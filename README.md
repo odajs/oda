@@ -78,7 +78,7 @@ Please make sure to read the [Contributing Guide](https://github.com/odajs/odajs
 
 ## Careers
 
-If you want to join us in our quest for creating the perfect framework, check the job section of [our company page on LinkedIn](https://www.linkedin.com/company/businessintersoft/jobs).
+If you are a framework enthusiast who wants to join us in our quest for creating the perfect WEB framework, check the job section of [our company page on LinkedIn](https://www.linkedin.com/company/businessintersoft/jobs).
 
 ## License
 
