@@ -62,7 +62,11 @@ Detailed changes for each release are documented in the [release notes](https://
 
 Please make sure to read the [Contributing Guide](https://github.com/odajs/odajs/blob/dev/.github/CONTRIBUTING.md) before making a pull request. If you have an ODA-related project/component/tool, add it with a pull request to [this curated list](https://github.com/odajs/contribution-list)!
 
-Thank you to all the people who already contributed to ODA Framework!
+THANK YOU TO ALL THE PEOPLE WHO ALREADY CONTRIBUTED TO ODA FRAMEWORK!
+
+## Careers
+
+If you want to join us in our quest for creating the perfect framework, check the job section of [our company page on LinkedIn](https://www.linkedin.com/company/businessintersoft/jobs). 
 
 ## License
 
