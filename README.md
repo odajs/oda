@@ -10,11 +10,11 @@
 
 It's a progressive ES framework based on the Web Components technology and designed especially for rapid development of custom UI/UX for web applications.
 
-* **Features** The ODA Framework allows its users to rapidly and easily create interactive user interfaces of any complexity. Web application code becomes as simple and straightforward as it is even possible for debugging and further distribution. Effective updating and rendering of an interface are carried out automatically whenever there is any change in the data itself or in the state of web components.
-* **Technologies** It uses a component-oriented approach based on all 4 basic elements of the Web Components technology: Custom Elements, Shadow DOM, HTML Templates, and Modules. It implements all the requirements of the PWA and PWC technologies.
-* **Advantages** Simplicity of coding and learning, code minimization with its functionality maximization, the substantial increase of the development speed and extensibility due to the re-use of ready-made web components, both self- and third-party-developed. High rendering efficiency for any changes which take place within an interface. Capability to develop cross-platform mobile applications.
+* **Features:** the ODA Framework allows its users to rapidly and easily create interactive user interfaces of any complexity. Web application code becomes as simple and straightforward as it is even possible for debugging and further distribution. Effective updating and rendering of an interface are carried out automatically whenever there is any change in the data itself or in the state of web components.
+* **Technologies:** it uses a component-oriented approach based on all 4 basic elements of the Web Components technology: Custom Elements, Shadow DOM, HTML Templates, and Modules. It implements all the requirements of the PWA and PWC technologies.
+* **Advantages:** simplicity of coding and learning, code minimization with its functionality maximization, the substantial increase of the development speed and extensibility due to the re-use of ready-made web components, both self- and third-party-developed. High rendering efficiency for any changes which take place within an interface. Capability to develop cross-platform mobile applications.
 
-[Learn how to use ODA Framework in your own project](https://odajs.org/docs/getting-started.html).
+[Learn how to use ODA Framework in your own project](https://odajs.org/#learn).
 
 ## Installation
 
