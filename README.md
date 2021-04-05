@@ -61,7 +61,7 @@ Detailed changes for each release are documented in the [release notes](https://
 ## Contribution
 
 Please make sure to read the [Contributing Guide](https://github.com/odajs/odajs/blob/dev/.github/CONTRIBUTING.md) before making a pull request. If you have an ODA-related project/component/tool, add it with a pull request to [this curated list](https://github.com/odajs/contribution-list)!
-*
+
 *THANK YOU TO ALL THE PEOPLE WHO ALREADY CONTRIBUTED TO ODA FRAMEWORK!*
 
 ## Careers
