@@ -1,0 +1,35 @@
+<meta charset="UTF-8">
+<script type="module" src="./property-grid.js"></script>
+
+<style>
+    html,body * {
+        color: gray;
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    oda-button {
+        max-width: 50vw;
+    }
+    oda-property-grid2 {
+        border: 1px solid gray;
+
+    }
+    .container {
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
+
+<div class="container">
+    <oda-button id="btn" icon-size="64" icon="icons:android" label="I'm button" fill="green"></oda-button>
+    <div style="flex:1"></div>
+    <oda-property-grid2 id="pg"></oda-property-grid2>
+</div>
+
+<script type="module">
+    pg.io = btn;
+</script>

@@ -1,0 +1,10 @@
+[
+  { "icon": "hardware:phone-android", "label": "Galaxy SIII Mini", "size": {"width": 420, "height": 800}, "border": {"left": 0.03, "right": 0.03, "top": 0.08, "bottom": 0.08, "radius": 0.05}},
+  { "icon": "hardware:phone-iphone", "label": "iPhone 6", "size": {"width": 750, "height": 1344}, "border": {"left":0.03, "right":0.03, "top":0.08, "bottom":0.14, "radius":0.05 }},
+  { "icon": "hardware:phone-iphone", "label": "iPhone 11", "size": {"width": 828, "height": 1792}, "border": {"left":0.02, "right":0.02, "top":0.02, "bottom":0.02, "radius":0.02}},
+  { "icon": "hardware:phone-iphone", "label": "iPhone 8 Plus", "size": {"width": 1080, "height": 1920}, "border": {"left":0.03, "right":0.03, "top":0.08, "bottom":0.08, "radius":0.05 }},
+  { "icon": "hardware:tablet-mac", "label": "iPad Air", "size": {"width": 1536, "height": 2048}, "border": {"left":0.03, "right":0.03, "top":0.03, "bottom":0.09, "radius":0.03 }},
+  { "icon": "hardware:tablet-mac", "label": "iPad Pro", "size": {"width": 1668, "height": 2224}, "border": {"left":0.03, "right":0.03, "top":0.03, "bottom":0.03, "radius":0.03 }},
+  { "icon": "enterprise:computer-screen", "label": "iMac 27''", "size": {"width": 2560, "height": 1440}, "border": {"left":0.02, "right":0.02, "top":0.02, "bottom":0.04, "radius":0.01 }},
+  { "icon": "enterprise:computer-screen", "label": "iMac 27'' 5K", "size": {"width": 5120, "height": 2880}, "border": {"left":0.02, "right":0.02, "top":0.02, "bottom":0.04, "radius":0.01 }}
+]

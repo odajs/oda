@@ -1,0 +1,71 @@
+<script src="../../oda.js" type="module"></script>
+<script src="/web/core/odant3.js" type="module"></script>
+<script src="./inspector.js" type="module"></script>
+<script src="../../components/buttons/button/button.js" type="module"></script>
+<script src="/web/core/structure/client/pages/navigator/navigator.js" type="module"></script>
+<div style="display: flex; flex-direction: row; height: 100%; overflow-y: visible;">
+  <odant-navigator context="H:1D03A3F3B5863BB/P:WORK/B:1D163F90CEC93D4" id="comp"></odant-navigator>
+  <oda-inspector id="app" style="width: 300px; max-width: 300px;"></oda-inspector>
+</div>
+<script type="module">
+  ODA({
+    is: 'my-comp',
+    extends: [],
+    template: /*html*/`
+    <style>
+      :host{
+        @apply --vertical;
+        @apply --flex;
+        display: block;
+        background-color: blue;
+        color: white;
+        white-space: pre;
+        overflow: auto;
+      }  
+    </style>
+    <div ~html="_getString()" style="font-weight: 900;"></div>
+    `,
+    props: {
+      root: {
+        a: 1,
+        b: false,
+        c: '3',
+        d: 'string',
+        e: { a: 1 },
+        f: [1, 2, 3, 4, 5],
+        g: [{ a: 1 }, { b: 2 }],
+        h: true,
+        props: {
+          b: {
+            type: Boolean,
+            default: false,
+            editor: 'custom-editor'
+          }
+        }
+      }
+    },
+    listeners: {},
+    keyBindings: {},
+    observers: [],
+    _getString() {
+      return JSON.stringify(this.root, null, '\t');
+    }
+  });
+  ODA({
+      is: 'custom-editor',
+      extends: 'oda-button',
+      props: {
+        value(){
+          return this.toggled;
+        },
+        label: 'custom editor'
+      },
+      listeners: {},
+      keyBindings: {},
+      observers: [],
+      
+  });
+  setTimeout(() => {
+    app.io = comp;
+  }, 3000);
+</script>

@@ -1,0 +1,101 @@
+<script src="/web/oda/oda.js"></script>
+<link rel="import" href="/web/lib/filter-container/filter-container.html">
+<link rel="import" href="../icons-tree/icons-tree.html">
+<link rel="import" href="../components-tree/components-tree.html">
+<link rel="import" href="/web/core/class/lib/field-tree/field-tree.html">
+<link rel="import" href="/web/tools/types-tree/types-tree.html">
+<oda-module id="oda-app-studio-toolbox" test-context="H:1D03A3F3B5863BB/P:WORK/B:1D163F90CEC93D4/C:1D163F9191B17AC">
+    <template>
+        <style>
+            :host{
+                @apply --flex;
+                @apply --vertical;
+                overflow: hidden;
+                height: 100%;
+            }
+        </style>
+        <div class="no-flex horizontal">
+            <oda-scroll-box>
+                <oda-button v-for="(tool, k) in tools" :key="tools[k].label" :label="tools[k].label" class="no-flex" :class="{focused: k === index}" :style="{ borderBottom: `2px solid ${index === k?'blue':'transparent'}`}" @tap="index = k"></oda-button>
+            </oda-scroll-box>
+        </div>
+        <div :is="tools[index].tag" :context-item.prop="contextItem"></div>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-app-studio-toolbox',
+            props: {
+                tools: {
+                    type: Array,
+                    default: [
+                        {
+                            label: 'Icons',
+                            tag: 'oda-icons-tool'
+                        },
+                        {
+                            label: 'Components',
+                            tag: 'oda-Components-tool'
+                        },
+                        {
+                            label: 'Types',
+                            tag: 'oda-types-tool'
+                        },
+                    ]
+                },
+                index: 0,
+                contextItem: Object
+            },
+            _clearFilter() {
+                this.filter = this._filter = '';
+            }
+        })
+    </script>
+</oda-module>
+<oda-module id="oda-icons-tool">
+    <template>
+        <style>
+            :host{
+                overflow: hidden;
+            }
+        </style>
+        <oda-icons-tree :filter-val="filter"></oda-icons-tree>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-icons-tool',
+            extends: 'oda-filter-container',
+        })
+    </script>
+</oda-module>
+<oda-module id="oda-components-tool">
+    <template>
+        <style>
+            :host{
+                overflow: hidden;
+            }
+        </style>
+        <oda-components-tree :filter-val="filter"></oda-components-tree>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-components-tool',
+            extends: 'oda-filter-container',
+        })
+    </script>
+</oda-module>
+<oda-module id="oda-types-tool">
+    <template>
+        <style>
+            :host{
+                overflow: hidden;
+            }
+        </style>
+        <oda-types-tree :filter-val="filter"></oda-types-tree>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-types-tool',
+            extends: 'oda-filter-container',
+        })
+    </script>
+</oda-module>

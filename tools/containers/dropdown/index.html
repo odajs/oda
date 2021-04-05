@@ -1,0 +1,46 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./dropdown.js"></script>
+<oda-tester id="tester">
+    <oda-dropdown id="modal">
+        <div>BLA-BLA-BLA</div>
+        <div>BLA-BLA-BLA</div>
+        <div>BLA-BLA-BLA</div>
+        <button>1 2 3</button>
+
+    </oda-dropdown>
+    <button id="btn" slot="buttons">static</button>
+    <button id="btn1" slot="buttons">dynamic</button>
+</oda-tester>
+<script type="module">
+    btn.onclick = async e => {
+        modal.parent = btn;
+        try {
+            ODA.console.status = await modal.show();
+        }
+        catch (e) {
+            ODA.console.log(e);
+        }
+        finally {
+            modal.parent = null
+        }
+    }
+    btn1.onclick = async e => {
+        try {
+            const res = await ODA.showDropdown('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true }, { animation: 500, parent: btn1 });
+            ODA.console.log(res);
+        }
+        catch (e) {
+            ODA.console.log(e);
+        }
+    }
+    tester.oncontextmenu = async e => {
+        try {
+            const res = await modal.show();
+            ODA.console.log(res);
+        }
+        catch (e) {
+            ODA.console.log(e);
+        }
+    }
+</script>

@@ -1,0 +1,18 @@
+<meta charset="utf-8">
+<script type="module" src="./monitor.js"></script>
+
+<oda-monitor></oda-monitor>
+
+<script type="module">
+    import confetti from "https://cdn.skypack.dev/canvas-confetti";
+
+    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+    setInterval(() => {
+            confetti({
+            angle: randomInRange(30, 150),
+            spread: randomInRange(50, 70),
+            particleCount: randomInRange(50, 100),
+            origin: { y: 0.6 }
+        });
+    }, 800);
+</script>

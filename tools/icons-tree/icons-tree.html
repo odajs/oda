@@ -1,0 +1,131 @@
+<script src="/web/oda/oda.js"></script>
+<link rel="import" href="/web/lib/tree/tree.html">
+
+<!--<link rel="import" href="nodes.html">-->
+<oda-module id="oda-icons-tree">
+    <script>
+        ODA({
+            is: 'oda-icons-tree',
+            extends: 'oda-tree',
+            props: {
+                allowFocus: true,
+                lazy: true,
+                allowDrag: true,
+                connection: {
+                    type: Object,
+                    async watch(connection) {
+                        if (connection) {
+                            let files = await connection.getFiles('web/lib/icon/icons/*');
+                            files.sort((a, b) => a.name.localeCompare(b.name));
+                            this.dataSet = files.map(file => {
+                                return { $file: file, template: 'oda-icons-folder', drag: false, items: [{ template: 'oda-table-loading' }] }
+                            });
+                            this.dataSet.forEach(async (i) => i.items = await this._beforeExpand(i));
+                        }
+                    }
+                },
+                columns: [{ name: 'icon', treeMode: true }],
+                filterVal: {
+                    default: '',
+                    watch(filter) {
+                        this.set(this.columns[0], '$filter', filter === '*' ? '' : filter);
+                        this.hideRoot = Boolean(filter);
+                    }
+                }
+            },
+            async _onDragStart(e) {
+                const el = e.path.find(p => p.row);
+                if (el && (this.allowDrag || el.row.drag)) {
+                    try {
+                        const node = e.target.querySelector('oda-table-cell-tree').__shadowRoot.querySelector('oda-icons-icon');
+                        e.dataTransfer.setDragImage(node, 0, 0);
+                    } catch (err) {
+                        e.dataTransfer.setDragImage(new Image(), 0, 0);
+                    }
+                    e.dataTransfer.setData('text/plain', `\r\n<oda-icon icon="${el.row.icon}"></oda-icon>`);
+                    e.dataTransfer.setData('odant/html-links', JSON.stringify([`<link rel="import" href="/web/lib/icon/icon.html">`]));
+                    e.dataTransfer.setData('odant/icon', el.row.icon);
+                }
+            },
+            async _beforeExpand(item) {
+                if (item.items.length > 1)
+                    return item.items;
+                const link = await ODA.loadLink(item.$file.path);
+                const icons = Array.from(link.import.querySelector('template').content.children).map(i => {
+                    return { label: i.id, icon: item.$file.name + ':' + i.id, template: 'oda-icons-icon' }
+                });
+                icons.sort((a, b) => a.label.localeCompare(b.label));
+                return icons;
+            },
+            async ready() {
+                this.connection = await ODANT.getConnection();
+            }
+        })
+    </script>
+</oda-module>
+
+<oda-module id="oda-icons-folder">
+    <template>
+        <style>
+            :host{
+                fill: var(--body-color, #555555);
+            }
+        </style>
+        <label class="label">{{item.$file && item.$file.name}}</label>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-icons-folder',
+            extends: 'oda-table-cell-base, oda-icon',
+            props: {
+                icon: 'odant:folder'
+            }
+        })
+    </script>
+</oda-module>
+
+<oda-module id="oda-icons-icon">
+    <template>
+        <style>
+            :host(:not(:hover)) > oda-button{
+                display: none;
+            }
+            oda-button{
+                opacity: 0.25;
+            }
+            oda-button:hover{
+                opacity: 1;
+            }
+        </style>
+        <label class="label flex" style="cursor: pointer;">{{item.label}}</label>
+        <oda-button icon="icons:content-copy" @tap="_copyToClipboard"></oda-button>
+    </template>
+    <script>
+        ODA({
+            is: 'oda-icons-icon',
+            extends: 'oda-icon, oda-table-cell-base',
+            props: {
+                icon: {
+                    get() {
+                        return this.item.icon;
+                    }
+                }
+            },
+            listeners: {
+                dblclick: '_copyToClipboard'
+            },
+            _copyToClipboard() {
+                const s = this.icon;
+                const input = document.createElement('input');
+                input.style.opacity = '0';
+                input.style.display = 'fixed';
+                document.body.appendChild(input);
+                input.value = s;
+                input.focus();
+                input.select();
+                document.execCommand("Copy");
+                input.remove();
+            }
+        })
+    </script>
+</oda-module>

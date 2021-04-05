@@ -1,0 +1,19 @@
+<meta charset="UTF-8">
+<script type="module" src="./modal.js"></script>
+<oda-tester>
+    <oda-modal id="modal"><div>BLA-BLA-BLA</div><div>BLA-BLA-BLA</div><div>BLA-BLA-BLA</div></oda-modal>
+    <button id="btn" slot="buttons">static</button>
+    <button id="btn1" slot="buttons">dynamic</button>
+    <button id="btn2" slot="buttons">iframe</button>
+</oda-tester>
+<script type="module">
+    btn.onclick = e => {
+        modal.show();
+    }
+    btn1.onclick = e => {
+        ODA.showModal('oda-button', {icon: 'icons:warning', iconSize: 100, allowToggle: true}, {animation: 500, title: 'ЗАГОЛОВОК'})
+    }
+    btn2.onclick = e => {
+        ODA.showModal('iframe', {src:'https://s1.1zoom.ru/prev/581/Love_Heart_Two_580916_600x400.jpg'}, {animation: 100, title: 'ЗАГОЛОВОК', fullSize: true})
+    }
+</script>

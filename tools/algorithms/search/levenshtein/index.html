@@ -1,0 +1,32 @@
+<meta charset="UTF-8">
+<oda-levenshtein-test id="test"></oda-levenshtein-test>
+<script type="module">
+    import '../../../../oda.js';
+    import {levenshteinList} from './levenshtein.js';
+    ODA({
+        is: 'oda-levenshtein-test',
+        template:`
+            <style>
+                div{
+                    max-width: 200px;
+                }
+            </style>
+            <input ::value>
+            <div class="horizontal" ~for="results">
+                <span class="flex">{{item.value}}</span>
+                <span>{{item.distance}}</span>
+            </div>
+        `,
+        props:{
+            value: '',
+            data:[],
+            results: {
+                default: Array,
+                get(){
+                    return levenshteinList(this.value, this.data, true)
+                }
+            }
+        }
+    })
+    test.data = ['Иванов', 'Петров', 'Сидоров']
+</script>

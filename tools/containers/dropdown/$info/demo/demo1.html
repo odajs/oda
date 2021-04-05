@@ -1,0 +1,110 @@
+﻿<script type="module" src="./dropdown.js"></script>
+<my-calculator></my-calculator>
+<script type="module">
+ODA({
+    is: "my-calculator",
+    template: `
+        <style>
+            .digit {
+                width: 30px;
+                margin-left: 4px;
+                margin-top: 4px;
+            }
+        </style>
+        <button ref="calc" @tap="myOpened = !myOpened">Калькулятор</button>
+        <oda-dropdown ::opened="myOpened" parent="$refs.calc">
+            <input ::value @keypress.prevent=""></input>
+            <div>
+                <button class="digit" @tap="insertSign('1')">1</button>
+                <button class="digit" @tap="insertSign('2')">2</button>
+                <button class="digit" @tap="insertSign('3')">3</button>
+                <button class="digit" @tap="insertSign('+')">+</button>
+                <button class="digit" @tap="if(value.length>0) value=value.substr(0,value.length-1)">&larr;</button>
+            </div>
+            <div>
+                <button class="digit" @tap="insertSign('4')">4</button>
+                <button class="digit" @tap="insertSign('5')">5</button>
+                <button class="digit" @tap="insertSign('6')">6</button>
+                <button class="digit" @tap="insertSign('-')">-</button>
+                <button class="digit" @tap="value=''">C</button>
+            </div>
+            <div>
+                <button class="digit" @tap="insertSign('7')">7</button>
+                <button class="digit" @tap="insertSign('8')">8</button>
+                <button class="digit" @tap="insertSign('9')">9</button>
+                <button class="digit" @tap="insertSign('*')">*</button>
+            </div>
+            <div style="margin-bottom: 4px;">
+                <button class="digit" @tap="insertSign('0')" style="width: 64px">0</button>
+                <button class="digit" @tap="insertSign('.')">.</button>
+                <button class="digit" @tap="insertSign('/')">/</button>
+                <button class="digit" @tap="insertSign('=')">=</button>
+            </div>
+        <oda-dropdown>
+    `,
+    props: {
+        value: "",
+        myOpened: false,
+        result: 0
+    },
+    insertSign( sign ) {
+//        if( sign == 'Enter' )
+//            sign = '=';
+        if( ! /[\+\-\*\/\.=\d]/.test(sign) )
+            return;
+        if( '0123456789'.indexOf(sign) != -1 ) {
+            if( this.value[this.value.length-1] == '0' )
+                if( this.value.length==1 || '+-*/'.indexOf(this.value[this.value.length-2])!=-1 )
+                    this.value = this.value.substr( 0, this.value.length-1 );
+            this.value += sign;
+            return;
+        }
+        if( this.value.length > 0 )
+            if( this.value[this.value.length-1] == '.' )
+                this.value = this.value.substr( 0, this.value.length-1 );
+        switch( sign ) {
+            case '+':
+            case '*':
+            case '/':
+                if( this.value.length > 0 )
+                    if( '+-*/'.indexOf(this.value[this.value.length-1]) == -1 ) {
+                        this.value = String( eval(this.value) );
+                        this.value += sign;
+                    }
+                break;
+            case '-':
+                if( this.value.length == 0 )
+                    this.value = '-';
+                else
+                    if( this.value[this.value.length-1] != '-' ) {
+                        if( '0123456789'.indexOf(this.value[this.value.length-1]) != -1 )
+                            this.value = String( eval(this.value) );
+                        this.value += '-';
+                    }
+                break;
+            case '=':
+                this.value = String( eval(this.value) );
+                break;
+            case '.':
+                if( this.value.length==0 || '+-*/'.indexOf(this.value[this.value.length-1]) != -1 )
+                    this.value += '0.';
+                else {
+                    var lastIndex = this.value.lastIndexOf('.');
+                    if( lastIndex == -1 )
+                        this.value += '.';
+                    else {
+                        var s = this.value.substring( lastIndex, this.value.length );
+                        if( s.search(/[\+\-\*\/]/) != -1 ) 
+                            this.value += '.';
+                    }
+                }
+                break;
+        }
+    },
+//    listeners: {
+//        keypress: function(e) {
+//            this.insertSign( e.key );
+//        }
+//    },
+}); 
+</script>
