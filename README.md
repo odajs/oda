@@ -60,7 +60,7 @@ You can improve it by sending pull requests to [this repository](https://github.
 
 ## Questions
 
-For questions and support please use [the official support mail](mailto:support@odant.su?subject=[GitHub]%20Source%20Han%20Sans). The issue list of this repo is **exclusively** for bug reports and feature requests.
+For questions and support use [the official support mail](mailto:support@odant.su?subject=[GitHub]%20Source%20Han%20Sans), please. The issue list of this repo is **exclusively** for bug reports and feature requests.
 
 ## Issues
 
