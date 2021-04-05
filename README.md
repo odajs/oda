@@ -66,7 +66,7 @@ THANK YOU TO ALL THE PEOPLE WHO ALREADY CONTRIBUTED TO ODA FRAMEWORK!
 
 ## Careers
 
-If you want to join us in our quest for creating the perfect framework, check the job section of [our company page on LinkedIn](https://www.linkedin.com/company/businessintersoft/jobs). 
+If you want to join us in our quest for creating the perfect framework, check the job section of [our company page on LinkedIn](https://www.linkedin.com/company/businessintersoft/jobs).
 
 ## License
 
