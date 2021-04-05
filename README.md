@@ -20,9 +20,23 @@ It's a progressive ES framework based on the Web Components technology and desig
 
 From its very beginning, ODA Framework has been designed for gradual adoption and **you can use as little or as much ODA Framework as you need**:
 
-* Use [Online Playgrounds](https://odajs.org/docs/getting-started.html#online-playgrounds) to check fully deployed ODA Framework.
-* [Add ODA Framework to a Website](https://odajs.org/docs/add-react-to-a-website.html) as a `<script>` tag in one minute.
-* [Create a New ODA Framework App](https://odajs.org/docs/create-a-new-react-app.html) if you're looking for a powerful JavaScript toolchain.
+* Download a [ZIP](https://current.odant.org/web/oda/dist/oda.zip) archive.
+* Use CDN:
+~~~html
+<script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda-framework/oda.js"></script>
+~~~
+
+~~~html
+<script type="module" src="https://unpkg.com/browse/oda-framework@0.0.1/oda.js"></script>
+~~~
+* Install ODA Framework via NPM:
+~~~html
+ npm i oda-framework
+~~~
+* Install ODA Framework via YARN:
+~~~html
+ yarn add oda-framework
+~~~
 
 You can use ODA Framework as a `<script>` tag from [CDN](https://odajs.org/docs/cdn-links.html), or as an `oda-framework` package on [npm](https://www.npmjs.com/).
 
