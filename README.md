@@ -44,9 +44,9 @@ ODA Framework supports all [ES5-compliant](http://kangax.github.io/compat-table/
 
 ## Documentation
 
-You can find the ODA Framework documentation on this [website](https://odajs.org/learn/docs).
+You can find the ODA Framework documentation on this [website](https://odajs.org/#learn).
 
-Check out the [Getting Started](https://odajs.org/learn/docs/getting-started.html) page for a quick overview.
+Check out the [Getting Started](https://odajs.org/#learn/guide/introduction.md) page for a quick overview.
 
 The documentation is divided into several sections:
 
