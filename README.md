@@ -54,10 +54,6 @@ For questions and support please use [the official support mail](mailto:support@
 
 Please make sure to read the [Issue Reporting Checklist](https://github.com/odajs/odajs/blob/dev/.github/CONTRIBUTING.md#issue-reporting-guidelines) before opening an issue. Issues not conforming to the guidelines may be closed immediately.
 
-## Good First Issues
-
-To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odajs/odajs/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
-
 ## Changelog
 
 Detailed changes for each release are documented in the [release notes](https://github.com/odajs/odajs/releases).
