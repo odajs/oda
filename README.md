@@ -38,8 +38,6 @@ From its very beginning, ODA Framework has been designed for gradual adoption an
  yarn add oda-framework
 ~~~
 
-You can use ODA Framework as a `<script>` tag from [CDN](https://odajs.org/docs/cdn-links.html), or as an `oda-framework` package on [npm](https://www.npmjs.com/).
-
 ## Browser Compatibility
 
 ODA Framework supports all [ES5-compliant](http://kangax.github.io/compat-table/es5/) browsers (IE8 and older versions are not supported).
