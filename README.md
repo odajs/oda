@@ -12,7 +12,7 @@ It's a progressive ES framework based on the technology of Web Components and de
 
 * **Features** The ODA Framework allows its users to create  interactive user interfaces of any complexity rapidly and easily. Web application code becomes as simple and straightforward as it is even possible for debugging and further distribution. Effective updating and rendering of an interface are carried out automatically whenever there is any change in the data itself or in the state of web components.
 * **Technologies** It is used a component-oriented approach based on all 4 basic elements of the Web Components technology: Custom Elements, Shadow DOM, HTML Templates, and Modules. It implements all the requirements of PWA and PWC technologies.
-* **Advantages** Simplicity of coding and learning, code minimizaton with its functionality maximization, the substantial increase of the development speed and extensibility due to the re-use of ready-made web components, both self- and third-party-developed. High rendering efficiency for any changes occurring within an interface. Capability to develop cross-platform mobile applications.
+* **Advantages** Simplicity of coding and learning, code minimizaton with its functionality maximization, the substantial increase of the development speed and extensibility due to the re-use of ready-made web components, both self- and third-party-developed. High rendering efficiency for any changes occurring within an interface. Capability to develop cross-platform mobile applications..
 
 [Learn how to use ODA Framework in your own project](https://odajs.org/docs/getting-started.html).
 
