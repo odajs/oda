@@ -16,7 +16,7 @@ It's a progressive ES framework based on the technology of Web Components and de
 
 [Learn how to use ODA Framework in your own project](https://odajs.org/docs/getting-started.html).
 
-## Installation
+## Installation....
 
 ODA Framework has been designed for gradual adoption from the start, and **you can use as little or as much ODA Framework as you need**:
 
