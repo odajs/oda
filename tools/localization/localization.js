@@ -13,7 +13,6 @@ ODA.loadJSON(Localization.pathDictionary).then( res => { Localization.dictionary
 
 //Localization.dictionary = { words: {'_':'_'}, phraze: {'_':'_'} }
 // import dictionary from  './tst.js'
-// //console.log(dictionary)
 // Localization.dictionary = dictionary
 
 window.addEventListener('keydown', async e => {
