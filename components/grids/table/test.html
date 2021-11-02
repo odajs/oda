@@ -1,0 +1,25 @@
+<meta charset="utf-8">
+<oda-table id="tab" allow-check="double" lazy col-lines row-lines show-footer show-group-footer show-header allow-focus allow-selection allow-sort even-odd></oda-table>
+<script type="module">
+    import '/web/oda/oda.js';
+    import './table.js';
+    tab.columns = [
+        { fix: 'left', width: 16 },
+        { name: 'right', fix: 'right' },
+        { name: 'col1', treeMode: true },
+        { name: 'number', summary: 'sum' },
+        { name: 'left', fix: 'left' }
+    ];
+    tab.dataSet = [
+        { col1: "1 строка", number: 12345.6789 },
+        { col1: "2 строка", number: 56789.1234 },
+        { col1: "3 строка" },
+        { col1: "4 строка" },
+        { col1: "5 строка" },
+        { col1: "6 строка" },
+        { col1: "7 строка", items: [{ col1: 'новая строка' }] },
+        { col1: "8 строка" },
+        { col1: "9 строка" },
+        { col1: "10 строка" },
+    ];
+</script>

@@ -1,0 +1,45 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../../oda.js"></script>
+<oda-test-layout></oda-test-layout>
+<script type="module">
+    import './app-layout.js';
+    ODA({is:'oda-test-layout', extends:'oda-app-layout',
+        template:`
+            <app-layout-toolbar slot="header">
+                    <oda-button icon="class" slot="header-left">left toolbar</oda-button>
+            </app-layout-toolbar>
+            <app-layout-toolbar slot="top">
+
+            </app-layout-toolbar>
+                            <oda-button icon="class" slot="top-left">left toolbar</oda-button>
+                <oda-button icon="class" slot="top-right">right toolbar</oda-button>
+                <oda-button icon="class" slot="top-center">center toolbar</oda-button>
+            <div slot="top">TOP qw erpiqwerop iqwpeopoqweirpqpowporq ikqwep wepp oeqpiqwer
+                <oda-button>fff</oda-button>
+            </div>
+            <input slot="top" value="100"></input>
+            <div slot="top-left">TOP-LEFT</div>
+            <div slot="main">MAIN</div>
+            <div slot="bottom">BOTTOM</div>
+    <!--        <div slot="leftbar">LEFT BAR</div>-->
+            <div  icon="odant:class" slot="left-panel">ссссс</div>
+            <div  slot="left-panel" bar-opened>LEFT1</div>
+            <div  style="font-weight: bolder; color: red;" :slot="mySlot">LEFT2</div>
+            <div slot="left-panel">LEFT3</div>
+            <div slot="right-panel">RIGHT</div>
+            <div slot="header">HEADER</div>
+            <div slot="footer">FOOTER</div>
+
+
+            <app-layout-toolbar slot="footer">
+                <div slot="left">left toolbar</div>
+                <div slot="right">right toolbar</div>
+                <div slot="center">center toolbar</div>
+            </app-layout-toolbar>
+
+        `,
+        mySlot: 'left-panel',
+        leftButtons:[{icon: 'icons:warning', bubble: 10, allowToggle: true, toggleGroup: 'views'}, {icon: 'icons:error', bubble: 3, allowToggle: true, toggleGroup: 'views'}]
+    })
+</script>

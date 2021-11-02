@@ -1,0 +1,49 @@
+<style>
+    body{
+        overflow: hidden;
+    }
+</style>
+<oda-my-test></oda-my-test>
+<script type="module">
+    import '/web/oda/oda.js';
+    ODA({is:'oda-my-test',
+        template:`
+            <style>
+                :host{
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                    background-color: #FFEEAD;
+                    @apply --vertical;
+                    position: relative;
+                }
+                .container{
+                    width: 100px;
+                    height: 100px;
+                    background-color: #0aa7e8;
+                    position: absolute;
+                    transform: translate(1000px, 300px);
+                }
+                svg{
+                    background-color: red;
+                }
+            </style>
+
+            <div @resize="resize" class="flex vertical" style="background-color: yellow; overflow: visible; position: relative;">
+                <svg :width :height class="flex"></svg>
+                <div class="container" ~for="items">{{scrollWidth}},{{offsetWidth}}</div>
+            </div>
+        `,
+        width: 0,
+        height: 0,
+        items: [1,2,3],
+        resize(e){
+            this.width = e.target.clientWidth;
+            this.height = e.target.clientHeight;
+            this.interval('resize', ()=>{
+                this.width = e.target.scrollWidth;
+                this.height = e.target.scrollHeight;
+            }, 100)
+        }
+    })
+</script>

@@ -1,0 +1,15 @@
+<script type="module" src="../../../oda.js"></script>
+<script src="./listbox.js" type="module"></script>
+<oda-list-box id="listbox"></oda-list-box>
+<script type="module">
+    let icons = [
+        'icons:favorite', 'icons:face', 'icons:star', 'icons:android', 'icons:add-box', 'icons:accessibility', 'icons:add-shopping-cart', 'icons:alarm', 'icons:apps', 'icons:archive', 'icons:assignment', 'icons:attachment', 'icons:backspace', 'icons:backup', 'icons:bookmark', 'icons:bookmark-border', 'icons:bug-report', 'icons:camera-enhance', 'icons:check', 'icons:check-box', 'icons:check-box-indeterminate', 'icons:check-box-outline-blank', 'icons:explore', 'icons:extension', 'icons:flag', 'icons:folder', 'icons:gesture', 'icons:get-app', 'icons:language', 'icons:lock', 'icons:radio-button-unchecked', 'icons:receipt', 'icons:redeem', 'icons:save', 'icons:schedule', 'icons:search', 'icons:shop', 'icons:sort', 'icons:speaker-notes', 'icons:spellcheck', 'icons:stars', 'icons:store', 'icons:subject', 'icons:supervisor-account', 'icons:swap-horiz', 'icons:swap-vert', 'icons:swap-vertical-circle', 'icons:translate', 'icons:tree-structure', 'icons:trending-down', 'icons:trending-flat', 'icons:trending-up', 'icons:turned-in', 'icons:turned-in-not', 'icons:undo', 'icons:unfold-less', 'icons:unfold-more', 'icons:up-folder', 'icons:verified-user', 'icons:view-agenda', 'icons:view-array', 'icons:view-carousel', 'icons:view-column', 'icons:view-day', 'icons:view-headline', 'icons:view-list', 'icons:view-module', 'icons:view-quilt', 'icons:view-stream', 'icons:view-week', 'icons:visibility', 'icons:visibility-off', 'icons:warning', 'icons:work', 'icons:youtube-searched-for', 'icons:zoom-in', 'icons:zoom-out'
+    ];
+    setTimeout(() => {
+        let items = [];
+        for (let i = 0; i < 50; ++i) {
+            items[i] = { label: "Элемент " + (i + 1), icon: icons[i] };
+        }
+        listbox.setProperty('items', items);
+    }, 300); 
+</script>

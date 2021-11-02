@@ -1,0 +1,73 @@
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<script src="../../../oda.js" type="module"></script>
+<script src="./basic-input.js" type="module"></script>
+
+<style>
+  oda-basic-input{
+    border-bottom: 1px solid gray;
+    margin: 8px;
+  }
+  input[type=checkbox]:checked+div oda-basic-input{
+    outline: 1px solid rgba(0,0,0,.1);
+  }
+</style>
+<label for="showBorder">show border</label><input type="checkbox" id="showBorder">
+<div class="horizontal" style="margin: 0 auto;padding: 16px">
+  <fieldset >
+    <legend>Width label</legend>
+    <oda-basic-input placeholder="text hjadkjshkjas dhkja hsdkjk jasdhkjasd kja skjdhkjas"      type="text"   ></oda-basic-input>
+    <oda-basic-input placeholder="text"      type="text"   ></oda-basic-input>
+    <oda-basic-input placeholder="with list" type="text"   ></oda-basic-input>
+    <oda-basic-input placeholder="number"    type="number" ></oda-basic-input>
+    <oda-basic-input placeholder="email"     type="email"  ></oda-basic-input>
+    <oda-basic-input placeholder="date"      type="date"   ></oda-basic-input>
+    <oda-basic-input placeholder="tel"       type="tel"    ></oda-basic-input>
+    <oda-basic-input placeholder="logical"   type="boolean"></oda-basic-input>
+    <oda-basic-input placeholder="color"   type="color"></oda-basic-input>
+    <oda-basic-input type="text"></oda-basic-input>
+  </fieldset>
+  <fieldset style="margin: 0 auto;padding: 16px">
+    <legend>Hide label</legend>
+    <oda-basic-input hide-label placeholder="text hjadkjshkjas dhkja hsdkjk jasdhkjasd kja skjdhkjas"      type="text"   ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="text"      type="text"   ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="with list" type="text"   ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="number"    type="number" ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="email"     type="email"  ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="date"      type="date"   ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="tel"       type="tel"    ></oda-basic-input>
+    <oda-basic-input hide-label placeholder="logical"   type="boolean"></oda-basic-input>
+    <oda-basic-input hide-label placeholder="color"   type="color"></oda-basic-input>
+    <oda-basic-input hide-label type="text"></oda-basic-input>
+  </fieldset>
+</div>
+<div style="padding: 16px">
+  <oda-basic-input placeholder="text hjadkjshkjas dhkja hsdkjk jasdhkjasd kja skjdhkjas"      type="text"   ></oda-basic-input>
+  <oda-basic-input placeholder="text"      type="text"   ></oda-basic-input>
+  <oda-basic-input placeholder="with list" type="text"   ></oda-basic-input>
+  <oda-basic-input placeholder="number"    type="number" ></oda-basic-input>
+  <oda-basic-input placeholder="email"     type="email"  ></oda-basic-input>
+  <oda-basic-input placeholder="date"      type="date"   ></oda-basic-input>
+  <oda-basic-input placeholder="tel"       type="tel"    ></oda-basic-input>
+  <oda-basic-input placeholder="logical"   type="boolean"></oda-basic-input>
+  <oda-basic-input type="text"></oda-basic-input>
+</div>
+<script>
+  document.querySelector('[placeholder="with list"]').list = [
+    'первое значение',
+    'второе значение',
+    '3 значение',
+    'а',
+    'аб',
+    'абв',
+    'абвг',
+    'абвгд',
+    'абвгде',
+    'лофырв лдофвды',
+    'шщфгв щфшыв фщшы',
+    'khjasdkl jl ',
+    'oiqwo wwkwm',
+    '10',
+    '654',
+    '888',
+  ];
+</script>

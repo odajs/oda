@@ -1,0 +1,87 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./table.js"></script>
+<oda-table id="table" lazy allow-check col-lines row-lines show-footer show-group-footer show-header allow-focus allow-selection></oda-table>
+<script type="module">
+    table.columns = [
+            {fix:'left', width: 32},
+            {name: 'right', fix: 'right'},
+            {name: 'col1', treeMode: true},
+            {name: 'number', summary: 'sum'},
+            {name: 'left', fix: 'left'},
+            {name: 'col2', items: [{name: 'col21', items: [{name: 'col211'},{name: 'col212'},{name: 'col213'},{name: 'col215', items: [{name: 'col211'},{name: 'col212'},{name: 'col213'},{name: 'col215', }]}]}, {name: "col22"}]}
+        ];
+    table.dataSet = [
+        {col1:"1 строка", drag: true, id: 1234, number: 3748.578, col21: 'вложенное', col22: 'второе вложенное'},
+        {col1:"2 строка", number: '234234.234', col215: 'col215', $expanded: true,
+            items:[
+                {col1:"2.1 строка", drag: true, col21: 'вложенное'},
+                {col1:"2.2 строка", drop: true,
+                    items:[
+                        {col1:"2.2.1 строка"},
+                        {col1:"2.2.2 строка", col212: 'col212'},
+                        {col1:"2.2.3 строка"},
+                        {col1:"2.2.4 строка"},
+                        {col1:"2.2.5 строка", col21: 'вложенное'},
+                        {col1:"2.2.6 строка"},
+                        {col1:"2.2.7 строка", col22: 'второе вложенное'},
+                        {col1:"2.2.8 строка"},
+                        {col1:"2.2.9 строка"},
+                        {col1:"2.2.10 строка", col22: 'второе вложенное'}
+                    ]},
+                {col1:"2.3 строка", col22: 'второе вложенное'},
+                {col1:"2.4 строка", col212: 'col212'},
+                {col1:"2.5 строка", col21: 'вложенное'}
+            ]
+        },
+        {col1:"3 строка",
+            items:[
+                {col1:"3.1 строка"},
+                {col1:"3.2 строка", col22: 'второе вложенное'},
+                {col1:"3.3 строка", col21: 'вложенное'},
+                {col1:"3.4 строка", col212: 'col212'},
+                {col1:"3.5 строка"},
+                {col1:"3.6 строка"},
+                {col1:"3.7 строка"},
+                {col1:"3.8 строка", col212: 'col212'},
+                {col1:"3.9 строка"},
+                {col1:"3.10 строка"}
+            ]
+        },
+        {col1:"4 строка", parent: 1234, col212: 'col212'},
+        {col1:"5 строка",
+            items:[
+                {col1:"5.1 строка"},
+                {col1:"5.2 строка",
+                    items:[
+                        {col1:"5.2.1 строка"},
+                        {col1:"5.2.2 строка"},
+                        {col1:"5.2.3 строка"},
+                        {col1:"5.2.4 строка"},
+                        {col1:"5.2.5 строка"},
+                        {col1:"5.2.6 строка"},
+                        {col1:"5.2.7 строка"},
+                        {col1:"5.2.8 строка"},
+                        {col1:"5.2.9 строка"},
+                        {col1:"5.2.10 строка"}
+                    ]},
+                {col1:"5.3 строка"},
+                {col1:"5.4 строка"},
+                {col1:"5.5 строка"},
+                {col1:"5.6 строка"},
+                {col1:"5.7 строка"},
+                {col1:"5.8 строка"},
+                {col1:"5.9 строка"},
+                {col1:"5.10 строка"}
+            ]
+        },
+        {col1:"6 строка"},
+        {col1:"7 строка",
+            items:[
+                {col1: 'новая ветка'}
+            ]},
+        {col1:"8 строка"},
+        {col1:"9 строка"},
+        {col1:"10 строка", drop: true},
+    ];
+</script>

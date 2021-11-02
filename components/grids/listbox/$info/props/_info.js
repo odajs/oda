@@ -1,0 +1,23 @@
+export default [
+    { label: 'items', src: './$info/props/items.md', title: 'Список элементов', color: 'green' },
+    { label: 'iconSize', src: './$info/props/icon-size.md', title: 'Размер иконки', color: 'green' },
+    { label: 'rowSize', src: './$info/props/row-size.md', title: 'Размер элемента списка', color: 'green' },
+    { label: 'rowCount', src: './$info/props/row-count.md', title: 'Количество строк, отображаемых в контейнере', color: 'green' },
+    { label: 'filter', src: './$info/props/filter.md', title: 'Значение фильтра элементов', color: 'green' },
+    { label: 'orderBy', src: './$info/props/order-by.md', title: 'Порядок сортировки', color: 'green' },
+    { label: 'rows', src: './$info/props/rows.md', title: 'Все элементы в контейнере', color: 'green' },
+    { label: 'visibleRows', src: './$info/props/visible-rows.md', title: 'Отображаемые элементы в видимой области контейнера', color: 'green' },
+    { label: 'pagesCount', src: './$info/props/pages-count.md', title: 'Количество станиц в контейнере', color: 'green' },
+    { label: 'count', src: './$info/props/count.md', title: 'Количество элементов списка', color: 'green'},
+    { label: 'multiple', src: './$info/props/multiple.md', title: 'Выбор нескольких элементов из списка', color: 'green' },
+    { label: 'comboMode', src: './$info/props/combo-mode.md', title: 'Изменение режима выбора элементов', color: 'green' },
+    { label: 'showCount', src: './$info/props/show-count.md', title: 'Отображение панели с количеством элементов списка', color: 'green' },
+    { label: 'focusedItem', src: './$info/props/focused-item.md', title: 'Первый выбранный элемент из списка', color: 'green' },
+    { label: 'selection', src: './$info/props/selection.md', title: 'Все выбранные элементы из списка', color: 'green' },
+    { label: 'autofocus', src: './$info/props/autofocus.md', title: 'Устанавливает фокус на контейнер при его создании', color: 'green' },
+    { label: 'hideIcons', src: './$info/props/hide-icons.md', title: 'Позволяет спрятать отображение иконок у элементом списка', color: 'green' },
+    { label: 'defaultTemplate', src: './$info/props/default-template.md', title: 'Определяет тип элементов пользовательского списка', color: 'green' },
+    { label: 'bottomOffset', src: './$info/props/bottom-offset.md', title: 'Задает отступ от конца контейнера до списка элементов', color: 'green' },
+    { label: 'counterHeight', src: './$info/props/counter-height.md', title: 'Задает размер счетчика на итоговой панели ', color: 'green' },
+    { label: 'hasIcons', src: './$info/props/has-icons.md', title: 'Определяет существование иконок у элементов списка', color: 'green' }
+]

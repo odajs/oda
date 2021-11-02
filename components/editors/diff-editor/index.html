@@ -1,0 +1,13 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/web/oda/oda.js" type="module"></script>
+<script src="./diff-editor.js" type="module"></script>
+<!-- <oda-tester> -->
+    <oda-diff-editor id="editor"></oda-diff-editor>
+<!-- </oda-tester> -->
+<script type="module">
+    editor.theme = 'vs-dark';
+    // editor.readOnly = true;
+    editor.originalText = `// First line\nfunction hello() {\n\talert('Hello world!');\n}\n// Last line`;
+    editor.modifiedText = `// Its not first line\nfunction hello() {\n\talert('Hello world!');\n}\n// may be last line`;
+</script>

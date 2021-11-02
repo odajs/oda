@@ -1,0 +1,19 @@
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./button.js"></script>
+<div align="center">
+    <oda-button allow-toggle toggle-group="a" icon-size="32" icon="icons:class" label="i'm small button" fill="orange" stroke="red"
+        style="width: 160px; border: 1px solid gray; border-radius: 4px;">
+    </oda-button>
+    <br>
+    <oda-button id="btn" allow-toggle toggle-group="a" icon-size="64" icon="icons:settings" fill="lightblue" stroke="orange"
+        style="width: 64px; border: 3px solid orange; border-radius: 50%; padding: 6px; background-color: lightyellow;">
+    </oda-button>
+</div>
+
+<script type="module">
+    let count = 0;
+    setInterval(() => {
+        count += 6;
+        btn.rotate = count;
+    }, 100);
+</script>

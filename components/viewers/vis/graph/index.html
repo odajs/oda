@@ -1,0 +1,24 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/web/oda/oda.js" type="module"></script>
+<script type="module" src="./graph.js"></script>
+<!-- <oda-tester> -->
+    <oda-graph id="graph"></oda-graph>
+<!-- </oda-tester> -->
+
+<script type="module">
+    let counter = 0;
+    const steps = 50;
+    const axisMax = 314;
+    const axisStep = axisMax / steps;
+    for (let x = 0; x < axisMax; x += axisStep) {
+        for (let y = 0; y < axisMax; y += axisStep) {
+            const value = _custom(x, y);
+            graph.data = graph.data || new vis.DataSet();
+            graph.data.add({ id: counter++, x: x, y: y, z: value, style: value });
+        }
+    }
+    function _custom(x, y) {
+        return (Math.sin(x / 50) * Math.cos(y / 50) * 50 + 50);
+    }
+</script>

@@ -1,0 +1,77 @@
+<script type="module" src="../../../oda.js"></script>
+
+<script type="module">
+    // import { TestDataSet } from '../../../tools/tester/tester.js';
+    import './tile.js';
+    import '../tree/tree.js';
+
+    ODA({
+        is: 'oda-tile-demo', extends: 'oda-tile, oda-tree',
+        template: `
+            <div slot="buttons" class="horizontal">
+                <oda-button icon="icons:view-week" @tap="viewModeIndex = 0"></oda-button>
+                <oda-button icon="icons:view-headline" @tap="viewModeIndex = 1"></oda-button>
+                <oda-button icon="image:view-compact" @tap="viewModeIndex = 2"></oda-button>
+                <oda-button icon="image:view-comfy" @tap="viewModeIndex = 3"></oda-button>
+            </div>
+        `,
+        props: {
+            preparedCurrentNode: {
+                type: Object,
+                // default: { items: new TestDataSet() }
+                default: {
+                    items: [
+                        {
+                            name: 'emty-folder',
+                            item: {name: 'empty folder'},
+                            items: []
+                        },
+                        {
+                            name: 1,
+                            item: {name: 1},
+                            items: [
+                                {
+                                    name: '1-1',
+                                    item: {name: '1-1'},
+                                    items: [
+                                        { name: '1-1-1', item: { name: '1-1-1' }}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 2,
+                            time: (new Date()).toLocaleString('ru'),
+                            type: 'any entity which has items',
+                            item: {name: 2},
+                            items: [
+                                {name: '2-1', item:{ name: '2-1' }},
+                                {name: '2-2', item:{ name: '2-2' }},
+                                {name: '2-3', item:{ name: '2-3' }}
+                            ]
+                        },
+                        {
+                            name: 3,
+                            size: '12345',
+                            time: (new Date()).toLocaleString('ru'),
+                            type: 'any entity without items',
+                            item: {name: 3}
+                        },
+                        { name: 4, item: {name: 4} }
+                    ]
+                }
+            },
+            columns: [{showIcon: true}]
+        },
+
+        observers: [
+            function _setCurrentNodeItem(preparedCurrentNode) {
+                this.currentNode = preparedCurrentNode;
+            }
+        ]
+    });
+</script>
+
+<oda-tester>
+    <oda-tile-demo allow-focus allow-selection></oda-tile-demo>
+</oda-tester>

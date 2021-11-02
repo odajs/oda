@@ -1,0 +1,42 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/web/oda/oda.js" type="module"></script>
+<script type="module" src="./network.js"></script>
+<oda-tester>
+    <oda-network id="network"></oda-network>
+</oda-tester>
+
+<script type="module">
+    network.dataSet = [
+        {
+            label: 'ROOT',
+            items: [
+                {
+                    label: 'node_1'
+                },
+                {
+                    label: 'node_2'
+                },
+                {
+                    label: 'node_3',
+                    items: [
+                        {
+                            label: 'node_3.1'
+                        },
+                        {
+                            label: 'node_3.2',
+                            items: [
+                                {
+                                    label: 'node_3.2.1'
+                                },
+                                {
+                                    label: 'node_3.2.2'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+</script>

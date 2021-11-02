@@ -1,0 +1,21 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./ace-editor.js"></script>
+<oda-ace-editor id="ed"></oda-ace-editor>
+<script>
+  ed.value = `
+  switch (expr) {
+    case 'Oranges':
+      console.log('Oranges are $0.59 a pound.');
+      break;
+    case 'Mangoes':
+    case 'Papayas':
+      console.log('Mangoes and papayas are $2.79 a pound.');
+      // expected output: "Mangoes and papayas are $2.79 a pound."
+      break;
+    default:
+      console.log('Sorry, we are out of ' + expr + '.');
+  }
+  `;
+  ed.options = { theme: 'ace/theme/dracula', fontSize: 20, minLines: 50 };
+</script>

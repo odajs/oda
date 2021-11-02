@@ -1,0 +1,47 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./md-editor.js"></script>
+<oda-md-editor id="ed"></oda-md-editor>
+<script>
+  ed.options = { theme: 'ace/theme/dracula', fontSize: 20, minLines: 100 };
+  ed.value = `
+# H1 Demo
+## H2 Demo
+### H3 Demo
+#### H4 Demo
+##### H5 Demo
+###### H6 Demo
+
+Sub-heading
+-----------
+
+Paragraphs are separated
+by a blank line.
+
+Two spaces at the end of a line  
+produces a line break.
+
+Text attributes _italic_, 
+**bold**, 
+
+Horizontal rule:
+
+---
+
+Strikethrough:
+~~strikethrough~~
+
+Bullet list:
+
+  * apples
+  * oranges
+  * pears
+
+Numbered list:
+
+  1. lather
+  2. rinse
+  3. repeat
+  
+  `;
+</script>

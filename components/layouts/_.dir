@@ -1,0 +1,58 @@
+[
+  {
+    "name": "accordion",
+    "label": "<b style='color: #f66'>oda-accordion:</b> Аккордеон",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "temp"
+  },
+  {
+    "name": "app-layout",
+    "label": "<b style='color: #f66'>oda-app-layout:</b> App-layout",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "check"
+  },
+  {
+    "name": "form-layout",
+    "label": "<b style='color: #f66'>oda-form-layout:</b> Form-layout",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "temp"
+  },
+  {
+    "name": "scroll-box",
+    "label": "<b style='color: #f66'>oda-scroll-box:</b> Scroll-box",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "site-layout",
+    "label": "<b style='color: #f66'>oda-site-layout:</b> Site-layout",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "splitter",
+    "label": "<b style='color: #f66'>oda-splitter:</b> Сплиттер",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "title",
+    "label": "<b style='color: #f66'>oda-title:</b> Заголовок",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  }
+]

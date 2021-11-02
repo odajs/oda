@@ -1,0 +1,9 @@
+{
+    "button.js": "button.js",
+    "index.html": "index.html",
+    "_.info": "_.info",
+    "_info.js": "_info.js",
+    "props": "./$info/props",
+    "demo": "./$info/demo",
+    "description": "./$info/description"
+}

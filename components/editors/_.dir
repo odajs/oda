@@ -1,0 +1,26 @@
+[
+  {
+    "name": "ace-editor",
+    "label": "<b style='color: #e689fe'>oda-ace-editor:</b> ace-редактор",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "html-editor",
+    "label": "<b style='color: #e689fe'>oda-html-editor:</b> html-редактор",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "md-editor",
+    "label": "<b style='color: #e689fe'>oda-md-editor:</b> md-редактор",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  }
+]

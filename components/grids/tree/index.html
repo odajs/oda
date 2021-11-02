@@ -1,0 +1,208 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./tree.js"></script>
+<!--<oda-tester>-->
+    <oda-tree id="tree" key-name="col1" show-tree-lines auto-expand-alone></oda-tree>
+<!--</oda-tester>-->
+
+<script type="module">
+    tree.dataSet = [
+        {col1:"2 строка", fix: false,
+            items:[
+                {col1:"2.1 строка"},
+                {col1:"2.2 строка",
+                    items:[
+                        {col1:"2.2.1 строка", template: 'my-next-template'},
+                        {col1:"2.2.2 строка"},
+                        {col1:"2.2.3 строка"},
+                        {col1:"2.2.4 строка"},
+                        {col1:"2.2.5 строка"},
+                        {col1:"2.2.6 строка"},
+                        {col1:"2.2.7 строка", template: 'my-template'},
+                        {col1:"2.2.8 строка"},
+                        {col1:"2.2.9 строка"},
+                        {col1:"2.2.10 строка"}
+                    ]},
+                {col1:"2.3 строка",
+                    items: [
+                        {col1:"2.3.1 строка"},
+                    ]
+                },
+                {col1:"2.4 строка"},
+                {col1:"2.5 строка"}
+            ]
+        },
+        {col1:"1 строка", icon: 'class', template: 'my-template'},
+        {col1:"3 строка",
+            items:[
+                {col1:"3.1 строка"},
+                {col1:"3.2 строка"},
+                {col1:"3.3 строка", template: 'my-template'},
+                {col1:"3.4 строка"},
+                {col1:"3.5 строка", template: 'my-template'},
+                {col1:"3.6 строка"},
+                {col1:"3.7 строка"},
+                {col1:"3.8 строка"},
+                {col1:"3.9 строка"},
+                {col1:"3.10 строка"}
+            ]
+        },
+        {col1:"4 строка"},
+        {col1:"5 строка",
+            items:[
+                {col1:"5.1 строка"},
+                {col1:"5.2 строка",
+                    items:[
+                        {col1:"5.2.1 строка"},
+                        {col1:"5.2.2 строка"},
+                        {col1:"5.2.3 строка"},
+                        {col1:"5.2.4 строка"},
+                        {col1:"5.2.5 строка"},
+                        {col1:"5.2.6 строка"},
+                        {col1:"5.2.7 строка"},
+                        {col1:"5.2.8 строка"},
+                        {col1:"5.2.9 строка"},
+                        {col1:"5.2.10 строка"}
+                    ]},
+                {col1:"5.3 строка"},
+                {col1:"5.4 строка"},
+                {col1:"5.5 строка"},
+                {col1:"5.6 строка"},
+                {col1:"5.7 строка"},
+                {col1:"5.8 строка"},
+                {col1:"5.9 строка"},
+                {col1:"5.10 строка"}
+            ]
+        },
+        {col1:"6 строка"},
+        {col1:"7 строка",
+            items:[
+                {col1: 'новая ветка'}
+            ]},
+        {col1:"8 строка"},
+        {col1:"9 строка"},
+        {col1:"10 строка"}
+    ];
+    // ODA({is: 'oda-tree-test', template:`
+    //            <oda-tree lazy key-name="col1"  :data-set="nodes"></oda-tree>
+    //            <oda-button @tap="_delete">delete selection</oda-button>`,
+    //     props:{
+    //         nodes: []
+    //     },
+    //     _delete(e){
+    //         const sel = this.$$('oda-tree').selection;
+    //         this.$$('oda-tree').deleteItems(i=>{
+    //             return sel.includes(i);
+    //         })
+    //     },
+    //     _fill(l = 10){
+    //         const arr = [];
+    //         arr.length = l;
+    //         for (let i = 0; i < l; i++) {
+    //             arr[i] = { col1: "строка" + i };
+    //         }
+    //         return arr;
+    //     },
+    //     ready() {
+    //         this.nodes = [
+    //             {col1:"1 строка", icon: 'class', template: 'my-template'},
+    //             {col1:"2 строка", fix: false,
+    //                 items:[
+    //                     {col1:"2.1 строка"},
+    //                     {col1:"2.2 строка",
+    //                         items:[
+    //                             {col1:"2.2.1 строка", template: 'my-next-template'},
+    //                             {col1:"2.2.2 строка"},
+    //                             {col1:"2.2.3 строка"},
+    //                             {col1:"2.2.4 строка"},
+    //                             {col1:"2.2.5 строка"},
+    //                             {col1:"2.2.6 строка"},
+    //                             {col1:"2.2.7 строка", template: 'my-template'},
+    //                             {col1:"2.2.8 строка"},
+    //                             {col1:"2.2.9 строка"},
+    //                             {col1:"2.2.10 строка"}
+    //                         ]},
+    //                     {col1:"2.3 строка (10000 элементов)",
+    //                         items: this._fill(10000)
+    //                     },
+    //                     {col1:"2.4 строка"},
+    //                     {col1:"2.5 строка"}
+    //                 ]
+    //             },
+    //             {col1:"3 строка",
+    //                 items:[
+    //                     {col1:"3.1 строка"},
+    //                     {col1:"3.2 строка"},
+    //                     {col1:"3.3 строка", template: 'my-template'},
+    //                     {col1:"3.4 строка"},
+    //                     {col1:"3.5 строка", template: 'my-template'},
+    //                     {col1:"3.6 строка"},
+    //                     {col1:"3.7 строка"},
+    //                     {col1:"3.8 строка"},
+    //                     {col1:"3.9 строка"},
+    //                     {col1:"3.10 строка"}
+    //                 ]
+    //             },
+    //             {col1:"4 строка"},
+    //             {col1:"5 строка",
+    //                 items:[
+    //                     {col1:"5.1 строка"},
+    //                     {col1:"5.2 строка",
+    //                         items:[
+    //                             {col1:"5.2.1 строка"},
+    //                             {col1:"5.2.2 строка"},
+    //                             {col1:"5.2.3 строка"},
+    //                             {col1:"5.2.4 строка"},
+    //                             {col1:"5.2.5 строка"},
+    //                             {col1:"5.2.6 строка"},
+    //                             {col1:"5.2.7 строка"},
+    //                             {col1:"5.2.8 строка"},
+    //                             {col1:"5.2.9 строка"},
+    //                             {col1:"5.2.10 строка"}
+    //                         ]},
+    //                     {col1:"5.3 строка"},
+    //                     {col1:"5.4 строка"},
+    //                     {col1:"5.5 строка"},
+    //                     {col1:"5.6 строка"},
+    //                     {col1:"5.7 строка"},
+    //                     {col1:"5.8 строка"},
+    //                     {col1:"5.9 строка"},
+    //                     {col1:"5.10 строка"}
+    //                 ]
+    //             },
+    //             {col1:"6 строка"},
+    //             {col1:"7 строка",
+    //                 items:[
+    //                     {col1: 'новая ветка'}
+    //                 ]},
+    //             {col1:"8 строка"},
+    //             {col1:"9 строка"},
+    //             {col1:"10 строка"}
+    //         ]
+    //     },
+    // });
+
+    ODA({is: 'my-template', template:`
+            <style>
+                :host{
+                    @apply --horizontal;
+                    align-items: center;
+                }
+            </style>
+            <oda-icon icon="class"></oda-icon>
+            <span>{{item[column.name]}}</span>`,
+        props: {
+            column:{},
+            item:{}
+        }
+    });
+    ODA({is: 'my-next-template', template:`
+                    <oda-icon icon="object" style="background-color: #0aa7e8"></oda-icon>
+        <span  style="background-color: #0aa7e8">2.2.1. Моя строка</span>`,
+        props: {
+            column:{},
+            item:{}
+        },
+    });
+</script>

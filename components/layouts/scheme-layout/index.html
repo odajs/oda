@@ -1,0 +1,178 @@
+<meta charset="utf-8">
+<oda-tester>
+    <oda-scheme-layout-test></oda-scheme-layout-test>
+</oda-tester>
+
+<script type="module">
+    import '/web/oda/oda.js'
+    import './scheme-layout.js'
+    import '/web/oda/components/buttons/button/button.js'
+
+    ODA({
+        is: 'oda-scheme-layout-test', extends: 'oda-scheme-layout',
+        template: `
+        <oda-button slot="header-right" icon="editor:mode-edit" :fill="editMode?'red':''" @tap="editMode = !editMode"></oda-button>
+        <div slot="header-right" class="horizontal no-flex">
+            <oda-button icon="icons:zoom-in" @tap="zoomIn"></oda-button>
+            <oda-button id="resetZoomButton" style="padding: 0 4px" @tap="zoom = 1" :label="Math.round(zoom * 100) + '%'"></oda-button>
+            <oda-button icon="icons:zoom-out" @tap="zoomOut"></oda-button>
+        </div>
+        `,
+        items: [
+        {
+                "is": "oda-button", "id": '1',
+                "item": { "x": 100, "y": 250, "id": "id-1" },
+                "props": {
+                    "icon": "icons:extension", "fill": "blue", "iconSize": 64, "label": "1:oda-button"
+                },
+                "interfaces": {
+                    "top": [{ "id": '1-t1', "links": [] }],
+                    "right": [
+                        { "id": "1-r1" },
+                        { "id": "1-r2" },
+                    ]
+                }
+            },
+            {
+                "is": "oda-button", "id":"2",
+                "item": { "x": 200, "y": 100, "id": "id-2" },
+                "props": {
+                    "icon": "icons:android", "fill": "green", "iconSize": 64, "label": "2:oda-button"
+                },
+                "interfaces": {
+                    "top": [
+                        { "id": "2-t1" },
+                    ],
+                    "left": [
+                        {
+                            "id": "2-l1",
+                            "links": [
+                                {"block": "1", "pin": "1-t1"},
+                            ]
+                        },
+
+                    ]
+                }
+            },
+            // {
+            //     "is": "oda-button",
+            //     "item": { "x": 100, "y": 250, "id": "001" },
+            //     "props": {
+            //         "icon": "icons:extension", "fill": "blue", "iconSize": 64, "label": "1:oda-button"
+            //     },
+            //     "interfaces": {
+            //         "top": [{ "id": 'c001', "links": [] }],
+            //         "right": [
+            //             { "id": "2681067b-e690-4f51-b359-878d1e5a4ec1" },
+            //             { "id": "bfa01081-2d3c-4a94-b6de-7bb43da24a64" },
+            //             { "id": "8482c33e-6ae9-47e4-b48f-fb8ca2dddad2" },
+            //             { "id": "c-001-r004" },
+            //             { "id": "5d03b6c4-5b3e-45f3-8aa1-fd1523b2b362" },
+            //             { "id": "12007429-8e67-4a23-a61b-867e0263e9ad" }
+            //         ]
+            //     }
+            // },
+            // {
+            //     "is": "oda-button",
+            //     "item": { "x": 1333, "y": 100, "id": "002" },
+            //     "props": {
+            //         "icon": "icons:android", "fill": "green", "iconSize": 64, "label": "2:oda-button"
+            //     },
+            //     "interfaces": {
+            //         "top": [
+            //             { "id": "ea0f4b9a-f43a-44a5-a970-ab92ba3f146e" },
+            //             { "id": "3ffdbb14-4a52-41e6-a8ba-2d9a16a68686" },
+            //             { "id": "5f350f91-d0d9-400a-a94f-05fc33693f02" },
+            //             { "id": "ebef0a7a-eb96-46d2-bfa6-17933769316c" },
+            //             { "id": "f4c59b62-0511-4afd-a1d2-669fff48f14a" }
+            //         ],
+            //         "left": [
+            //             {
+            //                 "id": "c002",
+            //                 "links": [
+            //                     {"blockId": "001", "connectorId": "c001"},
+            //                     {"blockId": "003", "connectorId": "c-003-001"}
+            //                 ]
+            //             },
+            //             { "id": "4bec17e6-9192-4a53-8043-aca4375b5b17" },
+            //             { "id": "60469d9b-89b1-431f-8808-876ff30add3b" },
+            //             { "id": "b0849c77-26c3-45dc-aeab-85778b03a59e" },
+            //             { "id": "f6c6d2cd-0f01-41b5-885b-dbfa5811fc2e" },
+            //             { "id": "27cb28b8-35c4-4cbf-8c91-1d75794bda80" },
+            //             {
+            //                 "id": "c882d4f0-7239-4418-bc33-547dc28305ff",
+            //                 "links": [
+            //                     "c-003-003",
+            //                     "c-001-r004"
+            //                 ]
+            //             }
+            //         ]
+            //     }
+            // },
+            // {
+            //     "is": "oda-button",
+            //     "item": { "x": 450, "y": 400, "id": "003" },
+            //     "props": { "icon": "icons:android", "fill": "green", "iconSize": 24, "label": "3:24px" },
+            //     "interfaces": {
+            //         "top": [
+            //             { "id": "c-003-001" },
+            //             { "id": "dacbb7b1-0aea-4a6d-b048-170cfac6662c" },
+            //             { "id": "c-003-003" },
+            //             { "id": "42624202-a108-4015-8ff3-e9dd4a691f59" },
+            //             { "id": "6a50dc95-fe2d-4485-86e1-a3d2d1543cc0" }
+            //         ],
+            //         "left": [
+            //             {
+            //                 "id": "e6b38679-8252-46e7-9292-7c5584691fd7",
+            //                 "links": [
+            //                     "2681067b-e690-4f51-b359-878d1e5a4ec1",
+            //                     "12007429-8e67-4a23-a61b-867e0263e9ad"
+            //                 ]
+            //             },
+            //             { "id": "8a2087a8-6f3d-47dc-8cb0-4bc88f9bbc95" },
+            //             { "id": "f4d803a9-bac0-494d-8c47-88b215d30d12" },
+            //             { "id": "748aefec-ba64-4484-aa89-c92f5026aa06" },
+            //             { "id": "b9a4ca6f-641a-4923-b6d8-db6108292249" },
+            //             { "id": "379be12d-2a92-4e78-aedd-8a6ce78ad163" },
+            //             {
+            //                 "id": "e4282618-d1ab-4e89-bc4b-417c1e4bb877",
+            //                 "links": [
+            //                 ]
+            //             }
+            //         ]
+            //     }
+            // },
+            // {
+            //     "item": { "x": 450, "y": 100, "id": "004" },
+            //     // "props": {},
+            //     "interfaces": {
+            //         "top": [
+            //             { "id": "a0f40ca4-2bb9-4a38-a9da-b405ef4b9930" },
+            //             { "id": "dacbb7b1-0aea-4a6d-b048-170cfac6992c" },
+            //             { "id": "12007429-8e67-4a23-a61b-867e0263e9ad" },
+            //             { "id": "42624202-a108-4015-8ff3-e9dd4a699959" },
+            //             { "id": "6a50dc95-fe2d-4485-86e1-a3d2d15499c0" }
+            //         ],
+            //         "left": [
+            //             {
+            //                 "id": "e6b38679-8252-46e7-9292-7c55846999d7"
+            //             },
+            //             { "id": "8a2087a8-6f3d-47dc-8cb0-4bc88f9b9995" },
+            //             { "id": "f4d803a9-bac0-494d-8c47-88b215d39912" },
+            //             { "id": "748aefec-ba64-4484-aa89-c92f50269906" },
+            //             { "id": "b9a4ca6f-641a-4923-b6d8-db6108299949" },
+            //             { "id": "379be12d-2a92-4e78-aedd-8a6ce78a9963" },
+            //             {
+            //                 "id": "e4282618-d1ab-4e89-bc4b-417c1e4b9977",
+            //             }
+            //         ]
+            //     }
+            // },
+            // {
+            //     "is": "oda-button",
+            //     "item": { "x": 750, "y": 400, "id": "005" },
+            //     "props": { "icon": "icons:android", "fill": "green", "iconSize": 24, "label": "24px" },
+            // },
+        ]
+    });
+</script>

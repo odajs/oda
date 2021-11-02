@@ -1,0 +1,22 @@
+<meta charset="utf-8">
+<body style="overflow: hidden">
+<oda-tester>
+    <oda-hexagon-layout id="hex" icon-size="200"></oda-hexagon-layout>
+</oda-tester>
+
+</body>
+
+
+<script type="module">
+  import '/web/oda/oda.js';
+  import '/web/oda/components/layouts/hexagon-layout/hexagon-layout.js';
+  import '/web/oda/components/buttons/button/button.js';
+  hex.data = [{x: 2, y: 3, is:'oda-icon', label: 'А это супер-пупер длинный заголовок', props:{
+                  icon: 'odant:base', iconSize: 100,
+              }},
+            {x: 4, y: 3, is:'oda-button', label: 'Заголовок',  props:{
+                  icon: 'odant:class', iconSize: 100,
+              }}]
+
+
+</script>

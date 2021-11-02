@@ -1,0 +1,30 @@
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./list.js"></script>
+
+<div>
+    При изменении выделенного элемента в списке автоматически генерируется событие <b>focused-item-changed</b>, которое
+    можно обработать во внешнем компоненте.
+</div>
+
+<my-component></my-component>
+
+<div>
+    Сам выделенный элемент хранится в свойстве <b>detail</b> по именем <b>value</b>.
+</div>
+
+<script type="module">
+    ODA({
+    is: 'my-component',
+    template: `
+        <oda-list :items @focused-item-changed="onFocused"></oda-list>        
+        <div>{{text}}</div>
+    `,
+    props: {
+        items: ["Элемент 1", "Элемент 2", "Элемент 3", "Элемент 4", "Элемент 5"],        
+        text: 'Элемент не выделен'
+    },
+    onFocused(e) {
+        this.text = 'Выделен элемент: ' + e.detail.value;
+    }
+});
+</script>

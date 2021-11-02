@@ -1,0 +1,32 @@
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./tree.js"></script>
+<oda-tree id="tree" key-name="col1"></oda-tree>
+</oda-tester>
+<script type="module">
+    tree.dataSet = [
+        { col1: "1 строка", icon: 'class', template: 'my-template' },
+        {
+            col1: "2 строка", fix: false,
+            items: [
+                { col1: "2.1 строка" },
+                {
+                    col1: "2.2 строка",
+                    items: [
+                        { col1: "2.2.1 строка", template: 'my-next-template' },
+                        { col1: "2.2.2 строка" },
+                        { col1: "2.2.3 строка" },
+                        { col1: "2.2.4 строка" },
+                        { col1: "2.2.5 строка" },
+                        { col1: "2.2.6 строка" },
+                        { col1: "2.2.7 строка", template: 'my-template' },
+                        { col1: "2.2.8 строка" },
+                        { col1: "2.2.9 строка" },
+                        { col1: "2.2.10 строка" }
+                    ]
+                },
+                { col1: "2.4 строка" },
+                { col1: "2.5 строка" }
+            ]
+        }
+    ];
+</script>

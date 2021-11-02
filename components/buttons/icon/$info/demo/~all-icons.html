@@ -1,0 +1,77 @@
+<meta charset="UTF-8">
+<title>WELCOME</title>
+<oda-svg-icons></oda-svg-icons>
+<script type="module">
+    import '../../../../../oda.js';
+    import '../../icon.js'
+    import '../../../button/button.js'
+    ODA({
+        is: 'oda-svg-icons',
+        template: `
+            <div style="position: sticky; top: 0; background-color: white;z-index:999;padding-top: 8px">
+                <div style="display: flex; align-items:center">
+                    <div style="font-size: 1.4em; font-weight: 600">Collection svg icons </div><samp>({{ics.length}})</samp>
+                    <div style="flex:1"></div>
+                    <span>Search: </span>
+                    <input style="height: 26px; margin: 0 10px" ::value>
+                </div>
+                <hr ~if="showMenu" style="border: none; color: lightgray; background-color: lightgray;  height: 1px;">
+                <div ~if="showMenu" style="flex: 0 0 auto">
+                    <div style="display: flex;  flex-wrap: wrap;">
+                        <div class="tab" ~for="i in lst" style="border: 1px solid #eeeeee; height: 20px; margin: 2px; padding: 2px; cursor: pointer;"
+                                @tap="selected=i;_getIcons(i)" ~style="selected===i?'color:#336699;background-color:yellow':''">{{i}}</div>
+                    </div>
+                </div>
+                <hr style="border: none; color: lightgray; background-color: lightgray;  height: .5px;">
+                    <div style="display: flex; align-items:center">
+                        <div ~if="!selectedIcon" style="color:#6699cc"> Click on the icon to copy to clipboard...</div>
+                        <div ~if="selectedIcon" style="display: flex; align-items:center;color:blue"> 
+                            <oda-icon :icon="selectedIcon" icon-size=32 fill="blue" style="margin: 0 16px;"></oda-icon>- {{selectedIcon.split(':')[1]}}
+                        </div>
+                        <div style="flex:1"></div>
+                        <oda-button icon="icons:visibility" @tap="showMenu=!showMenu" title="hidden buttons menu" fill="darkgray"></oda-button>
+                    </div>
+                <hr style="border: none; color: lightgray; background-color: lightgray;  height: 1px;">
+            </div>
+            <div ~for="ics">
+                <div ~if="item.includes(value)" ~style="selectedIcon===item?'border:.5px solid lightgray':''" 
+                        style="cursor: pointer;display: flex; align-items:center;border:.5px solid transparent" @tap="_copy(item)"> 
+                    <oda-icon :icon="item" icon-size=32 style="margin: 0 16px;"></oda-icon>-  {{item.split(':')[1]}}
+                </div>
+            </div>
+        `,
+        props: {
+            lst: ['all', 'icons', 'av', 'communication', 'device', 'editor', 'enterprise', 'files', 'hardware', 'image', 'industry-buildings', 'loaders', 'maps', 
+                'material', 'notification', 'odant', 'office-set', 'phone', 'shopping', 'social', 'social-media', 'space-sci-fi', 'symbols', 'tools', 'travel-and-tourism'
+            ],
+            ics: [],
+            selected: 'icons',
+            selectedIcon: '',
+            value: '',
+            showMenu: true
+        },
+        attached() {
+            this._getIcons('icons');
+        },
+        async _getIcons(name) {
+            this.ics = [];
+            let col = name === 'all' ? this.lst : [...[], name];
+            col.forEach(async n => {
+                if (n !== 'all') {
+                    try {
+                        let file = ODA.rootPath + '/icons/svg/' + n + '.html';
+                        let doc = await fetch(file);
+                        doc = doc.ok ? await doc.text() : '';
+                        let rx = /<g id="(.*?)"/g, res = [], m;
+                        while ((m = rx.exec(doc)) !== null) { this.ics.push(n + ':' + m[1]); }
+                    }
+                    catch (e) { console.error(e); }
+                }
+            })
+        },
+        async _copy(icon) {
+            this.selectedIcon = icon;
+            await navigator.clipboard.writeText(icon);
+        }
+    });
+</script>

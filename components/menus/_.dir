@@ -1,0 +1,10 @@
+[
+  {
+    "name": "menu",
+    "label": "<b style='color: #fed085'>oda-menu:</b> Меню",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  }
+]

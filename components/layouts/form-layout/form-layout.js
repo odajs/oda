@@ -1,0 +1,421 @@
+ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
+        <style>
+            :host{
+                @apply --vertical;
+                @apply --flex;
+                @apply --content;
+                overflow: hidden;
+                height: 100%;
+                touch-action: manipulation;
+            }
+            :host(:not([modal])){
+                position: relative;
+            }
+            :host([modal]) {
+                position: absolute;
+            }
+            :host>form-title{
+                cursor: grab;
+                cursor: -webkit-grab;
+                cursor: -moz-grab;
+            }
+            :host>form-title:active{
+                cursor: grabbing;
+                cursor: -webkit-grabbing;
+                cursor: -moz-grabbing;
+            }
+            form-status-bar{
+                position: absolute;
+                width: 100%;
+                bottom: 0;
+                left: 0;
+            }
+            :host>.body{
+                @apply --flex;
+            }
+            :host .title-bar{
+                @apply --heading;
+            }
+        </style>
+        <style ~if="showCloseBtn || modal">
+            :host .title-bar{
+                min-height: {{iconSize + iconSize / 8 + 5}}px;
+                max-height: {{iconSize + iconSize / 8 + 5}}px;
+            }
+            :host .title-bar{
+                line-height: {{iconSize + iconSize / 8}}px;
+            }
+            :host .title-bar oda-button{
+                 padding: {{iconSize / 8}}px;
+            }
+        </style>
+        <style ~if="modal && !isMinimized">
+            :host{
+                box-sizing: border-box;
+                box-shadow: var(--box-shadow);
+                filter: opacity(1);
+                min-width: {{minWidth}}px;
+                min-height: {{minHeight}}px;
+                border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
+                padding-bottom: {{statusBar.show ? iconSize : 0}}px;
+                width: {{_getSize('width')}};
+                height: {{_getSize('height')}};
+                flex: {{size === 'normal' ? '0 0 auto' : '1 0 auto'}};
+                left: {{_getPosition('left')}};
+                top: {{_getPosition('top')}};
+                {{isMinimized ? \`max-height: \${iconSize}px;\` : ''}}
+            }
+        </style>
+        <style ~if="modal && isMinimized" >
+            :host{
+                box-sizing: border-box;
+                box-shadow: var(--box-shadow);
+                max-width: 300px;
+                height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
+                max-height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
+                border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
+                left: {{_getPosition('left')}};
+                top: {{_getPosition('top')}};
+            }
+        </style>
+        <div class="title-bar horizontal" @mouseenter="_onHeader = true" @mouseleave="_onHeader = false">
+            <slot class="horizontal flex" ref="titleBar" name="title-bar"></slot>
+            <div ~if="modal" class="horizontal no-flex">
+                <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+                <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+            </div>
+            <oda-button ~if="showCloseBtn || modal" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
+        </div>
+        <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
+    props: {
+        unique: String,
+        // animated: false,
+        iconSize: {
+            default: 24,
+            shared: true
+        },
+        modal: {
+            default: false,
+            reflectToAttribute: true
+        },
+        size: {
+            list: ['normal', 'max'],
+            default: 'normal',
+            save: true,
+            // set(){
+            //     if(this.parentNode) this._transition();
+            // }
+        },
+        isMinimized: {
+            default: false,
+            set() {
+                this._fixPos();
+            }
+        },
+        pos: {
+            default: {
+                x: Math.max(0, Math.round(document.body.offsetWidth  / 2 - 250)),
+                y: Math.max(0, Math.round(document.body.offsetHeight / 2 - 150)),
+                width: 500,
+                height: 300,
+            },
+            save: true
+        },
+        title: {
+            default: {
+                show: true,
+                icon: 'av:web',
+                title: ''
+            },
+        },
+        statusBar: {
+            default: {
+                show: false,
+            },
+        },
+        minWidth: 300,
+        minHeight: 300,
+        _resizeDir: String,
+        _curPos: String,
+        _onBorder: false,
+        _moving: false,
+        _sizing: false,
+        _onHeader: false,
+        _bw: 4, //border-width,
+        _parentWidth: {
+            type: Number,
+            default: 0
+        },
+        _parentHeight: {
+            type: Number,
+            default: 0
+        },
+        showCloseBtn: false,
+    },
+    listeners: {
+        mousemove(e) {
+            if (!this.modal || this.size !== 'normal' || this.isMinimized) {
+                return this.style.cursor = '';
+            }
+            const bw = this._bw;
+            const bw2 = bw * 2;
+            const h = this.pos.height;
+            const w = this.pos.width;
+
+            let str = '';
+            str += e.offsetY <= 0 ? 'n' : '';
+            str += e.offsetY >= h - bw2 ? 's' : '';
+            str += e.offsetX <= 0 ? 'w' : '';
+            str += e.offsetX >= w - bw2 ? 'e' : '';
+
+            this._curPos = str;
+            if (str) {
+                this._onBorder = true;
+                this.style.cursor = `${str}-resize`;
+            } else {
+                this._onBorder = false;
+                return this.style.cursor = '';
+            }
+        },
+        track(e, d) {
+            if (!this.modal || e.sourceEvent.button !== 0) return;
+            const state = d.state;
+            const x = d.ddx || 0;
+            const y = d.ddy || 0;
+            if (!this._sizing && (this._moving || this._onHeader)) {
+                switch (state) {
+                    case 'start':
+                        this._moving = true;
+                        break;
+                    case 'track':
+                        if (!this._moving) return;
+                        //this.pos.x += x;
+                        //this.pos.y += y;
+                        this.pos = { ...this.pos, ...{ x: this.pos.x += x, y: this.pos.y += y } }
+                        break;
+                    case 'end':
+                        if (!this._moving) return;
+                        this._moving = false;
+                        break;
+                }
+                this._fixPos();
+            }
+            if (this._sizing || !this._moving && this._onBorder) {
+                const maxW = this._parentWidth - 8 * this._bw;
+                const maxH = this._parentHeight - 8 * this._bw;
+                switch (state) {
+                    case 'start':
+                        this._sizing = true;
+                        this._resizeDir = this._curPos;
+                        break;
+                    case 'track':
+                        if (!this._resizeDir) return;
+                        const _pos = Object.assign({}, this.pos);
+                        if (this._resizeDir.includes('n')) {
+                            _pos.height -= y;
+                            this._fixPos(_pos);
+                            const dh = this.pos.height - _pos.height;
+                            _pos.y += dh;
+                        }
+                        if (this._resizeDir.includes('w')) {
+                            _pos.width -= x;
+                            this._fixPos(_pos);
+                            const dw = this.pos.width - _pos.width;
+                            _pos.x += dw;
+                        }
+                        if (this._resizeDir.includes('s')) {
+                            _pos.height += y;
+                        }
+                        if (this._resizeDir.includes('e')) {
+                            _pos.width += x;
+                        }
+                        this._fixPos(_pos);
+                        this.pos = { ...this.pos, ..._pos };
+                        //Object.assign(this.pos, _pos);
+                        break;
+                    case 'end':
+                        this._fixPos();
+                        this._sizing = false;
+                        break;
+                }
+            }
+        },
+        resize: '_resize',
+        mousedown() {
+            this._top();
+        },
+    },
+    observers: [
+        '_setTransform(modal, pos)',
+        //function _smoothly(size) {
+        //    this._transition();
+        //}
+    ],
+    _setTransform(modal = this.modal, pos = this.pos) {
+        const parent = this.parentElement;
+        if (!parent) return;
+        this._parentWidth = parent.offsetWidth;
+        this._parentHeight = parent.offsetHeight;
+        this._fixPos();
+    },
+    _resize() {
+        // this.interval('resize', ()=>{
+        if (this.modal && this.size !== 'max' && window.innerWidth < this.maxWidth) {
+            this.size = 'max';
+        }
+        const parent = this.parentElement;
+        if (!parent) return;
+        this._parentWidth = parent.offsetWidth;
+        this._parentHeight = parent.offsetHeight;
+        this._fixPos();
+        // })
+
+    },
+    _fixPos(pos = this.pos) {
+        pos.width = Math.min(Math.max(this.minWidth, pos.width || this.minWidth), this._parentWidth);
+        pos.height = Math.min(Math.max(this.minHeight, pos.height || this.minHeight), this._parentHeight);
+        const maxW = this._parentWidth - (this.isMinimized ? 300 : pos.width);
+        const maxH = this._parentHeight - (this.isMinimized ? ((this.$refs.titleBar?.offsetHeight || 0) + 6) : pos.height);
+        pos.x = Math.min(Math.max(0, pos.x || 0), maxW);
+        pos.y = Math.min(Math.max(0, pos.y || 0), maxH);
+
+    },
+    _getSize(dir = 'width') {
+        if (this.modal && this.size === 'normal') return `${this.pos[dir]}px`;
+        else return '100%';
+    },
+    _getPosition(dir = 'left') {
+        if (this.modal && this.size === 'normal') return `${this.pos[{ left: 'x', top: 'y' }[dir]]}px`;
+        else return 0;
+    },
+    attached() {
+        this._setTransform();
+        const prop = this.style.getPropertyValue('--bw');
+        this._bw = prop ? Number(prop.replace('px', '')) : this._bw;
+        window.addEventListener('resize', () => {
+            this._resize();
+        });
+        this._top();
+    },
+    show() {
+
+    },
+    _top() {
+        if (this.modal) {
+            const my = Number(getComputedStyle(this)["zIndex"]);
+            const z = this.getModals().reduce((res, el) => {
+                const z = Number(getComputedStyle(el)["zIndex"]);
+                if (z > res)
+                    res = z;
+                return res;
+            }, 0);
+            if (my <= z) {
+                this.style.zIndex = z + 1;
+            }
+        }
+    },
+    getModals() {
+        const parent = this.parentElement;
+        if (parent) return Array.from(parent.children).filter(el => el !== this && el.localName === this.localName);
+        return [];
+    },
+    // _transition(dur = 150) {
+    //     if (!this.animated) return;
+    //     this.style.transition = `all ${dur}ms`;
+    //     this.async(() => {
+    //         this.style.transition = '';
+    //     }, dur);
+    // },
+    _toggleSize([state1, state2]) {
+        this.size = this.size === state1 ? state2 : state1;
+    },
+});
+ODA({is: 'form-title', template: /*html*/`
+        <style>
+            :host{
+                @apply --header;
+                @apply --dark;
+                @apply --horizontal;
+                @apply --no-flex;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                align-items: center;
+            }
+            oda-button{
+                fill: white;
+                cursor: pointer;
+            }
+            .close-btn:hover{
+                background-color: red;
+            }
+            label{
+                margin-left: 4px;
+                margin-right: 4px;
+                cursor: inherit;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: center;
+                line-height: 24px;
+                white-space: nowrap;
+            }
+        </style>
+        <style>
+            :host{
+                display: {{!show ? 'none' : ''}};
+            }
+            :host{
+                min-height: {{iconSize / 2 + iconSize / 4}}px;
+            }
+            label{
+                line-height: {{iconSize / 2 + iconSize / 4}}px;
+            }
+            oda-button{
+                 padding: {{iconSize / 8}}px {{iconSize / 4}}px;
+            }
+        </style>
+        <oda-icon :icon :size="iconSize * .7" @dblclick="close"></oda-icon>
+        <div class="flex label" @dblclick="!isMinimized && _toggleSize(['normal', 'max'])">{{title}}</div>
+        <div class="horizontal">
+            <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+            <oda-button class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="close"></oda-button>
+        </div>`,
+    props: {
+        icon: String,
+        title: '',
+        modal: false,
+        size: {
+            list: ['normal', 'max'],
+            default: 'normal'
+        },
+        isMinimized: false,
+        show: false
+    },
+    _toggleSize([state1, state2]) {
+        this.size = this.size === state1 ? state2 : state1;
+    },
+    close() {
+        this.fire('close');
+        this.domHost.remove();
+    }
+});
+ODA({is: 'form-status-bar', template: `
+        <style ~if="show">
+            :host{
+                @apply --header;
+                @apply --horizontal;
+                @apply --no-flex;
+                min-height: {{iconSize}}px;
+            }
+        </style>
+        <style ~if="!show">
+            :host{
+                display: none;
+            }
+        </style>
+    `,
+    props: {
+        show: false,
+        iconSize: 24
+    }
+});

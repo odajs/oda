@@ -1,0 +1,35 @@
+<meta charset="UTF-8">
+<title>WELCOME</title>
+<my-component></my-component>
+<script type="module">
+        import '../../../oda.js';
+        import './icon.js';
+    ODA({
+        is: 'my-component',
+        template: `
+            <div align="center" style="margin-top:20px">
+                <oda-icon icon="icons:android"></oda-icon>
+                <oda-icon icon="icons:android:90" fill="green"></oda-icon>
+                <oda-icon icon="https://odajs.org/icons/png/admin.png"></oda-icon>
+                <oda-icon icon="../../../icons/png/admin.png"></oda-icon>
+                <oda-icon icon="admin"></oda-icon>
+                <oda-icon icon="admin:180"></oda-icon>
+            </div>
+            <hr>
+            <div align="center">
+                <oda-icon ~for="icons" :icon="item" icon-size="64" fill="green"></oda-icon>
+            </div>
+            <hr>
+        `,
+        props: {
+        	icons: [
+        		"icons:android", 
+        		"icons:android:90",
+        		"https://odajs.org/icons/png/admin.png",
+        		"../../../icons/png/admin.png",
+        		"admin",
+        		"admin:180"
+        	]
+        }
+    });
+</script>

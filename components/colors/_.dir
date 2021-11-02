@@ -1,0 +1,34 @@
+[
+  {
+    "name": "color-input",
+    "label": "<b style='color: #73abfe'>oda-color-input:</b> Color Input",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "color-picker",
+    "label": "<b style='color: #73abfe'>oda-picker:</b> Пикер цвета",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "cpicker",
+    "label": "<b style='color: #73abfe'>oda-cpicker:</b> Пикер цвета (hsla)",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
+    "name": "palette",
+    "label": "<b style='color: #73abfe'>oda-palette:</b> Палитра",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  }
+]
