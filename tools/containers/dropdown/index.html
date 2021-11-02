@@ -1,46 +1,59 @@
 <meta charset="UTF-8">
 <script type="module" src="../../../oda.js"></script>
-<script type="module" src="./dropdown.js"></script>
-<oda-tester id="tester">
-    <oda-dropdown id="modal">
-        <div>BLA-BLA-BLA</div>
-        <div>BLA-BLA-BLA</div>
-        <div>BLA-BLA-BLA</div>
-        <button>1 2 3</button>
-
-    </oda-dropdown>
-    <button id="btn" slot="buttons">static</button>
-    <button id="btn1" slot="buttons">dynamic</button>
-</oda-tester>
+<script type="module" src="../../../components/buttons/button/button.js"></script>
+<script type="module" src="../containers.js"></script>
+<style>
+    body{
+        overflow: hidden;
+    }
+</style>
+<oda-dropdown-tester></oda-dropdown-tester>
 <script type="module">
-    btn.onclick = async e => {
-        modal.parent = btn;
-        try {
-            ODA.console.status = await modal.show();
+
+   ODA({is:'oda-dropdown-tester',
+        template:`
+            <style>
+                :host{
+                    @apply --horizontal;
+                    @apply --flex;
+                }
+            </style>
+            <div ~for="type" class="flex vertical shadow" style="margin: 12px; border: 1px solid transparent; border-radius: 4px; align-items: center;">
+                <h3>{{item}}</h3>
+                <div class="flex vertical" style=" justify-content: space-around;">
+                    <button ~for="align" style="width: 60px; margin: 20px;" @tap="run($event, item, item1)">{{item1}}</button>
+                </div>
+
+            </div>
+        `,
+        type: ['No parent', 'Parent', 'Parent + intersect'],
+        align: ['top', 'bottom', 'left', 'right'],
+        async run(e, type, align){
+            try {
+                const res = await ODA.showDropdown('oda-test', { icon: 'icons:warning', iconSize: 100},
+                    { animation: 500, parent: type.startsWith('Parent')?e.target:null, intersect: type.includes('intersect') , align, title: type+` (${align})`, icon: 'icons:info'});
+                console.log(res);
+            }
+            catch (e) {
+                console.log(e);
+            }
         }
-        catch (e) {
-            ODA.console.log(e);
-        }
-        finally {
-            modal.parent = null
-        }
-    }
-    btn1.onclick = async e => {
-        try {
-            const res = await ODA.showDropdown('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true }, { animation: 500, parent: btn1 });
-            ODA.console.log(res);
-        }
-        catch (e) {
-            ODA.console.log(e);
-        }
-    }
-    tester.oncontextmenu = async e => {
-        try {
-            const res = await modal.show();
-            ODA.console.log(res);
-        }
-        catch (e) {
-            ODA.console.log(e);
-        }
-    }
+    })
+   ODA({is: 'oda-test',
+       template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                    align-items: center;
+                }
+            </style>
+            <oda-button :icon-size :icon></oda-button>
+            <div class="vertical" style="overflow: auto">
+                <h4 ~for="5">Запись № {{item}}</h4>
+            </div>
+
+       `,
+       iconSize: 24,
+       icon: ''
+   })
 </script>

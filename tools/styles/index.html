@@ -1,0 +1,44 @@
+<style>
+    :root{
+        --my-style: {
+            color: yellow;
+            background-color: red;
+        };
+        --mey-second:{
+            opacity: .1;
+        };
+    }
+    .horizontal{
+        position: center;
+    }
+    div{
+        @apply --my-style;
+    }
+</style>
+
+<style>
+    :root{
+        --my-my-style: {
+            color: yellow;
+            background-color: red;
+        };
+    }
+    .horizontal{
+        position: center;
+    }
+    div{
+        @apply --my-style;
+    }
+</style>
+<body>
+    <div>qwerqwer</div>
+</body>
+
+<script type="module">
+    for (let i of document.querySelectorAll('style')){
+        for (let rule of i.sheet.rules){
+            if (rule.selectorText === ':root')
+                console.dir(rule)
+        }
+    }
+</script>

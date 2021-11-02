@@ -1,72 +1,110 @@
-import '../../../components/buttons/button/button.js';
-ODA({
-    is: 'oda-modal',
+ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     template: /*html*/`
         <style>
             :host{
                 justify-content: center;
-                position: absolute;
+                position: relative;
                 z-index: 100;
                 left: 0;
                 top: 0;
                 width: 100%;
                 height: 100%;
                 overflow: hidden;
-                background-color: rgba(0, 0, 0, 0.5);
                 pointer-events: auto;
                 @apply --vertical;  
+                animation: fadin 5s ease-in-out;
+                background-color: rgba(0, 0, 0, 0.4);
             }
-            :host .container{
-                max-width: 100%;
-                max-height: 100%;
-                border: 1px solid black !important;
-                @apply --shadow;
-                min-width: 280px;
-            }
+
             ::slotted(*){
                 @apply --flex;
             }
-
+            :host>div{
+                animation: scale {{animation}}ms ease-in-out;
+                max-height: {{fullSize?100:80}}vh;
+                max-width: {{fullSize?100:80}}%;
+            }
+            :host>div>div{
+                align-items: center;
+            }
+            @keyframes fadin {
+                from {background-color: rgba(0, 0, 0, 0)}
+                to {background-color: rgba(0, 0, 0, 0.4)}
+            }
+            @keyframes scale {
+                from {transform:scale(0)}
+                to {transform:scale(1)}
+            }
+            slot{
+                overflow: hidden;
+            }
         </style>
-        <slot name="title">
-            <oda-modal-title :title :slot="(fullSize || titleMode === 'full')?'title':(titleMode === 'auto'?'title1':'ertretre')" class="no-flex" ~style="{alignItems: fullSize?'initial':'center'}" style="color: white; text-align: center;"></oda-modal-title>
-        </slot>
-        <div ~class="flex" class="vertical" style="justify-content: center; overflow: hidden; padding: 16px;">
-            <div class="container vertical shadow" ~style="{alignSelf: fullSize?'initial':'center'}">
-                <slot name="title1" style="margin-top: 30px;"></slot>
-                <slot @tap.stop class="shadow content flex vertical" style="overflow: hidden;"></slot>
-            </div>
+        <div class="vertical shadow" ~class="{flex:fullSize}" ~style="{alignSelf:fullSize?'none':'center'}">
+            <oda-title ~if="title" :title :icon :icon-size allow-close @close="fire('cancel')" :help></oda-title>
+            <slot @slotchange="_slot" @tap.stop class="content flex vertical"></slot>
         </div>
     `,
+    help: '',
     props:{
-        _zoom: 0,
+        icon: '',
         title: '',
-        titleMode:{
-            default: 'none',
-            list: ['none', 'auto', 'full']
-        },
         fullSize: false,
-        animation: 0,
-        iconSize:{
-            default: 24,
+        animation: 200,
+        iconSize: 24,
+    },
+    control: null,
+    keyBindings: {
+        escape() {
+            this.fire('cancel');
         },
-        flex: 'flex'
+        enter() {
+            if (this.focusedButton?.item?.execute)
+                this.focusedButton.item.execute();
+            this.fire('ok');
+        }
+    },
+    _slot(e){
+        this.control = this.control || e.target.assignedNodes()?.[0]
     }
 })
-ODA({
-    is: 'oda-modal-title',
-    template: /*html*/`
+ODA({is:'oda-dialog-message',
+    template:`
         <style>
             :host{
                 @apply --horizontal;
-                @apply --header;
                 align-items: center;
+                padding: 16px;
+                font-size: x-large;
+            }
+            label{
+                padding-left: 16px;
+                word-wrap: break-word;
             }
         </style>
-        <span class="flex">{{title}}</span>
-        <oda-button @tap="domHost.fire('cancel')" class="no-flex" icon="icons:close"></oda-button>
+        <oda-icon :icon :icon-size></oda-icon>
+        <label :html="message"></label>
     `,
-    props:{
-        title: ''
+    message: '',
+    icon: 'icons:info',
+    iconSize: 48
+})
+ODA({is:'oda-dialog-input',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                align-items: center;
+                padding: 16px;
+                font-size: large;
+            }
+        </style>
+        <input class="flex" ::value autofocus :placeholder>
+    `,
+    value: '',
+    placeholder: '',
+    attached(){
+        this.async(()=>{
+            this.$$('input')[0].focus();
+        },100)
     }
 })

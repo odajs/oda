@@ -1,21 +1,21 @@
 <meta charset="UTF-8">
-<script type="module" src="dialog.js"></script>
-<oda-tester>
-    <oda-dialog id="modal"><div>BLA-BLA-BLA</div></oda-dialog>
-    <button id="btn" slot="buttons">static</button>
-    <button id="btn1" slot="buttons">dynamic</button>
-</oda-tester>
+<button id="btn1" slot="buttons">dialogs</button>
+<button id="btn2" slot="buttons">buttons</button>
 <script type="module">
-    btn.onclick = e => {
-        return modal.show().then(res=>{
-            return res;
-        })
+    import "../containers.js";
+    btn1.onclick = async e => {
+        const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {animation: 500, help:'Привет'})
     }
-    btn1.onclick = e => {
-        ODA.console.log('111');
-        ODA.console.status = "Изменился статус приложения";
-        return ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {animation: 500}).then(res=>{
-            return res;
+    btn2.onclick = async e => {
+        const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {hideOkButton:true, icon:'icons:warning', animation: 500,
+            buttons: [
+                {icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{
+                        console.log('1 кнопка')
+                    }},{icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{
+                        console.log('2 кнопка')
+                    }},
+            ]
         })
+        console.log(res);
     }
 </script>

@@ -1,16 +1,14 @@
-import '../property-grid/property-grid.js';
-import '../../components/layouts/app-layout/app-layout.js';
-ODA({
-    is: 'oda-tester',
+ODA({ is: 'oda-tester', imports: ['@oda/app-layout', '@tools/property-grid'],
     extends: 'oda-app-layout', template: `
-        <div class="horizontal" slot="top-left" style="align-items:center;width: 100%">
-            <oda-button class="no-flex" ~for="views.filter(i=>i.slot === 'top-left')" :icon="item.icon" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
-        </div>
-        <span class="flex" slot="top-center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
-        <slot name="buttons" slot="top-right" style="display:flex;"></slot>
-        <oda-button slot="top-right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'top-right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
-        <oda-button slot="top-right" icon="files:log" :title="_console?'console off':'console on'" allow-toggle ::toggled="_console"></oda-button>
-        <slot @slotchange="onSlot" class="flex"></slot>
+        <app-layout-toolbar slot="header">
+            <div class="horizontal" slot="header-left" style="align-items:center; width: 100%">
+                <oda-button class="no-flex" ~for="views.filter(i=>i.slot === 'left')" :icon="item.icon" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
+            </div>
+            <span class="flex" slot="header-center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
+            <slot name="buttons" slot="header-right" style="display:flex;"></slot>
+            <oda-button slot="header-right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
+        </app-layout-toolbar>
+        <slot @slotchange="onSlot" class="flex"></slot>           
     `,
     props: {
         saveKey: 'tester',
@@ -23,14 +21,14 @@ ODA({
             }
         },
         views: [
-            { icon: 'enterprise:computer-screen', view: 'tester', slot: "top-left", slots: [{ slot: 'main', id: 'oda-tester-container' }, { slot: 'right-drawer', id: 'oda-property-grid' }] },
-            { icon: 'device:devices', view: 'tester', slot: "top-left", slots: [{ slot: 'main', id: 'oda-mobile', src: '../containers/mobile/mobile.js' }, { slot: 'right-drawer', id: 'oda-property-grid' }] },
-            { icon: 'icons:settings-overscan', view: 'tester', slot: "top-left", slots: [{ slot: 'main', id: 'oda-containers', src: '../containers/containers/containers.js' }, { slot: 'right-drawer', id: 'oda-property-grid' }] },
+            { icon: 'enterprise:computer-screen', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-tester-container' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
+            { icon: 'device:devices', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-mobile', src: '../containers/mobile/mobile.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
+            { icon: 'icons:settings-overscan', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-containers', src: '../containers/containers/containers.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
 
-            { label: 'API', view: 'api', slot: "top-right", slots: [{ slot: 'main', id: 'oda-auto-doc', src: '../auto-doc/auto-doc.js' }] },// { slot: 'right-drawer', id: 'oda-property-grid' }] },
-            { icon: 'icons:code', view: 'source', slot: "top-right", slots: [{ slot: 'main', id: 'oda-code-viewer', src: '../../components/viewers/code-viewer/code-viewer.js' }, { slot: 'right-drawer', id: 'oda-tester-info' }] },
-            { icon: 'icons:check-circle', view: 'demo', slot: "top-right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-drawer', id: 'oda-tester-info' }], if: 'demo' },
-            { icon: 'icons:help', view: 'description', slot: "top-right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-drawer', id: 'oda-tester-info' }], if: 'description' }
+            { label: 'API', view: 'api', slot: "right", slots: [{ slot: 'main', id: 'oda-auto-doc', src: '../auto-doc/auto-doc.js' }] },// { slot: 'right-panel', id: 'oda-property-grid' }] },
+            { icon: 'icons:code', view: 'source', slot: "right", slots: [{ slot: 'main', id: 'oda-code-viewer', src: '../../components/viewers/code-viewer/code-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }] },
+            { icon: 'icons:check-circle', view: 'demo', slot: "right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }], if: 'demo' },
+            { icon: 'icons:help', view: 'description', slot: "right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }], if: 'description' }
         ],
         focused: {
             default: {},
@@ -44,12 +42,12 @@ ODA({
                     }
                 }
                 for (let v of this.views) {
-                    if (v === n) {
+                    if (Object.equal(v, n)) {
                         for (let slot of v.slots) {
                             if (!slot.target) {
                                 slot.src && await import(slot.src);
                                 if (slot.id !== 'oda-property-grid' || (slot.id === 'oda-property-grid' && !this._pg))
-                                    slot.target = ODA.createComponent(slot.id);
+                                    slot.target = await ODA.createComponent(slot.id);
                             }
                             if (slot.id === 'oda-property-grid') {
                                 if (!this._pg) this._pg = slot.target;
@@ -77,14 +75,6 @@ ODA({
             default: { props: [] },
             freeze: true
         },
-        _console: {
-            type: Boolean,
-            default: false,
-            set(n) {
-                if(n) ODA.console.start();
-                else ODA.console.stop();
-            }
-        },
         _focusedSrc: 0,
         _arrSrc: { get() { return this.focused && this.focused.view !== 'tester' && this._info && this._info[this.focused.view] || undefined; } },
         _src: { get() { return this._arrSrc && this._arrSrc[this._focusedSrc] && this._arrSrc[this._focusedSrc].src || this._info.api || ''; } },
@@ -97,6 +87,7 @@ ODA({
         if (this.component) return;
         const els = e.target.assignedElements();
         this.component = els[0];
+        //this.component.setAttribute('slot', 'main')
         // this.removeAttribute('hidden');
     },
     async _componentAnalysis(comp = this.component) {
@@ -146,7 +137,7 @@ ODA({
     props: {
         component: {},
         focused: {},
-        _arrSrc: '',
+        _arrSrc: Array,
         _focusedSrc: {
             default: 0,
             set(n) {

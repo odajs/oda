@@ -1,4 +1,3 @@
-import '../../components/grids/tree/tree.js';
 const ODA_ICON_PATH = '/oda/buttons/icon/icon.js';
 let iconsPath = import.meta.url;
 iconsPath = iconsPath.slice(0, iconsPath.lastIndexOf('/')) + '/../../icons/svg/';
@@ -14,8 +13,7 @@ function getIconFolder(template) {
     const obj = {};
     obj.name = template.getAttribute('name');
     obj.label = obj.name
-    // obj.icon = `${obj.name}:${template.getAttribute('icon')}`;
-    obj.icon = 'enterprise:folder';
+    obj.icon = 'odant:folder';
     obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`
     const content = template.content;
     obj.items = Array.prototype.map.call(content.children, g => getIconItem(g, obj.name));
@@ -30,10 +28,15 @@ async function loadIcons(items) {
         return getIconFolder(template);
     })));
 }
-ODA({
-    is: 'oda-icons-tree', extends: 'oda-tree',
+ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
+    template:`
+        <div class="horizontal">
+          <input class="flex" type="search" ::value="filterVal">
+          <oda-button :icon-size icon="icons:search"></oda-button>
+        </div>
+    `,
     props: {
-        // allowFocus: true,
+        allowFocus: true,
         lazy: true,
         allowDrag: true,
         allowSort: true,
@@ -83,13 +86,10 @@ ODA({
     // },
     async ready() {
         this.iconsList = await (await fetch(iconsPath + 'info.json')).json();
-        this.sorts = [this.columns[0]]; //todo: костыль, убрать
     }
 });
 
-ODA({
-    is: 'oda-icons-icon',
-    extends: 'oda-icon, oda-table-cell-base',
+ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
     template: /*html*/`
     <style>
         :host{
@@ -104,18 +104,18 @@ ODA({
         oda-button:hover{
             opacity: 1;
         }
+        oda-icon{
+            filter: invert(1);
+        }
     </style>
-    <oda-icon ~if="item?.subIcon" style="position: absolute; transform: translate(0px, 2px) scale(0.5);" :icon="item.subIcon || ''"></oda-icon>
+    <oda-icon ~if="item?.subIcon" :icon="item.subIcon" :icon-size="iconSize*.4" style="position: absolute; transform: skew(340deg, 360deg); filter: invert(1)" ~style="{left: iconSize/3+'px'}"></oda-icon>
     <label class="label flex">{{item.label}}</label>
     <oda-button ~if="!item?.subIcon" icon="icons:content-copy" @tap="_copyToClipboard"></oda-button>`,
-    props: {
-        item: {
-            set(item) {
-                this.icon = item.icon;
-                this.fill = item?.subIcon ? 'orange' : '';
-            }
-        }
+    set item(item){
+        this.icon = item?.icon;
+        this.fill = item?.subIcon && 'orange';
     },
+
     _copyToClipboard() {
         const s = this.icon;
         const input = document.createElement('input');

@@ -1,114 +1,227 @@
-ODA({
-    is: 'oda-dropdown', template: /*html*/`
+ODA({is: 'oda-dropdown', imports: '@oda/title',
+    template: /*html*/`
         <style>
             :host {
                 pointer-events: none;
-            }
-            :host>.container{
-                pointer-events: auto;
-                overflow: hidden;
                 z-index: 100;
+                transition: background-color 5s;
+            }
+            :host([is-ready]){
+                background-color: rgba(0,0,0,.4);
+            }
+            :host>div{
+                visibility: hidden;
+                pointer-events: auto;
                 position: fixed;
-                opacity: 0;
-                transition: opacity 0.25s;
+                overflow: hidden;
+            }
+            :host([is-ready]) div{
+                visibility: visible;
+                overflow: hidden;
             }
         </style>
-        <div class="shadow content border flex vertical container" @tap.stop="fire('ok')" tabindex="1" ref="container" ~show="_ready" ~style="_size">
-            <slot @slotchange="_setSize(0)"></slot>
+        <div class="vertical shadow content" ~style="_style">
+            <div @resize="setSize" class="vertical flex">
+                <oda-title ~if="title" allow-close :icon :title></oda-title>
+                <div class="flex vertical">
+                    <slot @slotchange="onSlot"></slot>
+                </div>
+            </div>
         </div>
     `,
-    attached() {
-        const windows = [...Array.prototype.map.call(window.top, w => w), window];
-        if (window !== window.top) windows.push(window.top);
-        windows.forEach( w =>{
-            this.listen('resize', '_close', { target: w, useCapture: true });
-            this.listen('wheel', '_close', { target: w, useCapture: true });
+    onSlot(e){
+        this.controls = e.target.assignedNodes();
+        if (this.focused && this.controls?.length) {
+            this.controls[0].setAttribute('tabindex', 0);
+            this.controls[0].setAttribute('autofocus', true);
+            this.async(()=>{
+                this.controls?.[0]?.focus();
+            },100);
+        }
+    },
+    controls: undefined,
+    ready() {
+        let win = window;
+        this.windows = [];
+        while (win.window !== win){
+            this.windows.push(win)
+            win = win.window;
+        }
+        this.windows.push(win);
+        this.windows.forEach(w => {
+            // this.listen('resize', '_close', { target: w, useCapture: true });
+            this.listen('scroll', '_close', { target: w, useCapture: true });
         });
     },
     detached() {
-        const windows = [...Array.prototype.map.call(window.top, w => w), window];
-        if (window !== window.top) windows.push(window.top);
-        windows.forEach( w => {
-            this.unlisten('resize', '_close', { target: w, useCapture: true });
-            this.unlisten('wheel', '_close', { target: w, useCapture: true });
+        this.windows.forEach(w => {
+            // this.unlisten('resize', '_close', { target: w, useCapture: true });
+            this.unlisten('scroll', '_close', { target: w, useCapture: true });
         });
     },
+    resolveEvent: 'ok',
+    observers:[
+        function setEvent(controls, resolveEvent){
+            for (let el of controls){
+                this.listen(resolveEvent, (e)=>{
+                    this.fire('ok');
+                }, {target:el})
+
+            }
+        }
+    ],
     props: {
         parent: { type: [HTMLElement, Object] },
-        minWidth: 100,
-        maxWidth: 0,
-        maxHeight: 0,
         intersect: false,
-        _size: null,
-        _ready: false,
-        useParentWidth: false
+        align: {
+            default: 'bottom',
+            list: ['bottom', 'top', 'left', 'right']
+        },
+        useParentWidth: false,
+        title: '',
+        icon: '',
+        iconSize: 24,
+        minWidth: 100,
+        minHeight: 0,
+        isReady: {
+            default: false,
+            reflectToAttribute: true
+        }
     },
-    _setSize(repeat = 0) {
-        requestAnimationFrame(() => {
-            let size,
-                container = this.$refs.container,
-                containerSize = container.getBoundingClientRect();
-            const rect = new ODARect(this.parent),
-                h = containerSize.height,
-                w = containerSize.width + container.scrollWidth,
-                l = rect.left,
-                t = this.intersect ? rect.top : rect.bottom,
-                r = window.innerWidth - rect.left,
-                b = window.innerHeight - t;
-            size = {};
-            size.minWidth = this.parent && this.parent.offsetWidth > this.minWidth ? this.parent.offsetWidth - 2 : this.minWidth || w;
-            if (this.useParentWidth && this.parent) size.maxWidth = this.parent.offsetWidth - 2;
-            else if (this.maxWidth) size.maxWidth = this.maxWidth > size.minWidth ? this.maxWidth : size.minWidth;
-            if (this.maxHeight) size.maxHeight = this.maxHeight;
-            if (b > h + 12) {
-                size.maxHeight = b;
-                size.top = t;
-            } else {
+    contentRect: null,
+    get _style() {
+        const rect = new ODARect(this.parent);
+        let top = rect.top;
+        let left = rect.left;
+        // this.contentRect = e.target.getBoundingClientRect();
+        let height = this.contentRect?.height || 0;
+        let width = this.contentRect?.width || 0;
+        if (!height || !width) {
+            top += 'px';
+            left += 'px';
+            return { top, left };
+        }
+
+        let winWidth = window.innerWidth;
+        let winHeight = window.innerHeight;
+        let maxHeight = winHeight;
+        let maxWidth = winWidth;
+        let minHeight = height || this.minHeight;
+        let minWidth = width || this.minWidth;
+        let right = left + width;
+        let bottom = top + height;
+
+        let parentWidth = rect.width;
+        if (rect.right > winWidth)
+            parentWidth += winWidth - rect.right;
+        if (rect.left < 0)
+            parentWidth += rect.left;
+        let size = {};
+        this._steps = this._steps || [];
+        this.align = ['left', 'right', 'top', 'bottom'].includes(this.align) ? this.align : 'bottom';
+        switch (this.align) {
+            case 'left': {
+                right = this.intersect ? rect.right : rect.left;
+                left = right - width;
                 if (this.parent) {
-                    if (h >= t && b >= t) {
-                        size.top = t;
-                        size.bottom = 0;
-                    } else {
-                        size.top = (rect.top - h < 2 ? 2 : rect.top - h);
-                        size.maxHeight = rect.top - 4;
+                    if (left < 0) {
+                        this.align = this._steps.includes('right') ? 'bottom' : 'right';
+                        this._steps.push('left');
+                        return undefined;
                     }
-                } else {
-                    size.bottom = 0;
                 }
-            }
-            if (r > w + 12) {
-                size.left = l;
-            } else {
-                if (this.parent && this.useParentWidth) {
-                    size.left = l;
-                } else {
-                    size.right = 0;
+            } break;
+            case 'right': {
+                left = this.intersect ? rect.left : rect.right;
+                right = left + width;
+                if (this.parent) {
+                    if (right > winWidth) {
+                        this.align = this._steps.includes('left') ? 'bottom' : 'left';
+                        this._steps.push('right');
+                        return undefined;
+                    }
                 }
+            } break;
+            case 'top': {
+                bottom = this.intersect ? rect.bottom : rect.top;
+                top = bottom - height;
+                if (this.parent) {
+                    top = top < 0 ? 0 : top;
+                    maxHeight = bottom - top;
+                    if (height > maxHeight && winHeight - rect.bottom > rect.top) {
+                        this.align = this._steps.includes('bottom') ? 'top' : 'bottom';
+                        if (this.align === 'bottom') {
+                            this._steps.push('top');
+                            return undefined;
+                        }
+                    }
+                }
+            } break;
+            case 'bottom': {
+                top = this.intersect ? rect.top : rect.bottom;
+                bottom = top + height;
+                if (this.parent) {
+                    top = top < 0 ? 0 : top;
+                    maxHeight = winHeight - top;
+                    if (height > maxHeight &&  rect.top > winHeight - rect.bottom) {
+                        this.align = this._steps.includes('top') ? 'bottom' : 'top';
+                        if (this.align === 'top') {
+                            this._steps.push('bottom');
+                            return undefined;
+                        }
+                    }
+                }
+            } break;
+        }
+
+        if (!this.parent) {
+            top = top < 0 ? 0 : top;
+            left = left < 0 ? 0 : left;
+            if (bottom > winHeight) size.bottom = 0
+            if (right > winWidth) size.right = 0;
+        } else {
+            if (this.align === 'left' || this.align === 'right') {
+                if (this.useParentWidth) minWidth = maxWidth = parentWidth;
+                if ((height && top) > winHeight - top) {
+                    top = rect.bottom - height;
+                    top = top < 0 ? 0 : top;
+                    maxHeight = winHeight - top;
+                } else if (bottom >= winHeight) size.bottom = 0;
+            } else if (this.align === 'top' || this.align === 'bottom') {
+                if (this.useParentWidth) minWidth = maxWidth = parentWidth;
+                else {
+                    if (width < parentWidth) minWidth = parentWidth;
+                    if (right > winWidth) size.right = 0;
+                }
+                left = left < 0 ? 0 : left;
+                if (bottom > winHeight) size.bottom = 0;
             }
-            Object.keys(size).forEach(k => size[k] += 'px');
-            this._size = { ...size };
-            if (repeat === 1) {
-                this._ready = true;
-                this.debounce('set-opacity', () => {
-                    this.$refs.container.style.setProperty('opacity', 1);
-                }, 100);
-            }
-            else {
-                this._setSize(++repeat);
-            }
-        });
+        }
+        minWidth = minWidth > maxWidth ? maxWidth : minWidth;
+        minHeight = minHeight > maxHeight ? maxHeight : minHeight;
+
+        size = { ...size, ...{ maxWidth, minWidth, minHeight, maxHeight } };
+        if (!size.hasOwnProperty('bottom')) size.top = top;
+        if (!size.hasOwnProperty('right')) size.left = left;
+        Object.keys(size).forEach(k => size[k] += 'px');
+        this._steps = [];
+        return size;
+    },
+    setSize(e) {
+        this['#_style'] = undefined;
+        this.contentRect = e.target.getBoundingClientRect();
+        this.interval('set-size', () => {
+            this.isReady = true;
+        })
     },
     _close(e) {
-        let dd = this;
-        while (dd) {
-            if (dd.contains?.(e.target)) {
-                if (e.type === 'resize' && this._offsetHeight !== e.target.offsetHeight) {
-                    dd._setSize();
-                    this._offsetHeight = e.target.offsetHeight;
-                }
-                return;
+        if (this.windows.some(w=>e.target instanceof w.Node)) {
+            let dd = this;
+            while (e?.target && dd) {
+                if (dd.contains?.(e.target))
+                    return;
+                dd = dd.nextElementSibling;
             }
-            dd = dd.nextElementSibling;
         }
         this.fire('cancel');
     }

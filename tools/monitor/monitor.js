@@ -1,5 +1,12 @@
 import '../../oda.js';
-
+const CONSOLE = ODA.regTool('console');
+ODA.regHotKey('ctrl+m', (e)=>{
+    const elem = window.top.document.body.querySelector('oda-monitor')
+    if (elem)
+        window.top.document.body.removeChild(elem);
+    else
+        window.top.document.body.appendChild(ODA.createComponent('oda-monitor'));
+})
 ODA({
     is: 'oda-monitor', template: `
     <style>
@@ -16,6 +23,7 @@ ODA({
             padding: 2px;
             cursor: pointer;
             transform: {{_translate}};
+            zoom: {{1 / devicePixelRatio}};
         }
         .bars {
             justify-content: flex-end; 
@@ -51,7 +59,7 @@ ODA({
         _memoryMax: 0,
         _memoryArr: [],
         _frame: 0,
-        _startTime: Date,
+        _startTime: Object,
         _perf: Object,
         translateX: {
             default: 0,
@@ -79,6 +87,9 @@ ODA({
         this._startTime = performance.now();
         this.tick();
     },
+    _zoom() {
+        return 1 / window.devicePixelRatio
+    },
     tick() {
         requestAnimationFrame(() => this.tick());
         let time = performance.now();
@@ -91,10 +102,12 @@ ODA({
             this._memoryArr.push(ms);
             if (this._memoryArr.length > this.monitorWidth / 3) this._memoryArr = this._memoryArr.splice(-this.monitorWidth / 3);
             this.fps = (this._frame / ((time - this._startTime) / 500) * 2).toFixed(1);
+            this._fpsMax = this.fps > this._fpsMax ? this.fps : this._fpsMax;
             this._fpsArr.push(this.fps);
             if (this._fpsArr.length > this.monitorWidth / 3) this._fpsArr = this._fpsArr.splice(-this.monitorWidth / 3);
             this._startTime = time;
             this._frame = 0;
+            this.render();
         }
     },
     bytesToSize(bytes, nFractDigit) {

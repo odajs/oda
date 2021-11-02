@@ -1,0 +1,125 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="../../../components/buttons/icon/icon.js"></script>
+<script type="module" src="../../../components/buttons/button/button.js"></script>
+<script type="module" src="../../../components/buttons/checkbox/checkbox.js"></script>
+<script type="module" src="../containers.js"></script>
+<style>
+    body {
+        overflow: hidden;
+    }
+</style>
+<oda-dropdown-tester></oda-dropdown-tester>
+<script type="module">
+
+    ODA({
+        is: 'oda-dropdown-tester',
+        template: `
+            <style>
+                :host{
+                    @apply --vertical;
+                    @apply --flex;
+                }
+                .box {
+                    left: {{left}};
+                    top: {{top}};
+                    touch-action: none;
+                }
+                oda-checkbox {
+                    cursor: pointer;
+                }
+                oda-button {
+                    width: 240px; 
+                    margin: 2px;
+                    border: 1px solid gray
+                }
+            </style>
+            <oda-button icon="icons:refresh" @pointerdown="left=10;top=50;_lastX=_lastY=undefined" title="reset position" style="width:24px;margin: 10px; z-index: 1;"></oda-button>
+            <div class="box vertical" dragable style="border: 1px solid red; padding: 8px; background: lightyellow;
+                cursor: move; position: absolute" @pointerdown="_down">
+                <oda-button @pointerdown.stop="run">top</oda-button>
+                <oda-button @pointerdown.stop="run">left</oda-button>
+                <oda-button @pointerdown.stop="run">right</oda-button>
+                <oda-button @pointerdown.stop="run">bottom</oda-button>
+                <div class="vertical" style="margin-top: 10px; align-items: left;justify-content: center;">
+                    <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
+                    <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>
+                    <div class="horizontal" style="align-items:center"><oda-checkbox ::value="useParentWidth"></oda-checkbox> - useParentWidth</div>
+                </div>
+            </div>
+        `,
+        props: {
+            left: {
+                type: Number,
+                default: 10,
+                save: true
+            },
+            top: {
+                type: Number,
+                default: 50,
+                save: true
+            },
+            parent: {
+                type: Boolean,
+                save: true
+            },
+            intersect: {
+                type: Boolean,
+                save: true
+            },
+            useParentWidth: {
+                type: Boolean,
+                save: true
+            },
+        },
+        _down(e) {
+            this._lastX = e.pageX;
+            this._lastY = e.pageY;
+            this.__doMove = this.__doMove = this._doMove.bind(this);
+            this.__stopMove = this.__stopMove = this._stopMove.bind(this);
+            document.documentElement.addEventListener("pointermove", this.__doMove, false);
+            document.documentElement.addEventListener("pointerup", this.__stopMove, false);
+            document.documentElement.addEventListener("pointercancel", this.__stopMove, false);
+        },
+        _doMove(e) {
+            this.left += e.pageX - this._lastX;
+            this.top += e.pageY - this._lastY;
+            this._lastX = e.pageX;
+            this._lastY = e.pageY;
+        },
+        _stopMove() {
+            document.documentElement.removeEventListener("pointermove", this.__doMove, false);
+            document.documentElement.removeEventListener("pointerup", this.__stopMove, false);
+            document.documentElement.removeEventListener("pointercancel", this.__stopMove, false);
+        },
+        async run(e) {
+            let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
+            try {
+                const res = await ODA.showDropdown('oda-test', { icon: 'icons:warning', iconSize: 100 },
+                    { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, title: type + ` (${e.target.innerText})`, icon: 'icons:info' });
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
+    })
+    ODA({
+        is: 'oda-test',
+        template: `
+            <style>
+                :host{
+                    @apply --vertical;
+                    align-items: center;
+                    border: 4px solid red;
+                    overflow: auto;
+                }
+            </style>
+            <oda-button :icon-size :icon></oda-button>
+            <div class="vertical">
+                <h4 ~for="5">Запись № {{item}}</h4>
+            </div>
+       `,
+        iconSize: 24,
+        icon: ''
+    })
+</script>

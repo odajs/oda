@@ -1,0 +1,39 @@
+[
+  {
+    "name": "default",
+    "path": "themes/default",
+    "execute": "setStyle"
+  },
+  {
+    "name": "blue",
+    "execute": "setStyle",
+    "path": "themes/blue",
+    "content": {
+        "src": "blue.json"
+    }
+  },
+  {
+    "name": "orange",
+    "execute": "setStyle",
+    "path": "themes/orange",
+    "content": {
+      "src": "orange.json"
+  }},
+  {
+    "name": "green",
+    "execute": "setStyle",
+    "path": "themes/green",
+    "content": {
+      "src": "green.json"
+    }
+  },
+  {
+    "name": "theme-editor",
+    "path": "tools/styles/theme-editor",
+    "label": "Редактор тем",
+    "content": {
+      "link": "index.html"
+    },
+    "hideLeft": "true"
+  }
+]

@@ -1,0 +1,12 @@
+<oda-containers-test></oda-containers-test>
+<script type="module">
+    import './containers.js';
+    ODA({is:'oda-containers-test',
+        template:`
+            <button ~for="ODA.containers.items" @tap="show(item)">{{item}}</button>
+        `,
+        show(item){
+            ODA[('show-' + item).toCamelCase()]('oda-containers-test')
+        }
+    })
+</script>

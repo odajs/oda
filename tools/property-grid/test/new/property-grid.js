@@ -1,5 +1,6 @@
 import '../../../../components/buttons/button/button.js';
 import '../../../../components/grids/list/list.js';
+import '../../../containers/containers.js';
 
 ODA({
     is: "oda-property-grid2", template: `
@@ -8,15 +9,14 @@ ODA({
                 display: flex;
                 flex-direction: column;
                 overflow-y: auto;
-                border: 1px solid gray;
+                border: 1px solid var(--dark-background);
             }
             .hheader {
                 position: sticky;
                 top: 0px;
                 display: flex;
                 align-items: center;
-                background-color: #a0a0a0;
-                border-bottom:1px solid gray;
+                border-bottom:1px solid var(--dark-background);
                 z-index: 1;
             }
             .label {
@@ -24,7 +24,7 @@ ODA({
                 flex: 1;
                 align-items: center;
                 font-size: large;
-                color: white;
+                color: var(--content-color);
             }
             .container {
                 position: relative;
@@ -32,17 +32,15 @@ ODA({
                 overflow-y: auto;
                 overflow-x: hidden;
             }            
-            .group-header {
+            .header {
                 position: sticky;
                 top: 0px;
                 display: flex;
                 align-items: center;
-                background-color: #d0d0d0;
-                border-bottom:1px solid gray;
+                border-bottom:1px solid var(--dark-background);
                 min-height: 28px;
                 padding-left: 16px;
                 z-index: 1;
-                color: gray;
             }
             .splitter {
                 position: absolute;
@@ -60,13 +58,13 @@ ODA({
                 position: absolute;
                 left: {{labelColumn + 25}}px;
                 width: 1px;
-                border-right: 1px solid lightgray;
+                border-right: 1px solid var(--dark-background);
                 height: 100%;
             }
         </style>
-        <div class="hheader">
-            <div class="label">{{item?.label || label}}</div>
-            <div class="horizontal">
+        <div class="hheader dark">
+            <div class="label dark" style="height:32px">{{item?.label || label}}</div>
+            <div ~if="showButtons" class="horizontal">
                 <oda-button class="flex" aloow-toggle :toggled="focus" icon="icons:radio-button-checked" title="view focused" @click="_focus"></oda-button>
                 <oda-button class="flex" icon="icons:refresh" title="refresh" @tap="_expert"></oda-button>
                 <oda-button class="flex" :icon="sort==='ascending'?'icons:sort:180':sort==='descending'?'icons:sort':'icons:menu'" title="sort" @tap="_sort"></oda-button>
@@ -79,17 +77,17 @@ ODA({
             <div class="splitter" ref="splitter" @down="_splitter=true"></div>
 
             <div class="group" ~for="key in Object.keys(item || {})">
-                <div ~show="group" class="group-header" @tap="focused=item[key][0].obj">{{key}} [{{item[key].length}}]</div>
-                <oda-property-tree class="tree" :item="item[key]" ::focused :args></oda-property-tree>
+                <div ~show="group" class="header" @tap="focused=item[key][0].obj">{{key}} [{{item[key] && item[key].length}}]</div>
+                <oda-property-tree class="tree" :item="item[key]" ::focused :args :label-column="labelColumn"></oda-property-tree>
             </div>
         </div>
         <div class="horizontal">
-            <div class="hheader" style="height:28px" :style="{width:(labelColumn+26)+'px'}">
-                <div style="padding-left:8px; color: white">
+            <div class="hheader dark" style="height:28px" :style="{width:(labelColumn+26)+'px'}">
+                <div style="padding-left:8px; color: var(--dark-color)">
                     {{ioLength}}
                 </div>
             </div>
-            <div class="hheader flex" style="margin-left:1px;height:28px;"></div>
+            <div class="hheader dark flex" style="margin-left:1px;height:28px;"></div>
         </div> 
     `,
     props: {
@@ -97,19 +95,18 @@ ODA({
         io: {
             type: Object,
             set(n, o) {
-                this.getData();
-            }
+                if (this._isReady)
+                    this.getData();
+            },
+            freeze: true
         },
         ioLength: 0,
         expertMode: Boolean,
         group: true,
-        item: {
-            type: Object,
-            freeze: true
-        },
+        item: Object,
         labelColumn: {
+            type: Number,
             default: 150,
-            shared: true,
             save: true
         },
         sort: {
@@ -119,22 +116,21 @@ ODA({
         },
         focused: Object,
         focus: false,
-        args: {
-            type: Object,
-            get() { return { expert: this.expertMode, group: this.group, sort: this.sort } },
-            shared: true
-        },
-        _splitter: false
+        _splitter: false,
+        categories: Array,
+        showButtons: true,
+        args() { return { expert: this.expertMode, group: this.group, sort: this.sort, categories: this.categories } },
     },
     attached() {
-        //this.getData();
+        this.getData();
+        this._isReady = true;
     },
     listeners: {
         track(e) {
             if (!this._splitter) return;
             requestAnimationFrame(() => {
                 let w = this.labelColumn + e.detail.ddx;
-                w = w <= 0 ? 0 : w;
+                w = w <= 100 ? 100 : w;
                 this.labelColumn = w;
             });
         },
@@ -157,7 +153,7 @@ ODA({
         const obj = {};
         this.ioLength = 0;
         this._io.items.map(i => {
-            let cat = i.category || 'no category';
+            let cat = i.category || 'props';
             obj[cat] = obj[cat] || [];
             obj[cat].push(i);
             this.ioLength++;
@@ -193,22 +189,23 @@ ODA({
     is: "oda-property-tree", template: `
         <style>
             .complex {
-                background-color: hsla(90, 0%, 50%, .1);
-                box-shadow: inset 0 -2px 0 0 gray;
+                margin-left: 6px;
+                border-left: 1px dotted var(--dark-background);
                 overflow: hidden;
             }
-            .row:hover {
-                background-color: lightyellow;
-                cursor: pointer;
-            }
             .row[isfocused] {
-                box-shadow: inset 0 -1px 0 0 blue;
+                box-shadow: inset 0 -2px 0 0 var(--focused-color);
+            }
+            .row:hover {
+                cursor: pointer;
+                box-shadow: inset 0 -2px 0 0 var(--dark-background);
             }
             .input {
+                margin: 2px;
                 font-size: 1em;
-                color: gray;
                 outline: none; 
-                background: transparent; 
+                background-color: var(--content-background);
+                color: var(--content-color);
                 border: none;
                 flex:1;
                 min-width: 0px;
@@ -225,61 +222,50 @@ ODA({
             }
         </style>
         <div ~for="i in _items">
-            <div class="row" :isfocused="focused === i" style="border-bottom: .5px solid lightgray" @tap="focused=i">
+            <div class="row" :isfocused="focused === i" style="border-bottom: .5px solid var(--dark-background)" @tap="focused=i">
                 <div style="display:flex;align-items:center;">
                     <oda-icon ~if="i.items?.length || i.is" :icon="i.expanded?'icons:chevron-right:90':'icons:chevron-right'" allow-toggle :toggled="i.expanded" :icon-size="iconSize - 2" fill="gray" @tap="_expanded(i)"></oda-icon>
                     <div ~if="!(i.items?.length || i.is)" style="min-width:22px"></div>
-                    <div class="prop" style="color: gray;overflow:hidden;display:flex;padding:0 2px;white-space: nowrap;align-items: center;" @dblclick="_dblclick($event, i)">{{i.label||i.name}}</div>
-                    <input class="input" :type="i.type||'text'" :checked="i.value" :value="i.value" ~style="{height:iconSize+'px'}" @change="_change($event, i)" :disabled="i.is || i.readOnly">
+                    <div class="prop" style="overflow:hidden;display:flex;padding:0 2px;white-space: nowrap;align-items: center;" @dblclick="_dblclick($event, i)">{{i.label||i.name}}</div>
+                    <input ~is="i.editor || 'input'" class="input" :type="i.type||'text'" :checked="i.value" ::value="i.value" ~style="{height:iconSize+'px'}" @change="_change($event, i)" :disabled="i.is || i.readOnly">
                     <oda-button ~if="i.list && !i.readOnly" icon="icons:chevron-right:90" @tap="_openDropdown($event, i)"></oda-button>
                 </div>
             </div>
             <div class="complex">
-                <oda-property-tree ~if="(i.el || i.items?.length) && i.expanded" :item="i.data || i.items" ::focused :args></oda-property-tree>
+                <oda-property-tree ~if="(i.el || i.items?.length) && i.expanded" :item="i.data || i.items" ::focused :args :label-column="labelColumn"></oda-property-tree>
             </div>
         </div>
     `,
     props: {
         args: Object,
-        item: {
-            type: Object,
-            freeze: true
-        },
-        labelColumn: {
-            default: 150,
-            shared: true
-        },
+        item: Object,
+        labelColumn: 150,
         iconSize: 24,
-        _items: {
-            freeze: true,
-            reactive: true,
-            get() { return this.item?.map ? this.item : this.item?.items?.map ? this.item.items : [] }
-        },
+        _items() { return this.item?.map ? this.item : this.item?.items?.map ? this.item.items : [] },
         focused: Object
     },
     _expanded(i) {
         i.expanded = !i.expanded;
         if (i.expanded)
-            i.data = makeData(i.el, this.args);
+            i.data = makeData(i.obj[i.key], this.args, true);
         else
             i.data = [];
-        this.render();
     },
     _change(e, i) {
-        if (e.target.type === 'checkbox') i.obj[i.label] = e.target.checked;
-        else i.obj[i.label] = e.target.value
-        this.render();
+        if (e.target.type === 'checkbox') i.obj[i.key] = e.target.checked;
+        else i.obj[i.key] = e.target.value
+        this.fire('pg-changed', i);
     },
     async _openDropdown(e, i) {
         let res = await ODA.showDropdown('oda-list', { items: i.list, focusedItem: i.value }, { parent: e.target, useParentWidth: false });
-        if (res?.focusedItem) i.obj[i.label] = res.focusedItem;
+        if (res?.focusedItem) i.obj[i.key] = res.focusedItem;
     },
     _dblclick(e, i) {
         this.fire('dblClick', i);
     }
 })
 
-function makeData(el, { expert, group, sort }) {
+function makeData(el, { expert, group, sort, categories }, sure = false) {
     const editors = {
         'boolean': 'checkbox',
         'number': 'number',
@@ -287,19 +273,20 @@ function makeData(el, { expert, group, sort }) {
     }
     let obj = el;
     const exts = /^(_|\$|#)/;
-    const label = el?.constructor?.name || el?.localName || '';
-    const data = { label, items: [] };
+    const _label = el?.constructor?.name || el?.localName || '';
+    const data = { _label, items: [] };
     const props = el?.props || el?.properties || undefined;
 
-    function fn(key, category = 'no category', props) {
-        if (!group) category = '...';
+    function fn(key, category = 'props', props) {
+        category = props?.category || category;
+        const _ok = !categories || (categories && categories.includes(category)) || (categories && sure);
+        if (!_ok) return;
         try {
             let value = el[key], is, type;
-            const _docs = undefined;
-            if (el[key] && el[key]._docs) _docs = el[key]._docs;
-            const item = { label: key, value, el: el[key], items: [], category, obj, _docs };
+            const label = props && props[key] && props[key].label || key;
+            const item = { label, key, value, el: el[key], items: [], category, obj };
             if (value && Array.isArray(value)) {
-                Object.defineProperty(item, 'value', { get() { return 'Array [' + (this?.obj && this.obj[this.label] ? this.obj[this.label].length : '') + ']'; } });
+                Object.defineProperty(item, 'value', { get() { return 'Array [' + (this?.obj && this.obj[this.key] ? this.obj[this.key].length : '') + ']'; } });
                 is = 'array';
                 type = 'text';
             } else if (value !== null && typeof value === 'object') {
@@ -313,9 +300,10 @@ function makeData(el, { expert, group, sort }) {
                 if (editors[type])
                     type = editors[type];
                 item.type = type || 'text';
+                item.editor = props && props[key] && props[key].editor || undefined;
                 Object.defineProperty(item, 'value', {
-                    get() { try { return this.obj[this.label] } catch (err) { return value } },
-                    set(v) { this.obj[this.label] = v; }
+                    get() { try { return this.obj[this.key] } catch (err) { return value } },
+                    set(v) { this.obj[this.key] = v; }
                 });
             }
             if (props && props[key] && props[key].list) item.list = props[key].list;

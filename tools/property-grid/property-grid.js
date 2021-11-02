@@ -1,220 +1,6 @@
-import ODA from '../../oda.js';
-import '../../components/grids/table/table.js';
-import '../containers/dropdown/dropdown.js'
-import '../../components/grids/list/list.js';
-import '../../components/viewers/md-viewer/md-viewer.js';
-class _Promise {
-    constructor(promise, silent) {
-        this.__promise = promise;
-        Object.defineProperty(this, 'value', {
-            get() {
-                if (this.__value)
-                    return this.__value;
-                this.__promise.then(resolve => {
-                    this.__value = resolve;
-                })
-            }
-        });
-        Object.defineProperty(this, 'status', {
-            get() {
-                return 'pending';
-            }
-        })
-    }
-}
-function toBoolean(v) {
-    switch (v) {
-        case 'true':
-        case 'True':
-        case true: return true;
-        case 'false':
-        case 'False':
-        case false: return false;
-        default: return Boolean(v);
-    }
-}
-function getOwnKeys(target) {
-    let arr = [];
-    for (let i of target.__io) {
-        if (i) {
-            if (!arr.length) {
-                arr.add(...Object.getOwnPropertyNames(i));
-                arr.add(...Object.getOwnPropertySymbols(i));
-            }
-            else {
-                const array2 = [...Object.getOwnPropertyNames(i), ...Object.getOwnPropertySymbols(i)];
-                arr = arr.filter(value => array2.includes(value))
-            }
-        }
-    }
-    return arr;
-}
-class ioSet {
-    constructor(objects) {
-        this.__io = objects;
-    }
-}
-const proxyHandler = {
-    set(target, p, value, receiver) {
-        if (target instanceof ioSet) {
-            for (let obj of target.__io)
-                obj && (obj[p] = value);
-        }
-        else
-            target[p] = value;
-        return true;
-    },
-    get(target, p, receiver) {
-        if (target instanceof ioSet) {
-            const arr = [];
-            for (let i of target.__io) {
-                i && arr.add(i[p])
-            }
-            if (arr.length === 1)
-                return arr[0];
-            if (arr.find(i => i && typeof i === 'object')) {
-                return new ioSet(arr.map(i => {
-                    if (i instanceof Promise)
-                        i = new _Promise(i);
-                    return i;
-                }))
-            }
-        }
-        return target[p];
-    },
-    getOwnPropertyDescriptor(target, p) {
-        if (target instanceof ioSet) {
-            for (let i of target.__io) {
-                if (i) {
-                    let d = Object.assign({ configurable: true }, Object.getOwnPropertyDescriptor(i, p));
-                    if (d.value !== undefined)
-                        d.configurable = true;
-                    d.enumerable = true;
-                    return d;
-                }
-            }
-        }
-        return Object.assign({ configurable: true }, Object.getOwnPropertyDescriptor(target, p));
-    },
-    ownKeys(target) {
-        if (target instanceof ioSet)
-            return getOwnKeys(target);
-        let arr = [];
-        arr.add(...Object.getOwnPropertyNames(target));
-        arr.add(...Object.getOwnPropertySymbols(target));
-        return arr;
-    }
-};
-const exts = /^(_|\$)/;
-function parse(io = {}, expert) {
-    if (io === null) return [];
-    let props = Object.assign({}, io.properties || io.props);
-    if (props.__io) {
-        let keys = getOwnKeys(props);
-        props = props.__io.reduce((res, p) => {
-            if (keys.includes(p))
-                res = Object.assign(res, p);
-            return res;
-        }, {})
-    }
-    let obj = io;
-    while (obj) {
-        let names = Object.getOwnPropertyNames(obj);
-        for (let key of names) {
-            if (!expert && exts.test(key)) continue;
-            if (/^(__|props|properties)/.test(key)) continue;
-            let d = Object.getOwnPropertyDescriptor(obj, key);
-            if (!d || typeof d.value === 'function') continue;
-            let prop = props[key];
-            if (!prop)
-                prop = { category: expert && obj.constructor.name, readOnly: exts.test(key) || d.get ? !d.set : !d.writable };
-            props[key] = Object.assign({}, prop, d);
-        }
-        if (!expert) break;
-        obj = obj.__proto__;
-    }
-    const res = [];
-    for (let name of Object.keys(props)) {
-        if (!expert && exts.test(name)) continue;
-        let value = io[name];
-        if (typeof value === 'function') continue;
-        let prop = props[name];
-        let label = prop.label || (!Number.isNaN(+name) ? `[${name}]` : name);
-        let _docs = prop._docs || null;
-        let row = Object.assign({ name, label, _docs }, prop);
-        Object.defineProperty(row, '$value', {
-            get() {
-                let val = io[name];
-                if (this.$group) {
-                    console.log(name)
-                }
-                if (val && typeof val === 'object') {
-                    if (val !== this.target || Array.isArray(val)) {
-                        this.target = val;
-                        if (val instanceof Promise)
-                            val = new _Promise(val);
-                        this.proxy = (!(val instanceof ioSet) || val.__io) ? new Proxy(val, proxyHandler) : val;
-                        this.items = parse(val);
-                    }
-                    return this.proxy;
-                }
-                this.items = undefined;
-                return val;
-            }
-        });
-        Object.defineProperty(row, 'value', {
-            get() {
-                let val = this.$value;
-                if (val && typeof val === 'object' && val.constructor) {
-                    const n = val.constructor.name;
-                    if (n === 'Array')
-                        return `Array [${val.length}]`;
-                    return `[${n}]`;
-                }
-                return val;
-            },
-            set(v) {
-                // console.table([{ n: 'v', v }, { n: 'io', v: io[name]}])
-                if (!Object.is(io[name], v)) {
-                    const curV = io[name];
-                    if (v?.constructor?.name === curV?.constructor?.name || (curV === undefined || curV === null) || (v === undefined || v === null)) {
-                        io[name] = v;
-                    } else {
-                        //return;
-                        if (curV !== undefined || curV !== null) {
-                            switch (curV?.constructor?.name) {
-                                case 'Number': return io[name] = isNaN(v) || !v ? 0 : parseFloat(v);
-                                case 'String': return io[name] = typeof v !== 'object' && v?.toString ? v.toString() : v;
-                                case 'Boolean': return io[name] = toBoolean(v);
-                                case 'Array':
-                                    return io[name] = typeof v === 'object' && v !== null
-                                        ? curV.splice(0, curV.length, ...Array.from(v))
-                                        : curV.splice(0, curV.length);
-                            }
-                            try {
-                                io[name] = curV.constructor(v);
-                            } catch (err) {
-                                console.warn(`Bad type convert ${curV?.constructor?.name} to ${v?.constructor?.name}`);
-                                io[name] = v;
-                            }
-                        } else {
-
-                        }
-                    }
-                }
-            }
-        });
-        // Object.defineProperty(row, 'items', {
-        //     writable: true,
-        //     value: []
-        // });
-        res.push(row);
-    }
-    return res;
-};
-let _propsFullPath = '';
-ODA({
-    is: "oda-property-grid", extends: 'this, oda-table', template: /*html*/`
+ODA({ is: "oda-property-grid", extends: 'this, oda-table',
+    imports: ['@oda/table'],
+    template: /*html*/`
     <style>
         :host {
             max-height: 100%;
@@ -223,18 +9,15 @@ ODA({
         }
     </style>
     <slot ~show="false"  @slotchange="onSlot"></slot>`,
+    get columns() {
+        return [
+            { name: 'label', width: 200, label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'value', template: 'oda-property-grid-cell', header: 'oda-property-grid-header-cell', width: 'auto' },
+            { name: 'category', hidden: true, $sortGroups: 0 },
+        ]
+    },
     props: {
-        title:{
-            get(){
-                if (this.io){
-                    let nm = this.io?.label || this.io?.name || '';
-                    if (nm)
-                        nm = ` (${nm})`;
-                    return (this.io?.constructor?.name + nm);
-                }
-                return ''
-            }
-        },
+        inspectedObject: Object,
         icon: 'icons:settings',
         expertMode: false,
         editMode: true,
@@ -246,191 +29,187 @@ ODA({
         colLines: true,
         rowLines: true,
         allowSort: true,
-        io: {
-            default: null,
-            freeze: true,
-        },
-        component: {
-            default: null,
-            freeze: true,
-            async set(n, o) {
-                if (n && Array.isArray(n)) {
-                    this.io = new Proxy(new ioSet(n), proxyHandler);
-                }
-                else this.io = n;
+        groupExpandingMode: 'first',
 
-                if (n && n.$url) {
-                    const path = n.$url.split('/').slice(0, -1).join('/');
-                    const props = _propsFullPath = path + '/$info/props/_info.js';
-                    try {
-                        const res = await import(props);
-                        const module = res.info || res.default;
-                        module && module.map(o => {
-                            o.src = o.src.replace('./', path + '/')
-                            if (n.props[o.label])
-                                n.props[o.label]._docs = o;
-                        });
-                        this.dataSet = parse(this.io, this.expertMode);
-                    } catch (err) { };
-                }
-            }
-        },
-        columns: [
-            { name: 'label', template: 'oda-property-grid-label-cell', header: 'oda-property-grid-label-header', treeMode: true, fix: 'left', $sort: 1 },
-            { name: 'value', template: 'oda-property-grid-value-cell', header: 'oda-property-grid-value-header', width: 'auto' },
-            { name: 'category', hidden: true },
-        ],
-        groups: {
+        dataSet: {
             get() {
-                return [this.columns.find(c => c.name === 'category')]
+                return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
             }
         },
+        onlySave: false,
     },
     ready() {
-        this.sorts.push(this.columns[0]);
+        this.groups = [this.columns.find(c => c.name === 'category')];
     },
-    observers: [
-        function setDataSet(io, expertMode) {
-            this.dataSet = parse(this.io, this.expertMode, true);
-        },
-    ],
     onSlot(e) {
-        this.component = e.target.assignedElements();
-    }
-});
-ODA({
-    is: 'oda-property-grid-label-header', extends: 'oda-table-cell-base', template: `
-         <style>
-            :host{
-                justify-content: flex-end;
-            }
-        </style>
-        <oda-button ~if="_editMode" icon="office-set:contact" fill="gray" style="cursor:pointer" @tap="_tap" title="Edit _info.js"></oda-button>`,
-    props: {
-        _editMode: { get() { return document._editMode } }
+        this.inspectedObject = e.target.assignedElements()?.[0];
     },
-    _tap() {
-        if (_propsFullPath) window.open(ODA.rootPath + '/components/editors/md-editor/md-editor.html?src=' + _propsFullPath);
+   _beforeExpand(node, force) {
+        if (!force && node?.items?.length)
+            return node?.items || [];
+        return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
     }
-});
-ODA({
-    is: 'oda-property-grid-value-header', extends: 'oda-table-cell-base', template: /*html*/`
-         <style>
-            :host{
-                justify-content: flex-end;
+})
+function parseInspectedObject(io, expertMode, onlySave) {
+    const result = [];
+    if (typeof io === 'object') {
+        if (!io?.props)
+            expertMode = true;
+        const props = io?.props || {};
+        let proto = io;
+        while (proto) {
+            const descriptors = Object.getOwnPropertyDescriptors(proto);
+            for (let name in descriptors) {
+                if (!expertMode && (name.startsWith('$obs$') || name === '$$savePath')) continue; //todo: найти другое решение
+                const p = props[name];
+                if (!expertMode && (!p || p.private || (onlySave && p && !p.save)))
+                    continue;
+                let d = descriptors[name];
+                if (typeof d.value === 'function') continue;
+                if (name.startsWith('#') || name === 'props' || name === '__proto__' || name === '__op__') continue;
+                if (result.some(i => i.name === name)) continue;
+                const row = { label: name, name, category: p?.category || proto?.constructor?.name, ro: p?.readOnly || typeof d.value === 'object', list: p?.list };
+
+                let editor = p?.editor;
+                if (editor?.includes('/')){
+                    ODA.import(editor).then(async imp=>{
+                        row.editor =  (await imp?.default)?.is || getTypeEditor(p?.type || typeof d.value || typeof p.default);
+                        this.render();
+                    })
+                }
+                else{
+                    row.editor = editor || getTypeEditor(p?.type || typeof d.value || typeof p.default)
+                }
+
+
+                d = Object.assign({}, d)
+                if (row.readOnly) d.writable = false;
+                if (d.get || d.set) {
+                    if (d.set) {
+                        d.set = function (value) {
+                            row.ro = row.ro || (typeof value === 'object');
+                            io[name] = value;
+                        }
+                    }
+                    else {
+                        row.ro = true;
+                    }
+                    d.get = function () {
+                        const value = io[name];
+                        row.ro = row.ro || (typeof value === 'object');
+                        return value || '';
+                    }
+                }
+                Object.defineProperty(row, 'value', d)
+                result.push(row);
+            }
+            if (!expertMode && result.length)
+                break;
+            proto = proto.__proto__;
+        }
+    }
+    return result;
+}
+
+function getTypeEditor(type) {
+    switch (type) {
+        case Array:
+        case Object:
+        case 'object':
+            return 'oda-pg-object';
+        case Number:
+        case 'number':
+            return 'oda-pg-number';
+        case Boolean:
+        case 'boolean':
+            return 'oda-pg-bool';
+        case String:
+        case 'string':
+            return 'oda-pg-string';
+    }
+    return 'span';
+}
+
+ODA({ is: 'oda-pg-object',
+    template: `
+        {{text}}
+    `,
+    value: null,
+    get text() {
+        if (Array.isArray(this.value))
+            return `Array (${this.value.length})`
+        return this.value?.constructor?.name || this.value
+    }
+})
+
+ODA({ is: 'oda-pg-string',
+    template: `
+        <style>
+            input{
+                font-size: medium;
+                padding: 0px; 
             }
         </style>
-        <!-- <oda-button allow-toggle ::toggled="table?.expertMode" icon="social:school" title="Expert mode"></oda-button> -->
-        <oda-button allow-toggle :toggled="table?.expertMode" @tap="this.table.expertMode = !this.table.expertMode" icon="social:school" title="Expert mode"></oda-button>`,
-});
-ODA({
-    is: 'oda-property-grid-label-cell', extends: 'oda-table-cell-base, this', template: `
-            <span style=";text-overflow: ellipsis;overflow: hidden" ~style="item._docs && item._docs.style">{{item.label}}</span>
-            <div style="flex:1"></div>
-            <oda-icon ~if="item._docs" :icon="item._docs.icon || 'icons:info-outline'" :blink="item._docs.blink || ''" fill="darkgray" :icon-size="iconSize/2" style="cursor:pointer" @tap="_tap" :title="item._docs.title"
-                    :fill="item._docs && item._docs.color"></oda-icon>
-`,
-    _tap() {
-        let src = this.item._docs.src || '';
-        if (src) ODA.showModal('oda-md-viewer', { src: src }, { title: this.item.label, fullSize: true });
-    }
-});
-const editors = {};
-ODA({
-    is: 'oda-property-grid-value-cell', extends: 'oda-table-cell-base', template: /*html*/`
+        <input class="flex" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" @tap.stop.prevent @keydown.stop>
+    `,
+})
+ODA({ is: 'oda-pg-number',
+    template: `
+        <input class="flex"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent>
+    `,
+})
+
+ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
+    template: `
         <style>
             :host{
                 @apply --horizontal;
-                @apply: --flex;
-            }
-            input{
-                border: none;
-                outline: none;
-                padding: 4px;
-                overflow: hidden;
-                /*height: 100%;*/
-            }
-            oda-button{
-                padding: 0px;
-            }
-            [disabled]{
-               pointer-events: none;
+                @apply --flex
+                align-items: center;
             }
         </style>
-    <!--    <div class="horizontal flex" :disabled="item.readOnly" style="overflow: hidden">-->
-    <!--    <input ~is="tag || 'input'" :type="type" class="flex" ::value="item.value" :disabled="item.readOnly"> -->
-            <input ~is="tag || 'input'"
-                    :type="type"
-                    class="flex"
-                    :value="item.value"
-                    @input="_setValue"
-                    @value-changed="_setValue"
-                    @tap="focused = true; async(()=>{focused = false}, 300)"
-                    @focus="focused = true"
-                    @blur="focused = false"
-                    :disabled="item.readOnly">
-    <!--    </div>-->
-        <oda-button ~if="item.list && !item.readOnly" icon="icons:chevron-right:90" @tap="_openDropdown"></oda-button>
-        `,
-    props: {
-        value() {
-            return this.item.value;
-        },
-        type: {
-            get() {
-                switch (this.item.type) {
-                    case Boolean:
-                        return 'checkbox';
-                    case Number:
-                        return 'number';
-                    case Date:
-                        return 'date';
-                }
-                switch (typeof this.item.value) {
-                    case 'boolean':
-                        return 'checkbox';
-                    case 'number':
-                        return 'number';
-                    case 'date':
-                        return 'date';
-                }
-            }
-        },
-        tag: {
-            get() {
-                if (this.item.tag)
-                    return this.item.tag;
-                switch (this.type) {
-                    case 'checkbox':
-                        return 'oda-checkbox';
-                }
-            }
-        },
-        item: {
-            default: {},
-            async set(n, o) {
-                if (n && n.editor) {
-                    n.tag = editors[n.editor];
-                    if (!n.tag) {
-                        const module = await import(n.editor);
-                        editors[n.editor] = n.tag = module.default.is;
-                    }
-                }
-            }
-        },
-        focused: false
-    },
-    _setValue(e) {
-        if (this.focused) {
-            this.item.value =  e.currentTarget.value;
+        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" @tap.stop.prevent></oda-checkbox>
+    `,
+})
+
+ODA({ is: 'oda-property-grid-cell',
+    template: /* html */`
+    <style>
+        :host{
+            padding-left: 4px;
         }
-    },
-    _select(e) {
-        this.item.value = e.target.focusedItem;
-        this.dropdown = false;
-    },
-    async _openDropdown() {
-        let res = await ODA.showDropdown('oda-list', { items: this.item.list, focusedItem: this.item.value }, { parent: this, useParentWidth: true });
-        this.item.value = res.focusedItem;
+        :host>span[disabled]{
+            pointer-events: auto;
+            user-select: text;
+        }
+    </style>
+    <span :disabled="item?.ro || item?.editor === 'span'" style="align-self: center;" class="flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
+    <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
+    `,
+    item: null,
+    async showDD(e){
+        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
+        this.item.value = res.focusedItem.value;
     }
-});
+})
+
+ODA({ is: 'oda-property-header-cell-label',
+    template: `
+        <label style="text-align: center;" class="flex">{{inspectedObject?.constructor?.name}}</label>
+    `,
+    item: null
+})
+
+ODA({ is: 'oda-property-grid-header-cell',
+    template: `
+        <style>
+            :host{
+                @apply --horizontal;
+                align-items: center;
+                @apply --flex;
+                justify-content: flex-end;
+            }
+        </style>
+        <oda-button class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
+    `
+})

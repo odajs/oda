@@ -1,4 +1,3 @@
-import '../../../oda.js';
 ODA({
     is: 'oda-containers',
     template: `
@@ -40,7 +39,7 @@ ODA({
         },
         containers: {
             get() {
-                return ODA.$containers;
+                return ODA.containers?.items || [];
             }
         }
     },

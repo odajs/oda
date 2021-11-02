@@ -1,0 +1,8 @@
+<meta charset="UTF-8">
+<button id="btn1" slot="buttons">Confirm</button>
+<script type="module">
+    import "../containers.js";
+    btn1.onclick = async e => {
+        const res = await ODA.showConfirm('oda-dialog-message', {icon: 'icons:help', message: "1111"})
+    }
+</script>

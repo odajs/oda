@@ -1,40 +1,22 @@
 <meta charset="utf-8">
-<script type="module" src="./property-grid.js"></script>
-<oda-tester>
+<!--<oda-tester>-->
     <oda-property-grid>
         <oda-array-test></oda-array-test>
-        <!--    <oda-array-test></oda-array-test>-->
-        <!--    <oda-array-test></oda-array-test>-->
-        <!--    <oda-button size="100" icon="odant:base"></oda-button>-->
-        <!--    <oda-button size="200" icon="odant:object"></oda-button>-->
-        <!--    <oda-button size="500" icon="class"></oda-button>-->
+        <oda-array-test></oda-array-test>
     </oda-property-grid>
-</oda-tester>
+<!--</oda-tester>-->
 <script type="module">
-    import ODA from '../../oda.js';
-    class ioPromise {
-        constructor(promise, silent) {
-            this['[[PromiseStatus]]'] = 'pending';
-            this['[[PromiseValue]]'] = 'undefined';
-            promise.then(
-                (res) => {
-                    this['[[PromiseStatus]]'] = 'resolved';
-                    this['[[PromiseValue]]'] = res;
-                },
-                (e) => {
-                    this['[[PromiseStatus]]'] = 'rejected';
-                    this['[[PromiseValue]]'] = e;
-                    if (!silent) {
-                        console.error(e);
-                    }
-                }
-            );
-        }
-    }
+    import '../../oda.js';
+    import '../styles/styles.js';
+    import './property-grid.js';
     ODA({
         is: 'oda-array-test',
         props: {
+            bb: Boolean,
+            num: 100,
+            text: 'А это текст',
             array: [1, 2, 3, 4, 5],
+            array1: [44, 66],
             promise: {
                 get() {
                     return new Promise(resolve => {
