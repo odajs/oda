@@ -139,12 +139,20 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
             this.focusedItem = null;
         },
         wheel(e) {
-            if (!e.ctrlKey && !e.shiftKey) return;
-            e.preventDefault();
-            if (e.wheelDelta > 0)
-                this.zoomIn();
-            else
-                this.zoomOut();
+            if (e.ctrlKey) {
+                e.preventDefault();
+                if (e.wheelDelta > 0)
+                    this.zoomIn();
+                else
+                    this.zoomOut();
+                return;
+            }
+            if (e.shiftKey) {
+                e.preventDefault();
+                this.scrollLeft -= e.wheelDelta;
+                return;
+            }
+
         }
     },
     select(e) {
@@ -188,14 +196,6 @@ ODA({
                 @apply --content;
                 background: transparent;
             }
-
-            oda-scheme-interface { position: absolute; }
-            [align=t], [align=b] { width: 100%; }
-            [align=l], [align=r] { height: 100%; }
-            [align=t] {top: - 12px;}
-            [align=b] {bottom: -12px;}
-            [align=l] {left: -12px;}
-            [align=r] {right: -12px;}
         </style>
         <div>
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
@@ -238,18 +238,20 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             :host{
                 justify-content: center;
             }
-            .connector {
-                min-width: 8px;
-                min-height: 8px;
-                margin: 4px;
+            .pin {
+                min-width: 10px;
+                min-height: 10px;
+                box-sizing: border-box;
                 border: 1px solid gray;
                 border-radius: 2px;
             }
         </style>
-        <div ~if="editMode || con?.link" class="connector" ~is="con?.is || 'div'" ~for="con in connectors" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
+        <div ~for="con in connectors" style="min-width:10px; min-height:10px; margin:4px;">
+            <div class="pin" ~if="editMode || con?.links?.length"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
+        </div>
     `,
     findPin(link){
-        return this.$$('div').find(i=>{
+        return this.$$('div.pin').find(i=>{
             return i.item.id === link.pin;
         })
     },

@@ -210,7 +210,7 @@ body{
     };
 
     --text-shadow: {
-        text-shadow: 0 1px 1px rgba(255, 255, 255, 1);
+        text-shadow: 0 1px 1px var(--header-background, gray);
     };
 
     --text-shadow-black: {

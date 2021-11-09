@@ -1,5 +1,5 @@
-import '../../../buttons/icon/icon.js';
-ODA({ is: 'oda-gradient-preview', template: `
+ODA({ is: 'oda-gradient-preview', imports: '@oda/icon',
+    template: `
     <style>
         :host {
             @apply --border;

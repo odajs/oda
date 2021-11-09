@@ -1,4 +1,3 @@
-import '../../../../oda.js';
 ODA({is: 'oda-color-line', template: `
     <style>
         :host {

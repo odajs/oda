@@ -113,10 +113,12 @@ ODA({
         <style>
             :host {
                 @apply --vertical;
-                min-width: 200px;
-                flex: {{align === 'row' ? '1' : '0'}};
+                @apply --flex;
+                flex: 0;
+                min-width: {{iconSize}}px;
+                /*flex: {{align === 'row' ? '1' : '0'}};*/
                 position: relative;
-                margin: {{item?.bs?.showBorder && (item?.bs?.designMode || isGroup) ? '1px' : '0'}};
+                /*margin: {{item?.bs?.showBorder && (item?.bs?.designMode || isGroup) ? '1px' : '0'}};*/
             }
             .complex {
                 border-left: 1px dashed darkgray;

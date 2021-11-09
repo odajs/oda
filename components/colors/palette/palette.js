@@ -16,8 +16,8 @@ ODA({ is: 'oda-palette', template: /*html*/`
         </div>
     `,
     props: {
-        colors: 10,
-        gradients: 10,
+        colors: 15,
+        gradients: 20,
         size: 20,
         value: String,
         color: {

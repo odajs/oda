@@ -91,6 +91,11 @@ if (!globalThis.KERNEL) {
                 getProxyValue.call(this, block, value, old, true);
                 return true;
             }
+            // ,
+            // getPrototypeOf(target){
+            //     return target;
+            // }
+
         };
         const proxy = new Proxy(options?.target || target, handlers);
         if (!target.__op__) {

@@ -410,8 +410,8 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         :host([hide-tabs]):hover{
             opacity: 1 !important;
         }
-        oda-button{
-            border-radius: 5px;
+        .bt>oda-button{
+            border-radius: 15%;
         }
         .pin{
             transform: scale(.5);
@@ -442,8 +442,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     <div @touchmove="hideTabs=false"  @down.stop="hideTabs=!hideTabs" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
             <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" :rotate="-sign*90" ~style="{transform: \`rotate(\${sign*90}deg)\`}" @down.stop="setFocus(item)" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'" :toggled="focused === item"></oda-button>
-            <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
-            </div>
+            <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
             <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="item?.tap?.($event)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
         <oda-icon class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ></oda-icon>
@@ -460,9 +459,9 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
 
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
-            <div class="horizontal" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" ~if="focused?.title">
-                <div style="padding: 4px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: large;" class="flex" >{{focused?.title}}</div>
-                <oda-button :size="iconSize" icon="icons:close" @tap="focused = null"></oda-button>
+            <div class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" ~if="focused?.title" style="background-color: black; color: white; fill: white">
+                <div style="padding: 4px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
+                <oda-button :size="iconSize" icon="icons:close" @tap="focused = null" style="background-color: red;"></oda-button>
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
@@ -570,23 +569,4 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             this.focused = null;
         this.swipe = 0;
     },
-    // reduceSomeDrawers(hiddenKey = '', l, r) {
-    //     hiddenKey = hiddenKey || ((this.pos === 'left' ? 'right' : 'left') + 'Hidden');
-    //     l = l || window.top.odaAppLayoutDrawers.left;
-    //     r = r || window.top.odaAppLayoutDrawers.right;
-    //     const lWidth = Array.from(l.keys()).reduce((res, li) => {
-    //         return (res + (li.leftHidden? 0 : li.focused ? li.width : li.offsetWidth));
-    //     }, 0);
-    //     const rWidth = Array.from(r.keys()).reduce((res, ri) => {
-    //         return (res + (ri.rightHidden ? 0 : ri.focused ? ri.width : ri.offsetWidth));
-    //     }, 0);
-    //     if (lWidth + rWidth > window.top.screen.width) {
-    //         const targetsForHide = this.pos === 'left' ? r : l;
-    //         const target = Array.from(targetsForHide.keys()).find(d => !d.hidden && d[hiddenKey] === false);
-    //         if (target) {
-    //             target[hiddenKey] = true;
-    //             this.reduceSomeDrawers(hiddenKey, l, r);
-    //         }
-    //     }
-    // },
 });

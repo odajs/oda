@@ -81,7 +81,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
                 async set(n) {
                     if (n) {
-                        this.editor.setTheme('ace/theme/' + n);
+                        this.editor?.setTheme('ace/theme/' + n);
                     }
                 }
         },

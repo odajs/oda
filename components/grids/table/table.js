@@ -152,7 +152,7 @@ ODA({is: "oda-table",
         .sticky{
             position: sticky;
             position: -webkit-sticky;
-            z-index: 1;
+            /*z-index: 1;*/
         }
         .group-row{
             z-index: 10;
@@ -172,7 +172,7 @@ ODA({is: "oda-table",
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <div ref="body" tabindex="0" class="flex vertical" style="overflow: auto; min-height: 0px; max-height: 100vh; flex: auto;" @scroll="_scroll" @touchmove="_bodyTouchmove">
-        <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky; z-index: 1;" ~style="{minHeight: _rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
+        <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: _rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
             <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
         </div>
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky;" ~style="{width: _scrollWidth, minHeight: _bodyHeight+'px'}">
@@ -200,7 +200,7 @@ ODA({is: "oda-table",
                 </div>
             </div>
         </div>
-        <div class="flex" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; selectedRows.clear()"></div>
+        <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; selectedRows.clear()"></div>
         <div ref="footer" class="no-flex horizontal header sticky" style="bottom: 0px;" ~show="showFooter" ~style="{maxHeight: _rowHeight+'px',  minHeight: _rowHeight+'px',  width:(autoWidth?'auto':(_scrollWidth + 'px'))}">
             <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
         </div>
@@ -1688,6 +1688,7 @@ cells: {
         is: "oda-table-header", extends: 'oda-table-cell-base', template: /*html*/`
         <style>
             :host{
+                font-weight: bold;
                 @apply --header;
                 @apply --flex;
                 @apply --horizontal;

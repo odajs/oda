@@ -15,17 +15,32 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     },
     filter: '',
     async dropdown(e){
+
         try{
             if (this.value) {
                 this.value = null;
             }
             else {
-                ODA.closeDropdown();
-                this.value = (await ODA.showDropdown('oda-combo-list', {items: this.filtered, focusedItem: this.value}, {parent: this, focused: !!e})).focusedItem;
+                // ODA.closeDropdown();
+                // this._combo.items = this.filtered;
+                // this._combo.focusedItem = this.value;
+                if (!this._combo){
+                    this._combo = document.createElement('oda-combo-list');
+                    this._combo.items = this.filtered;
+                    this._combo.focusedItem = this.value;
+                    this.value = (await ODA.showDropdown(this._combo, {}, {parent: this, focused: !!e})).focusedItem;
+                }
+                else{
+                    this._combo.items = this.filtered;
+                    this._combo.focusedItem = this.value;
+                    return;
+                }
+
             }
             this.filter = '';
         }
         finally {
+            this._combo = undefined;
             this.async(()=>{
                 this.$('input').focus();
             })

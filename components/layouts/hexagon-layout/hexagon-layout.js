@@ -3,6 +3,177 @@
  * proman62@gmail.com
  * Under the MIT License.
  */
+
+ODA({is: 'oda-hexagon-layout',
+    template:`
+          <style>
+              :host{
+                  @apply --vertical;
+                  @apply --flex;
+                  justify-content: start;
+                  overflow: hidden;
+                  background: {{background}};
+                  margin:  -{{h / 2 }}px -{{size / 2 + distance}}px;
+                  
+                  
+              }
+              :host([tracking]):before{
+                    content: "";
+                    position: absolute;
+                    left: {{tr.left}}px;
+                    top: {{tr.top}}px;
+                    width: {{tr.width}}px;
+                    height: {{tr.height}}px;
+                    @apply --content;
+                    opacity: .5
+                }
+          </style>
+          <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - index}"></oda-hexagon-row>
+      `,
+    width: 5,
+    height: 5,
+    tr: {},
+    get size(){
+        return Math.max(this.iconSize, 32) * 2;
+    },
+    get h(){
+        return (this.size / (Math.sqrt(3)/2));
+    },
+    props:{
+        iconSize: {
+            default: 48,
+            save: true,
+        },
+        color1: {
+            default: 'whitesmoke',
+            save: true,
+            editor: '@oda/color-picker'
+        },
+        color2: {
+            default: 'silver',
+            save: true,
+            editor: '@oda/color-picker'
+        },
+        background: {
+            default: 'white',
+            save: true,
+            editor: '@oda/color-picker'
+        },
+        full: true,
+        distance: 1,
+        data: {
+            default: [],
+            save: true,
+            readOnly: true,
+        },
+        tracking:{
+            type: Boolean,
+            reflectToAttribute: true,
+            readOnly: true,
+        }
+    },
+    get rows(){
+        return Math.ceil(this.height/this.size)+1
+    },
+    set showTrash(n){
+        this.trashItem.x = Math.floor(this.offsetWidth/(this.size + this.distance * 2))-2;
+        this.trashItem.y =  Math.floor(this.offsetHeight/(this.h + this.distance * (Math.sqrt(3)/2) * 2))+1;
+    },
+    listeners:{
+        resize(e){
+            this.interval('resize', ()=>{
+                this.height = this.offsetHeight;
+                this.width = this.offsetWidth;
+                //     this.height = Math.ceil(this.offsetHeight / this.size ) * this.size  + 1;
+                // if (this.height<this.offsetHeight)
+                //     this.height = Math.ceil(this.offsetHeight / this.size ) * this.size  + 1;
+                // if (this.width<this.offsetWidth)
+                //     this.width = Math.ceil(this.offsetWidth / this.size ) * this.size ;
+            })
+        },
+        track(e){
+            if(focusedHex) return;
+            e.stopPropagation();
+            switch (e.detail.state){
+                case 'start':{
+                    this.tracking = true;
+                    this.tr = {left: e.detail.x, top: e.detail.y, width: 0, height: 0};
+                } break;
+                case 'track':{
+                    this.tr.width =  e.detail.x-this.tr.left;
+                    this.tr.height =  e.detail.y-this.tr.top;
+                    this.render();
+                } break;
+                case 'end':{
+                    this.tracking = false;
+                    this.tr = {};
+                } break;
+            }
+        }
+    },
+    addItem(item) {
+        let row = this.data.find(i=>(i.y === (item.y || 0)))
+        if (!row)
+            this.data.push(row = {y:item.y || 0, items: []});
+        if (row.items.find(i=>i.x === (item.x || 0))){
+            return ODA.push(`item in cell[${item.x||0},${item.y || 0}]already exist!`)
+        }
+        return row.items.push(item);
+    },
+    removeItem(item) {
+        let row = this.data.find(i=>(i.y === (item.y || 0)))
+        if (!row) return;
+        const idx = row.items.findIndex(i=>i.x === (item.x || 0))
+        row.items.splice(idx, 1);
+    },
+    __drop(e, hex){
+        console.warn('method __drop not implemented!');
+    },
+    get trashItem(){
+        return {background: 'red', x:1,  y:1, allowDrop: true, is: 'oda-icon', props:{
+                icon:'icons:delete', iconSize: this.size / 2
+            }}
+    }
+})
+
+
+ODA({is: 'oda-hexagon-row',
+    template:`
+          <style>
+              :host{
+                  @apply --horizontal;
+                  @apply --no-flex;
+                  justify-content: start;
+                  
+              }
+          </style>
+          <oda-hexagon ~style="{margin: '0px '+distance+'px'}" class="no-flex" ~for="cols" :x="index" :y></oda-hexagon>
+      `,
+    get items(){
+        return this.data?.filter(i => (i.y === this.y)) || [];
+    },
+    props:{
+        y:0,
+        cols(){
+            return Math.ceil(this.width/this.size)+1
+        }
+    },
+    __drop(...e){
+        this.domHost.__drop(...e);
+    },
+    add(item) {
+        let res = this.data.add(item);
+        // this.data = [...this.data]
+        return res;
+    },
+    remove(item) {
+        this.data?.remove(item);
+        // this.data = [...this.data];
+    }
+})
+
+
+
 ODA({is: 'oda-hexagon',
     template:`
         <style>
@@ -20,6 +191,8 @@ ODA({is: 'oda-hexagon',
 
         :host:before,
         :host:after {
+            text-align: center;
+            font-size: small;
             content: "";
             position: absolute;
             width: 0px;
@@ -31,54 +204,48 @@ ODA({is: 'oda-hexagon',
             bottom: 100%;
             border-bottom: {{h/4}}px solid {{color1}};
             overflow: visible;
-            z-index:1;
+            /*z-index:1;*/
         }
         :host([active]):before {
             border-bottom: {{h/4}}px solid {{background}};
         }
         :host([active]):after {
             border-top: {{h/4}}px solid {{background}};
+             z-index: -1;
         }
         :host:after {
             top: 100%;
             border-top: {{h/4}}px solid {{color2}};
             overflow: visible;
         }
-        /*:host([label])>*:after {*/
-        /*    font-weight: bolder; */
-        /*    @apply --text-shadow;*/
-        /*    position: absolute;*/
-        /*    content: "{{label}}";*/
-        /*    text-align: center;*/
-        /*    top: 100%;*/
-        /*    z-index: 1;*/
-        /*    color: black;*/
-        /*    font-size: {{size/6}}px;*/
-        /*    overflow: visible;*/
-        /*    transform-origin: bottom;*/
-        /*    transition: font-size ease-in .1s;*/
-        /*    width: 200%;*/
-        /*    left: -50%;*/
-        /*}*/
           :host([active]) {
               filter: brightness(.9) !important;
               cursor: pointer;
+             
           }
-          /*:host([active]:hover) {*/
-          /*    transform: scale(1.5);*/
-          /*    transition: transform ease-in .1s;*/
-          /*    z-index: 1;*/
-          /*}*/
           :host>* {
-              /*transition: filter ease-out 1s;*/
               overflow: visible;
-              z-index: 1;
+              /*z-index: 1;*/
           }
           :host(.drag-hover)>div {
               filter: brightness(.6) !important;
           }
+          :host([label])>.block:after{
+            left: -{{size/4}}px;
+            max-height: {{size}}px;
+            /*color: white;*/
+            text-align: center;
+            position: absolute;
+            content: "{{label}}";
+            top: {{size/2 * 1.3}}px;
+            font-size: x-small;
+            z-index: 1;
+            width: {{size*1.5}}px;
+            @apply --text-shadow;
+            background-color: transparent;
+          }
         </style>
-        <div ~if="full || item" class="no-flex" ~is="item?.is" ~props="item?.props"></div>
+        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props"></div>
       `,
     get allowDrop(){
         return (this.x && this.y && (!this.active || this?.item?.allowDrop));
@@ -198,167 +365,7 @@ ODA({is: 'oda-hexagon',
         }
     }
 })
-ODA({is: 'oda-hexagon-row',
-    template:`
-          <style>
-              :host{
-                  @apply --horizontal;
-                  @apply --no-flex;
-                  justify-content: start;
-                  
-              }
-          </style>
-          <oda-hexagon ~style="{margin: '0px '+distance+'px'}" class="no-flex" ~for="cols" :x="index" :y></oda-hexagon>
-      `,
-    get items(){
-        return this.data?.filter(i => (i.y === this.y)) || [];
-    },
-    props:{
-        y:0,
-        cols(){
-            return Math.ceil(this.width/this.size)+1
-        }
-    },
-    __drop(...e){
-        this.domHost.__drop(...e);
-    },
-    add(item) {
-        let res = this.data.add(item);
-        // this.data = [...this.data]
-        return res;
-    },
-    remove(item) {
-        this.data?.remove(item);
-        // this.data = [...this.data];
-    }
-})
-ODA({is: 'oda-hexagon-layout',
-    template:`
-          <style>
-              :host{
-                  @apply --vertical;
-                  @apply --flex;
-                  justify-content: start;
-                  overflow: hidden;
-                  background: {{background}};
-                  margin:  -{{h / 2 }}px -{{size / 2 + distance}}px;
-                  
-                  
-              }
-              :host([tracking]):before{
-                    content: "";
-                    position: absolute;
-                    left: {{tr.left}}px;
-                    top: {{tr.top}}px;
-                    width: {{tr.width}}px;
-                    height: {{tr.height}}px;
-                    @apply --content;
-                    opacity: .5
-                }
-          </style>
-          <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`}"></oda-hexagon-row>
-      `,
-    width: 5,
-    height: 5,
-    tr: {},
-    get size(){
-        return Math.max(this.iconSize, 32) * 2;
-    },
-    get h(){
-        return (this.size / (Math.sqrt(3)/2));
-    },
-    props:{
-        iconSize: {
-            default: 48,
-            save: true,
-        },
-        color1: {
-            default: 'whitesmoke',
-            save: true,
-            editor: '@oda/color-picker'
-        },
-        color2: {
-            default: 'silver',
-            save: true,
-            editor: '@oda/color-picker'
-        },
-        background: {
-            default: 'white',
-            save: true,
-            editor: '@oda/color-picker'
-        },
-        full: true,
-        distance: 1,
-        data: {
-            default: [],
-            save: true,
-            readOnly: true,
-        },
-        tracking:{
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true,
-        }
-    },
-    get rows(){
-        return Math.ceil(this.height/this.size)+1
-    },
-    set showTrash(n){
-        this.trashItem.x = Math.floor(this.offsetWidth/(this.size + this.distance * 2))-2;
-        this.trashItem.y =  Math.floor(this.offsetHeight/(this.h + this.distance * (Math.sqrt(3)/2) * 2))+1;
-    },
-    listeners:{
-        resize(e){
-            this.debounce('resize', ()=>{
-                if (this.height<this.offsetHeight)
-                    this.height = Math.ceil(this.offsetHeight / this.size ) * this.size  + 1;
-                if (this.width<this.offsetWidth)
-                    this.width = Math.ceil(this.offsetWidth / this.size ) * this.size ;
-            })
-        },
-        track(e){
-            if(focusedHex) return;
-            e.stopPropagation();
-            switch (e.detail.state){
-                case 'start':{
-                    this.tracking = true;
-                    this.tr = {left: e.detail.x, top: e.detail.y, width: 0, height: 0};
-                } break;
-                case 'track':{
-                    this.tr.width =  e.detail.x-this.tr.left;
-                    this.tr.height =  e.detail.y-this.tr.top;
-                    this.render();
-                } break;
-                case 'end':{
-                    this.tracking = false;
-                    this.tr = {};
-                } break;
-            }
-        }
-    },
-    addItem(item) {
-        let row = this.data.find(i=>(i.y === (item.y || 0)))
-        if (!row)
-            this.data.push(row = {y:item.y || 0, items: []});
-        if (row.items.find(i=>i.x === (item.x || 0))){
-            return ODA.push(`item in cell[${item.x||0},${item.y || 0}]already exist!`)
-        }
-        return row.items.push(item);
-    },
-    removeItem(item) {
-        let row = this.data.find(i=>(i.y === (item.y || 0)))
-        if (!row) return;
-        const idx = row.items.findIndex(i=>i.x === (item.x || 0))
-        row.items.splice(idx, 1);
-    },
-    __drop(e, hex){
-        console.warn('method __drop not implemented!');
-    },
-    get trashItem(){
-        return {background: 'red', x:1,  y:1, allowDrop: true, is: 'oda-icon', props:{
-                icon:'icons:delete', iconSize: this.size / 2
-            }}
-    }
-})
+
+
 const Post = {};
 let focusedHex;

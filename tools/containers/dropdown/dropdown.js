@@ -1,4 +1,4 @@
-ODA({is: 'oda-dropdown', imports: '@oda/title',
+ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
             :host {
@@ -7,7 +7,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
                 transition: background-color 5s;
             }
             :host([is-ready]){
-                background-color: rgba(0,0,0,.4);
+                background-color: rgba(0,0,0,.1);
             }
             :host>div{
                 visibility: hidden;
@@ -29,21 +29,21 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
             </div>
         </div>
     `,
-    onSlot(e){
+    onSlot(e) {
         this.controls = e.target.assignedNodes();
         if (this.focused && this.controls?.length) {
             this.controls[0].setAttribute('tabindex', 0);
             this.controls[0].setAttribute('autofocus', true);
-            this.async(()=>{
+            this.async(() => {
                 this.controls?.[0]?.focus();
-            },100);
+            }, 100);
         }
     },
     controls: undefined,
     ready() {
         let win = window;
         this.windows = [];
-        while (win.window !== win){
+        while (win.window !== win) {
             this.windows.push(win)
             win = win.window;
         }
@@ -60,12 +60,12 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         });
     },
     resolveEvent: 'ok',
-    observers:[
-        function setEvent(controls, resolveEvent){
-            for (let el of controls){
-                this.listen(resolveEvent, (e)=>{
+    observers: [
+        function setEvent(controls, resolveEvent) {
+            for (let el of controls) {
+                this.listen(resolveEvent, (e) => {
                     this.fire('ok');
-                }, {target:el})
+                }, { target: el })
 
             }
         }
@@ -163,7 +163,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = winHeight - top;
-                    if (height > maxHeight &&  rect.top > winHeight - rect.bottom) {
+                    if (height > maxHeight && rect.top > winHeight - rect.bottom) {
                         this.align = this._steps.includes('top') ? 'bottom' : 'top';
                         if (this.align === 'top') {
                             this._steps.push('bottom');
@@ -215,7 +215,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         })
     },
     _close(e) {
-        if (this.windows.some(w=>e.target instanceof w.Node)) {
+        if (this.windows.some(w => e.target instanceof w.Node)) {
             let dd = this;
             while (e?.target && dd) {
                 if (dd.contains?.(e.target))
