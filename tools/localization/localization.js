@@ -26,7 +26,6 @@ window.addEventListener('keydown', async e => {
                 //console.log(ok.focusedButton)
             })
             .catch(err => {});
-        //console.log(lDialog.focusedButton)
         
     }
 })
@@ -115,7 +114,6 @@ ODA({ is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basi
         //console.log( data )
         // var dataArr = []
         // for (let k in dataOb) { dataArr.push( {'key':k, 'val':dataOb[k]} ) }
-        // //console.log( dataArr )
         // this.content = dataArr
     },
 
