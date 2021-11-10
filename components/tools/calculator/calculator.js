@@ -31,9 +31,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     signs: ['+', '-', '*', '/'],
-    value: '0',
-    expression: '0',
-    hideExpression: '0',
+    value: '0', // переменная для представления выражения, которое было записано ранее
+    expression: '0', // переменная для представления записанного пользователем выражения и, в дальнейшем, результата
+    hideExpression: '0', // переменная для вычисления выражения
     model: {
         rows: [
             [
@@ -106,7 +106,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     },
     // Получение результата вычислений, записанных в строке, а так же запись его в value и expression
     calc () {
-        console.log(this.hideExpression)
         if (this.expression) {
             if (this.getString().search(/\D$/) !== -1 && this.getString().match(/\D$/)[0] !== '%') {
                 this.deleteElement();
@@ -115,6 +114,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             const result = this.expression;
             this.expression = this.value;
             this.value = result + '=';
+            this.hideExpression = this.expression;
         } else {
             this.expression = '0';
             this.hideExpression = '0';
@@ -123,15 +123,19 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // Удаление последнего символа в строке
     deleteElement () {
         if (this.expression === '' || this.getString().length === 1) { // если строка пустая или в ней всего 1 символ, строка принимает значение 0
-            this.expression = '0';
+            return this.expression = '0'
+        } else  if (this.getString()[this.expression.length - 1] === '%') { // если стираем "%", нужно вернуть значение hideExpression
+            const arr = this.hideExpression.match(/(\d+)?\.?\d*/g).filter(Boolean); // выписываем в массив все введенные в калькулятор числа, исключая пустые строки
+            arr[arr.length - 1] *= 100;
+            this.hideExpression = this.hideExpression.replace(/\d+\.?(\d*)?$/, arr[arr.length - 1]); // меняем значение числа, на то, которое было до вычисления процента
         } else {
-            this.hideExpression = this.hideExpression.replace(/.$/, '');
-            this.expression = this.getString().replace(/.$/, '');
+            this.hideExpression = this.hideExpression.replace(/.$/, ''); // удаление последнего элемента
         }
+        this.expression = this.getString().replace(/.$/, '');
     },
     // Правильное написание десятичных чисел
     getFraction () {
-        const arr = this.getString().match(/(\d*)?\.?(\d*)?/g) // получаем массив всех введенных чисел для дальнейших проверок
+        const arr = this.getString().match(/(\d+)?\.?(\d*)?/g) // получаем массив всех введенных чисел для дальнейших проверок
         if (arr[(arr.length - 2)].match(/\./) || this.getString().match(/\D$/)) { // проверяем нет ли перед точкой в числе еще одной точки, либо математического знака
             return
         }
@@ -154,7 +158,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.stringValidation (btn);
         const arr = this.hideExpression.match(/(\d*)?\.?\d*/g).filter(Boolean); // выписываем в массив все введенные в калькулятор числа
         arr[arr.length - 1] *= 0.01;
-        this.hideExpression = this.hideExpression.replace(/\d*\.?(\d*)?\D$/, arr[arr.length - 1]) // сразу высчитываем процент от числа
+        this.hideExpression = this.hideExpression.replace(/\d*\.?(\d*)?\D$/, arr[arr.length - 1]); // сразу высчитываем процент от числа
     },
     // Преобразование выражения в строку для дальнейших действий
     getString () {
