@@ -1,4 +1,4 @@
-ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @tools/container, ./pell.js', template: /*html*/`
+ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @tools/containers, ./pell.js', template: /*html*/`
     <style>
         :host {
             @apply --vertical;

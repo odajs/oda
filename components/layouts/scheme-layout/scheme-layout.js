@@ -9,9 +9,17 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
             }
         </style>
         <svg :width :height>
-            <line ~for="links" :props="item" stroke="black"></line>
+            <line ~for="link in links" :props="link" stroke="black"></line>
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="items" :item @down="dd"  :focused="Object.equal(item, focusedItem)" ~style="{transform: \`translate3d(\${item?.item?.x}px, \${item?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(item)"></oda-scheme-container>
+        <div ~if="item" class="vertical" style="position:absolute; justify-content:space-between;" ~style="{width: '100%', height: '100%'}">
+            <oda-scheme-interface ~if="item.interfaces?.top" align="t" :connectors="item.interfaces?.top" min-width="30" min-height="30" class="horizontal"></oda-scheme-interface>
+            <div class="horizontal" style="justify-content:space-between;">
+                <oda-scheme-interface ~if="item.interfaces?.left" align="l" :connectors="item.interfaces?.left" class="vertical" :min-width="30" :min-height="30"></oda-scheme-interface>
+                <oda-scheme-interface ~if="item.interfaces?.right" align="r" :connectors="item.interfaces?.right" class="vertical" :min-width="30" :min-height="30"></oda-scheme-interface>
+            </div>
+            <oda-scheme-interface ~if="item.interfaces?.bottom" align="b" :connectors="item.interfaces?.bottom" class="horizontal" :min-width="30" :min-height="30"></oda-scheme-interface>
+        </div>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd"  :focused="Object.equal(item, focusedItem)" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(item)"></oda-scheme-container>
     `,
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
@@ -66,7 +74,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
     },
     focusedItem: null,
     selection: [],
-    isChanged: false, // временное решение
+    item: null,
     items: [],
     zoomKoef: 1.5,
     listeners: {
@@ -233,23 +241,28 @@ ODA({
 });
 
 ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
-    template: `
-        <style>
-            :host{
-                justify-content: center;
-            }
-            .pin {
-                min-width: 10px;
-                min-height: 10px;
-                box-sizing: border-box;
-                border: 1px solid gray;
-                border-radius: 2px;
-            }
-        </style>
-        <div ~for="con in connectors" style="min-width:10px; min-height:10px; margin:4px;">
-            <div class="pin" ~if="editMode || con?.links?.length"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
-        </div>
+    template: /*html*/`
+    <style>
+        :host{
+            justify-content: center;
+        }
+        .pin-space {
+            @apply --no-flex;
+            width: {{minWidth}}px;
+            height: {{minHeight}}px;
+        }
+        .pin {
+            box-sizing: border-box;
+            border: 1px solid gray;
+            border-radius: 2px;
+        }
+    </style>
+    <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;">
+        <div class="pin-space pin" ~if="editMode || con?.links?.length"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
+    </div>
     `,
+    minWidth: 10,
+    minHeight: 10,
     findPin(link){
         return this.$$('div.pin').find(i=>{
             return i.item.id === link.pin;
@@ -260,7 +273,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         this.links = undefined;
     },
     get links(){
-        let pins = this.connectors && this.$$('*');
+        let pins = this.connectors?.length && this.$$('*') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
         });
