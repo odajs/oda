@@ -2,26 +2,32 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     template: /*html*/ `
         <style>
             :host {
+                flex-grow: 0;
                 @apply --vertical;
-                max-width: 300px;
-            }
-            input {
-                margin-left: 10px;
+                /*max-width: 300px;*/
+                padding: 16px;
+                @apply --shadow;
             }
             .header {
                 @apply --header
             }
         </style>
-
-        <div class="border" style="margin: 8px; text-align: right">
-            <span style="font-size: small" class="dimmed">{{value}}</span>
-            <div style="font-size: large">{{expression}}</div>
+        <div class="border vertical" style="margin-bottom: 16px; text-align: right">
+            <span style="font-size: small" class="dimmed">{{result}}</span>
+            <span style="font-size: large">{{expression || 0}}
+                <span disabled>{{predicate}}</span>
+            </span>
         </div>
-        <div ~for="model?.rows" class="horizontal between">
-            <oda-button ~for="btn in item" :label="btn.label" @tap="add(btn)" ~props="btn.props"></oda-button>
+        <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
+            <oda-button class="raised flex" ~for="md in item" :label="md.label" @tap="tap" :model="md" ~props="md.props"></oda-button>
         </div>
     `,
-
+    get predicate(){
+        return this.predicates.map(i=>{
+            return i.predicate;
+        }).join('');
+    },
+    predicates: [],
     hostAttributes: {
         tabindex: 1
     },
@@ -30,138 +36,58 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             alert('HI')
         }
     },
-    signs: ['+', '-', '*', '/'],
-    value: '0', // переменная для представления выражения, которое было записано ранее
-    expression: '0', // переменная для представления записанного пользователем выражения и, в дальнейшем, результата
-    hideExpression: '0', // переменная для вычисления выражения
-    model: {
-        rows: [
-            [
-                {label: 'C', props:{class: "content"}, exec () {
-                        this.hideExpression = '0';
-                        this.expression = '0';
-                        this.value = 0;
-                    }
-                },
-                {label: '%', exec (e) {
-                        this.calcPercent (e.label)
-                    }
-                }, 
-                {label: '🠔', exec () {
-                        this.deleteElement();
-                    }
-                }
-            ],
-            [  
-                {label: 1},
-                {label: 2}, 
-                {label: 3},
-                {label: '*'} 
-            ],
-            [
-                {label: 4}, 
-                {label: 5},
-                {label: 6},
-                {label: '/'} 
-            ],
-            [
-                {label: 7},
-                {label: 8}, 
-                {label: 9},
-                {label: '-'}  
-            ], 
-            [
-                {label: 0},
-                {label: '.', exec () {
-                    this.getFraction()
-                }},
-                {label: '=', props: {class: "header"}, exec () {
-                        this.calc();
-                    }
-                },
-                {label: '+'} 
-            ]
-        ]
+    result: '0',
+    value: 0, // переменная для представления выражения, которое было записано ранее
+    get expression(){
+        return this.stack.map(i=>{
+            return (i.name || i.label);
+        }).join('');
     },
-    //Запись значения нажатой кнопки в строку, проверка корректности выражения
-    add (btn) {
-        if (this.signs.some((e) => e === btn.label)) {
-            return this.stringValidation(btn.label)
-        } 
-        if (this.expression == '0' && btn.label !== '.' && btn.label !== '%') {
-            this.getString().replace(/^0+(?!\.)/gm, '0') // убираем лишние нули вначале числа
-            this.expression = '';
-            this.hideExpression = '';
-        } else if (this.getString()[this.expression.length - 1] === '%' && /\d/.test(btn.label)) {
-            this.expression = this.getString() + '*'; 
-            this.hideExpression = this.hideExpression + '*'; 
+    data: {
+        rows:[]
+    },
+    stack: [],
+    tap(e){
+        const model = e.target.model;
+        switch (model.command){
+            case 'calc':
+            case 'clear':
+            case 'back':
+                return this[model.command]();
         }
-        // btn.exec ? btn.exec.call(this, btn) : this.expression = this.getString() + btn.label;
-        if (btn.exec) {
-            btn.exec.call(this, btn)
-        } else {
-            this.hideExpression = this.hideExpression + btn.label;
-            this.expression = this.getString() + btn.label;
-        } 
+        if (this.predicates[0]?.predicate === (model.name || model.label)){
+            this.predicates.shift();
+        }
+        this.stack.push(model)
+        if (model.predicate)
+            this.predicates.unshift(model);
+        this.expression = undefined;
+        this.predicate = undefined;
     },
-    // Получение результата вычислений, записанных в строке, а так же запись его в value и expression
     calc () {
-        if (this.expression) {
-            if (this.getString().search(/\D$/) !== -1 && this.getString().match(/\D$/)[0] !== '%') {
-                this.deleteElement();
-            } 
-            this.value = (new Function([], `with (this) {return ${this.hideExpression}}`)).call(this);
-            const result = this.expression;
-            this.expression = this.value;
-            this.value = result + '=';
-            this.hideExpression = this.expression;
-        } else {
-            this.expression = '0';
-            this.hideExpression = '0';
+        this.stack.push(...this.predicates);
+        this.expression = undefined;
+        const expr = this.stack.map(i=>{
+            return (i.expr || i.name || i.label);
+        }).join('');
+        this.predicates = [];
+        try{
+            this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
+            this.result = this.expression + ' =';
         }
-    },
-    // Удаление последнего символа в строке
-    deleteElement () {
-        if (this.expression === '' || this.getString().length === 1) { // если строка пустая или в ней всего 1 символ, строка принимает значение 0
-            return this.expression = '0'
-        } else  if (this.getString()[this.expression.length - 1] === '%') { // если стираем "%", нужно вернуть значение hideExpression
-            const arr = this.hideExpression.match(/(\d+)?\.?\d*/g).filter(Boolean); // выписываем в массив все введенные в калькулятор числа, исключая пустые строки
-            arr[arr.length - 1] *= 100;
-            this.hideExpression = this.hideExpression.replace(/\d+\.?(\d*)?$/, arr[arr.length - 1]); // меняем значение числа, на то, которое было до вычисления процента
-        } else {
-            this.hideExpression = this.hideExpression.replace(/.$/, ''); // удаление последнего элемента
+        catch (e){
+            console.error(e)
         }
-        this.expression = this.getString().replace(/.$/, '');
+        this.stack = [];
+
     },
-    // Правильное написание десятичных чисел
-    getFraction () {
-        const arr = this.getString().match(/(\d+)?\.?(\d*)?/g) // получаем массив всех введенных чисел для дальнейших проверок
-        if (arr[(arr.length - 2)].match(/\./) || this.getString().match(/\D$/)) { // проверяем нет ли перед точкой в числе еще одной точки, либо математического знака
-            return
-        }
-        this.expression += '.';
-        this.hideExpression += '.';
+    clear(){
+        this.stack = [];
+        this.predicate = [];
+        this.value = 0;
+        this.result = '0';
     },
-    // Проверяем возможность написания математических знаков в выражении
-    stringValidation (btn) {
-        if (this.expression === '0') { // исключаем возможность написания математических знаков в пустой строке
-            return
-        } else if (this.signs.some((e) => e === this.getString()[this.expression.length - 1]) || this.getString()[this.expression.length - 1] === '.') { // исключаем возможность написания нескольких математических знаков подряд
-            this.hideExpression = this.hideExpression.replace(/.$/, btn);
-            return this.expression = this.getString().replace(/.$/, btn);
-        }
-            this.hideExpression = this.hideExpression + btn;
-            return this.expression = this.getString() + btn
-    },
-    //  Вычисляем проценты
-    calcPercent (btn = '') {
-        this.stringValidation (btn);
-        const arr = this.hideExpression.match(/(\d*)?\.?\d*/g).filter(Boolean); // выписываем в массив все введенные в калькулятор числа
-        arr[arr.length - 1] *= 0.01;
-        this.hideExpression = this.hideExpression.replace(/\d*\.?(\d*)?\D$/, arr[arr.length - 1]); // сразу высчитываем процент от числа
-    },
-    // Преобразование выражения в строку для дальнейших действий
-    getString () {
-        return this.expression.toString()
+    back(){
+
     }
 })

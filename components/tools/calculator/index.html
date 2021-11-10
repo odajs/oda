@@ -1,6 +1,44 @@
 <meta charset="utf-8">
-<oda-calculator id="calc"></oda-calculator>
+<oda-calculator id="calc" style="width: 300px"></oda-calculator>
 <script type="module">
     import '/web/oda/oda.js';
     import './calculator.js';
+    calc.data = {
+        rows: [
+        [
+            {label: 'C', props:{class: "content"}, command: 'clear'},
+            {label: '%'},
+            {label: '🠔', command: 'back'}
+        ],
+        [
+            {label: 1},
+            {label: 2},
+            {label: 3},
+            {label: '*'}
+        ],
+        [
+            {label: 4},
+            {label: 5},
+            {label: 6},
+            {label: '/'}
+        ],
+        [
+            {label: 7},
+            {label: 8},
+            {label: 9},
+            {label: '-'}
+        ],
+        [
+            {label: 0},
+            {label: '.'},
+            {label: '=', props: {class: "header"}, command:'calc'},
+            {label: '+', name: ' + '}
+        ],
+            [
+                {label: '(', predicate: ')'},
+                {label: 'sin', name: ' sin(', expr: ' Math.sin(', predicate: ')'},
+                {label: ')'},
+
+            ]
+    ]}
 </script>
