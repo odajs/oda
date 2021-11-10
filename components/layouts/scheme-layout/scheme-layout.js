@@ -216,7 +216,7 @@ ODA({
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.left" align="l" :connectors="item?.interfaces?.left"></oda-scheme-interface>
-                <div class="block" :is="item?.is || 'div'" :disabled="editMode" ~props="item?.props"></div>
+                <div class="block" :is="item?.is || 'div'" ~props="item?.props"></div>
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.right" align="r" :connectors="item?.interfaces?.right"></oda-scheme-interface>
             </div>
             <oda-scheme-interface ~if="item?.interfaces?.bottom" align="b" :connectors="item?.interfaces?.bottom" class="horizontal"></oda-scheme-interface>

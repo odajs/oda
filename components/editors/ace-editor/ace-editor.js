@@ -164,9 +164,14 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         const snippets = snippetManager.parseSnippetFile(snippet, this.mode);
         snippetManager.register(snippets, this.mode);
     },
-    updated() {
-        this.editor?.setOptions(this.options);
-    },
+    // updated() {
+    //     this.editor?.setOptions(this.options);
+    // },
+    observers: [
+        function _observer(fontSize, tabSize, wrap, showPrintMargin) {
+            this.editor?.setOptions(this.options);
+        },
+    ],
     set editor(editor) {
         editor.renderer.attachToShadowRoot();
         editor.setOptions(this.options);
