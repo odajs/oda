@@ -59,10 +59,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.predicates.shift();
         }
         this.stack.push(model)
-        if (model.predicate)
+        if (model.predicate) 
             this.predicates.unshift(model);
-        this.expression = undefined;
-        this.predicate = undefined;
+            this.expression = undefined;
+            this.predicate = undefined;
+        
     },
     calc () {
         this.stack.push(...this.predicates);
