@@ -11,10 +11,6 @@ ODA.loadJSON(Localization.pathDictionary).then( res => { Localization.dictionary
     .catch( error => { console.log("Errol load dictionary: " + error)  })
 
 
-//Localization.dictionary = { words: {'_':'_'}, phraze: {'_':'_'} }
-// import dictionary from  './tst.js'
-// Localization.dictionary = dictionary
-
 window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey){
         //console.log('dialog')
