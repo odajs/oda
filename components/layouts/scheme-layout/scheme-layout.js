@@ -140,9 +140,13 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
 
                             })
                         }
-                    })
+                    });
+                    this.save();
                 } break;
             }
+
+        },
+        save() {
 
         },
         tap(e) {
@@ -241,6 +245,9 @@ ODA({
             return i.findPin(link);
         })?.findPin?.(link);
     },
+    save() {
+        this.$$('.block')?.[0]?.save?.();
+    }
 });
 
 ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
@@ -344,7 +351,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             if (!pin.item.links)
                 pin.item.links = [];
             pin.item.links.push(pinTo);
-            this.fire('linkCreated', { from: pinFrom, to: pinTo });
+            // this.fire('linkCreated', { from: pinFrom, to: pinTo });
+            pin.domHost.domHost.save();
         }
-    }
+    },
 });
