@@ -19,8 +19,11 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
             </div>
             <oda-scheme-interface ~if="item.interfaces?.bottom" align="b" :connectors="item.interfaces?.bottom" class="horizontal" :min-width="30" :min-height="30"></oda-scheme-interface>
         </div>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd"  :focused="Object.equal(item, focusedItem)" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(item)"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd"  :focused="isFocused(itm)" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(item)"></oda-scheme-container>
     `,
+    isFocused(item) {
+        return Object.equal(item, this.focusedItem);
+    },
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
             return i.item?.id === link.block;
