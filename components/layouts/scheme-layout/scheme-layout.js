@@ -11,14 +11,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         <svg :width :height>
             <line ~for="link in links" :props="link" stroke="black"></line>
         </svg>
-        <div ~if="item" class="vertical" style="position:absolute; justify-content:space-between;" ~style="{width: '100%', height: '100%'}">
-            <oda-scheme-interface ~if="item.interfaces?.top" align="t" :connectors="item.interfaces?.top" min-width="30" min-height="30" class="horizontal"></oda-scheme-interface>
-            <div class="horizontal" style="justify-content:space-between;">
-                <oda-scheme-interface ~if="item.interfaces?.left" align="l" :connectors="item.interfaces?.left" class="vertical" :min-width="30" :min-height="30"></oda-scheme-interface>
-                <oda-scheme-interface ~if="item.interfaces?.right" align="r" :connectors="item.interfaces?.right" class="vertical" :min-width="30" :min-height="30"></oda-scheme-interface>
-            </div>
-            <oda-scheme-interface ~if="item.interfaces?.bottom" align="b" :connectors="item.interfaces?.bottom" class="horizontal" :min-width="30" :min-height="30"></oda-scheme-interface>
-        </div>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="Object.equal(itm, focusedItem)" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(itm)"></oda-scheme-container>
     `,
     findPin(link){
@@ -212,6 +204,7 @@ ODA({
                 background: transparent;
             }
         </style>
+        <oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar>
         <div>
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
@@ -227,6 +220,7 @@ ODA({
             this.updateLinks();
         }, 300);
     },
+    focused: false,
     updateLinks(){
         this.$$('oda-scheme-interface').forEach(i=>i.updateLinks());
     },
@@ -292,13 +286,15 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return pin.item.links.map((link)=>{
                 const result = {
                     x1: (rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft,
-                    y1: (rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop
+                    y1: (rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop,
+                    from: pin
                 }
                 const targetPin = this.layout.findPin(link)
                 if (targetPin){
                     const targetRect = targetPin.getClientRect(this.layout);
                     result.x2 = (targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
                     result.y2 = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
+                    result.to = targetRect;
                 }
                 else {
                     switch (this.align){
@@ -356,3 +352,21 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     },
 });
+ODA({is:'oda-scheme-container-toolbar',
+    template:`
+        <style>
+            :host{
+                justify-content: right;
+                z-index: 100;
+                position:absolute;
+                top: -{{offsetHeight}}px;
+                width: 100%;
+                left: 0px;
+                @apply --horizontal;
+                /*@apply --shadow;    */
+           
+            }
+        </style>
+        <oda-button icon="icons:delete"></oda-button>
+    `
+})
