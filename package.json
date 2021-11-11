@@ -31,11 +31,11 @@
   "name": "oda-framework",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ilysaz/oda-framework.git"
+    "url": "git+https://github.com/odajs/odajs.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "url": "https://odajs.org",
-  "version": "0.0.5"
+  "version": "0.0.7"
 }
