@@ -1,0 +1,41 @@
+{
+  "author": {
+    "name": "Perepyolkin Roman"
+  },
+  "bugs": {
+    "url": "https://github.com/odajs/odajs/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "It's an ES Progressive Framework based on the technology of Web Components and designed especially for creating custom UI/UX of any complexity for web and cross-platform PWA mobile applications.",
+  "email": "odajs@odant.ru",
+  "homepage": "https://odajs.org",
+  "keywords": [
+    "ODA",
+    "Framework",
+    "odajs",
+    "JavaScript",
+    "Web",
+    "Components",
+    "ECMA",
+    "PWA",
+    "WEB",
+    "applications"
+  ],
+  "files": [ 
+    "oda.js",  "rocks.js", "LICENSE", "README.md",   
+    "components/*", "icons/*", "tools/*"
+  ],
+  "license": "MIT",
+  "main": "oda.js",
+  "name": "oda-framework",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilysaz/oda-framework.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "url": "https://odajs.org",
+  "version": "0.0.5"
+}
