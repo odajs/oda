@@ -395,10 +395,13 @@ ODA({is:'oda-scheme-container-toolbar',
 
 ODA({is:'oda-scheme-pin-links-toolbar',
     template:`
-        <oda-button ~for="link of item?.links" icon="icons:delete" @tap.stop="removeLink(link)" style="position: absolute; z-index: 100;" ~style="getButtonStyle(link)"></oda-button>
+        <oda-button ~for="link of links" icon="icons:delete" @tap.stop="removeLink(link)" style="position: absolute; z-index: 100;" ~style="getButtonStyle(link)"></oda-button>
     `,
     item: null,
     interface: null,
+    get links() {
+        return this.item?.links;
+    },
     getButtonStyle(link) {
         const result = {};
         const iLink = this.interface.links.find(l => Object.equal(l.link, link));
@@ -407,7 +410,7 @@ ODA({is:'oda-scheme-pin-links-toolbar',
         return result;
     },
     removeLink(link) {
-        this.item.links.remove(link);
+        this.links?.remove(link);
         this.block?.save?.();
     }
 });
