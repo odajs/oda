@@ -238,8 +238,11 @@ ODA({
             return i.findPin(link);
         })?.findPin?.(link);
     },
-    save() {
-        this.$$('.block')?.[0]?.save?.();
+    // save() {
+    //     this.$$('.block')?.[0]?.save?.();
+    // }
+    get block() {
+        return this.$$('.block')?.[0];
     }
 });
 
@@ -353,7 +356,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 pin.item.links = [];
             pin.item.links.push(pinTo);
             // this.fire('linkCreated', { from: pinFrom, to: pinTo });
-            pin.domHost.domHost.save();
+            // pin.domHost.domHost.save();
+            this.block?.save?.();
+
         }
     },
 });
@@ -390,5 +395,6 @@ ODA({is:'oda-scheme-pin-links-toolbar',
     },
     removeLink(link) {
         this.item.links.remove(link);
+        this.block?.save?.();
     }
 });
