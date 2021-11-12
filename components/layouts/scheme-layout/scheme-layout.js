@@ -11,12 +11,17 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         <svg :width :height style="z-index: 0">
             <line ~for="link in links" :props="link" stroke="black"></line>
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="Object.equal(itm, focusedItem)" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(itm)"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="itm?.id === focusedItem?.id" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(itm)"></oda-scheme-container>
     `,
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
             return i.item?.id === link.block;
         })?.findPin(link);
+    },
+    findBlock(id) {
+        return this.$$('oda-scheme-container').find(i=>{
+            return i.item?.id === id;
+        }).block;
     },
     get layout(){
         return this;
@@ -363,8 +368,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 pin.item.links = [];
             pin.item.links.push(pinTo);
             // this.fire('linkCreated', { from: pinFrom, to: pinTo });
-            this.block?.save?.();
-
+            this.layout.findBlock(pinFrom.block)?.save?.();
         }
     },
 });
