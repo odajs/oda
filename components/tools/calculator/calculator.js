@@ -56,11 +56,18 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             case 'back':
                 return this[model.command]();
         }
+        console.log(this.predicates[0]?.predicate === (model.name || model.label))
         if (this.predicates[0]?.predicate === (model.name || model.label)){ // checking closing brackets
             this.predicates.shift();
         }
         if (this.expression === '0' && model.label === 0) { 
             return
+        } else if ((model.name || model.label) === '.') {
+            const arr = this.getExpression().match(/(\d+)?\.?(\d*)?/g) // get an array of all entered numbers for further checks
+            if (arr[(arr.length - 2)].match(/\./) || this.getExpression().match(/\D$/)) { // checking if there is another dot or math sign in front of a point
+                return
+            }
+            this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
             this.stack.splice(0, 1, model);
         } else if (this.canBeReplaced(model)) {
@@ -77,9 +84,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     calc () {
         this.stack.push(...this.predicates);
         this.expression = undefined;
-        const expr = this.stack.map(i=>{
-            return (i.expr || i.name || i.label);
-        }).join('');
+        const expr = this.getExpression();
         this.predicates = [];
         try{
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
@@ -88,11 +93,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         catch (e){
             console.error(e)
         }
-        this.stack = [{label: this.value, result: true}];
+        this.stack = [{label: this.value, result: true}]; // push the result to the stack
     },
     clear () {
         this.stack = [{label: 0}];
-        this.predicate = [];
+        this.predicates = [];
         this.value = 0;
         this.result = '0';
     },
@@ -117,5 +122,12 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
         return this.signs.some((e) => e === this.stack[this.stack.length-1]?.label) && this.signs.some((e) => e === model.label)
+    },
+    // get the expression as a string
+    getExpression () {
+        const expr = this.stack.map(i=>{
+            return (i.expr || i.name || i.label);
+        }).join('');
+        return expr
     }
 })
