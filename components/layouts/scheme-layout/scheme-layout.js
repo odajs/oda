@@ -137,9 +137,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
             }
 
         },
-        save() {
-
-        },
         tap(e) {
             this.selection.clear();
             this.focusedItem = null;
@@ -159,7 +156,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
                 return;
             }
 
-        }
+        },
     },
     select(e) {
         if (!this.editMode) return;
@@ -184,11 +181,18 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
     zoomOut() {
         this.zoom = this.zoom / this.zoomKoef;
     },
+    save() {
+
+    },
+    removeBlock(block) {
+        this.items.remove(block);
+        this.save();
+    }
 });
 
 ODA({
     is: 'oda-scheme-container',
-    template: `
+    template: /*html*/`
         <style>
             :host([selected]){
                 /*@apply --shadow;*/
@@ -203,7 +207,8 @@ ODA({
                 background: transparent;
             }
         </style>
-        <oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar>
+        <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar>-->
+        <oda-scheme-container-toolbar ~if="editMode && Object.equal(focusedItem, item)" ></oda-scheme-container-toolbar>
         <div>
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
@@ -238,9 +243,6 @@ ODA({
             return i.findPin(link);
         })?.findPin?.(link);
     },
-    // save() {
-    //     this.$$('.block')?.[0]?.save?.();
-    // }
     get block() {
         return this.$$('.block')?.[0];
     }
@@ -356,7 +358,6 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 pin.item.links = [];
             pin.item.links.push(pinTo);
             // this.fire('linkCreated', { from: pinFrom, to: pinTo });
-            // pin.domHost.domHost.save();
             this.block?.save?.();
 
         }
@@ -376,8 +377,11 @@ ODA({is:'oda-scheme-container-toolbar',
                 /*@apply --shadow;    */
             }
         </style>
-        <oda-button icon="icons:delete"></oda-button>
-    `
+        <oda-button icon="icons:delete" @tap.stop="onTap"></oda-button>
+    `,
+    onTap(e) {
+        this.layout.removeBlock(this.item);
+    }
 });
 
 ODA({is:'oda-scheme-pin-links-toolbar',
