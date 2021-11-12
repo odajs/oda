@@ -118,6 +118,7 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 @apply --flex;
                 overflow: hidden;
                 min-width: {{hasChildren?'100%':'32px'}};
+                {{layout?.noFlex?'flex-grow: 0;':''}}
             }
             .structure{
                 margin-left: {{layout?.isGroup?0:iconSize}}px;
@@ -198,6 +199,9 @@ KERNEL({ is: 'Layout',
     },
     get name() {
         return this.data?.name || this.id;
+    },
+    get noFlex() {
+        return this.data?.noFlex;
     },
     get label() {
         return this.data?.label || this.name;
