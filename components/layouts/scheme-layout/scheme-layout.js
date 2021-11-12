@@ -28,7 +28,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         this.lastdown = e.target;
     },
     uu(e) {
-        this.lastdown = null;
+        if (!this.inTrack)
+            this.lastdown = null;
     },
     get links(){
         let links = this.$$('oda-scheme-container').reduce((res, i)=>{
@@ -93,11 +94,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
                 case 'start':{
                     if(!this.selection.has(this.lastdown.item)){
                         this.selection.splice(0, this.selection.length, this.lastdown.item);
-                        // this.focusedItem = this.lastdown.item;
                     }
-                    // if (!this.selection.length && this.lastdown){
-                    //
-                    // }
                     this.selection.forEach(i=>{
                         i.delta = {
                             x: e.detail.start.x / this.zoom - i.item.x,
@@ -113,6 +110,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
                         i.item.y = e.detail.y / this.zoom - i.delta.y;//Math.round(((e.detail.y + i.delta.y) / this.zoom)/10) * 10;
                         i.item.x = Math.round(i.item.x / 10) * 10;
                         i.item.y = Math.round(i.item.y / 10) * 10;
+
+                        if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
+                            this.inTrack = true;
+                        }
                     })
                     this.async(() => {
                         this.updateLinks();
@@ -120,17 +121,21 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
 
                 } break;
                 case 'end': {
+                    delete this.trackStarted;
                     if (this.selection.length === 1 && this.selection[0] === this.lastdown?.item)
                         this.selection.clear();
                     this.lastdown = null;
-                    this.selection.forEach(i => {
-                        if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
-                            this.inTrack = true;
-                            this.async(() => {
-                                this.inTrack = false;
+                    // this.selection.forEach(i => {
+                    //     if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
+                    //         this.inTrack = true;
+                    //         this.async(() => {
+                    //             this.inTrack = false;
 
-                            })
-                        }
+                    //         })
+                    //     }
+                    // });
+                    this.async(() => {
+                        this.inTrack = false;
                     });
                     this.save();
                 } break;

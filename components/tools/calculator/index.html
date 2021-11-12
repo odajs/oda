@@ -1,12 +1,14 @@
 <meta charset="utf-8">
+<script type="module" src="/web/oda/oda.js"></script>
+<script type="module" src="./calculator.js"></script>
 <oda-calculator id="calc" style="width: 300px"></oda-calculator>
 <script type="module">
-    import '/web/oda/oda.js';
-    import './calculator.js';
+    // import '/web/oda/oda.js';
+    // import './calculator.js';
     calc.data = {
         rows: [
         [
-            {label: 'C', props:{class: "content"}, command: 'clear'},
+            {label: 'C', command: 'clear'},
             {label: '%'},
             {label: '🠔', command: 'back'}
         ],
@@ -14,19 +16,19 @@
             {label: 1},
             {label: 2},
             {label: 3},
-            {label: '*'}
+            {label: '*', name: ' * '}
         ],
         [
             {label: 4},
             {label: 5},
             {label: 6},
-            {label: '/'}
+            {label: '/', name: ' / '}
         ],
         [
             {label: 7},
             {label: 8},
             {label: 9},
-            {label: '-'}
+            {label: '-', name: ' - '}
         ],
         [
             {label: 0},
@@ -34,12 +36,11 @@
             {label: '=', props: {class: "header", icon:"class"}, command:'calc'},
             {label: '+', name: ' + '}
         ],
-            [
-                {label: '(', predicate: ')'},
-                {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
-                {label: 'atan', name: ' atan(', expr: ' Math.atan(', predicate: ')'},
-                {label: ')'},
-
-            ]
+        [
+            {label: '(', predicate: ')'},
+            {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
+            {label: 'atan', name: ' atan(', expr: ' Math.atan(', predicate: ')'},
+            {label: ')'},
+        ]
     ]}
 </script>
