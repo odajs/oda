@@ -39,7 +39,33 @@
                         { "id": "1-r1" },
                         { "id": "1-r2", props: {}, tap(){
                                 //todo что-то делаем
-                            }},
+                            }
+                        },
+                        {
+                            "id": "1-r3",
+                            props: {
+                                my: 'dfkjlsfjl',
+                                style:'background: red;',
+                                myFunc2: () => {
+                                    console.log('myFunc2 1-r3')
+                                }
+                            },
+                            tap() {
+                                console.log('tap on 1-r3');
+                            },
+                            contextmenu() {
+                                console.log('contextmenu 1-r3');
+                            },
+                            onclick() {
+                                console.log('onclick 1-r3')
+                            },
+                            oncontextmenu() {
+                                console.log('oncontextmenu 1-r3');
+                            },
+                            myFunc1() {
+                                console.log('myFunc1 1-r3')
+                            }
+                    }
                     ]
                 }
             },

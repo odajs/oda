@@ -270,10 +270,27 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     </style>
     <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;" :focused="editMode && Object.equal(con, focusedItem)">
-        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @tap.stop="onTap"></div>
+        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @tap.stop="onTap"></div>
         <oda-scheme-pin-links-toolbar ~if="editMode && Object.equal(con, focusedItem)" :interface="this" :item="con"></oda-scheme-pin-links-toolbar>
     </div>
     `,
+    observers: [
+        function addPinMethods(connectors) {
+            if (!this.connectors?.length) return;
+            this.async(()=> {
+                const sCons = this.connectors.filter(c => {return (Object.keys(c).find(k => typeof c[k] === 'function'))}) || [];
+                sCons.forEach(con => {
+                    const pin = this.$$('.pin').find(p => p.item.id == con.id);
+                    if (pin) {
+                        Object.keys(con).forEach(key => {
+                            if (key !== 'id' && key !== 'props')
+                                pin[key] = con[key];
+                        });
+                    }
+                });
+            }, 300);
+        }
+    ],
     isVisiblePin(con) {
         if (!this.layout?.links?.length)
             return false;
@@ -287,7 +304,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     minWidth: 10,
     minHeight: 10,
     findPin(link){
-        return this.$$('div.pin').find(i=>{
+        return this.$$('.pin').find(i=>{
             return i.item.id === link.pin;
         })
     },
