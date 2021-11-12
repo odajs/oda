@@ -50,10 +50,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         Backspace () {
             this.back();
         },
-        1 () {
-            this.stack.push({label: 1});
-            tap (e)
-        }
+        Escape () {
+            this.clear();
+        },
+        // 1 () {
+        //     this.stack.push({label: 1});
+        //     this.tap (this.stack)
+        // }
     },
     tap (e) {
         const model = e.target.model;
@@ -67,6 +70,12 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         if (this.expression === '0' && model.label === 0) { 
             return
         } 
+        if (model.label === '(') {
+            this.stack.push(model);
+            let numbersBeforeBrackets = this.getExpression().match(/\d(?=\()/);
+            numbersBeforeBrackets = numbersBeforeBrackets[0].replace(numbersBeforeBrackets[0], `${numbersBeforeBrackets[0]}*`);
+            return this.stack[this.stack.length-1].expr = numbersBeforeBrackets
+        }
         if ((model.name || model.label) === '.') {
             const arr = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
             arr[(arr.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
