@@ -11,8 +11,14 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         <svg :width :height style="z-index: 0">
             <line ~for="link in links" :props="link" stroke="black"></line>
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="itm?.id === focusedItem?.id" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.includes(itm)"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="itm?.id === focusedItem?.id" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="isSelected(itm)"></oda-scheme-container>
     `,
+    isSelected(item) {
+        const s = this.selection.find(i => i.id === item.id);
+        if (s)
+            return true;
+        return false;
+    },
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
             return i.item?.id === link.block;
@@ -126,19 +132,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
 
                 } break;
                 case 'end': {
-                    delete this.trackStarted;
-                    if (this.selection.length === 1 && this.selection[0] === this.lastdown?.item)
-                        this.selection.clear();
                     this.lastdown = null;
-                    // this.selection.forEach(i => {
-                    //     if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
-                    //         this.inTrack = true;
-                    //         this.async(() => {
-                    //             this.inTrack = false;
-
-                    //         })
-                    //     }
-                    // });
                     this.async(() => {
                         this.inTrack = false;
                     });
