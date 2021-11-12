@@ -276,10 +276,16 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     </style>
     <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;" :focused="editMode && Object.equal(con, focusedItem)">
-        <div class="pin-space pin" ~if="editMode || con?.links?.length"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @tap.stop="onTap"></div>
+        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @tap.stop="onTap"></div>
         <oda-scheme-pin-links-toolbar ~if="editMode && Object.equal(con, focusedItem)" :interface="this" :item="con"></oda-scheme-pin-links-toolbar>
     </div>
     `,
+    isVisiblePin(con) {
+        if (!this.layout?.links?.length)
+            return false;
+        const target = this.layout?.links?.find?.(l => l.to?.item?.id === con.id);
+        return (target ? true : false);
+    },
     onTap(e) {
         // focusedItem = con
         this.focusedItem = e.target.item;
