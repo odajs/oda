@@ -1239,7 +1239,8 @@ if (!window.ODA) {
                                         return;
                                     }
                                 }
-                                exec.call(this, func, [res, ...(e.target.$for || [])]);
+                                if (res !== undefined || e.target.$for !== undefined) //todo понаблюдать
+                                    exec.call(this, func, [res, ...(e.target.$for || [])]);
                             };
                             src.listeners[name + '-changed'].notify = name;
                         }

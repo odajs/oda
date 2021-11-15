@@ -22,8 +22,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     get linkButtonStyle() {
         if (!this.focusedLink) return {};
         return { // учесть случай, когда линия связи выходит за границу
-            top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2,
-            left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2,
+            top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2 + 'px',
+            left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2 + 'px',
         }
     },
     removeLink(link) {

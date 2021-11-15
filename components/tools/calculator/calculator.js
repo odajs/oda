@@ -20,7 +20,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
-            <oda-button class="raised flex" ~for="md in item" :label="md.label" @tap="tap" :model="md" ~props="md.props"></oda-button>
+            <oda-button class="raised flex" style="min-width: 30px;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props"></oda-button>
         </div>
     `,
     get predicate(){
@@ -43,6 +43,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         tabindex: 1
     },
     degree: '',
+    timerClear: '',
     keyBindings: {
         Enter () {
             this.calc();
@@ -60,26 +61,36 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     detached() {
         document.removeEventListener('keydown', this._onKeyDown.bind(this));
     },
-    _onKeyDown(e) {
+    _onKeyDown (e) {
         this.tap(e.key);
     },
+    mousedown (e) {
+        if (e.target.model.command === 'back') {
+            this.timerClear = setTimeout(() => {
+                this.clear()
+            }, 1000)
+        }  
+    },
+    mouseup () {
+        clearTimeout(this.timerClear);
+    },
     tap (e) {
-        let model = e.target?.model ? e.target.model : e.match(/[0-9.)]/) ? {label: e} : e.match(/\(/) ? {label: e, predicate: ')'} : e.match(/[+-/*]/) ? {label: e, name: ` ${e} `} : false;
-        console.log(this.getExpression().match(/\)$/))
-        // e.target?.model ? model = e.target.model : e.match(/[0-9%.]/) ? model = {label: e} : e.match(/[+-/*]/) ? model = {label: e, name: ` ${e} `} : false; // if we press the button, we use the model of the button, if we press the key, we create the model of the key
+        let model = '';
+        if (e.target?.model) {
+            model = e.target.model
+        } else if (e.match(/[0-9.)]/)) {
+            model = {label: e}
+        } else if (e.match(/\(/)) {
+            model = {label: e, predicate: ')'}
+        } else if (e.match(/[-+/*]/)) {
+            model = {label: e, name: ` ${e} `}
+        } 
         switch (model.command){
             case 'calc':
             case 'clear':
             case 'back':
                 return this[model.command]();
         }
-        // else if (model.label === '%') {
-        //     if (this.stack[this.stack.length-2].label === '+' || '-') { 
-        //         const numForPercent = this.getExpression().match
-        //         this.stack.push({label: model.label, expr: model.expr * })
-        //     } 
-        //     this.stack.push(model)
-        // } 
         if (this.expression === '0' && model.label === 0) { 
             return 
         } 
@@ -96,7 +107,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             }
         } else if (model.label === this.stack[this.stack.length-1].predicate) {
             return
-        } else if ((model.name || model.label) === '.') {
+        } else if (model.label === '.') {
             const enteredNubers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
             enteredNubers[(enteredNubers.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
@@ -105,7 +116,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         } else if (this.canBeReplaced(model)) {
             this.stack.splice(-1, 1, model);
             this.getReactivity();  
-        } else if (typeof model.label === 'number' && this.getExpression().match(/\)$/)) {
+        } else if (model.label.toString().match(/[0-9%)]/) && this.getExpression().match(/\)$/)) {
             this.stack.push(model);
             this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label}
             this.getReactivity();
@@ -143,6 +154,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.error = '';
     },
     back () {
+
         if (this.getExpression().match(/\)$/)) {
             this.predicates.unshift({label: ')', predicate: ')'})
         }
@@ -161,7 +173,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // checking if the value in the output line can be deleted
     canBeDeleted (model) {
         return (this.expression === '0' || this.stack[this.stack.length-1]?.result) 
-                && (typeof model.label === 'number' ||
+                && (model.label.toString().match(/[0-9]/) ||
                 model.label === 'sin' ||
                 model.label === 'tan' ||
                 model.label === '-' ||
