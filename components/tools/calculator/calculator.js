@@ -64,21 +64,29 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.tap(e.key);
     },
     tap (e) {
-        let model = ''
-        e.target?.model ? model = e.target.model : e.match(/[0-9%.]/) ? model = {label: e} : e.match(/[+-/*]/) ? model = {label: e, name: ` ${e} `} : false; // if we press the button, we use the model of the button, if we press the key, we create the model of the key
+        let model = e.target?.model ? e.target.model : e.match(/[0-9.)]/) ? {label: e} : e.match(/\(/) ? {label: e, predicate: ')'} : e.match(/[+-/*]/) ? {label: e, name: ` ${e} `} : false;
+        console.log(this.getExpression().match(/\)$/))
+        // e.target?.model ? model = e.target.model : e.match(/[0-9%.]/) ? model = {label: e} : e.match(/[+-/*]/) ? model = {label: e, name: ` ${e} `} : false; // if we press the button, we use the model of the button, if we press the key, we create the model of the key
         switch (model.command){
             case 'calc':
             case 'clear':
             case 'back':
                 return this[model.command]();
         }
+        // else if (model.label === '%') {
+        //     if (this.stack[this.stack.length-2].label === '+' || '-') { 
+        //         const numForPercent = this.getExpression().match
+        //         this.stack.push({label: model.label, expr: model.expr * })
+        //     } 
+        //     this.stack.push(model)
+        // } 
         if (this.expression === '0' && model.label === 0) { 
             return 
         } 
         if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
-            if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
-                this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label};
+            if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/) || this.getExpression().match(/\)/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
+                this.stack[this.stack.length-1] = {label: model.label, predicate: ')', expr: '*' + model.label};
                 this.getReactivity();
             }
         } else if (model.label === ')') {
@@ -135,6 +143,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.error = '';
     },
     back () {
+        if (this.getExpression().match(/\)$/)) {
+            this.predicates.unshift({label: ')', predicate: ')'})
+        }
         if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
             this.predicates.shift();
             this.getReactivity();
@@ -150,15 +161,19 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // checking if the value in the output line can be deleted
     canBeDeleted (model) {
         return (this.expression === '0' || this.stack[this.stack.length-1]?.result) 
-                && (typeof model.label === 'number' || (model.label === 'sin' || 'atan' || '-' || '('))
+                && (typeof model.label === 'number' ||
+                model.label === 'sin' ||
+                model.label === 'tan' ||
+                model.label === '-' ||
+                model.label === '(')
     },
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
-        return this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && this.signs.some((e) => e === model.label)
+        return this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && (this.signs.some((e) => e === model.label) || model.label === '%')
     },
     // checking the possibility of writing the closing bracket
     canWriteBracket () {
-        return (typeof this.stack[this.stack.length-1].label === 'number' || this.stack[this.stack.length-1].label === ')') && this.predicates.length !== 0
+        return this.stack[this.stack.length-1].label.toString().match(/[0-9%)]/) && this.predicates.length !== 0
     },
     // activation of reactivity
     getReactivity () {

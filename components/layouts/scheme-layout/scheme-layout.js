@@ -11,8 +11,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         <svg :width :height style="z-index: 0">
             <line ~for="link in links" :props="link" stroke="black" @tap.stop="focusLink(link)" :focused="Object.equal(link, focusedLink)"></line>
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="itm?.id === focusedItem?.id" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="isSelected(itm)"></oda-scheme-container>
-        <oda-button ~if="focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
+        <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
     `,
     focusedLink: null,
     focusLink(link) {
@@ -32,12 +32,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         link.from.item?.links?.remove?.(target);
         this.focusedLink = null;
         link.from.domHost?.block?.save?.();
-    },
-    isSelected(item) {
-        const s = this.selection.find(i => i.id === item.id);
-        if (s)
-            return true;
-        return false;
     },
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
@@ -221,10 +215,6 @@ ODA({
     is: 'oda-scheme-container',
     template: /*html*/`
         <style>
-            :host([selected]){
-                /*@apply --shadow;*/
-                outline: 1px dashed black;
-            }
             :host {
                 position: absolute;
                 min-width: 8px;
@@ -233,14 +223,18 @@ ODA({
                 @apply --content;
                 background: transparent;
             }
+            .block([selected]){
+                /*@apply --shadow;*/
+                outline: 1px dashed black; !important
+            }
         </style>
-        <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar>-->
+        <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
         <oda-scheme-container-toolbar ~if="editMode && Object.equal(focusedItem, item)" ></oda-scheme-container-toolbar>
         <div>
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.left" align="l" :connectors="item?.interfaces?.left"></oda-scheme-interface>
-                <div class="block" :is="item?.is || 'div'" ~props="item?.props"></div>
+                <div class="block" :is="item?.is || 'div'" ~props="item?.props" :focused="isFocused(item)"  :selected="isSelected(item)"></div>
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.right" align="r" :connectors="item?.interfaces?.right"></oda-scheme-interface>
             </div>
             <oda-scheme-interface ~if="item?.interfaces?.bottom" align="b" :connectors="item?.interfaces?.bottom" class="horizontal"></oda-scheme-interface>
@@ -250,6 +244,12 @@ ODA({
         this.async(() => {
             this.updateLinks();
         }, 300);
+    },
+    isFocused(item) {
+        return item?.id === this.focusedItem?.id;
+    },
+    isSelected(item) {
+        return (this.selection.find(i => i.id === item.id) ? true : false);
     },
     focused: false,
     updateLinks(){
@@ -292,7 +292,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             border-radius: 2px;
         }
     </style>
-    <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;" :focused="editMode && Object.equal(con, focusedItem)">
+    <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;">
         <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
     </div>
     `,

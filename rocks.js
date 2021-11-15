@@ -710,7 +710,7 @@ if (!globalThis.KERNEL) {
     function isNativeObject(obj) {
         return obj && (obj.constructor === Object);//toString.call(obj) === '[object Object]';
     }
-    function toBool(v, def = false) {
+    globalThis.toBool =  globalThis.toBool || function toBool(v, def = false) {
         if (!v)
             return def;
         switch (typeof v) {

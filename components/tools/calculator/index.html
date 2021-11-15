@@ -1,15 +1,13 @@
 <meta charset="utf-8">
-<script type="module" src="/web/oda/oda.js"></script>
-<script type="module" src="./calculator.js"></script>
 <oda-calculator id="calc" style="width: 300px"></oda-calculator>
 <script type="module">
-    // import '/web/oda/oda.js';
-    // import './calculator.js';
+    import '/web/oda/oda.js';
+    import './calculator.js';
     calc.data = {
         rows: [
         [
             {label: 'C', command: 'clear'},
-            {label: '%'},
+            {label: '%', expr: '*0.01'},
             {label: '🠔', command: 'back'}
         ],
         [
@@ -39,7 +37,7 @@
         [
             {label: '(', predicate: ')'},
             {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
-            {label: 'atan', name: ' atan(', expr: ' Math.atan(', predicate: ')'},
+            {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')'},
             {label: ')'},
         ]
     ]}
