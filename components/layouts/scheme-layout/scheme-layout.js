@@ -9,7 +9,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <line ~for="link in links" :props="link" stroke="black" @tap.stop="focusLink(link)" :focused="Object.equal(link, focusedLink)"></line>
+            <line ~for="link in links" stroke="black" :props="link" @tap.stop="focusLink(link)" :focused="Object.equal(link, focusedLink)"></line>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
@@ -372,6 +372,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                             result.x2 = 0;
                         } break;
                     }
+                    result.stroke = 'gray';
                 }
                 return result;
             })
