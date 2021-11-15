@@ -141,7 +141,7 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden">
-            <oda-icon :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
+            <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}">
                 <label ~if="showLabel" class="flex">{{layout?.label}}</label>
                 <div class="flex" ~is="layout?.$template || editTemplate" :layout></div>

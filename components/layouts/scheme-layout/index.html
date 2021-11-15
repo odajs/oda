@@ -34,7 +34,10 @@
                     "icon": "icons:extension", "fill": "blue", "iconSize": 64, "label": "1:oda-button"
                 },
                 "interfaces": {
-                    "top": [{ "id": '1-t1', "links": [] }],
+                    "top": [{ "id": '1-t1', props:{
+                            icon: 'icons:error'
+                        }},{ "id": '1-t33', "links":
+                            [{"block": "5", "pin": "1-t66"}] }],
                     "right": [
                         { "id": "1-r1" },
                         { "id": "1-r2", props: {}, tap(){

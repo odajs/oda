@@ -260,8 +260,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
         .pin-space {
             @apply --no-flex;
-            width: {{minWidth}}px;
-            height: {{minHeight}}px;
+            min-width: {{minWidth}}px;
+            min-height: {{minHeight}}px;
         }
         .pin {
             box-sizing: border-box;
@@ -280,7 +280,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             this.async(()=> {
                 const sCons = this.connectors.filter(c => {return (Object.keys(c).find(k => typeof c[k] === 'function'))}) || [];
                 sCons.forEach(con => {
-                    const pin = this.$$('.pin').find(p => p.item.id == con.id);
+                    const pin = this.$$('.pin').find(p => p.item.id === con.id);
                     if (pin) {
                         Object.keys(con).forEach(key => {
                             if (key !== 'id' && key !== 'props')
@@ -295,7 +295,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         if (!this.layout?.links?.length)
             return false;
         const target = this.layout?.links?.find?.(l => l.to?.item?.id === con.id);
-        return (target ? true : false);
+        return !!target;
     },
     onTap(e) {
         // focusedItem = con
@@ -308,7 +308,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return i.item.id === link.pin;
         })
     },
-    align: '',
+    props:{
+        align: '',
+    },
     updateLinks(){
         this.links = undefined;
     },

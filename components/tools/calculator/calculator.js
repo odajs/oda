@@ -15,6 +15,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
             <span style="font-size: small" class="dimmed">{{result}}</span>
             <span style="font-size: large">{{error || expression || value}}
+                <sup disabled>{{degree}}</sup>
                 <span disabled>{{predicate}}</span>
             </span>
         </div>
@@ -32,9 +33,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return (i.name || i.label);
         }).join('');
     },
-    data: {
-        rows:[]
-    },
     predicates: [],
     stack: [{label: 0}],
     signs: ['+', '-', '*', '/'],
@@ -44,6 +42,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     hostAttributes: {
         tabindex: 1
     },
+    degree: '',
     keyBindings: {
         Enter () {
             this.calc();
@@ -53,14 +52,24 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         },
         Escape () {
             this.clear();
-        },
+        }
         // 1 () {
         //     this.stack.push({label: 1});
-        //     this.tap (this.stack)
+        //     this.tap(this.stack)
         // }
     },
+    attached() {
+        document.addEventListener('keydown', this._onKeyDown.bind(this));
+    },
+    detached() {
+        document.removeEventListener('keydown', this._onKeyDown.bind(this));
+    },
+    _onKeyDown(e) {
+        this.tap(e.key);
+    },
     tap (e) {
-        const model = e.target.model;
+        let model = ''
+        e.target?.model ? model = e.target.model : e.match(/[0-9+-/*%.]/) ? model = {label: e} : false;
         switch (model.command){
             case 'calc':
             case 'clear':
@@ -71,9 +80,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         if (this.expression === '0' && model.label === 0) { 
             return
         } 
-        if (model.label === '(') {
+        if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
-            if (this.getExpression().match(/\d+\.?\d*(?=\()/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
+            if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
                 this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label};
                 this.getReactivity();
             }
@@ -88,6 +97,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         } else if (this.canBeReplaced(model)) {
             this.stack.splice(-1, 1, model);
             this.getReactivity();  
+        } else if (typeof model.label === 'number' && this.getExpression().match(/\)$/)) {
+            this.stack.push(model);
+            this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label}
+            this.getReactivity();
         } else {
             this.stack.push(model);
         } 
@@ -101,9 +114,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         const expr = this.getExpression();
         this.predicates = [];
         try {
-            if (expr.match(/\D$/)) { // if the expression ends with a mathematical sign, do not count
-                return
-            }
+            if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not count
+                    return
+                }
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
             this.result = this.expression + ' =';
         }
@@ -137,11 +150,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // checking if the value in the output line can be deleted
     canBeDeleted (model) {
         return (this.expression === '0' || this.stack[this.stack.length-1]?.result) 
-                && (typeof model.label === 'number' || model.label === ('sin' || 'atan'))
+                && (typeof model.label === 'number' || (model.label === 'sin' || 'atan' || '-' || '('))
     },
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
-        return this.signs.some((e) => e === this.stack[this.stack.length-1]?.label) && this.signs.some((e) => e === model.label)
+        return this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && this.signs.some((e) => e === model.label)
     },
     // activation of reactivity
     getReactivity () {
