@@ -53,10 +53,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         Escape () {
             this.clear();
         }
-        // 1 () {
-        //     this.stack.push({label: 1});
-        //     this.tap(this.stack)
-        // }
     },
     attached() {
         document.addEventListener('keydown', this._onKeyDown.bind(this));
@@ -69,16 +65,15 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     },
     tap (e) {
         let model = ''
-        e.target?.model ? model = e.target.model : e.match(/[0-9+-/*%.]/) ? model = {label: e} : false;
+        e.target?.model ? model = e.target.model : e.match(/[0-9%.]/) ? model = {label: e} : e.match(/[+-/*]/) ? model = {label: e, name: ` ${e} `} : false; // if we press the button, we use the model of the button, if we press the key, we create the model of the key
         switch (model.command){
             case 'calc':
             case 'clear':
             case 'back':
                 return this[model.command]();
         }
-        this.predicates[0]?.predicate === (model.name || model.label) ? this.predicates.shift() : false;
         if (this.expression === '0' && model.label === 0) { 
-            return
+            return 
         } 
         if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
@@ -86,11 +81,16 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label};
                 this.getReactivity();
             }
+        } else if (model.label === ')') {
+            if (this.canWriteBracket()) {
+                this.stack.push(model);
+                this.predicates.shift();
+            }
         } else if (model.label === this.stack[this.stack.length-1].predicate) {
             return
         } else if ((model.name || model.label) === '.') {
-            const arr = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
-            arr[(arr.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
+            const enteredNubers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
+            enteredNubers[(enteredNubers.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
             this.error = '';
             this.stack.splice(0, 1, model);
@@ -155,6 +155,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
         return this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && this.signs.some((e) => e === model.label)
+    },
+    // checking the possibility of writing the closing bracket
+    canWriteBracket () {
+        return (typeof this.stack[this.stack.length-1].label === 'number' || this.stack[this.stack.length-1].label === ')') && this.predicates.length !== 0
     },
     // activation of reactivity
     getReactivity () {
