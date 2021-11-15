@@ -229,7 +229,7 @@ ODA({
             }
         </style>
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
-        <oda-scheme-container-toolbar ~if="editMode && Object.equal(focusedItem, item)" ></oda-scheme-container-toolbar>
+        <oda-scheme-container-toolbar ~if="editMode && focusedItem?.id === item?.id" ></oda-scheme-container-toolbar>
         <div>
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
