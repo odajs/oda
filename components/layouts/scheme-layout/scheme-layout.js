@@ -1,4 +1,4 @@
-ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-grid',
+ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid',
     template: `
         <style>
             :host {
@@ -9,10 +9,30 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <line ~for="link in links" :props="link" stroke="black"></line>
+            <line ~for="link in links" :props="link" stroke="black" @tap.stop="focusLink(link)" :focused="Object.equal(link, focusedLink)"></line>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" :focused="itm?.id === focusedItem?.id" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="isSelected(itm)"></oda-scheme-container>
+        <oda-button ~if="focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
     `,
+    focusedLink: null,
+    focusLink(link) {
+        this.focusedLink = link;
+        this.focusedItem = null;
+    },
+    get linkButtonStyle() {
+        if (!this.focusedLink) return {};
+        return { // учесть случай, когда линия связи выходит за границу
+            top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2,
+            left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2,
+        }
+    },
+    removeLink(link) {
+        if (!link?.from) return;
+        const target = link.from.item?.links?.find?.(l => Object.equal(l, link.link))
+        link.from.item?.links?.remove?.(target);
+        this.focusedLink = null;
+        link.from.domHost?.block?.save?.();
+    },
     isSelected(item) {
         const s = this.selection.find(i => i.id === item.id);
         if (s)
@@ -59,6 +79,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
                 if (o) {
                     this.selection.clear();
                     this.focusedItem = null;
+                    this.focusedLink = null;
                 }
             },
             save: true
@@ -144,6 +165,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         tap(e) {
             this.selection.clear();
             this.focusedItem = null;
+            this.focusedLink = null;
         },
         wheel(e) {
             if (e.ctrlKey) {
@@ -168,6 +190,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid', extends: 'oda-ruler-gr
         const item = e.target.item;
         if (!e.sourceEvent.ctrlKey) {
             this.focusedItem = item;
+            this.focusedLink = null;
             this.selection.clear();
         } else {
             if (this.selection.has(item)) {
@@ -270,8 +293,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     </style>
     <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;" :focused="editMode && Object.equal(con, focusedItem)">
-        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @tap.stop="onTap"></div>
-        <oda-scheme-pin-links-toolbar ~if="editMode && Object.equal(con, focusedItem)" :interface="this" :item="con"></oda-scheme-pin-links-toolbar>
+        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
     </div>
     `,
     observers: [
@@ -296,10 +318,6 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return false;
         const target = this.layout?.links?.find?.(l => l.to?.item?.id === con.id);
         return !!target;
-    },
-    onTap(e) {
-        // focusedItem = con
-        this.focusedItem = e.target.item;
     },
     minWidth: 10,
     minHeight: 10,
@@ -409,27 +427,5 @@ ODA({is:'oda-scheme-container-toolbar',
     `,
     onTap(e) {
         this.layout.removeBlock(this.item);
-    }
-});
-
-ODA({is:'oda-scheme-pin-links-toolbar',
-    template:`
-        <oda-button ~for="link of links" icon="icons:delete" @tap.stop="removeLink(link)" style="position: absolute; z-index: 100;" ~style="getButtonStyle(link)"></oda-button>
-    `,
-    item: null,
-    interface: null,
-    get links() {
-        return this.item?.links;
-    },
-    getButtonStyle(link) {
-        const result = {};
-        const iLink = this.interface.links.find(l => Object.equal(l.link, link));
-        result.left = iLink.x2 - iLink.x1 + this.layout.scrollLeft + this.layout.offsetLeft;
-        result.top = iLink.y2 - iLink.y1 + this.layout.scrollTop + this.layout.offsetTop;
-        return result;
-    },
-    removeLink(link) {
-        this.links?.remove(link);
-        this.block?.save?.();
     }
 });
