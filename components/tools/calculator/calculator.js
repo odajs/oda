@@ -70,7 +70,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     mousedown (e) {
         if (e.target.model.command === 'back') {
             this.timerClear = setTimeout(() => {
-                this.clear()
+                this.clear();
             }, 500)
         }  
     },
@@ -80,13 +80,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     tap (e) {
         let model = '';
         if (e.target?.model) { // checking the presses of calculator buttons or keyboard keys
-            model = e.target.model
+            model = e.target.model;
         } else if (e.match(/[0-9.)]/)) {
-            model = {label: e}
+            model = {label: e};
         } else if (e.match(/\(/)) {
-            model = {label: e, predicate: ')'}
+            model = {label: e, predicate: ')'};
         } else if (e.match(/[-+/*]/)) {
-            model = {label: e, name: ` ${e} `}
+            model = {label: e, name: ` ${e} `};
         } 
         switch (model.command){
             case 'calc':
@@ -94,13 +94,27 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             case 'back':
                 return this[model.command]();
         }
+        // checking for exceptions
         if (this.expression === '0' && model.label === 0) { 
             return 
         } 
         if (this.stack[this.stack.length-1].name === 'E' && model.label.toString().match(/[0-9-]/) === null) {
             return
         }
-        if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
+        if (model.label === 'Inv') { // inversion check
+            this.inverse = this.inverse ? false : true;
+        }
+        if (model.label === 'Ans') {
+            if (this.getExpression().match(/[0-9]$/)) {
+                this.stack.push({name: model.name, expr: `*${this.result.match(/(?<=\=\s).*/)}`});
+            } else {
+                this.stack.push({name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)}`});
+            }
+            this.getReactivity();
+        } else if ((model.label === 'π' || model.label === 'e') && this.getExpression().match(/[0-9]$/) !== null) { // checking for constants
+            this.stack.push({label: model.label, expr: `*${model.expr}`});
+            this.getReactivity(); 
+        } else if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
             if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/) || this.getExpression().match(/\)/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
                 this.stack[this.stack.length-1] = {label: model.label, predicate: ')', expr: '*' + model.label};
@@ -118,14 +132,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.getExpression().match(/\D$/) ? false : this.expression === '0' ? false : this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
             this.error = '';
-            this.result = `Ans = ${this.stack[0].label}` 
+            this.result = `Ans = ${this.stack[0].label}` ; // displaying the previous answer
             this.stack.splice(0, 1, model);
         } else if (this.canBeReplaced(model)) {
             this.stack.splice(-1, 1, model);
             this.getReactivity();  
-        } else if (model.label.toString().match(/[0-9%)]/) && this.getExpression().match(/\)$/)) {
-            this.stack.push(model);
-            this.stack[this.stack.length-1] = {label: model.label, expr: '*' + model.label}
+        } else if (model.label.toString().match(/[0-9]/) && this.getExpression().match(/\)$/)) {
+            this.stack.push({label: model.label, expr: '*' + model.label});
             this.getReactivity();
         } else {
             this.stack.push(model);
@@ -140,7 +153,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.predicates = [];
         try {
             if (this.stack[this.stack.length-1].name === 'E') {
-                this.stack[this.stack.length-1] = {expr: '*1'}
+                this.stack[this.stack.length-1] = {expr: '*1'};
             }
             const expr = this.getExpression();
             if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not count
@@ -166,7 +179,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     back () {
         this.error = '';
         if (this.getExpression().match(/\)$/)) {
-            this.predicates.unshift({label: ')', predicate: ')'})
+            this.predicates.unshift({label: ')', predicate: ')'});
         }
         if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
             this.predicates.shift();

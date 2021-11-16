@@ -119,7 +119,7 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 @apply --flex;
                 min-width: {{hasChildren?'100%':'32px'}};
                 /*flex-grow: {{layout?.noFlex?'1':'100'}};*/
-                flex: {{layout?.noFlex?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
+                flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /*flex-basis: auto;*/
             }
             .structure{
@@ -144,14 +144,15 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
-            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}">
+            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{alignItems: width?'center':''}">
 <!--            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">-->
                 <label ~if="showLabel" class="no-flex">{{layout?.label}}</label>
-                <div class="flex" ~is="layout?.$template || editTemplate" :layout></div>
+                <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
             </div>
         </div>
         <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px; margin-right: 1px;"></div>
     `,
+    width: undefined,
     get hasChildren(){
         return this.layout?.items?.length;
     },
@@ -204,9 +205,9 @@ KERNEL({ is: 'Layout',
     get name() {
         return this.data?.name || this.id;
     },
-    get noFlex() {
-        return this.data?.width || this.data?.noFlex;
-    },
+    // get noFlex() {
+    //     return this.data?.width || this.data?.noFlex;
+    // },
     get label() {
         return this.data?.label || this.name;
     },
