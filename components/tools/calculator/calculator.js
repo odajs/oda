@@ -20,7 +20,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
-            <oda-button class="raised flex" style="min-width: 30px;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props"></oda-button>
+            <oda-button class="raised flex" style="min-width: 30px; position: relative;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
+                <sup ~style="md.props?.supStyle">{{md.sup}}</sup>
+            </oda-button>
         </div>
     `,
     get predicate(){
@@ -33,17 +35,18 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return (i.name || i.label);
         }).join('');
     },
-    predicates: [],
-    stack: [{label: 0}],
+    predicates: [], // container for unclosed brackets
+    stack: [{label: 0}], // container for models of all pressed buttons
     signs: ['+', '-', '*', '/'],
-    result: '0',
-    value: 0, 
-    error: '',
+    result: '0', // variable to display the calculated expression
+    value: 0, // variable to display the result of the entered expression
+    error: '', // variable to display errors
+    degree: '', // variable to display the power of a number on the monitor
+    timerClear: '', // a variable containing a timer to clear the monitor
+    inverse: false, // variable containing the flag of inversion of some functions
     hostAttributes: {
         tabindex: 1
     },
-    degree: '',
-    timerClear: '',
     keyBindings: {
         Enter () {
             this.calc();
@@ -68,7 +71,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         if (e.target.model.command === 'back') {
             this.timerClear = setTimeout(() => {
                 this.clear()
-            }, 1000)
+            }, 500)
         }  
     },
     mouseup () {
@@ -76,7 +79,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     },
     tap (e) {
         let model = '';
-        if (e.target?.model) {
+        if (e.target?.model) { // checking the presses of calculator buttons or keyboard keys
             model = e.target.model
         } else if (e.match(/[0-9.)]/)) {
             model = {label: e}
@@ -94,6 +97,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         if (this.expression === '0' && model.label === 0) { 
             return 
         } 
+        if (this.stack[this.stack.length-1].name === 'E' && model.label.toString().match(/[0-9-]/) === null) {
+            return
+        }
         if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
             if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/) || this.getExpression().match(/\)/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
@@ -105,13 +111,14 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 this.stack.push(model);
                 this.predicates.shift();
             }
-        } else if (model.label === this.stack[this.stack.length-1].predicate) {
-            return
         } else if (model.label === '.') {
             const enteredNubers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
             enteredNubers[(enteredNubers.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
+        } else if (model.label === 'EXP') {
+            this.getExpression().match(/\D$/) ? false : this.expression === '0' ? false : this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
             this.error = '';
+            this.result = `Ans = ${this.stack[0].label}` 
             this.stack.splice(0, 1, model);
         } else if (this.canBeReplaced(model)) {
             this.stack.splice(-1, 1, model);
@@ -130,12 +137,15 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     calc () {
         this.stack.push(...this.predicates);
         this.getReactivity();
-        const expr = this.getExpression();
         this.predicates = [];
         try {
+            if (this.stack[this.stack.length-1].name === 'E') {
+                this.stack[this.stack.length-1] = {expr: '*1'}
+            }
+            const expr = this.getExpression();
             if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not count
                     return
-                }
+            }
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
             this.result = this.expression + ' =';
         }
@@ -154,7 +164,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.error = '';
     },
     back () {
-
+        this.error = '';
         if (this.getExpression().match(/\)$/)) {
             this.predicates.unshift({label: ')', predicate: ')'})
         }
@@ -177,11 +187,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 model.label === 'sin' ||
                 model.label === 'tan' ||
                 model.label === '-' ||
-                model.label === '(')
+                model.label === '(' ||
+                model.label === '√' ||
+                model.label === 'ln' ||
+                model.label === 'log' ||
+                model.label === 'π' ||
+                model.label === 'e')
     },
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
-        return this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && (this.signs.some((e) => e === model.label) || model.label === '%')
+        return  this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && 
+                (this.signs.some((e) => e === model.label) || model.label === '%')
     },
     // checking the possibility of writing the closing bracket
     canWriteBracket () {
@@ -198,5 +214,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return (i.expr || i.label);
         }).join('');
         return expr
-    }
+    },
+    calcFactorial (n) {
+        return (n != 1) ? n * calcFactorial(n-1) : 1
+    } 
 })

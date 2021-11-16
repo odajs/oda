@@ -13,28 +13,36 @@
             {label: '🠔', command: 'back'}
         ],
         [
-            {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
+            {label: 'Inv'},
+            {label: 'sin', name: ' sin(', expr: ' Math.sin(', predicate: ')'},
+            {label: 'ln', name: ' ln(', expr: ' Math.log(', predicate: ')'},
             {label: 7},
             {label: 8},
             {label: 9},
             {label: '/', name: ' / '}
         ],
         [
+            {label: 'π', expr: '3.14159265359'},
             {label: 'cos', name: ' cos(', expr: ' Math.cos(', predicate: ')'},
+            {label: 'log', name: ' log(', expr: ' 1/Math.log(10)*Math.log(', predicate: ')'},
             {label: 4},
             {label: 5},
             {label: 6},
             {label: '*', name: ' * '}
         ],
         [
+            {label: 'e', expr: '2.71828182846'},
             {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')'},
+            {label: '√', name: ' √(', expr: ' Math.sqrt(', predicate: ')'},
             {label: 1},
             {label: 2},
             {label: 3},
             {label: '-', name: ' - '}
         ],
         [
-            {label: 'EXP'},
+            {label: 'Ans'},
+            {label: 'EXP', name: 'E', expr: '*10**'},
+            {label: 'x', props: {supStyle: {fontSize: '10px', position: 'absolute', top: '2px', right: '30%'}}, sup: 'y'},
             {label: 0},
             {label: '.'},
             {label: '=', command:'calc'},
