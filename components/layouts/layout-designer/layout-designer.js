@@ -144,7 +144,7 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
-            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{alignItems: width?'center':''}">
+            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{alignItems: (width && !layout?.type)?'center':''}">
 <!--            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">-->
                 <label ~if="showLabel" class="no-flex">{{layout?.label}}</label>
                 <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
@@ -205,9 +205,6 @@ KERNEL({ is: 'Layout',
     get name() {
         return this.data?.name || this.id;
     },
-    // get noFlex() {
-    //     return this.data?.width || this.data?.noFlex;
-    // },
     get label() {
         return this.data?.label || this.name;
     },
@@ -225,6 +222,7 @@ KERNEL({ is: 'Layout',
         const group = new Layout({label: `Group for ${this.label}`}, this.key, this);
         const block = new Layout({label: `Group for ${this.label}`}, this.key, group);
         group.type = 'group';
+        group.width = 0;
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
