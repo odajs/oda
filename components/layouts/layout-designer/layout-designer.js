@@ -118,8 +118,8 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 overflow: hidden;
                 @apply --flex;
                 min-width: {{hasChildren?'100%':'32px'}};
-                flex-grow: {{layout?.noFlex?'1':'100'}};
-                /*flex: {{layout?.noFlex?'auto':'10000'}};*/
+                /*flex-grow: {{layout?.noFlex?'1':'100'}};*/
+                flex: {{layout?.noFlex?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /*flex-basis: auto;*/
             }
             .structure{
@@ -205,7 +205,7 @@ KERNEL({ is: 'Layout',
         return this.data?.name || this.id;
     },
     get noFlex() {
-        return this.data?.noFlex;
+        return this.data?.width || this.data?.noFlex;
     },
     get label() {
         return this.data?.label || this.name;
