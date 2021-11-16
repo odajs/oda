@@ -115,10 +115,12 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             :host{
                 box-sizing:border-box;
                 @apply --vertical;
-                @apply --flex;
                 overflow: hidden;
+                @apply --flex;
                 min-width: {{hasChildren?'100%':'32px'}};
-                {{layout?.noFlex?'flex-grow: 0;':''}}
+                flex-grow: {{layout?.noFlex?'1':'100'}};
+                /*flex: {{layout?.noFlex?'auto':'10000'}};*/
+                /*flex-basis: auto;*/
             }
             .structure{
                 margin-left: {{layout?.isGroup?0:iconSize}}px;
@@ -142,8 +144,9 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
-            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">
-                <label ~if="showLabel" class="flex">{{layout?.label}}</label>
+            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}">
+<!--            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">-->
+                <label ~if="showLabel" class="no-flex">{{layout?.label}}</label>
                 <div class="flex" ~is="layout?.$template || editTemplate" :layout></div>
             </div>
         </div>
