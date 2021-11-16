@@ -1209,7 +1209,7 @@ if (!window.ODA) {
                         if (/::/.test(attr.name)) {
                             const params = ['$value', ...(vars || [])];
                             src.listeners.input = function func2wayInput(e) {
-                                if (!e.target.parentNode) return;
+                                if (!e.target.parentNode || !(name === 'value' || name === 'checked')) return;
                                 e.stopPropagation();
                                 const target = e.target;
                                 let value = target.value;

@@ -9,7 +9,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <line ~for="link in links" stroke="black" :props="link" @tap.stop="focusLink(link)" :focused="Object.equal(link, focusedLink)"></line>
+            <line ~for="link in links" stroke="black" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)"></line>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
@@ -18,6 +18,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     focusLink(link) {
         this.focusedLink = link;
         this.focusedItem = null;
+        this.selection.clear();
     },
     get linkButtonStyle() {
         if (!this.focusedLink) return {};
@@ -51,6 +52,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     dd(e){
         this.lastdown = e.target;
+        this.focusedLink = null;
     },
     uu(e) {
         if (!this.inTrack)
@@ -184,7 +186,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         const item = e.target.item;
         if (!e.sourceEvent.ctrlKey) {
             this.focusedItem = item;
-            this.focusedLink = null;
             this.selection.clear();
         } else {
             if (this.selection.has(item)) {
@@ -361,11 +362,11 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                         } break;
                         case 'r':{
                             result.y2 = result.y1;
-                            result.x2 = 10000;
+                            result.x2 = this.layout?.width;
                         } break;
                         case 'b':{
                             result.x2 = result.x1;
-                            result.y2 = 10000;
+                            result.y2 = this.layout.height;
                         } break;
                         case 'l':{
                             result.y2 = result.y1;
