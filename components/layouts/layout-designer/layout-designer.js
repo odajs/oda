@@ -7,7 +7,7 @@ ODA({is:'oda-layout-designer',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0;"></oda-layout-designer-structure>
         <div class="flex"></div>
 <!--        <div ~if="designMode" :slot="designMode?'left-panel':'?'">дерево</div>-->
     `,
