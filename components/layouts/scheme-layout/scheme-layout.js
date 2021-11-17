@@ -9,7 +9,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <line ~for="link in links" stroke="black" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)"></line>
+            <!--<line ~for="link in links" stroke="black" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)"></line>-->
+            <path ~for="link in links" stroke="black" :stroke-width="Object.equal(link, focusedLink) ? 3 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
@@ -23,8 +24,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     get linkButtonStyle() {
         if (!this.focusedLink) return {};
         return { // учесть случай, когда линия связи выходит за границу
-            top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2 + 'px',
-            left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2 + 'px',
+            // top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2 + 'px',
+            // left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2 + 'px',
+            top: (Math.abs(this.focusedLink.y2 + this.focusedLink.y3) - this.iconSize) / 2 + 'px',
+            left: (Math.abs(this.focusedLink.x2 + this.focusedLink.x3) - this.iconSize) / 2 + 'px',
         }
     },
     removeLink(link) {
@@ -342,39 +345,228 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             const rect = pin.getClientRect(this.layout);
             return pin.item.links.map((link)=>{
                 const result = {
-                    x1: (rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft,
-                    y1: (rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop,
                     from: pin,
                     link: link
                 }
                 const targetPin = this.layout.findPin(link)
-                if (targetPin){
-                    const targetRect = targetPin.getClientRect(this.layout);
-                    result.x2 = (targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
-                    result.y2 = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
-                    result.to = targetPin;
+                const r = {};
+                r.xStart = (rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft;
+                r.yStart = (rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop;
+                r.x1 = r.xStart;
+                r.y1 = r.yStart;
+                switch (this.align) {
+                    case 't':{
+                         r.y1 -= 20;
+                    } break;
+                    case 'r':{
+                        r.x1 += 20;
+                    } break;
+                    case 'b':{
+                        r.y1 += 20;
+                    } break;
+                    case 'l':{
+                        r.x1 -= 20;
+                    } break;
                 }
-                else {
-                    switch (this.align){
+                r.x2 = r.x3 = r.x4 = r.x1;
+                r.y2 = r.y3 = r.y4 = r.y1;
+                if (targetPin) {
+                    result.to = targetPin;
+                    const targetRect = targetPin.getClientRect(this.layout);
+                    r.xEnd = (targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
+                    r.yEnd = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
+                    r.x4 = r.xEnd;
+                    r.y4 = r.yEnd;
+
+                    switch (targetPin.domHost.align) {
                         case 't':{
-                            result.x2 = result.x1;
-                            result.y2 = 0;
+                             r.y4 -= 20;
                         } break;
                         case 'r':{
-                            result.y2 = result.y1;
-                            result.x2 = this.layout?.width;
+                            r.x4 += 20;
                         } break;
                         case 'b':{
-                            result.x2 = result.x1;
-                            result.y2 = this.layout.height;
+                            r.y4 += 20;
                         } break;
                         case 'l':{
-                            result.y2 = result.y1;
-                            result.x2 = 0;
+                            r.x4 -= 20;
                         } break;
                     }
-                    result.stroke = 'gray';
+
+                    switch (this.align) {
+                        case 't': {
+                            if (r.y1 > r.y4) {
+                                r.y2 = (r.y1 + r.y4) / 2;
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !== 't') {
+                                        r.x3 = r.x4;
+                                        r.y3 = r.y2
+                                    } else {
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.y3 = r.y4
+                                    } else {
+                                        r.y3 = r.y2;
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            } else {
+                                r.x2 = (r.x1 + r.x4) / 2;
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !=='b') {
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.x3 = r.x2
+                                        r.y3 = r.y4
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.x3 = r.x2;
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            }
+                        } break;
+                        case 'r':{
+                            if (r.y1 > r.y4) {
+                                if (r.x1 > r.x4) {
+                                    r.y2 = (r.y1 + r.y4) / 2;
+                                    if (targetPin.domHost.align !== 't') {
+                                        r.y3 = r.y2;
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.y3 = r.y4
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            } else {
+                                if (r.x1 > r.x4) {
+                                    r.y2 = (r.y1 + r.y4) / 2;
+                                    if (targetPin.domHost.align !=='b') {
+                                        r.y3 = r.y2;
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    r.x2 = (r.x1 + r.x4) / 2;
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.x3 = r.x2;
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            }
+                        } break;
+                        case 'b':{
+                            if (r.y1 > r.y4) {
+                                r.x2 = (r.x1 + r.x4) / 2;
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !== 't') {
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.x3 = r.x2;
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.x3 = r.x2;
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            } else {
+                                r.y2 = (r.y1 + r.y4) / 2;
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !=='b') {
+                                        r.x3 = r.x4;
+                                        r.y3 = r.y2;
+                                    } else {
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.y3 = r.y2;
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            }
+                        } break;
+                        case 'l':{
+                            if (r.y1 > r.y4) {
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !== 't') {
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.x3 = r.x2 = (r.x1 + r.x4) / 2;
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.y3 = r.y2 = (r.y1 + r.y4) / 2;
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            } else {
+                                if (r.x1 > r.x4) {
+                                    if (targetPin.domHost.align !=='b') {
+                                        r.x3 = r.x4;
+                                    } else {
+                                        r.x3 = r.x2 = (r.x1 + r.x4) / 2;
+                                        r.y3 = r.y4;
+                                    }
+                                } else {
+                                    if (targetPin.domHost.align !=='r') {
+                                        r.y3 = r.y4;
+                                    } else {
+                                        r.y3 = r.y2 = (r.y1 + r.y4) / 2;
+                                        r.x3 = r.x4;
+                                    }
+                                }
+                            }
+                        } break;
+                    }
                 }
+                else {
+                    result.stroke = 'gray';
+                    switch (this.align){
+                        case 't':{
+                            r.xEnd = r.xStart;
+                            r.yEnd = 0;
+                        } break;
+                        case 'r':{
+                            r.yEnd = r.yStart;
+                            r.xEnd = this.layout?.width;
+                        } break;
+                        case 'b':{
+                            r.xEnd = r.xStart;
+                            r.yEnd = this.layout.height;
+                        } break;
+                        case 'l':{
+                            r.yEnd = r.yStart;
+                            r.xEnd = 0;
+                        } break;
+                    }
+                    r.x4 = r.x3 = r.xEnd;
+                    r.y4 = r.y3 = r.yEnd;
+                }
+                result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.x3},${r.y3} L${r.x4},${r.y4} L${r.xEnd},${r.yEnd}`;
+                Object.assign(result, r);
                 return result;
             })
         }).flat();
@@ -382,6 +574,55 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return links;
         return undefined;
     },
+    // get links(){
+    //     let pins = this.connectors?.length && this.$$('*') || [];
+    //     pins = pins.filter(i=>{
+    //         return i.item?.links?.length;
+    //     });
+    //     const links = pins.map(pin=>{
+    //         const rect = pin.getClientRect(this.layout);
+    //         return pin.item.links.map((link)=>{
+    //             const result = {
+    //                 x1: (rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft,
+    //                 y1: (rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop,
+    //                 from: pin,
+    //                 link: link
+    //             }
+    //             const targetPin = this.layout.findPin(link)
+    //             if (targetPin){
+    //                 const targetRect = targetPin.getClientRect(this.layout);
+    //                 result.x2 = (targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
+    //                 result.y2 = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
+    //                 result.to = targetPin;
+    //             }
+    //             else {
+    //                 switch (this.align){
+    //                     case 't':{
+    //                         result.x2 = result.x1;
+    //                         result.y2 = 0;
+    //                     } break;
+    //                     case 'r':{
+    //                         result.y2 = result.y1;
+    //                         result.x2 = this.layout?.width;
+    //                     } break;
+    //                     case 'b':{
+    //                         result.x2 = result.x1;
+    //                         result.y2 = this.layout.height;
+    //                     } break;
+    //                     case 'l':{
+    //                         result.y2 = result.y1;
+    //                         result.x2 = 0;
+    //                     } break;
+    //                 }
+    //                 result.stroke = 'gray';
+    //             }
+    //             return result;
+    //         })
+    //     }).flat();
+    //     if(links.length)
+    //         return links;
+    //     return undefined;
+    // },
     connectors: [],
     dragstart(e) {
          e.dataTransfer.setData('pin', JSON.stringify({

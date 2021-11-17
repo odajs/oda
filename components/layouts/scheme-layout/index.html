@@ -34,17 +34,31 @@
                     "icon": "icons:extension", "fill": "blue", "iconSize": 64, "label": "1:oda-button"
                 },
                 "interfaces": {
-                    "top": [{ "id": '1-t1', props:{
+                    "top": [
+                        { "id": '1-t1', props:{
                             icon: 'icons:error'
-                        }},{ "id": '1-t33', "links":
-                            [{"block": "5", "pin": "1-t66"}] }],
+                        }},
+                        { "id": '1-t2', "links": [
+                            {"block": "5", "pin": "3333"},
+                            {"block": "2", "pin": "2-l1"},
+                            {"block": "2", "pin": "2-r1"},
+                            {"block": "2", "pin": "2-t1"},
+                            {"block": "2", "pin": "2-b1"}
+                        ]}
+                    ],
                     "right": [
                         { "id": "1-r1", links:[
                             {}
                         ]},
                         { "id": "1-r2", props: {}, tap(){
                                 //todo что-то делаем
-                            }
+                            },
+                            links: [
+                                {"block": "2", "pin": "2-l1"},
+                                {"block": "2", "pin": "2-r1"},
+                                {"block": "2", "pin": "2-t1"},
+                                {"block": "2", "pin": "2-b1"}
+                            ]
                         },
                         {
                             "id": "1-r3",
@@ -71,7 +85,25 @@
                                 console.log('myFunc1 1-r3')
                             }
                     }
-                    ]
+                    ],
+                    "left": [
+                        { "id": '1-l1'},
+                        { "id": '1-l2', links: [
+                            {"block": "2", "pin": "2-l1"},
+                            {"block": "2", "pin": "2-r1"},
+                            {"block": "2", "pin": "2-t1"},
+                            {"block": "2", "pin": "2-b1"}
+                        ]}
+                    ],
+                    "bottom": [
+                        { "id": '1-b1'},
+                        { "id": '1-b2', links: [
+                            {"block": "2", "pin": "2-l1"},
+                            {"block": "2", "pin": "2-r1"},
+                            {"block": "2", "pin": "2-t1"},
+                            {"block": "2", "pin": "2-b1"}
+                        ]}
+                    ],
                 }
             },
             {
@@ -92,7 +124,15 @@
                             ]
                         },
 
-                    ]
+                    ],
+                    "right": [
+                        { "id": '2-r1'},
+                        { "id": '2-r2'}
+                    ],
+                    "bottom": [
+                        { "id": '2-b1'},
+                        { "id": '2-b2'}
+                    ],
                 }
             },
             // {
