@@ -34,9 +34,9 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         if (this.focused && this.controls?.length) {
             this.controls[0].setAttribute('tabindex', 0);
             this.controls[0].setAttribute('autofocus', true);
-            this.async(() => {
+            // this.async(() => {
                 this.controls?.[0]?.focus();
-            }, 100);
+            // }, 100);
         }
     },
     controls: undefined,
@@ -49,13 +49,13 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         }
         this.windows.push(win);
         this.windows.forEach(w => {
-            // this.listen('resize', '_close', { target: w, useCapture: true });
+            this.listen('resize', 'setSize', { target: w, useCapture: true });
             this.listen('scroll', '_close', { target: w, useCapture: true });
         });
     },
     detached() {
         this.windows.forEach(w => {
-            // this.unlisten('resize', '_close', { target: w, useCapture: true });
+            this.unlisten('resize', 'setSize', { target: w, useCapture: true });
             this.unlisten('scroll', '_close', { target: w, useCapture: true });
         });
     },
@@ -207,9 +207,12 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         this._steps = [];
         return size;
     },
-    setSize(e) {
+    get control(){
+        return this.controls?.[0];
+    },
+    setSize() {
         this['#_style'] = undefined;
-        this.contentRect = e.target.getBoundingClientRect();
+        this.contentRect = this.control.getBoundingClientRect();
         this.interval('set-size', () => {
             this.isReady = true;
         })
