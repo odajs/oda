@@ -196,8 +196,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 return;
             }
         }
-        this.items.remove(item);
-        this.items.push(item);
         this.selection.add(item);
     },
     zoomIn() {
@@ -226,7 +224,7 @@ ODA({
                 @apply --vertical;
                 @apply --content;
             }
-            .block([selected]){
+            :host([selected]).block{
                 outline: 1px dashed black !important;
             }
         </style>
