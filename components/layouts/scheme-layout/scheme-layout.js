@@ -23,8 +23,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     get linkButtonStyle() {
         if (!this.focusedLink) return {};
         return {
-            top: (Math.abs(this.focusedLink.y1 + this.focusedLink.y2) - this.iconSize) / 2 + 'px',
-            left: (Math.abs(this.focusedLink.x1 + this.focusedLink.x2) - this.iconSize) / 2 + 'px',
+            top: Math.abs((this.focusedLink.y1 + this.focusedLink.y2 - this.iconSize) / 2) + 'px',
+            left: Math.abs((this.focusedLink.x1 + this.focusedLink.x2 - this.iconSize) / 2) + 'px',
         }
     },
     removeLink(link) {
@@ -330,6 +330,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         this.links = undefined;
     },
     get links(){
+        const SHIFT = 10;
+        const SHOULDER = 30;
         let pins = this.connectors?.length && this.$$('*') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
@@ -342,26 +344,25 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     link: link
                 }
                 const targetPin = this.layout.findPin(link)
-
                 const r = {};
                 r.xStart = r.x1 = Math.round((rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft);
                 r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop);
                 switch (this.align) {
                     case 't':{
-                         r.yStart -= 20;
-                         r.y1 = r.yStart - 50;
+                         r.yStart -= SHIFT;
+                         r.y1 = r.yStart - SHOULDER;
                     } break;
                     case 'r':{
-                        r.xStart += 20;
-                        r.x1 = r.xStart + 50;
+                        r.xStart += SHIFT;
+                        r.x1 = r.xStart + SHOULDER;
                     } break;
                     case 'b':{
-                        r.yStart += 20;
-                        r.y1 = r.yStart + 50;
+                        r.yStart += SHIFT;
+                        r.y1 = r.yStart + SHOULDER;
                     } break;
                     case 'l':{
-                        r.xStart -= 20;
-                        r.x1 = r.xStart - 50;
+                        r.xStart -= SHIFT;
+                        r.x1 = r.xStart - SHOULDER;
                     } break;
                 }
 
@@ -372,23 +373,23 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     r.yEnd = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
                     switch (targetPin.domHost.align) {
                         case 't':{
-                            r.yEnd -= 20;
-                            r.y2 = r.yEnd - 50;
+                            r.yEnd -= SHIFT;
+                            r.y2 = r.yEnd - SHOULDER;
                             r.x2 = r.xEnd;
                         } break;
                         case 'r':{
-                            r.xEnd += 20;
-                            r.x2 = r.xEnd + 50;
+                            r.xEnd += SHIFT;
+                            r.x2 = r.xEnd + SHOULDER;
                             r.y2 = r.yEnd;
                         } break;
                         case 'b':{
-                            r.yEnd += 20;
-                            r.y2 = r.yEnd + 50;
+                            r.yEnd += SHIFT;
+                            r.y2 = r.yEnd + SHOULDER;
                             r.x2 = r.xEnd;
                         } break;
                         case 'l':{
-                            r.xEnd -= 20;
-                            r.x2 = r.xEnd - 50;
+                            r.xEnd -= SHIFT;
+                            r.x2 = r.xEnd - SHOULDER;
                             r.y2 = r.yEnd;
                         } break;
                     }
@@ -415,6 +416,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     }
                 }
                 result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.xEnd},${r.yEnd}`;
+                Object.assign(result, r);
                 return result;
             })
         }).flat();
