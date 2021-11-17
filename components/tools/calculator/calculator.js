@@ -1,4 +1,4 @@
-ODA({is: 'oda-calculator', imports: '@oda/button',
+ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     template: /*html*/ `
         <style>
             :host {
@@ -13,6 +13,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             }
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
+        <oda-icon icon="icons:history" style="position: absolute;" @tap="getHistory()"></oda-icon>
             <span style="font-size: small" class="dimmed">{{result}}</span>
             <span style="font-size: large">{{error || expression || value}}
                 <sup disabled>{{degree}}</sup>
@@ -40,6 +41,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     signs: ['+', '-', '*', '/'],
     result: '0', // variable to display the calculated expression
     value: 0, // variable to display the result of the entered expression
+    history: [], // variable to save the history of operations
     error: '', // variable to display errors
     degree: '', // variable to display the power of a number on the monitor
     timerClear: '', // a variable containing a timer to clear the monitor
@@ -95,17 +97,32 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 return this[model.command]();
         }
         // checking for exceptions
+        if (model.label === '%') {
+            const signBeforePercent = this.getExpression().match(/\D(?=\d+\.?\d+?\%?$)/); // find the mathematical sign that is entered before the number with a percentage
+            if (signBeforePercent !== null && (signBeforePercent[0] === '+' || signBeforePercent[0] === '-')) { 
+                const numForPercent = this.getExpression().match(/\d+\.?\d*(?=\D\d+\.?\d+?\%?)/g), // find the number for which we want to calculate the percentage
+                      percent = numForPercent[0] / 100;
+                this.stack.push({label: '%', expr: '*' + percent})
+                this.getReactivity();
+                return 
+            } else {
+                this.stack.push(model);
+                this.getReactivity();
+                return 
+            }
+        }
         if (this.expression === '0' && model.label === 0) { 
             return 
         } 
-        if (this.stack[this.stack.length-1].name === 'E' && model.label.toString().match(/[0-9-]/) === null) {
+        if (this.stack[this.stack.length-1].label === 'EXP' && model.label.toString().match(/[0-9-]/) === null) {
             return
         }
         if (model.label === 'Inv') { // inversion check
             this.inverse = this.inverse ? false : true;
         }
-        if (model.label === 'Ans') {
-            if (this.getExpression().match(/[0-9]$/)) {
+        if (model.label === 'Ans' && this.expression !== '0') {
+            this.isResult();
+            if (this.getExpression().match(/[0-9.]$/)) {
                 this.stack.push({name: model.name, expr: `*${this.result.match(/(?<=\=\s).*/)}`});
             } else {
                 this.stack.push({name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)}`});
@@ -131,8 +148,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         } else if (model.label === 'EXP') {
             this.getExpression().match(/\D$/) ? false : this.expression === '0' ? false : this.stack.push(model);
         } else if (this.canBeDeleted(model)) { 
+            this.isResult();
             this.error = '';
-            this.result = `Ans = ${this.stack[0].label}` ; // displaying the previous answer
             this.stack.splice(0, 1, model);
         } else if (this.canBeReplaced(model)) {
             this.stack.splice(-1, 1, model);
@@ -152,14 +169,20 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.getReactivity();
         this.predicates = [];
         try {
-            if (this.stack[this.stack.length-1].name === 'E') {
+            if (this.stack[this.stack.length-1].name === 'E') { // if there is nothing after EXP, replace it with *1
                 this.stack[this.stack.length-1] = {expr: '*1'};
+            } else if (this.expression === ' Ans' && this.result === '0') {
+                this.result = 'Ans = 0';
+                this.stack = [{label: 0}];
+                return
             }
             const expr = this.getExpression();
-            if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not count
+            console.log(expr);
+            if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not calculate
                     return
             }
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
+            this.getHistory(this.expression, this.value);
             this.result = this.expression + ' =';
         }
         catch (e) {
@@ -170,6 +193,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.stack = [{label: this.value, result: true}]; // push the result to the stack
     },
     clear () {
+        this.isResult();
         this.stack = [{label: 0}];
         this.predicates = [];
         this.value = 0;
@@ -186,6 +210,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.getReactivity();
         }
         if (this.stack.length === 1) {
+            this.isResult();
             this.stack.splice(-1, 1, {label: 0});
             this.getReactivity();
         } else {
@@ -205,7 +230,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 model.label === 'ln' ||
                 model.label === 'log' ||
                 model.label === 'π' ||
-                model.label === 'e')
+                model.label === 'e' ||
+                model.label === 'Ans')
     },
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
@@ -227,6 +253,27 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return (i.expr || i.label);
         }).join('');
         return expr
+    },
+    // checking that the line contains the result
+    isResult () {
+        if (this.stack[this.stack.length-1].result) {
+            this.result = `Ans = ${this.stack[0].label}`;
+        }
+    },
+    getHistory (key, value) {
+        if (key && value) {
+            // const obj = {}
+            // obj[key] = value;
+            const expression = key,
+                  result = value, 
+                  historyExpression = `${expression} = ${result}`;
+            this.history.push(historyExpression);
+        } 
+        if (this.history.length !== 0) {
+            console.log(this.history)
+        } else {
+            console.log('История чиста')
+        }
     },
     calcFactorial (n) {
         return (n != 1) ? n * calcFactorial(n-1) : 1
