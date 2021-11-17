@@ -565,6 +565,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     r.x4 = r.x3 = r.xEnd;
                     r.y4 = r.y3 = r.yEnd;
                 }
+                Object.keys(r).forEach( key => {
+                    r[key] = Math.round(r[key]);
+                });
                 result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.x3},${r.y3} L${r.x4},${r.y4} L${r.xEnd},${r.yEnd}`;
                 Object.assign(result, r);
                 return result;
