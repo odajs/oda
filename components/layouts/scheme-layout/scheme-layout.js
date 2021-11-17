@@ -225,11 +225,9 @@ ODA({
                 min-height: 8px;
                 @apply --vertical;
                 @apply --content;
-                background: transparent;
             }
             .block([selected]){
-                /*@apply --shadow;*/
-                outline: 1px dashed black; !important
+                outline: 1px dashed black !important;
             }
         </style>
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
