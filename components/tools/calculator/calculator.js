@@ -122,22 +122,24 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             this.inverse = this.inverse ? false : true;
         }
         if (model.label === 'Ans') {
-            if (this.result === '0') {
+            if (this.result === '0') { 
                 this.result = 'Ans = 0';
             } 
             if (this.canBeDeleted(model)) {
                 this.isResult();
                 this.stack.splice(0, 1, {label: model.label, name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)[0]}`});
                 this.getReactivity(); 
-            } else if (this.getExpression().match(/[0-9.]$/)) {
+            } else if (this.getExpression().match(/[0-9.]$/)) { // if you use Ans after any number or point, multiplication is performed
                 this.stack.push({label: model.label, name: model.name, expr: `*${this.result.match(/(?<=\=\s).*/)[0]}`});
             } else {
                 this.stack.push({label: model.label, name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)[0]}`});
             }
             this.getReactivity();
-        } else if ((model.label === 'π' || model.label === 'e') && this.getExpression().match(/[0-9]$/) !== null) { // checking for constants
-            this.stack.push({label: model.label, expr: `*${model.expr}`});
-            this.getReactivity(); 
+        } else if (model.label === 'π' || model.label === 'e') { // checking for constants
+            if (this.getExpression().match(/[0-9]$/) !== null) {
+                this.stack.push({label: model.label, expr: `*${model.expr}`});
+                this.getReactivity(); 
+            }
         } else if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
             if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/) || this.getExpression().match(/\)/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
@@ -150,11 +152,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
                 this.predicates.shift();
             }
         } else if (model.label === '.') {
-            if (this.stack[this.stack.length-1].label === '%' || this.stack[this.stack.length-1].label === 'Ans') {
-                this.stack.push({label: ` * ${model.label}`})
+            if (this.canBeDeleted(model)) { 
+                this.isResult();
+                this.error = '';
+                this.stack.splice(0, 1, model);
+            } else if (this.stack[this.stack.length-1].label.match(/[%)]/) || this.stack[this.stack.length-1].label === 'Ans') {
+                this.stack.push({label: `*${model.label}`, name: ` * ${model.label}`})
+            } else if (this.stack[this.stack.length-1].label === '(') {
+                this.stack.push(model);
             } else {
-                const enteredNubers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
-                enteredNubers[(enteredNubers.length - 1)].match(/\./) || this.getExpression().match(/\D$/) ? false : this.stack.push(model);
+                const enteredNumbers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
+                enteredNumbers[(enteredNubers.length - 1)].match(/\./) ? false : this.stack.push(model);
             }
         } else if (model.label === 'EXP') {
             this.getExpression().match(/\D$/) ? false : this.expression === '0' ? false : this.stack.push(model);
@@ -171,8 +179,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         } else {
             this.stack.push(model);
         } 
-        if (model.predicate) 
+        if (model.predicate) {
             this.predicates.unshift({label: model.predicate, predicate: model.predicate});
+        }
             this.getReactivity();
     },
     calc () {
