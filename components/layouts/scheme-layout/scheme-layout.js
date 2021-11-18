@@ -11,9 +11,15 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         <svg :width :height style="z-index: 0">
             <path ~for="link in links" stroke="#666666" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
     `,
+    isFocused(item) {
+        return item?.id === this.focusedItem?.id;
+    },
+    isSelected(item) {
+        return (this.selection.find(i => i.id === item.id) ? true : false);
+    },
     focusedLink: null,
     focusLink(link) {
         this.focusedLink = link;
@@ -224,6 +230,9 @@ ODA({
             :host([selected]).block{
                 outline: 1px dashed black !important;
             }
+            .block{
+                border: 1px solid gray;
+            }
         </style>
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
         <oda-scheme-container-toolbar ~if="editMode && focusedItem?.id === item?.id" ></oda-scheme-container-toolbar>
@@ -231,24 +240,27 @@ ODA({
             <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :connectors="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.left" align="l" :connectors="item?.interfaces?.left"></oda-scheme-interface>
-                <div class="block" :is="item?.is || 'div'" ~props="item?.props" :focused="isFocused(item)"  :selected="isSelected(item)"></div>
+                <div class="block" :is="item?.is || 'div'" ~props="item?.props" :focused ~style="{outline: selected?'2px dashed gray':'0px'}"></div>
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.right" align="r" :connectors="item?.interfaces?.right"></oda-scheme-interface>
             </div>
             <oda-scheme-interface ~if="item?.interfaces?.bottom" align="b" :connectors="item?.interfaces?.bottom" class="horizontal"></oda-scheme-interface>
         </div>
     `,
+    props: {
+        focused: {
+            default: false,
+            // reflectToAttribute: true
+        },
+        selected: {
+            default: false,
+            // reflectToAttribute: true
+        }
+    },
     attached(){
         this.async(() => {
             this.updateLinks();
         }, 300);
     },
-    isFocused(item) {
-        return item?.id === this.focusedItem?.id;
-    },
-    isSelected(item) {
-        return (this.selection.find(i => i.id === item.id) ? true : false);
-    },
-    focused: false,
     updateLinks(){
         this.$$('oda-scheme-interface').forEach(i=>i.updateLinks());
     },
