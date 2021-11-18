@@ -9,7 +9,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <path ~for="link in links" stroke="#666666" :stroke-width="Object.equal(link, focusedLink) ? 3 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
+            <path ~for="link in links" stroke="#666666" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
@@ -333,6 +333,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         const SHIFT = 10;
         const SHOULDER = 30;
         const OUTSIDE_LINK_COLOR = '#bfbfbf';
+        const ARROW_LENGTH = 10;
+        const ARROW_WIDTH_HALF = 3;
         let pins = this.connectors?.length && this.$$('*') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
@@ -370,8 +372,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 if (targetPin) {
                     result.to = targetPin;
                     const targetRect = targetPin.getClientRect(this.layout);
-                    r.xEnd = (targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
-                    r.yEnd = (targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
+                    r.xEnd = Math.round(targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
+                    r.yEnd = Math.round(targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
                     switch (targetPin.domHost.align) {
                         case 't':{
                             r.yEnd -= SHIFT;
@@ -416,7 +418,40 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                         } break;
                     }
                 }
-                result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.xEnd},${r.yEnd}`;
+
+                const a = {}; // arrow
+                const side = targetPin ? targetPin.domHost.align : this.align;
+                const k = targetPin ? 1 : -1;
+                switch (side) {
+                    case 't':{
+                        a.x1 = r.xEnd + ARROW_WIDTH_HALF;
+                        a.y1 = r.yEnd - ARROW_LENGTH * k;
+                        a.x3 = r.xEnd - ARROW_WIDTH_HALF;
+                        a.y3 = a.y1;
+                    } break;
+                    case 'r':{
+                        a.x1 = r.xEnd + ARROW_LENGTH * k;
+                        a.y1 = r.yEnd + ARROW_WIDTH_HALF;
+                        a.x3 = a.x1;
+                        a.y3 = r.yEnd - ARROW_WIDTH_HALF;
+                    } break;
+                    case 'b':{
+                        a.x1 = r.xEnd - ARROW_WIDTH_HALF;
+                        a.y1 = r.yEnd + ARROW_LENGTH * k;
+                        a.x3 = r.xEnd + ARROW_WIDTH_HALF;
+                        a.y3 = a.y1;
+                    } break;
+                    case 'l':{
+                        a.x1 = r.xEnd - ARROW_LENGTH * k;
+                        a.y1 = r.yEnd - ARROW_WIDTH_HALF;
+                        a.x3 = a.x1;
+                        a.y3 = r.yEnd + ARROW_WIDTH_HALF;
+                    } break;
+                }
+                a.x2 = r.xEnd;
+                a.y2 = r.yEnd;
+
+                result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.xEnd},${r.yEnd} M${a.x1},${a.y1} L${a.x2},${a.y2} L${a.x3},${a.y3}`;
                 Object.assign(result, r);
                 return result;
             })
