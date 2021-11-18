@@ -1,5 +1,5 @@
 ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 @apply --vertical;
@@ -9,7 +9,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <path ~for="link in links" stroke="black" :stroke-width="Object.equal(link, focusedLink) ? 3 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
+            <path ~for="link in links" stroke="#666666" :stroke-width="Object.equal(link, focusedLink) ? 3 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
@@ -332,6 +332,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     get links(){
         const SHIFT = 10;
         const SHOULDER = 30;
+        const OUTSIDE_LINK_COLOR = '#bfbfbf';
         let pins = this.connectors?.length && this.$$('*') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
@@ -395,7 +396,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     }
                 }
                 else {
-                    result.stroke = 'gray';
+                    result.stroke = OUTSIDE_LINK_COLOR;
                     switch (this.align){
                         case 't':{
                             r.xEnd = r.x2 = r.x1;;
