@@ -764,7 +764,7 @@ ODA({is: "oda-table",
         return cols.reduce((res, col) => {
             if (col.$expanded && col.items?.length) {
                 const items = col.items.map((c, i) => {
-                    c.id = col.id + '-' + i;А
+                    c.id = col.id + '-' + i;
                     c.$parent = col;
                     return c;
                 });
