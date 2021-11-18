@@ -13,15 +13,15 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             }
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
-        <oda-icon icon="icons:history" style="position: absolute;" @tap="getHistory()"></oda-icon>
+        <oda-button icon="icons:history" style="position: absolute;" @tap="getHistory()" class="dimmed"></oda-button>
             <span style="font-size: small" class="dimmed">{{result}}</span>
-            <span style="font-size: large">{{error || expression || value}}
+            <span style="font-size: large; overflow: hidden">{{error || expression || value}}
                 <sup disabled>{{degree}}</sup>
                 <span disabled>{{predicate}}</span>
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
-            <oda-button class="raised flex" style="min-width: 30px; position: relative;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
+            <oda-button class="raised flex" style="min-width: 30px; position: relative; margin: 0 2px;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
                 <sup ~style="md.props?.supStyle">{{md.sup}}</sup>
             </oda-button>
         </div>
@@ -121,7 +121,27 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         if (model.label === 'Inv') { // inversion check
             this.inverse = this.inverse ? false : true;
         }
-        if (model.label === 'Ans') {
+        if (model.label === 'x!') {
+            try{
+                if (this.stack[this.stack.length-1].label === '%') {
+                    console.log(this.getExpression().match(/\d+\.?\d*\D\d+\.\d*$/))
+                    const exprForFactorial = (new Function([], `with (this) {return ${this.getExpression().match(/\d+\.?\d*\D\d+\.\d*$/)}}`)).call(this);
+                    this.stack.push({label: '!', expr: '*' + this.calcFactorial(exprForFactorial-1)});
+                } else if (this.getExpression().toString().match(/[0-9.]$/)) {
+                    this.stack.push({label: '!', expr: '*' + this.calcFactorial(this.getExpression().toString().match(/\d+\.?\d*$/) - 1)});
+                    this.getReactivity();
+                } else if (this.getExpression().toString().match(/[-+*/]$/)) {
+                    this.stack.splice(-1, 1, {label: '!', expr: '*' + this.calcFactorial(this.getExpression().toString().match(/\d+\.?\d*(?!\d)/) - 1)});
+                } else if (this.getExpression().match(/\)$/)) {
+                    const exprForFactorial = (new Function([], `with (this) {return ${this.getExpression().match(/\(.*\)$/)}}`)).call(this);
+                    this.stack.push({label: '!', expr: '*' + this.calcFactorial(exprForFactorial-1)});
+                } 
+            } catch (e) {
+                this.stack.push(model);
+                console.log(e);
+            }
+            this.getReactivity();
+        } else if (model.label === 'Ans') {
             if (this.result === '0') { 
                 this.result = 'Ans = 0';
             } 
@@ -156,13 +176,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
                 this.isResult();
                 this.error = '';
                 this.stack.splice(0, 1, model);
-            } else if (this.stack[this.stack.length-1].label.match(/[%)]/) || this.stack[this.stack.length-1].label === 'Ans') {
+            } else if (this.getExpression().match(/[%)]$/) || this.stack[this.stack.length-1].label === 'Ans') {
                 this.stack.push({label: `*${model.label}`, name: ` * ${model.label}`})
             } else if (this.stack[this.stack.length-1].label === '(') {
                 this.stack.push(model);
             } else {
                 const enteredNumbers = this.getExpression().match(/\d+\.?(\d*)?/g); // get an array of all entered numbers for further checks
-                enteredNumbers[(enteredNubers.length - 1)].match(/\./) ? false : this.stack.push(model);
+                enteredNumbers[(enteredNumbers.length - 1)].match(/\./) ? false : this.stack.push(model);
             }
         } else if (model.label === 'EXP') {
             this.getExpression().match(/\D$/) ? false : this.expression === '0' ? false : this.stack.push(model);
@@ -187,6 +207,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     calc () {
         this.stack.push(...this.predicates);
         this.predicates = [];
+        this.getReactivity();
         try {
             if (this.stack[this.stack.length-1].name === 'E') { // if there is nothing after EXP, replace it with *1
                 this.stack[this.stack.length-1] = {expr: '*1'};
@@ -239,6 +260,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         return (this.expression === '0' || this.stack[this.stack.length-1]?.result) 
                 && (model.label.toString().match(/[0-9.]/) ||
                 model.label === 'sin' ||
+                model.label === 'cos' ||
                 model.label === 'tan' ||
                 model.label === '(' ||
                 model.label === '√' ||
@@ -255,7 +277,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     },
     // checking the possibility of writing the closing bracket
     canWriteBracket () {
-        const lastOperation = this.stack[this.stack.length-1].label ? this.stack[this.stack.length-1].label : this.stack[this.stack.length-1].expr;
+        const lastOperation = this.stack[this.stack.length-1].label !== undefined ? this.stack[this.stack.length-1].label : this.stack[this.stack.length-1].expr;
         return lastOperation.toString().match(/[0-9%)]/) && this.predicates.length !== 0
     },
     // activation of reactivity
@@ -276,6 +298,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             this.result = `Ans = ${this.stack[0].label}`;
         }
     },
+    // show transaction history
     getHistory (key, value) {
         if (key && value) {
             const expression = key,
@@ -290,6 +313,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         }
     },
     calcFactorial (n) {
-        return (n != 1) ? n * calcFactorial(n-1) : 1
+        return (n != 1) ? n * this.calcFactorial(n-1) : 1
     } 
 })
