@@ -1765,8 +1765,7 @@ cells: {
                     <span class="label flex" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></span>
                     <oda-icon :show="showSort && sortIcon" title="sort" :icon="sortIcon" :sort="sortIndex"></oda-icon>
                 </div>
-
-                <div class="split" @tap.stop @track="_track" ~style="{minHeight: iconSize+'px', position: 'absolute', right: '0', top: '0', bottom: '0',}"></div>
+                <div class="split" @tap.stop @track="_track"></div>
             </div>
             <div class="flex horizontal filter-container" ~if="!column.$expanded && column.name && showFilter" style="align-items: center" @tap.stop>
                 <input class="flex filter-input" ::value="filter" @tap.stop>
