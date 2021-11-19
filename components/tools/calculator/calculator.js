@@ -11,8 +11,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             .header {
                 @apply --header
             }
+            .layout {
+                @apply --layout
+            }
         </style>
-        <div class="border vertical" style="margin-bottom: 16px; text-align: right">
+        <div class="border vertical" style="margin-bottom: 16px; text-align: right; border-radius: 5px">
         <oda-button icon="icons:history" style="position: absolute;" @tap="getHistory()" class="dimmed"></oda-button>
             <span style="font-size: small" class="dimmed">{{result}}</span>
             <span style="font-size: large; overflow: hidden">{{error || expression || value}}
@@ -21,20 +24,23 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
-            <oda-button class="raised flex" style="min-width: 30px; position: relative; margin: 0 2px; flex-grow: 20000" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
+            <oda-button class="raised flex" style="width: 12.5%; font-size: 16px; border-radius: 5px" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
                 <sup ~style="md.props?.supStyle">{{md.sup}}</sup>
             </oda-button>
         </div>
     `,
-    get predicate(){ // unclosed brackets
+    get predicate () { // unclosed brackets
         return this.predicates.map(i=>{
             return i.predicate;
         }).join('');
     },
-    get expression(){
+    get expression () {
         return this.stack.map(i=>{
             return (i.name || i.label);
         }).join('');
+    },
+    get cWidth () {
+        
     },
     predicates: [], // container for unclosed brackets
     stack: [{label: 0, initial: true}], // container for models of all pressed buttons
@@ -92,6 +98,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             model = {label: 'e', expr: '2.71828182846'};
         } else if (e === 'p') {
             model = {label: 'π', expr: '3.14159265359'}
+        } else if (e === 'Enter' || e === 'Backspace' || e === 'Escape') {
+            return
         }
         switch (model.command){
             case 'calc':
