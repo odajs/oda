@@ -231,7 +231,7 @@ ODA({
                 outline: 1px dashed black !important;
             }
             .block{
-                border: 1px solid gray;
+                border: 1px {{editMode?'dotted':'solid'}} gray;
                 @apply --content;
             }
         </style>
