@@ -304,26 +304,19 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     </style>
     <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;">
-        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
+        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @attached="attachedPin(con)"></div>
     </div>
     `,
-    observers: [
-        function addPinMethods(connectors) {
-            if (!this.connectors?.length) return;
-            this.async(()=> {
-                const sCons = this.connectors.filter(c => {return (Object.keys(c).find(k => typeof c[k] === 'function'))}) || [];
-                sCons.forEach(con => {
-                    const pin = this.$$('.pin').find(p => p.item.id === con.id);
-                    if (pin) {
-                        Object.keys(con).forEach(key => {
-                            if (key !== 'id' && key !== 'props')
-                                pin[key] = con[key];
-                        });
-                    }
-                });
-            }, 300);
-        }
-    ],
+    attachedPin(con) {
+        console.log('Pin is attached as ODA-component: ', con.id);
+        if (!con?.id) return;
+        const target = this.$$('.pin').find(p => p.item?.id === con.id);
+        if (!target) return;
+        Object.keys(con).forEach(key => {
+            if (typeof con[key] === 'function')
+                target.listen(key, con[key]);
+        });
+    },
     isVisiblePin(con) {
         if (!this.layout?.links?.length)
             return false;
@@ -349,7 +342,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         const OUTSIDE_LINK_COLOR = '#bfbfbf';
         const ARROW_LENGTH = 7;
         const ARROW_WIDTH_HALF = 4;
-        let pins = this.connectors?.length && this.$$('*') || [];
+        let pins = this.connectors?.length && this.$$('.pin') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
         });

@@ -47,27 +47,20 @@
                         },
                         {
                             "id": "1-r3",
+                            is: 'oda-icon',
                             props: {
                                 my: 'dfkjlsfjl',
+                                icon: 'icons:error',
+                                iconSize: 30,
                                 style:'background: red;',
-                                myFunc2: () => {
-                                    console.log('myFunc2 1-r3')
-                                }
                             },
-                            tap() {
+                            tap(e) {
+                                e.stopPropagation();
                                 console.log('tap on 1-r3');
                             },
-                            contextmenu() {
+                            contextmenu(e) {
+                                e.stopPropagation();
                                 console.log('contextmenu 1-r3');
-                            },
-                            onclick() {
-                                console.log('onclick 1-r3')
-                            },
-                            oncontextmenu() {
-                                console.log('oncontextmenu 1-r3');
-                            },
-                            myFunc1() {
-                                console.log('myFunc1 1-r3')
                             },
                             links: [
                                 {block: '3', pin: '3-l1'}
