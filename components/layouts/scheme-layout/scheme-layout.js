@@ -225,13 +225,14 @@ ODA({
                 min-width: 8px;
                 min-height: 8px;
                 @apply --vertical;
-                @apply --content;
+                /*@apply --content;*/
             }
             :host([selected]).block{
                 outline: 1px dashed black !important;
             }
             .block{
                 border: 1px solid gray;
+                @apply --content;
             }
         </style>
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
@@ -345,8 +346,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         const SHIFT = 10;
         const SHOULDER = 30;
         const OUTSIDE_LINK_COLOR = '#bfbfbf';
-        const ARROW_LENGTH = 10;
-        const ARROW_WIDTH_HALF = 3;
+        const ARROW_LENGTH = 7;
+        const ARROW_WIDTH_HALF = 4;
         let pins = this.connectors?.length && this.$$('*') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;

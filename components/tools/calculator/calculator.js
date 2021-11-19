@@ -26,7 +26,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             </oda-button>
         </div>
     `,
-    get predicate(){
+    get predicate(){ // unclosed brackets
         return this.predicates.map(i=>{
             return i.predicate;
         }).join('');
@@ -37,8 +37,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         }).join('');
     },
     predicates: [], // container for unclosed brackets
-    stack: [{label: 0}], // container for models of all pressed buttons
-    signs: ['+', '-', '*', '/'],
+    stack: [{label: 0, initial: true}], // container for models of all pressed buttons
     result: '0', // variable to display the calculated expression
     value: 0, // variable to display the result of the entered expression
     history: [], // variable to save the history of operations
@@ -89,7 +88,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             model = {label: e, predicate: ')'};
         } else if (e.match(/[-+/*]/)) {
             model = {label: e, name: ` ${e} `};
-        } 
+        } else if (e === 'e') {
+            model = {label: 'e', expr: '2.71828182846'};
+        } else if (e === 'p') {
+            model = {label: 'π', expr: '3.14159265359'}
+        }
         switch (model.command){
             case 'calc':
             case 'clear':
@@ -98,73 +101,78 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         }
         // checking for exceptions
         this.isResult();
+        if (this.result === '0') { 
+            this.result = 'Ans = 0';
+        } 
+        if (this.expression === '0' && model.label === 0) {
+            this.stack.splice(-1, 1, {label: 0}) 
+            return
+        } 
+        if (this.stack[this.stack.length-1].label === 'EXP' && model.label.toString().match(/[0-9-]/) === null) return
+        if (model.label === 'Inv') this.inverse = this.inverse ? false : true; // inversion check 
         if (model.label === '%') {
             const signBeforePercent = this.getExpression().match(/\D(?=\d+\.?\d+?\%?$)/); // find the mathematical sign that is entered before the number with a percentage
             if (signBeforePercent !== null && (signBeforePercent[0] === '+' || signBeforePercent[0] === '-')) { 
                 const numForPercent = this.getExpression().match(/\d+\.?\d*(?=\D\d+\.?\d+?\%?)/g), // find the number for which we want to calculate the percentage
                       percent = numForPercent[0] / 100;
                 this.stack.push({label: '%', expr: '*' + percent})
-                this.getReactivity();
-                return 
             } else {
-                this.stack.push(model);
-                this.getReactivity();
-                return 
+                this.stack.push(model); 
             }
-        }
-        if (this.expression === '0' && model.label === 0) { 
-            return 
-        } 
-        if (this.stack[this.stack.length-1].label === 'EXP' && model.label.toString().match(/[0-9-]/) === null) {
+            this.getReactivity();
             return
+        } 
+        if (model.label === '-') {
+        this.getExpression().match(/[*/]$/) ? this.stack.push(model) : this.canBeReplaced
+        this.getReactivity();
         }
-        if (model.label === 'Inv') { // inversion check
-            this.inverse = this.inverse ? false : true;
-        }
-        if (model.label === 'x!') {
+        if (model.label.toString().match(/[0-9]/) && this.expression === '0') {
+            this.stack.splice(-1, 1, model);
+        } else if (model.label === 'x!') {
             try{
-                if (this.stack[this.stack.length-1].label === '%') {
-                    console.log(this.getExpression().match(/\d+\.?\d*\D\d+\.\d*$/))
+                if (this.stack[this.stack.length-1].label === '%') { // if the last element is '%', first calculate the expression with a percentage
                     const exprForFactorial = (new Function([], `with (this) {return ${this.getExpression().match(/\d+\.?\d*\D\d+\.\d*$/)}}`)).call(this);
-                    this.stack.push({label: '!', expr: '*' + this.calcFactorial(exprForFactorial-1)});
-                } else if (this.getExpression().toString().match(/[0-9.]$/)) {
+                    console.log(exprForFactorial);
+                    this.factorialOfZero(exprForFactorial);
+                } else if (this.getExpression().toString().match(/[1-9.]$/)) { // if the last element is a number from 0 to 9, or a point, write the function for calculating the factorial
                     this.stack.push({label: '!', expr: '*' + this.calcFactorial(this.getExpression().toString().match(/\d+\.?\d*$/) - 1)});
-                    this.getReactivity();
-                } else if (this.getExpression().toString().match(/[-+*/]$/)) {
+                } else if (this.getExpression().toString().match(/[-+*/]$/)) { // if the last element is a mathematical sign, then we replace it with the factorial calculation function
                     this.stack.splice(-1, 1, {label: '!', expr: '*' + this.calcFactorial(this.getExpression().toString().match(/\d+\.?\d*(?!\d)/) - 1)});
-                } else if (this.getExpression().match(/\)$/)) {
+                } else if (this.getExpression().match(/\)$/)) { // if the last element is a closing bracket, then first calculate the expression inside the brackets
                     const exprForFactorial = (new Function([], `with (this) {return ${this.getExpression().match(/\(.*\)$/)}}`)).call(this);
-                    this.stack.push({label: '!', expr: '*' + this.calcFactorial(exprForFactorial-1)});
-                } 
+                    this.factorialOfZero(exprForFactorial);
+                } else if (this.stack[this.stack.length-1].label === 0) {
+                    this.factorialOfZero(0);
+                }
             } catch (e) {
                 this.stack.push(model);
                 console.log(e);
             }
-            this.getReactivity();
         } else if (model.label === 'Ans') {
-            if (this.result === '0') { 
-                this.result = 'Ans = 0';
-            } 
             if (this.canBeDeleted(model)) {
+                this.error = '';
                 this.isResult();
                 this.stack.splice(0, 1, {label: model.label, name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)[0]}`});
-                this.getReactivity(); 
             } else if (this.getExpression().match(/[0-9.]$/)) { // if you use Ans after any number or point, multiplication is performed
                 this.stack.push({label: model.label, name: model.name, expr: `*${this.result.match(/(?<=\=\s).*/)[0]}`});
             } else {
                 this.stack.push({label: model.label, name: model.name, expr: `${this.result.match(/(?<=\=\s).*/)[0]}`});
             }
-            this.getReactivity();
         } else if (model.label === 'π' || model.label === 'e') { // checking for constants
-            if (this.getExpression().match(/[0-9]$/) !== null) {
+            if (this.canBeDeleted(model)) {
+                this.stack.splice(-1, 1, model);
+                this.getReactivity();
+                return
+            }  
+            if (this.getExpression().match(/[0-9).]$/) !== null) {
                 this.stack.push({label: model.label, expr: `*${model.expr}`});
-                this.getReactivity(); 
+            } else {
+                this.stack.push(model);
             }
         } else if (model.label === '(' && this.expression !== '0' && !this.stack[this.stack.length-1]?.result) {
             this.stack.push(model);
             if (this.getExpression().match(/\d+\.?\d*\%?(?=\()/) || this.getExpression().match(/\)/)) { // if exist the number after which comes the bracket, add '*' in front of the bracket
                 this.stack[this.stack.length-1] = {label: model.label, predicate: ')', expr: '*' + model.label};
-                this.getReactivity();
             }
         } else if (model.label === ')') {
             if (this.canWriteBracket()) {
@@ -191,18 +199,15 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             this.error = '';
             this.stack.splice(0, 1, model);
         } else if (this.canBeReplaced(model)) {
+            if (this.getExpression().match(/[-+*/][-+*/]$/)) return
             this.stack.splice(-1, 1, model);
-            this.getReactivity();  
         } else if (model.label.toString().match(/[0-9]/) && this.getExpression().match(/\)$/)) {
             this.stack.push({label: model.label, expr: '*' + model.label});
-            this.getReactivity();
         } else {
             this.stack.push(model);
         } 
-        if (model.predicate) {
-            this.predicates.unshift({label: model.predicate, predicate: model.predicate});
-        }
-            this.getReactivity();
+        if (model.predicate) this.predicates.unshift({label: model.predicate, predicate: model.predicate});
+        this.getReactivity();
     },
     calc () {
         this.stack.push(...this.predicates);
@@ -214,9 +219,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             } 
             const expr = this.getExpression();
             console.log(expr);
-            if (expr.match(/\D$/) && this.signs.some(e => e === expr.match(/\D$/)[0])) { // if the expression ends with a mathematical sign, do not calculate
-                    return
-            }
+            if (expr.match(/[-+*/]$/)) return // if the expression ends with a mathematical sign, do not calculate
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
             this.getHistory(this.expression, this.value);
             this.result = this.expression + ' =';
@@ -231,34 +234,29 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     },
     clear () {
         this.isResult();
-        this.stack = [{label: 0}];
+        this.stack = [{label: 0, initial: true}];
         this.predicates = [];
         this.value = 0;
-        // this.result = '0';
         this.error = '';
     },
     back () {
         this.error = '';
-        if (this.getExpression().match(/\)$/)) {
-            this.predicates.unshift({label: ')', predicate: ')'});
-        }
+        if (this.getExpression().match(/\)$/)) this.predicates.unshift({label: ')', predicate: ')'});
         if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
             this.predicates.shift();
-            this.getReactivity();
         }
         if (this.stack.length === 1) {
             this.isResult();
-            this.stack.splice(-1, 1, {label: 0});
-            this.getReactivity();
+            this.stack.splice(-1, 1, {label: 0, initial: true});
         } else {
             this.stack.pop();
-            this.getReactivity();
         }
+        this.getReactivity();
     },
     // checking if the value in the output line can be deleted
     canBeDeleted (model) {
-        return (this.expression === '0' || this.stack[this.stack.length-1]?.result) 
-                && (model.label.toString().match(/[0-9.]/) ||
+        return ((this.stack[this.stack.length-1]?.initial) || this.stack[this.stack.length-1]?.result || this.error) &&
+                (model.label.toString().match(/[0-9.]/) ||
                 model.label === 'sin' ||
                 model.label === 'cos' ||
                 model.label === 'tan' ||
@@ -272,8 +270,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     },
     // checking the possibility of replacing the mathematical sign
     canBeReplaced (model) {
-        return  this.signs.some(e => e === this.stack[this.stack.length-1]?.label) && 
-                (this.signs.some((e) => e === model.label) || model.label === '%')
+    return  this.getExpression().match(/[-+*/]$/) && 
+            (model.label.toString().match(/[-+*/]/) || model.label === '%')
     },
     // checking the possibility of writing the closing bracket
     canWriteBracket () {
@@ -314,5 +312,15 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     },
     calcFactorial (n) {
         return (n != 1) ? n * this.calcFactorial(n-1) : 1
-    } 
+    },
+    // checking the number before the factorial for equality to 0 or 1
+    factorialOfZero (num) {
+        if (num === 0) {
+            this.stack.push({label: '!', expr: '**0'});
+        } else if (num === 1) {
+            this.stack.push({label: '!', expr: '*1'});
+        } else {
+            this.stack.push({label: '!', expr: '*' + this.calcFactorial(num-1)});
+        }
+    }
 })
