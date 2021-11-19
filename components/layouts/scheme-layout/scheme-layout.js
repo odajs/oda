@@ -309,14 +309,32 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     `,
     attachedPin(con) {
         console.log('Pin is attached as ODA-component: ', con.id);
-        if (!con?.id) return;
-        const target = this.$$('.pin').find(p => p.item?.id === con.id);
-        if (!target) return;
-        Object.keys(con).forEach(key => {
-            if (typeof con[key] === 'function')
-                target.listen(key, con[key]);
-        });
+        // if (!con?.id) return;
+        // const target = this.$$('.pin').find(p => p.item?.id === con.id);
+        // if (!target) return;
+        // Object.keys(con).forEach(key => {
+        //     if (typeof con[key] === 'function')
+        //         target.listen(key, con[key]);
+        // });
     },
+    observers:[
+        function addPinsLinsteners(connectors) {
+            if (connectors?.length) {
+                this.async(() => {
+                    connectors.forEach(con => {
+                        const target = this.$$('.pin').find(pin => pin.item.id === con.id);
+                        if (!target)
+                            // return this['#$obs$addPinsLinsteners'] = undefined;
+                            return;
+                        Object.keys(con).forEach(key => {
+                            if (typeof con[key] === 'function')
+                                target.addEventListener(key, con[key]);
+                        });
+                    });
+                }, 300);
+            }
+        }
+    ],
     isVisiblePin(con) {
         if (!this.layout?.links?.length)
             return false;

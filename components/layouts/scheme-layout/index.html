@@ -40,6 +40,7 @@
                         ]},
                         { "id": "1-r2", props: {}, tap(){
                                 //todo что-то делаем
+                                console.log('tap on 1-r2');
                             },
                             links: [
                                 {"block": "2", "pin": "2-l1"},
@@ -47,8 +48,9 @@
                         },
                         {
                             "id": "1-r3",
-                            is: 'oda-icon',
+                            // is: 'oda-icon',  // ! если раскомментировать, то данный объект подменит собой item контейнера
                             props: {
+
                                 my: 'dfkjlsfjl',
                                 icon: 'icons:error',
                                 iconSize: 30,
