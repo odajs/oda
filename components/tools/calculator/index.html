@@ -6,49 +6,49 @@
     calc.data = {
         rows: [
         [
-            {label: 'Rad'},
-            {label: 'Deg'},
-            {label: 'x!', name: '!'},
+            {label: 'Rad', props: {style: "width: 16.6%"}},
+            {label: 'Deg', props: {style: "width: 16.6%"}},
+            {label: 'x!', name: '!', props: {style: "width: 16.6%"}},
             {label: '(', predicate: ')'},
             {label: ')'},
             {label: '%', expr: '*0.01'},
             {label: '🠔', command: 'back'}
         ],
         [
-            {label: 'Inv'},
-            {label: 'sin',  name: ' sin(', expr: ' Math.sin(', predicate: ')'},
-            {label: 'ln', name: ' ln(', expr: ' Math.log(', predicate: ')'},
-            {label: 7},
-            {label: 8},
-            {label: 9},
-            {label: '/', name: ' / '}
+            {label: 'Inv', props: {style: "width: 16.6%"}},
+            {label: 'sin',  name: ' sin(', expr: ' Math.sin(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: 'ln', name: ' ln(', expr: ' Math.log(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: 7, props: {style: "width: 12.5%"}},
+            {label: 8, props: {style: "width: 12.5%"}},
+            {label: 9, props: {style: "width: 12.5%"}},
+            {label: '/', name: ' / ', props: {style: "width: 12.5%"}}
         ],
         [
-            {label: 'π', expr: '3.14159265359'},
-            {label: 'cos', name: ' cos(', expr: ' Math.cos(', predicate: ')'},
-            {label: 'log', name: ' log(', expr: ' 1/Math.log(10)*Math.log(', predicate: ')'},
-            {label: 4},
-            {label: 5},
-            {label: 6},
-            {label: '*', name: ' * '}
+            {label: 'π', expr: '3.14159265359', props: {style: "width: 16.6%"}},
+            {label: 'cos', name: ' cos(', expr: ' Math.cos(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: 'log', name: ' log(', expr: ' 1/Math.log(10)*Math.log(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: 4, props: {style: "width: 12.5%"}},
+            {label: 5, props: {style: "width: 12.5%"}},
+            {label: 6, props: {style: "width: 12.5%"}},
+            {label: '*', name: ' * ', props: {style: "width: 12.5%"}}
         ],
         [
-            {label: 'e', expr: '2.71828182846'},
-            {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')'},
-            {label: '√', name: ' √(', expr: ' Math.sqrt(', predicate: ')'},
-            {label: 1},
-            {label: 2},
-            {label: 3},
-            {label: '-', name: ' - '}
+            {label: 'e', expr: '2.71828182846', props: {style: "width: 16.6%"}},
+            {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: '√', name: ' √(', expr: ' Math.sqrt(', predicate: ')', props: {style: "width: 16.6%"}},
+            {label: 1, props: {style: "width: 12.5%"}},
+            {label: 2, props: {style: "width: 12.5%"}},
+            {label: 3, props: {style: "width: 12.5%"}},
+            {label: '-', name: ' - ', props: {style: "width: 12.5%"}}
         ],
         [
-            {label: 'Ans', name: ' Ans'},
-            {label: 'EXP', name: 'E', expr: '*10**'},
-            {label: 'x', props: {supStyle: {fontSize: '10px', position: 'absolute', top: '2px', right: '30%'}}, sup: 'y'},
-            {label: 0},
-            {label: '.'},
-            {label: '=', command:'calc'},
-            {label: '+', name: ' + '}
+            {label: 'Ans', name: ' Ans', props: {style: "width: 16.6%"}},
+            {label: 'EXP', name: 'E', expr: '*10**', props: {style: "width: 16.6%"}},
+            {label: 'x', props: {supStyle: {fontSize: '10px', position: 'absolute', top: '2px', right: '30%'}, }, sup: 'y'},
+            {label: 0, props: {style: "width: 12.5%"}},
+            {label: '.', props: {style: "width: 12.5%"}},
+            {label: '=', command:'calc', props: {class: "header raised flex", style: "width: 12.5%"}},
+            {label: '+', name: ' + ', props: {style: "width: 12.5%"}}
         ]
     ]}
 </script>

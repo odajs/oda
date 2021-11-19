@@ -165,9 +165,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
 
         },
         tap(e) {
-            this.selection.clear();
+            this.selection.clear(); // не срабатывет реактивность
             this.focusedItem = null;
             this.focusedLink = null;
+            this.render();
         },
         wheel(e) {
             if (e.ctrlKey) {
@@ -494,9 +495,15 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return;
         const pin = this.layout.findPin(pinFrom);
         if (pin) {
-            if (!pin.item.links)
-                pin.item.links = [];
-            pin.item.links.push(pinTo);
+            // if (!pin.item.links)
+            //     pin.item.links = [];
+            // pin.item.links.push(pinTo);
+            // // this.fire('linkCreated', { from: pinFrom, to: pinTo });
+            // this.layout.findBlock(pinFrom.block)?.save?.();
+
+            const links = pin.item.links || [];
+            links.push(pinTo);
+            pin.item.links = links;
             // this.fire('linkCreated', { from: pinFrom, to: pinTo });
             this.layout.findBlock(pinFrom.block)?.save?.();
         }

@@ -21,7 +21,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
-            <oda-button class="raised flex" style="min-width: 30px; position: relative; margin: 0 2px;" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
+            <oda-button class="raised flex" style="min-width: 30px; position: relative; margin: 0 2px; flex-grow: 20000" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
                 <sup ~style="md.props?.supStyle">{{md.sup}}</sup>
             </oda-button>
         </div>
