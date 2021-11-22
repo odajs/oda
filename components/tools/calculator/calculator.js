@@ -16,7 +16,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
             <span style="font-size: small" class="dimmed">{{result}}</span>
-            <span style="font-size: large">{{expression || value}}
+            <span style="font-size: large">{{expression || value || error || 0}}
                 <span disabled>{{predicate}}</span>
             </span>
         </div>
@@ -32,11 +32,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         return this.predicates.map(i=>i.predicate).join('');
     },
     get expression(){
-        return this.stack.map(i=>(i.name || i.label)).join('');
+        return this.stack.map(i=>(i.key || i.name)).join('');
     },
-    data: {
-        rows:[]
-    },
+    error: undefined,
     predicates: [],
     stack: [],
     result: '0',
@@ -44,16 +42,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     hostAttributes: {
         tabindex: 1
     },
-    keyBindings: {
-        p () {
-            alert('HI')
-        }
-    },
     tap (e) {
         const model = e.target.item;
         if (model.command && this[model.command])
             return this[model.command]();
-        if (this.predicates[0]?.predicate === (model.name || model.label)){ // checking closing brackets
+        if (this.predicates[0]?.predicate === (model.key || model.name)){ // checking closing brackets
             this.predicates.shift();
         }
         this.stack.push(model);
@@ -66,7 +59,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.stack.push(...this.predicates);
         this.expression = undefined;
         const expr = this.stack.map(i=>{
-            return (i.expr || i.name || i.label);
+            return (i.expr || i.name || i.key);
         }).join('');
         this.predicates = [];
         try{
@@ -74,7 +67,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.result = this.expression + ' =';
         }
         catch (e){
-            console.error(e)
+            this.error = e;
+            // console.error(e)
         }
         this.stack = [{label: this.value, result: true}];
     },
@@ -83,6 +77,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.predicate = [];
         this.value = 0;
         this.result = '0';
+        this.error = undefined;
     },
     back () {
         if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
