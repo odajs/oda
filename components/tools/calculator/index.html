@@ -12,15 +12,19 @@
                         "x!": {}
                     }, {
                         Inv: {},
-                        sin: {},
-                        ln: {}
+                        sin: {name: "sin(", expr: "Math.sin(", predicate: ')'},
+                        ln: {name: "ln(", expr: "Math.log(", predicate: ')'}
                     }, {
-                        "e":{},
-                        tan:{},
-                        "√":{}
+                        "π":{expr: '3.14159265359'},
+                        cos:{name: "cos(", expr: "Math.cos(", predicate: ')'},
+                        log:{name: "log(", expr: "Math.log10(", predicate: ')'}
+                    },{
+                        "e":{expr: "2.71828182846"},
+                        tan:{name: "tan(", expr: "Math.tan(", predicate: ')'},
+                        "√":{name: "√(", expr: "Math.sqrt(", predicate: ')'}
                     }, {
                         Ans:{},
-                        EXP:{},
+                        EXP:{name: "E", expr: "*10**"},
                         "XY":{key:"<div>X<sup>y</sup></div>"},
                     }
                 ],
@@ -33,7 +37,7 @@
                     {
                         "(": {predicate: ')'},
                         ")": {},
-                        "%": {}
+                        "%": {expr: "*0.01"}
                     }, {
                         7: {},
                         8: {},
@@ -59,9 +63,9 @@
                     {
                         "AC": {command: 'clear'}
                     }, {
-                        "÷": {name: '/'}
+                        "÷": {expr: '/'}
                     }, {
-                        "X":{name: '*'}
+                        "X":{expr: '*'}
                     }, {
                         "-":{}
                     }, {

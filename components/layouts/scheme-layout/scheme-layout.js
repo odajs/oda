@@ -9,11 +9,11 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         </style>
         <svg :width :height style="z-index: 0">
-            <path ~for="link in links" stroke="#666666" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" />
+            <path ~for="link in links" :stroke="linkColor" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" ~style="{opacity: link?.to ? 1 : 0.5}" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
-        <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
-        <oda-button ~for="outerLinks" :item icon="image:brightness-2" :rotate="(item.align==='b')?-90:(item.align==='l')?0:(item.align==='t'?90:180)" fill="gray" style="position:absolute; padding:0; border: 0" ~style="getOuterLinkStyle(item)" @tap.stop="outerLinkTap"></oda-button>
+        <oda-button ~if="editMode && focusedLink" icon="icons:delete" :fill="linkColor" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
+        <oda-button ~for="outerLinks" :item icon="image:brightness-2" :fill="linkColor" :rotate="(item.align==='b')?-90:(item.align==='l')?0:(item.align==='t'?90:180)" fill="gray" style="position:absolute; padding:0; border: 0" ~style="getOuterLinkStyle(item)" @tap.stop="outerLinkTap"></oda-button>
     `,
     isFocused(item) {
         return item?.id === this.focusedItem?.id;
@@ -94,7 +94,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             save: true
         },
         linkColor: {
-            default: 'orangered',
+            default: '#666666',
             save: true
         },
         snapToGrid: {
@@ -319,6 +319,10 @@ ODA({
     }
 });
 
+const PIN_SPACE = 10;
+const PIN_SHOULDER = 30;
+const ARROW_LENGTH = 7;
+const ARROW_WIDTH_HALF = 4;
 ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     template: /*html*/`
     <style>
@@ -387,12 +391,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     updateLinks(){
         this.links = undefined;
     },
+
     get links(){
-        const SHIFT = 10;
-        const SHOULDER = 30;
-        const OUTSIDE_LINK_COLOR = '#bfbfbf';
-        const ARROW_LENGTH = 7;
-        const ARROW_WIDTH_HALF = 4;
         let pins = this.connectors?.length && this.$$('.pin') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
@@ -411,20 +411,20 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop);
                 switch (this.align) {
                     case 't':{
-                         r.yStart -= SHIFT;
-                         r.y1 = r.yStart - SHOULDER;
+                         r.yStart -= PIN_SPACE;
+                         r.y1 = r.yStart - PIN_SHOULDER;
                     } break;
                     case 'r':{
-                        r.xStart += SHIFT;
-                        r.x1 = r.xStart + SHOULDER;
+                        r.xStart += PIN_SPACE;
+                        r.x1 = r.xStart + PIN_SHOULDER;
                     } break;
                     case 'b':{
-                        r.yStart += SHIFT;
-                        r.y1 = r.yStart + SHOULDER;
+                        r.yStart += PIN_SPACE;
+                        r.y1 = r.yStart + PIN_SHOULDER;
                     } break;
                     case 'l':{
-                        r.xStart -= SHIFT;
-                        r.x1 = r.xStart - SHOULDER;
+                        r.xStart -= PIN_SPACE;
+                        r.x1 = r.xStart - PIN_SHOULDER;
                     } break;
                 }
 
@@ -435,29 +435,28 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     r.yEnd = Math.round(targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
                     switch (targetPin.domHost.align) {
                         case 't':{
-                            r.yEnd -= SHIFT;
-                            r.y2 = r.yEnd - SHOULDER;
+                            r.yEnd -= PIN_SPACE;
+                            r.y2 = r.yEnd - PIN_SHOULDER;
                             r.x2 = r.xEnd;
                         } break;
                         case 'r':{
-                            r.xEnd += SHIFT;
-                            r.x2 = r.xEnd + SHOULDER;
+                            r.xEnd += PIN_SPACE;
+                            r.x2 = r.xEnd + PIN_SHOULDER;
                             r.y2 = r.yEnd;
                         } break;
                         case 'b':{
-                            r.yEnd += SHIFT;
-                            r.y2 = r.yEnd + SHOULDER;
+                            r.yEnd += PIN_SPACE;
+                            r.y2 = r.yEnd + PIN_SHOULDER;
                             r.x2 = r.xEnd;
                         } break;
                         case 'l':{
-                            r.xEnd -= SHIFT;
-                            r.x2 = r.xEnd - SHOULDER;
+                            r.xEnd -= PIN_SPACE;
+                            r.x2 = r.xEnd - PIN_SHOULDER;
                             r.y2 = r.yEnd;
                         } break;
                     }
                 }
                 else {
-                    result.stroke = OUTSIDE_LINK_COLOR;
                     switch (this.align){
                         case 't':{
                             r.xEnd = r.x2 = r.x1;;

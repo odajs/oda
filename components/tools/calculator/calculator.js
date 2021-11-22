@@ -28,11 +28,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             </div>
         </div>
     `,
-    get predicate(){
+    get predicate () {
         return this.predicates.map(i=>i.predicate).join('');
     },
-    get expression(){
-        return this.stack.map(i=>(i.key || i.name)).join('');
+    get expression () {
+        return this.stack.map(i=>(i.name || i.key)).join('');
     },
     error: undefined,
     predicates: [],
