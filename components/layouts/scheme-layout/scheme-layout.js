@@ -162,6 +162,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
 
                 } break;
                 case 'end': {
+                    if (this.inTrack)
+                        this.dispatchEvent(new Event('resize'));
                     this.lastdown = null;
                     this.async(() => {
                         this.inTrack = false;

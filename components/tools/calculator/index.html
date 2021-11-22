@@ -1,57 +1,118 @@
 <meta charset="utf-8">
-<oda-calculator id="calc" style="width: 290px"></oda-calculator>
+<oda-calculator id="calc" style="width: 500px;"></oda-calculator>
 <script type="module">
     import '/web/oda/oda.js';
     import './calculator.js';
     calc.data = {
+        cols: {
+            science: {
+                rows: [
+                    {
+                        "Rad | Deg": {},
+                        "x!": {}
+                    }, {
+                        Inv: {},
+                        sin: {},
+                        ln: {}
+                    }, {
+                        "e":{},
+                        tan:{},
+                        "√":{}
+                    }, {
+                        Ans:{},
+                        EXP:{},
+                        "XY":{key:"<div>X<sup>y</sup></div>"},
+                    }
+                ],
+                props:{
+                    // class: "header"
+                }
+            },
+            numpad: {
+                rows: [
+                    {
+                        "(": {},
+                        ")": {},
+                        "%": {}
+                    }, {
+                        7: {},
+                        8: {},
+                        9: {}
+                    }, {
+                        4:{},
+                        5:{},
+                        6:{}
+                    }, {
+                        1:{},
+                        2:{},
+                        3:{}
+                    },
+                    {
+                        0:{},
+                        ".":{},
+                        "=":{}
+                    }
+                ]
+            },
+            sign:{
+                rows:[
+                    {
+                        "AC": {}
+                    }, {
+                        "÷": {}
+                    }, {
+                        "X":{}
+                    }, {
+                        "-":{}
+                    }, {
+                        "+":{}
+                    }
+                ]
+            }
+        }
+    };
+  /*    /!*  cols:[
+            {name: 'science', rows:[{}, {}, {}, {}
+                    {label: 'Rad | Deg'},
+                    {label: 'x!'}
+                ]},
+
+        ],
         rows: [
-            [
-                {label: 'DC', command: 'digitCapacity', props: {class: "raised layout", style: "width: 28%; font-size: 16px"}, DC: true}
-            ],
-            [
-                {label: 'Rad', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'Deg', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'x!', name: '!', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: '(', predicate: ')'},
-                {label: ')'},
-                {label: '%', expr: '*0.01'},
-                {label: '🠔', command: 'back'}
-            ],
-            [
-                {label: 'Inv', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'sin',  name: ' sin(', expr: ' Math.sin(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'ln', name: ' ln(', expr: ' Math.log(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 7},
-                {label: 8},
-                {label: 9},
-                {label: '/', name: ' / '}
-            ],
-            [
-                {label: 'π', expr: '3.14159265359', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'cos', name: ' cos(', expr: ' Math.cos(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'log', name: ' log(', expr: ' 1/Math.log(10)*Math.log(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 4},
-                {label: 5},
-                {label: 6},
-                {label: '*', name: ' * '}
-            ],
-            [
-                {label: 'e', expr: '2.71828182846', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: '√', name: ' √(', expr: ' Math.sqrt(', predicate: ')', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 1},
-                {label: 2},
-                {label: 3},
-                {label: '-', name: ' - '}
-            ],
-            [
-                {label: 'Ans', name: ' Ans', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 11px"}},
-                {label: 'EXP', name: 'E', expr: '*10**', props: {class: "raised flex layout", style: "width: 16.6%; font-size: 9px"}},
-                {label: 'x', props: {supStyle: {fontSize: '70%', position: 'absolute', top: '5px', right: '40%'}, style: "width: 16.6%; min-width: 30px; position: relative; margin: 0 2px; font-size: 11px", class: "raised flex layout"}, sup: 'y'},
-                {label: 0},
-                {label: '.', props: {style: "width: 12.5%; font-size: 18px; border-radius: 5px"}},
-                {label: '=', command:'calc', props: {class: "raised flex header"}},
-                {label: '+', name: ' + '}
-            ]
-    ]}
+        [
+            {label: 'C', command: 'clear'},
+            {label: '%', expr: '*0.01'},
+            {label: '🠔', command: 'back'}
+        ],
+        [
+            {label: 1},
+            {label: 2},
+            {label: 3},
+            {label: '*', name: ' * '}
+        ],
+        [
+            {label: 4},
+            {label: 5},
+            {label: 6},
+            {label: '/', name: ' / '}
+        ],
+        [
+            {label: 7},
+            {label: 8},
+            {label: 9},
+            {label: '-', name: ' - '}
+        ],
+        [
+            {label: 0},
+            {label: '.'},
+            {label: '=', props: {class: "header", icon:"class"}, command:'calc'},
+            {label: '+', name: ' + '}
+        ],
+        [
+            {label: '(', predicate: ')'},
+            {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
+            {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')'},
+            {label: ')'},*!/
+        ]
+    ]}*/
 </script>

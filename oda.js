@@ -1364,9 +1364,33 @@ if (!window.ODA) {
             const props = exec.call(this, fn, p);
             for (let i in props) {
                 if(i.startsWith('#') || i.startsWith('$')) continue;
-                const val = props[i];
-                if (val === undefined) continue;
-                $el.setProperty(i, val);
+                let s = props[i];
+                // switch (i){
+                //     case 'class':{
+                //         if (!Object.equal($el.$class, s)) {
+                //             $el.$class = s;
+                //             if (typeof s === 'object')
+                //                 s = Object.keys(s).filter(i => s[i]).join(' ');
+                //             if ($el.$node?.vals?.class)
+                //                 s = (s ? (s + ' ') : '') + $el.$node.vals.class;
+                //             $el.setAttribute('class', s);
+                //         }
+                //     } break;
+                //     case 'style':{
+                //         if (!Object.equal($el.$style, s, true)) {
+                //             $el.$style = s;
+                //             if (Array.isArray(s))
+                //                 s = s.join('; ');
+                //             else if (isObject(s))
+                //                 s = Object.keys(s).filter(i => s[i]).map(i => i.toKebabCase() + ': ' + s[i]).join('; ');
+                //             if ($el.$node?.vals?.style)
+                //                 s = $el.$node.vals.style + (s ? ('; ' + s) : '');
+                //         }
+                //     } break;
+                // }
+
+                if (s === undefined) continue;
+                $el.setProperty(i, s);
             }
         },
         ref($el, fn, p) {
@@ -1394,7 +1418,7 @@ if (!window.ODA) {
                 $el.$class = s;
                 if (typeof s === 'object')
                     s = Object.keys(s).filter(i => s[i]).join(' ');
-                if ($el.$node.vals && $el.$node.vals.class)
+                if ($el.$node?.vals?.class)
                     s = (s ? (s + ' ') : '') + $el.$node.vals.class;
                 $el.setAttribute('class', s);
             }
@@ -1407,7 +1431,7 @@ if (!window.ODA) {
                     s = s.join('; ');
                 else if (isObject(s))
                     s = Object.keys(s).filter(i => s[i]).map(i => i.toKebabCase() + ': ' + s[i]).join('; ');
-                if ($el.$node.vals && $el.$node.vals.style)
+                if ($el.$node?.vals?.style)
                     s = $el.$node.vals.style + (s ? ('; ' + s) : '');
                 $el.setAttribute('style', s);
             }
@@ -1454,6 +1478,13 @@ if (!window.ODA) {
                 items = await items;
             else if (typeof items === 'string')
                 items = items.split('');
+            else if (isObject(items) && !Array.isArray(items))
+                items = Object.keys(items).map(key=>{
+                    const obj = items[key];
+                    if (obj)
+                        obj.key = obj.key || key;
+                    return obj;
+                });
             if (!Array.isArray(items)) {
                 items = +items || 0;
                 if (items < 0)
