@@ -51,7 +51,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
         this.stack.push(model);
         if (model.predicate)
-            this.predicates.unshift({label: model.predicate, predicate: model.predicate});
+            this.predicates.unshift({key: model.predicate, predicate: model.predicate});
         this.expression = undefined;
         this.predicate = undefined;
     },
@@ -68,13 +68,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
         catch (e){
             this.error = e;
-            // console.error(e)
+            console.error(e)
         }
         this.stack = [{label: this.value, result: true}];
     },
     clear () {
         this.stack = [{label: 0}];
-        this.predicate = [];
+        this.predicates = [];
         this.value = 0;
         this.result = '0';
         this.error = undefined;
