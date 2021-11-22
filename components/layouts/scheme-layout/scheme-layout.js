@@ -13,6 +13,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
+        <oda-button ~for="outerLinks" :item icon="image:brightness-2" :rotate="(item.align==='b')?-90:(item.align==='l')?0:(item.align==='t'?90:180)" fill="gray" style="position:absolute; padding:0; border: 0" ~style="getOuterLinkStyle(item)" @tap.stop="outerLinkTap"></oda-button>
     `,
     isFocused(item) {
         return item?.id === this.focusedItem?.id;
@@ -73,6 +74,12 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             return links;
         return undefined;
     },
+    get outerLinks() {
+        return this.links?.filter?.(link => {
+            return !link.to;
+        }) || [];
+    },
+
     props: {
         editMode: {
             type: Boolean,
@@ -214,6 +221,30 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     removeBlock(block) {
         this.items.remove(block);
         this.save();
+    },
+    getOuterLinkStyle(item) {
+        const style = {};
+        switch(item.align) {
+            case 'l': {
+                style.left = 0 + 'px';
+                style.top = item.y2 - this.iconSize / 2 + 'px';
+            } break;
+            case'r': {
+                style.left = item.x2 + 'px';
+                style.top = item.y2 - this.iconSize / 2 + 'px';
+            } break;
+            case 't': {
+                style.left = item.x2 - this.iconSize / 2 + 'px';
+                style.top = 0 + 'px';
+            } break;
+            case 'b': {
+                style.left = item.x2 - this.iconSize / 2 + 'px';
+                style.top = item.y2 + 'px';
+            } break;
+        }
+        return style;
+    },
+    outerLinkTap(e) {
     }
 });
 
@@ -369,7 +400,8 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return pin.item.links.map((link)=>{
                 const result = {
                     from: pin,
-                    link: link
+                    link: link,
+                    align: this.align
                 }
                 const targetPin = this.layout.findPin(link)
                 const r = {};
@@ -427,19 +459,23 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     switch (this.align){
                         case 't':{
                             r.xEnd = r.x2 = r.x1;;
-                            r.y2 = r.yEnd = 0;
+                            // r.y2 = r.yEnd = 0;
+                            r.y2 = r.yEnd = this.layout?.iconSize;
                         } break;
                         case 'r':{
                             r.yEnd = r.y2 = r.y1;
-                            r.x2 = r.xEnd = this.layout?.width;
+                            // r.x2 = r.xEnd = this.layout?.width;
+                            r.x2 = r.xEnd = this.layout?.width - this.layout?.iconSize;
                         } break;
                         case 'b':{
                             r.xEnd = r.x2 = r.x1;
-                            r.y2 = r.yEnd = this.layout.height;
+                            // r.y2 = r.yEnd = this.layout.height;
+                            r.y2 = r.yEnd = this.layout.height - this.layout?.iconSize;
                         } break;
                         case 'l':{
                             r.yEnd = r.y2 = r.y1;
-                            r.x2 = r.xEnd = 0;
+                            // r.x2 = r.xEnd = 0;
+                            r.x2 = r.xEnd = this.layout?.iconSize;
                         } break;
                     }
                 }
@@ -506,16 +542,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             return;
         const pin = this.layout.findPin(pinFrom);
         if (pin) {
-            // if (!pin.item.links)
-            //     pin.item.links = [];
-            // pin.item.links.push(pinTo);
-            // // this.fire('linkCreated', { from: pinFrom, to: pinTo });
-            // this.layout.findBlock(pinFrom.block)?.save?.();
-
             const links = pin.item.links || [];
             links.push(pinTo);
             pin.item.links = links;
-            // this.fire('linkCreated', { from: pinFrom, to: pinTo });
             this.layout.findBlock(pinFrom.block)?.save?.();
         }
     },

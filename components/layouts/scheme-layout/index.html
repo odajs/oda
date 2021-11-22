@@ -72,11 +72,13 @@
                     "left": [
                         { "id": '1-l1'},
                         { "id": '1-l2', links: [
+                        {block: '5', pin: '1'}
                         ]}
                     ],
                     "bottom": [
                         { "id": '1-b1'},
                         { "id": '1-b2', links: [
+                            {block: '5', pin: '1'}
                         ]}
                     ],
                 }
@@ -125,6 +127,10 @@
                     ]
                 }
             }
-        ]
+        ],
+
+        outerLinkTap(e) {
+            console.log('outerLink tap: ', e.target.item);
+        }
     });
 </script>

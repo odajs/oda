@@ -19,28 +19,31 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         <oda-button icon="icons:history" style="position: absolute;" @tap="getHistory()" class="dimmed"></oda-button>
             <span style="font-size: small" class="dimmed">{{result}}</span>
             <span style="font-size: large; overflow: hidden">{{error || expression || value}}
-                <sup disabled>{{degree}}</sup>
+                <sup>{{power}}</sup>
                 <span disabled>{{predicate}}</span>
             </span>
         </div>
         <div ~for="data?.rows" class="horizontal between" style="margin-top: 8px;" >
             <oda-button class="raised flex" style="width: 12.5%; font-size: 16px; border-radius: 5px" ~for="md in item" :label="md.label" @tap="tap" @mousedown="mousedown" @mouseup="mouseup" :model="md" ~props="md.props">
                 <sup ~style="md.props?.supStyle">{{md.sup}}</sup>
+                <span disabled ~if="md.DC">{{DC}}</span>
             </oda-button>
         </div>
     `,
     get predicate () { // unclosed brackets
-        return this.predicates.map(i=>{
+        return this.predicates.map(i => {
             return i.predicate;
         }).join('');
     },
     get expression () {
-        return this.stack.map(i=>{
+        return this.stack.map(i => {
             return (i.name || i.label);
         }).join('');
     },
-    get cWidth () {
-        
+    get power () {
+        return this.powerStack.map(i => {
+            return(i.label);
+        }).join('');
     },
     predicates: [], // container for unclosed brackets
     stack: [{label: 0, initial: true}], // container for models of all pressed buttons
@@ -48,9 +51,11 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
     value: 0, // variable to display the result of the entered expression
     history: [], // variable to save the history of operations
     error: '', // variable to display errors
-    degree: '', // variable to display the power of a number on the monitor
+    power: '', // variable to display the power of a number on the monitor
     timerClear: '', // a variable containing a timer to clear the monitor
     inverse: false, // variable containing the flag of inversion of some functions
+    powerStack: [],
+    DC: ' = 0',
     hostAttributes: {
         tabindex: 1
     },
@@ -98,17 +103,23 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             model = {label: 'e', expr: '2.71828182846'};
         } else if (e === 'p') {
             model = {label: 'π', expr: '3.14159265359'}
-        } else if (e === 'Enter' || e === 'Backspace' || e === 'Escape') {
+        } else if (e === '%') {
+            model = {label: '%', expr: '*0.01'}
+        } else if (e === 'Enter' || e === 'Backspace' || e === 'Escape' || e === 'Shift') {
             return
         }
         switch (model.command){
             case 'calc':
             case 'clear':
             case 'back':
+            case 'digitCapacity':
                 return this[model.command]();
         }
         // checking for exceptions
         this.isResult();
+        if (this.power && model.label.toString().match(/[0-9%.]/)) {
+            // this.power =  
+        }
         if (this.result === '0') { 
             this.result = 'Ans = 0';
         } 
@@ -131,8 +142,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             return
         } 
         if (model.label === '-') {
-        this.getExpression().match(/[*/]$/) ? this.stack.push(model) : this.canBeReplaced
-        this.getReactivity();
+            this.getExpression().match(/[*/]$/) ? this.stack.push(model) : this.canBeReplaced
+            this.getReactivity();
+        }
+        if (model.label === 'x') {
+            this.powerStack.push({label: '□', expr: '**'});
+            this.power = undefined;
+            return
         }
         if (model.label.toString().match(/[0-9]/) && this.expression === '0') {
             this.stack.splice(-1, 1, model);
@@ -229,6 +245,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             console.log(expr);
             if (expr.match(/[-+*/]$/)) return // if the expression ends with a mathematical sign, do not calculate
             this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
+            this.value = this.value.toFixed((+this.DC.match(/\d$/)[0]));
             this.getHistory(this.expression, this.value);
             this.result = this.expression + ' =';
         }
@@ -246,6 +263,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
         this.predicates = [];
         this.value = 0;
         this.error = '';
+        this.power = '';
     },
     back () {
         this.error = '';
@@ -260,6 +278,21 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             this.stack.pop();
         }
         this.getReactivity();
+    },
+    digitCapacity () {
+        if (this.DC === ' = 0') {
+            this.DC = ' = 1';
+        } else if (this.DC === ' = 1') {
+            this.DC = ' = 2';
+        } else if (this.DC === ' = 2') {
+            this.DC = ' = 3';
+        } else if (this.DC === ' = 3') {
+            this.DC = ' = 4';
+        } else if (this.DC === ' = 4') {
+            this.DC = ' = 5';
+        } else if (this.DC === ' = 5') {
+            this.DC = ' = 0';
+        }
     },
     // checking if the value in the output line can be deleted
     canBeDeleted (model) {
