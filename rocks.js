@@ -612,7 +612,83 @@ if (!globalThis.KERNEL) {
             return false;
         };
     }
-
+    Date:{
+        if (!Date.prototype.addDays) {
+            Object.defineProperty(Date.prototype, 'addDays', {
+                enumerable: false, value: function (num) {
+                    let value = this.valueOf();
+                    value += 86400000 * num;
+                    return new Date(value);
+                }
+            });
+        }
+    
+        if (!Date.prototype.addSeconds) {
+            Object.defineProperty(Date.prototype, 'addSeconds', {
+                enumerable: false, value: function (num) {
+                    let value = this.valueOf();
+                    value += 1000 * num;
+                    return new Date(value);
+                }
+            });
+        }
+    
+        if (!Date.prototype.addMinutes) {
+            Object.defineProperty(Date.prototype, 'addMinutes', {
+                enumerable: false, value: function (num) {
+                    let value = this.valueOf();
+                    value += 60000 * num;
+                    return new Date(value);
+                }
+            });
+        }
+    
+        if (!Date.prototype.addHours) {
+            Object.defineProperty(Date.prototype, 'addHours', {
+                enumerable: false, value: function (num) {
+                    let value = this.valueOf();
+                    value += 3600000 * num;
+                    return new Date(value);
+                }
+            });
+        }
+    
+        Date.isLeapYear = function (year) {
+            return (((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0));
+        };
+    
+        Date.getDaysInMonth = function (year, month) {
+            return [31, (Date.isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
+        };
+    
+        if (!Date.prototype.isLeapYear) {
+            Object.defineProperty(Date.prototype, 'isLeapYear', {
+                enumerable: false, value: function () {
+                    return Date.isLeapYear(this.getFullYear());
+                }
+            });
+        }
+    
+        if (!Date.prototype.getDaysInMonth) {
+            Object.defineProperty(Date.prototype, 'getDaysInMonth', {
+                enumerable: false, value: function () {
+                    return Date.getDaysInMonth(this.getFullYear(), this.getMonth());
+                }
+            });
+        }
+    
+        if (!Date.prototype.addMonths) {
+            Object.defineProperty(Date.prototype, 'addMonths', {
+                enumerable: false, value: function (num) {
+                    const n = this.getDate();
+                    this.setDate(1);
+                    this.setMonth(this.getMonth() + num);
+                    this.setDate(Math.min(n, this.getDaysInMonth()));
+                    return this;
+                }
+            });
+        }
+    }
     Array:{
         const fnIncl = Array.prototype.includes;
         Object.defineProperty(Array.prototype, 'includes', {
