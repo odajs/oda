@@ -1363,8 +1363,15 @@ if (!window.ODA) {
         props($el, fn, p) {
             const props = exec.call(this, fn, p);
             for (let i in props) {
-                if(i.startsWith('#') || i.startsWith('$')) continue;
-                let s = props[i];
+                if (i.startsWith('#') || i.startsWith('$')) continue;
+                let val = props[i];
+                if (val === undefined) continue;
+                const map = { class: ' ', style: ';' };
+                if (Object.keys(map).includes(i)) {
+                    const oldVal = $el.getAttribute(i);
+                    // список уникальных значений из старого и нового значения
+                    if (oldVal) val = [...new Set([...oldVal.trim().replace(/ +/g, ' ').split(map[i]), ...val.trim().replace(/ +/g, ' ').split(map[i])])].join(map[i]);
+                }
                 // switch (i){
                 //     case 'class':{
                 //         if (!Object.equal($el.$class, s)) {
@@ -1388,9 +1395,7 @@ if (!window.ODA) {
                 //         }
                 //     } break;
                 // }
-
-                if (s === undefined) continue;
-                $el.setProperty(i, s);
+                $el.setProperty(i, val);
             }
         },
         ref($el, fn, p) {
