@@ -14,6 +14,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button, @oda/icons',
             .layout {
                 @apply --layout
             }
+            .horizontal-end {
+                @apply --horizontal-end
+            }
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right; border-radius: 5px">
         <oda-button icon="icons:history" style="position: absolute;" @tap="getHistory()" class="dimmed"></oda-button>

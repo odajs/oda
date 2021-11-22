@@ -200,7 +200,7 @@ ODA({is: "oda-table",
                 </div>
             </div>
         </div>
-        <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; selectedRows.clear()"></div>
+        <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; clearSelection()"></div>
         <div ref="footer" class="no-flex horizontal header sticky" style="bottom: 0px;" ~show="showFooter" ~style="{maxHeight: _rowHeight+'px',  minHeight: _rowHeight+'px',  width:(autoWidth?'auto':(_scrollWidth + 'px'))}">
             <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
         </div>
@@ -1062,10 +1062,12 @@ ODA({is: "oda-table",
             default: return;
         }
         this.selectedRows.push(item);
+        this.fire('selected-rows-changed', this.selectedRows);
     },
     clearSelection() {
         this.selectedRows.splice(0);
         this._selectedAll = false;
+        this.fire('selected-rows-changed', this.selectedRows);
         this.render();
     },
     scrollToItem(item) {
