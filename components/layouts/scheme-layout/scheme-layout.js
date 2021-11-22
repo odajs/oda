@@ -481,9 +481,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 return result;
             })
         }).flat();
-        if(links.length)
-            return links;
-        return undefined;
+        // if(links.length)
+        //     return links;
+        return links;
     },
     connectors: [],
     dragstart(e) {

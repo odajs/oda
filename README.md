@@ -1,5 +1,5 @@
 # [ODA Framework](https://odajs.org/)
- [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/odajs/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/oda-framework.svg?style=flat)](https://www.npmjs.com/oda-framework) [![CircleCI Status](https://circleci.com/gh/facebook/react.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/facebook/react) [![PRs Welcome](https://img.shields.io/badge/ODA-welcome-brightgreen.svg)](https://odajs.org/web/oda/learn/docs/how-to-contribute.html#your-first-pull-request)
+ [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/odajs/odajs/blob/main/LICENSE) [![npm version](https://img.shields.io/npm/v/oda-framework.svg?style=flat)](https://www.npmjs.com/oda-framework) [![CircleCI Status](https://circleci.com/gh/facebook/react.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/facebook/react) [![Welcome1](https://img.shields.io/badge/ODA-welcome-brightgreen.svg)](https://odajs.org/#learn/guide/introduction/introduction.md)
 
 It's a progressive ES framework based on the technology of Web Components and designed especially for rapid development of custom UI/UX for web applications.
 
@@ -25,7 +25,7 @@ ODA Framework supports all browsers that are [ES5-compliant](http://kangax.githu
 
 ## Documentation
 
-You can find the ODA Framework documentation [on the website](https://odajs.org/learn/docs). 
+You can find the ODA Framework documentation [on the website](https://odajs.org/learn/docs).
 
 Check out the [Getting Started](https://odajs.org/learn/docs/getting-started.html) page for a quick overview.
 
