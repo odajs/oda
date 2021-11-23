@@ -11,7 +11,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         <svg :width :height style="z-index: 0">
             <path ~for="link in links" :stroke="linkColor" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" ~style="{opacity: link?.to ? 1 : 0.5}" />
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
         <oda-button ~if="editMode && focusedLink" icon="icons:delete" :fill="linkColor" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
         <oda-button ~for="outerLinks" :item icon="image:brightness-2" :fill="linkColor" :rotate="(item.align==='b')?-90:(item.align==='l')?0:(item.align==='t'?90:180)" fill="gray" style="position:absolute; padding:0; border: 0" ~style="getOuterLinkStyle(item)" @tap.stop="outerLinkTap"></oda-button>
     `,
@@ -396,13 +396,37 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         this.links = undefined;
     },
 
+    getClientRect(target, host) {
+        const zoom = this.zoom || 1;
+        let rect = target.getBoundingClientRect();
+        if (host) {
+            const rectHost = host.getBoundingClientRect?.() || host;
+            const res = { x: 0, y: 0, top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 };
+            for (let n in res)
+                res[n] = rect[n];
+            res.x -= rectHost.x / zoom || 0;
+            res.y -= rectHost.y / zoom || 0;
+            res.top -= rectHost.top / zoom || 0;
+            res.left -= rectHost.left / zoom || 0;
+            res.bottom -= rectHost.top / zoom || 0;
+            res.right -= rectHost.left / zoom || 0;
+            rect = res;
+            rect.host = host;
+        }
+        return rect;
+    },
     get links(){
+        const aWidth = ARROW_WIDTH_HALF * this.zoom;
+        const aLength = ARROW_LENGTH * this.zoom;
+        const space = PIN_SPACE * this.zoom;
+        const shoulder = PIN_SHOULDER * this.zoom;
+
         let pins = this.connectors?.length && this.$$('.pin') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
         });
         const links = pins.map(pin=>{
-            const rect = pin.getClientRect(this.layout);
+            const rect = this.getClientRect(pin, this.layout);
             return pin.item.links.map((link)=>{
                 const result = {
                     from: pin,
@@ -411,51 +435,51 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 }
                 const targetPin = this.layout.findPin(link)
                 const r = {};
-                r.xStart = r.x1 = Math.round((rect.left + rect.width / 2) * this.zoom + this.layout.scrollLeft);
-                r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom + this.layout.scrollTop);
+                r.xStart = r.x1 = Math.round((rect.left + rect.width / 2) * this.zoom) + this.layout.scrollLeft;
+                r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom) + this.layout.scrollTop;
                 switch (this.align) {
                     case 't':{
-                         r.yStart -= PIN_SPACE;
-                         r.y1 = r.yStart - PIN_SHOULDER;
+                         r.yStart -= space;
+                         r.y1 = r.yStart - shoulder;
                     } break;
                     case 'r':{
-                        r.xStart += PIN_SPACE;
-                        r.x1 = r.xStart + PIN_SHOULDER;
+                        r.xStart += space;
+                        r.x1 = r.xStart + shoulder;
                     } break;
                     case 'b':{
-                        r.yStart += PIN_SPACE;
-                        r.y1 = r.yStart + PIN_SHOULDER;
+                        r.yStart += space;
+                        r.y1 = r.yStart + shoulder;
                     } break;
                     case 'l':{
-                        r.xStart -= PIN_SPACE;
-                        r.x1 = r.xStart - PIN_SHOULDER;
+                        r.xStart -= space;
+                        r.x1 = r.xStart - shoulder;
                     } break;
                 }
 
                 if (targetPin) {
                     result.to = targetPin;
-                    const targetRect = targetPin.getClientRect(this.layout);
-                    r.xEnd = Math.round(targetRect.left + targetRect.width / 2) * this.zoom + this.layout.scrollLeft;
-                    r.yEnd = Math.round(targetRect.top + targetRect.height / 2) * this.zoom + this.layout.scrollTop;
+                    const targetRect = this.getClientRect(targetPin, this.layout);
+                    r.xEnd = Math.round((targetRect.left + targetRect.width / 2) * this.zoom) + this.layout.scrollLeft;
+                    r.yEnd = Math.round((targetRect.top + targetRect.height / 2) * this.zoom) + this.layout.scrollTop;
                     switch (targetPin.domHost.align) {
                         case 't':{
-                            r.yEnd -= PIN_SPACE;
-                            r.y2 = r.yEnd - PIN_SHOULDER;
+                            r.yEnd -= space;
+                            r.y2 = r.yEnd - shoulder;
                             r.x2 = r.xEnd;
                         } break;
                         case 'r':{
-                            r.xEnd += PIN_SPACE;
-                            r.x2 = r.xEnd + PIN_SHOULDER;
+                            r.xEnd += space;
+                            r.x2 = r.xEnd + shoulder;
                             r.y2 = r.yEnd;
                         } break;
                         case 'b':{
-                            r.yEnd += PIN_SPACE;
-                            r.y2 = r.yEnd + PIN_SHOULDER;
+                            r.yEnd += space;
+                            r.y2 = r.yEnd + shoulder;
                             r.x2 = r.xEnd;
                         } break;
                         case 'l':{
-                            r.xEnd -= PIN_SPACE;
-                            r.x2 = r.xEnd - PIN_SHOULDER;
+                            r.xEnd -= space;
+                            r.x2 = r.xEnd - shoulder;
                             r.y2 = r.yEnd;
                         } break;
                     }
@@ -490,28 +514,28 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 const k = targetPin ? 1 : -1;
                 switch (side) {
                     case 't':{
-                        a.x1 = r.xEnd + ARROW_WIDTH_HALF;
-                        a.y1 = r.yEnd - ARROW_LENGTH * k;
-                        a.x3 = r.xEnd - ARROW_WIDTH_HALF;
+                        a.x1 = r.xEnd + aWidth;
+                        a.y1 = r.yEnd - aLength * k;
+                        a.x3 = r.xEnd - aWidth;
                         a.y3 = a.y1;
                     } break;
                     case 'r':{
-                        a.x1 = r.xEnd + ARROW_LENGTH * k;
-                        a.y1 = r.yEnd + ARROW_WIDTH_HALF;
+                        a.x1 = r.xEnd + aLength * k;
+                        a.y1 = r.yEnd + aWidth;
                         a.x3 = a.x1;
-                        a.y3 = r.yEnd - ARROW_WIDTH_HALF;
+                        a.y3 = r.yEnd - aWidth;
                     } break;
                     case 'b':{
-                        a.x1 = r.xEnd - ARROW_WIDTH_HALF;
-                        a.y1 = r.yEnd + ARROW_LENGTH * k;
-                        a.x3 = r.xEnd + ARROW_WIDTH_HALF;
+                        a.x1 = r.xEnd - aWidth;
+                        a.y1 = r.yEnd + aLength * k;
+                        a.x3 = r.xEnd + aWidth;
                         a.y3 = a.y1;
                     } break;
                     case 'l':{
-                        a.x1 = r.xEnd - ARROW_LENGTH * k;
-                        a.y1 = r.yEnd - ARROW_WIDTH_HALF;
+                        a.x1 = r.xEnd - aLength * k;
+                        a.y1 = r.yEnd - aWidth;
                         a.x3 = a.x1;
-                        a.y3 = r.yEnd + ARROW_WIDTH_HALF;
+                        a.y3 = r.yEnd + aWidth;
                     } break;
                 }
                 a.x2 = r.xEnd;
