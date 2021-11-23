@@ -6,70 +6,83 @@
     calc.data = {
         cols: {
             science: {
-                rows: [
-                    {
-                        "Rad | Deg": {},
-                        "x!": {}
-                    }, {
-                        Inv: {},
-                        sin: {name: "sin(", expr: "Math.sin(", predicate: ')'},
-                        ln: {name: "ln(", expr: "Math.log(", predicate: ')'}
-                    }, {
-                        "π":{expr: '3.14159265359'},
-                        cos:{name: "cos(", expr: "Math.cos(", predicate: ')'},
-                        log:{name: "log(", expr: "Math.log10(", predicate: ')'}
-                    },{
-                        "e":{expr: "2.71828182846"},
-                        tan:{name: "tan(", expr: "Math.tan(", predicate: ')'},
-                        "√":{name: "√(", expr: "Math.sqrt(", predicate: ')'}
-                    }, {
-                        Ans:{},
-                        EXP:{name: "E", expr: "*10**"},
-                        "XY":{key:"<div>X<sup>y</sup></div>", name: "^", expr: "**"},
+                rows: {
+                    1: {
+                        buttons: {
+                            "Rad | Deg": {},
+                            "x!": {name: "!", command: "calcFactorial"}
+                        }
+                    }, 
+                    2: {
+                        buttons: {
+                            Inv: {},
+                            sin: {name: "sin(", expr: "Math.sin(", predicate: ')'},
+                            ln: {name: "ln(", expr: "Math.log(", predicate: ')'}
+                        }
+                    }, 
+                    3: {
+                        buttons: {
+                            "π": {expr: '3.14159265359'},
+                            cos: {name: "cos(", expr: "Math.cos(", predicate: ')'},
+                            log: {name: "log(", expr: "Math.log10(", predicate: ')'}   
+                        }
+                    },
+                    4: {
+                        buttons: {
+                            "e": {expr: "2.71828182846"},
+                            tan: {name: "tan(", expr: "Math.tan(", predicate: ')'},
+                            "√": {name: "√(", expr: "Math.sqrt(", predicate: ')'}
+                        }
+                    }, 
+                    5: {
+                        buttons: {
+                            Ans: {command: 'answer'},
+                            EXP: {name: "E", expr: "*10**"},
+                            "XY": {key:"<div>X<sup>y</sup></div>", name: "^", expr: "**"},
+                        }
+                    },
+                    props: {
+                        class: "layout"
                     }
-                ],
-                props:{
-                    class: "header"
-                }
+                },
             },
             numpad: {
                 rows: {
                     1:{
-                            buttons: {
-                                "(": {predicate: ')'},
-                                ")": {},
-                            }
+                        buttons: {
+                            "(": {predicate: ')', expr: '('},
+                            ")": {},
+                        }
 
-                        },
+                    },
                     2:{
-                            buttons: {
-                                7: {},
-                                8: {},
-                                9: {}
-                            }
-                        },
+                        buttons: {
+                            7: {},
+                            8: {},
+                            9: {}
+                        }
+                    },
                     3:{
                         buttons: {
                             4: {},
                             5: {},
                             6: {}
                         }
-                        },
+                    },
                     4:{
                         buttons:{
-                            1:{},
-                            2:{},
-                            3:{}
+                            1: {},
+                            2: {},
+                            3: {}
                         }
                     },
-
-                        5:{
-                            buttons: {
-                                0: {},
-                                ".": {},
-                                "=": {command: 'calc'}
-                            }
+                    5:{
+                        buttons: {
+                            0: {},
+                            '00': {},
+                            ".": {},
                         }
+                    }
                 }
             },
             sign:{
@@ -77,7 +90,7 @@
                     1: {
                         buttons:{
                             "AC": {command: 'clear'},
-                            "<=": {command: 'back'}
+                            "⟵": {command: 'back'}
                         }
                     },
                     2: {
@@ -88,8 +101,8 @@
                     },
                     3:{
                         buttons: {
-                            "X":{name: ' × ', expr: '*'},
-                            "-":{}
+                            "X": {name: ' × ', expr: '*'},
+                            "-": {name: ' - '}
                         }
                     },
                     4: {
@@ -97,8 +110,8 @@
                             style: 'flex-grow: 10000000',
                         },
                         buttons:{
-                            "+":{},
-                            "=":{command: 'calc'}
+                            "+": {name: ' + '},
+                            "=": {command: 'calc'}
                         }
                     }
 
