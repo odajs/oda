@@ -21,18 +21,23 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             </span>
         </div>
         <div class="horizontal flex">
-            <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px">
-                <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;">
-                    <oda-button class="raised flex" ~for="button in row" ~html="button.key" @tap="tap" :item="button" ~props="Object.assign({}, col.props, row.props, button.props)"></oda-button>
+            <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props">
+                <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props">
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="button.props"></oda-button>
                 </div>
             </div>
         </div>
     `,
     get predicate () {
-        return this.predicates.map(i=>i.predicate).join('');
+        return this.predicates.map(i=>i?.predicate).join('');
     },
     get expression () {
-        return this.stack.map(i=>(i.name || i.key)).join('');
+        return this.stack.map(i=>(i?.name || i?.key)).join('');
+    },
+    get calcExpression () {
+        return ([...this.stack, ...this.predicates]).map(i=>{
+            return (i.expr || i.name || i.key);
+        }).join('');
     },
     error: undefined,
     predicates: [],
@@ -43,41 +48,43 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         tabindex: 1
     },
     tap (e) {
+        this.error = undefined;
         const model = e.target.item;
-        if (model.command && this[model.command])
+        if (model?.command && this[model.command])
             return this[model.command]();
-        if (this.predicates[0]?.predicate === (model.key || model.name)){ // checking closing brackets
+        if (this.predicates[0]?.predicate === (model?.key || model?.name)){ // checking closing brackets
             this.predicates.shift();
         }
         this.stack.push(model);
-        if (model.predicate)
-            this.predicates.unshift({key: model.predicate, predicate: model.predicate});
-        this.expression = undefined;
-        this.predicate = undefined;
+        if (model?.predicate)
+            this.predicates.unshift({key: model?.predicate, predicate: model?.predicate});
+        try{
+            (new Function([], `with (this) {return ${this.calcExpression+0}}`)).call(this);
+            this.expression = undefined;
+            this.predicate = undefined;
+        }
+        catch (e){
+            this.error = e;
+            this.stack.pop(model);
+        }
     },
     calc () {
-        this.stack.push(...this.predicates);
-        this.expression = undefined;
-        const expr = this.stack.map(i=>{
-            return (i.expr || i.name || i.key);
-        }).join('');
         this.predicates = [];
         try{
-            this.value = (new Function([], `with (this) {return ${expr}}`)).call(this);
+            this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
             this.result = this.expression + ' =';
         }
         catch (e){
             this.error = e;
             console.error(e)
         }
-        this.stack = [{label: this.value, result: true}];
+        this.stack = [{key: this.value}];
     },
     clear () {
-        this.stack = [{label: 0}];
+        this.stack = [{key: 0}];
         this.predicates = [];
         this.value = 0;
         this.result = '0';
-        this.error = undefined;
     },
     back () {
         if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
@@ -85,7 +92,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.predicate = undefined;
         }
         if (this.stack.length === 1) {
-            this.stack.splice(-1, 1, {label: 0})
+            this.stack.splice(-1, 1, {key: 0})
             this.expression = undefined;
         } else {
             this.stack.pop();

@@ -25,53 +25,84 @@
                     }, {
                         Ans:{},
                         EXP:{name: "E", expr: "*10**"},
-                        "XY":{key:"<div>X<sup>y</sup></div>"},
+                        "XY":{key:"<div>X<sup>y</sup></div>", name: "^", expr: "**"},
                     }
                 ],
                 props:{
-                    // class: "header"
+                    class: "header"
                 }
             },
             numpad: {
-                rows: [
-                    {
-                        "(": {predicate: ')'},
-                        ")": {},
-                        "%": {expr: "*0.01"}
-                    }, {
-                        7: {},
-                        8: {},
-                        9: {}
-                    }, {
-                        4:{},
-                        5:{},
-                        6:{}
-                    }, {
-                        1:{},
-                        2:{},
-                        3:{}
+                rows: {
+                    1:{
+                            buttons: {
+                                "(": {predicate: ')'},
+                                ")": {},
+                            }
+
+                        },
+                    2:{
+                            buttons: {
+                                7: {},
+                                8: {},
+                                9: {}
+                            }
+                        },
+                    3:{
+                        buttons: {
+                            4: {},
+                            5: {},
+                            6: {}
+                        }
+                        },
+                    4:{
+                        buttons:{
+                            1:{},
+                            2:{},
+                            3:{}
+                        }
                     },
-                    {
-                        0:{},
-                        ".":{},
-                        "=":{command: 'calc'}
-                    }
-                ]
+
+                        5:{
+                            buttons: {
+                                0: {},
+                                ".": {},
+                                "=": {command: 'calc'}
+                            }
+                        }
+                }
             },
             sign:{
-                rows:[
-                    {
-                        "AC": {command: 'clear'}
-                    }, {
-                        "÷": {expr: '/'}
-                    }, {
-                        "X":{expr: '*'}
-                    }, {
-                        "-":{}
-                    }, {
-                        "+":{}
+                rows:{
+                    1: {
+                        buttons:{
+                            "AC": {command: 'clear'},
+                            "<=": {command: 'back'}
+                        }
+                    },
+                    2: {
+                        buttons: {
+                            "÷": {name: ' ÷ ', expr: '/'},
+                            "%": {expr: "*0.01"}
+                        }
+                    },
+                    3:{
+                        buttons: {
+                            "X":{name: ' × ', expr: '*'},
+                            "-":{}
+                        }
+                    },
+                    4: {
+                        props:{
+                            style: 'flex-grow: 10000000',
+                        },
+                        buttons:{
+                            "+":{},
+                            "=":{command: 'calc'}
+                        }
                     }
-                ]
+
+                }
             }
         }
     };
