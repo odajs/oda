@@ -444,6 +444,7 @@ if (!window.ODA) {
             render() {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
+                this.onRender?.();
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
