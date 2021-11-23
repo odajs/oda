@@ -224,23 +224,27 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         this.items.remove(block);
         this.save();
     },
+
+    get outerLinkSize() {
+        return this.iconSize || 0;
+    },
     getOuterLinkStyle(item) {
         const style = {};
         switch(item.align) {
             case 'l': {
                 style.left = 0 + 'px';
-                style.top = item.y2 - this.iconSize / 2 + 'px';
+                style.top = item.y2 - this.outerLinkSize / 2 + 'px';
             } break;
             case'r': {
                 style.left = item.x2 + 'px';
-                style.top = item.y2 - this.iconSize / 2 + 'px';
+                style.top = item.y2 - this.outerLinkSize / 2 + 'px';
             } break;
             case 't': {
-                style.left = item.x2 - this.iconSize / 2 + 'px';
+                style.left = item.x2 - this.outerLinkSize / 2 + 'px';
                 style.top = 0 + 'px';
             } break;
             case 'b': {
-                style.left = item.x2 - this.iconSize / 2 + 'px';
+                style.left = item.x2 - this.outerLinkSize / 2 + 'px';
                 style.top = item.y2 + 'px';
             } break;
         }
@@ -461,22 +465,22 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                         case 't':{
                             r.xEnd = r.x2 = r.x1;;
                             // r.y2 = r.yEnd = 0;
-                            r.y2 = r.yEnd = this.layout?.iconSize;
+                            r.y2 = r.yEnd = this.layout?.outerLinkSize;
                         } break;
                         case 'r':{
                             r.yEnd = r.y2 = r.y1;
                             // r.x2 = r.xEnd = this.layout?.width;
-                            r.x2 = r.xEnd = this.layout?.width - this.layout?.iconSize;
+                            r.x2 = r.xEnd = this.layout?.width - this.layout?.outerLinkSize;
                         } break;
                         case 'b':{
                             r.xEnd = r.x2 = r.x1;
                             // r.y2 = r.yEnd = this.layout.height;
-                            r.y2 = r.yEnd = this.layout.height - this.layout?.iconSize;
+                            r.y2 = r.yEnd = this.layout.height - this.layout?.outerLinkSize;
                         } break;
                         case 'l':{
                             r.yEnd = r.y2 = r.y1;
                             // r.x2 = r.xEnd = 0;
-                            r.x2 = r.xEnd = this.layout?.iconSize;
+                            r.x2 = r.xEnd = this.layout?.outerLinkSize;
                         } break;
                     }
                 }
