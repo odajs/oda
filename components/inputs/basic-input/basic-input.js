@@ -20,7 +20,7 @@ ODA({
     :host>input {
         border: none;
         background-color: inherit;
-        color: inherit;
+        /*color: inherit;*/
         overflow: hidden;
         text-overflow: ellipsis;
         width: 100%;
@@ -31,7 +31,7 @@ ODA({
         font-weight: inherit;
     }
     :host>input:not([type=color])[readonly] {
-        opacity: 0.4;
+        opacity: 0.7;
     }
     :host>input[type="number"]{
         text-align: end;
@@ -88,7 +88,7 @@ ODA({
     }
     </style>
     <input ref="input" id="input" :type="_type" :min :max :maxlength :minlength :step :accept :autocomplete autofocus :pattern
-    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : ''}" :read-only="disabled" :value :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''">
+    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : ''}" :read-only="disabled" :value="focused ? _value : value" :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''">
     <label for="input" ~text="placeholder" class="placeholder"></label>
     <oda-button ~if="showClear" ~style="{opacity: $refs.input.value ? '0.8' : '0.25'}" icon="icons:clear" @tap.stop="$refs.input.value = '';$refs.input.dispatchEvent(new Event('change'))"></oda-button>
     <datalist ~if="list?.length" id="datalist">
