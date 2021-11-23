@@ -10,7 +10,7 @@
                     1: {
                         buttons: {
                             "Rad | Deg": {},
-                            "x!": {name: "!", command: "calcFactorial"}
+                            "x!": {command: "calcFactorial"}
                         }
                     }, 
                     2: {
@@ -42,7 +42,8 @@
                         }
                     },
                     props: {
-                        class: "layout"
+                        class: "layout",
+                        style: 'flex-shrink: 10000000'
                     }
                 },
             },
@@ -102,7 +103,7 @@
                     3:{
                         buttons: {
                             "X": {name: ' × ', expr: '*'},
-                            "-": {name: ' - '}
+                            "-": {name: ' - ', expr: '-'}
                         }
                     },
                     4: {
@@ -110,7 +111,7 @@
                             style: 'flex-grow: 10000000',
                         },
                         buttons:{
-                            "+": {name: ' + '},
+                            "+": {name: ' + ', expr: '+'},
                             "=": {command: 'calc'}
                         }
                     }
@@ -119,48 +120,4 @@
             }
         }
     };
-  /*    /!*  cols:[
-            {name: 'science', rows:[{}, {}, {}, {}
-                    {label: 'Rad | Deg'},
-                    {label: 'x!'}
-                ]},
-
-        ],
-        rows: [
-        [
-            {label: 'C', command: 'clear'},
-            {label: '%', expr: '*0.01'},
-            {label: '🠔', command: 'back'}
-        ],
-        [
-            {label: 1},
-            {label: 2},
-            {label: 3},
-            {label: '*', name: ' * '}
-        ],
-        [
-            {label: 4},
-            {label: 5},
-            {label: 6},
-            {label: '/', name: ' / '}
-        ],
-        [
-            {label: 7},
-            {label: 8},
-            {label: 9},
-            {label: '-', name: ' - '}
-        ],
-        [
-            {label: 0},
-            {label: '.'},
-            {label: '=', props: {class: "header", icon:"class"}, command:'calc'},
-            {label: '+', name: ' + '}
-        ],
-        [
-            {label: '(', predicate: ')'},
-            {label: 'sin', name: ' sin(', expr: ' Math.sin(',    predicate: ')'},
-            {label: 'tan', name: ' tan(', expr: ' Math.tan(', predicate: ')'},
-            {label: ')'},*!/
-        ]
-    ]}*/
 </script>

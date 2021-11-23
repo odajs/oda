@@ -43,28 +43,29 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }).join('');
     },
     error: undefined,
-    predicates: [],
+    predicates: [], // unclosed brackets
     stack: [],
-    result: '0',
-    value: 0, 
+    result: '0', // the value of the previous expression
+    value: 0, // the resulting expression value
     hostAttributes: {
         tabindex: 1
     },
     tap (e) {
         this.error = undefined;
+        this.result = `Ans = ${this.value}`;
         const model = e.target.item;
         if (model?.command && this[model.command])
             return this[model.command]();
         if (this.predicates[0]?.predicate === (model?.key || model?.name)){ // checking closing brackets
             this.predicates.shift();
         }
-        this.expression == 0 ? this.stack.splice(0, 1, model) : this.stack.push(model); 
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); 
         if (model?.predicate)
             this.predicates.unshift({key: model?.predicate, predicate: model?.predicate});
             this.expression = undefined;
             this.predicate = undefined;
         try {
-            (new Function([], `with (this) {return ${this.calcExpression.replace(/[a-zA-Z]\./g).replace(/[a-zA-Z()]/g, '')+0}}`)).call(this);
+            (new Function([], `with (this) {return ${this.calcExpression.replace(/[a-zA-Z]\./g).replace(/[a-zA-Z()]/g, '')+0}}`)).call(this); // remove all letters, brackets and dots in operations and test
             this.expression = undefined;
             this.predicate = undefined;
         }
@@ -75,7 +76,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     calc () {
-        this.stack.push(...this.predicates);
+        this.stack.push(...this.predicates); // close all brackets
         this.expression = undefined;
         try{
             this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
@@ -83,7 +84,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
         catch (e){
             this.error = e;
-            console.error(e)
+            console.error(e);
         }
         this.stack = [{key: this.value}];
         this.predicates = [];
@@ -91,7 +92,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     clear () {
         this.stack = [{key: 0}];
         this.predicates = [];
-        this.value = 0;
         this.result = '0';
     },
     back () {
@@ -100,7 +100,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.predicate = undefined;
         }
         if (this.stack.length === 1) {
-            this.stack.splice(-1, 1, {key: 0})
+            this.stack.splice(-1, 1, {key: 0});
             this.expression = undefined;
         } else {
             this.stack.pop();
@@ -109,13 +109,19 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     answer () {
-        this.stack.push({name: 'Ans', expr: this.value});
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push({name: 'Ans', expr: this.value}); 
         this.expression = undefined;
     },
     invert () {
-
+        
     },
-    calcFactorial (num = this.stack[this.stack.length-1].key-1) {
-        return (num !== 1) ? num * this.calcFactorial(num-1) : 1
+    calcFactorial () {
+        const fact = [];
+        const factorial = (num = this.stack[this.stack.length-1].key-1) => {
+            return (num !== 1) ? num * factorial(num-1) : 1
+        }
+        fact.push(factorial());
+        this.stack.push({name: '!', expr: `*${fact.join('')}`}); 
+        this.expression = undefined;
     },
 })
