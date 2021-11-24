@@ -70,7 +70,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     timerClear: '', // a variable containing a timer to clear the monitor
     result: '0', // the value of the previous expression
     value: 0, // the resulting expression value
-    DC: ' = 0',
+    DC: ' = 0', // bit width of the result
     hostAttributes: {
         tabindex: 1
     },
