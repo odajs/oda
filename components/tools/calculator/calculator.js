@@ -26,7 +26,9 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="horizontal flex">
             <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props">
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props">
-                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props"></oda-button>
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" ~style="button.buttonStyle">
+                    <span disabled ~if="row.buttons.DC">{{DC}}</span>
+                    </oda-button>
                 </div>
             </div>
         </div>
@@ -49,7 +51,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         document.removeEventListener('keydown', this._onKeyDown.bind(this));
     },
     _onKeyDown (e) {
-        this.tap(e.key);
+        e.key.match(/[0-9().*/+-]/) ? this.tap(e.key) : false;
     },
     get predicate () {
         return this.predicates.map(i=>i?.predicate).join('');
@@ -68,6 +70,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     timerClear: '', // a variable containing a timer to clear the monitor
     result: '0', // the value of the previous expression
     value: 0, // the resulting expression value
+    DC: ' = 0',
     hostAttributes: {
         tabindex: 1
     },
@@ -101,6 +104,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.expression = undefined;
         try{
             this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
+            this.value = this.value.toFixed((+this.DC.match(/\d$/)[0]));
             this.result = this.expression + ' =';
         }
         catch (e){
@@ -144,5 +148,27 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         fact.push(factorial());
         this.stack.push({name: '!', expr: `*${fact.join('')}`}); 
         this.expression = undefined;
+    },
+    digitCapacity () {
+        switch (this.DC) {
+            case ' = 0':
+                this.DC = ' = 1';
+                break;
+            case ' = 1': 
+                this.DC = ' = 2';
+                break;
+            case ' = 2': 
+                this.DC = ' = 3';
+                break;
+            case ' = 3': 
+                this.DC = ' = 4';
+                break;
+            case ' = 4': 
+                this.DC = ' = 5';
+                break;
+            case ' = 5': 
+                this.DC = ' = 0';
+                break;
+        }
     },
 })

@@ -23,6 +23,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     focusedLink: null,
     focusLink(link) {
+        if (!this.editMode) return;
         this.focusedLink = link;
         this.focusedItem = null;
         this.selection.clear();

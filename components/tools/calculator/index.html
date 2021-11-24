@@ -7,9 +7,14 @@
         cols: {
             science: {
                 rows: {
+                    0: {
+                        buttons: {
+                            "DC": {command: "digitCapacity"}
+                        }
+                    },
                     1: {
                         buttons: {
-                            "Rad | Deg": {},
+                            "Rad | Deg": {props:{buttonStyle: "width: 66%"}},
                             "x!": {command: "calcFactorial"}
                         }
                     }, 
@@ -111,7 +116,7 @@
                     },
                     4: {
                         props:{
-                            style: 'flex-grow: 10000000',
+                            style: 'flex-grow: 9',
                         },
                         buttons:{
                             "+": {name: ' + ', expr: '+'},
