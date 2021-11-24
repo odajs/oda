@@ -20,7 +20,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
             <span style="font-size: small" class="dimmed">{{result}}</span>
             <span style="font-size: large">{{expression || value || error || 0}}
-                <span disabled>{{predicate}}</span>
+                <span disabled>{{hint}}</span>
             </span>
         </div>
         <div class="horizontal flex">
@@ -53,8 +53,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     _onKeyDown (e) {
         e.key.match(/[0-9().*/+-]/) ? this.tap(e.key) : false;
     },
-    get predicate () {
-        return this.predicates.map(i=>i?.predicate).join('');
+    get hint () {
+        return this.hints.map(i=>i?.hint).join('');
     },
     get expression () {
         return this.stack.map(i=>(i?.name || i?.key)).join('');
@@ -65,7 +65,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }).join('');
     },
     error: undefined,
-    predicates: [], // unclosed brackets
+    hints: [], // unclosed brackets
     stack: [],
     timerClear: '', // a variable containing a timer to clear the monitor
     result: '0', // the value of the previous expression
@@ -75,32 +75,31 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         tabindex: 1
     },
     tap (e) {
-        this.error = undefined;
-        this.result = `Ans = ${this.value}`;
-        const model = e.target?.item ? e.target.item : {key: e};
-        if (model?.command && this[model.command])
-            return this[model.command]();
-        if (this.predicates[0]?.predicate === (model?.key || model?.name)){ // checking closing brackets
-            this.predicates.shift();
-        }
-        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); 
-        if (model?.predicate)
-            this.predicates.unshift({key: model?.predicate, predicate: model?.predicate});
-            this.expression = undefined;
-            this.predicate = undefined;
+        this.error = undefined; // on any input, the error is cleared
+        this.result = `Ans = ${this.value}`; // for any input, the result is formed according to a given template
+        const model = e.target?.item ? e.target.item : {key: e}; // determine if a calculator button or keyboard key was pressed
+        if (model?.command && this[model.command]) // if the button has a function, then it is executed
+            return this[model.command]()
+        if (this.hints[0]?.hint === (model?.key || model?.name)) // checking closing brackets
+            this.hints.shift();
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); // if there is only zero in the expression, replace it with the entered character
+        if (model?.hint)
+            this.hints.unshift({key: model?.hint, hint: model?.hint});
+        this.expression = undefined;
+        this.hint = undefined;
         try {
-            (new Function([], `with (this) {return ${this.calcExpression.replace(/[a-zA-Z]\./g).replace(/[a-zA-Z()]/g, '')+0}}`)).call(this); // remove all letters, brackets and dots in operations and test
+            (new Function([], `with (this) {return ${this.calcExpression.replace(/[a-zA-Z]\.|[a-zA-Z()]/g, '')+0}}`)).call(this); // remove all letters, brackets and dots in operations and test
             this.expression = undefined;
-            this.predicate = undefined;
+            this.hint = undefined;
         }
         catch (e) {
             this.error = e;
-            this.stack[this.stack.length-1]?.predicate ? this.predicates.pop() : false;
+            this.stack[this.stack.length-1]?.hint ? this.hints.pop() : false;
             this.stack.pop(model);
         }
     },
     calc () {
-        this.stack.push(...this.predicates); // close all brackets
+        this.stack.push(...this.hints); // close all brackets
         this.expression = undefined;
         try{
             this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
@@ -112,17 +111,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             console.error(e);
         }
         this.stack = [{key: this.value}];
-        this.predicates = [];
+        this.hints = [];
     },
     clear () {
         this.stack = [{key: 0}];
-        this.predicates = [];
+        this.hints = [];
         this.result = '0';
     },
     back () {
-        if (this.stack[this.stack.length-1]?.predicate === this.predicates[this.predicates.length - 1]?.predicate){ 
-            this.predicates.shift();
-            this.predicate = undefined;
+        if (this.stack[this.stack.length-1]?.hint === this.hints[this.hints.length - 1]?.hint) { 
+            this.hints.shift();
+            this.hint = undefined;
         }
         if (this.stack.length === 1) {
             this.stack.splice(-1, 1, {key: 0});
@@ -130,7 +129,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         } else {
             this.stack.pop();
             this.expression = undefined;
-            this.predicate = undefined;
+            this.hint = undefined;
         }
     },
     answer () {
@@ -141,12 +140,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         
     },
     calcFactorial () {
-        const fact = [];
         const factorial = (num = this.stack[this.stack.length-1].key-1) => {
             return (num !== 1) ? num * factorial(num-1) : 1
         }
-        fact.push(factorial());
-        this.stack.push({name: '!', expr: `*${fact.join('')}`}); 
+        this.stack.push({name: '!', expr: `*${factorial()}`}); 
         this.expression = undefined;
     },
     digitCapacity () {
