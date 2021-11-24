@@ -1,0 +1,52 @@
+[
+    {
+        "name": "list-props-modifiers.md",
+        "label": "Список модификаторов",
+        "status": "check"
+    },
+    {
+        "name": "default-modifier.md",
+        "label": "<b style='color: brown'>default</b>: Модификатор начального значения",
+        "status": "check"
+    },
+    {
+        "name": "type-modifier.md",
+        "label": "<b style='color: brown'>type</b>: Модификатор типа",
+        "status": "check"
+    },
+    {
+        "name": "reflect-to-attribute-modifier.md",
+        "label": "<b style='color: brown'>reflectToAttribute</b>: Модификатор атрибутов хоста",
+        "status": "check"
+    },
+    {
+        "name": "reactive-modifier.md",
+        "label": "<b style='color: brown'>reactive</b>: Модификатор реактивности",
+        "status": "edit"
+    },
+    {
+        "name": "freeze-modifier.md",
+        "label": "<b style='color: brown'>freeze</b>: Модификатор блокировки реактивности",
+        "status": "edit"
+    },
+    {
+        "name": "label-modifier.md",
+        "label": "<b style='color: brown'>label</b>: Модификатор имени",
+        "status": "check"
+    },
+    {
+        "name": "category-modifier.md",
+        "label": "<b style='color: brown'>category</b>: Модификатор группы",
+        "status": "check"
+    },
+    {
+        "name": "list-modifier.md",
+        "label": "<b style='color: brown'>list</b>: Модификатор списка значений",
+        "status": "check"
+    },
+    {
+        "name": "shared-modifier.md",
+        "label": "<b style='color: brown'>shared</b>: Модификатор сквозного биндинга",
+        "status": "check"
+    }
+]

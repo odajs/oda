@@ -1,0 +1,71 @@
+[
+    {
+        "name": "is.md",
+        "label": "<b style='color:blue'>is</b>: Идентификатор компонента",
+        "status": "check"
+    },
+    {
+        "name": "extends.md",
+        "label": "<b style='color:blue'>extends</b>: Признак наследования",
+        "status": "check"
+    },
+    {
+        "name": "imports.md",
+        "label": "<b style='color:blue'>imports</b>: Отложенный импорт модулей",
+        "status": "check"
+    },
+    {
+        "name": "template",
+        "label": "<b style='color:blue'>template</b>: Шаблон компонента",
+        "content": {
+            "abstract": "\n~~~md\nПосмотреть [ВИДЕО-УРОК](https://youtu.be/ZRX5Srr6TqA?t=0) \nШаблон компонента задается атрибутом **template** с помощью шаблонных литералов, заключенных в обратные кавычки в формате **JSX**. \nВ соответствии со спецификацией [WEB components](https://en.wikipedia.org/wiki/Web_Components), стилизация задается внутри шаблона для каждого компонента\n~~~"
+        }
+    },
+    {
+        "name": "props",
+        "label": "<b style='color:blue'>props</b>: Свойства компонента",
+        "content": {
+            "abstract": "\n~~~md\n Свойства — это элементы компонента, предназначенные для чтения, хранения и изменения его данных.\n~~~"
+        }
+    },
+    {
+        "name": "host-attributes.md",
+        "label": "<b style='color:blue'>hostAttributes</b>: Начальные значения атрибутов компонента",
+        "status": "temp"
+    },
+    {
+        "name": "observers.md",
+        "label": "<b style='color:blue'>observers</b>: Обозреватели свойств компонента",
+        "status": "check"
+    },
+    {
+        "name": "listeners.md",
+        "label": "<b style='color:blue'>listeners</b>: Слушатели событий компонента",
+        "status": "check"
+    },
+    {
+        "name": "key-bindings.md",
+        "label": "<b style='color:blue'>keyBindings</b>: Обработка нажатий клавиш клавиатуры",
+        "status": "check"
+    },
+    {
+        "name": "methods.md",
+        "label": "Методы",
+        "status": "check"
+    },
+    {
+        "name": "variables.md",
+        "label": "Переменные",
+        "status": "check"
+    },
+    {
+        "name": "hooks",
+        "label": "Хуки жизненного цикла",
+        "status": "temp"
+    },
+    {
+        "name": "slots.md",
+        "label": "<b style='color:blue'>slot</b>: Слоты компонента",
+        "status": "check"
+    }
+]

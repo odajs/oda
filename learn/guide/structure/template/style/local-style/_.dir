@@ -1,0 +1,22 @@
+[
+    {
+        "name": "style-attribute.md",
+        "label": "Inline-стилизация. Атрибут style",
+        "status": "check"
+    },
+    {
+        "name": "style-directive.md",
+        "label": "~style: Динамическая локальная стилизация",
+        "status": "check"
+    },
+    {
+        "name": "class-attribute.md",
+        "label": "Классовая стилизация. Атрибут class",
+        "status": "check"
+    },
+    {
+        "name": "class-directive.md",
+        "label": "~class: Классовая динамическая стилизация",
+        "status": "check"
+    }
+]

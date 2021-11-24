@@ -1,0 +1,34 @@
+[
+    {
+        "name": "html.md",
+        "label": "HTML-разметка",
+        "status": "temp"
+    },
+    {
+        "name": "directives",
+        "label": "Директивы",
+        "content": {
+            "abstract": "\n~~~md\nДирективы управляют поведением HTML-кода компонента во время его работы.\nВ JSX-разметке директивы начинаются с префикса **~** (тильда). \n~~~"
+        }
+    },
+    {
+        "name": "binding.md",
+        "label": "Биндинг. Директива <b style='color: brown'>:</b>",
+        "status": "check"
+    },
+    {
+        "name": "double-binding.md",
+        "label": "Двойной биндинг. Директива <b style='color: brown'>::</b>",
+        "status": "check"
+    },
+    {
+        "name": "pdp.md",
+        "label": "PDP: Групповой биндинг свойств",
+        "status": "check"
+    },
+    {
+        "name": "events",
+        "label": "События",
+        "status": "test"
+    }
+]

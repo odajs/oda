@@ -1,0 +1,32 @@
+[
+    {
+        "name": "pseudo-class-host.md",
+        "label": "Стилизация хоста теневого дерева :host",
+        "status": "check"
+    },
+    {
+        "name": "pseudo-element-part.md",
+        "label": "CSS-часть part",
+        "status": "check"
+    },
+    {
+        "name": "exportparts.md",
+        "label": "exportparts: Переадресация теневых элементов",
+        "status": "check"
+    },
+    {
+        "name": "pseudo-element-slotted.md",
+        "label": "Слотовая стилизация ::slotted()",
+        "status": "check"
+    },
+    {
+        "name": "slot-stylization-management.md",
+        "label": "Управление слотовой стилизацией",
+        "status": "check"
+    },
+    {
+        "name": "pseudo-element-theme.md",
+        "label": "Глобальная переадресация ::theme",
+        "status": "check"
+    }
+]

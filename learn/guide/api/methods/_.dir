@@ -1,0 +1,32 @@
+[
+    {
+        "name": "listen.md",
+        "label": "<b style='color: brown'>listen</b>: Регистрация обработчиков событий",
+        "status": "check"
+    },
+    {
+        "name": "unlisten.md",
+        "label": "<b style='color: brown'>unlisten</b>: Удаление обработчиков событий",
+        "status": "check"
+    },
+    {
+        "name": "fire.md",
+        "label": "<b style='color: brown'>fire</b>: Генерация пользовательского события",
+        "status": "check"
+    },
+    {
+        "name": "create.md",
+        "label": "<b style='color: brown'>create</b>: Создание вложенных HTML-элементов",
+        "status": "check"
+    },
+    {
+        "name": "delay-functions",
+        "label": "Функции временной задержки",
+        "status": "check"
+    },
+    {
+        "name": "$super.md",
+        "label": "<b style='color: brown'>$super</b>: Вызов родительских методов",
+        "status": "check"
+    }
+]

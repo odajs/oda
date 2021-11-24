@@ -1,0 +1,28 @@
+[
+    {
+        "name": "learn",
+        "label": "Обучение"
+    },
+    {
+        "name": "components",
+        "label": "Компоненты"
+    },
+    {
+        "name": "apps",
+        "label": "Приложения"
+    },
+    {
+        "name": "benchmarks",
+        "label": "Тесты"
+    },
+
+    {
+        "name": "locales",
+        "label": "Языки"
+    },
+    {
+        "name": "themes",
+        "path": "/tools/styles/themes/",
+        "label": "Темы"
+    }
+]

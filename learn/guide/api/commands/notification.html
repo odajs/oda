@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+
+
+        <title>Уведомление - Пример - code sample</title>
+    </head>
+    <body>
+
+            <button onclick="myError()">Notify me!</button>
+
+
+            <script>
+              function myError() {
+                const e = new Error("Моя ошибка");
+                alert("Создали сообщение");
+                try {
+
+                  alert("Генерация ошибки");
+                  var years = prompt('Сколько вам лет?', 100);
+                  e.message = years;
+                  throw e;
+                }
+                catch (err) {
+                  if(err.name === "Error") {
+                    alert(err.message);
+                  }
+
+                }
+
+                alert( e.stack );
+              }
+                function notifyMe() {
+  // Проверка поддержки браузером уведомлений
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+  }
+
+  // Проверка разрешения на отправку уведомлений
+  else if (Notification.permission === "granted") {
+    // Если разрешено, то создаем уведомление
+    var notification = new Notification("Hi there!");
+  }
+
+  // В противном случае, запрашиваем разрешение
+  else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(function (permission) {
+      // Если пользователь разрешил, то создаем уведомление
+      if (permission === "granted") {
+        var notification = new Notification("Hi there!");
+      }
+    });
+  }
+
+  // В конечном счете, если пользователь отказался от получения
+  // уведомлений, то стоит уважать его выбор и не беспокоить его
+  // по этому поводу.
+} Notification.requestPermission().then(function(result) {
+  console.log(result);
+}); function spawnNotification(body, icon, title) {
+  var options = {
+      body: body,
+      icon: icon
+  };
+  var n = new Notification(title, options);
+}
+            </script>
+
+    </body>
+</html>

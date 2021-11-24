@@ -1,0 +1,67 @@
+[
+    {
+        "name": "console.md",
+        "label": "<b style='color: brown'>ODA.console</b>: Работа с ODA-консолью",
+        "status": "check"
+    },
+    {
+        "name": "create-component.md",
+        "label": "<b style='color: brown'>ODA.createComponent</b>: Создание компонента",
+        "status": "check"
+    },
+    {
+        "name": "load-component.md",
+        "label": "<b style='color: brown'>ODA.loadComponent</b>: Загрузка компонента",
+        "status": "check"
+    },
+    {
+        "name": "show-modal.md",
+        "label": "<b style='color: brown'>ODA.showModal</b>: Отображение модального окна",
+        "status": "check"
+    },
+    {
+        "name": "show-dialog.md",
+        "label": "<b style='color: brown'>ODA.showDialog</b>: Отображение диалогового окна",
+        "status": "check"
+    },
+    {
+        "name": "show-drop-down.md",
+        "label": "<b style='color: brown'>ODA.showDropdown</b>: Отображение выпадающего окна",
+        "status": "check"
+    },
+    {
+        "name": "load-url.md",
+        "label": "<b style='color: brown'>ODA.loadURL</b>: Загрузка любого внешнего ресурса",
+        "status": "check"
+    },
+    {
+        "name": "load-json.md",
+        "label": "<b style='color: brown'>ODA.loadJSON</b>: Загрузка внешнего JSON-ресурса",
+        "status": "check"
+    },
+    {
+        "name": "load-html.md",
+        "label": "<b style='color: brown'>ODA.loadHTML</b>: Загрузка внешнего HTML-ресурса",
+        "status": "check"
+    },
+    {
+        "name": "push.md",
+        "label": "<b style='color: brown'>ODA.push</b>: Отправка уведомлений",
+        "status": "check"
+    },
+    {
+        "name": "notify.md",
+        "label": "<b style='color: brown'>ODA.notify</b>: Отправка предупреждающих уведомлений",
+        "status": "check"
+    },
+    {
+        "name": "push-message.md",
+        "label": "<b style='color: brown'>ODA.pushMessage</b>: Отправка уведомлений",
+        "status": "check"
+    },
+    {
+        "name": "push-error.md",
+        "label": "<b style='color: brown'>ODA.pushError</b>: Отправка уведомлений об ошибках",
+        "status": "check"
+    }
+]

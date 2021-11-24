@@ -1,0 +1,27 @@
+[
+    {
+        "name": "hooks-life-cycle.md",
+        "label": "Диаграмма жизненного цикла",
+        "status": "check"
+    },
+    {
+        "name": "hook-created.md",
+        "label": "<b style='color: brown'>created</b>: Хук создания",
+        "status": "check"
+    },
+    {
+        "name": "hook-ready.md",
+        "label": "<b style='color: brown'>ready</b>: Хук готовности",
+        "status": "check"
+    },
+    {
+        "name": "hook-attached.md",
+        "label": "<b style='color: brown'>attached</b>: Хук присоединения",
+        "status": "check"
+    },
+    {
+        "name": "hook-detached.md",
+        "label": "<b style='color: brown'>detached</b>: Хук удаления",
+        "status": "check"
+    }
+]

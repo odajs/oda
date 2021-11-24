@@ -1,0 +1,23 @@
+[
+    {
+        "name": "properties",
+        "label": "Свойства компонента",
+        "status": "check"
+    },
+    {
+        "name": "methods",
+        "label": "Методы компонента",
+        "status": "check"
+    },
+    {
+        "name": "commands",
+        "label": "Команды фреймворка",
+        "status": "check"
+    },
+    {
+        "name": "parameters",
+        "label": "Параметры фреймворка",
+        "status": "check"
+    }
+
+]

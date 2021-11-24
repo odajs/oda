@@ -1,0 +1,37 @@
+[
+    {
+        "name": "global-style.md",
+        "label": "Группы стилей",
+        "status": "check"
+    },
+    {
+        "name": "layouts-style.md",
+        "label": "<b style='color: brown'>layouts</b>: Стили оконных элементов",
+        "status": "check"
+    },
+    {
+        "name": "shadow-style.md",
+        "label": "<b style='color: brown'>shadow</b>: Стили теней",
+        "status": "check"
+    },
+    {
+        "name": "special-style.md",
+        "label": "<b style='color: brown'>special</b>: Стили диалоговых компонентов",
+        "status": "check"
+    },
+    {
+        "name": "effects-style.md",
+        "label": "<b style='color: brown'>effects</b>: Стили состояний",
+        "status": "check"
+    },
+    {
+        "name": "oda-style.md",
+        "label": "<b style='color: brown'>oda</b>: Стили анимаций",
+        "status": "check"
+    },
+    {
+        "name": "theme-style.md",
+        "label": "<b style='color: brown'>theme</b>: Стили сайта",
+        "status": "check"
+    }
+]

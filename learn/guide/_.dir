@@ -1,0 +1,42 @@
+[
+    {
+        "name": "introduction",
+        "label": "White Book",
+        "status": "ok"
+    },
+    {
+        "name": "install.md",
+        "label": "Установка",
+        "status": "ok"
+    },
+    {
+        "name": "hello-world.md",
+        "label": "Компонент «Hello, World!»",
+        "status": "ok"
+    },
+    {
+        "name": "structure",
+        "label": "Структура компонента",
+        "status": "temp"
+    },
+    {
+        "name": "api",
+        "label": "API фреймворка",
+        "status": "check"
+    },
+    {
+        "name": "spa-routing.md",
+        "label": "SPA-роутинг",
+        "status": "check"
+    },
+    {
+        "name": "spa-routing2.md",
+        "label": "SPA-роутинг. Дополнительные сведения",
+        "status": "check"
+    },
+    {
+        "name": "my-first-component.md",
+        "label": "Мой первый компонент",
+        "status": "check"
+    }
+]

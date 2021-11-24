@@ -1,0 +1,32 @@
+[
+    {
+        "name": "event-directive.md",
+        "label": "Директива @",
+        "status": "check"
+    },
+    {
+        "name": "event-handling.md",
+        "label": "Обработчики событий",
+        "status": "check"
+    },
+    {
+        "name": "event-handling-params.md",
+        "label": "Параметры обработчиков",
+        "status": "check"
+    },
+    {
+        "name": "event-source.md",
+        "label": "Исходные события",
+        "status": "check"
+    },
+    {
+        "name": "event-retargeting.md",
+        "label": "Перенацеливание событий",
+        "status": "check"
+    },
+    {
+        "name": "event-modifier.md",
+        "label": "Модификаторы событий",
+        "status": "check"
+    }
+]

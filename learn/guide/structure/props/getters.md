@@ -1,0 +1,104 @@
+**Геттер** (Getter) — это метод, который объявляется внутри свойства и вызывается автоматически при любом чтении его значения.
+
+Геттер задается только в расширенной форме объявления свойства, как функция с предопределенным именем **get**. Он вызывается автоматически при любом обращении к свойству для чтения.
+
+Например:
+
+```javascript_run_line_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="_onTap">{{text}}</button>
+    `,
+    props: {
+        _count: 0,
+        text: {
+            default: "Кнопка",
+            get() {
+                return this._count & 1 ? this._count + " - нечетное число" : this._count + " - четное число";
+            }
+        }
+    },
+    _onTap() {
+        this._count++;
+    }
+});
+```
+
+В данном примере счетчик **\_count** будет увеличиваться на единицу при каждом нажатии на кнопку. Эти изменения автоматически отслеживаются и геттер будет вызываться каждый раз.  Возвращаемое им значение выводится в качестве надписи на кнопке, так как оно динамически связано со свойством с помощью директивы интерполяционной подстановки **{{ }}**. В результате этого на кнопке будет выводиться не только значение счетчика, но и надпись, определяющая — является ли текущее число четным или нечетным.
+
+Начальное значение, заданное в параметре **default**, присваивается свойству только в момент создания компонента. В дальнейшем значение свойства будет формироваться только геттером. Поэтому, если у свойства есть геттер, то указывать начальное значение не имеет смысла.
+
+Например:
+
+```javascript_run_line_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="_onTap">{{text}}</button>
+    `,
+    props: {
+        _count: 0,
+        text: {
+            get() {
+                return this._count & 1 ? this._count + " - нечетное число" : this._count + " - четное число";
+            }
+        }
+    },
+    _onTap() {
+        this._count++;
+    }
+});
+```
+
+```warning_md
+В теле геттера нельзя обращаться к собственному свойству. Это приведет к возникновению бесконечной рекурсии, так как геттер будет вызывать самого себя до бесконечности.
+```
+
+```javascript_error
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="_onTap">{{text}}</button>
+    `,
+    props: {
+        _count: 0,
+        text: {
+            get() {
+                return this.text;
+            }
+        }
+    },
+    _onTap() {
+        this._count++;
+    }
+});
+```
+
+По этой причине для формирования возвращаемого значения в геттере можно обращаться только к другим свойствам, а не к своему собственному.
+
+```javascript_run_line_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="_onTap">{{text}}</button>
+    `,
+    props: {
+        _count: 0,
+        text: {
+            get() {
+                return this._count;
+            }
+        }
+    },
+    _onTap() {
+        this._count++;
+    }
+});
+```
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/C08B6QTjIQc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>
+

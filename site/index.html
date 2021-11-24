@@ -1,0 +1,84 @@
+<meta charset="utf-8">
+<oda-site></oda-site>
+<script type="module">
+    import '../components/layouts/app-layout/app-layout.js';
+    import '../tools/containers/containers.js';
+    import '../tools/router/router.js';
+    import '../tools/containers/modal/modal.js';
+    import '../components/grids/tree/tree.js';
+    ODA({is:'oda-site', extends: 'oda-app-layout',
+        template:`
+            <div class="no-flex horizontal header" slot="title" style="align-items: center;">
+                <img width="64" class="no-flex" @tap="home" src="../icon.png" style="cursor: pointer; margin: 8px;">
+<!--                    <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>-->
+<!--                    <a class="no-flex" :href="sets?.hrefYoutube" target="_blank"><img src="./site/youtube.png" height="20" style="margin: 6px 0 0 16px"/></a>-->
+                <oda-site-header parts></oda-site-header>
+            </div>
+            <div :slot="group?'left-drawer':'?'">левая панель</div>
+        `,
+        props:{
+            group: null,
+            groups:[
+                {name: 'learn', label: 'Обучение'},
+                {name: 'components', label: 'Компоненты'},
+                {name: 'benchmark', label: 'Тесты'}
+            ]
+        },
+        home(e){
+            window.location.hash = '';
+            this.group = null;
+        }
+    })
+    ODA({is:'oda-site-header',
+        template: `
+            <style>
+                :host{
+                    @apply --horizontal;
+                    @apply --flex;
+                    justify-content: flex-end;
+                }
+            </style>
+            <div ~show="wide" class="horizontal" style="align-items: center;">
+                <oda-site-menu ref="menu"></oda-site-menu>
+            </div>
+            <oda-button @tap="showMenu" :icon-size icon="icons:menu"></oda-button>
+        `,
+        showMenu(e){
+            ODA.showDropdown(this.$refs.menu, {align: 'vertical'});
+        },
+        props:{
+            wide: false
+        }
+    })
+    ODA({is:'oda-site-menu',
+        template: `
+            <style>
+                :host{
+                    @apply --horizontal;
+                }
+                label{
+                    margin: 8px;
+                    cursor: pointer;
+                    opacity: .6;
+                }
+                label:hover{
+                    opacity: 1;
+                    text-decoration: underline;
+                }
+                div{
+                    align-items: center;
+                }
+                .vertical{
+                    @apply --vertical
+                }
+            </style>
+            <div ~class="align">
+                <label @tap="group = item" ~for="groups" :focused="group === item">{{item.label}}</label>
+            </div>
+
+        `,
+        props:{
+            align: 'horizontal'
+        }
+    })
+</script>

@@ -96,8 +96,6 @@ ODA({ is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basi
         
         //const wordsDop = subObAB(dW,sW), phrazeDop = subObAB(dP,sP), words = supObAB(sW,dW), phraze = supObAB(sP,dP)
 
-        // console.log(dW)
-        // console.log(sW)
         
         // console.log(toData( subObAB(dW,sW) ))
         // console.log( sumObAB( supObAB(dW,sW), sW) )

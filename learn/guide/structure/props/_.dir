@@ -1,0 +1,32 @@
+[
+    {
+        "name": "properties.md",
+        "label": "Объявление свойств",
+        "status": "check"
+    },
+    {
+        "name": "props-modifiers",
+        "label": "Модификаторы свойств",
+        "status": "temp"
+    },
+    {
+        "name": "getters.md",
+        "label": "Геттеры",
+        "status": "check"
+    },
+    {
+        "name": "setters.md",
+        "label": "Сеттеры",
+        "status": "check"
+    },
+    {
+        "name": "getter-setter.md",
+        "label": "Совместное использование геттера и сеттера",
+        "status": "check"
+    },
+    {
+        "name": "getters-caching.md",
+        "label": "Кэширование геттера",
+        "status": "edit"
+    }
+]

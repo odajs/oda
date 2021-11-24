@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome to ODA.js</title>
+        <script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda-framework/oda.js"></script>
+    </head>
+    <body>
+        <my-component></my-component>
+        <script type="module">
+            ODA({
+                is: 'my-component',
+                template: `
+                    <span>{{text}}</span>
+                `,
+                props:{
+                    text: 'Hello, world!'
+                }
+            });
+        </script>
+    </body>
+</html>

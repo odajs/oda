@@ -1,0 +1,17 @@
+[
+    {
+        "name": "var.md",
+        "label": "var: Пользовательские CSS-свойства",
+        "status": "check"
+    },
+    {
+        "name": "var-rule.md",
+        "label": "Правила задания CSS-свойств",
+        "status": "check"
+    },
+    {
+        "name": "apply.md",
+        "label": "Правило CSS @apply",
+        "status": "check"
+    }
+]

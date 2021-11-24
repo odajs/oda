@@ -1,0 +1,87 @@
+[
+    {
+        "name": "introduction.md",
+        "label": "Введение",
+        "status": "check"
+    },
+    {
+        "name": "web-components.md",
+        "label": "Соответствие технологии Web Components",
+        "status": "check"
+    },
+    {
+        "name": "super-compact-code.md",
+        "label": "Супер-компактный код",
+        "status": "check"
+    },
+    {
+        "name": "full-inheritance.md",
+        "label": "Полноценное наследование компонентов",
+        "status": "check"
+    },
+    {
+        "name": "full-reactivity.md",
+        "label": "Полная, но контролируемая реактивность",
+        "status": "check"
+    },
+    {
+        "name": "themes-control.md",
+        "label": "Встроенная подсистема управления темами",
+        "status": "check"
+    },
+    {
+        "name": "reactive-styling.md",
+        "label": "Реактивная стилизация",
+        "status": "check"
+    },
+    {
+        "name": "runtime-localization.md",
+        "label": "Встроенная подсистема runtime локализации",
+        "status": "check"
+    },
+    {
+        "name": "3d-scene-control.md",
+        "label": "Встроенная подсистема управления 3D-сценами",
+        "status": "check"
+    },
+    {
+        "name": "state-storage.md",
+        "label": "Встроенная подсистема хранения состояний",
+        "status": "check"
+    },
+    {
+        "name": "extended-slot-control-model.md",
+        "label": "Расширенная модель управления слотами",
+        "status": "check"
+    },
+    {
+        "name": "spa-routing.md",
+        "label": "Встроенный SPA-роутинг",
+        "status": "check"
+    },
+    {
+        "name": "push-messages.md",
+        "label": "Поддержка PUSH-сообщений",
+        "status": "check"
+    },
+    {
+        "name": "smart-binding.md",
+        "label": "Интеллектуальный двусторонний типонезависимый биндинг",
+        "status": "check"
+    },
+    {
+        "name": "pdp.md",
+        "label": "Property Deep Propagation",
+        "status": "check"
+    },
+    {
+        "name": "built-in-dev-tools.md",
+        "label": "Встроенные мощные инструменты разработчика",
+        "status": "check"
+    },
+    {
+        "name": "exceptional-performance.md",
+        "label": "Исключительная производительность",
+        "status": "check"
+    }
+]

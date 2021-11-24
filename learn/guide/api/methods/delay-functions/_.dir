@@ -1,0 +1,17 @@
+[
+    {
+        "name": "async.md",
+        "label": "<b style='color: brown'>async</b>: Вызов функции с задержкой",
+        "status": "check"
+    },
+    {
+        "name": "debounce.md",
+        "label": "<b style='color: brown'>debounce</b>: Вызов функции с ограниченной частотой",
+        "status": "check"
+    },
+    {
+        "name": "interval.md",
+        "label": "<b style='color: brown'>interval</b>: Вызов функции с фиксированной частотой",
+        "status": "check"
+    }
+]

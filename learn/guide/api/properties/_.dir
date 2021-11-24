@@ -1,0 +1,22 @@
+[
+    {
+        "name": "$refs.md",
+        "label": "<b style='color: brown'>$refs</b>: Внутренние идентификаторы",
+        "status": "check"
+    },
+    {
+        "name": "$url.md",
+        "label": "<b style='color: brown'>$url</b>: Полное имя модуля компонента",
+        "status": "check"
+    },
+    {
+        "name": "$dir.md",
+        "label": "<b style='color: brown'>$dir</b>: Путь к модулю компонента",
+        "status": "check"
+    },
+    {
+        "name": "$dirInfo.md",
+        "label": "<b style='color: brown'>$dirInfo</b>: Информация о папке компонента",
+        "status": "check"
+    }
+]

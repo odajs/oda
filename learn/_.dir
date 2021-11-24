@@ -1,0 +1,10 @@
+[
+    {
+        "name": "guide",
+        "label": "Руководство"
+    },
+    {
+        "name": "video-lessons",
+        "label": "Видео-уроки"
+    }
+]

@@ -1,0 +1,17 @@
+[
+    {
+        "name": "origin.md",
+        "label": "<b style='color: brown'>ODA.origin</b>: Первоначальное определение URL-ресурса",
+        "status": "check"
+    },
+    {
+        "name": "language.md",
+        "label": "<b style='color: brown'>ODA.language</b>: Предпочитаемый язык пользователя",
+        "status": "check"
+    },
+    {
+        "name": "telemetry.md",
+        "label": "<b style='color: brown'>ODA.telemetry</b>: Мониторинг текущего состояния",
+        "status": "check"
+    }
+]

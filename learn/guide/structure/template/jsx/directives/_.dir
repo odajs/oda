@@ -1,0 +1,72 @@
+[
+    {
+        "name": "~for.md",
+        "label": "<b style='color: brown'>~for</b>: Управление циклом",
+        "status": "check"
+    },
+    {
+        "name": "~for2.md",
+        "label": "<b style='color: brown'>~for</b>: Преимущества",
+        "status": "check"
+    },
+    {
+        "name": "~is.md",
+        "label": "<b style='color: brown'>~is</b>: Динамическое изменение имени тега",
+        "status": "check"
+    },
+    {
+        "name": "~style.md",
+        "label": "<b style='color: brown'>~style</b>: Стили",
+        "status": "check"
+    },
+    {
+        "name": "~class.md",
+        "label": "<b style='color: brown'>~class</b>: Классы",
+        "status": "check"
+    },
+    {
+        "name": "~props.md",
+        "label": "<b style='color: brown'>~props</b>: Групповой биндинг",
+        "status": "check"
+    },
+    {
+        "name": "~text.md",
+        "label": "<b style='color: brown'>~text / {{}}</b>: Вставка текста",
+        "status": "check"
+    },
+    {
+        "name": "~html.md",
+        "label": "<b style='color: brown'>~html</b>: Вставка HTML",
+        "status": "check"
+    },
+    {
+        "name": "~show.md",
+        "label": "<b style='color: brown'>~show</b>: Отображение элемента",
+        "status": "check"
+    },
+    {
+        "name": "~if.md",
+        "label": "<b style='color: brown'>~if / ~else / ~else-if</b>: Условная прорисовка",
+        "status": "check"
+    },
+    {
+        "name": "~ref.md",
+        "label": "<b style='color: brown'>~ref</b>: Указатели на элементы",
+        "status": "check"
+    },
+    {
+        "name": "~save-key.md",
+        "label": "<b style='color: brown'>~save-key</b>: Ключ хранилища",
+        "status": "check"
+    },
+    {
+        "name": "~save-key2.md",
+        "label": "<b style='color: brown'>~save-key</b>: Дополнительные сведения",
+        "status": "check"
+    },
+    {
+        "name": "~wake.md",
+        "label": "<b style='color: brown'>~wake</b>: Директива пробуждения",
+        "status": "check"
+    }
+]
