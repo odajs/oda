@@ -4,6 +4,7 @@ import snippet from './src/snippets/oda-snippet.js';
 
 ODA({ is: 'oda-ace-editor', template: /*html*/`
         <style>
+            ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: lightgray; } ::-webkit-scrollbar-thumb { background-color: gray; }
             :host {
                 display: block;
                 position: relative;

@@ -378,9 +378,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         }
     ],
     isVisiblePin(con) {
-        if (!this.layout?.links?.length)
+        if (!this.layout?.links?.length || !this.block)
             return false;
-        const target = this.layout?.links?.find?.(l => l.to?.item?.id === con.id);
+        const target = this.layout?.links?.find?.(l => l.link.block === this.block.item?.id && l.link.pin === con.id);
         return !!target;
     },
     minWidth: 10,
