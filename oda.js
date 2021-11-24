@@ -2345,7 +2345,7 @@ if (!window.ODA) {
         return ++componentCounter;
     }
 }
-ODA.mapUrl = '/paths.json';
+ODA.mapUrl = 'paths.json';
 ODA.moduleScopes = {};
 ODA.convertToModule = async function (url, scope){
     const text = await (await fetch(url)).text();
