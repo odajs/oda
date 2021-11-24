@@ -31,6 +31,26 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             </div>
         </div>
     `,
+    keyBindings: {
+        Enter () {
+            this.calc();
+        },
+        Backspace () {
+            this.back();
+        },
+        Escape () {
+            this.clear();
+        }
+    },
+    attached() {
+        document.addEventListener('keydown', this._onKeyDown.bind(this));
+    },
+    detached() {
+        document.removeEventListener('keydown', this._onKeyDown.bind(this));
+    },
+    _onKeyDown (e) {
+        this.tap(e.key);
+    },
     get predicate () {
         return this.predicates.map(i=>i?.predicate).join('');
     },
@@ -45,6 +65,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     error: undefined,
     predicates: [], // unclosed brackets
     stack: [],
+    timerClear: '', // a variable containing a timer to clear the monitor
     result: '0', // the value of the previous expression
     value: 0, // the resulting expression value
     hostAttributes: {
@@ -53,7 +74,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     tap (e) {
         this.error = undefined;
         this.result = `Ans = ${this.value}`;
-        const model = e.target.item;
+        const model = e.target?.item ? e.target.item : {key: e};
         if (model?.command && this[model.command])
             return this[model.command]();
         if (this.predicates[0]?.predicate === (model?.key || model?.name)){ // checking closing brackets
