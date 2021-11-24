@@ -84,10 +84,10 @@ site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layou
         },
         template: `
             <div class="flex horizontal header" slot="header" style="align-items: center;">
-                <img width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="icon.png" style="cursor: pointer; margin: 8px;"/>
+                <img width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="site/icon.png" style="cursor: pointer; margin: 8px;"/>
                 <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
                 <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
-                    <img src="youtube.png" height="20" style="margin: 6px 0 0 16px"/>
+                    <img src="site/youtube.png" height="20" style="margin: 6px 0 0 16px"/>
                 </a>
                 <oda-site-header :items ::part ></oda-site-header>
             </div>
