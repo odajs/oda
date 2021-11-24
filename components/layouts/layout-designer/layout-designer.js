@@ -24,7 +24,7 @@ ODA({is:'oda-layout-designer',
 
 })
 ODA({is:'oda-layout-designer-structure',
-    template:`
+    template: /*html*/`
         <style>
             :host{
                 @apply --horizontal;
@@ -33,6 +33,7 @@ ODA({is:'oda-layout-designer-structure',
                 flex-wrap: wrap;
                 justify-content: space-around;
                 padding: 8px; /*//{{layout?.isGroup?'8px':''}};*/
+                align-content: flex-start;
             }
         </style>
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size></oda-layout-designer-container>
