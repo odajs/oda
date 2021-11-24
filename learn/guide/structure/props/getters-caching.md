@@ -288,7 +288,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_line_edit_[my-component.js]_h=46_
 ODA({
     is: 'my-component',
     template: `
@@ -485,66 +485,62 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=46_
+```javascript_run_line_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
-        <div>Счетчик из геттера: {{getterCount}}</div>
-        <div>Счетчик из метода: {{methodCount()}}</div>
+        <input ::value="change1.a">
+        <input ::value="change2[0]">
+        <div>Значение из геттера: {{getterChange}}</div>
+        <div>Значение из метода: {{methodChange()}}</div>
     `,
     props: {
-        getterCount: {
+        getterChange: {
             get() {
-                this.count2[0];
-                return this.count1.a;
+                this.change2[0];
+                return this.change1.a;
             }
         }
     },
-    count1: { a:0 },
-    count2: [0],
-    methodCount() {
-        return this.count2[0];
+    change1: { a:"Измени свойство объекта" },
+    change2: ["Измени элемент массива"],
+    methodChange() {
+        return this.change2[0];
     },
-    attached() {
-        setInterval( ()=>{
-            ++this.count1.a;
-            ++this.count2[0];
-        }, 1000);
-    }
 });
 ```
 
-В примере геттер **getterCount** и метод **methodCount** выполняются один раз при загрузке страницы, поскольку изменения значений элементов массива и свойств объекта не считаются изменением состояния компонента.
+В примере изменения значений свойства объекта **change1.a** и элемента массива **change2[0]** с помощью строк ввода не сбрасывают кэш методов и кэш геттера, поэтому геттер **getterChange** и метод **methodChange** выполняются один раз при загрузке страницы.
 
 Если свойство компонента не было явно объявлено в прототипе компонента, то изменение его значения не сбрасывает кэш ни геттеров, ни методов.
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=46_
+```javascript_run_line_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
-        <div>Счетчик из геттера: {{getterCount}}</div>
-        <div>Счетчик из метода: {{methodCount()}}</div>
+        <input ::value="change">
+        <div>Значение из геттера: {{getterChange}}</div>
+        <div>Значение из метода: {{methodChange()}}</div>
     `,
     props: {
-        getterCount: {
+        getterChange: {
             get() {
-                return this.count;
+                return this.change;
             }
         }
     },
-    methodCount() {
-        return this.count;
+    methodChange() {
+        return this.change;
     },
-    attached() {
-        this.count = this.count || 0;
-        setInterval( ()=>{++this.count}, 1000);
+    created() {
+        this.change = this.change || "Измени меня";
     }
 });
 ```
 
-В примере свойство **count** создается в хуке **attached**, поэтому изменение его значения не сбрасывает кэш геттера **getterCount** и метода **methodCount**. В результате и геттер, и метод выполняются один раз при загрузке страницы.
+В примере свойство **change** создается в хуке **created**, поэтому изменение его значения в строке ввода не сбрасывает кэш геттера **getterChange** и метода **methodChange**. В результате и геттер, и метод выполняются один раз при загрузке страницы.
 
 Кратко повторим особенности работы кэша геттера и методов:
 
