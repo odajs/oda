@@ -27,7 +27,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props">
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props">
                     <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" ~style="button.buttonStyle">
-                    <span disabled ~if="row.buttons.DC">{{DC}}</span>
+                    <span disabled ~if="row.buttons.Acc">{{Acc}}</span>
                     </oda-button>
                 </div>
             </div>
@@ -42,7 +42,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         },
         Escape () {
             this.clear();
-        }
+        },
     },
     attached() {
         document.addEventListener('keydown', this._onKeyDown.bind(this));
@@ -57,7 +57,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         return this.hints.map(i=>i?.hint).join('');
     },
     get expression () {
-        return this.stack.map(i=>(i?.name || i?.key)).join('');
+        return this.stack.map(i=>(i?.name || i?.key)).join('').replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     },
     get calcExpression () {
         return ([...this.stack]).map(i=>{
@@ -70,7 +70,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     timerClear: '', // a variable containing a timer to clear the monitor
     result: '0', // the value of the previous expression
     value: 0, // the resulting expression value
-    DC: ' = 0', // bit width of the result
+    Acc: ' = 0', // bit width of the result
     hostAttributes: {
         tabindex: 1
     },
@@ -82,7 +82,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return this[model.command]()
         if (this.hints[0]?.hint === (model?.key || model?.name)) // checking closing brackets
             this.hints.shift();
-        // if (this.hints.length === 0 && model?.key)
         this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); // if there is only zero in the expression, replace it with the entered character
         if (model?.hint)
             this.hints.unshift({key: model?.hint, hint: model?.hint});
@@ -104,7 +103,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.expression = undefined;
         try{
             this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
-            this.value = this.value.toFixed((+this.DC.match(/\d$/)[0]));
+            this.value = this.value.toFixed((+this.Acc.match(/\d$/)[0])); // rounding to the specified value
             this.result = this.expression + ' =';
         }
         catch (e){
@@ -133,8 +132,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.hint = undefined;
         }
     },
-    answer () {
-        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: 'Ans', expr: this.value}) : this.stack.push({name: 'Ans', expr: this.value}); 
+    getAnswer () {
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: this.value}) : this.stack.push({name: this.value}); 
         this.expression = undefined;
     },
     invert () {
@@ -147,25 +146,26 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.stack.push({name: '!', expr: `*${factorial()}`}); 
         this.expression = undefined;
     },
-    digitCapacity () {
-        switch (this.DC) {
+    // choose what bit depth the number will be
+    chooseAccuracy () {
+        switch (this.Acc) {
             case ' = 0':
-                this.DC = ' = 1';
+                this.Acc = ' = 1';
                 break;
             case ' = 1': 
-                this.DC = ' = 2';
+                this.Acc = ' = 2';
                 break;
             case ' = 2': 
-                this.DC = ' = 3';
+                this.Acc = ' = 3';
                 break;
             case ' = 3': 
-                this.DC = ' = 4';
+                this.Acc = ' = 4';
                 break;
             case ' = 4': 
-                this.DC = ' = 5';
+                this.Acc = ' = 5';
                 break;
             case ' = 5': 
-                this.DC = ' = 0';
+                this.Acc = ' = 0';
                 break;
         }
     },

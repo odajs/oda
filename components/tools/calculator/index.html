@@ -9,40 +9,40 @@
                 rows: {
                     0: {
                         buttons: {
-                            "DC": {command: "digitCapacity"},
+                            "Acc": {command: "chooseAccuracy"},
                         },
                     },
                     1: {
                         buttons: {
-                            "Rad | Deg": {props:{buttonStyle: "width: 66%"}},
+                            "Rad | Deg": {},
                             "x!": {command: "calcFactorial"},
                         },
                     }, 
                     2: {
                         buttons: {
-                            Inv: {command: "invert"},
-                            sin: {name: "sin(", expr: "Math.sin(", hint: ')'},
-                            ln: {name: "ln(", expr: "Math.log(", hint: ')'},
+                            "Inv": {command: "invert"},
+                            "sin": {name: "sin(", expr: "Math.sin(", hint: ')'},
+                            "ln": {name: "ln(", expr: "Math.log(", hint: ')'},
                         },
                     }, 
                     3: {
                         buttons: {
                             "π": {expr: '3.14159265359'},
-                            cos: {name: "cos(", expr: "Math.cos(", hint: ')'},
-                            log: {name: "log(", expr: "Math.log10(", hint: ')'},   
+                            "cos": {name: "cos(", expr: "Math.cos(", hint: ')'},
+                            "log": {name: "log(", expr: "Math.log10(", hint: ')'},   
                         },
                     },
                     4: {
                         buttons: {
                             "e": {expr: "2.71828182846"},
-                            tan: {name: "tan(", expr: "Math.tan(", hint: ')'},
+                            "tan": {name: "tan(", expr: "Math.tan(", hint: ')'},
                             "√": {name: "√(", expr: "Math.sqrt(", hint: ')'},
                         },
                     }, 
                     5: {
                         buttons: {
-                            Ans: {command: 'answer'},
-                            EXP: {name: "E", expr: "*10**"},
+                            "Ans": {command: 'getAnswer'},
+                            "EXP": {name: "E", expr: "*10**"},
                             "XY": {key:"<div>X<sup>y</sup></div>", name: "^", expr: "**"},
                         },
                     },
@@ -85,7 +85,7 @@
                     5: {
                         buttons: {
                             0: {},
-                            '00': {},
+                            "00": {},
                             ".": {},
                         },
                     },
