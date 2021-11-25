@@ -82,6 +82,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             return this[model.command]()
         if (this.hints[0]?.hint === (model?.key || model?.name)) // checking closing brackets
             this.hints.shift();
+        // if (this.hints.length === 0 && model?.key)
         this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); // if there is only zero in the expression, replace it with the entered character
         if (model?.hint)
             this.hints.unshift({key: model?.hint, hint: model?.hint});
@@ -133,7 +134,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     answer () {
-        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push({name: 'Ans', expr: this.value}); 
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: 'Ans', expr: this.value}) : this.stack.push({name: 'Ans', expr: this.value}); 
         this.expression = undefined;
     },
     invert () {
