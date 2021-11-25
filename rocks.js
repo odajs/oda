@@ -636,15 +636,12 @@ if (!globalThis.KERNEL) {
                 value: function (...args) {
                     const old_length = this.length;
                     const res = push.call(this, ...args);
+                    for (let i = old_length; i<this.length; i++){
+                        this[i] = makeReactive.call(this, this[i]);
+                    }
                     if (this.__op__){
-                        for (let i = old_length; i<this.length; i++){
-                            this[i] = makeReactive.call(this, this[i]);
-                        }
-
-                        // this[]
                         this.__op__.proxy.length = this.length;
                     }
-
                     return res;
                 }
             });

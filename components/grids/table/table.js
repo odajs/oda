@@ -1,5 +1,4 @@
-ODA({is: "oda-table",
-    imports: '@oda/button, @oda/checkbox, @oda/menu',
+ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     template: /*html*/`
     <style>
         ::-webkit-scrollbar {
@@ -499,21 +498,6 @@ ODA({is: "oda-table",
                 if (rows.length > this.screen.length)
                     rows.pop();
             }
-            //
-            // const currentLength = rows.length;
-            // const scrolledLength = this._scrollTop / this._rowHeight;
-            // if (this.scrollHeight - this._scrollTop < (raised.length + 1) * this._rowHeight) {
-            //     let diff = this.items.length - (scrolledLength + currentLength);
-            //     while (rows.length && diff < 0) {
-            //         for (let i in rows) {
-            //             if (!raised.includes(rows[i])) {
-            //                 rows.splice(i, 1);
-            //                 diff++;
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // }
         }
         this.raisedRows = raised;
         return rows;

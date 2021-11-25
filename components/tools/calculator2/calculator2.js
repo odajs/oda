@@ -1,4 +1,4 @@
-ODA({is: 'oda-calculator', imports: '@oda/button',
+ODA({is: 'oda-calculator2', imports: '@oda/button',
     template: /*html*/ `
         <style>
             :host {
