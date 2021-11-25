@@ -146,7 +146,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         };
                         // i.item.x = Math.round((+i.item.x + e.detail.ddx / this.zoom)/10) * 10;
                         // i.item.y = Math.round((+i.item.y + e.detail.ddy  / this.zoom)/10) * 10;
-                    })
+                    });
                 } break;
                 case 'track':{
                     this.selection.forEach(i=>{

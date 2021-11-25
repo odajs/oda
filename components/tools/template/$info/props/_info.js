@@ -1,4 +1,5 @@
 export default [
+    { label: 'color', src: './$info/props/color.md', title: 'Текущий цвет в палитре', color: 'green' },
     { label: 'colors', src: './$info/props/colors.md', title: 'Количество тонов в палитре', color: 'green' },
     { label: 'gradients', src: './$info/props/gradients.md', title: 'Количество градаций светлости тона', color: 'green' },
     { label: 'value', src: './$info/props/value.md', title: 'Значение выбранного цвета или градиента', color: 'green' },

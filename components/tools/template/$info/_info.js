@@ -14,7 +14,7 @@ export default {
             <div horizontal=""><b><span>Component oda-template includes oda-color-line and oda-gradient-preview</span></b><span> It is ODA component.</span></div>
             <div>supported by - '<a href="mailto:support@odajs.org">ODA</a>', author - '<a href="mailto:support@odajs.org">R.A. Perepelkin</a>'</div>
             <div>Distributed under the BIS LLC.</div>
-            <div>Copyright (c) 2007-2020. All rights reserved.</div>
+            <div>Copyright (c) 2007-2021. All rights reserved.</div>
             <div><a target="_blank" href="https://www.odajs.org">https://www.odajs.org</a></div>
         </div>`
 }
