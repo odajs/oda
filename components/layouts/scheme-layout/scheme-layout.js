@@ -433,9 +433,10 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         pins = pins.filter(i=>{
             return i.item?.links?.length;
         });
-        const links = pins.map(pin=>{
+        const links = pins.reduce((lnks, pin ) => {
             const rect = this.getClientRect(pin, this.layout);
-            return pin.item.links.map((link)=>{
+            lnks.push(pin.item.links.reduce((pinLinks, link) => {
+                if (!link.block) return pinLinks;
                 const result = {
                     from: pin,
                     link: link,
@@ -551,9 +552,11 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
 
                 result.d = `M${r.xStart},${r.yStart} L${r.x1},${r.y1} L${r.x2},${r.y2} L${r.xEnd},${r.yEnd} M${a.x1},${a.y1} L${a.x2},${a.y2} L${a.x3},${a.y3}`;
                 Object.assign(result, r);
-                return result;
-            })
-        }).flat();
+                pinLinks.push(result);
+                return pinLinks;
+            }, []))
+            return lnks;
+        }, []).flat();
         // if(links.length)
         //     return links;
         return links;
