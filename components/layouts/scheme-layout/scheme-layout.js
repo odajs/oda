@@ -345,7 +345,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             border-radius: 2px;
         }
     </style>
-    <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;">
+    <div ~for="con of [...connectors]" class="pin-space" style="margin: 4px;" :item="con">
         <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop" @attached="attachedPin(con)"></div>
     </div>
     `,
@@ -386,7 +386,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     minWidth: 10,
     minHeight: 10,
     findPin(link){
-        return this.$$('.pin').find(i=>{
+        return this.$$('.pin-space').find(i=>{
             return i.item.id === link.pin;
         })
     },
