@@ -1,0 +1,157 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../oda.js"></script>
+<title>Инь-Ян</title>
+<link rel="icon" rel="shortcut" href="icon.png" type="image/x-icon">
+<test-cosmo></test-cosmo>
+<script type="module">
+    /*
+     * (c) 2019-2020 R.A. Perepelkin
+     * powered by oda.js v3.0
+     * Under the MIT License.
+     */
+    ODA({
+        is: 'test-cosmo',
+        template:`
+            <style>
+                :host{
+                    background: linear-gradient(90deg, navy, white, white, white, navy);
+                    overflow: hidden;
+                    @apply --flex;
+                    @apply --horizontal;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .block{
+                    margin: 4px;
+                    width: 210px;
+                }
+                button, label{
+                    overflow: hidden;
+                    font-weight: bold;
+                    align-items: center;
+                    text-align: center;
+                    align-self: center;
+                    outline: none;
+                }
+                button{
+                    border-radius: 8px;
+                    background-color: white;
+                }
+
+                .block>button{
+                    width: 40px;
+                    font-size: large;
+                }
+                button:active{
+                    background-color: navy;
+                    color: white;
+                }
+                .marker{
+                    box-sizing: border-box;
+                    border-radius: 50%;
+                    width: 16px;
+                    height: 16px;
+                    left: 0px;
+                    top: 0px;
+                    position: absolute;
+                    background-color: red;
+                    border: 2px solid yellow;
+                    z-index: 1;
+                }
+                label{
+                    color: white;
+                    text-shadow: 1px 1px 2px black;
+                }
+            </style>
+            <div ~if="showMarker" class="marker" ~style="{transform: \`translate3d(\${(markerPos.x || 0) - 8}px, \${(markerPos.y || 0) - 8}px, 0px)\`}"></div>
+            <div class="vertical" style="position: absolute; top: 16px; left: 16px;">
+                <input type="range" min=0 max=360 ::value="speed">
+                <div class="block horizontal" ~for="steps">
+                    <button @tap="speed -= item">-</button>
+                    <label class="flex">{{item}}&deg;</label>
+                    <button @tap="speed += item">+</button>
+                </div>
+            </div>
+            <div class="vertical" style="position: absolute; bottom: 16px; left: 16px;">
+                <div class="block horizontal">
+                    <button @tap="steps.length>1?steps.splice(steps.splice.length-1, 1):''">-</button>
+                    <label class="flex">accuracy</label>
+                    <button @tap="steps.push(steps[steps.length-1]/2)">+</button>
+                </div>
+                <button class="block" @tap="spin = -spin" style="font-size: x-large">{{spin<0?'&#8592;':'&#8594;'}}</button>
+            </div>
+            <label  class="block" @dblclick="reset" style="position: absolute; top: 16px; border-radius: 16px; background: linear-gradient(90deg, white, navy, white) ;  font-size: x-large" ~style="{left: \`\${center}px\`, color: fixed.includes(speed)?'limegreen':''}">{{speed}}&deg;</label>
+            <div class="vertical" style="position: absolute; top: 16px; right: 16px; ">
+                 <div class="block horizontal">
+                    <button @tap="fix" :disabled="fixed.includes(speed)">+</button>
+                    <label class="flex">fixed: {{fixed.length}}</label>
+                    <button @tap="unfix" :disabled="!fixed.includes(speed)">X</button>
+                </div>
+                <div class="horizontal block" style="flex-wrap: wrap">
+                    <button @tap="speed = item" ~for="fixed" ~style="{backgroundColor: item === speed?'limegreen':''}" style="min-width: 70px; font-size: small; text-align: center">{{item}}&deg;</button>
+                </div>
+            </div>
+            <img height="70%" ref="img" src="inyan.png" ~style="{transform: \`rotateZ(\${angle}deg)\`}" style="background-color: transparent; -webkit-user-drag: none;">
+        `,
+        props:{
+            angle: 0,
+            speed: 0,
+            spin: 1,
+            fixed:[],
+            center: 600,
+            steps:[1],
+            showMarker: false,
+            markerPos: {}
+        },
+        listeners:{
+            resize: function (e) {
+                this.center = (window.innerWidth - 210 - 16) / 2;
+            },
+            track: function (e, d) {
+                switch (d.state) {
+                    case 'start':{
+                        this.markerPos = d;
+                        this.showMarker = true;
+                    } break;
+                    case 'track':{
+                        this.markerPos = d;
+                    } break;
+                    case 'end':{
+                        this.showMarker = false;
+                    } break;
+                }
+            }
+        },
+        attached(){
+            this.rotate();
+        },
+        unfix(){
+            const idx = this.fixed.indexOf(this.speed);
+            if (idx<0) return;
+            this.fixed.splice(idx, 1);
+        },
+        fix(){
+            if (!this.fixed.includes(this.speed)){
+                for (let i of this.fixed){
+                    if (i>this.speed){
+                        this.fixed.splice(this.fixed.indexOf(i), 0,this.speed);
+                        return;
+                    }
+                }
+                this.fixed.push(this.speed);
+            }
+        },
+        rotate(){
+            requestAnimationFrame(()=>{
+                this.angle += this.speed * this.spin;
+                this.rotate()
+            })
+        },
+        reset(){
+            this.speed = 0;
+            this.angle = 0;
+            this.fixed = [];
+        }
+    })
+</script>

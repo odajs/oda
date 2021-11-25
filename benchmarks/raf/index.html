@@ -1,0 +1,120 @@
+<oda-raf-test></oda-raf-test>
+<script type="module">
+    import '../../oda.js';
+    ODA({
+        is: 'oda-raf-test',
+        template: `
+            <style>
+                input {
+                    width: 100px;
+                    margin: 4px;
+                }
+                #tvs {
+                    color: red;
+                    padding: 0px 25px;
+                }
+                H3 {
+                    font-size: x-large;
+                    font-weight: 500;
+                }
+            </style>
+            <h3>requestAnimationFrame<span id="tvs">vs.</span> setTimeout()</h3>
+            <div>
+                <input type="number" ::value="fps"  @change="_fps"  min="1" max="240" step="1"/>FPS.....<span>{{results}}</span>
+            </div>
+            <div>
+                <input type="number" ::value="period" @change="_period" min="100" max="2000" step="100"/> Sample period (output fps in ...ms)
+            </div>
+            <canvas ref="c"></canvas> <canvas ref="c2"></canvas>
+        `,
+        props: {
+            results: '',
+            fps: 60,
+            period: 1000
+        },
+        attached() {
+            this.canvas = this.$refs.c;
+            this.canvas_timed = this.$refs.c2;
+            this.canvas_timed.width = this.canvas.width = 400;
+            this.canvas_timed.height = this.canvas.height = 400;
+            this.ctx = this.canvas.getContext("2d");
+            this.ctx2 = this.canvas_timed.getContext("2d");
+            this.startAnimating(this.fps, this.period);
+        },
+        _fps(e) {
+            if (this.fps > 0)
+                this.fpsInterval = 1000 / this.fps;
+        },
+        _period(e) {
+            if (this.period > 0) {
+                if (this.intervalID)
+                    clearInterval(this.intervalID);
+                this.intervalID = setInterval(this.sampleFps.bind(this), this.period);
+            }
+        },
+        startAnimating(fps, sampleFreq) {
+            this.ctx.fillStyle = this.ctx2.fillStyle = "#000";
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx2.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx2.font = this.ctx.font = "32px sans";
+            this.fpsInterval = 1000 / fps;
+            this.lastDrawTime = performance.now();
+            this.lastSampleTime = this.lastDrawTime;
+            this.frameCount = 0;
+            this.frameCount_timed = 0;
+            this.animate();
+            this.intervalID = setInterval(this.sampleFps.bind(this), sampleFreq);
+            this.animate_timed()
+        },
+        sampleFps() {
+            const now = performance.now();
+            if (this.frameCount > 0) {
+                this.currentFps = (this.frameCount / (now - this.lastSampleTime) * 1000).toFixed(2);
+                this.currentFps_timed = (this.frameCount_timed / (now - this.lastSampleTime) * 1000).toFixed(2);
+                this.results = this.currentFps + " | " + this.currentFps_timed;
+                this.frameCount = 0;
+                this.frameCount_timed = 0;
+            }
+            this.lastSampleTime = now;
+        },
+        drawNextFrame(now, canvas, ctx, fpsCount = 0) {
+            const length = Math.min(canvas.width, canvas.height) / 2.1;
+            const step = 15000;
+            const theta = (now % step) / step * 2 * Math.PI;
+            const xCenter = canvas.width / 2;
+            const yCenter = canvas.height / 2;
+            const x = xCenter + length * Math.cos(theta);
+            const y = yCenter + length * Math.sin(theta);
+            ctx.beginPath();
+            ctx.moveTo(xCenter, yCenter);
+            ctx.lineTo(x, y);
+            ctx.fillStyle = ctx.strokeStyle = 'white';
+            ctx.stroke();
+            const theta2 = theta + 3.14 / 6;
+            ctx.beginPath();
+            ctx.moveTo(xCenter, yCenter);
+            ctx.lineTo(x, y);
+            ctx.arc(xCenter, yCenter, length * 2, theta, theta2);
+            ctx.fillStyle = "rgba(0,0,0,.1)"
+            ctx.fill();
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, 100, 30);
+            ctx.fillStyle = "#ff0";
+            ctx.fillText(fpsCount, 10, 30);
+        },
+        animate_timed() {
+            this.frameCount_timed++;
+            this.drawNextFrame(performance.now(), this.canvas_timed, this.ctx2, this.currentFps_timed);
+            setTimeout(this.animate_timed.bind(this), this.fpsInterval);
+        },
+        animate(now) {
+            requestAnimationFrame(this.animate.bind(this));
+            const elapsed = now - this.lastDrawTime;
+            if (elapsed > this.fpsInterval) {
+                this.lastDrawTime = now - (elapsed % this.fpsInterval);
+                this.frameCount++;
+                this.drawNextFrame(now, this.canvas, this.ctx, this.currentFps);
+            }
+        }
+    })
+</script>

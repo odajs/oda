@@ -1,0 +1,259 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../oda.js"></script>
+<script src="./build.js"></script>
+<oda-recognizing></oda-recognizing>
+
+<script type="module">
+    ODA ({is: 'oda-recognizing', imports:['@oda/button'],
+    template: /*html*/`
+    <style>
+        h2 {text-align:center;}
+        #kvadr {clear:both;}
+        oda-button {background:#f0f0f0; border-color:#777 }
+        #panel {width:{{zoom*(netSize+2)}}px;margin:0 {{zoom}}px;}
+        #btnclr {float:right; }
+        #min {float:right; border: 1px solid #077; margin:0 {{zoom}}px;}
+        #drow {border: {{zoom}}px solid #077; margin:{{zoom}}px; float:left; cursor:crosshair;}
+        #obr {border: {{zoom}}px solid #770; margin:{{zoom}}px; float:left;}
+        #digit-cont {border: {{zoom}}px solid #707; margin:{{zoom}}px; float:left; position:relative;
+                        width: {{zoom*netSize}}; height: {{zoom*netSize}};}
+        #digit { color:#000; opacity: 0.5; font-size:{{zoom*netSize}}px; text-align: center; line-height:{{zoom*netSize}}px;
+                    position:absolute; top:0;left:0; width: {{zoom*netSize}};}
+        .rezprots {width:100%; color:#777; line-height:{{zoom*netSize/11}}px; font-size:{{zoom*netSize/15}}px; border-collapse: collapse;}
+        .rezprots .pol {width:100%;}
+        .rezprots .pol div {color:transparent;font-size:1px; background:#f0f0f0; line-height:{{zoom*netSize/15}}px;}        
+    </style>
+    
+    <h2>Распознавание рукописных цифр. </br> Реализовано на odajs.</h2>
+    <div id="panel">
+        <div id='min'><oda-canvas :width="netSize" :height="netSize" ref="min"></oda-canvas-drow></div>
+        <div id='btnclr'><oda-button :icon-size="20" icon="icons:close" @tap="_clear">Очистить</oda-button></div></div>
+    <div id="kvadr">
+        <div id='drow'><oda-canvas-drow :l-width="1.75*zoom" :width="netSize*zoom" :height="netSize*zoom" ref="drow" ::oscillo ></oda-canvas-drow></div>
+        <div id='obr'><oda-canvas :width="netSize*zoom" :height="netSize*zoom" ref="obr"></oda-canvas-drow></div>
+        <div id='digit-cont'>
+            <table class="rezprots">
+                <tr ~for="el, ix in rezProts" ><td>{{ix}}</td><td class="pol"><div :style="'width:'+ el + '%'">.</div></td><td>{{el}}%</td> </tr>
+            </table>
+            <div ~if="digit" id='digit'>{{digit}}</div>
+        </div>        
+    </div>
+    `,
+    props:{netSize:28, zoom: {get() { return this._newZoom() } }, oscillo:true, digit:'?', rezProts:[0,0,0,0,0,0,0,0,0,0] },
+    observers: ['_rec(oscillo)'],
+    listeners: { resize() { this.zoom = this._newZoom() } },
+    _clear () { this.$refs.drow._clear()
+                this.$refs.min._clear()
+                this.$refs.obr._clear()
+                this.rezProts=[0,0,0,0,0,0,0,0,0,0]
+                this.digit='?'} ,
+    _newZoom() {
+        var zoom = Math.trunc(this.offsetWidth/(3*this.netSize+12))
+        if (zoom<6) {zoom = Math.trunc(this.offsetWidth/(this.netSize+4)) }
+        return zoom },
+    _rec () {
+        let size = this.netSize*this.zoom, imgData = this.$refs.drow._ctx.getImageData(0, 0, size, size),
+            grayscaleImg = imageDataToGrayscale(imgData), boundingRectangle = getBoundingRectangle(grayscaleImg, 1/10),
+            brW = boundingRectangle.maxX+1-boundingRectangle.minX, brH = boundingRectangle.maxY+1-boundingRectangle.minY,
+            trans = centerImage(grayscaleImg), scaling = (size*3/4) / (brW>brH?brW:brH);
+        
+        let canvasCopy = document.createElement("canvas"),  copyCtx = canvasCopy.getContext("2d");
+        canvasCopy.width = size;
+        canvasCopy.height = size;
+        copyCtx.translate(size/2, size/2);
+        copyCtx.scale(scaling, scaling);
+        copyCtx.translate(-size/2, -size/2);
+        copyCtx.translate(trans.transX, trans.transY);
+        copyCtx.drawImage(this.$refs.drow._ctx.canvas, 0, 0);
+
+        imgData = copyCtx.getImageData(0, 0, size, size);
+        grayscaleImg = imageDataToGrayscale(imgData);
+
+        this.$refs.min._clear()
+        this.$refs.obr._clear()
+
+        var thumbnail =  this.$refs.min._ctx.getImageData(0, 0, this.netSize, this.netSize);
+
+        var nnInput = new Array(784),  nnInput2 = [];
+        for (var y = 0; y < this.netSize; y++) {
+            for (var x = 0; x < this.netSize; x++) {
+                var mean = 0, nnRez = 0;
+                for (var v = 0; v < this.zoom; v++) {
+                    for (var h = 0; h < this.zoom; h++) {
+                        mean += grayscaleImg[y*this.zoom + v][x*this.zoom + h];
+                    }
+                }
+                mean = (1 - mean / (this.zoom*this.zoom) ); // average and invert
+                nnRez = (mean - .5) / .5;
+                nnInput[x*this.netSize+y] = nnRez;
+
+                var block = this.$refs.drow._ctx.getImageData(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
+                var newVal = 255 * (0.5 - nnRez/2);
+                nnInput2.push(Math.round((255-newVal)/255*100)/100);
+                for (var i = 0; i < 4 * this.zoom * this.zoom; i+=4) {
+                        block.data[i] = newVal;
+                        block.data[i+1] = newVal;
+                        block.data[i+2] = newVal;
+                        block.data[i+3] = 255;  }
+                this.$refs.obr._ctx.putImageData(block, x * this.zoom, y * this.zoom);
+
+                thumbnail.data[(y*28 + x)*4] = newVal;
+                thumbnail.data[(y*28 + x)*4 + 1] = newVal;
+                thumbnail.data[(y*28 + x)*4 + 2] = newVal;
+                thumbnail.data[(y*28 + x)*4 + 3] = 255;
+            }
+        }
+        this.$refs.min._ctx.putImageData(thumbnail, 0, 0);
+
+        if (jsonNet?.layers?.length) {
+            var output = window["nn"](nnInput2,jsonNet);
+            const rezProts = output.map(a=> Math.trunc(a*100))
+            this.rezProts = rezProts
+            var maxIndex = 0;
+            rezProts.reduce(function(p,c,i){if(p<c) {maxIndex=i; return c;} else return p;});
+            this.digit = (rezProts[maxIndex]>5)?maxIndex:'?';
+        }
+
+    },
+    }),
+
+    ODA ({is: 'oda-canvas-drow', extends: 'oda-canvas',
+        listeners:{ 'touchstart':'_drow','touchmove':'_drow','touchend':'_drow',
+                    'mousedown':'_drow','mousemove':'_drow','mouseup':'_drow', },
+        // _track(e, d) { //console.log(e)            
+        //     const ox = this.$refs.canvas.offsetLeft, oy = this.$refs.canvas.offsetTop
+        //     this._ctx.beginPath();
+        //     this._ctx.lineWidth = this.lWidth;
+        //     this._ctx.lineCap="round";
+        //     this._ctx.moveTo(d.x-d.ddx-ox, d.y-d.ddy-oy);
+        //     this._ctx.lineTo(d.x-ox, d.y-oy);
+        //     if (d.state = "end" && !d.x) {
+        //         this._ctx.moveTo(d.start.x-ox, d.start.y-oy);
+        //         this._ctx.lineTo(d.start.x-ox, d.start.y-oy);  }
+        //     this._ctx.stroke();
+        //     this._ctx.closePath();
+        //     this.interval("track", ()=>{this.oscillo = !this.oscillo}, 300)
+        // },
+        _drow(e) {  // console.log(e)
+            const   x = (e.x)? e.pageX - this.$refs.canvas.offsetLeft : e.changedTouches[0].pageX - this.$refs.canvas.offsetLeft,
+                    y = (e.y)? e.pageY - this.$refs.canvas.offsetTop : e.changedTouches[0].pageY - this.$refs.canvas.offsetTop;
+            e.preventDefault();
+            this._ctx.beginPath();
+            this._ctx.lineWidth = this.lWidth;
+            this._ctx.lineCap="round";
+            (this.lastPoint.x)? this._ctx.moveTo(this.lastPoint.x, this.lastPoint.y): this._ctx.moveTo(x,y)
+            if ((e.type != 'mousemove') || (this.lastPoint.x) ) {this._ctx.lineTo(x, y);}
+            this._ctx.stroke();
+            this._ctx.closePath();
+            if ( (e.type == 'touchstart')||(e.type == 'touchmove')||(e.type == 'mousedown') ) { this.lastPoint = {'x':x,'y':y} }
+            if ( (this.lastPoint.x)&&(e.type == 'mousemove') ) { this.lastPoint = {'x':x,'y':y} }
+            if ( (e.type == 'touchend')||(e.type == 'mouseup')) {this.lastPoint = {} }
+            this.interval("track", ()=>{this.oscillo = !this.oscillo}, 300)
+            console.log(x,y)
+        },
+        props:{ lWidth:5, lastPoint:{} },
+    }),
+
+    ODA ({is: 'oda-canvas',  
+    template: /*html*/`<canvas ref="canvas" :width="width" :height="height">Sorry, is not supported.</canvas>`,
+        props:{ width: 280, height:280, },
+        _clear() {
+            this._ctx.beginPath();
+            this._ctx.fillStyle = "white";
+            this._ctx.fillRect(0,0,this.width,this.height);
+            this._ctx.closePath(); },
+        // _track(e, d) {},
+        get _ctx() { return this.$refs.canvas.getContext('2d');  },
+    })
+
+    function imageDataToGrayscale(imgData) {
+    var grayscaleImg = [];
+    for (var y = 0; y < imgData.height; y++) {
+        grayscaleImg[y]=[];
+        for (var x = 0; x < imgData.width; x++) {
+            var offset = y * 4 * imgData.width + 4 * x;
+            var alpha = imgData.data[offset+3];
+            if (alpha == 0) {
+                imgData.data[offset] = 255;
+                imgData.data[offset+1] = 255;
+                imgData.data[offset+2] = 255; }
+            imgData.data[offset+3] = 255;
+            grayscaleImg[y][x] = imgData.data[y*4*imgData.width + x*4 + 0] / 255;
+        }
+    }
+    return grayscaleImg;
+}
+
+function centerImage(img) {
+    var meanX = 0, meanY = 0, rows = img.length, columns = img[0].length, sumPixels = 0;
+    for (var y = 0; y < rows; y++) {
+        for (var x = 0; x < columns; x++) {
+            var pixel = (1 - img[y][x]);
+            sumPixels += pixel;
+            meanY += y * pixel;
+            meanX += x * pixel;
+        }
+    }
+    meanX /= sumPixels;
+    meanY /= sumPixels;
+    var dY = Math.round(rows/2 - meanY), dX = Math.round(columns/2 - meanX);
+    return {transX: dX, transY: dY};
+}
+
+function getBoundingRectangle(img, threshold) {
+    var rows = img.length, columns = img[0].length, minX=columns, minY=rows, maxX=-1, maxY=-1;
+    for (var y = 0; y < rows; y++) {
+        for (var x = 0; x < columns; x++) {
+            if (img[y][x] < threshold) {
+                if (minX > x) minX = x;
+                if (maxX < x) maxX = x;
+                if (minY > y) minY = y;
+                if (maxY < y) maxY = y;
+            }
+        }
+    }
+    return { minY: minY, minX: minX, maxY: maxY, maxX: maxX};
+}
+var jsonNet = {
+    "sizes": [ 784, 392, 10 ],
+    "layers":[],
+    "outputLookup": false,
+    "inputLookup": false,
+    "activation": "sigmoid",
+    "trainOpts": {
+        "iterations": 20000, "errorThresh": 0.005, "log": true, "logPeriod": 1,
+        "learningRate": 0.3, "momentum": 0.1, "callbackPeriod": 10,
+        "beta1": 0.9, "beta2": 0.999, "epsilon": 1e-8
+    }
+}
+
+
+
+var layers1 = {}
+for (var i = 0; i < jsonNet.sizes[0]; i++) { layers1[i]={} }
+
+var jsonNetIsh = await fetch('./mnistTrain.json');
+jsonNetIsh = await jsonNetIsh.json()
+
+// function fXXXro(obj,n) { // округление
+//     getProp(obj);
+//     function getProp(o) {
+//         for(var prop in o) {
+//             if(typeof(o[prop]) === 'object') { getProp(o[prop]); }
+//             if(typeof(o[prop]) === 'number')  { o[prop] = Math.round(o[prop]*(10**n))/(10**n) }
+//             else {}
+//         }
+//     } }
+// fXXXro(jsonNetIsh,1)
+
+jsonNet.layers[0]=layers1
+jsonNet.layers[1]=jsonNetIsh.layers[1]
+jsonNet.layers[2]=jsonNetIsh.layers[2]
+
+// const downLoad = document.createElement('a'); // скачать
+//         downLoad.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(jsonNetIsh, null, '') );
+//         downLoad.setAttribute('download', 'mnistTrain.json');
+//         downLoad.click();
+
+</script>

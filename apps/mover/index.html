@@ -1,0 +1,25 @@
+<oda-mover></oda-mover>
+<script type="module">
+    import '../../oda.js';
+    import Mover from "./mover.js";
+    ODA({is:'oda-mover',
+        template:`
+          <style>
+              :host{
+                  @apply --vertical;
+              }
+          </style>
+          <div class="horizontal">
+            <button @tap="mover.forward()">forward</button>
+            <button @tap="mover.left()">left</button>
+            <button @tap="mover.right()">right</button>
+            <button @tap="mover.back()">back</button>
+          </div>
+
+          <span>{{mover.toString()}}</span>
+        `,
+        attached(){
+          this.mover = new Mover(100,200,0,10,30);
+        }
+    })
+</script>

@@ -1,0 +1,682 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../oda.js"></script>
+
+<oda-space-layout></oda-space-layout>
+
+<script type="module">
+    ODA({is: 'oda-space-layout', extends: 'oda-app-layout',
+        imports:['@oda/app-layout'],
+        template:`
+            <app-layout-toolbar slot="top">
+                <div slot="top-left" class="horizontal">
+                    <oda-button icon="icons:forward" @tap="fire('next')">next</oda-button>
+                    <oda-button icon="device:gps-fixed" allow-toggle ::toggled="showLines"></oda-button>
+                    <oda-button icon="av:pause" allow-toggle ::toggled="stop"></oda-button>
+                </div>
+                <div slot="top-right" class="horizontal center">
+                    <label>time:<input ::value="timeLimit" style="width: 50px;"></label>
+                    <label>bugs:<input ::value="bugCount" style="width: 35px;"></label>
+                    <label>targets:<input ::value="targetCount" style="width: 35px;"></label>
+                </div>
+              <div slot="top-center" class="horizontal center">
+                    <label>time:{{step}}</label>
+                    <label style="margin-left: 4px;">age:{{epoch}}</label>
+               </div>
+            </app-layout-toolbar>
+            <oda-space slot="main" ::step></oda-space>
+        `,
+        props:{
+            timeLimit: 2000,
+            hideToolbar: false,
+            showLines: false,
+            targetCount: 10,
+            bugCount: 10,
+            step: -1,
+            epoch: 0,
+            stop: false
+        }
+    })
+    ODA({is: 'oda-space',
+        template:`
+        <style>
+            :host{
+                @apply --header;
+            }
+        </style>
+          <div ~for="body in items" ~if="!body?.hidden"  ~is="body?.is || 'oda-body'" :item="body"></div>
+          <svg :width :height ~if="showLines">
+              <g ~for="items" ~if="!item.hidden">
+                <line :x1="item.top.x1" :x2="item.top.x2" :y1="item.top.y1" :y2="item.top.y2" stroke="pink"></line>
+                <line :x1="item.bottom.x1" :x2="item.bottom.x2" :y1="item.bottom.y1" :y2="item.bottom.y2" stroke="lime"></line>
+                <line :x1="item.left.x1" :x2="item.left.x2" :y1="item.left.y1" :y2="item.left.y2"  stroke="cyan"></line>
+                <line :x1="item.right.x1" :x2="item.right.x2" :y1="item.right.y1" :y2="item.right.y2" stroke="yellow"></line>
+                <g ~for="eye in item?.eyes">
+                    <line :x1="eye.x1" :x2="eye.x2" :y1="eye.y1" :y2="eye.y2" stroke="red"></line>
+                </g>
+              </g>
+          </svg>
+        `,
+        props:{
+            space(){
+                return this;
+            },
+            parents: null,
+            bugs(){
+                return (new Array(this.bugCount)).fill('').map(i=>(this.parents?this.parents.father.clone(this.parents.mother):new Brain([7,6,5,4])))
+            },
+            targets(){
+                const h = this.parents;
+                return (new Array(this.targetCount)).fill('').map(i=>({is:'oda-target'}));
+            },
+            items:{
+                get(){
+                    return [...this.bugs, ...this.targets]
+                },
+                set(n){
+                    this.step = 0;
+                }
+            },
+            width: 0,
+            height: 0,
+            top: 0,
+            left: 0,
+            step: {
+                shared: true,
+                default: -1,
+                set(n){
+                    if (n<0) return;
+                    this.async(()=>{
+                        if (this.step>this.timeLimit || (this.targetCount>1 && this.targets.filter(i=>!i.hidden).length <1) || (this.bugCount>2 && this.bugs.filter(i=>!i.hidden).length < 2)){
+                            this.next();
+                            return;
+                        }
+                        this.step++;
+                    })
+                }
+            }
+        },
+        attached() {
+            this.domHost.listen('next', this.next.bind(this));
+            this.next();
+        },
+        next(){
+            const bugs = this.bugs.sort((a,b)=>{
+                return (a.score+a.time/1000)>(b.score+b.time/1000)?-1:1
+            })
+            this.parents = {father:bugs[0], mother:bugs[1] || bugs[0]};
+            this.domHost.epoch++;
+            this.step = 0;
+        },
+        listeners:{
+            resize(e) {
+                this.width = this.offsetWidth;
+                this.height = this.offsetHeight;
+                this.top = this.getClientRect().top;
+                this.left = this.getClientRect().left;
+            }
+        }
+    })
+    ODA({is:'oda-body',
+        template:`
+            <style>
+                :host{
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    transform: translate3d({{pos.x}}px, {{pos.y}}px, 0) rotate({{angle}}deg);
+                    cursor: pointer;
+                }
+            </style>
+        `,
+        props:{
+            item: {
+                type: Object,
+                set(n){
+                    if (!n) return;
+                    n.host = this;
+                    const self = this;
+                    Object.defineProperties(n, {
+                        score:{
+                            enumerable: true,
+                            writable: true,
+                            value: 0
+                        },
+                        x: {
+                            enumerable: true,
+                            get() {
+                                return self.x;
+                            }
+                        },
+                        y: {
+                            enumerable: true,
+                            get() {
+                                return self.y;
+                            }
+                        },
+                        top: {
+                            enumerable: true,
+                            get() {
+                                return self.top;
+                            }
+                        },
+                        left: {
+                            enumerable: true,
+                            get() {
+                                return self.left;
+                            }
+                        },
+                        right: {
+                            enumerable: true,
+                            get() {
+                                return self.right;
+                            }
+                        },
+                        bottom: {
+                            enumerable: true,
+                            get() {
+                                return self.bottom;
+                            }
+                        },
+                    })
+                }
+            },
+            x: Number,
+            y: Number,
+            width: 0,
+            height: 0,
+            angle: 0,
+            top(){
+                return this.getLine(0,-this.dy)
+            },
+            left() {
+                return this.getLine(-this.dx, 0)
+            },
+            right(){
+                return this.getLine(this.dx, 0);
+            },
+            bottom(){
+                return this.getLine(0, this.dy);
+            },
+            minX(){
+                return Math.min(this.top.x1, this.top.x2, this.bottom.x1, this.bottom.x2)
+            },
+            maxX(){
+                return Math.max(this.top.x1, this.top.x2, this.bottom.x1, this.bottom.x2)
+            },
+            minY(){
+                return Math.min(this.top.y1, this.top.y2, this.bottom.y1, this.bottom.y2)
+            },
+            maxY(){
+                return Math.max(this.top.y1, this.top.y2, this.bottom.y1, this.bottom.y2)
+            }
+        },
+        observers:[
+            function init(space, item){
+                item.host = this;
+                if (!this.random) return;
+                const rect = this.getClientRect(this.space);
+                this.x = rect.width*2 + Math.random() * (rect.host.width - rect.width * 4);
+                this.y = rect.height*2 + Math.random() * (rect.host.height - rect.height * 4);
+                this.angle = Math.random() * 360-180;
+            }
+        ],
+        get pos(){
+            const test = this.idx;
+            return {x: this.x - this.dx + this.space?.left || 0, y: this.y - this.dy + this.space?.top || 0}
+        },
+        get dx(){
+            return this.width/2;
+        },
+        get dy(){
+            return this.height/2;
+        },
+        get angleRad(){
+            return this.angle * Math.PI/180;
+        },
+        get radius(){
+            return Math.hypot(this.width, this.height)/2;
+        },
+        get cos(){
+            return Math.cos(this.angleRad);
+        },
+        get sin(){
+            return Math.sin(this.angleRad);
+        },
+        getLine(dx, dy){
+            let x1 = this.x + (dx || -this.dx);
+            let y1 = this.y + (dy || -this.dy);
+            let x2 = this.x + (dx || this.dx);
+            let y2 = this.y + (dy || this.dy);
+            const dot1 = this.rotate(x1, y1);
+            const dot2 = this.rotate(x2, y2)
+            return {x1: dot1.x, y1: dot1.y, x2: dot2.x, y2: dot2.y};
+        },
+        rotate(x, y) {
+            const nx = (this.cos * (x - this.x)) - (this.sin * (y - this.y)) + this.x;
+            const ny = (this.cos * (y - this.y)) + (this.sin * (x - this.x)) + this.y;
+            return {x:nx, y:ny};
+        },
+        listeners:{
+            resize(e){
+                e.stopPropagation()
+                this.width = this.item.width = this.offsetWidth;
+                this.height = this.item.height = this.offsetHeight;
+            },
+            track (e){
+                if (e.detail.state !== 'track') return;
+                this.x += e.detail.ddx;
+                this.y += e.detail.ddy;
+            }
+        }
+    })
+    ODA({is:'oda-bug', extends: 'oda-body',
+        template:`
+              <style>
+                  :host{
+                      border-color: darkred;
+                      border-left-style: solid;
+                      border-radius: 50%;
+                      @apply --horizontal;
+                      @apply --dark;
+                      border-width: {{item?.score}}px;
+                      opacity: {{energy}}
+                  }
+                  div{
+                      align-items: center;
+                      justify-content: space-between;
+                  }
+              </style>
+              <div class="vertical" style="justify-content: center;">
+                  <oda-sensor ::val="inputs[2]" title="2"></oda-sensor>
+                  <div class="horizontal">
+                     <oda-neuron :val="outputs[3]" title="3"></oda-neuron>
+                     <oda-neuron :val="outputs[0]" title="0"></oda-neuron>
+                  </div>
+
+                  <oda-sensor ::val="inputs[3]" title="3"></oda-sensor>
+              </div>
+              <div class="vertical">
+                <div class="horizontal">
+                    <oda-sensor ::val="inputs[4]" title="4"></oda-sensor>
+                </div>
+                <div class="horizontal">
+                    <div class="horizontal">
+                        <oda-energy ::val="inputs[0]" title="0"></oda-energy>
+                    </div>
+                    <div class="vertical">
+                        <oda-neuron :val="outputs[1]" title="2"></oda-neuron>
+                        <oda-neuron :val="outputs[2]" title="3"></oda-neuron>
+                    </div>
+                </div>
+                <div class="horizontal">
+                    <oda-sensor ::val="inputs[1]" title="1"></oda-sensor>
+                </div>
+              </div>
+              <div class="vertical" style="justify-content: center;">
+                  <oda-eye ~for="eye in item?.eyes" ::item="eye" :title="index+5" ::val="inputs[index+5]"></oda-eye>
+              </div>
+      `,
+        props:{
+            energy: 1,
+            random: true,
+            inputs: {
+                default: [],
+                get(){
+                    return new Array(this.item?.topology[0]).fill(1);
+                }
+            },
+            outputs: {
+                default: [],
+                set(n){
+                    this.item.time++;
+                    this.energy = this.inputs[0];
+                    const left = n[1];
+                    const right = n[2];
+                    const angle = right-left;
+                    const forward = n[0] + Math.sqrt(this.energy);
+                    const back = n[3];
+                    const move =  forward - back;
+                    if(this.stop) return;
+                    this.moveDirect(move);
+                    this.angle += angle;
+                }
+            }
+        },
+        observers:[
+            'checkPosition(space?.width, space?.height, space, x, y, angle, item, stop)',
+        ],
+        get body(){
+            return this;
+        },
+        checkPosition(sw,sh){
+            if (this.energy < 0.1){
+                this.item.hidden = true;
+                return;
+            }
+            if (stop) {
+                if (this.minX<0)
+                    this.x -= this.minX;
+                else if (this.maxX > sw)
+                    this.x -= this.maxX - sw;
+                if (this.minY < 0)
+                    this.y -= this.minY;
+                else if (this.maxY > sh)
+                    this.y -= this.maxY - sh;
+            }
+            this.bugs.forEach(bug=>{
+                if(!bug.host || bug === this.item) return false;
+                const x1 = (this.maxX-10) - (bug.host.minX+10);
+                const x2 = (bug.host.maxX-10) - (this.minX + 10);
+                const x = x1>0 && x2>0;
+                const y1 = (this.maxY-10) - (bug.host.minY+10);
+                const y2 = (bug.host.maxY-10) - (this.minY+10);
+                const y = y1>0 && y2>0;
+                if(x && y){
+                    bug.host.y += Math.min(y1,y2)/4;
+                    bug.host.x -= Math.min(x1,x2)/4;
+                    this.y -= Math.min(y1,y2)/4;
+                    this.x += Math.min(x1,x2)/4;
+                    // console.log(Math.min(x1,x2),Math.min(y1,y2))
+                }
+            })
+            // if(correct){
+            //     this.outputs = this.item.forward([this.inputs[0], ...new Array(this.inputs.length-1).fill(5)]);
+            // }
+            // else{
+            //     this.outputs = this.item.forward(this.inputs);
+            // }
+            this.outputs = this.item.forward(this.inputs);
+        },
+        moveDirect(c){
+            if (this.energy < 0.1){
+                this.item.hidden = true;
+                return;
+            }
+
+            const sw = this.space.width;
+            const sh = this.space.height;
+            this.x += c * Math.cos((-this.angle) * Math.PI/180)
+            this.y -= c * Math.sin((-this.angle) * Math.PI/180)
+            if (this.minX<0)
+                this.x -= this.minX;
+            else if (this.maxX > sw)
+                this.x -= this.maxX - sw;
+            if (this.minY < 0)
+                this.y -= this.minY;
+            else if (this.maxY > sh)
+                this.y -= this.maxY - sh;
+            // this.outputs = this.item.forward(this.inputs);
+        }
+    })
+    ODA({is:'oda-target', extends: 'oda-body, oda-icon',
+        imports:['@oda/icon'],
+        props:{
+            random: true,
+            fill: 'red',
+            stroke: 'green',
+            icon: 'maps:local-florist'
+        }
+    })
+    ODA({is: 'oda-neuron',
+        template:`
+            <style>
+                :host{
+                    margin: 1px;
+                    width: {{size}}px;
+                    height: {{size}}px;
+                    border: .2px solid white;
+                    @apply --content;
+                    cursor: pointer;
+                    background-color: rgb({{color}},{{color}},{{color}});
+                }
+            </style>
+        `,
+        observers:[
+            function checkState(x,y,angle, step){
+                this.check?.();
+            }
+        ],
+        props:{
+            size: 4,
+            val: 1,
+            color(){
+                return this.val * 255;
+            },
+            item: Object
+        },
+        getCenter(){
+            const rect = this.getClientRect(this.space);
+            return {x: rect.x + rect.width/2, y: rect.y + rect.height/2};
+        }
+    })
+    ODA({is: 'oda-sensor', extends: 'oda-neuron',
+        template:`
+            <style>
+                :host{
+                    border-radius: 50%;
+                    font-size: xx-small;
+                }
+            </style>
+        `,
+        props:{
+            item: {},
+            size: 6,
+            distance: 10,
+            speed: .9,
+            angle(){
+                return this.x
+            }
+        },
+        check(){
+            if (!this.item) return;
+            this.val *= this.speed;
+            this.item.x1 = this.x;
+            this.item.y1 = this.y;
+            const c = this.getCenter();
+            this.item.x2 = c.x
+            this.item.y2 = c.y
+            const fi = Math.atan2(this.item.y2 - this.item.y1, this.item.x2 - this.item.x1);
+            this.item.y2 += (this.distance + this.size/2) * Math.sin(fi);
+            this.item.x2 +=  (this.distance + this.size/2) * Math.cos(fi);
+            let array = this.space.items.reduce((res, item)=>{
+                if (item !== this.item && !item.hidden){
+                    res.push(this.getDistance({x1:item.x, y1:item.y, x2:item.x + item.width/2, y2:item.y + item.height/2}));
+                    res.push(this.getDistance({x1:item.x, y1:item.y + item.height/2, x2:item.x + item.width/2, y2:item.y}))
+                }
+                return res;
+            },[])
+            array.push(this.getDistance({x1:0, y1:0, x2:this.space.width, y2:0}));
+            array.push(this.getDistance({x1:0, y1:0, x2:0, y2:this.space.height}));
+            array.push(this.getDistance({x1:this.space.width, y1:0, x2:this.space.width, y2:this.space.height}));
+            array.push(this.getDistance({x1:0, y1:this.space.height, x2:this.space.width, y2:this.space.height}));
+            array = array.filter(i=>i).map(i=>{
+                return Math.hypot(c.x - i.x, c.y-i.y);
+            }).sort((a,b)=>(a>b?1:-1))
+            const vector = array[0] || this.distance;
+            this.val = (this.distance - vector)/this.distance;
+        },
+        getDistance(line){
+            if (!line) return 0
+            return intersection({x:line.x1, y:line.y1}, {x:line.x2, y:line.y2}, {x:this.item.x1, y:this.item.y1}, {x:this.item.x2, y:this.item.y2})
+        }
+
+    })
+    ODA({is:'oda-energy', extends:'oda-sensor',
+        template:`
+            <style>
+                :host{
+                    font-size: 7px;
+                    text-align: center;
+                    @apply --horizintal;
+                    align-items: center;
+                }
+            </style>
+        `,
+        props:{
+            size(){
+                return this.val + 4;
+            },
+            speed: .999
+        },
+        check(){
+            if(this.stop) return;
+            this.val *= this.speed;
+            const pos = this.getCenter();
+            this.targets.forEach(body =>{
+                if (body === this || body.hidden) return;
+                const x1 = body.x;
+                const y1 = body.y;
+                const l = Math.hypot((pos.x-x1),(pos.y-y1));
+                if (l<this.domHost.width/2){
+                    this.val += 1;
+                    this.domHost.item.score++;
+                    body.hidden = true;
+                }
+            })
+        }
+    })
+    ODA({is: 'oda-eye', extends: 'oda-sensor',
+        template:`
+            <style>
+                :host{
+                    margin-right: -10px;
+                }
+            </style>
+        `,
+        props:{
+            item: Object,
+            distance(){
+                return Math.min(this.space.width,this.space.height)
+            },
+            size: 10,
+        }
+    })
+
+    KERNEL({is:'Brain',
+        props:{
+            score: 0,
+            time: 0,
+            eyes: [{},{}],
+            is: 'oda-bug'
+        },
+        ctor(topology, clone) {
+            this.topology = topology;
+            this.layers = new Array(this.topology.length - 1);
+            if (clone) return;
+            for (let i = 0; i < this.layers.length; i++) {
+                this.layers[i] = new Layer(this.topology[i], this.topology[i + 1]);
+            }
+        },
+        forward(input) {
+            let output = input;
+            for (let i = 0; i < this.layers.length; i++) {
+                output = this.layers[i].forward(output);
+            }
+            return output;
+        },
+        mutate (mutationProbability = 0.2, mutationAmount = 2) {
+            for (let i = 0; i < this.layers.length; i++) {
+                this.layers[i].mutate(mutationProbability, mutationAmount);
+            }
+        },
+        clone(heroMom){
+            const clone = new Brain(this.topology, true);
+            for (let i = 0; i < this.layers.length; i++) {
+                clone.layers[i] = this.layers[i].clone(heroMom?.layers[i]);
+            }
+            clone.mutate();
+            return clone;
+        }
+    })
+    KERNEL({is: 'Layer',
+        ctor(inCount = 0, outCount) {
+            if (inCount === 0) return;
+            this.weights = new Array(inCount + 1);
+            for (let i = 0; i < this.weights.length; i++)
+                this.weights[i] = new Array(outCount);
+            for (let i = 0; i < this.weights.length; i++)
+                for (let j = 0; j < this.weights[i].length; j++)
+                    this.weights[i][j] = Math.random() - 0.5;
+        },
+        forward(input) {
+            let output = new Array(this.weights[0].length);
+            output.fill(0);
+            for (let i = 0; i < this.weights.length; i++) {
+                for (let j = 0; j < this.weights[i].length; j++) {
+                    if (i === this.weights.length - 1) // If is Bias Neuron
+                        output[j] += this.weights[i][j]; // Then, the value of the neuron is equal to one
+                    else
+                        output[j] += this.weights[i][j] * input[i];
+                }
+            }
+            for (let i = 0; i < output.length; i++)
+                output[i] = LeakyReLU(output[i]);
+            return output;
+        },
+        mutate (mutationProbability, mutationAmount) {
+            for (let i = 0; i < this.weights.length; i++) {
+                for (let j = 0; j < this.weights[i].length; j++) {
+                    if (Math.random() < mutationProbability)
+                        this.weights[i][j] = Math.random() * (mutationAmount * 2) - mutationAmount;
+                }
+            }
+        },
+        clone(heroMom){
+            const clone = new Layer();
+            clone.weights = new Array(this.weights.length);
+
+            for (let i = 0; i < this.weights.length; i++)
+                clone.weights[i] = new Array(this.weights[i].length);
+
+            for (let i = 0; i < this.weights.length; i++) {
+                for (let j = 0; j < this.weights[i].length; j++) {
+                    clone.weights[i][j] = (j % 2 === 0 || !heroMom) ? this.weights[i][j] : heroMom.weights[i][j];
+                }
+            }
+            return clone;
+        }
+    })
+    function intersection(start1, end1, start2, end2) {
+        const dir1 = point2f(end1, '-', start1)
+        const dir2 = point2f(end2, '-', start2);
+        //считаем уравнения прямых проходящих через отрезки
+        const a1 = -dir1.y;
+        const b1 = +dir1.x;
+        const d1 = -(a1*start1.x + b1*start1.y);
+        const a2 = -dir2.y;
+        const b2 = +dir2.x;
+        const d2 = -(a2*start2.x + b2*start2.y);
+        //подставляем концы отрезков, для выяснения в каких полуплоскотях они находятся
+        const seg1_line2_start = a2*start1.x + b2*start1.y + d2;
+        const seg1_line2_end = a2*end1.x + b2*end1.y + d2;
+        const seg2_line1_start = a1*start2.x + b1*start2.y + d1;
+        const seg2_line1_end = a1*end2.x + b1*end2.y + d1;
+        //если концы одного отрезка имеют один знак, значит он в одной полуплоскости и пересечения нет.
+        if (seg1_line2_start * seg1_line2_end >= 0 || seg2_line1_start * seg2_line1_end >= 0)
+            return false;
+        const u = seg1_line2_start / (seg1_line2_start - seg1_line2_end);
+        const pin_out = point2f({x: u, y: u}, '*', dir1);
+        return point2f(start1, '+', pin_out);
+    }
+    function point2f(start, type, end) {
+        switch (type){
+            case '-':
+                return {x: start.x - end.x, y: start.y - end.y}
+            case '*':
+                return {x: start.x * end.x, y: start.y * end.y}
+            case '+':
+                return {x: start.x + end.x, y: start.y + end.y}
+            case '/':
+                return {x: start.x / end.x, y: start.y / end.y}
+        }
+
+    }
+
+    function LeakyReLU(x) {
+        if (x >= 0)
+            return x;
+        else
+            return -x * .01;
+    }
+</script>

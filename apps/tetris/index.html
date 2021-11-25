@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="module" src="../../oda.js"></script>
+        <title>ODA TETRIS</title>
+        <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet" />
+        <style>
+            * {
+                font-family: 'Press Start 2P', cursive;
+            }
+
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <oda-tetris></oda-tetris>
+        <script type="module">
+            import '../../components/buttons/button/button.js';
+            const KEY = {
+                ESC: 27,
+                SPACE: 32,
+                LEFT: 37,
+                UP: 38,
+                RIGHT: 39,
+                DOWN: 40,
+                P: 80,
+                S: 83
+            }
+            ODA({
+                is: 'oda-tetris',
+                template: `
+                    <style>
+                        :host {
+                            height: 100%;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: stretch;
+                            background: url('./back.png');
+                            background-size: cover;
+                        }
+                        .cnts {
+                            flex: 1;
+                            margin: 2px;
+                            border: 1px solid gray;
+                            border-radius: 4px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            color: gray;
+                            font-size: small;
+                        }
+                        oda-button {
+                            font-size: small;
+                        }
+                    </style>
+                    <div class="vertical" style="border-right:1px solid gray; width:200px;;background-color: white;opacity: 0.9;">
+                        <div align="center" style="font-weight:500;text-decoration:underline;padding:8px;font-size:large;cursor: pointer" ~style="{color:showShadow?'':'red'}">TETRIS</div>
+                        <oda-button @tap="_play">Play</oda-button>
+                        <oda-button @tap="pause">Pause</oda-button>
+                        <oda-button @tap="soundEnabled=!soundEnabled" ~style="{'text-decoration': soundEnabled?'':'line-through'}">Sound</oda-button>
+                        <oda-button @tap="_music" ~style="{'text-decoration': musicEnabled?'':'line-through'}">Music</oda-button>
+                        <oda-button @tap="showShadow=!showShadow" ~style="{'text-decoration': showShadow?'':'line-through'}">Shadow</oda-button>
+                        <div style="flex:1"></div>
+                        <div style="max-height:400px; flex: 10; display: flex;flex-direction: column;cursor:pointer;">
+                            <div class="cnts" @mousedown="down($event, 38)" @touchstart="touch($event, 38)">up</div>
+                            <div style="display:flex;flex-direction:row;flex:1">
+                                <div class="cnts" @mousedown="down($event, 37)" @touchstart="touch($event, 37)">left</div>
+                                <div class="cnts" @mousedown="down($event, 39)" @touchstart="touch($event, 39)">right</div>
+                            </div>
+                            <div class="cnts" @mousedown="down($event, 40)" @touchstart="touch($event, 40)">down</div>
+                        </div>
+                    </div>
+                    <canvas ref="board" class="no-flex game-board" style="border: 18px solid transparent;box-shadow: inset 0 0 0 1px gray;;background-color: white;opacity: 0.9;"></canvas>
+                    <div class="vertical" style="border-left:1px solid gray; width:200px;background-color: white;opacity: 0.9;">
+                        <div style="margin:16px;font-size:small;">Score: {{account.score}}</div>
+                        <div style="margin:16px;font-size:small;">Lines: {{account.lines}}</div>
+                        <div style="margin:16px;font-size:small;">Level: {{account.level}}</div>
+                        <div class="account" style="display:flex;justify-content:center">
+                            <canvas ref="next" style="width:100px"></canvas>
+                        </div>
+                        <div style="flex:1"></div>
+                        <div style="max-height:400px; flex: 10; display: flex;flex-direction: column;cursor:pointer;">
+                            <div class="cnts" @mousedown="down($event, 38)" @touchstart="touch($event, 38)">up</div>
+                            <div style="display:flex;flex-direction:row;flex:1">
+                                <div class="cnts" @mousedown="down($event, 37)" @touchstart="touch($event, 37)">left</div>
+                                <div class="cnts" @mousedown="down($event, 39)" @touchstart="touch($event, 39)">right</div>
+                            </div>
+                            <div class="cnts" @mousedown="down($event, 32)" @touchstart="touch($event, 32)">space</div>                        </div>
+                    </div>
+                `,
+                props: {
+                    showShadow: {
+                        default: true,
+                        shared: true
+                    },
+                    soundEnabled: {
+                        default: true,
+                        shared: true
+                    },
+                    musicEnabled: {
+                        default: true,
+                        set(n) {
+                            this.playMusic()
+                        },
+                        shared: true
+                    },
+                    COLS: 15,
+                    ROWS: 30,
+                    BLOCK_SIZE: 24,
+                    LINES_PER_LEVEL: 10,
+                    SLIT: 0.05,
+                    COLORS: [
+                        'none',
+                        '#e36bae',      // I
+                        '#19d3da',      // J
+                        '#a8dda8',      // L
+                        '#f1e189',      // []
+                        '#00917c',      // S
+                        '#ff7171',      // T
+                        '#3d7ea6'       // Z
+                    ],
+                    SHAPES: [
+                        [],
+                        [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+                        [[2, 0, 0], [2, 2, 2], [0, 0, 0]],
+                        [[0, 0, 3], [3, 3, 3], [0, 0, 0]],
+                        [[4, 4], [4, 4]],
+                        [[0, 5, 5], [5, 5, 0], [0, 0, 0]],
+                        [[0, 6, 0], [6, 6, 6], [0, 0, 0]],
+                        [[7, 7, 0], [0, 7, 7], [0, 0, 0]]
+                    ],
+                    POINTS: {
+                        SINGLE: 100,
+                        DOUBLE: 300,
+                        TRIPLE: 500,
+                        TETRIS: 800,
+                        SOFT_DROP: 1,
+                        HARD_DROP: 3,
+                        NO_SHADOW_DROP: 5
+                    },
+                    LEVEL: {
+                        0: 800,
+                        1: 720,
+                        2: 630,
+                        3: 550,
+                        4: 470,
+                        5: 380,
+                        6: 300,
+                        7: 220,
+                        8: 130,
+                        9: 100,
+                        10: 80,
+                        11: 80,
+                        12: 80,
+                        13: 70,
+                        14: 70,
+                        15: 70,
+                        16: 50,
+                        17: 50,
+                        18: 50,
+                        19: 30,
+                        20: 30,
+                        // 29+ is 20ms
+                    },
+                    account: { score: 0, level: 0, lines: 0 },
+                    moves: {
+                        [KEY.LEFT]: p => ({ ...p, x: p.x - 1 }),
+                        [KEY.RIGHT]: p => ({ ...p, x: p.x + 1 }),
+                        [KEY.DOWN]: p => ({ ...p, y: p.y + 1 }),
+                        [KEY.SPACE]: p => ({ ...p, y: p.y + 1 }),
+                        [KEY.UP]: p => board.rotate(p)
+                    },
+                    _pause: false
+                },
+                attached() {
+                    this.canvas = this.$refs.board;
+                    this.ctx = this.canvas.getContext('2d');
+                    this.canvasNext = this.$refs.next;
+                    this.ctxNext = this.canvasNext.getContext('2d');
+                    this.board = new Board(this);
+                    this.addEventListener();
+                    this.initNext();
+                },
+                down(e, action) {
+                    e.preventDefault();
+                    if (action === KEY.LEFT || action === KEY.RIGHT || action === KEY.DOWN)
+                        this._timer = setInterval(() => {
+                            this.action(action);
+                        }, 100);
+                    else this.action(action);
+                },
+                touch(e, action) {
+                    e.preventDefault();
+                    if (action === KEY.LEFT || action === KEY.RIGHT || action === KEY.DOWN)
+                        this._timer = setInterval(() => {
+                            this.action(action);
+                        }, 100);
+                    else this.action(action);
+                },
+                action(action) {
+                    if (!this._gameStart) return;
+                    let p;
+                    if (action === KEY.UP) p = this.board.rotate(this.board.piece);
+                    else p = this.moves[action](this.board.piece);
+                    if (action === KEY.SPACE) {
+                        if (this.soundEnabled) {
+                            this.linedropeffect = new Audio('./music/drop.mp3');
+                            this.linedropeffect.volume = 0.15;
+                            this.linedropeffect.play();
+                        }
+                        while (this.board.valid(p)) {
+                            this.account.score += (this.showShadow ? this.POINTS.HARD_DROP : this.POINTS.NO_SHADOW_DROP);
+                            this.board.piece.move(p);
+                            p = this.moves[KEY.DOWN](this.board.piece);
+                        }
+                    } else if (this.board.valid(p)) {
+                        this.board.piece.move(p);
+                        if (action === KEY.DOWN) {
+                            this.account.score += this.POINTS.SOFT_DROP;
+                        }
+                    }
+                },
+                addEventListener() {
+                    document.addEventListener('touchend', event => {
+                        if (this._timer) clearInterval(this._timer);
+                    })
+                    document.addEventListener('mouseup', event => {
+                        if (this._timer) clearInterval(this._timer);
+                    })
+                    document.addEventListener('keydown', event => {
+                        if (event.keyCode === KEY.S) {
+                            this.showShadow = !this.showShadow;
+                            return;
+                        }
+                        if (event.keyCode === KEY.P) {
+                            this.pause();
+                        }
+                        if (event.keyCode === KEY.ESC) {
+                            this.gameOver();
+                        } else if (this.moves[event.keyCode]) {
+                            event.preventDefault();
+                            this.action(event.keyCode);
+                        }
+                    })
+                },
+                initNext() {
+                    this.ctxNext.canvas.width = 4 * this.BLOCK_SIZE;
+                    this.ctxNext.canvas.height = 4 * this.BLOCK_SIZE;
+                    this.ctxNext.scale(this.BLOCK_SIZE, this.BLOCK_SIZE);
+                },
+                _music() {
+                    this.musicEnabled = !this.musicEnabled;
+                    this.playMusic();
+                },
+                _play() {
+                    this.playMusic();
+                    this.play();
+                },
+                playMusic() {
+                    if (this.themeMusic) {
+                        this.themeMusic.pause();
+                    }
+                    if (this.musicEnabled) {
+                        if (!this.themeMusic) {
+                            this.themeMusic = new Audio('./music/TetrisTheme.mp3');
+                            this.themeMusic.volume = 0.05;
+                            this.themeMusic.loop = true;
+                        }
+                        this.themeMusic.play();
+                    }
+                },
+                resetGame() {
+                    this.account.score = 0;
+                    this.account.lines = 0;
+                    this.account.level = 0;
+                    this.board.reset();
+                    this.time = { start: 0, elapsed: 0, level: this.LEVEL[this.account.level] };
+                },
+                play() {
+                    this.resetGame();
+                    this.time.start = performance.now();
+                    if (this.requestId) cancelAnimationFrame(this.requestId);
+                    this.animate();
+                    this._gameStart = true;
+                },
+                animate(now = 0) {
+                    this.time.elapsed = now - this.time.start;
+                    if (this.time.elapsed > this.time.level) {
+                        this.time.start = now;
+                        if (!this.board.drop()) {
+                            this.gameOver();
+                            return;
+                        }
+                    }
+                    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+                    this.board.draw();
+                    this.requestId = requestAnimationFrame(this.animate.bind(this));
+                },
+                gameOver() {
+                    cancelAnimationFrame(this.requestId);
+                    this.ctx.fillStyle = 'black';
+                    this.ctx.fillRect(1, 3, 13, 1.2);
+                    this.ctx.font = '1px Arial';
+                    this.ctx.fillStyle = 'red';
+                    this.ctx.fillText('GAME OVER', 4.5, 4);
+                    this._gameStart = false;
+                },
+                pause() {
+                    if (!this.requestId) {
+                        this.animate();
+                        return;
+                    }
+                    cancelAnimationFrame(this.requestId);
+                    this.requestId = null;
+                    this.ctx.fillStyle = 'black';
+                    this.ctx.fillRect(1, 3, 13, 1.2);
+                    this.ctx.font = '1px Arial';
+                    this.ctx.fillStyle = 'yellow';
+                    this.ctx.fillText('PAUSED', 5.5, 4);
+                }
+            })
+
+            class Board {
+                constructor(tet) {
+                    this.tet = tet;
+                    this.ctx = tet.ctx;
+                    this.ctxNext = tet.ctxNext;
+                    this.init();
+                }
+                init() {
+                    this.ctx.canvas.width = this.tet.COLS * this.tet.BLOCK_SIZE;
+                    this.ctx.canvas.height = this.tet.ROWS * this.tet.BLOCK_SIZE;
+                    this.ctx.scale(this.tet.BLOCK_SIZE, this.tet.BLOCK_SIZE);
+                }
+                reset() {
+                    this.grid = this.getEmptyGrid();
+                    this.piece = new Piece(this.ctx, this.tet);
+                    this.piece.setStartingPosition();
+                    this.getNewPiece();
+                }
+                getNewPiece() {
+                    this.next = new Piece(this.ctxNext, this.tet);
+                    this.ctxNext.clearRect(0, 0, this.ctxNext.canvas.width, this.ctxNext.canvas.height);
+                    this.next.draw();
+                }
+                draw() {
+                    this.piece.draw();
+                    this.drawBoard();
+
+                    if (this.tet.showShadow) {
+                        this.shadow = new Piece(this.ctx, this.tet, this.piece.typeId);
+                        this.shadow.shape = this.piece.shape;
+                        this.shadow.x = this.piece.x;
+                        this.shadow.y = this.piece.y;
+                        this.shadow.slit = this.piece.slit;
+                        this.shadow.color = 'lightgray';
+                        let _p = this.tet.moves[KEY.DOWN](this.shadow);
+                        while (this.valid(_p)) {
+                            this.shadow.move(_p);
+                            _p = this.tet.moves[KEY.DOWN](this.shadow);
+                        }
+                        this.shadow.draw();
+                    }
+                }
+                drop() {
+                    let p = this.tet.moves[KEY.DOWN](this.piece);
+                    if (this.valid(p)) {
+                        this.piece.move(p);
+                    } else {
+                        this.freeze();
+                        this.clearLines();
+                        if (this.piece.y === 0) return false;
+                        this.piece = this.next;
+                        this.piece.ctx = this.ctx;
+                        this.piece.setStartingPosition();
+                        this.getNewPiece();
+                    }
+                    return true;
+                }
+                clearLines() {
+                    let lines = 0;
+                    this.grid.forEach((row, y) => {
+                        if (row.every(value => value > 0)) {
+                            lines++;
+                            this.grid.splice(y, 1);
+                            this.grid.unshift(Array(this.tet.COLS).fill(0));
+                        }
+                    });
+                    if (lines > 0) {
+                        if (this.tet.soundEnabled) {
+                            if (!this.linecleareffect) {
+                                this.linecleareffect = new Audio('./music/line.wav');
+                                this.linecleareffect.volume = 0.25;
+                            }
+                            this.linecleareffect.play();
+                            if (lines === 4) {
+                                if (!this.tetriseffect) {
+                                    this.tetriseffect = new Audio('./music/tetris.mp3');
+                                    this.tetriseffect.volume = 0.5;
+                                }
+                                this.tetriseffect.play();
+                            }
+                        }
+                        this.tet.account.score += this.getLinesClearedPoints(lines);
+                        this.tet.account.lines += lines;
+                        if (this.tet.account.lines >= this.tet.LINES_PER_LEVEL) {
+                            this.tet.account.level++;
+                            this.tet.account.lines -= this.tet.LINES_PER_LEVEL;
+                            this.tet.time.level = this.tet.LEVEL[this.tet.account.level];
+                        }
+                    }
+                }
+                valid(p) {
+                    return p.shape.every((row, dy) => {
+                        return row.every((value, dx) => {
+                            let x = p.x + dx;
+                            let y = p.y + dy;
+                            return (
+                                value === 0 ||
+                                (this.insideWalls(x) && this.aboveFloor(y) && this.notOccupied(x, y))
+                            );
+                        });
+                    });
+                }
+                freeze() {
+                    this.piece.shape.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value > 0) {
+                                this.grid[y + this.piece.y][x + this.piece.x] = value;
+                            }
+                        });
+                    });
+                }
+                drawBoard() {
+                    this.grid.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value > 0) {
+                                this.ctx.fillStyle = this.tet.COLORS[value];
+                                this.ctx.fillRect(x + this.tet.SLIT, y + this.tet.SLIT, 1 - this.tet.SLIT, 1 - this.tet.SLIT);
+                            }
+                        });
+                    });
+                }
+                getEmptyGrid() {
+                    return Array.from({ length: this.tet.ROWS }, () => Array(this.tet.COLS).fill(0));
+                }
+                insideWalls(x) {
+                    return x >= 0 && x < this.tet.COLS;
+                }
+                aboveFloor(y) {
+                    return y <= this.tet.ROWS;
+                }
+                notOccupied(x, y) {
+                    return this.grid[y] && this.grid[y][x] === 0;
+                }
+                rotate(piece) {
+                    let p = JSON.parse(JSON.stringify(piece));
+
+                    for (let y = 0; y < p.shape.length; ++y) {
+                        for (let x = 0; x < y; ++x) {
+                            [p.shape[x][y], p.shape[y][x]] = [p.shape[y][x], p.shape[x][y]];
+                        }
+                    }
+                    p.shape.forEach(row => row.reverse());
+                    return p;
+                }
+                getLinesClearedPoints(lines, level) {
+                    const lineClearPoints =
+                        lines === 1
+                            ? this.tet.POINTS.SINGLE
+                            : lines === 2
+                                ? this.tet.POINTS.DOUBLE
+                                : lines === 3
+                                    ? this.tet.POINTS.TRIPLE
+                                    : lines === 4
+                                        ? this.tet.POINTS.TETRIS
+                                        : 0;
+                    return (this.tet.account.level + 1) * lineClearPoints;
+                }
+            }
+
+            class Piece {
+                constructor(ctx, tet, id) {
+                    this.ctx = ctx;
+                    this.typeId = id || this.randomizeTetrominoType(tet.COLORS.length - 1);
+                    this.shape = tet.SHAPES[this.typeId];
+                    this.color = tet.COLORS[this.typeId];
+                    this.slit = tet.SLIT;
+                    this.x = 0;
+                    this.y = 0;
+                }
+                draw() {
+                    this.ctx.fillStyle = this.color;
+                    this.shape.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value > 0) {
+                                this.ctx.fillRect(this.x + x + this.slit, this.y + y + this.slit, 1 - this.slit, 1 - this.slit);
+                            }
+                        });
+                    });
+                }
+                move(p) {
+                    this.x = p.x;
+                    this.y = p.y;
+                    this.shape = p.shape;
+                }
+                setStartingPosition() {
+                    this.x = this.typeId === 4 ? 7 : 6;
+                }
+                randomizeTetrominoType(noOfTypes) {
+                    return Math.floor(Math.random() * noOfTypes + 1);
+                }
+            }
+
+        </script>
+
+    </body>
+
+</html>

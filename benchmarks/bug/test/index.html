@@ -1,0 +1,247 @@
+<body>
+
+</body>
+<script>
+class NeuralNetwork
+{
+    constructor (Topology, clone)
+    {
+        // Validation Checks
+        if (Topology.length < 2)
+            throw Error("A Neural Network cannot contain less than 2 Layers.", "Topology");
+        for (let i = 0; i < Topology.length; i++) {
+            if(Topology[i] < 1)
+                throw Error ("A single layer of neurons must contain, at least, one neuron.", "Topology");
+        }
+
+
+        // Set Topology
+        this.TheTopology = Topology;//new List<uint>(Topology).AsReadOnly();
+
+        // Initialize Sections
+        this.Sections = new Array(this.TheTopology.length - 1);
+        if (clone) return;
+        // Set the Sections
+        for (let i = 0; i < this.Sections.length; i++) {
+            this.Sections[i] = new NeuralSection(this.TheTopology[i], this.TheTopology[i + 1]);
+        }
+    }
+    clone(){
+        const clone = new NeuralNetwork(this.TheTopology, true);
+          // Set the Sections
+          for (let i = 0; i < this.Sections.length; i++) {
+              clone.Sections[i] = this.Sections[i].clone();
+          }
+          return clone;
+    }
+
+
+    get Topology(){ // Returns the topology in the form of an array
+        const res = new Array(this.TheTopology.length);
+        res.fill(0)
+        // this.TheTopology.CopyTo(res, 0);
+        return res;
+    }
+    FeedForward(Input)
+    {
+        // Validation Checks
+        if (Input === null)
+            throw Error("The input array cannot be set to null.", "Input");
+        else if (Input.length !== this.TheTopology[0])
+            throw Error("The input array's length does not match the number of neurons in the input layer.", "Input");
+
+        let Output = Input;
+
+        // Feed values through all sections
+        for (let i = 0; i < this.Sections.length; i++) {
+            Output = this.Sections[i].FeedForward(Output);
+        }
+        return Output;
+    }
+
+    /// <summary>
+    /// Mutate the NeuralNetwork.
+    /// </summary>
+    /// <param name="MutationProbablity">The probability
+    /// that a weight is going to be mutated. (Ranges 0-1)</param>
+    /// <param name="MutationAmount">The maximum amount a mutated weight would change.
+    /// </param>
+    Mutate (MutationProbablity = 0.3, MutationAmount = 2.0) {
+        // Mutate each section
+        for (let i = 0; i < this.Sections.length; i++)
+        {
+            this.Sections[i].Mutate(MutationProbablity, MutationAmount);
+        }
+    }
+}
+
+
+
+class NeuralSection
+{
+    /// <summary>
+    /// Initiate a NeuralSection from a topology and a seed.
+    /// </summary>
+    /// <param name="InputCount">The number of input neurons in the section.</param>
+    /// <param name="OutputCount">The number of output neurons in the section.</param>
+    /// <param name="Randomizer">The Ransom instance of the NeuralNetwork.</param>
+    constructor (InputCount=0, OutputCount)
+    {
+        // Validation Checks
+        if (InputCount === 0)
+            return;
+            // throw Error("You cannot create a Neural Layer with no input neurons.", "InputCount");
+        else if (OutputCount === 0)
+            throw Error("You cannot create a Neural Layer with no output neurons.", "OutputCount");
+
+        // Initialize the Weights array
+        this.Weights = new Array(InputCount + 1); // +1 for the Bias Neuron
+
+        for (let i = 0; i < this.Weights.length; i++)
+            this.Weights[i] = new Array(OutputCount);
+
+        // Set random weights
+        for (let i = 0; i < this.Weights.length; i++)
+            for (let j = 0; j < this.Weights[i].length; j++)
+                this.Weights[i][j] = Math.random() - 0.5;
+    }
+    clone(){
+        const clone = new NeuralSection();
+        clone.Weights = new Array(this.Weights.length);
+
+        for (let i = 0; i < this.Weights.length; i++)
+            clone.Weights[i] = new Array(this.Weights[i].length);
+
+          // Set Weights
+          for (let i = 0; i < this.Weights.length; i++)
+          {
+              for (let j = 0; j < this.Weights[i].length; j++)
+              {
+                  clone.Weights[i][j] = this.Weights[i][j];
+              }
+          }
+          return clone;
+    }
+
+
+    /// <summary>
+    /// Feed input through the NeuralSection and get the output.
+    /// </summary>
+    /// <param name="Input">The values to set the input neurons.</param>
+    /// <returns>The values in the output neurons after propagation.</returns>
+    FeedForward(Input) {
+    // Validation Checks
+        if (Input === null)
+            throw Error("The input array cannot be set to null.", "Input");
+        else if (Input.length !== this.Weights.length - 1)
+            throw Error("The input array's length does not match the number of neurons in the input layer.", "Input");
+
+        // Initialize Output Array
+        let Output = new Array(this.Weights[0].length);
+        Output.fill(0);
+        // Calculate Value
+        for (let i = 0; i < this.Weights.length; i++) {
+            for (let j = 0; j < this.Weights[i].length; j++) {
+                if (i === this.Weights.length - 1) // If is Bias Neuron
+                    Output[j] += this.Weights[i][j]; // Then, the value of the neuron is equal to one
+                else
+                    Output[j] += this.Weights[i][j] * Input[i];
+            }
+        }
+
+        // Apply Activation Function
+        for (let i = 0; i < Output.length; i++)
+            Output[i] = ReLU(Output[i]);
+
+        return Output;
+    }
+
+    /// <summary>
+    /// Mutate the NeuralSection.
+    /// </summary>
+    /// <param name="MutationProbablity">The probability
+    /// that a weight is going to be mutated. (Ranges 0-1)</param>
+    /// <param name="MutationAmount">The maximum amount a Mutated Weight would change.
+    /// </param>
+    Mutate (MutationProbablity, MutationAmount) {
+        for (let i = 0; i < this.Weights.length; i++) {
+            for (let j = 0; j < this.Weights[i].length; j++) {
+                if (Math.random() < MutationProbablity)
+                    this.Weights[i][j] = (Math.random()) * (MutationAmount * 2) - MutationAmount;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Puts a double through the activation function ReLU.
+    /// </summary>
+    /// <param name="x">The value to put through the function.</param>
+    /// <returns>x after it is put through ReLU.</returns>
+}
+function ReLU(x) {
+    if (x >= 0)
+        return x;
+    else
+        return x / 20;
+}
+
+let Iteration = 0; // Current Training Iteration
+
+let BestNetwork = new NeuralNetwork([2, 2, 1]); // The best network currently made
+let BestCost = 1000000; // The cost that the best network achieved
+let BestNetworkResults = new Array(4); // The results that the best network calculated
+const Inputs = [[0, 0],[0, 1],[1, 0],[1, 1]] // This represents the possible inputs
+                                       // or the training dataset
+const ExpectedOutputs = [0, 1, 1, 0]; // This represents
+    // the expected outputs from the optimum NeuralNetwork
+
+function run(){
+    setTimeout(()=>{
+        while(true){
+            Iteration++;
+            const MutatedNetwork = BestNetwork.clone(); // Clone the current
+            // best network
+            MutatedNetwork.Mutate(); // Mutate the clone
+            let MutatedNetworkCost = 0;
+            let CurrentNetworkResults = new Array(4); // The results that the mutated
+            // network calculated
+
+            // Calculate the cost of the mutated network
+            for (let i = 0; i < Inputs.length; i++) {
+                const Result = MutatedNetwork.FeedForward(Inputs[i]);
+                MutatedNetworkCost += Math.abs(Result[0] - ExpectedOutputs[i]);
+                CurrentNetworkResults[i] = Result[0];
+            }
+
+            // Does the mutated network perform better than the last one
+            if (MutatedNetworkCost < BestCost) {
+                BestNetwork = MutatedNetwork;
+                BestCost = MutatedNetworkCost;
+                BestNetworkResults = CurrentNetworkResults;
+            }
+
+            // Print only each 20000 iteration in order to speed up the training process
+            if (Iteration % 2000 === 0)
+            {
+                document.body.innerText = '';
+                // Console.Clear(); // Clear the current console text
+
+                for (let i = 0; i < BestNetworkResults.length; i++) {
+                    document.body.innerText += Inputs[i][0] + "," + Inputs[i][1] + " | " + BestNetworkResults[i]+'\r';
+                }
+                document.body.innerText += "Loss: " + (BestCost * 100)+"%\r"; // Print the best cost
+                document.body.innerText += "Iteration: " + Iteration+"\r"; // Print the current Iteration
+                run();
+                return;
+            }
+
+        // run();
+            // An iteration is done
+
+        }
+    })
+
+}
+run();
+
+</script>

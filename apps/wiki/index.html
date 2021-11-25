@@ -1,0 +1,39 @@
+<script type="module" src="../../oda.js"></script>
+<script type="module" src="./wiki.js"></script>
+
+<style>
+    html * {
+        font-family: Arial;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+</style>
+
+
+<oda-wiki id="wiki"></oda-wiki>
+
+<script type="module">
+    import { data, data2, data3 } from './data.js';
+
+    wiki.data = [
+        { id: 'a5299f3f-e291-410c-a96b-4d88d5128d5b', label: 'html-editor', show: true, h: 80, type: 'html-editor', value: '<div style="color:blue;font-size:26px;font-weight:600;">oda-wiki (prototype)</div>' },
+        { id: '53428854-f07e-459b-b5f2-0f1c2f760064', label: 'html-editor', show: true, h: 80, type: 'html-editor', value: '<div style="color:red;font-size:26px;font-weight:600;">HTML editor</div>' },
+        { id: 'd7f8fc1c-393a-4635-82d4-54f7b0494fe9', label: 'suneditor', show: true, h: 140, type: 'suneditor', value: '<div style="color:orange;font-size:26px;font-weight:600;">SunEditor (html editor)</div>' },
+        { id: '08df3d54-0be6-48ef-a3cc-dd40f375add6', label: 'simplemde', show: true, h: 120, type: 'simplemde', value: '## SimpleMDE (markdown editor)' },
+        { id: 'a7c1cf67-1c68-4559-9fba-efaebadd443e', label: 'showdown', show: true, h: 40, type: 'showdown', value: '## Showdown (markdown editor)' },
+        { id: '34b65636-a09d-475c-ba03-99882f4879b7', label: 'html-editor', show: true, h: 100, type: 'html-editor', collapsed: true, value: '<div style="color:blue;font-size:26px;font-weight:600;">Demo - Tabulator (<a target="_blank" href="http://tabulator.info/">http://tabulator.info/</a>) in iFrame:</div>' },
+        { id: 'fa1bc0ed-f66e-48fe-9078-f3f580975765', label: 'iframe', show: true, h: 240, type: 'iframe', value: data3 },
+        { id: '2dd4ec57-c858-452c-acaa-84d45831b18f', label: 'html-editor', show: true, h: 140, type: 'html-editor', value: data2 },
+        {
+            id: 'ae9ff85e-2aeb-4d76-bc78-a7a84334392b', label: 'iframe', show: true, h: 48, type: 'iframe', value: `<div style="font-family: Arial;font-size: 24px;font-weight:700;color:blue">
+    Demo CahrtJS (<a target="_blank" href="https://www.chartjs.org/">https://www.chartjs.org/</a>) in iFrame:
+</div>`},
+        { id: '302771fc-3978-4013-8836-d7c160ed3159', label: 'iframe', show: true, h: 640, type: 'iframe', value: data },
+    ]
+
+</script>

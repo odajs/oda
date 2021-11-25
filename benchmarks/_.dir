@@ -1,0 +1,51 @@
+[
+  {
+    "name": "dbmon",
+    "label": "DB monster framerate test",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "sierpinski",
+    "label": "Sierpinski triangle animation test",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "performance",
+    "label": "Repaint rate test",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "life",
+    "label": "Game Of Life",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "life-webgl",
+    "label": "Game Of Life (webgl)",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "houdini",
+    "label": "houdini CSS",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "raf",
+    "label": "requestAnimationFrame vs setTimeout",
+    "content": {
+      "link": "index.html"
+    }
+  }
+]

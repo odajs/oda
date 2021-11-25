@@ -1,0 +1,34 @@
+[
+  {
+    "name": "ru",
+    "label": "Русский",
+    "icon": "flags:ru",
+    "execute": "setLocale"
+  },
+  {
+    "name": "en",
+    "label": "English",
+    "icon": "flags:us"
+  },
+    {
+    "name": "fr",
+    "label": "Français",
+    "icon": "flags:fr"
+  },
+  {
+    "name": "cn",
+    "label": "中文 (chinese)",
+    "icon": "flags:cn"
+  },
+  {
+    "name": "ja",
+    "label": "日本語 (japanese)",
+    "icon": "flags:jp"
+  },
+  {
+    "name": "ua",
+    "label":"Українська",
+     "icon": "flags:ua"
+  }
+]
+

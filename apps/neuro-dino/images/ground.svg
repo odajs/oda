@@ -1,0 +1,58 @@
+<svg version="1.1"
+     baseProfile="full"
+     width="9" height="2"
+     xmlns="http://www.w3.org/2000/svg" class="grounds">
+
+    <path d="
+        M0 0,
+        h3,
+        v3,
+        h-3,
+        z
+        " fill="grey" id="ground3" visibility="hidden">
+    </path>
+
+    <path d="
+        M0 0,
+        h4,
+        v3,
+        h-4,
+        z
+        " fill="grey" id="ground4"  visibility="hidden">
+    </path>
+
+    <path d="
+        M0 0,
+        h6,
+        v3,
+        h-6,
+        z
+        " fill="grey" id="ground6"  visibility="hidden">
+    </path>
+
+    <path d="
+        M0 0,
+        h9,
+        v3,
+        h-9,
+        z
+        " fill="grey" id="ground9"  visibility="hidden">
+    </path>
+
+    <path d="
+        M0 0,
+        h10,
+        v3,
+        h-10,
+        z
+        " fill="grey" id="ground10"  visibility="hidden">
+    </path>
+        <path d="
+        M0 0,
+        h13,
+        v3,
+        h-13,
+        z
+        " fill="grey" id="ground12" visibility="hidden">
+    </path>
+ </svg>

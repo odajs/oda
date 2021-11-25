@@ -1,0 +1,14 @@
+<script type="module" src="../../oda.js"></script>
+<script type="module" src="./html-editor.js"></script>
+
+<oda-html-editor id="htmleditor"></oda-html-editor>
+
+<script type="module">
+    htmleditor.src = `
+        <div style="display:flex;flex-direction:column;color: blue;">
+            <h3>HTML editor:</h3>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/LSWlHKvlnZ8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>        <div>
+        <br>
+        <span style="color:gray">...</span>
+    `
+</script>

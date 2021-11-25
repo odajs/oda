@@ -1,0 +1,277 @@
+<svg version="1.1" baseProfile="full" width="186" height="137"
+    xmlns="http://www.w3.org/2000/svg" id="dino">
+    <path d="
+        M0 48,
+        h7,
+        v12,
+        h6,
+        v7,
+        h6,
+        v6,
+        h13,
+        v-6,
+        h7,
+        v-7,
+        h9,
+        v-6,
+        h10,
+        v-6,
+        h6,
+        v-42,
+        h7,
+        v-6,
+        h51,
+        v6,
+        h6,
+        v29,
+        h-32,
+        v6,
+        h19,
+        v7,
+        h-25,
+        v12,
+        h13,
+        v13,
+        h-7,
+        v-6,
+        h-6,
+        v22,
+        h-7,
+        v10,
+        h-6,
+        v6,
+        h-6,
+        v7,
+        h-45,
+        v-7,
+        h-7,
+        v-6,
+        h-6,
+        v-7,
+        h-6,
+        v-6,
+        h-7,
+        z
+        " fill="grey" stroke="transparent" id="body" visibility="visible">
+    </path>
+
+    <!--Глаз маленький-->
+    <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"></rect>
+
+    <!--Глаз большой-->
+    <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"></rect>
+
+
+
+    <!--Рот-->
+    <path d="
+        M95 34,
+        v8,
+        h20,
+        v-1,
+        h13,
+        v-7,
+        z
+        " fill="grey" id="month" visibility="hidden">
+    </path>
+
+    <!--Наклон-->
+    <path d="
+        M0 53,
+        h7,
+        v6,
+        h12,
+        v7,
+        h26,
+        v-7,
+        h54,
+        v7,
+        h13,
+        v-3,
+        h7,
+        v-7,
+        h51,
+        v7,
+        h6,
+        v28,
+        h-32,
+        v7,
+        h19,
+        v6,
+        h-44,
+        v-6,
+        h-13,
+        v9,
+        h-7,
+        v7,
+        h7,
+        v6,
+        h-13,
+        v-13,
+        h-16,
+        v4,
+        h-38,
+        v-7,
+        h-7,
+        v-6,
+        h-6,
+        v-7,
+        h-7,
+        v-6,
+        h-6,
+        v-6,
+        h-6,
+        v-7,
+        h-7,
+        z
+        " fill="grey" id="incline" visibility="hidden">
+    </path>
+
+    <!--Глаз наклон-->
+    <rect x="125" y="64" fill="white" height="6" width="6" id="incline-eye" visibility="hidden"></rect>
+
+    <!--Перая нога-->
+    <path d="
+        M32 111,
+        v26,
+        h13,
+        v-6,
+        h-6,
+        v-7,
+        h6,
+        v-6,
+        h6,
+        v-7,
+        z
+        " fill="grey" id="first-leg" visibility="visible">
+    </path>
+
+    <!--Вторая нога-->
+    <path d="
+        M58 111,
+        v7,
+        h6,
+        v19,
+        h13,
+        v-6,
+        h-6,
+        v-20,
+        z
+        " fill="grey" id="second-leg" visibility="visible">
+    </path>
+
+    <!-- Третья нога -->
+    <path d="
+        M64 111,
+        v7,
+        h16,
+        v-6,
+        h-9,
+        v-1,
+        z
+        " fill="grey" visibility="hidden" id="third-leg">
+    </path>
+
+    <!--Четвертая нога-->
+    <path d="
+        M32 111,
+        v7,
+        h7,
+        v6,
+        h12,
+        v-6,
+        h-6,
+        v-7,
+        z
+        " fill="grey" visibility="hidden" id="fourth-leg">
+    </path>
+
+
+
+
+
+     <!--Перая нога наклон-->
+    <path d="
+        M35 111,
+        v25,
+        h13,
+        v-6,
+        h-6,
+        v-7,
+        h6,
+        v-6,
+        h7,
+        v-6,
+        z
+        " fill="grey" id="first-leg-incline" visibility="hidden">
+    </path>
+
+    <!--Вторая нога наклон-->
+    <path d="
+        M67 111,
+        v6,
+        h16,
+        v-6,
+        z
+        " fill="grey" id="second-leg-incline" visibility="hidden">
+    </path>
+
+    <!--Третья нога наклон-->
+    <path d="
+        M55 111,
+        v25,
+        h12,
+        v-6,
+        h-6,
+        v-7,
+        h6,
+        v-6,
+        h7,
+        v-6,
+        z
+        " fill="grey" visibility="hidden" id="third-leg-incline">
+    </path>
+
+     <!-- Четвертая нога наклон -->
+    <path d="
+        M35 111,
+        v12,
+        h13,
+        v-6,
+        h-6,
+        v-7,
+        h6,
+        v-6,
+        h7,
+        v-6,
+        z
+        " fill="grey" visibility="hidden" id="fourth-leg-incline">
+    </path>
+
+
+    <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s"
+        repeatCount="indefinite" id="first-leg-anim"/>
+
+    <animate href = "#fourth-leg" attributeName="visibility"
+        values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
+
+    <animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s"
+        repeatCount="indefinite" id="second-leg-anim"/>
+
+    <animate href = "#third-leg" attributeName = "visibility"
+        values = "visible;hidden" dur="0.3s" repeatCount = "indefinite"></animate>
+
+
+    <!-- <animate href="#first-leg-incline" attributeName="visible" values="visible;hidden" dur="0.3s"
+        repeatCount="indefinite" id="first-leg-incline-anim"/>
+
+    <animate href = "#fourth-leg-incline" attributeName="visible"
+        values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
+
+    <animate href="#second-leg-incline" attributeName="visible" values="hidden;visible" dur="0.3s"
+        repeatCount="indefinite" id="second-leg-incline-anim"/>
+
+    <animate href = "#third-leg-incline" attributeName = "visible"
+        values = "visible;hidden" dur="0.3s" repeatCount = "indefinite"></animate> -->
+
+</svg>

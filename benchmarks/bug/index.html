@@ -1,0 +1,264 @@
+<oda-bug-layer id="field">
+
+</oda-bug-layer>
+<script type="module">
+    import '../../components/layouts/app-layout/app-layout.js';
+    ODA({is:'oda-bug-layer', extends: 'oda-app-layout',
+        template:`
+<!--            <oda-button slot="title"></oda-button>-->
+            <div slot="main" :brain class="border flex content">
+                <oda-bug ~for="[brain]" :brain="item" ~style="getStyle(item)"></oda-bug>
+                <oda-target ~for="targets" :item ~style="getStyle(item)"></oda-target>
+            </div>
+        `,
+        props:{
+            targetCount: 10,
+            brain: Object,
+            targets(){
+                return (new Array(this.targetCount)).fill().map(i=>({}));
+            }
+        },
+        getStyle(item){
+            return {transform: `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.angle || 0}deg)`}
+        },
+        checkEat(item){
+            const target = this.targets.find(i=>{
+                return Math.abs(i.x - item.x)<48 && Math.abs(i.y - item.y)<48;
+            })
+            if (target)
+                this.targets.remove(target);
+            return target;
+        },
+        checkTarget(item){
+            const target = this.targets.find(i=>{
+                return Math.abs(i.y - item.y)<48 && i.x > item.x;
+            })
+            return target;
+        }
+    })
+    ODA({is:'oda-target', extends: 'oda-icon',
+        template:`
+            <style>
+                :host{
+                    position: absolute;
+                }
+            </style>
+           `,
+        attached(){
+            this.move();
+            this.size = {w: this.offsetWidth, h: this.offsetHeight}
+        },
+        move(){
+            requestAnimationFrame(()=>{
+                this.item.x -= this.item.speed;
+                if (this.item.x<=0)
+                    this.item.x = this.domHost.offsetWidth - this.offsetWidth;
+                this.move();
+            })
+        },
+        props:{
+            icon: 'maps:local-florist',
+            iconSize: 64,
+            item: {
+                set(n) {
+                    n.x = n.x  || Math.random() * this.domHost.offsetWidth;
+                    if (n.x> this.domHost.offsetWidth - this.offsetWidth)
+                        n.x =  this.domHost.offsetWidth - this.offsetWidth
+                    n.y =  n.y || Math.random() * this.domHost.offsetHeight;
+                    if (n.y> this.domHost.offsetHeight - this.offsetHeight)
+                        n.y =  this.domHost.offsetHeight - this.offsetHeight
+                    n.speed = Math.random() + 1;
+                    n.iconSize = this.iconSize;
+                }
+            },
+
+        },
+    })
+    ODA({is: 'oda-bug', extends: 'oda-icon',
+        template:`
+            <style>
+                :host{
+                    position: absolute;
+                    @apply --border;
+                    border-radius: 50%;
+                }
+            </style>
+        `,
+        props:{
+            icon: 'icons:arrow-forward',
+            iconSize: 32,
+            bestBrain: Object,
+            brain:{
+                set(n){
+                    if (!n) return
+                    n.x  = Math.random() * this.domHost.clientWidth/3;
+                    n.y  = Math.random() * this.domHost.clientHeight;
+                    n.iconSize = this.iconSize;
+                }
+            },
+            outputs: {
+                type: Array,
+                set(n) {
+                    if (!n) return;
+                    let target = this.domHost.checkEat(this.brain);
+                    if(target){
+                        this.ok();
+                        return;
+                    }
+
+                    target = this.domHost.checkTarget(this.brain);
+                    this.brain.y += n[0] * 20;
+                    this.inputs = [0, 0];
+                    if (target){
+                        this.inputs[1] = (target.x - this.brain.x)/this.domHost.offsetWidth - .5;
+                    }
+                    const y =  this.domHost.offsetHeight -  this.offsetHeight;
+                    if (this.brain.y <= 0) {
+                        this.brain.y = y;
+                        this.fail()
+                        return;
+                    }
+
+                    if (this.brain.y >= y){
+                        this.brain.y = 0;
+                        this.fail()
+                        return;
+                    }
+                    this.inputs[0] = this.brain.y/this.domHost.offsetHeight-0.5
+
+                }
+            },
+            inputs: [0, 0]
+        },
+        ok(){
+            this.bestBrain = this.brain;
+            this.brain = this.brain.clone();
+            this.brain.mutate();
+            this.inputs = [0, 0];
+        },
+        fail(){
+            this.brain = (this.bestBrain || this.brain).clone();
+            this.brain.mutate();
+            this.inputs = [0, 0];
+        },
+        attached(){
+            this.forward();
+            this.size = {w: this.offsetWidth, h: this.offsetHeight}
+        },
+        forward(){
+            requestAnimationFrame(()=>{
+                this.outputs = this.brain.forward(this.inputs);
+                this.forward();
+            })
+        }
+    })
+    class Brain{
+        id = 0
+        angle = 0;
+        speed = 0;
+        size = 0;
+
+        constructor(topology, clone) {
+            this.topology = topology;
+            this.layers = new Array(this.topology.length - 1);
+
+            if (clone) return;
+
+            for (let i = 0; i < this.layers.length; i++) {
+                this.layers[i] = new Layer(this.topology[i], this.topology[i + 1]);
+            }
+        }
+        forward(input) {
+            let output = input;
+            for (let i = 0; i < this.layers.length; i++) {
+                output = this.layers[i].forward(output);
+            }
+            return output;
+        }
+        rotate(angle){
+            this.angle += angle;
+            if (this.angle>180)
+                this.angle-=360;
+            if (this.angle<-180)
+                this.angle+=360;
+        }
+        impulse(impulse){
+            this.speed += impulse;
+        }
+        mutate (mutationProbability = 0.3, mutationAmount = 2.0) {
+        // Mutate each section
+            for (let i = 0; i < this.layers.length; i++)
+            {
+                this.layers[i].mutate(mutationProbability, mutationAmount);
+            }
+        }
+        clone(){
+            const clone = new Brain(this.topology, true);
+            // Set the Sections
+            for (let i = 0; i < this.layers.length; i++) {
+                  clone.layers[i] = this.layers[i].clone();
+            }
+          return clone;
+        }
+    }
+    class Layer{
+        constructor(inCount = 0, outCount) {
+            if (inCount === 0) return;
+            this.weights = new Array(inCount + 1);
+            for (let i = 0; i < this.weights.length; i++)
+                this.weights[i] = new Array(outCount);
+            for (let i = 0; i < this.weights.length; i++)
+                for (let j = 0; j < this.weights[i].length; j++)
+                    this.weights[i][j] = Math.random() - 0.5;
+        }
+        forward(input) {
+            let output = new Array(this.weights[0].length);
+            output.fill(0);
+            for (let i = 0; i < this.weights.length; i++) {
+                for (let j = 0; j < this.weights[i].length; j++) {
+                    if (i === this.weights.length - 1) // If is Bias Neuron
+                        output[j] += this.weights[i][j]; // Then, the value of the neuron is equal to one
+                    else
+                        output[j] += this.weights[i][j] * input[i];
+                }
+            }
+
+            for (let i = 0; i < output.length; i++)
+                output[i] = LeakReLU(output[i]);
+
+            return output;
+        }
+        mutate (mutationProbability, mutationAmount) {
+            for (let i = 0; i < this.weights.length; i++) {
+                for (let j = 0; j < this.weights[i].length; j++) {
+                    if (Math.random() < mutationProbability)
+                        this.weights[i][j] = (Math.random()) * (mutationAmount * 2) - mutationAmount;
+                }
+            }
+        }
+        clone(){
+            const clone = new Layer();
+            clone.weights = new Array(this.weights.length);
+
+            for (let i = 0; i < this.weights.length; i++)
+                clone.weights[i] = new Array(this.weights[i].length);
+
+            // Set weights
+            for (let i = 0; i < this.weights.length; i++)
+            {
+                for (let j = 0; j < this.weights[i].length; j++)
+                {
+                    clone.weights[i][j] = this.weights[i][j];
+                }
+            }
+            return clone;
+        }
+    }
+    function LeakReLU(x) {
+        if (x >= 0)
+            return x;
+        else
+            return x * .01;
+    }
+    field.brain = new Brain([2, 8, 1]);
+</script>

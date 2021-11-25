@@ -1,0 +1,46 @@
+<svg version="1.1"
+     baseProfile="full"
+     width="48" height="105"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <path d="
+        M0 13,
+        h3,
+        v-4,
+        h3,
+        v4,
+        h3,
+        v35,
+        h7,
+        v-45,
+        h3,
+        v-3,
+        h9,
+        v3,
+        h4,
+        v51, 
+        h6,
+        v-38,
+        h3,
+        v-3,
+        h3,
+        v3,
+        h4,
+        v41,
+        h-4,
+        v4,
+        h-3,
+        v3,
+        h-9,        
+        v41,
+        h-16,
+        v-48,
+        h-10,
+        v-3,
+        h-3,
+        v-3,
+        h-3,
+        z
+        " fill="grey">
+    </path>
+ </svg>

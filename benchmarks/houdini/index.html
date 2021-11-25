@@ -1,0 +1,105 @@
+<meta charset="UTF-8">
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        perspective: 50em;
+        background: #000;
+    }
+</style>
+<houdini-test></houdini-test>
+<script type="module">
+    CSS.registerProperty({
+        'name': '--m',
+        'syntax': '<number>',
+        'initialValue': 1,
+        inherits: false });
+
+    CSS.registerProperty({
+        'name': '--f',
+        'syntax': '<number>',
+        'initialValue': 1,
+        inherits: false });
+    import '../../oda.js';
+    ODA({is:'houdini-test',
+        template:`
+        <style>
+            div {
+                --i: 0;
+                --j: 0;
+                position: absolute;
+                transform-style: preserve-3d;
+            }
+
+            .a3d {
+                top: 50%;
+                left: 50%;
+                animation: ry 8s linear infinite;
+            }
+
+            @keyframes ry {
+                to {
+                    transform: rotatey(1turn);
+                }
+            }
+            .cube {
+                --l: calc(20vmin/var(--max));
+                --x: calc((var(--i) - .5*(var(--nc) - 1))*var(--l));
+                --y: calc((var(--j) - .5*(var(--nr) - 1))*var(--l));
+                --z: calc(var(--m)*.5*var(--nc)*var(--l));
+                transform: rotatey(calc(var(--j)*90deg/var(--nr))) translate3d(var(--x), var(--y), var(--z)) scale3d(var(--f), var(--f), var(--f));
+                color: hsl(calc(var(--i)*360/var(--nc)), 65%, 65%);
+                animation: a 1s ease-in-out infinite alternate;
+                animation-name: move, zoom;
+                animation-duration: 1s, 0.5s;
+                animation-delay: calc((var(--i) + var(--j))*-2s/(var(--nc) + var(--nr)));
+            }
+            .cube__face {
+                --j: calc(1 - var(--i));
+                margin: calc(-.5*var(--l));
+                width: var(--l);
+                height: var(--l);
+                backface-visibility: hidden;
+                transform: rotate3d(var(--i), var(--j), 0, calc(var(--m, 1)*90deg)) translatez(calc(.5*var(--l)));
+                box-shadow: inset 0 0 0 3px currentcolor;
+                background: #000;
+            }
+            .cube__face:nth-child(n + 5) {
+                --i: 1;
+            }
+            .cube__face:nth-child(1) {
+                --m: 0;
+            }
+            .cube__face:nth-child(3) {
+                --m: 2;
+            }
+            .cube__face:nth-child(4) {
+                --m: 3;
+            }
+            .cube__face:nth-child(6) {
+                --m: -1;
+            }
+
+            @keyframes move {
+                to {
+                    --m: -1;
+                }
+            }
+            @keyframes zoom {
+                to {
+                    --f: 0.1;
+                }
+            }
+            .cube:nth-child(n + 9) { --j: 1 }.cube:nth-child(n + 17) { --j: 2 }.cube:nth-child(n + 25) { --j: 3 }.cube:nth-child(n + 33) { --j: 4 }.cube:nth-child(n + 41) { --j: 5 }.cube:nth-child(n + 49) { --j: 6 }.cube:nth-child(n + 57) { --j: 7 }.cube:nth-child(8n + 2) { --i: 1 }.cube:nth-child(8n + 3) { --i: 2 }.cube:nth-child(8n + 4) { --i: 3 }.cube:nth-child(8n + 5) { --i: 4 }.cube:nth-child(8n + 6) { --i: 5 }.cube:nth-child(8n + 7) { --i: 6 }.cube:nth-child(8n + 8) { --i: 7 }
+        </style>
+        <div class="a3d" style="--nc: 8; --nr: 8; --max: 8">
+            <div class="cube" ~for="64">
+                <div class="cube__face" ~for="6"></div>
+            </div>
+        </div>
+        `
+
+
+    })
+
+</script>

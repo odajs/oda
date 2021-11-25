@@ -1,0 +1,51 @@
+<body style="overflow: hidden;">
+  <oda-over-tests id="admin"></oda-over-tests>
+  <oda-root id="test"></oda-root>
+</body>
+
+<script type="module">
+
+    import './sierpinski.js';
+    ODA({is: 'oda-over-tests',
+      imports: '@tools/styles, @oda/button',
+      template:`
+        <style>
+          :host{
+            @apply --vertical;
+            padding: 8px;
+            position: absolute;
+          }
+        </style>
+        <div class="horizontal">
+            <oda-button allow-toggle toggle-group="1" toggled @tap="size=1000">1000</oda-button>
+            <oda-button allow-toggle  toggle-group="1"  @tap="size=2000">2000</oda-button>
+            <oda-button allow-toggle  toggle-group="1"  @tap="size=4000">4000</oda-button>
+            <oda-button allow-toggle  toggle-group="1"  @tap="size=8000">8000</oda-button>
+        </div>
+
+        <h3 style="text-align: left; font-weight: bold;">Other frameworks</h3>
+        <a ~for="items" :href="item.href" target="_blank">{{item.label}}</a>`,
+        props:{
+            size: {
+               default: 1000,
+               set(n){
+                  this.fire('size-changed', n);
+               }
+            },
+            items:[{
+                href: "https://claudiopro.github.io/react-fiber-vs-stack-demo/stack.html", label: "React 15 (Stack)"}, {
+                href: "https://claudiopro.github.io/react-fiber-vs-stack-demo/fiber.html", label: "React (Fiber)"}, {
+                href: "https://mupkoo.github.io/react-fiber-demo-with-glimmerjs/", label: "Glimmer"}, {
+                href: "http://aurelia-thousand-nodes.bigopon.surge.sh/", label: "Aurelia"}, {
+                href: "https://stencil-fiber-demo.firebaseapp.com/perf.html", label: "Stencil"}, {
+                href: "https://ryansolid.github.io/solid-sierpinski-triangle-demo/",label: "Solid"}, {
+                href: "https://imba-perf-demo.firebaseapp.com/", label: "Imba"}, {
+                href: "https://radi.js.org/perf-test.html", label: "Radi"}
+            ]
+        }
+    })
+
+    admin.addEventListener('size-changed', (e, d)=>{
+      test.size = e.detail.value
+    })
+</script>

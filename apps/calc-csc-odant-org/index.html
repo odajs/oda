@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+<head> <meta charset="utf-8"> </head>
+
+<oda-calc></oda-calc>
+
+<script type="module">
+    import '../../oda.js';
+    ODA({
+        is: 'oda-calc',
+        template: `
+        <style>
+            #calc {width:800px; margin:auto; display: grid;  grid-template-columns: 1fr 20px 1fr; grid-gap: 10px;}
+            #calc .u {grid-column-start: 1;}
+            #calc .s {grid-column-start: 3;}
+            #calc input {display: block; width:380px;}
+            #calc .lab {background:#25a0db; color:#fff; font-size:24px; border-radius: 3px; text-align:center; padding:5px;}
+            #calc .cost {color:#25a0db; font-size:20px; text-align:right;}
+            #calc label b {margin-left:.5em;}
+        </style>
+        <div id='calc'>
+            <div class="u lab">модель "Пользователь"</div>
+            <div class="s lab">модель "Сервер"</div>           
+            <label for="u-ueser" class="u ueser"> Пользователей:
+                <input type="number" id="u-ueser" name="u-ueser" min="1" ::value="uUser"></label>
+            <label for="s-core" class="s core"> Ядер:
+                <input type="number" id="s-core" name="s-core" min="1" ::value="sCore"></label>
+            <label for="u-base" class="u base"> Баз:
+                <input type="number" id="u-base" name="u-base" min="1" ::value="uBase"></label>
+            <label for="u-period" class="u period"> Срок лицензирования, лет: <b> {{uPeriod}}</b>
+                <input type="range" id="u-period" name="u-period" min="1" max="25" step="1" ::value="uPeriod"></label>
+            <label for="u-period" class="s period"> Срок лицензирования, лет: <b> {{sPeriod}}</b>
+                <input type="range" id="s-period" name="s-period" min="1" max="25" step="1" ::value="sPeriod"></label>
+            <div class='u cost'>{{uCost.toLocaleString()}} руб.</div>
+            <div class='s cost'>{{sCost.toLocaleString()}} руб.</div>
+        </div>
+        `,
+        props: {
+            uUser: 2,
+            uBase: 1,
+            uPeriod: 5,
+            sCore: 2,
+            sPeriod: 5,
+            baseCost: 1600,
+            uCost: {
+                get() {
+                    return (this.uUser + this.uBase) * (this.baseCost * (this.uPeriod + 1))
+                }
+            },
+            sCost: {
+                get() {
+                    return 0.5 * this.sCore * (this.sCore + 1) * (this.baseCost * (this.sPeriod + 1))
+                }
+            }
+        }
+    });
+</script>
+
+</html>
