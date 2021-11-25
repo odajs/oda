@@ -4,7 +4,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             :host {
                 @apply --vertical;
                 padding: 16px;
-                @apply --no-flex;
                 @apply --shadow;
             }
             .header {
@@ -26,7 +25,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="horizontal flex">
             <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props">
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props">
-                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" ~style="button.buttonStyle">
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props"   ~style="{height: buttonHeight+'px'}">
                     <span disabled ~if="row.buttons.Acc">{{Acc}}</span>
                     </oda-button>
                 </div>
@@ -71,6 +70,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     result: '0', // the value of the previous expression
     value: 0, // the resulting expression value
     Acc: ' = 0', // bit width of the result
+    props:{
+        accuracy:{
+            default: 2,
+            label: 'Точность',
+            save: true
+        },
+        buttonHeight:{
+            default: 32,
+            save: true
+        }
+    },
     hostAttributes: {
         tabindex: 1
     },

@@ -27,14 +27,12 @@ ODA({
         getterTime: {
             get() {
                 var d = new Date();
-                console.log('getter: ' + d.getSeconds() + '.' + d.getMilliseconds());
                 return d.toLocaleTimeString() + '.' + d.getMilliseconds();
             }
         }
     },
     methodTime() {
         var d = new Date();
-        console.log('method: ' + d.getSeconds() + '.' + d.getMilliseconds());
         return d.toLocaleTimeString() + '.' + d.getMilliseconds();
     }
 });
