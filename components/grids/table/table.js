@@ -987,7 +987,7 @@ ODA({is: "oda-table",
         return this.checkedRows;
     },
     _scroll(e) {
-        // this.interval('scroll', ()=>{
+        this.interval('scroll', ()=>{
             this.headerHeight = this.showHeader && this.$refs.header?.offsetHeight || 0; //
             this.footerHeight = this.showFooter && this.$refs.footer?.offsetHeight || 0; //
             if (this.$refs.body) {
@@ -996,7 +996,7 @@ ODA({is: "oda-table",
                 this._height = this.$refs.body.offsetHeight - this.headerHeight - this.footerHeight;
                 this._scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
             }
-        // },15)
+        },16)
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
@@ -1083,7 +1083,6 @@ ODA({is: "oda-table",
         }
     },
     selectItem(item) {
-        // this.debounce('selectItemFuncBody', item => {
         this.clearSelection();
         const items = this.items;
         if (item && items) {
@@ -1091,7 +1090,6 @@ ODA({is: "oda-table",
             this.focusedRow = item;
             // this.scrollToItem(item);
         }
-        // }, 100)
     },
 
     selectAll() {
