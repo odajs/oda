@@ -12,7 +12,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             <svg :width :height style="z-index: 0; position: absolute;">
                 <path ~for="link in links" :stroke="linkColor" :stroke-width="Object.equal(link, focusedLink) ? 2 : 1" fill="transparent" :props="link" @tap.stop="focusLink(link)" @push.stop :focused="Object.equal(link, focusedLink)" ~style="{opacity: link?.to ? 1 : 0.5}" />
             </svg>
-            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
+            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="dd" @up="uu" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom, zIndex: selection?.indexOf(itm) + 1}" :focused="isFocused(itm)" :selected="isSelected(itm)"></oda-scheme-container>
             <oda-button ~if="editMode && focusedLink" icon="icons:delete" :fill="linkColor" style="position: absolute" ~style="linkButtonStyle" @tap.stop="removeLink(focusedLink)"></oda-button>
             <oda-button ~for="outerLinks" :item icon="image:brightness-2" :fill="linkColor" :rotate="(item.align==='b')?-90:(item.align==='l')?0:(item.align==='t'?90:180)" fill="gray" style="position:absolute; padding:0; border: 0" ~style="getOuterLinkStyle(item)" @tap.stop="outerLinkTap"></oda-button>
         </div>
@@ -146,6 +146,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         };
                         // i.item.x = Math.round((+i.item.x + e.detail.ddx / this.zoom)/10) * 10;
                         // i.item.y = Math.round((+i.item.y + e.detail.ddy  / this.zoom)/10) * 10;
+                        this.putToEnd(i);
                     });
                 } break;
                 case 'track':{
@@ -213,6 +214,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             }
         }
         this.selection.add(item);
+    },
+    putToEnd(item) {
+        this.items.remove(item);
+        this.items.add(item);
     },
     zoomIn() {
         this.zoom = this.zoom * this.zoomKoef;
