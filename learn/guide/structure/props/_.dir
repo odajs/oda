@@ -23,10 +23,5 @@
         "name": "getter-setter.md",
         "label": "Совместное использование геттера и сеттера",
         "status": "check"
-    },
-    {
-        "name": "getters-caching.md",
-        "label": "Кэширование геттера",
-        "status": "edit"
     }
 ]
