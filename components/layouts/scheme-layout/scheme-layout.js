@@ -583,9 +583,12 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         const pin = this.layout.findPin(pinFrom);
         if (pin) {
             const links = pin.item.links || [];
-            links.push(pinTo);
-            pin.item.links = links;
-            this.layout.findBlock(pinFrom.block)?.save?.();
+            const sameLink = links.find(l => l.block === pinTo.block && l.pin === pinTo.pin);
+            if (!sameLink) {
+                links.push(pinTo);
+                pin.item.links = links;
+                this.layout.findBlock(pinFrom.block)?.save?.();
+            }
         }
     },
 });
