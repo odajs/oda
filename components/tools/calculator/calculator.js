@@ -5,7 +5,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 @apply --vertical;
                 padding: 16px;
                 @apply --shadow;
-                height: fit-content;
             }
             .header {
                 @apply --header

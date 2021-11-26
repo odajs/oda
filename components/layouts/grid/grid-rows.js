@@ -6,44 +6,49 @@ ODA({is: 'oda-grid-row',
                 position: sticky;
                 position: -webkit-sticky;
             }
-            :host([col-lines]) .cell{
-                border-right: 1px solid var(--dark-background);
-                box-sizing: border-box;
-            }
+            /*:host([col-lines]) .cell{*/
+            /*    border-right: 1px solid var(--dark-background);*/
+            /*    box-sizing: border-box;*/
+            /*}*/
             :host([col-lines]) .cell[fix=right]{
                 border-width: 2px !important;
             }
+            :host>*{
+                box-sizing: border-box; 
+            }
         </style>
-        <span ~for="col in cols" ~is="getCellTemplate(row, col)"  :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
+        <span ~for="col in cols" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
     `,
+    props:{
+
+    },
     row: {},
-    getCellTemplate(row, col) {
-        if (row.$role)
-            return row.template || col.template || this.defaultTemplate;
-        if (row.$group)
+    getTemplate(col) {
+        if (this.row.$role)
+            return this.row.template || col.template || this.defaultTemplate;
+        if (this.row.$group)
             return this.defaultGroupTemplate;
         if (col.treeMode)
             return this.defaultTreeTemplate;
-        let template = col.template || row.template || this.defaultTemplate;
+        let template = col.template || this.row.template || this.defaultTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
     },
     getStyle(col) {
         const style = {width: col?.width + 'px'};
-        if (this.rowLines)
-            style.borderBottom = '1px solid'
-        // {width: col?.width+'px', borderBottom: 1px solid }
+        if (this.colLines)
+            style.borderRight = '1px solid var(--dark-background)';
         return style;
     }
 })
 ODA({is: 'oda-grid-header', extends: 'oda-grid-row',
-    getCellTemplate(row, col) {
+    getTemplate(col) {
         return this.defaultHeader;
     },
 })
 ODA({is: 'oda-grid-footer', extends: 'oda-grid-header',
-    getCellTemplate(row, col) {
+    getTemplate(col) {
         return this.defaultFooter;
     },
 })

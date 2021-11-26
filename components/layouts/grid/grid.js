@@ -266,16 +266,7 @@ ODA({is: 'oda-grid-body', imports: './grid-rows.js',
             default: false,
             reflectToAttribute: true
         },
-        colLines: {
-            default: false,
-            reflectToAttribute: true
-        },
-        rowLines: {
-            default: false,
-            reflectToAttribute: true
-        },
     }
-
 })
 
 
