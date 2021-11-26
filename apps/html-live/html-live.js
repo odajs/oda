@@ -44,6 +44,7 @@ ODA({
             <oda-button icon="icons:more-vert" @tap="_resize(2)" style="margin-right:4px" fill="gray"></oda-button>
             <oda-button icon="image:filter-1" @tap="_resize(1)" style="margin-right:4px" fill="gray"></oda-button>
             <oda-button icon="icons:launch" @tap="_open" title="open in new window" style="margin-right:8px" fill="gray"></oda-button>
+            <oda-button icon="icons:refresh" @tap="_reload" title="reload page" style="margin-right:4px" fill="gray"></oda-button>
             <label style="margin-right: auto; padding-left: 4px; color: gray">oda-html-live</label>
         </div>
         <div id="main">
@@ -108,6 +109,10 @@ ODA({
     _open() {
         let url = this.$url.replace('html-live.js', 'index.html#?') + LZString.compressToEncodedURIComponent(this.editor.getValue());
         window.open(url, '_blank').focus();
+    },
+    _reload() {
+        window.location.href = this.$url.replace('html-live.js', 'index.html#?') + LZString.compressToEncodedURIComponent(this.editor.getValue());
+        setTimeout(() => window.location.reload(), 100);
     },
     _resize(v) {
         this._widthL = v ? this.clientWidth / v : 0;
