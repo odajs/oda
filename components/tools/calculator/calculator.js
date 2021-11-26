@@ -175,20 +175,20 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             case 0:
                 this.accuracy = 1;
                 break;
-            case ' = 1': 
-                this.Acc = ' = 2';
+            case 1: 
+                this.accuracy = 2;
                 break;
-            case ' = 2': 
-                this.Acc = ' = 3';
+            case 2: 
+                this.accuracy = 3;
                 break;
-            case ' = 3': 
-                this.Acc = ' = 4';
+            case 3: 
+                this.accuracy = 4;
                 break;
-            case ' = 4': 
-                this.Acc = ' = 5';
+            case 4: 
+                this.accuracy = 5;
                 break;
-            case ' = 5': 
-                this.Acc = ' = 0';
+            case 5: 
+                this.accuracy = 0;
                 break;
         }
     },
