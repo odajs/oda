@@ -4,7 +4,7 @@ import snippet from './src/snippets/oda-snippet.js';
 
 // https://github.com/beautify-web/js-beautify
 import './src/beautify.js';
-import './src/beautify-css.js';
+// import './src/beautify-css.js';
 import './src/beautify-html.js';
 
 ODA({ is: 'oda-ace-editor', template: /*html*/`
@@ -187,9 +187,12 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             name: 'format',
             bindKey: {win: "Ctrl-Q", mac: "Cmd-Q"},
             exec: () => {
-                let fn = this.mode === 'html' ? html_beautify : this.mode === 'css' ? css_beautify : js_beautify;
                 // https://github.com/beautify-web/js-beautify
-                let session = this.editor.getSession();
+                const 
+                    mode = this.editor.session.getMode().$id,
+                    fn = mode.includes('html') ? html_beautify : js_beautify,
+                    // fn = mode.includes('html') ? html_beautify : mode.includes('css') ? css_beautify : js_beautify,
+                    session = this.editor.getSession();
                 session.setValue(fn(session.getValue(), {
                     // "indent_size": 4,
                     // "indent_char": " ",
