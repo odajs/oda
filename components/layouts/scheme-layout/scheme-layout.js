@@ -130,6 +130,9 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 this.updateLinks();
             }, 100);
         },
+        scroll(e) {
+            this.updateLinks();
+        },
         track(e) {
             if (!this.lastdown) return;
             if (e.sourceEvent.ctrlKey) return;
@@ -240,7 +243,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         const style = {};
         switch(item.align) {
             case 'l': {
-                style.left = 0 + 'px';
+                style.left = item.x2 - this.outerLinkSize + 'px';
                 style.top = item.y2 - this.outerLinkSize / 2 + 'px';
             } break;
             case'r': {
@@ -249,7 +252,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             } break;
             case 't': {
                 style.left = item.x2 - this.outerLinkSize / 2 + 'px';
-                style.top = 0 + 'px';
+                style.top = item.y2 - this.outerLinkSize  + 'px';
             } break;
             case 'b': {
                 style.left = item.x2 - this.outerLinkSize / 2 + 'px';
@@ -424,17 +427,19 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         return rect;
     },
     get links(){
+        if (!this.layout) return;
         const aWidth = ARROW_WIDTH_HALF * this.zoom;
         const aLength = ARROW_LENGTH * this.zoom;
         const space = PIN_SPACE * this.zoom;
         const shoulder = PIN_SHOULDER * this.zoom;
+        const layout = this.layout;
 
         let pins = this.connectors?.length && this.$$('.pin') || [];
         pins = pins.filter(i=>{
             return i.item?.links?.length;
         });
         const links = pins.reduce((lnks, pin ) => {
-            const rect = this.getClientRect(pin, this.layout);
+            const rect = this.getClientRect(pin, layout);
             lnks.push(pin.item.links.reduce((pinLinks, link) => {
                 if (!link.block) return pinLinks;
                 const result = {
@@ -442,10 +447,10 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                     link: link,
                     align: this.align
                 }
-                const targetPin = this.layout.findPin(link)
+                const targetPin = layout.findPin(link)
                 const r = {};
-                r.xStart = r.x1 = Math.round((rect.left + rect.width / 2) * this.zoom) + this.layout.scrollLeft;
-                r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom) + this.layout.scrollTop;
+                r.xStart = r.x1 = Math.round((rect.left + rect.width / 2) * this.zoom) + layout.scrollLeft;
+                r.yStart = r.y1 = Math.round((rect.top + rect.height / 2) * this.zoom) + layout.scrollTop;
                 switch (this.align) {
                     case 't':{
                          r.yStart -= space;
@@ -467,9 +472,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
 
                 if (targetPin) {
                     result.to = targetPin;
-                    const targetRect = this.getClientRect(targetPin, this.layout);
-                    r.xEnd = Math.round((targetRect.left + targetRect.width / 2) * this.zoom) + this.layout.scrollLeft;
-                    r.yEnd = Math.round((targetRect.top + targetRect.height / 2) * this.zoom) + this.layout.scrollTop;
+                    const targetRect = this.getClientRect(targetPin, layout);
+                    r.xEnd = Math.round((targetRect.left + targetRect.width / 2) * this.zoom) + layout.scrollLeft;
+                    r.yEnd = Math.round((targetRect.top + targetRect.height / 2) * this.zoom) + layout.scrollTop;
                     switch (targetPin.domHost.align) {
                         case 't':{
                             r.yEnd -= space;
@@ -496,24 +501,24 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 else {
                     switch (this.align){
                         case 't':{
-                            r.xEnd = r.x2 = r.x1;;
-                            // r.y2 = r.yEnd = 0;
-                            r.y2 = r.yEnd = this.layout?.outerLinkSize;
+                            r.xEnd = r.x2 = r.x1;
+                            const y = layout.scrollTop < rect.top ? layout.scrollTop : rect.top;
+                            r.y2 = r.yEnd = y + layout?.outerLinkSize;
                         } break;
                         case 'r':{
                             r.yEnd = r.y2 = r.y1;
-                            // r.x2 = r.xEnd = this.layout?.width;
-                            r.x2 = r.xEnd = this.layout?.width - this.layout?.outerLinkSize;
+                            let x = (layout.clientWidth + layout.scrollLeft);
+                            x = x > rect.left ? x : rect.left
+                            r.x2 = r.xEnd = x - layout?.outerLinkSize;
                         } break;
                         case 'b':{
                             r.xEnd = r.x2 = r.x1;
-                            // r.y2 = r.yEnd = this.layout.height;
-                            r.y2 = r.yEnd = this.layout.height - this.layout?.outerLinkSize;
+                            r.y2 = r.yEnd = layout.clientHeight + layout.scrollTop - layout.outerLinkSize;
                         } break;
                         case 'l':{
                             r.yEnd = r.y2 = r.y1;
-                            // r.x2 = r.xEnd = 0;
-                            r.x2 = r.xEnd = this.layout?.outerLinkSize;
+                            const y = layout.scrollLeft < rect.left ? layout.scrollLeft : rect.left;
+                            r.x2 = r.xEnd = y + layout.outerLinkSize;
                         } break;
                     }
                 }
