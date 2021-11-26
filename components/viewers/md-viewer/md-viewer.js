@@ -105,7 +105,7 @@ let fileCount = 0;
 ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
         <style>
             .md { @apply --layout; display: block; padding: 4px; }
-            .hljs { @apply --layout; display: block; padding: {{md ? '8px 4px 6px 10px;' : ''}} }
+            .hljs { @apply --layout; display: block; padding: {{md ? '8px 4px 6px 10px;' : ''}}; height: {{_eh ? _eh + 'px' : ''}} }
             .hljs-comment, .hljs-quote { color: #93a1a1; }
             .hljs-keyword, .hljs-selector-tag, .hljs-addition { color: #859900; }
             .hljs-number, .hljs-string, hljs-meta .hljs-meta-string, .hljs-literal, .hljs-doctag, .hljs-regexp { color: #2aa198; }
@@ -198,7 +198,8 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                     ['error', 'success', 'info', 'warning', 'help', 'like', 'faq'].forEach(e => {
                         if (this._lang.includes(e)) this.infpnl = e;
                     });
-                    this._h = /(?:_h=)(.*)(?:_)/g.exec(n) ? /(?:_h=)(.*)(?:_)/g.exec(n)[1] : '';
+                    this._h = /_h=(.*?)_/g.exec(n) ? /_h=(.*?)_/g.exec(n)[1] : '';
+                    this._eh = /_eh=(.*?)_/g.exec(n) ? /_eh=(.*?)_/g.exec(n)[1] : '';
                     this._loadODA = n.includes('loadoda');
                     this.showConsole = n.includes('console');
                     this.warn = n.includes('warn');
@@ -225,6 +226,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
         _edit: '',
         _lang: '',
         _h: '',
+        _eh: '',
         _src: '',
         _loadODA: false,
         showConsole: false,

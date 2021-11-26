@@ -6,10 +6,6 @@ ODA({is: 'oda-grid-row',
                 position: sticky;
                 position: -webkit-sticky;
             }
-            /*:host([col-lines]) .cell{*/
-            /*    border-right: 1px solid var(--dark-background);*/
-            /*    box-sizing: border-box;*/
-            /*}*/
             :host([col-lines]) .cell[fix=right]{
                 border-width: 2px !important;
             }
@@ -39,6 +35,8 @@ ODA({is: 'oda-grid-row',
         const style = {width: col?.width + 'px'};
         if (this.colLines)
             style.borderRight = '1px solid var(--dark-background)';
+        if (this.rowLines)
+            style.borderBottom = '1px solid var(--dark-background)';
         return style;
     }
 })

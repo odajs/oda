@@ -76,7 +76,8 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         return  []
     },
     set dataSet(n){
-        this.$('oda-grid-body').scrollTop = 0;
+        this.style.visibility = 'hidden';
+        this.scrollTop = 0;
     },
     get bodyHeight(){
         return this.$('oda-grid-body').offsetHeight;
@@ -261,6 +262,16 @@ ODA({is: 'oda-grid-body', imports: './grid-rows.js',
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,
+    ready(){
+        this.style.visibility = 'hidden';
+    },
+    onRender(){
+        if (this.style.visibility){
+            this.debounce('render', ()=>{
+                this.style.visibility = '';
+            },100)
+        }
+    },
     props:{
         evenOdd: {
             default: false,
