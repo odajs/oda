@@ -9,39 +9,28 @@
         cols: {
             science: {
                 rows: {
-                    0: {
-                        buttons: {
-                            "Acc": {command: "chooseAccuracy"},
-                        },
-                    },
                     1: {
                         buttons: {
-                            "Rad | Deg": {},
                             "x!": {command: "calcFactorial"},
-                        },
-                    }, 
-                    2: {
-                        buttons: {
-                            "Inv": {command: "invert"},
                             "sin": {name: "sin(", expr: "Math.sin(", hint: ')'},
                             "ln": {name: "ln(", expr: "Math.log(", hint: ')'},
                         },
                     }, 
-                    3: {
+                    2: {
                         buttons: {
                             "π": {expr: '3.14159265359'},
                             "cos": {name: "cos(", expr: "Math.cos(", hint: ')'},
                             "log": {name: "log(", expr: "Math.log10(", hint: ')'},   
                         },
                     },
-                    4: {
+                    3: {
                         buttons: {
                             "e": {expr: "2.71828182846"},
                             "tan": {name: "tan(", expr: "Math.tan(", hint: ')'},
                             "√": {name: "√(", expr: "Math.sqrt(", hint: ')'},
                         },
                     }, 
-                    5: {
+                    4: {
                         buttons: {
                             "Ans": {command: 'getAnswer'},
                             "EXP": {name: "E", expr: "*10**"},
@@ -50,7 +39,7 @@
                     },
                     props: {
                         class: "layout",
-                        style: 'flex-shrink: 10000000; width: 33%',
+                        style: 'flex-shrink: 10000000',
                     },
                 },
             },
@@ -90,10 +79,7 @@
                             "00": {},
                             ".": {},
                         },
-                    },
-                    props: {
-                        style: 'width: 33%'
-                    },
+                    }
                 },
             },
             sign:{
@@ -118,16 +104,13 @@
                     },
                     4: {
                         props:{
-                            style: 'flex-grow: 9',
+                            style: 'flex-grow: 1000000',
                         },
                         buttons:{
                             "+": {name: ' + ', expr: '+'},
                             "=": {command: 'calc'},
                         },
-                    },
-                    props: {
-                        style: "width: 50%",
-                    },
+                    }
                 },
             },
         },

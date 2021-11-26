@@ -5,6 +5,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 @apply --vertical;
                 padding: 16px;
                 @apply --shadow;
+                height: fit-content;
             }
             .header {
                 @apply --header
@@ -22,12 +23,13 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 <span disabled>{{hint}}</span>
             </span>
         </div>
+        <div class="horizontal" style="margin: 0px 8px 0px auto" ~style="{height: buttonHeight + 'px'}">
+            <oda-button class="raised flex" @tap="chooseAccuracy">Acc <span disabled>{{Acc}}</span></oda-button>
+        </div>
         <div class="horizontal">
             <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props" >
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props" ~style="{height: buttonHeight + 'px'}">
-                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" >
-                    <span disabled ~if="row.buttons.Acc">{{Acc}}</span>
-                    </oda-button>
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
                 </div>
             </div>
         </div>
