@@ -2,6 +2,11 @@ import './src/ace.js';
 import './src/ext-language_tools.js';
 import snippet from './src/snippets/oda-snippet.js';
 
+// https://github.com/beautify-web/js-beautify
+import './src/beautify.js';
+import './src/beautify-css.js';
+import './src/beautify-html.js';
+
 ODA({ is: 'oda-ace-editor', template: /*html*/`
         <style>
             ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: lightgray; } ::-webkit-scrollbar-thumb { background-color: gray; }
@@ -178,6 +183,42 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         editor.setOptions(this.options);
         editor.setValue(this.value);
         editor.session.selection.clearSelection();
+        editor.commands.addCommand({
+            name: 'format',
+            bindKey: {win: "Ctrl-Q", mac: "Cmd-Q"},
+            exec: () => {
+                let fn = this.mode === 'html' ? html_beautify : this.mode === 'css' ? css_beautify : js_beautify;
+                // https://github.com/beautify-web/js-beautify
+                let session = this.editor.getSession();
+                session.setValue(fn(session.getValue(), {
+                    // "indent_size": 4,
+                    // "indent_char": " ",
+                    // "indent_with_tabs": false,
+                    // "editorconfig": false,
+                    // "eol": "\n",
+                    // "end_with_newline": false,
+                    // "indent_level": 0,
+                    // "preserve_newlines": true,
+                    // "max_preserve_newlines": 10,
+                    // "space_in_paren": false,
+                    // "space_in_empty_paren": false,
+                    // "jslint_happy": false,
+                    // "space_after_anon_function": false,
+                    // "space_after_named_function": false,
+                    // "brace_style": "collapse",
+                    // "unindent_chained_methods": false,
+                    // "break_chained_methods": false,
+                    // "keep_array_indentation": false,
+                    // "unescape_strings": false,
+                    // "wrap_line_length": 0,
+                    // "e4x": false,
+                    // "comma_first": false,
+                    // "operator_position": "before-newline",
+                    // "indent_empty_lines": false,
+                    // "templating": ["auto"]
+                }));
+            }
+        })
     },
     get options() {
         const options = {
