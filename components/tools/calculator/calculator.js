@@ -43,10 +43,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             this.clear();
         },
     },
-    attached() {
+    attached () {
         document.addEventListener('keydown', this._onKeyDown.bind(this));
     },
-    detached() {
+    detached () {
         document.removeEventListener('keydown', this._onKeyDown.bind(this));
     },
     _onKeyDown (e) {
@@ -76,26 +76,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         accuracy:{
             default: 2,
             label: 'Точность',
-            save: true
+            save: true,
+            list: [0, 1, 2, 3, 4, 5],
         },
         buttonHeight:{
             default: 32,
-            save: true
+            label: 'Высота кнопки',
+            save: true,
         }
     },
     hostAttributes: {
         tabindex: 1
-    },
-    props: {
-        accuracy: {
-            default: 2,
-            save: true,
-            list: [0, 1, 2, 3, 4, 5],
-        },
-        buttonHeight: {
-            default: 30,
-            save: true,
-        },
     },
     tap (e) {
         this.error = undefined; // on any input, the error is cleared
