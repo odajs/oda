@@ -77,10 +77,9 @@ ODA({
         max-width: calc(100% - 8px);
         font-size: normal;
     }
+    
     :host input:focus ~ .placeholder,
-    :host input[value] ~ .placeholder,
-    :host input[type=checkbox] ~ .placeholder,
-    :host input[type=date] ~ .placeholder{
+    :host input.up ~ .placeholder{
         bottom: unset;
         font-size: 75%;
         opacity: 0.5;
@@ -88,7 +87,7 @@ ODA({
     }
     </style>
     <input ref="input" id="input" :type="_type" :min :max :maxlength :minlength :step :accept :autocomplete autofocus :pattern
-    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : ''}" :read-only="disabled" :value="focused ? _value : value" :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''">
+    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : ''}" :read-only="disabled" :value="focused ? _value : value" :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''" ~class="{'up': String(value) || ['checkbox', 'date'].includes(type)}">
     <label for="input" ~text="placeholder" class="placeholder"></label>
     <oda-button ~if="showClear" ~style="{opacity: $refs.input.value ? '0.8' : '0.25'}" icon="icons:clear" @tap.stop="$refs.input.value = '';$refs.input.dispatchEvent(new Event('change'))"></oda-button>
     <datalist ~if="list?.length" id="datalist">
@@ -112,11 +111,11 @@ ODA({
             type = type === 'undefined' ? 'string' : type;
             switch (type) {
                 case 'boolean': return 'checkbox';
-                case 'string':
                 case 'number':
                 case 'date':
-                case 'color':
-                default: return type;
+                case 'color': return type;
+                case 'string':
+                default: return 'text';
             }
         },
         label: {
