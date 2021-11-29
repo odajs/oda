@@ -10,7 +10,16 @@ ODA({
     is: 'my-component',
     template: `
         <label> Размер кнопки <input type="number" ::value="height"></label>
-        <oda-calculator :accuracy="2" :button-height="height" :data></oda-calculator>
+        <label>Точность результата<select ::value="accuracy">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            </select>
+        </label>
+        <oda-calculator :accuracy :button-height="height" :data></oda-calculator>
     `,
     props: {
         height: 50,

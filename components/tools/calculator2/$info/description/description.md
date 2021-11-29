@@ -9,17 +9,17 @@ import '/components/tools/calculator/calculator.js';
 ODA({
     is: 'my-component',
     template: `
-        <label>Размер кнопки <input type="number" ::value="height" min="10" max="70"><label> <br>
-        <select ::value="accuracy">
-            <option disabled selected value="2">Точность результата</option>
+        <label>Размер кнопки <input type="number" ::value="height" min="10" max="70"><label>
+        <label>Точность результата<select ::value="accuracy">
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
             <option value="4">4</option>
             <option value="5">5</option>
-        </select>
-        <oda-calculator :accuracy="2" :button-height="height" :data></oda-calculator>
+            </select>
+        </label>
+        <oda-calculator :accuracy :button-height="height" :data></oda-calculator>
     `,
     props: {
         height: 50,
