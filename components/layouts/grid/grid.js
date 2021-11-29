@@ -69,7 +69,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         showHeader: true,
         colLines: false,
         rowLines: false,
-        // lazy: false,
+        lazy: false,
         showFilter: false
     },
     get dataSet(){
@@ -100,7 +100,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         //     })
         // };
         const from = Math.round(this.scrollTop / this.rowHeight);
-        const length = Math.round(this.bodyHeight / this.rowHeight) || 1;
+        let length = (Math.round(this.bodyHeight / this.iconSize) || 100) / devicePixelRatio;
         return {from, length};
     },
     get items() {
@@ -187,7 +187,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         }, 0);
 
         if (!this.autoWidth)
-            cols.push({ order: 999, template: 'span' });
+            cols.push({ order: 999, template: 'span', free: true });
         return cols;
     },
     _beforeExpand(row) {

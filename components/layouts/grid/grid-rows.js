@@ -31,11 +31,36 @@ ODA({is: 'oda-grid-row', imports: './grid-cells.js',
     },
     getStyle(col) {
         const w = col.width + 'px';
-        const style = {maxWidth: col.width + 'px', minWidth: col.width + 'px', order: col.order};
-        if (this.colLines)
-            style.borderRight = (col?.fix?2:1) + 'px solid var(--dark-background)';
+        const style = {width: col.width + 'px', minWidth: col.width + 'px', order: col.order};
+        if (this.colLines){
+            switch (col?.fix){
+                case 'right':{
+                    style['border-left'] = '1px solid var(--dark-background)';
+                } break;
+                default:{
+                    style['border-right'] = '1px solid var(--dark-background)';
+                }
+            }
+
+        }
         if (this.rowLines)
-            style.borderBottom = '1px solid var(--dark-background)';
+            style['border-bottom'] = '1px solid var(--dark-background)';
+        if(col?.fix){
+            style['background-color'] = 'var(--header-background)';
+            style['border-color'] = 'var(--content-background)';
+            style.right = '0px';
+            style.left = (col.left || 0)+'px';
+            style['border-left-width'] = style['border-right-width'] = '2px';
+            style['max-width'] = style.width;
+        }
+        else{
+            style['z-index'] = -1;
+            if (!this.autoWidth && !col.free)
+                style['max-width'] = style.width;
+
+        }
+        style.position = 'sticky';
+
         return style;
     }
 })

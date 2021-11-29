@@ -10,9 +10,11 @@ ODA({is: "oda-grid-cell-header", extends: 'oda-grid-cell-base', template: /*html
                 overflow: hidden;
                 align-items: initial !important;
                 box-sizing: border-box;
+                border-color: var(--content-background) !important;
+                @apply --dark;
             }
             .split{
-                cursor: col-resize;
+                cursor: col-resize !important;
                 border: 2px solid transparent;
                 transition: border-color .5s;
             }
@@ -489,7 +491,6 @@ cells: {
             :host{
                 justify-content: flex-end;
                 padding: 4px;
-                @apply --dark;
                 text-align: right;
                 font-size: smaller;
             }
