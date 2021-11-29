@@ -1,19 +1,17 @@
-ODA({is: 'oda-grid-row',
+ODA({is: 'oda-grid-row', imports: './grid-cells.js',
     template: `
         <style>
             :host{
                 @apply --horizontal;
                 position: sticky;
                 position: -webkit-sticky;
-            }
-            :host([col-lines]) .cell[fix=right]{
-                border-width: 2px !important;
+                justify-content: start;
             }
             :host>*{
                 box-sizing: border-box; 
             }
         </style>
-        <span ~for="col in cols" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
+        <span class="flex" ~for="col in cols" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
     `,
     props:{
 
@@ -32,9 +30,10 @@ ODA({is: 'oda-grid-row',
         return template;
     },
     getStyle(col) {
-        const style = {width: col?.width + 'px'};
+        const w = col.width + 'px';
+        const style = {maxWidth: col.width + 'px', minWidth: col.width + 'px', order: col.order};
         if (this.colLines)
-            style.borderRight = '1px solid var(--dark-background)';
+            style.borderRight = (col?.fix?2:1) + 'px solid var(--dark-background)';
         if (this.rowLines)
             style.borderBottom = '1px solid var(--dark-background)';
         return style;
