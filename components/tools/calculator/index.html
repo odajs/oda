@@ -1,10 +1,10 @@
 <meta charset="utf-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./calculator.js"></script>
 <oda-tester>
     <oda-calculator id="calc" style="width: 500px;"></oda-calculator>
 </oda-tester>
 <script type="module">
-    import '/web/oda/oda.js';
-    import './calculator.js';
     calc.data = {
         cols: {
             science: {
@@ -15,12 +15,12 @@
                             "sin": {name: "sin(", expr: "Math.sin(", hint: ')'},
                             "ln": {name: "ln(", expr: "Math.log(", hint: ')'},
                         },
-                    }, 
+                    },
                     2: {
                         buttons: {
                             "π": {expr: '3.14159265359'},
                             "cos": {name: "cos(", expr: "Math.cos(", hint: ')'},
-                            "log": {name: "log(", expr: "Math.log10(", hint: ')'},   
+                            "log": {name: "log(", expr: "Math.log10(", hint: ')'},
                         },
                     },
                     3: {
@@ -29,7 +29,7 @@
                             "tan": {name: "tan(", expr: "Math.tan(", hint: ')'},
                             "√": {name: "√(", expr: "Math.sqrt(", hint: ')'},
                         },
-                    }, 
+                    },
                     4: {
                         buttons: {
                             "Ans": {command: 'getAnswer'},

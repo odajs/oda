@@ -25,10 +25,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="horizontal" style="margin: 0px 8px 0px auto" ~style="{height: buttonHeight + 'px'}">
             <oda-button class="raised flex" @tap="chooseAccuracy">Acc <span disabled>{{Acc}}</span></oda-button>
         </div>
-        <div class="horizontal">
-            <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" ~props="col.props" >
+        <div class="horizontal" ::data="calc.data">
+            <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" >
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props" ~style="{height: buttonHeight + 'px'}">
-                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col?.rows.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
                 </div>
             </div>
         </div>
@@ -66,7 +66,8 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     },
     get Acc () { // bit width of the result
         return ` = ${this.accuracy}`
-    }, 
+    },
+    data: {},
     error: undefined,
     hints: [], // unclosed brackets
     stack: [],
@@ -134,7 +135,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.result = '0';
     },
     back () {
-        if (this.stack[this.stack.length-1]?.hint === this.hints[this.hints.length - 1]?.hint) { 
+        if (this.stack[this.stack.length-1]?.hint === this.hints[this.hints.length - 1]?.hint) {
             this.hints.shift();
             this.hint = undefined;
         }
@@ -148,17 +149,17 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     getAnswer () {
-        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: this.value}) : this.stack.push({name: this.value}); 
+        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: this.value}) : this.stack.push({name: this.value});
         this.expression = undefined;
     },
     invert () {
-        
+
     },
     calcFactorial () {
         const factorial = (num = this.stack[this.stack.length-1].key-1) => {
             return (num !== 1) ? num * factorial(num-1) : 1
         }
-        this.stack.push({name: '!', expr: `*${factorial()}`}); 
+        this.stack.push({name: '!', expr: `*${factorial()}`});
         this.expression = undefined;
     },
     // choose what bit depth the number will be
@@ -167,19 +168,19 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             case 0:
                 this.accuracy = 1;
                 break;
-            case 1: 
+            case 1:
                 this.accuracy = 2;
                 break;
-            case 2: 
+            case 2:
                 this.accuracy = 3;
                 break;
-            case 3: 
+            case 3:
                 this.accuracy = 4;
                 break;
-            case 4: 
+            case 4:
                 this.accuracy = 5;
                 break;
-            case 5: 
+            case 5:
                 this.accuracy = 0;
                 break;
         }
