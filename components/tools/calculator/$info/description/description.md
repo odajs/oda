@@ -4,16 +4,17 @@
 
 Для использования этого компонента необходимо подключить JS-модуль **calculator.js** и добавить в HTML-код пользовательский тэг **oda-calculator**.
 
-``` javascript _run_line_edit_loadoda_[my-component.js]_h=260_eh=260_
+```javascript _run_line_edit_loadoda_[my-component.js]_h=260_eh=260_
 import '/components/tools/calculator/calculator.js';
 ODA({
     is: 'my-component',
     template: `
-        <label> Размер кнопки <input type="number" ::value="height"></height>
+        <label> Размер кнопки <input type="number" ::value="height"></label>
         <oda-calculator :accuracy="2" :button-height="height" :data></oda-calculator>
     `,
     props: {
         height: 50,
+        accuracy: 2,
         data: {
             cols: {
                 science: {

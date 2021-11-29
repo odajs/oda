@@ -4,7 +4,7 @@ import demo from './demo/_info.js';
 export default {
     api: 'oda-calculator',
     source: [
-        { label: 'calculator2.js', src: './calculator2.js', title: 'source code oda-calculator' }
+        { label: 'calculator.js', src: './calculator.js', title: 'source code oda-calculator' }
     ],
     description: description || undefined,
     props: props || undefined,
