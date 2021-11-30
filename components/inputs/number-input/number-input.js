@@ -18,20 +18,24 @@ ODA({is:'oda-number-input',
             label: 'Значение'
         },
         input: '456',
-
         format:{
-            default: '',
+            default: 'text',
             list: ['percent', 'currency', 'text', '0.00' , '0.00%', '# 0,0000']
         }
     },
-    get display(){
-        return this.getFormattedValue(this.value);
+    get display () {
+        return this.getFormattedValue();
     },
-    getFormattedValue(val){
-        return val.toLocaleString();
+    getFormattedValue(){
+        // const minimumIntegerDigits = this.format.match(/\d+(?<=\.)/)[0];
+        // minimumIntegerDigits !== null ? minimumIntegerDigits.length : ;
+        switch (this.format) {
+            case 'text':
+                return this.value.toString();
+            case 'percent':
+                return this.value.toLocaleString('ru-RU', { style: 'percent' });
+            case 'currency':
+                return this.value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+        }
     }
-
-    // value: 0,
-
-
 })
