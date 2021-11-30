@@ -47,7 +47,6 @@ ODA({is: 'oda-grid-row', imports: './grid-cells.js',
             style['border-bottom'] = '1px solid var(--dark-background)';
         if(col?.fix){
             style['background-color'] = 'var(--header-background)';
-            style['border-color'] = 'var(--content-background)';
             style.right = '0px';
             style.left = (col.left || 0)+'px';
             style['border-left-width'] = style['border-right-width'] = '2px';

@@ -259,7 +259,7 @@ ODA({is: 'oda-grid-body', imports: './grid-rows.js',
         <oda-grid-header></oda-grid-header>
         <div class="flex vertical" style="z-index: -1;">
             <oda-grid-row ~for="row in rows" :row></oda-grid-row>
-            <div class="flex" ~style="{minHeight: '50px'}"></div>
+            <oda-grid-row class="disabled" :row="{}"  ~style="{minHeight: '50px'}" ></oda-grid-row>
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,
