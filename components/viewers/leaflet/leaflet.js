@@ -58,7 +58,7 @@ ODA({ is: 'oda-leaflet', template: `
         });
         this.polylines.forEach(i => {
             if (i.polylines?.length) {
-                let el = L.polygon([i.polylines], { ...i.args }).addTo(this._map);
+                let el = L.polyline([i.polylines], { ...i.args }).addTo(this._map);
                 if (i.bindPopup) el.bindPopup(i.bindPopup);
             }
         });

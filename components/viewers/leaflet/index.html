@@ -38,17 +38,24 @@
                     {
                         polygons: [[54.666187, 39.733772], [54.664499, 39.736862], [54.669662, 39.767418], [54.680183, 39.7542], [54.674129, 39.738235]],
                         bindPopup: 'I am a Lukovsky forest.',
-                        args: { color: 'green', fillColor: '#0f3', fillOpacity: 0.5, radius: 500 },
+                        args: { color: 'green', fillColor: '#0f3', fillOpacity: 0.5 },
                     }
                 ],
                 circles: [
                     {
-                        latitude: 54.630627 - 0.02,
-                        longitude: 39.739861 - 0.01,
+                        latitude: 54.610627,
+                        longitude: 39.729861,
                         args: { color: 'red', fillColor: '#f03', fillOpacity: 0.5, radius: 500 },
                         bindPopup: 'I am a Central Park of Culture and Leisure.'
                     }
-                ]
+                ],
+                polylines: [
+                    {
+                        polylines: [[54.630627, 39.739861], [54.610627 , 39.729861]],
+                        bindPopup: 'I am a distance.',
+                        args: { color: 'blue' },
+                    }
+                ],
             }
         }
     });
