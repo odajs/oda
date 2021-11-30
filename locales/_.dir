@@ -1,34 +1,38 @@
 [
   {
-    "name": "ru",
+    "name": "ru_RU",
     "label": "Русский",
-    "icon": "flags:ru",
+    "icon": "flags:ru",    
     "execute": "setLocale"
   },
   {
-    "name": "en",
+    "name": "en_EN",
     "label": "English",
-    "icon": "flags:us"
+    "icon": "flags:us",    
+    "execute": "setLocale"    
   },
     {
-    "name": "fr",
+    "name": "fr_FR",
     "label": "Français",
-    "icon": "flags:fr"
+    "icon": "flags:fr",    
+    "execute": "setLocale"
   },
   {
-    "name": "cn",
+    "name": "cn_CN",
     "label": "中文 (chinese)",
-    "icon": "flags:cn"
+    "icon": "flags:cn",    
+    "execute": "setLocale"
   },
   {
-    "name": "ja",
+    "name": "ja_JA",
     "label": "日本語 (japanese)",
-    "icon": "flags:jp"
+    "icon": "flags:jp",    
+    "execute": "setLocale"
   },
   {
-    "name": "ua",
+    "name": "ua_UA",
     "label":"Українська",
-     "icon": "flags:ua"
+     "icon": "flags:ua",    
+    "execute": "setLocale"
   }
 ]
-
