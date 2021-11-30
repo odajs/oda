@@ -36,7 +36,7 @@ ODA({is:'oda-number-input',
             } break;
         }
 
-        const value = Number.parseFloat(e.target.value || 0);
+        const value = Number.parseFloat(eval(e.target.value || 0));
         if (Number.isNaN(value))
             return;
         this.value = value;
@@ -89,8 +89,14 @@ const formats = {
     'percent': {
         format: '0.00%', mask: '0.00%'
     },
+    'scientific': {
+        format: '0E0', mask: '0E0'
+    },
+    'currency': {
+        format: '# #00.00$', mask: '00000.0000'
+    },
     'text': {
         format: 'SSSS'
     }
 }
-const suffixes = ['.', '%', '-', 'E', 'e']
+const suffixes = ['.', '%', '-', 'E', 'e', '+']
