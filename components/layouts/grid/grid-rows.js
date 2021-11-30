@@ -34,12 +34,12 @@ ODA({is: 'oda-grid-row', imports: './grid-cells.js',
         const style = {width: col.width + 'px', minWidth: col.width + 'px', order: col.order};
         if (this.colLines){
             switch (col?.fix){
-                case 'right':{
+                case 'right':
                     style['border-left'] = '1px solid var(--dark-background)';
-                } break;
-                default:{
+                    break;
+                default:
                     style['border-right'] = '1px solid var(--dark-background)';
-                }
+
             }
 
         }

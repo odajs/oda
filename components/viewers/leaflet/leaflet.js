@@ -787,7 +787,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
         minZoom: 3,
         markers: [],
         polygons: [],
-        circles: []
+        circles: [],
+        polylines: []
     },
     attached() {
         this._map = L.map(this.$('#mapid'));
@@ -802,13 +803,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
         });
         this.polygons.forEach(i => {
             if (i.polygons?.length) {
-                let el = L.polygon([i.polygons]).addTo(this._map);
+                let el = L.polygon([i.polygons], { ...i.args }).addTo(this._map);
                 if (i.bindPopup) el.bindPopup(i.bindPopup);
             }
         });
         this.circles.forEach(i => {
             if (i.latitude && i.longitude) {
                 let el = L.circle([i.latitude, i.longitude], { ...i.args }).addTo(this._map);
+                if (i.bindPopup) el.bindPopup(i.bindPopup);
+            }
+        });
+        this.polylines.forEach(i => {
+            if (i.polylines?.length) {
+                let el = L.polygon([i.polylines], { ...i.args }).addTo(this._map);
                 if (i.bindPopup) el.bindPopup(i.bindPopup);
             }
         });
