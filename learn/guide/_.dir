@@ -43,5 +43,10 @@
         "name": "my-first-component.md",
         "label": "Мой первый компонент",
         "status": "check"
+    },
+    {
+        "name": "doc-principles.md",
+        "label": "Принципы документирования",
+        "status": "check"
     }
 ]

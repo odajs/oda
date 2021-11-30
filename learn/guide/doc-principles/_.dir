@@ -1,0 +1,17 @@
+[
+    {
+        "name": "help-for-help.md",
+        "label": "Создание документации",
+        "status": "ok"
+    },
+    {
+        "name": "help-for-component.md",
+        "label": "Документирование компонентов",
+        "status": "ok"
+    },
+    {
+        "name": "help-for-component.html",
+        "label": "Структура компонента",
+        "status": "temp"
+    },
+]
