@@ -45,7 +45,7 @@
         "status": "check"
     },
     {
-        "name": "doc-principles.md",
+        "name": "doc-principles",
         "label": "Принципы документирования",
         "status": "check"
     }
