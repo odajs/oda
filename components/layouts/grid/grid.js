@@ -353,8 +353,8 @@ rows:{
             return template;
         },
         getStyle(col) {
-            const w = col.width + 'px';
-            const style = {width: col.width + 'px', minWidth: col.width + 'px', order: col.order};
+            const width = col.width + 'px'
+            const style = {width, "min-width": width, order: col.order};
             if (this.colLines){
                 switch (col?.fix){
                     case 'right':
@@ -426,12 +426,16 @@ cells: {
     ODA({is: "oda-grid-cell-header", extends: 'oda-grid-cell-title', template:/*html*/`
         <style>
             .split{
-                /*border: 1px solid var(--content-background);*/
-                max-width: 4px;
-                min-width: 4px;
+                width: 4px;
                 @apply --content;
                 border: none;
                 background-color: transparent;
+                cursor: e-resize !important;
+                z-index: 1;
+                position: absolute; 
+                top: 0px;
+                bottom: 0px;
+                right: 0px;
             }
             .split:hover{
                 @apply --content;
@@ -490,7 +494,7 @@ cells: {
                 <oda-grid-cell-header ~for="column in col.items" :col="column" :show-filter="showFilter" ~style="{width: column.width?column.width+'px':'auto' }" :save-key="column.name ? (column.name || column.id) + column.name : ''" ref="subColumn"></oda-grid-cell-header>
             </div>
         </div>
-        <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col" style="cursor: e-resize; z-index: 1"></div>
+        <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col"></div>
     `,
         listeners: {
             async contextmenu(e){
@@ -586,8 +590,8 @@ cells: {
                     let p = this.col;
 
                     while (p) {
-                        // const w = Math.round(p.width + delta);
-                        p.width = Math.round(p.width + delta);//Math.max(w, this.minWidth);
+                        const w = Math.round(p.width + delta);
+                        p.width = Math.max(w, this.iconSize);
                         p = p.$parent;
                     }
                     let col = this.col;
@@ -595,19 +599,6 @@ cells: {
                         col.items.last.width  = Math.round(col.items.last.width + delta);
                         col = col.items.last;
                     }
-                    // const setChildrenWidth = (col, delta) => {
-                    //     col.items.last.width  = Math.round(col.items.last.width + delta);
-                    //
-                    //     if (col.items?.length) {
-                    //         const d = Math.round((delta || 0) / col.items.length);
-                    //         col.items.forEach(i => {
-                    //             const w = i.width + d;
-                    //             i.width = Math.max(getMinWidth(i), w);
-                    //             setChildrenWidth(i, d);
-                    //         });
-                    //     }
-                    // };
-                    // setChildrenWidth(this.col.items?.last, delta);
                 } break;
                 case 'end': {
                     let col = this.col;
@@ -698,6 +689,7 @@ cells: {
                     align-items: center;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    box-sizing: border-box;
                 }
                 :host *{
                     text-overflow: ellipsis;
