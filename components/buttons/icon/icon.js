@@ -47,7 +47,7 @@ ODA({ is: 'oda-icon', template: /*html*/`
         return this._obj?.body || this._def?.body;
     },
     get _rotate(){
-        return this._obj?.rotate;
+        return this._obj?.rotate || 0;
     },
     get _obj(){
         if (this.icon){
