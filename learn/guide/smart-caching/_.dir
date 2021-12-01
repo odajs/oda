@@ -1,0 +1,22 @@
+[
+    {
+        "name": "introduction.md",
+        "label": "Основные принципы",
+        "status": "edit"
+   },
+    {
+        "name": "no-influence.md",
+        "label": "Что не влияет не кэширование",
+        "status": "edit"
+   },
+    {
+        "name": "getter-caching.md",
+        "label": "Кэширование гетеров",
+        "status": "edit"
+   },
+    {
+        "name": "brief.md",
+        "label": "Краткое повторение",
+        "status": "edit"
+   }
+]
