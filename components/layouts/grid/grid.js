@@ -427,10 +427,14 @@ cells: {
         <style>
             .split{
                 /*border: 1px solid var(--content-background);*/
-                max-width: 1px;
-                min-width: 1px;
+                max-width: 4px;
+                min-width: 4px;
                 @apply --content;
                 border: none;
+                background-color: transparent;
+            }
+            .split:hover{
+                @apply --content;
             }
             :host(:hover)>oda-icon{
                 opacity: 1;
