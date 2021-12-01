@@ -13,78 +13,79 @@ ODA({is:'oda-number-input',
         <input @input="_input" :value="inputValue">
         <input disabled :value="displayValue">
     `,
-    _input(e){
+    async _input (e) {
         const char = e.data;
         const size = e.target.value.length;
         const start = e.target.selectionStart;
         const end = e.target.selectionEnd;
+        try {
+            (new Function([], `with (this) {return ${this.value}}`));
+        }
+        catch (e) {
+
+        }
         switch (e.inputType){
-            case 'insertText':{
-                if (suffixes.has(char)){
-                    if(size === start && start === end && e.target.value.indexOf(char) === end-1)
-                        this.suffix = char;
-                }
-                else{
-                    this.suffix = '';
-                }
+            case 'insertText': {
+                this.stack.splice(start-1, 0, char);
             } break;
-            case 'insertFromPaste':{
-
+            case 'insertFromPaste': {
+                const clip = await navigator.clipboard.readText().then(text => text.split('')); // get an array of inserted elements
+                clip.forEach((el, i) => { // insert the copied elements into the array
+                    this.stack.splice(start-1+i, 0, el);
+                })
             } break;
-            case 'deleteContentBackward':{
-
+            case 'deleteContentBackward': {
+                this.stack.splice(end, 1);
             } break;
         }
-
-        const value = Number.parseFloat(eval(e.target.value || 0));
-        if (Number.isNaN(value))
-            return;
-        this.value = value;
+        this.value = undefined;
     },
-    suffix: '',
-    props:{
+    stack: [],
+    props: {
         thousandsSeparator: ' ',
         decimalSeparator: '.',
         locale: 'RU',
-        value: {
-            default: 5.5465634687695,
-            label: 'Значение'
+        format: {
+            default: 'decimal',
+            list: ['percent', 'currency', 'text', 'decimal', '0.00' , '0.00%', '# 0,0000'],
         },
-
-        format:{
-            default: 'percent',
-            list: ['percent', 'currency', 'text', '0.00' , '0.00%', '# 0,0000']
-        },
-        mask:{
-            get (){
+        mask: {
+            get () {
                 return formats[this.format]?.mask || '0.00';
             }
         },
-        displayFormat:{
-            get (){
+        displayFormat: {
+            get () {
                 return formats[this.format]?.format || '0.00';
             }
         },
     },
-    get inputValue(){
-        return this.value.toString()+this.suffix;
+    get value () {
+        return this.stack.join('') || 0
+    },
+    get inputValue () {
+        return this.value;
     },
     get displayValue () {
         return this.getFormattedValue();
     },
-    getFormattedValue(){
-        // const minimumIntegerDigits = this.format.match(/\d+(?<=\.)/)[0];
-        // minimumIntegerDigits !== null ? minimumIntegerDigits.length : ;
-        switch (this.format) {
-            case 'text':
-                return this.value.toString();
-            case 'percent':
-                return this.value.toLocaleString('ru-RU', { style: 'percent' });
-            case 'currency':
-                return this.value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+    getFormattedValue () {
+        if (/0/.test(this.mask)) { // check for restrictions in the mask
+            const minInt = this.mask.match(/\d+(?=\.)/)[0].length, // looking for the number of numbers to the point
+                  minFract = this.mask.match(/(?<=\.)\d+/)[0].length; // looking for the number of numbers after the dot
+            if (minInt && minFract)
+                return this.value.toLocaleString('ru-RU', {minimumIntegerDigits: minInt, minimumFractionDigits: minFract});
         }
+        switch (this.displayFormat) {
+            case '0,0':
+                return this.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); // add the digit capacity for the entered number
+            case '0.00%':
+                return this.value.toLocaleString('ru-RU', { style: 'percent' });
+            case '# #00.00$':
+                return this.value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' }).toFixed(4);
+        };
     }
-})
+});
 const formats = {
     'percent': {
         format: '0.00%', mask: '0.00%'
@@ -93,10 +94,12 @@ const formats = {
         format: '0E0', mask: '0E0'
     },
     'currency': {
-        format: '# #00.00$', mask: '00000.0000'
+        format: '# #00.00$', mask: '0.0000'
     },
     'text': {
         format: 'SSSS'
-    }
+    },
+    'decimal': {
+        format: '0,0', mask: '#,#'
+    },
 }
-const suffixes = ['.', '%', '-', 'E', 'e', '+']
