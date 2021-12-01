@@ -76,21 +76,17 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         showFilter: false,
         icon: 'odant:grid',
         icons:{
-            expanders:{
-
+            expand:{
+                collapsed: 'icons:chevron-right',
+                expanding: 'odant:spin',
+                expanded: 'icons:chevron-right:90',
             },
-            checkers:{
+            check:{
                 checked: 'icons:check-box',
                 unchecked: 'icons:check-box-outline-blank',
                 intermediate: 'icons:check-box-indeterminate',
             }
         },
-        iconChecked: 'icons:check-box',
-        iconUnchecked: 'icons:check-box-outline-blank',
-        iconCollapsed: 'icons:chevron-right',
-        iconExpanded: 'icons:chevron-right:90',
-        iconExpanding: 'odant:spin',
-        iconIntermediate: 'icons:check-box-indeterminate',
     },
     get dataSet(){
         return  []
@@ -210,6 +206,23 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
             cols.push({ order: 999, template: 'span', free: true });
         return cols;
     },
+    get cellCols(){
+        function recurse(items){
+            return items.reduce((res, a)=>{
+                if (a.$expanded){
+                    res.push(...recurse(a.items));
+                    a.items.forEach(i=>{
+                        i.$parent = a;
+                        i.order = a.order;
+                    });
+                }
+                else
+                    res.push(a);
+                return res;
+            }, []);
+        }
+        return recurse(this.cols);
+    },
     _beforeExpand(row) {
         return row.items;
     },
@@ -305,7 +318,6 @@ ODA({is: 'oda-grid-body',
 
 
 rows:{
-
     ODA({is: 'oda-grid-row',
         template: `
         <style>
@@ -322,10 +334,10 @@ rows:{
                 text-overflow: ellipsis;
             }
         </style>
-        <span class="flex" ~for="col in cols" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
+        <span class="flex" ~for="col in columns" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
     `,
-        props:{
-
+        get columns(){
+            return this.cellCols;
         },
         row: {},
         getTemplate(col) {
@@ -379,8 +391,11 @@ rows:{
         getTemplate(col) {
             return this.templates.header;
         },
+        get columns(){
+            return  this.cols;
+        },
     })
-    ODA({is: 'oda-grid-footer', extends: 'oda-grid-header',
+    ODA({is: 'oda-grid-footer', extends: 'oda-grid-row',
         getTemplate(col) {
             return this.templates.footer;
         },
@@ -405,171 +420,7 @@ cells: {
                 @apply --dark;
                 flex-direction: {{col.fix === 'right'?'row-reverse':'row'}};
             }
-    `,
-        props: {
-            showSort() {
-                return this.allowSort && !this.col$expanded && (!this.col.$parent || this.col.$parent.$expanded);
-            },
-            showFilter: false,
-            filter: {
-                type: String,
-                set(val) {
-                    this.col.$filter = val || null;
-                }
-            },
-            sortIcon() {
-                const sort = this.col.$sort;
-                return sort === 1 ? 'icons:arrow-drop-down' : sort === -1 ? 'icons:arrow-drop-up' : '';
-            },
-            sortIndex() {
-                return (this.sorts?.filter(s => !s.hidden).indexOf(this.col) + 1) || '';
-            },
-            minWidth(){
-                let width = 15;
-                if (this.col.$expanded && this.$refs.subColumn?.length){
-                    width = this.$refs.subColumn.reduce((res, c) => {
-                        res += Math.max(c.minWidth || 15, 15);
-                        return res;
-                    }, 0);
-                }else if(this.col.items?.length){
-                    width = getWidth(this.col);
-                }
-                return width;
-            },
-        },
-        // updated() {
-        //     if (this.table && this.grid.set && this.col.$parent) {
-        //         this.grid.set(this.col, 'width', Math.round(this.offsetWidth));
-        //     }
-        // },
-        listeners: {
-            contextmenu: '_menu',
-            resize(e){
-                if (this.col)
-                    this.col.width = this.col.width || this.offsetWidth;
-            }
-        },
-        _dragstart(e) {
-            this.grid._draggableColumn = this.col;
-        },
-        _dragend(e) {
-            this.grid._draggableColumn = null;
-        },
-        _dragover(e) {
-            if (this.grid._draggableColumn && this.grid._draggableColumn !== this.col) {
-                e.preventDefault();
-            }
-        },
-        _drop(e) {
-            this.grid._swapColumns(this.grid._draggableColumn, this.col);
-            this.grid._draggableColumn = null;
-        },
-        _track(e, d) {
-            switch (e.detail.state) {
-                case 'start': {
-                    this.col.width = Math.round(this.offsetWidth);
-                } break;
-                case 'track': {
-                    const delta = e.detail.ddx * (this.col.fix === 'right' ? -1 : 1);
-                    const clientRect = this.getClientRects()[0];
-                    if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.col.fix !== 'right') return;
-                    let p = this.col;
-
-                    while (p) {
-                        const w = Math.round(p.width + delta);
-                        p.width = Math.max(w, this.minWidth);
-                        p = p.$parent;
-                    }
-                    const setChildrenWidth = (col, delta) => {
-                        if (col.items?.length) {
-                            const d = Math.round((delta || 0) / col.items.length);
-                            col.items.forEach(i => {
-                                const w = i.width + d;
-                                i.width = Math.max(getMinWidth(i), w);
-                                setChildrenWidth(i, d);
-                            });
-                        }
-                    };
-                    setChildrenWidth(this.col, delta);
-                } break;
-                case 'end': {
-                    let col = this.col;
-                    const writeChildren = col => {
-                        col.items?.forEach(c => {
-                            // this.grid.__write(this.grid.settingsId + '/col/' + c.id + '/width', c.width);
-                            writeChildren(c);
-                        });
-                    };
-                    writeChildren(col);
-                    while (col) {
-                        // this.grid.__write(this.grid.settingsId + '/col/' + col.id + '/width', col.width);
-                        col = col.$parent;
-                    }
-                } break;
-            }
-        },
-        async _menu(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const menu = [
-                {
-                    label: this.grid.groups.includes(this.col) ? 'Ungrouping' : 'Grouping' + ' by this column',
-                    icon: 'icons:open-in-browser',
-                    execute: () => {
-                        if (this.grid.groups.includes(this.col))
-                            this.grid.groups.remove(this.col);
-                        else
-                            this.grid.groups.add(this.col);
-                    }
-                },
-                {
-                    label: 'Hide this column',
-                    icon: 'icons:visibility-off',
-                    execute: () => {
-                        this.col.hidden = !this.col.hidden;
-                        // this.grid.__write(this.grid.settingsId + '/column/' + this.column.name + '/hidden', this.column.hidden);
-                    }
-                },
-                {
-                    label: (this.grid.showGroupingPanel ? 'Hide' : 'Show') + ' grouping panel',
-                    icon: 'icons:credit-card',
-                    group: 'more', execute: () => {
-                        this.grid.showGroupingPanel = !this.grid.showGroupingPanel;
-                    }
-                },
-                {
-                    label: (this.grid.showFilter ? 'Hide' : 'Show') + ' filter row',
-                    icon: 'icons:filter',
-                    execute: () => {
-                        this.grid.showFilter = !this.grid.showFilter;
-                    }
-                }
-            ];
-            const res = await ODA.showDropdown('oda-menu', { parent: this, iconSize: this.iconSize, items: menu, title: 'Column menu', allowClose: true });
-            res?.focusedItem.execute();
-        },
-        _sort(e) {
-            e.stopPropagation();
-            if (this.allowSort) {
-                const sort = this.col.$sort;
-                this.col.$sort = sort === 1 ? -1 : sort === -1 ? 0 : 1;
-            }
-        },
-        async showDD(e) {
-            const dataSet = this.items.reduce((res, i) => {
-                const value = i[this.row.name];
-                if (value) {
-                    res.add(i);
-                }
-                return res;
-            }, []);
-            const list = await ODA.createComponent('oda-grid', { columns: [this.row], dataSet });
-            this.async(() => {
-                list.focus();
-            }, 300);
-            const res = await ODA.showDropdown(list, {}, { parent: this });
-            console.log(res);
-        }
+        `
     });
 
     ODA({is: "oda-grid-cell-header", extends: 'oda-grid-cell-title', template:/*html*/`
@@ -635,8 +486,176 @@ cells: {
                 <oda-grid-cell-header ~for="column in col.items" :col="column" :show-filter="showFilter" ~style="{width: column.width?column.width+'px':'auto' }" :save-key="column.name ? (column.name || column.id) + column.name : ''" ref="subColumn"></oda-grid-cell-header>
             </div>
         </div>
-        <div class="split" @tap.stop @track="_track" ~if="!col?.free && domHost.col?.items?.last !== col" style="cursor: e-resize;"></div>
+        <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col" style="cursor: e-resize; z-index: 1"></div>
     `,
+        listeners: {
+            async contextmenu(e){
+                e.preventDefault();
+                e.stopPropagation();
+                const menu = [
+                    {
+                        label: this.grid.groups.includes(this.col) ? 'Ungrouping' : 'Grouping' + ' by this column',
+                        icon: 'icons:open-in-browser',
+                        execute: () => {
+                            if (this.grid.groups.includes(this.col))
+                                this.grid.groups.remove(this.col);
+                            else
+                                this.grid.groups.add(this.col);
+                        }
+                    },
+                    {
+                        label: 'Hide this column',
+                        icon: 'icons:visibility-off',
+                        execute: () => {
+                            this.col.hidden = !this.col.hidden;
+                            // this.grid.__write(this.grid.settingsId + '/column/' + this.column.name + '/hidden', this.column.hidden);
+                        }
+                    },
+                    {
+                        label: (this.grid.showGroupingPanel ? 'Hide' : 'Show') + ' grouping panel',
+                        icon: 'icons:credit-card',
+                        group: 'more', execute: () => {
+                            this.grid.showGroupingPanel = !this.grid.showGroupingPanel;
+                        }
+                    },
+                    {
+                        label: (this.grid.showFilter ? 'Hide' : 'Show') + ' filter row',
+                        icon: 'icons:filter',
+                        execute: () => {
+                            this.grid.showFilter = !this.grid.showFilter;
+                        }
+                    }
+                ];
+                const res = await ODA.showDropdown('oda-menu', { parent: this, iconSize: this.iconSize, items: menu, title: 'Column menu', allowClose: true });
+                res?.focusedItem.execute();
+            },
+            resize(e){
+                if (this.col)
+                    this.col.width = this.col.width || this.offsetWidth;
+            }
+        },
+        props:{
+            showFilter: false,
+            filter: {
+                type: String,
+                set(val) {
+                    this.col.$filter = val || null;
+                }
+            }
+        },
+        get showSort() {
+            return this.allowSort && !this.col?.$expanded && (!this.col.$parent || this.col.$parent.$expanded);
+        },
+        get sortIcon() {
+            const sort = this.col.$sort;
+            return sort === 1 ? 'icons:arrow-drop-down' : sort === -1 ? 'icons:arrow-drop-up' : '';
+        },
+        get sortIndex() {
+            return (this.sorts?.filter(s => !s.hidden).indexOf(this.col) + 1) || '';
+        },
+
+        _dragstart(e) {
+            this.grid._draggableColumn = this.col;
+        },
+        _dragend(e) {
+            this.grid._draggableColumn = null;
+        },
+        _dragover(e) {
+            if (this.grid._draggableColumn && this.grid._draggableColumn !== this.col) {
+                e.preventDefault();
+            }
+        },
+        _drop(e) {
+            this.grid._swapColumns(this.grid._draggableColumn, this.col);
+            this.grid._draggableColumn = null;
+        },
+        track(e, d) {
+            switch (e.detail.state) {
+                case 'start': {
+                    this.col.width = Math.round(this.offsetWidth);
+                } break;
+                case 'track': {
+                    const delta = e.detail.ddx * (this.col.fix === 'right' ? -1 : 1);
+                    const clientRect = this.getClientRects()[0];
+                    if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.col.fix !== 'right')
+                        return;
+                    let p = this.col;
+
+                    while (p) {
+                        // const w = Math.round(p.width + delta);
+                        p.width = Math.round(p.width + delta);//Math.max(w, this.minWidth);
+                        p = p.$parent;
+                    }
+                    let col = this.col;
+                    while(col?.$expanded){
+                        col.items.last.width  = Math.round(col.items.last.width + delta);
+                        col = col.items.last;
+                    }
+                    // const setChildrenWidth = (col, delta) => {
+                    //     col.items.last.width  = Math.round(col.items.last.width + delta);
+                    //
+                    //     if (col.items?.length) {
+                    //         const d = Math.round((delta || 0) / col.items.length);
+                    //         col.items.forEach(i => {
+                    //             const w = i.width + d;
+                    //             i.width = Math.max(getMinWidth(i), w);
+                    //             setChildrenWidth(i, d);
+                    //         });
+                    //     }
+                    // };
+                    // setChildrenWidth(this.col.items?.last, delta);
+                } break;
+                case 'end': {
+                    let col = this.col;
+                    const writeChildren = col => {
+                        col.items?.forEach(c => {
+                            // this.grid.__write(this.grid.settingsId + '/col/' + c.id + '/width', c.width);
+                            writeChildren(c);
+                        });
+                    };
+                    writeChildren(col);
+                    while (col) {
+                        // this.grid.__write(this.grid.settingsId + '/col/' + col.id + '/width', col.width);
+                        col = col.$parent;
+                    }
+                } break;
+            }
+        },
+        _sort(e) {
+            e.stopPropagation();
+            if (this.allowSort) {
+                const sort = this.col.$sort;
+                this.col.$sort = sort === 1 ? -1 : sort === -1 ? 0 : 1;
+            }
+        },
+        async showDD(e) {
+            const dataSet = this.items.reduce((res, i) => {
+                const value = i[this.row.name];
+                if (value) {
+                    res.add(i);
+                }
+                return res;
+            }, []);
+            const list = await ODA.createComponent('oda-grid', { columns: [this.row], dataSet });
+            this.async(() => {
+                list.focus();
+            }, 300);
+            const res = await ODA.showDropdown(list, {}, { parent: this });
+            console.log(res);
+        },
+        //todo убрать это говно
+        get minWidth(){
+            let width = 15;
+            if (this.col.$expanded && this.$refs.subColumn?.length){
+                width = this.$refs.subColumn.reduce((res, c) => {
+                    res += Math.max(c.minWidth || 15, 15);
+                    return res;
+                }, 0);
+            }else if(this.col.items?.length){
+                width = getWidth(this.col);
+            }
+            return width;
+        },
     });
 
     ODA({is: "oda-grid-cell-footer", extends: 'oda-grid-cell-title', template:/*html*/`
@@ -693,16 +712,14 @@ cells: {
             if (!this.row || this.row.hideExpander || !this.row.items?.length && !this.row.$hasChildren)
                 return '';
             if (this.row.$loading)
-                return this.iconExpanding;
+                return this.icons.expand.expanding;
             if (this.row.$expanded)
-                return this.iconExpanded;
-            return this.iconCollapsed;
+                return this.icons.expand.expanded;
+            return this.icons.expand.collapsed;
         },
         _toggleExpand(e, d) {
-            if (!this.row.hideExpander) {
-                this.row.$expanded = !this.row.$expanded;
-                // this.fire('expanded-changed', this.row.$expanded);
-            }
+            if (this.row?.hideExpander) return;
+            this.row.$expanded = !this.row.$expanded;
         },
         row:null
     });
