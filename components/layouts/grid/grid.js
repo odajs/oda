@@ -435,7 +435,6 @@ cells: {
                 position: absolute; 
                 top: 0px;
                 bottom: 0px;
-                right: 0px;
             }
             .split:hover{
                 @apply --content;
@@ -494,8 +493,14 @@ cells: {
                 <oda-grid-cell-header ~for="column in col.items" :col="column" :show-filter="showFilter" ~style="{width: column.width?column.width+'px':'auto' }" :save-key="column.name ? (column.name || column.id) + column.name : ''" ref="subColumn"></oda-grid-cell-header>
             </div>
         </div>
-        <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col"></div>
+        <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col" ~style="splitStyle"></div>
     `,
+        get splitStyle(){
+            if(this.col?.fix === 'right')
+                return {left: '0px', right: 'auto'};
+            return {right: '0px', left: 'auto'};
+
+        },
         listeners: {
             async contextmenu(e){
                 e.preventDefault();
@@ -586,6 +591,8 @@ cells: {
                     const delta = e.detail.ddx * (this.col.fix === 'right' ? -1 : 1);
                     const clientRect = this.getClientRects()[0];
                     if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.col.fix !== 'right')
+                        return;
+                    if ((this.col.width + delta) < this.iconSize * 2)
                         return;
                     let p = this.col;
 
