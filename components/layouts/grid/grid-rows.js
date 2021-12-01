@@ -6,9 +6,12 @@ ODA({is: 'oda-grid-row', imports: './grid-cells.js',
                 position: sticky;
                 position: -webkit-sticky;
                 justify-content: start;
+                top: -30px;
             }
             :host>*{
                 box-sizing: border-box; 
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         </style>
         <span class="flex" ~for="col in cols" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>

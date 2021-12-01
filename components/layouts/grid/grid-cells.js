@@ -16,13 +16,10 @@ ODA({is: "oda-grid-cell-header", extends: 'oda-grid-cell-base', template: /*html
             .split{
                 cursor: col-resize !important;
                 border: 2px solid transparent;
-                transition: border-color .5s;
+                transition: border-color .2s;
             }
             .split:hover{
                 border-color: silver;
-            }
-            oda-icon, oda-grid-cell-and {
-                opacity: .5;
             }
             :host(:hover)>oda-icon{
                 opacity: 1;
@@ -285,15 +282,10 @@ cells: {
                     align-items: center;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    min-height: 1px;
-                    min-width: 1px;
                 }
                 :host *{
                     text-overflow: ellipsis;
                     position: relative;
-                }
-                .expander{
-                    cursor: pointer;
                 }
             </style>
         `,
@@ -302,13 +294,10 @@ cells: {
     });
     ODA({is: 'oda-grid-cell-expand', extends: "oda-grid-cell-base",
         template:/*html*/`
-            <oda-icon ~if="row?.$level !== -1" :icon :disabled="hideIcon" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
+            <oda-icon ~if="row?.$level !== -1" :icon :disabled="!icon" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent></oda-icon>
         `,
-        get hideIcon() {
-            return this.row?.hideExpander || (!this.row?.items?.length && !this.row?.$hasChildren);
-        },
         get icon() {
-            if (!this.row || this.hideIcon)
+            if (!this.row || this.row.hideExpander || !this.row.items?.length && !this.row.$hasChildren)
                 return '';
             if (this.row.$loading)
                 return this.iconExpanding;
@@ -321,7 +310,8 @@ cells: {
                 this.row.$expanded = !this.row.$expanded;
                 // this.fire('expanded-changed', this.row.$expanded);
             }
-        }
+        },
+        row:null
     });
 
     tree: {

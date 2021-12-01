@@ -23,7 +23,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
                 overflow: auto;
             }
         </style>
-        <oda-grid-groups ~if="showGroups" :groups></oda-grid-groups>
+        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>
         <oda-grid-body class="flex" :even-odd></oda-grid-body>
     `,
     listeners:{
@@ -32,6 +32,10 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         }
     },
     props:{
+        lines:{
+            cols: false,
+            rows: false
+        },
         iconSize: 32,
         showGroups: {
             default: false,
@@ -70,7 +74,14 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         colLines: false,
         rowLines: false,
         lazy: false,
-        showFilter: false
+        showFilter: false,
+        icon: 'odant:grid',
+        iconChecked: 'icons:check-box',
+        iconUnchecked: 'icons:check-box-outline-blank',
+        iconCollapsed: 'icons:chevron-right',
+        iconExpanded: 'icons:chevron-right:90',
+        iconExpanding: 'odant:spin',
+        iconIntermediate: 'icons:check-box-indeterminate',
     },
     get dataSet(){
         return  []
@@ -259,7 +270,7 @@ ODA({is: 'oda-grid-body', imports: './grid-rows.js',
         <oda-grid-header></oda-grid-header>
         <div class="flex vertical" style="z-index: -1;">
             <oda-grid-row ~for="row in rows" :row></oda-grid-row>
-            <oda-grid-row class="disabled" :row="{}"  ~style="{minHeight: '50px'}" ></oda-grid-row>
+            <oda-grid-row class="disabled flex" :row="{}" ~style="{minHeight: iconSize+'px'}"></oda-grid-row>
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,
