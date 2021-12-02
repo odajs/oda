@@ -23,7 +23,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
                 overflow: auto;
             }
         </style>
-<!--        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>-->
+        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>
         <oda-grid-body class="flex" :even-odd></oda-grid-body>
     `,
     listeners:{
@@ -36,10 +36,8 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     props:{
         lines:{
-            default:{
-                cols: false,
-                rows: false
-            }
+            cols: false,
+            rows: false
         },
         iconSize: 32,
         showGroups: {
@@ -72,10 +70,6 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
             tree: 'oda-grid-cell-tree',
         },
         showHeader: true,
-        lines:{
-            col: false,
-            row: false,
-        },
         lazy: false,
         showFilter: false,
         icon: 'odant:grid',
@@ -338,61 +332,29 @@ rows:{
                 text-overflow: ellipsis;
             }
         </style>
-        <div ~is="cellTemplate" ~for="col in columns" :col></div>
+        <span class="flex" ~for="col in columns" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
     `,
-        cellTemplate: 'oda-grid-cell',
         get columns(){
             return this.cellCols;
         },
         row: {},
-    })
-    ODA({is: 'oda-grid-header', extends: 'oda-grid-row',
-        get cellTemplate() {
-            return this.templates.header;
+        getTemplate(col) {
+            if (this.row.$role)
+                return this.row.template || col.template || this.templates.cell;
+            if (this.row.$group)
+                return this.templates.group;
+            if (col.treeMode)
+                return this.defaultTreeTemplate;
+            let template = col.template || this.row.template || this.templates.cell;
+            if (typeof template === 'object')
+                return template.tag || template.is || template.template;
+            return template;
         },
-        get columns(){
-            return  this.cols;
-        }
-    })
-    ODA({is: 'oda-grid-footer', extends: 'oda-grid-row',
-        get cellTemplate() {
-            return this.templates.footer;
-        },
-    })
-}
-
-
-
-cells: {
-    ODA({is: "oda-grid-cell-base",
-        template:/*html*/`
-            <style>
-                :host{
-                    /*@apply --flex;*/
-                    @apply --horizontal;
-                    align-items: center;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    box-sizing: border-box;
-                    position: relative;
-                    position: sticky;
-                    {{style || ''}}
-                }
-                :host *{
-                    text-overflow: ellipsis;
-                    position: relative;
-                }
-            </style>
-        `,
-        get style(){
-            const col = this.col;
-            const row = this.row;
-            if(!col || !row) return;
-
-            const width = col.width?(col.width + 'px'):'auto';
+        getStyle(col) {
+            const width = col.width + 'px'
             const style = {width, "min-width": width, order: col.order};
             if (this.lines.col){
-                switch (col.fix){
+                switch (col?.fix){
                     case 'right':
                         style['border-left'] = '1px solid var(--dark-background)';
                         break;
@@ -400,10 +362,11 @@ cells: {
                         style['border-right'] = '1px solid var(--dark-background)';
 
                 }
+
             }
             if (this.lines.row)
                 style['border-bottom'] = '1px solid var(--dark-background)';
-            if(col.fix){
+            if(col?.fix){
                 style['background-color'] = 'var(--header-background)';
                 style.right = '0px';
                 style.left = (col.left || 0)+'px';
@@ -415,32 +378,31 @@ cells: {
                 style['z-index'] = -1;
                 if (!this.autoWidth && !col.free)
                     style['max-width'] = style.width;
+
             }
-            return Object.keys(style).map(i=>{
-                return i+': '+style[i];
-            }).join(';');
-        },
-        get cellTemplate() {
-            if (this.row?.$role)
-                return this.row?.template || this.col?.template || this.templates.cell;
-            if (this.row?.$group)
-                return this.templates.group;
-            if (this.col?.treeMode)
-                return this.defaultTreeTemplate;
-            let template = this.col?.template || this.row?.template || this.templates.cell;
-            if (typeof template === 'object')
-                return template.tag || template.is || template.template;
-            return template;
-        },
-        col: null
+            style.position = 'sticky';
 
-    });
-    ODA({is: "oda-grid-cell", extends: 'oda-grid-cell-base',
-        template:/*html*/`
-            <span class="flex" ~is="cellTemplate">{{row?.[col?.name]}}</span>
-        `,
+            return style;
+        }
+    })
+    ODA({is: 'oda-grid-header', extends: 'oda-grid-row',
+        getTemplate(col) {
+            return this.templates.header;
+        },
+        get columns(){
+            return  this.cols;
+        },
+    })
+    ODA({is: 'oda-grid-footer', extends: 'oda-grid-row',
+        getTemplate(col) {
+            return this.templates.footer;
+        },
+    })
+}
 
-    });
+
+
+cells: {
     ODA({is: "oda-grid-cell-title", extends: 'oda-grid-cell-base', template: /*html*/`
         <style>
             :host{
@@ -468,7 +430,7 @@ cells: {
                 background-color: transparent;
                 cursor: e-resize !important;
                 z-index: 1;
-                position: absolute !important; 
+                position: absolute; 
                 top: 0px;
                 bottom: 0px;
             }
@@ -621,16 +583,16 @@ cells: {
         track(e, d) {
             switch (e.detail.state) {
                 case 'start': {
-                    e.detail.target.style.backgroundColor = "var(--content-background)";
                     this.col.width = Math.round(this.offsetWidth);
+                    e.detail.target.style.backgroundColor = 'var(--success-color)';
                 } break;
                 case 'track': {
                     const delta = e.detail.ddx * (this.col.fix === 'right' ? -1 : 1);
                     const clientRect = this.getClientRects()[0];
                     if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.col.fix !== 'right')
                         return;
-                    const nw = this.col.width + delta;
-                    if (nw < this.col.width && nw < this.iconSize)
+                    const w = this.col.width + delta;
+                    if (w < this.iconSize && w<this.col.width)
                         return;
                     let p = this.col;
 
@@ -672,6 +634,19 @@ cells: {
             const res = await ODA.showDropdown(list, {}, { parent: this });
             console.log(res);
         },
+        //todo убрать это говно
+        get minWidth(){
+            let width = 15;
+            if (this.col.$expanded && this.$refs.subColumn?.length){
+                width = this.$refs.subColumn.reduce((res, c) => {
+                    res += Math.max(c.minWidth || 15, 15);
+                    return res;
+                }, 0);
+            }else if(this.col.items?.length){
+                width = getWidth(this.col);
+            }
+            return width;
+        },
     });
 
     ODA({is: "oda-grid-cell-footer", extends: 'oda-grid-cell-title', template:/*html*/`
@@ -684,6 +659,42 @@ cells: {
         </style>
         <span class="label flex" :text="col.label || col.name">/span>
 `
+    });
+
+    function getMinWidth(col) {
+        if (col.items?.length) {
+            return col.items.reduce((res, c) => res + Math.max(getMinWidth(c) || 0, 15), 0);
+        } else {
+            return 15;
+        }
+    }
+    function getWidth(col){
+        if (col.items?.length) {
+            return col.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
+        } else {
+            return Math.max(col.width, 15);
+        }
+    }
+
+
+    ODA({is: "oda-grid-cell-base",
+        template:/*html*/`
+            <style>
+                :host{
+                    @apply --horizontal;
+                    align-items: center;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    box-sizing: border-box;
+                }
+                :host *{
+                    text-overflow: ellipsis;
+                    position: relative;
+                }
+            </style>
+        `,
+        col: null
+
     });
     ODA({is: 'oda-grid-cell-expand', extends: "oda-grid-cell-base",
         template:/*html*/`
@@ -866,4 +877,6 @@ cells: {
             this.grid.setScreenExpanded?.(this.item);
         }
     });
+
+
 }
