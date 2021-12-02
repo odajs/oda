@@ -375,6 +375,8 @@ cells: {
                     text-overflow: ellipsis;
                     box-sizing: border-box;
                     position: relative;
+                    position: sticky;
+                    {{style || ''}}
                 }
                 :host *{
                     text-overflow: ellipsis;
@@ -382,25 +384,12 @@ cells: {
                 }
             </style>
         `,
-        col: null
-
-    });
-    ODA({is: "oda-grid-cell",
-        template:/*html*/`
-            <style>
-                :host{
-                    position: sticky;
-                    {{style || ''}}
-                }
-            </style>
-            <span class="flex" ~is="cellTemplate">{{row?.[col?.name]}}</span>
-        `,
         get style(){
             const col = this.col;
             const row = this.row;
             if(!col || !row) return;
 
-            const width = (col.width || 100) + 'px';
+            const width = col.width?(col.width + 'px'):'auto';
             const style = {width, "min-width": width, order: col.order};
             if (this.lines.col){
                 switch (col.fix){
@@ -443,6 +432,14 @@ cells: {
                 return template.tag || template.is || template.template;
             return template;
         },
+        col: null
+
+    });
+    ODA({is: "oda-grid-cell", extends: 'oda-grid-cell-base',
+        template:/*html*/`
+            <span class="flex" ~is="cellTemplate">{{row?.[col?.name]}}</span>
+        `,
+
     });
     ODA({is: "oda-grid-cell-title", extends: 'oda-grid-cell-base', template: /*html*/`
         <style>
@@ -471,7 +468,7 @@ cells: {
                 background-color: transparent;
                 cursor: e-resize !important;
                 z-index: 1;
-                position: absolute; 
+                position: absolute !important; 
                 top: 0px;
                 bottom: 0px;
             }
@@ -675,19 +672,6 @@ cells: {
             const res = await ODA.showDropdown(list, {}, { parent: this });
             console.log(res);
         },
-        //todo убрать это говно
-        get minWidth(){
-            let width = 15;
-            if (this.col.$expanded && this.$refs.subColumn?.length){
-                width = this.$refs.subColumn.reduce((res, c) => {
-                    res += Math.max(c.minWidth || 15, 15);
-                    return res;
-                }, 0);
-            }else if(this.col.items?.length){
-                width = getWidth(this.col);
-            }
-            return width;
-        },
     });
 
     ODA({is: "oda-grid-cell-footer", extends: 'oda-grid-cell-title', template:/*html*/`
@@ -701,25 +685,6 @@ cells: {
         <span class="label flex" :text="col.label || col.name">/span>
 `
     });
-
-    function getMinWidth(col) {
-        if (col.items?.length) {
-            return col.items.reduce((res, c) => res + Math.max(getMinWidth(c) || 0, 15), 0);
-        } else {
-            return 15;
-        }
-    }
-    function getWidth(col){
-        if (col.items?.length) {
-            return col.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
-        } else {
-            return Math.max(col.width, 15);
-        }
-    }
-
-
-
-
     ODA({is: 'oda-grid-cell-expand', extends: "oda-grid-cell-base",
         template:/*html*/`
             <oda-icon ~if="row?.$level !== -1" :icon :disabled="!icon" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent></oda-icon>
