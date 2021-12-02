@@ -22,8 +22,10 @@ const statuses = [
 
 function clone(obj) {
     const res = Object.assign({}, obj);
-    console
-    //res.hideExpander = true;
+    
+    res.hideExpander = true;
+    res.$expanded=true
+    
     res.items = Object.assign([], res.items).map(i => clone(i));
     return res;
 }
@@ -54,15 +56,15 @@ const actions = {
     }
 };
 let prev = {};
-async function loadDir(root, path = ''){
+async function loadDir(root, path = '') {
     if (!root.items) {
         const url = ODA.rootPath.replace('/oda', '/' + (path || 'oda')),
             filename = url + (root.path || (root.$id ? ('/' + root.$id) : '')) + '/_.dir';
-        try{
+        try {
             const dirs = await ODA.loadJSON(filename);
-            let items = dirs.map(i=>{
+            let items = dirs.map(i => {
                 i.$parent = i.$parent || root;
-                i.$id = (root.$id?(root.$id + '/'):'') + i.name;
+                i.$id = (root.$id ? (root.$id + '/') : '') + i.name;
                 i.status = statuses.find(s => s.id === (i.status)) || statuses[0];
                 i.$expanded = true;
                 prev.next = i;
@@ -78,7 +80,9 @@ async function loadDir(root, path = ''){
     return root;
 }
 
-site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layout, @oda/tree',
+site: {
+    ODA({
+        is: 'oda-site', extends: 'oda-app-layout', imports: '@oda/app-layout, @oda/tree',
         hostAttributes: {
             'right.icon': 'icons:warning',
             'left.splitter.hidden': true
@@ -108,15 +112,15 @@ site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layou
         `,
         props: {
             modalwin: {
-                is:false,
-                url:""
+                is: false,
+                url: ""
             },
             left: { splitter: 'hidden' },
             src: '',
             _editMode: {
                 default: false,
                 shared: true,
-                set(x) {this.$refs.iframe.contentDocument._editMode = x}
+                set(x) { this.$refs.iframe.contentDocument._editMode = x }
             },
             hash: {
                 type: String,
@@ -135,8 +139,8 @@ site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layou
 
                     //console.log((params && params[2] && params[2].length)===1);
                     if (params[2] && params[2].length) {
-                        this.modalwin.url=params[2];
-                        this.modalwin.is=true;
+                        this.modalwin.url = params[2];
+                        this.modalwin.is = true;
                         console.log(ODA.rootPath);
                     };
                     //this.part = this.items.find(i=>i.name===steps[0]);
@@ -266,7 +270,8 @@ site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layou
 }
 
 content: {
-    ODA({is: 'oda-site-content-tree', extends: 'oda-tree', imports: ['@oda/tree'],
+    ODA({
+        is: 'oda-site-content-tree', extends: 'oda-tree', imports: ['@oda/tree'],
         props: {
             defaultTemplate: 'oda-site-content-cell',
             iconExpanded: 'icons:remove',
@@ -289,7 +294,8 @@ content: {
         },
         _tap(i) { route(i); }
     });
-    ODA({is: 'oda-site-content-cell', extends: 'oda-table-cell-base',  imports: ['@oda/table'],
+    ODA({
+        is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: ['@oda/table'],
         template: `
             <style>
                 :host * {
@@ -348,7 +354,8 @@ content: {
 
 
 
-    ODA({is: 'oda-nav-btn', extends: 'oda-button', imports:['@oda/button'],
+    ODA({
+        is: 'oda-nav-btn', extends: 'oda-button', imports: ['@oda/button'],
         template: `
             <style>
                 :host {
@@ -391,7 +398,8 @@ content: {
     });
 }
 navigator: {
-    ODA({is: 'oda-site-nav-tree', extends: 'oda-tree', imports: ['@oda/tree'],
+    ODA({
+        is: 'oda-site-nav-tree', extends: 'oda-tree', imports: ['@oda/tree'],
         template: `
             <style>
                 :host, :host *{
@@ -434,12 +442,13 @@ navigator: {
             //     // });
             // }
             function _byFocusedRow(focusedRow) {
-                    this.selectItem(focusedRow);
-                    this.scrollToItem(focusedRow);
+                this.selectItem(focusedRow);
+                this.scrollToItem(focusedRow);
             }
         ]
     });
-    ODA({is: 'oda-status-cell', extends: 'oda-table-cell', imports: '@oda/table',
+    ODA({
+        is: 'oda-status-cell', extends: 'oda-table-cell', imports: '@oda/table',
         template: `
         <style>
             :host{
@@ -481,7 +490,8 @@ navigator: {
             });
         }
     });
-    ODA({is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: ['@oda/table'],
+    ODA({
+        is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: ['@oda/table'],
         template: `
         <style>
             :host{
@@ -513,7 +523,8 @@ navigator: {
     })
 }
 header: {
-    ODA({is: 'oda-site-header',
+    ODA({
+        is: 'oda-site-header',
         template: `
         <style>
             :host{
@@ -575,7 +586,8 @@ header: {
             route(i);
         }
     });
-    ODA({is: 'oda-site-header-item',
+    ODA({
+        is: 'oda-site-header-item',
         template: `
             <style>
                 :host{
@@ -615,109 +627,112 @@ header: {
         }
     });
 
-    ODA({ is: 'oda-site-search',
-    template:  `<div  style="display:flex"> <input :show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
+    ODA({
+        is: 'oda-site-search',
+        template: `<div  style="display:flex"> <input :show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
                 <input class="flex" :if="chaosMode"  placeholder=" бездна наблюдает" type="search" @change="chaossee">
                 <oda-icon icon="icons:search" icon-size=32 class="noflex" :stroke="chaosMode?'#ff0000':'#0000'" @tap="chaosModeOff" ><oda-icon ></div>
     `,
-    props: {
-        _editMode:Boolean,
-        chaosMode:false,
-        es_url: "https://search.odajs.org",
-        //es_url: "http://localhost:9200",
-    },
-    chaosModeOff() { this.chaosMode=false;},
-    chaosModeChange() { this.chaosMode = !this.chaosMode;},
-    keyBindings: { 'Alt+Ctrl+Shift': 'chaosModeChange' },
-    async search(e) {
-        window.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 27 }));
-        let query = {
-            "_source": ["url", "label"],
-            "size":20,
-            "query": {
-                "multi_match": {
-                    "query": e.currentTarget.value ,
-                    "fields": ["label^3", "content"],
-                    "fuzziness": "AUTO"
+        props: {
+            _editMode: Boolean,
+            chaosMode: false,
+            es_url: "https://search.odajs.org",
+            //es_url: "http://localhost:9200",
+        },
+        chaosModeOff() { this.chaosMode = false; },
+        chaosModeChange() { this.chaosMode = !this.chaosMode; },
+        keyBindings: { 'Alt+Ctrl+Shift': 'chaosModeChange' },
+        async search(e) {
+            window.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 27 }));
+            let query = {
+                "_source": ["url", "label"],
+                "size": 20,
+                "query": {
+                    "multi_match": {
+                        "query": e.currentTarget.value,
+                        "fields": ["label^3", "content"],
+                        "fuzziness": "AUTO"
+                    }
                 }
-            }
-        };
+            };
 
-        let queryRow = await fetch( this.es_url + "/ind-learn/_search?pretty", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(query)
-        });
-        const queryResult = (await queryRow.json()).hits.hits.map(o => (
-            {"label":o._source.label, "$id":o._source.url, "score":o._score, "icon": (o._id [0]==='c') ? "odant:module" : "editor:format-align-left"}));
+            let queryRow = await fetch(this.es_url + "/ind-learn/_search?pretty", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(query)
+            });
+            const queryResult = (await queryRow.json()).hits.hits.map(o => (
+                { "label": o._source.label, "$id": o._source.url, "score": o._score, "icon": (o._id[0] === 'c') ? "odant:module" : "editor:format-align-left" }));
 
-        await ODA.showDropdown('oda-seach-result', {dataSet:queryResult  }, { parent: this });
+            await ODA.showDropdown('oda-seach-result', { dataSet: queryResult }, { parent: this });
 
-    },
-    async chaossee(e) {
-        this._editMode = e.currentTarget.value === '~~~' || e.currentTarget.value === '###';
-        //this._iframe.contentDocument._editMode = this._editMode;
-        if (e.currentTarget.value === '???') {
-            //const path = window.location.pathname;
-            //let basePath =  path.endsWith('.html') ? path.replace(/\/\w+.html/, '') : path + '';
-            let _url = ODA.rootPath + '/learn/_info.js';
+        },
+        async chaossee(e) {
+            this._editMode = e.currentTarget.value === '~~~' || e.currentTarget.value === '###';
+            //this._iframe.contentDocument._editMode = this._editMode;
+            if (e.currentTarget.value === '???') {
+                //const path = window.location.pathname;
+                //let basePath =  path.endsWith('.html') ? path.replace(/\/\w+.html/, '') : path + '';
+                let _url = ODA.rootPath + '/learn/_info.js';
 
-            _url = await import(_url);
+                _url = await import(_url);
 
-            let indLearn = [];
-            let indCompo = [];
-            function fn (l,x,goal) {
-                goal.push({url:(l+"/"+x.name), label:x.label, content: ((x.content && x.content.abstract) ? x.content.abstract : ""), isLeaf:!x.folder});
-                if (x.folder) (x.folder.forEach(e => {fn(l+"/"+x.name,e,goal)}));
-            }
-            fn(ODA.rootPath,_url.default.folder.find(e => e.name==="learn"),indLearn);
-            fn(ODA.rootPath,_url.default.folder.find(e => e.name==="components"),indCompo);
-
-            async function fullCompoInd (o) {
-                let rezList = [{url:o.url, label:o.label, content:o.content, isLeaf:0}];
-                if (o.isLeaf) {
-                    let _url = o.url + '/$info/props/_info.js';
-                    _url = await import(_url);
-                    let infoList = [{label:"Описание", src:"./$info/description/description.md"}].concat(_url.default);
-                    infoList.forEach(e => {
-                        if (e)  rezList.push({url:o.url, label: o.label + ": " + e.label , content:o.content, isLeaf:1, cont_url: e.src});  });
+                let indLearn = [];
+                let indCompo = [];
+                function fn(l, x, goal) {
+                    goal.push({ url: (l + "/" + x.name), label: x.label, content: ((x.content && x.content.abstract) ? x.content.abstract : ""), isLeaf: !x.folder });
+                    if (x.folder) (x.folder.forEach(e => { fn(l + "/" + x.name, e, goal) }));
                 }
-                return rezList;
-            }
+                fn(ODA.rootPath, _url.default.folder.find(e => e.name === "learn"), indLearn);
+                fn(ODA.rootPath, _url.default.folder.find(e => e.name === "components"), indCompo);
 
-            async function getContent (e) {
-                if (e.isLeaf) {
-                    let uUrl = e.cont_url ? e.cont_url : e.url;
-                    let rowText = await fetch (e.url).then(function(response) {return response.text();});
-                    //console.log(rowText);
-                    e.content = rowText.replace(/['`.*+?^${}()|[\]]/g, " ").replace(/\r?\n/g, " ").replace(/ {1,}/g," ");;
-                    if (e.cont_url) e.url = e.url + '#' + e.url + e.cont_url.substr(1);
-                    delete e.cont_url;
+                async function fullCompoInd(o) {
+                    let rezList = [{ url: o.url, label: o.label, content: o.content, isLeaf: 0 }];
+                    if (o.isLeaf) {
+                        let _url = o.url + '/$info/props/_info.js';
+                        _url = await import(_url);
+                        let infoList = [{ label: "Описание", src: "./$info/description/description.md" }].concat(_url.default);
+                        infoList.forEach(e => {
+                            if (e) rezList.push({ url: o.url, label: o.label + ": " + e.label, content: o.content, isLeaf: 1, cont_url: e.src });
+                        });
+                    }
+                    return rezList;
                 }
-                delete e.isLeaf;
-                // console.log(e.url);
-                e.url = e.url.substr(5);
-                return e;
+
+                async function getContent(e) {
+                    if (e.isLeaf) {
+                        let uUrl = e.cont_url ? e.cont_url : e.url;
+                        let rowText = await fetch(e.url).then(function (response) { return response.text(); });
+                        //console.log(rowText);
+                        e.content = rowText.replace(/['`.*+?^${}()|[\]]/g, " ").replace(/\r?\n/g, " ").replace(/ {1,}/g, " ");;
+                        if (e.cont_url) e.url = e.url + '#' + e.url + e.cont_url.substr(1);
+                        delete e.cont_url;
+                    }
+                    delete e.isLeaf;
+                    // console.log(e.url);
+                    e.url = e.url.substr(5);
+                    return e;
+                }
+
+                let indLearn1 = await Promise.all(indLearn.map(getContent));
+                let indLearn0 = indLearn1.map((o, i) => '{ "create" : { "_index" : "ind-learn", "_id" : "l' + (i + 1) + '" } }' + '\n' + JSON.stringify(o) + '\n').join('');
+                console.log(indLearn0);
+
+
+
+                let indCompo2 = await Promise.all(indCompo.map(fullCompoInd));
+                let indCompo1 = await Promise.all(indCompo2.flat().map(getContent));
+                let indCompo0 = indCompo1.map((o, i) => '{ "create" : { "_index" : "ind-learn", "_id" : "c' + (i + 1) + '" } }' + '\n' + JSON.stringify(o) + '\n').join('');;
+                console.log(indCompo0);
             }
 
-            let indLearn1 = await Promise.all (indLearn.map(getContent) );
-            let indLearn0 = indLearn1.map((o,i)=> '{ "create" : { "_index" : "ind-learn", "_id" : "l' + (i+1) + '" } }' + '\n' + JSON.stringify(o) + '\n').join('');
-            console.log( indLearn0 );
-
-
-
-            let indCompo2 = await Promise.all (indCompo.map(fullCompoInd) );
-            let indCompo1 = await Promise.all (indCompo2.flat().map(getContent) );
-            let indCompo0 = indCompo1.map((o,i)=> '{ "create" : { "_index" : "ind-learn", "_id" : "c' + (i+1) + '" } }' + '\n' + JSON.stringify(o) + '\n').join(''); ;
-            console.log( indCompo0 );
-        }
-
-    },
+        },
     });
 
 
-    ODA({ is: 'oda-seach-result', extends:'oda-tree', props: { defaultTemplate: 'oda-site-search-cell' } });
-    ODA({ is: 'oda-site-search-cell', extends:'oda-site-nav-cell', template: `
+    ODA({ is: 'oda-seach-result', extends: 'oda-tree', props: { defaultTemplate: 'oda-site-search-cell' } });
+    ODA({
+        is: 'oda-site-search-cell', extends: 'oda-site-nav-cell', template: `
             <div class="flex" style="padding: 0 10px; text-align: right; color: green;font-size: 0.7em;">{{this.item.score}}</div>
         `,
         // props: {
@@ -740,7 +755,7 @@ menu: {
                 <oda-site-menu-item ~for="i in items" :item="i" :parent :path="item.name" ~style="(i.items && i.items.length > 0)?'padding: 8px; font-weight: bold; font-size: large;':''" @up="close"></oda-site-menu-item>
 <!--            </div>-->
         `,
-        close(){
+        close() {
             this.parentElement.fire('ok');
         },
         // attached(){
@@ -771,7 +786,8 @@ menu: {
         }
     });
 
-    ODA({is: 'oda-site-menu-item', template: `
+    ODA({
+        is: 'oda-site-menu-item', template: `
         <style>
             :host{
 
