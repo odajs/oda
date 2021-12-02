@@ -338,23 +338,24 @@ rows:{
                 text-overflow: ellipsis;
             }
         </style>
-        <oda-grid-cell ~for="col in columns" :col></oda-grid-cell>
+        <div ~is="cellTemplate" ~for="col in columns" :col></div>
     `,
+        cellTemplate: 'oda-grid-cell',
         get columns(){
             return this.cellCols;
         },
-        row: undefined,
+        row: {},
     })
     ODA({is: 'oda-grid-header', extends: 'oda-grid-row',
-        getTemplate(col) {
+        get cellTemplate() {
             return this.templates.header;
         },
         get columns(){
             return  this.cols;
-        },
+        }
     })
     ODA({is: 'oda-grid-footer', extends: 'oda-grid-row',
-        getTemplate(col) {
+        get cellTemplate() {
             return this.templates.footer;
         },
     })
@@ -373,6 +374,7 @@ cells: {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     box-sizing: border-box;
+                    position: relative;
                 }
                 :host *{
                     text-overflow: ellipsis;
@@ -648,18 +650,6 @@ cells: {
                 } break;
                 case 'end': {
                     e.detail.target.style.backgroundColor = '';
-                    // let col = this.col;
-                    // const writeChildren = col => {
-                    //     col.items?.forEach(c => {
-                    //         // this.grid.__write(this.grid.settingsId + '/col/' + c.id + '/width', c.width);
-                    //         writeChildren(c);
-                    //     });
-                    // };
-                    // writeChildren(col);
-                    // while (col) {
-                    //     // this.grid.__write(this.grid.settingsId + '/col/' + col.id + '/width', col.width);
-                    //     col = col.$parent;
-                    // }
                 } break;
             }
         },

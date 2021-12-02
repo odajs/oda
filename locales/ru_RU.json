@@ -1,5 +1,10 @@
 {
 	"words": {
+		"words": "слова",
+		"phraze": "фразы",
+		"All": "Все",
+		"translate": "перевод",
+
 		"Buttons": "Кнопки",
 		"Events": "Cобытия",
 		"Examples": "Примеры",
@@ -18,6 +23,8 @@
 		"Watchers": "Наблюдатели cвойств"
 	},
 	"phraze": {
+		"Only visible": "Только видимое",
+
 		"Basic Concept": "Основная концепция",
 		"Binding Mechanism": "Механизм связывания",
 		"Binding Object Properties": "Связывание свойств объектов",

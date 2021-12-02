@@ -5,6 +5,7 @@
     "@oda/button": "components/buttons/button/button.js",
     "@oda/toggle": "components/buttons/toggle/toggle.js",
     "@oda/table": "components/grids/table/table.js",
+    "@oda/listbox": "components/grids/listbox/listbox.js",
     "@oda/tree": "components/grids/tree/tree.js",
     "@oda/title": "components/layouts/title/title.js",
     "@oda/form-layout": "components/layouts/form-layout/form-layout.js",
