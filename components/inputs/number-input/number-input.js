@@ -18,15 +18,17 @@ ODA({is:'oda-number-input',
         const size = e.target.value.length;
         const start = e.target.selectionStart;
         const end = e.target.selectionEnd;
-        try {
-            (new Function([], `with (this) {return ${this.value}}`));
-        }
-        catch (e) {
-
-        }
         switch (e.inputType){
             case 'insertText': {
                 this.stack.splice(start-1, 0, char);
+                this.value = undefined;
+                try {
+                    (new Function([], `with (this) {return ${this.value}}`));
+                }
+                catch (e) {
+                    this.stack.splice(start-1, 1);
+                    this.value = undefined;
+                }
             } break;
             case 'insertFromPaste': {
                 const clip = await navigator.clipboard.readText().then(text => text.split('')); // get an array of inserted elements
@@ -36,9 +38,9 @@ ODA({is:'oda-number-input',
             } break;
             case 'deleteContentBackward': {
                 this.stack.splice(end, 1);
+                this.value = undefined;
             } break;
         }
-        this.value = undefined;
     },
     stack: [],
     props: {
@@ -70,19 +72,15 @@ ODA({is:'oda-number-input',
         return this.getFormattedValue();
     },
     getFormattedValue () {
-        if (/0/.test(this.mask)) { // check for restrictions in the mask
-            const minInt = this.mask.match(/\d+(?=\.)/)[0].length, // looking for the number of numbers to the point
-                  minFract = this.mask.match(/(?<=\.)\d+/)[0].length; // looking for the number of numbers after the dot
-            if (minInt && minFract)
-                return this.value.toLocaleString('ru-RU', {minimumIntegerDigits: minInt, minimumFractionDigits: minFract});
-        }
+        const minInt = /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/)[0].length : 0, // looking for the number of numbers to the point
+              minFract = /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0; // looking for the number of numbers after the dot
         switch (this.displayFormat) {
             case '0,0':
-                return this.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); // add the digit capacity for the entered number
+                return new Intl.NumberFormat('ru-RU').format(this.value);
             case '0.00%':
-                return this.value.toLocaleString('ru-RU', { style: 'percent' });
+                return new Intl.NumberFormat('ru-RU', { style: 'percent', minimumIntegerDigits: minInt, minimumFractionDigits: minFract }).format(this.value)
             case '# #00.00$':
-                return this.value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' }).toFixed(4);
+                return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumIntegerDigits: minInt, minimumFractionDigits: minFract }).format(this.value)
         };
     }
 });
@@ -97,7 +95,7 @@ const formats = {
         format: '# #00.00$', mask: '0.0000'
     },
     'text': {
-        format: 'SSSS'
+        format: 'SSSS', mask: 'SSSS'
     },
     'decimal': {
         format: '0,0', mask: '#,#'

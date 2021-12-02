@@ -24,5 +24,9 @@
         "name": "themes",
         "path": "/tools/styles/themes/",
         "label": "Темы"
+    },
+    {
+        "name": "about",
+        "label": "О нас"
     }
 ]

@@ -153,9 +153,6 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: this.value}) : this.stack.push({name: this.value});
         this.expression = undefined;
     },
-    invert () {
-
-    },
     calcFactorial () {
         const factorial = (num = this.stack[this.stack.length-1].key-1) => {
             return (num !== 1) ? num * factorial(num-1) : 1
