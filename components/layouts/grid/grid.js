@@ -36,8 +36,10 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     props:{
         lines:{
-            cols: false,
-            rows: false
+            default:{
+                cols: false,
+                rows: false
+            }
         },
         iconSize: 32,
         showGroups: {
@@ -70,8 +72,10 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
             tree: 'oda-grid-cell-tree',
         },
         showHeader: true,
-        colLines: false,
-        rowLines: false,
+        lines:{
+            col: false,
+            row: false,
+        },
         lazy: false,
         showFilter: false,
         icon: 'odant:grid',
@@ -334,58 +338,12 @@ rows:{
                 text-overflow: ellipsis;
             }
         </style>
-        <span class="flex" ~for="col in columns" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
+        <oda-grid-cell ~for="col in columns" :col></oda-grid-cell>
     `,
         get columns(){
             return this.cellCols;
         },
-        row: {},
-        getTemplate(col) {
-            if (this.row.$role)
-                return this.row.template || col.template || this.templates.cell;
-            if (this.row.$group)
-                return this.templates.group;
-            if (col.treeMode)
-                return this.defaultTreeTemplate;
-            let template = col.template || this.row.template || this.templates.cell;
-            if (typeof template === 'object')
-                return template.tag || template.is || template.template;
-            return template;
-        },
-        getStyle(col) {
-            const width = col.width + 'px'
-            const style = {width, "min-width": width, order: col.order};
-            if (this.colLines){
-                switch (col?.fix){
-                    case 'right':
-                        style['border-left'] = '1px solid var(--dark-background)';
-                        break;
-                    default:
-                        style['border-right'] = '1px solid var(--dark-background)';
-
-                }
-
-            }
-            if (this.rowLines)
-                style['border-bottom'] = '1px solid var(--dark-background)';
-            if(col?.fix){
-                style['background-color'] = 'var(--header-background)';
-                style.right = '0px';
-                style.left = (col.left || 0)+'px';
-                style['border-left-width'] = style['border-right-width'] = '2px';
-                style['max-width'] = style.width;
-                style['z-index'] = 1;
-            }
-            else{
-                style['z-index'] = -1;
-                if (!this.autoWidth && !col.free)
-                    style['max-width'] = style.width;
-
-            }
-            style.position = 'sticky';
-
-            return style;
-        }
+        row: undefined,
     })
     ODA({is: 'oda-grid-header', extends: 'oda-grid-row',
         getTemplate(col) {
@@ -405,6 +363,85 @@ rows:{
 
 
 cells: {
+    ODA({is: "oda-grid-cell-base",
+        template:/*html*/`
+            <style>
+                :host{
+                    /*@apply --flex;*/
+                    @apply --horizontal;
+                    align-items: center;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    box-sizing: border-box;
+                }
+                :host *{
+                    text-overflow: ellipsis;
+                    position: relative;
+                }
+            </style>
+        `,
+        col: null
+
+    });
+    ODA({is: "oda-grid-cell",
+        template:/*html*/`
+            <style>
+                :host{
+                    position: sticky;
+                    {{style || ''}}
+                }
+            </style>
+            <span class="flex" ~is="cellTemplate">{{row?.[col?.name]}}</span>
+        `,
+        get style(){
+            const col = this.col;
+            const row = this.row;
+            if(!col || !row) return;
+
+            const width = (col.width || 100) + 'px';
+            const style = {width, "min-width": width, order: col.order};
+            if (this.lines.col){
+                switch (col.fix){
+                    case 'right':
+                        style['border-left'] = '1px solid var(--dark-background)';
+                        break;
+                    default:
+                        style['border-right'] = '1px solid var(--dark-background)';
+
+                }
+            }
+            if (this.lines.row)
+                style['border-bottom'] = '1px solid var(--dark-background)';
+            if(col.fix){
+                style['background-color'] = 'var(--header-background)';
+                style.right = '0px';
+                style.left = (col.left || 0)+'px';
+                style['border-left-width'] = style['border-right-width'] = '2px';
+                style['max-width'] = style.width;
+                style['z-index'] = 1;
+            }
+            else{
+                style['z-index'] = -1;
+                if (!this.autoWidth && !col.free)
+                    style['max-width'] = style.width;
+            }
+            return Object.keys(style).map(i=>{
+                return i+': '+style[i];
+            }).join(';');
+        },
+        get cellTemplate() {
+            if (this.row?.$role)
+                return this.row?.template || this.col?.template || this.templates.cell;
+            if (this.row?.$group)
+                return this.templates.group;
+            if (this.col?.treeMode)
+                return this.defaultTreeTemplate;
+            let template = this.col?.template || this.row?.template || this.templates.cell;
+            if (typeof template === 'object')
+                return template.tag || template.is || template.template;
+            return template;
+        },
+    });
     ODA({is: "oda-grid-cell-title", extends: 'oda-grid-cell-base', template: /*html*/`
         <style>
             :host{
@@ -611,18 +648,18 @@ cells: {
                 } break;
                 case 'end': {
                     e.detail.target.style.backgroundColor = '';
-                    let col = this.col;
-                    const writeChildren = col => {
-                        col.items?.forEach(c => {
-                            // this.grid.__write(this.grid.settingsId + '/col/' + c.id + '/width', c.width);
-                            writeChildren(c);
-                        });
-                    };
-                    writeChildren(col);
-                    while (col) {
-                        // this.grid.__write(this.grid.settingsId + '/col/' + col.id + '/width', col.width);
-                        col = col.$parent;
-                    }
+                    // let col = this.col;
+                    // const writeChildren = col => {
+                    //     col.items?.forEach(c => {
+                    //         // this.grid.__write(this.grid.settingsId + '/col/' + c.id + '/width', c.width);
+                    //         writeChildren(c);
+                    //     });
+                    // };
+                    // writeChildren(col);
+                    // while (col) {
+                    //     // this.grid.__write(this.grid.settingsId + '/col/' + col.id + '/width', col.width);
+                    //     col = col.$parent;
+                    // }
                 } break;
             }
         },
@@ -691,25 +728,8 @@ cells: {
     }
 
 
-    ODA({is: "oda-grid-cell-base",
-        template:/*html*/`
-            <style>
-                :host{
-                    @apply --horizontal;
-                    align-items: center;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    box-sizing: border-box;
-                }
-                :host *{
-                    text-overflow: ellipsis;
-                    position: relative;
-                }
-            </style>
-        `,
-        col: null
 
-    });
+
     ODA({is: 'oda-grid-cell-expand', extends: "oda-grid-cell-base",
         template:/*html*/`
             <oda-icon ~if="row?.$level !== -1" :icon :disabled="!icon" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent></oda-icon>

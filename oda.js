@@ -269,7 +269,7 @@ if (!window.ODA) {
                         defs[i] = makeReactive.call(this, desc.value, (this.$core.saveProps?.[i] && i));
                         delete this[i];
                     }
-                    this['#' + i] = core.defaults[i];
+                    this['#' + i] =  makeReactive.call(this, core.defaults[i], (this.$core.saveProps?.[i] && i));
                 }
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
