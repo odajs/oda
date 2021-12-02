@@ -291,7 +291,7 @@ ODA({is: 'oda-grid-body',
         </style>
         <oda-grid-header></oda-grid-header>
         <div class="flex vertical" style="z-index: -1;">
-            <oda-grid-row ~for="row in rows" :row ~style="{borderBottom: this.lines.rows?'1px solid var(--dark-background)':''}"></oda-grid-row>
+            <oda-grid-row ~for="row in rows" :row ></oda-grid-row>
             <oda-grid-row class="disabled flex" ~style="{minHeight: iconSize+'px'}"></oda-grid-row>
         </div>
         <oda-grid-footer></oda-grid-footer>
@@ -355,6 +355,8 @@ rows:{
         getStyle(col) {
             const width = (!col.free && col.width)?(col.width + 'px'):'auto';
             const style = {width, minWidth: width, order: col.order};
+            // if (this.autoWidth)
+            //     style.minWidth = '10px';
             if (this.lines.cols){
                 switch (col?.fix){
                     case 'right':
@@ -376,9 +378,12 @@ rows:{
             }
             else{
                 style['z-index'] = -1;
-                if (!this.autoWidth && !col.free)
+                if (!col.free && !this.autoWidth)
                     style['max-width'] = style.width;
 
+            }
+            if (this.lines.rows){
+                style['border-bottom'] = '1px solid var(--dark-background)';
             }
             style.position = 'sticky';
 
@@ -556,8 +561,8 @@ cells: {
                 res?.focusedItem.execute();
             },
             resize(e){
-                if (this.col)
-                    this.col.width = this.col.width || this.offsetWidth;
+                if (this.col && !this.col.free)
+                    this.col.width = this.offsetWidth;
             }
         },
         props:{
