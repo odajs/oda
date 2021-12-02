@@ -2087,7 +2087,7 @@ if (!window.ODA) {
             return false;
         };
         await import('./tools/styles/styles.js');
-        //
+
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 window.document.body.style.visibility = 'hidden';

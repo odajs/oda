@@ -585,6 +585,7 @@ cells: {
         track(e, d) {
             switch (e.detail.state) {
                 case 'start': {
+                    e.detail.target.style.backgroundColor = "var(--content-background)";
                     this.col.width = Math.round(this.offsetWidth);
                 } break;
                 case 'track': {
@@ -592,7 +593,8 @@ cells: {
                     const clientRect = this.getClientRects()[0];
                     if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.col.fix !== 'right')
                         return;
-                    if ((this.col.width + delta) < this.iconSize * 2)
+                    const nw = this.col.width + delta;
+                    if (nw < this.col.width && nw < this.iconSize)
                         return;
                     let p = this.col;
 
@@ -608,6 +610,7 @@ cells: {
                     }
                 } break;
                 case 'end': {
+                    e.detail.target.style.backgroundColor = '';
                     let col = this.col;
                     const writeChildren = col => {
                         col.items?.forEach(c => {
@@ -888,6 +891,4 @@ cells: {
             this.grid.setScreenExpanded?.(this.item);
         }
     });
-
-
 }

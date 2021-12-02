@@ -33,7 +33,8 @@ ODA({is:'oda-number-input',
             case 'insertFromPaste': {
                 const clip = await navigator.clipboard.readText().then(text => text.split('')); // get an array of inserted elements
                 clip.forEach((el, i) => { // insert the copied elements into the array
-                    this.stack.splice(start-1+i, 0, el);
+                    this.stack.splice(start-clip.length+i, 0, el);
+                    this.value = undefined;
                 })
             } break;
             case 'deleteContentBackward': {
