@@ -23,7 +23,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
                 overflow: auto;
             }
         </style>
-        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>
+<!--        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>-->
         <oda-grid-body class="flex" :even-odd></oda-grid-body>
     `,
     listeners:{
@@ -296,7 +296,7 @@ ODA({is: 'oda-grid-body',
         <oda-grid-header></oda-grid-header>
         <div class="flex vertical" style="z-index: -1;">
             <oda-grid-row ~for="row in rows" :row></oda-grid-row>
-            <oda-grid-row class="disabled flex" :row="{}" ~style="{minHeight: iconSize+'px'}"></oda-grid-row>
+            <oda-grid-row class="disabled flex" ~style="{minHeight: iconSize+'px'}"></oda-grid-row>
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,

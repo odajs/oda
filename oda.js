@@ -1666,7 +1666,7 @@ if (!window.ODA) {
                     requestAnimationFrame(() => {
                         $el.fire(i + '-changed');
                     });
-                } else {
+                } else  {
                     $el.setProperty(i, b);
                 }
             }
@@ -2122,15 +2122,14 @@ if (!window.ODA) {
                     for (let i = 0; i < path.length; i++) {
                         let key = path[i].toCamelCase();
                         if (i === 0) {
-                            const prop = this.props?.[key];
-                            if (prop) {
-                                step = this[key] = this[key] || {};
+                            if (this.props && key in this.props) {
+                                step = this[key] ??= {}
                             }
                             else break;
                         }
                         else if (isObject(step)) {
                             if (i < path.length - 1) {
-                                step = step[key] = step[key] || {};
+                                step = step[key] ??= {};
                             } else {
                                 step[key] = v;
                                 return;
@@ -2138,12 +2137,9 @@ if (!window.ODA) {
                         }
                     }
                 }
-                else {
-                    const prop = this.props?.[name];
-                    if (prop) {
+                else if (this.props && name in this.props && this[name] !== v) {
                         this[name] = v;
                         return;
-                    }
                 }
             }
             if (typeof v === 'object' || this.nodeType !== 1 || this.$node?.vars.has(name)) {
