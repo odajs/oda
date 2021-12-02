@@ -36,8 +36,10 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     props:{
         lines:{
-            cols: false,
-            rows: false
+            default:{
+                cols: false,
+                rows: false
+            }
         },
         iconSize: 32,
         showGroups: {
@@ -289,7 +291,7 @@ ODA({is: 'oda-grid-body',
         </style>
         <oda-grid-header></oda-grid-header>
         <div class="flex vertical" style="z-index: -1;">
-            <oda-grid-row ~for="row in rows" :row></oda-grid-row>
+            <oda-grid-row ~for="row in rows" :row ~style="{borderBottom: this.lines.rows?'1px solid var(--dark-background)':''}"></oda-grid-row>
             <oda-grid-row class="disabled flex" ~style="{minHeight: iconSize+'px'}"></oda-grid-row>
         </div>
         <oda-grid-footer></oda-grid-footer>
@@ -351,9 +353,9 @@ rows:{
             return template;
         },
         getStyle(col) {
-            const width = col.width + 'px'
-            const style = {width, "min-width": width, order: col.order};
-            if (this.lines.col){
+            const width = (!col.free && col.width)?(col.width + 'px'):'auto';
+            const style = {width, minWidth: width, order: col.order};
+            if (this.lines.cols){
                 switch (col?.fix){
                     case 'right':
                         style['border-left'] = '1px solid var(--dark-background)';
@@ -364,8 +366,6 @@ rows:{
                 }
 
             }
-            if (this.lines.row)
-                style['border-bottom'] = '1px solid var(--dark-background)';
             if(col?.fix){
                 style['background-color'] = 'var(--header-background)';
                 style.right = '0px';
@@ -417,12 +417,16 @@ cells: {
                 border-color: var(--content-background) !important;
                 @apply --dark;
                 flex-direction: {{col.fix === 'right'?'row-reverse':'row'}};
+                
             }
         `
     });
 
     ODA({is: "oda-grid-cell-header", extends: 'oda-grid-cell-title', template:/*html*/`
         <style>
+            :host{
+                {{_style}}
+            }
             .split{
                 width: 4px;
                 @apply --content;
@@ -477,7 +481,7 @@ cells: {
         <div class="flex vertical">
             <div class="flex horizontal">
                 <div class="flex horizontal" style="align-items: center;">
-                    <oda-grid-cell-expand :row="col"></oda-grid-cell-expand>
+                    <oda-grid-cell-expand ~if="col?.items?.length" class="no-flex" :row="col"></oda-grid-cell-expand>
                     <span class="label flex" :text="col.label || col.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></span>
                     <oda-icon class="no-flex" :show="showSort && sortIcon" title="sort" :icon="sortIcon" :sort="sortIndex"></oda-icon>
                 </div>
@@ -488,7 +492,7 @@ cells: {
                 <oda-button :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="col.$expanded">
-                <oda-grid-cell-header ~for="column in col.items" :col="column" :show-filter="showFilter" ~style="{width: column.width?column.width+'px':'auto' }" :save-key="column.name ? (column.name || column.id) + column.name : ''" ref="subColumn"></oda-grid-cell-header>
+                <oda-grid-cell-header ~for="column in col.items" :col="column" :show-filter="showFilter"  :save-key="column.name ? (column.name || column.id) + column.name : ''" ref="subColumn"></oda-grid-cell-header>
             </div>
         </div>
         <div class="split" @tap.stop @track="track" ~if="!col?.free && domHost.col?.items?.last !== col" ~style="splitStyle"></div>
@@ -498,6 +502,17 @@ cells: {
                 return {left: '0px', right: 'auto'};
             return {right: '0px', left: 'auto'};
 
+        },
+        get _style(){
+            if (!this.col || this.col.free)
+                return 'width: auto';
+            const width = this.col.width?(this.col.width+'px'):'auto';
+            const style = {width, 'min-width': width};
+            if(!this.col?.items?.length)
+                style['max-width'] =  width;
+            return Object.keys(style).map(i=>{
+                return i+': '+style[i];
+            }).join(';\n')
         },
         listeners: {
             async contextmenu(e){
@@ -584,7 +599,7 @@ cells: {
             switch (e.detail.state) {
                 case 'start': {
                     this.col.width = Math.round(this.offsetWidth);
-                    e.detail.target.style.backgroundColor = 'var(--success-color)';
+                    e.detail.target.style.backgroundColor = 'var(--warning-color)';
                 } break;
                 case 'track': {
                     const delta = e.detail.ddx * (this.col.fix === 'right' ? -1 : 1);

@@ -29,7 +29,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <div class="horizontal" ::data="calc.data">
             <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" >
                 <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props" ~style="{height: buttonHeight + 'px'}">
-                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button.key" @tap="tap" :item="button" ~props="col.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
+                    <oda-button class="raised flex" ~for="button in row.buttons" ~html="button?.key" @tap="tap" :item="button" ~props="col.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     tap (e) {
         this.error = undefined; // on any input, the error is cleared
         this.result = `Ans = ${this.value}`; // for any input, the result is formed according to a given template
-        const model = e.target?.item ? e.target.item : {key: e}; // determine if a calculator button or keyboard key was pressed
+        const model = e.currentTarget?.item ? e.currentTarget.item : {key: e}; // determine if a calculator button or keyboard key was pressed
         if (model?.command && this[model.command]) // if the button has a function, then it is executed
             return this[model.command]()
         if (this.hints[0]?.hint === (model?.key || model?.name)) // checking closing brackets
