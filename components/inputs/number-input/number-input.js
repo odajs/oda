@@ -10,9 +10,13 @@ ODA({is:'oda-number-input',
             }
         </style>
         <input disabled :value>
-        <input @input="_input" :value="inputValue">
+        <input @input="_input" @keydown="keydown" :value="inputValue">
         <input disabled :value="displayValue">
     `,
+    keydown (e) {
+        const start = e.target.selectionStart;
+        const end = e.target.selectionEnd;
+    },
     async _input (e) {
         const char = e.data;
         const size = e.target.value.length;
@@ -32,10 +36,8 @@ ODA({is:'oda-number-input',
             } break;
             case 'insertFromPaste': {
                 const clip = await navigator.clipboard.readText().then(text => text.split('')); // get an array of inserted elements
-                clip.forEach((el, i) => { // insert the copied elements into the array
-                    this.stack.splice(start-clip.length+i, 0, el);
+                    this.stack.splice(start-clip.length, end-start, ...clip); // subtract the length of the inserted line from the starting point to get the correct insertion point
                     this.value = undefined;
-                })
             } break;
             case 'deleteContentBackward': {
                 this.stack.splice(end, 1);
