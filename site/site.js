@@ -22,7 +22,8 @@ const statuses = [
 
 function clone(obj) {
     const res = Object.assign({}, obj);
-    res.hideExpander = true;
+    console
+    //res.hideExpander = true;
     res.items = Object.assign([], res.items).map(i => clone(i));
     return res;
 }
@@ -82,7 +83,7 @@ site: {ODA({is: 'oda-site', extends: 'oda-app-layout',  imports: '@oda/app-layou
             'right.icon': 'icons:warning',
             'left.splitter.hidden': true
         },
-        template: `
+        template: /*html */ `
             <div class="flex horizontal header" slot="header" style="align-items: center;">
                 <img width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="site/icon.png" style="cursor: pointer; margin: 8px;"/>
                 <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
@@ -268,6 +269,8 @@ content: {
     ODA({is: 'oda-site-content-tree', extends: 'oda-tree', imports: ['@oda/tree'],
         props: {
             defaultTemplate: 'oda-site-content-cell',
+            iconExpanded: 'icons:remove',
+            iconCollapsed: 'icons:add',
             lazy: false,
             treeStep: 4,
             rowLines: false,
