@@ -221,7 +221,6 @@ if (!window.ODA) {
         }
         const core = {
             // saveProps: {},
-            checkVisible: 200,
             reflects: [],
             prototype: prototype,
             node: { tag: '#document-fragment', id: 0, dirs: [] },
@@ -449,16 +448,13 @@ if (!window.ODA) {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 this.onRender?.();
-                if (this.$core.checkVisible && this.style.visibility){
+                if (!this.domHost && this.style.visibility){
                     this.async(()=>{
                         this.style.visibility = '';
-                    }, 500)
-                    this.interval('check-visible', ()=>{
-                        this.$core.checkVisible /= 2 ;
-                        if (this.$core.checkVisible>10)
-                            return;
+                    }, 1000)
+                    this.debounce('check-visible', ()=>{
                         this.style.visibility = '';
-                    },this.$core.checkVisible)
+                    }, 300)
                 }
             }
             resolveUrl(path) {
