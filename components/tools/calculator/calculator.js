@@ -18,7 +18,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
             }
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
-            <span style="font-size: small" class="dimmed">{{result}}</span>
+            <span style="font-size: small" class="dimmed">{{operation}}</span>
             <span style="font-size: large">{{expression || value || error || 0}}
                 <span disabled>{{hint}}</span>
             </span>
@@ -68,13 +68,16 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     get Acc () { // bit width of the result
         return ` = ${this.accuracy}`
     },
+    get value () {
+        return this.result.toFixed(this.Acc.match(/\d$/))
+    },
     data: {},
     error: undefined,
     hints: [], // unclosed brackets
     stack: [],
     timerClear: '', // a variable containing a timer to clear the monitor
-    result: '0', // the value of the previous expression
-    value: 0, // the resulting expression value
+    operation: '0', // the value of the previous expression
+    result: 0,
     props:{
         accuracy:{
             default: 2,
@@ -93,7 +96,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     },
     tap (e) {
         this.error = undefined; // on any input, the error is cleared
-        this.result = `Ans = ${this.value}`; // for any input, the result is formed according to a given template
+        this.operation = `Ans = ${this.value}`; // for any input, the result is formed according to a given template
         const model = e.currentTarget?.item ? e.currentTarget.item : {key: e}; // determine if a calculator button or keyboard key was pressed
         if (model?.command && this[model.command]) // if the button has a function, then it is executed
             return this[model.command]()
@@ -119,21 +122,21 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.stack.push(...this.hints); // close all brackets
         this.expression = undefined;
         try{
-            this.value = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
-            this.value = this.value.toFixed(this.Acc.match(/\d$/)); // rounding to the specified value
-            this.result = this.expression + ' =';
+            this.result = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
+            this.value = this.result.toFixed(this.Acc.match(/\d$/)); // rounding to the specified value
+            this.operation = this.expression + ' =';
         }
         catch (e){
             this.error = e;
             console.error(e);
         }
-        this.stack = [{key: this.value}];
+        this.stack = [{key: this.value, result: true}];
         this.hints = [];
     },
     clear () {
         this.stack = [{key: 0}];
         this.hints = [];
-        this.result = '0';
+        this.operation = '0';
     },
     back () {
         if (this.stack[this.stack.length-1]?.hint === this.hints[this.hints.length - 1]?.hint) {
@@ -182,5 +185,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
                 this.accuracy = 0;
                 break;
         }
+        this.stack[this.stack.length-1]?.result ? this.stack.splice(-1, 1, {key: (+this.value).toFixed(this.accuracy), result: true}) : 0;
+        this.expression = undefined;
     },
 })
