@@ -464,8 +464,8 @@ cells: {
             oda-grid-cell-header{
                 border-top: 1px solid;
             }
-            oda-grid-cell-header:not(:nth-child(1)){
-                border-left: 1px solid;
+            oda-grid-cell-header:not(:last-child){
+                border-right: 1px solid;
             }
             oda-icon:after{
                 content: attr(sort);
