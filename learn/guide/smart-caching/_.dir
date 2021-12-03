@@ -11,7 +11,12 @@
    },
     {
         "name": "getter-caching.md",
-        "label": "Кэширование гетеров",
+        "label": "Кэширование геттеров",
+        "status": "edit"
+   },
+    {
+        "name": "method-caching.md",
+        "label": "Кэширование методов",
         "status": "edit"
    },
     {
