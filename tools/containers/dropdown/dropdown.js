@@ -205,7 +205,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         if (!size.hasOwnProperty('right')) size.left = left;
         Object.keys(size).forEach(k => size[k] += 'px');
         this._steps = [];
-        return size;
+        if (!this._size || this._size.maxHeight !== size.maxHeight || this._size.minHeight !== size.minHeight
+                || this._size.maxWidth !== size.maxWidth || this._size.minWidth !== size.minWidth)
+            this._size = size;
+        return this._size;
     },
     get control(){
         return this.controls?.[0];

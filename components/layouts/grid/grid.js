@@ -290,6 +290,16 @@ ODA({is: 'oda-grid-body',
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,
+    ready(){
+        this.style.visibility = 'hidden';
+    },
+    onRender(){
+        if (this.style.visibility){
+            this.debounce('render', ()=>{
+                this.style.visibility = '';
+            },100)
+        }
+    },
     props:{
         evenOdd: {
             default: false,

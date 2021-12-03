@@ -307,7 +307,7 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                this.style.visibility = 'hidden';
+                // this.style.visibility = 'hidden';
                 // if(!this.domHost){
                 //     let parent = this.parentNode;
                 //     let dh = parent.$core ? parent : null;
@@ -448,12 +448,12 @@ if (!window.ODA) {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 this.onRender?.();
-                if (this.$core.checkVisible && this.style.visibility){
-                    this.$core.checkVisible--;
-                    this.debounce('chek-visible', ()=>{
-                        this.style.visibility = ''
-                    },100)
-                }
+                // if (this.$core.checkVisible && this.style.visibility){
+                //     this.$core.checkVisible--;
+                //     this.debounce('chek-visible', ()=>{
+                //         this.style.visibility = ''
+                //     },100)
+                // }
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
