@@ -8,11 +8,22 @@ ODA({is:'oda-number-input',
                 margin: 20px;
                 text-align: right;
             }
+            input:invalid {
+              background-color: red
+            }
         </style>
+        <span>format: {{format}}</span>
+        <span>display: {{displayFormat}}</span>
+        <span>mask: {{mask}}</span>
         <input disabled :value>
         <input @input="_input" @keydown="keydown" :value="inputValue">
         <input disabled :value="displayValue">
+        <input @oninvalid="onInvalid" type="text" pattern="[A-Za-z]{3}" title="Three letter country code" required>
+        <input type="tel" pattern="2-[0-9]{3}-[0-9]{3}" placeholder="+_(__)___ __ __" title="Three letter country code" required>
     `,
+    onInvalid(e){
+        console.dir(e)
+    },
     keydown (e) {
         const start = e.target.selectionStart;
         const end = e.target.selectionEnd;
@@ -56,12 +67,12 @@ ODA({is:'oda-number-input',
         },
         mask: {
             get () {
-                return formats[this.format]?.mask || '0.00';
+                return formats[this.format]?.mask || this.format;
             }
         },
         displayFormat: {
             get () {
-                return formats[this.format]?.format || '0.00';
+                return formats[this.format]?.format || this.format;
             }
         },
     },
@@ -98,7 +109,7 @@ const formats = {
         format: '# #00.00$', mask: '0.0000'
     },
     'text': {
-        format: 'SSSS', mask: 'SSSS'
+        format: 'SSSS', mask: 'SSSS', formatter: './formatters/text.js'
     },
     'decimal': {
         format: '0,0', mask: '#,#'
