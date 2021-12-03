@@ -1,29 +1,13 @@
 ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     template:`
         <style>
-            ::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            ::-webkit-scrollbar-track {
-                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-            }
-            ::-webkit-scrollbar-thumb {
-                border-radius: 3px;
-                background: var(--header-background);
-                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-            }
-            ::-webkit-scrollbar-thumb:hover {
-                @apply --dark;
-                width: 16px;
-            }
             :host{
                 @apply --flex;
                 @apply --vertical;
                 overflow: auto;
             }
         </style>
-        <oda-grid-groups a.b="444" ~if="showGroups" :groups></oda-grid-groups>
+        <oda-grid-groups ~if="showGroups" :groups></oda-grid-groups>
         <oda-grid-body class="flex" :even-odd></oda-grid-body>
     `,
     listeners:{
@@ -55,6 +39,10 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
             default: 'none',
             list: ['none', 'single', 'down', 'up', 'double']
         },
+        hide:{
+            root: false,
+            top: false
+        },
         hideRoot: false,
         hideTop: false,
         idName: '',
@@ -70,6 +58,12 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
             footer: 'oda-grid-cell-footer',
             group: 'oda-grid-cell-group',
             tree: 'oda-grid-cell-tree',
+        },
+        show:{
+            header: false,
+            footer: false,
+            filter: false,
+            groups: false,
         },
         showHeader: true,
         lazy: false,
@@ -296,16 +290,6 @@ ODA({is: 'oda-grid-body',
         </div>
         <oda-grid-footer></oda-grid-footer>
     `,
-    ready(){
-        this.style.visibility = 'hidden';
-    },
-    onRender(){
-        if (this.style.visibility){
-            this.debounce('render', ()=>{
-                this.style.visibility = '';
-            },100)
-        }
-    },
     props:{
         evenOdd: {
             default: false,
