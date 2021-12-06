@@ -19,7 +19,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         </style>
         <div class="border vertical" style="margin-bottom: 16px; text-align: right">
             <span style="font-size: small" class="dimmed">{{operation}}</span>
-            <span style="font-size: large">{{expression || value || error || 0}}
+            <span style="font-size: large">{{error || expression || value || 0}}
                 <span disabled>{{hint}}</span>
             </span>
         </div>
@@ -78,6 +78,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     timerClear: '', // a variable containing a timer to clear the monitor
     operation: '0', // the value of the previous expression
     result: 0,
+    answer: '0',
     props:{
         accuracy:{
             default: 2,
@@ -121,14 +122,14 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     calc () {
         this.stack.push(...this.hints); // close all brackets
         this.expression = undefined;
+        this.answer = this.calcExpression;
         try{
             this.result = (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this);
             this.value = this.result.toFixed(this.Acc.match(/\d$/)); // rounding to the specified value
             this.operation = this.expression + ' =';
         }
         catch (e){
-            this.error = e;
-            console.error(e);
+            this.error = 'Error';
         }
         this.stack = [{key: this.value, result: true}];
         this.hints = [];
@@ -153,8 +154,20 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         }
     },
     getAnswer () {
-        this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, {name: this.value}) : this.stack.push({name: this.value});
+        if (this.expression == 0 && this.stack.length === 1) {
+            this.stack.splice(0, 1, {name: 'Ans', expr: `(${this.answer})`});
+        } else {
+            try {
+                this.stack.push({name: 'Ans', expr: `(${this.answer})`});
+                (new Function([], `with (this) {return ${this.calcExpression}}`)).call(this)
+            }
+            catch (e) {
+                this.stack.pop();
+                this.answer = '0';
+            }
+        }
         this.expression = undefined;
+        this.calcExpression = undefined;
     },
     calcFactorial () {
         const factorial = (num = this.stack[this.stack.length-1].key-1) => {

@@ -39,11 +39,6 @@
         "label": "Smart-кэширование",
         "status": "edit"
    },
-    {
-        "name": "smart-caching.md",
-        "label": "Smart-кэширование",
-        "status": "edit"
-   },
    {
         "name": "my-first-component.md",
         "label": "Мой первый компонент",

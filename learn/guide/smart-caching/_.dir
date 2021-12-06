@@ -2,26 +2,31 @@
     {
         "name": "introduction.md",
         "label": "Основные принципы",
-        "status": "edit"
+        "status": "check"
    },
     {
         "name": "no-influence.md",
         "label": "Что не влияет на кэширование",
-        "status": "edit"
+        "status": "check"
    },
     {
         "name": "getter-caching.md",
         "label": "Кэширование геттеров",
-        "status": "edit"
+        "status": "check"
    },
     {
         "name": "method-caching.md",
         "label": "Кэширование методов",
-        "status": "edit"
+        "status": "check"
+   },
+    {
+        "name": "method-event-caching.md",
+        "label": "Реакция кэша на события",
+        "status": "check"
    },
     {
         "name": "brief.md",
         "label": "Краткое повторение",
-        "status": "edit"
+        "status": "check"
    }
 ]
