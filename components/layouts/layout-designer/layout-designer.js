@@ -122,6 +122,7 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /*flex-grow: {{layout?.noFlex?'1':'100'}};*/
                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /*flex-basis: auto;*/
+                cursor: {{designMode ? 'pointer' : ''}};
             }
             .structure{
                 margin-left: {{layout?.isGroup?0:iconSize}}px;
@@ -137,13 +138,17 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             .group{
                 @apply --header;
             }
+            .selected {
+                @apply --focused;
+                background-color: lightyellow;
+            }
         </style>
         <div ~if="designMode" ~is="designMode?'style':'div'">
              :host{
                 outline: 1px dashed blue;
             }
         </div>
-        <div class="horizontal flex" style="align-items: end; overflow: hidden">
+        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="_tap" ~class="{selected: designMode && data?.selection?.has(layout)}">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{alignItems: (width && !layout?.type)?'center':''}">
 <!--            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">-->
@@ -180,6 +185,16 @@ ODA({is:'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     layout: null,
     toGroup(){
         return this.layout.toGroup();
+    },
+    _tap(e) {
+        if (e.ctrlKey || e.metaKey) {
+            this.data.selection ||= [];
+            if (this.data.focused && (e.target.domHost.layout.owner !== this.data.focused.owner)) return;
+        } else {
+            this.data.selection = [];
+        }
+        this.data.focused = this.layout;
+        this.data.selection.add(this.layout);
     }
 })
 KERNEL({ is: 'Layout',
