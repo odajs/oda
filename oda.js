@@ -1678,10 +1678,10 @@ if (!window.ODA) {
                 if (i.includes('.') && listener) {
                     const pathToObj = i.slice(0, i.lastIndexOf('.'));
                     const propName = i.slice(i.lastIndexOf('.') + 1);
-                    const obj = eval(`$el['${pathToObj}']`);
+                    const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
                     const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
-                    const topUpdates = (eval(`this.__op__.blocks['${listener.expr}']`) ?? eval(`this.__op__.blocks['#${listener.expr}']`))?.updates ?? 0;
-                    console.table({ bottUpdates, topUpdates });
+                    const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+                    
                     if (bottUpdates > topUpdates && $el.fire) {
                         this.setProperty(listener.expr, obj[propName]);
                         // requestAnimationFrame(() => {
