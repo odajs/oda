@@ -12,7 +12,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 z-index: 1;
             }
         </style>
-        <svg :width :height style="z-index: 0">
+        <svg :width :height view-box="" style="z-index: 0">
             <path ~for="link in links" stroke="blue" :stroke-width="(link === focusedItem) ? 2 : 1" :item="link" fill="transparent" :props="link" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.has(itm)"></oda-scheme-container>

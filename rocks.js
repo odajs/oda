@@ -130,7 +130,7 @@ if (!globalThis.KERNEL) {
         }
         return  block;
     }
-    let uplates = 0;
+    let updates = 0;
     function getProxyValue(block, val, old, setter) {
         if (Object.equal(val, old)) return val;
         const target = block.options.target;
@@ -148,7 +148,7 @@ if (!globalThis.KERNEL) {
         if (block.$$saveName)
             this.saveSettings?.(block.$$saveName, this[block.$$saveName]);
         for (let host of block.options.hosts.keys()){
-            block.uplates = ++uplates;
+            block.updates = ++updates;
             (host.notify || host.bubble)?.call(host, block, val);
         }
         return val;

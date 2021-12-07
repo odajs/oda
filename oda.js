@@ -1255,6 +1255,7 @@ if (!window.ODA) {
                                     exec.call(this, func, [res, ...(e.target.$for || [])]);
                             };
                             src.listeners[name + '-changed'].notify = name;
+                            src.listeners[name + '-changed'].expr = expr;
                         }
                         const h = function (params) {
                             return exec.call(this, fn, params);
@@ -1673,13 +1674,32 @@ if (!window.ODA) {
         if (src.bind)
             for (let i in src.bind) {
                 const b = src.bind[i].call(this, pars, $el);
-                if (b === undefined && src.listeners[i + '-changed'] && $el.fire) {
-                    requestAnimationFrame(() => {
-                        $el.fire(i + '-changed');
-                    });
-                } else  {
-                    $el.setProperty(i, b);
+                const listener = src.listeners[i.toKebabCase() + '-changed'];
+                if (i.includes('.') && listener) {
+                    const pathToObj = i.slice(0, i.lastIndexOf('.'));
+                    const propName = i.slice(i.lastIndexOf('.') + 1);
+                    const obj = eval(`$el['${pathToObj}']`);
+                    const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+                    const topUpdates = (eval(`this.__op__.blocks['${listener.expr}']`) ?? eval(`this.__op__.blocks['#${listener.expr}']`))?.updates ?? 0;
+                    console.table({ bottUpdates, topUpdates });
+                    if (bottUpdates > topUpdates && $el.fire) {
+                        this.setProperty(listener.expr, obj[propName]);
+                        // requestAnimationFrame(() => {
+                        //     $el.fire(i + '-changed', { detail: {value: obj[propName]}});
+                        // });
+                    } else {
+                        $el.setProperty(i, b);
+                    }
+                } else {
+                    if (b === undefined && listener && $el.fire) {
+                        requestAnimationFrame(() => {
+                            $el.fire(i + '-changed');
+                        });
+                    } else  {
+                        $el.setProperty(i, b);
+                    }
                 }
+
             }
 
         this.$core.prototype.$system.observers?.forEach(name => {

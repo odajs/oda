@@ -124,39 +124,37 @@ ODA({
 
 Продемонстрировать преимущества отложенной загрузки можно на следующем примере:
 
-Пусть в модуле **module1** объявлен компонент **my-component**, для работы которого требуется модуль **module2**.
+Есть два модуля. В модуле **module1** объявлен компонент **demo-component**, для работы которого требуется модуль **module2**:
 
 ```javascript
-var div = document.createElement( "div" );
-div.innerText = "Загружен модуль module1.js";
-document.body.append( div );
+document.body.append( document.createTextNode("- Загружен модуль module1.js -") );
 
 ODA({
-    is: 'my-component',
+    is: 'demo-component',
     imports: './module2.js',
     template: `
-        <input value='Это мой компонент'></input>
+        <input value='Это мой компонент'>
     `
 });
 ```
 
-В коде обоих модулей есть строки, которые добавляют на веб-страницу элемент **div** с соответствующим сообщением, чтобы продемонстрировать момент загрузки каждого модуля.
+Модуль **module2** содержит одну команду и служит только для демонстрации отложенной загрузки:
 
 ```javascript
-var div = document.createElement( "div" );
-div.innerText = "Загружен модуль module2.js" ;
-document.body.append(div);
+document.body.append( document.createTextNode("- Загружен модуль module2.js -") );
 ```
 
-На основной странице создадим компонент **main-component**, который будет добавлять в DOM веб-страницы компонент **my-component** только при нажатии на кнопку **button**.
+Оба модуля начинаются с команды, добавляющей на веб-страницу сообщение о своей загрузке. Это позволяет продемонстрировать момент загрузки каждого модуля.
+
+Теперь создадим компонент **main-component**, который будет добавлять в DOM веб-страницы компонент **demo-component** только при нажатии на кнопку **Добавить компонент**.
 
 ```javascript _run_line_edit_[main-component.js]_h=60_
 ODA({
     is: 'main-component',
     imports: '/learn/guide/structure/module1.js',
     template: `
-        <button @tap='show=true'>Добавить мой компонент</button>
-        <my-component ~if='show'></my-component>
+        <button @tap='show=true'>Добавить компонент</button>
+        <demo-component ~if='show'></demo-component>
     `,
     props: {
         show: false
@@ -164,4 +162,4 @@ ODA({
 });
 ```
 
-Из примера видно, что за счет механизма отложенного импорта второй модуль загружается только тогда, когда компонент **my-component** действительно встраивается в DOM веб-страницы, а не тогда, когда загружается сама веб-страница.
+Из примера видно, что за счет механизма отложенного импорта второй модуль загружается только тогда, когда компонент **demo-component** действительно встраивается в DOM веб-страницы, а не тогда, когда загружается сама веб-страница.

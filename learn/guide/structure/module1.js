@@ -1,13 +1,11 @@
 //Пример для статьи Imports.
 
-var div = document.createElement( "div" );
-div.innerText = "Загружен модуль 1" ;
-document.body.append( div );
+document.body.append( document.createTextNode("- Загружен модуль module1.js -") );
 
 ODA({
-    is: "my-component",
+    is: "demo-component",
     imports: './module2.js',
     template: `
-        <input value='Это мой компонент'></input>
+        <input value='Это мой компонент'>
     `,
 });
