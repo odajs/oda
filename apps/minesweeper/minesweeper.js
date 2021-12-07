@@ -35,8 +35,8 @@ ODA({is:'oda-minesweeper',
     model: [],
     init(){
         const model = [];
-        for (let x=0; x<this.rows; x++){
-            for (let y=0; y<this.cols; y++){
+        for (let x=0; x<this.cols; x++){
+            for (let y=0; y<this.rows; y++){
                 model.push({x, y})
             }
         }
@@ -123,7 +123,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
         <div ~if="mine?.status === 'opened'" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
-        <button :error="mine.error" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
+        <button :error="mine?.error" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
             <oda-icon class="flex" :icon :icon-size="iconSize*.5"></oda-icon>
         </button>
     `,
