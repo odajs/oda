@@ -13,7 +13,15 @@ ODA({ is: 'oda-layout-designer',
     `,
     data: null,
     props: {
-        designMode: false,
+        designMode: {
+            default: false,
+            set(n) {
+                if (this.data) {
+                    this.data.focused = null;
+                    this.data.selection = [];
+                }
+            }
+        },
         keys: ''
     },
     get layout() {
@@ -41,7 +49,7 @@ ODA({ is: 'oda-layout-designer-structure',
     layout: null,
     iconSize: 32,
     get $saveKey() {
-        return this.layout.name;
+        return this.layout.$owner.name;
     },
     props: {
         settings: {
@@ -294,22 +302,24 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
 })
 KERNEL({
     is: 'Layout',
-    ctor(data, key = 'items', owner) {
+    ctor(data, key = 'items', owner, $owner) {
         this.data = data || {};
         this.key = key;
         this.owner = owner;
+        this._owner = $owner;
     },
     owner: undefined,
     type: undefined,
     $expanded: false,
+    get $owner() { return this._owner || this.owner?.$owner || this.owner || this },
     get items() {
         const items = this.data?.[this.key];
         if (items?.then) {
             return items.then(items => {
-                this.items = items.map(i => new Layout(i, this.key, this))
+                this.items = items.map(i => new Layout(i, this.key, this, this))
             })
         }
-        return items?.map(i => new Layout(i, this.key, this))
+        return items?.map(i => new Layout(i, this.key, this, this))
     },
     get id() {
         return this.data?.id || this.data?.name;
