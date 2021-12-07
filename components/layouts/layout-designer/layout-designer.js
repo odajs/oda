@@ -31,6 +31,7 @@ ODA({ is: 'oda-layout-designer',
     structureTemplate: 'oda-layout-designer-structure',
 
 })
+
 ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
@@ -116,7 +117,6 @@ ODA({ is: 'oda-layout-designer-group-structure',
         <oda-layout-designer-structure ~if="item === layout.$focused" class="flex" ~for="layout?.items" :layout="item"></oda-layout-designer-structure>
     `
 })
-
 
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     template: /*html*/`
@@ -288,6 +288,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     _dragdrop(e) {
         e.stopPropagation();
+        this.data.action = { action: this.data.action, props: { item: this.data.dragItem.id, target: this.data.targetItem.id, to: this.data.to } };
+        fnAction(this.data, this.layout, true);
         this._clearDragTo();
     },
     _clearDragTo() {
@@ -362,3 +364,32 @@ const img = new Image();
 img.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAACXBIWXMAAAsSAAALEgHS3X78AAAAa0lEQVRIiWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcsDFpDjJ7p8kB5KjoeB/D0CDExDLeSRAcjtTIPHOeSBUQ8MNBj1wECDUQ8MNBj1wECDUQ8MNGACteqGquNBbgc3SUGtuiHZnH7L8gAAtichl6hs6rYAAAAASUVORK5CYII=`;
 const img3 = new Image();
 img3.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAUCAYAAADC1B7dAAAACXBIWXMAAAsSAAALEgHS3X78AAAA4klEQVRYhWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcuDqwWsNsiuZgF5ZqLLB+mh5BkYyN8jwMDAwIoixjTUYgYZ8LL/Ew9b/P2J9oTfR2DCTIPCZWQCQfb/LKDUBUplMBNYhponsAFYTIHy1JCOIRhAjqlh4SEYAJUHw8pDDEO9UMAGRj002MGohwY7GH4eArVaB4E7yAIffzFiaAM3wUGtVlDzAVTjDgmfQD3z6SdmAmOB9CdYGUBtoRbbodmNQI4peIwMl5hi/P//P4oCUEwN4Q7fU4yYQIqpodclf8vyAAC+a17T0iNSKwAAAABJRU5ErkJggg==`;
+
+const findRecursive = (owner, id) => {
+    if (!owner.items?.length) return;
+    return owner.items.reduce((res, i) => {
+        if (i.id + '' === id + '') res = i;
+        return res || findRecursive(i, id);
+    }, undefined);
+}
+
+const fnAction = (data, item, save = false) => {
+    const act = data.action;
+    const jsonString = JSON.stringify(act);
+    if (data.lastAction === jsonString) return;
+    data.lastAction = jsonString;
+    const actions = {
+        move: () => {
+            const dragItem = findRecursive(item.$owner, act.props.item);
+            const targItem = findRecursive(item.$owner, act.props.target);
+            if (!dragItem || !targItem) return;
+        }
+    }
+    if (actions[act.action]) {
+        console.log('..... execute action - ', jsonString);
+        actions[act.action](data, item);
+    }
+    if (save) {
+
+    }
+}
