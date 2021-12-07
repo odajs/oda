@@ -106,6 +106,12 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         this.expression == 0 && this.stack.length === 1 ? this.stack.splice(0, 1, model) : this.stack.push(model); // if there is only zero in the expression, replace it with the entered character
         if (model?.hint)
             this.hints.unshift({key: model?.hint, hint: model?.hint});
+        if (/^[a-zA-Z(]/.test(model?.expr || model?.name || model?.key) && /[0-9)]$/.test(this.stack[this.stack.length-2]?.key)) { // if immediately after the number certain symbols follow, you must substitute multiplication
+            this.stack.splice(this.stack.length-1, 1, {key: model.key, name: model?.name, expr: `*${model?.expr}`, hint: model?.hint});
+        }
+        if (/^\d/.test(model?.key || model?.expr) && /[a-zA-Z)]$/.test(this.stack[this.stack.length-2]?.expr || this.stack[this.stack.length-2]?.key)) { // if the number is written immediately after certain characters, it is necessary to insert multiplication
+            this.stack.splice(this.stack.length-1, 1, {key: model.key, expr: `*${model.key}`})
+        }
         this.expression = undefined;
         this.hint = undefined;
         try {
