@@ -16,9 +16,13 @@ ODA({is:'oda-minesweeper',
     attached(){
         this.init();
     },
+
     props:{
+        iconSize: {
+            default: 48,
+        },
         colors:['', 'blue', 'green', 'red', 'magenta'],
-        iconSize: 100,
+
         cols:{
             default: 20,
             // save: true
@@ -29,8 +33,12 @@ ODA({is:'oda-minesweeper',
         },
         mineCount:{
             default: 50,
-            // save: true
+            save: true
         },
+        borderWidth:{
+            default: 4,
+            save: true
+        }
     },
     model: [],
     init(){
@@ -98,7 +106,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
             }
             .btn{
                 @apply --border;
-                border-width: 8px;
+                border-width: {{borderWidth}}px;
                 box-sizing: border-box;
                 border-left-color: var(--content-background);
                 border-top-color: var(--content-background);
@@ -115,7 +123,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
                 left: 0px;
                 top: 0px;
                 text-align: center;
-                font-size: xxx-large;
+                font-size: x-large;
                 align-items: center;
                 font-weight: bolder;
             }
@@ -123,7 +131,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
         <div ~if="mine?.status === 'opened'" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
-        <button :error="mine?.error" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
+        <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
             <oda-icon class="flex" :icon :icon-size="iconSize*.5"></oda-icon>
         </button>
     `,

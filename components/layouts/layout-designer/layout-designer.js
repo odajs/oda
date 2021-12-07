@@ -50,15 +50,22 @@ ODA({ is: 'oda-layout-designer-structure',
     layout: null,
     iconSize: 32,
     get $saveKey() {
-        return this.layout.$owner.name;
+        return this.layout?.name;
     },
     props: {
         settings: {
             default: { acts: [] },
             save: true
         }
-    }
-
+    },
+    observers: [
+        function setLayout(layout) {
+            if (layout) {
+                console.log(layout)
+                layout._structure = this;
+            }
+        }
+    ]
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -320,10 +327,10 @@ KERNEL({
                 this.items = items.map(i => new Layout(i, this.key, this, this))
             })
         }
-        return items?.map(i => new Layout(i, this.key, this, this))
+        return this.items = items?.map(i => new Layout(i, this.key, this, this))
     },
     get id() {
-        return this.data?.id || this.data?.name;
+        return this.data?.id || this.data?.name || 'root';
     },
     get name() {
         return this.data?.name || this.id;
@@ -390,6 +397,9 @@ const fnAction = (data, item, save = false) => {
         actions[act.action](data, item);
     }
     if (save) {
-
+        item.$owner._structure.settings ||= {};
+        item.$owner._structure.settings.acts ||= [];
+        item.$owner._structure.settings.acts.push(act);
+        console.log('..... acts - ', item.$owner._structure.settings.acts);
     }
 }
