@@ -24,12 +24,12 @@
             </div>
         `,
         mask: '# #.000',
-        value: 0,
-        get maskedValue(){
-
-
-
-            return this.value;
+        value: [],
+        get amountOfNumbers () {
+            return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0;
+        },
+        get maskedValue () {
+            return (+this.value.join('')).toFixed(this.amountOfNumbers);
         },
         async onInput(e){
             const char = e.data;
@@ -37,13 +37,17 @@
             const end = e.target.selectionEnd;
             switch (e.inputType) {
                 case 'insertText': {
-
+                    this.value.splice(start-1, 0, char);
+                    this.maskedValue = undefined;
                 } break;
                 case 'deleteContentBackward': {
-
+                    this.value.splice(end, 1);
+                    e.target.setSelectionRange(start-1, end-1);
+                    this.maskedValue = undefined;
                 } break;
                 case 'deleteContentForward': {
-
+                    this.value.splice(start, 1);
+                    this.maskedValue = undefined;
                 } break;
             }
         }
