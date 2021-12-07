@@ -5,61 +5,78 @@
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "credit-calculator",
     "label": "Кредитный калькулятор",
     "content": {
       "link": "index.html"
     }
-  }, {
-     "name": "tetris",
+  },
+  {
+    "name": "tetris",
     "label": "Тетрис",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
+    "name": "minesweeper",
+    "label": "Сапер",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
     "name": "oda-doom",
     "label": "oda-doom",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "l-system",
     "label": "L-System",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "bugs",
     "label": "Жуки",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "in-yan",
     "label": "Инь ян",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "wiki",
     "label": "oda-wiki (prototype)",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "sierpinski-triangle",
     "label": "sierpinski-triangle",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "figure-digit",
     "label": "Распознавание рукописных цифр",
     "content": {
       "link": "index.html"
     }
-  }, {
+  },
+  {
     "name": "html-live",
     "label": "HTML editor with live preview",
     "content": {

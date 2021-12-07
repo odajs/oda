@@ -20,7 +20,7 @@ ODA({is:'oda-minesweeper',
         colors:['', 'blue', 'green', 'red', 'magenta'],
         iconSize: 100,
         cols:{
-            default: 10,
+            default: 20,
             // save: true
         },
         rows:{
@@ -28,7 +28,7 @@ ODA({is:'oda-minesweeper',
             // save: true
         },
         mineCount:{
-            default: 20,
+            default: 50,
             // save: true
         },
     },
@@ -86,7 +86,7 @@ ODA({is:'oda-minesweeper-field',
         <div ~for="(row, rowIdx) in rows" class="horizontal flex">
             <oda-minesweeper-mine class="no-flex" :icon-size ~for="(col, colIdx) in cols" :mine="model.find(i=>(i.y === rowIdx && i.x === colIdx))" ~style="{width: iconSize+'px', height: iconSize+'px'}"></oda-minesweeper-mine>
         </div>
-    `
+    `,
 })
 ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
     template:`
@@ -144,15 +144,12 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
     },
     get icon(){
         switch (this.mine?.status){
-            case 'opened':{
+            case 'opened':
                 return 'odant:spin';
-            }
-            case 'locked':{
+            case 'locked':
                 return 'icons:block';
-            }
-            case 'bang':{
+            case 'bang':
                 return 'icons:error';
-            }
         }
         return ' ';
     },
@@ -163,7 +160,6 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
             else
                 this.mine.status = '';
         }
-
     },
     onTap(e){
         if (this.mine.status === 'locked')
@@ -178,6 +174,6 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
 })
 ODA({is:'oda-minesweeper-display',
     template:`
-    дисплей 
-`
+        дисплей
+    `
 })
