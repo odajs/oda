@@ -263,8 +263,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this._clearDragTo();
         if (this.data?.dragItem) {
             this.layout.dragTo = 'drag-to-error';
-            if ((this.data.selection && this.data.selection.includes(this.data.dragItem) && this.isSelected) || this.data.dragItem === this.layout) return;
-            if (this.data.dragItem.owner !== this.layout.owner) return;
+            if (this.data.dragItem.$owner !== this.layout.$owner || this.data.dragItem === this.layout) return;
             this._clearDragTo();
             e.preventDefault();
             let to = '',

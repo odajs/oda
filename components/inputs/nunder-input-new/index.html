@@ -1,0 +1,51 @@
+<meta charset="UTF-8">
+<oda-number></oda-number>
+<script type="module">
+    import  '/web/oda/oda.js';
+    ODA({is:'oda-number',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                }
+                input{
+                    text-align: right;
+                    width: 200px;
+                    margin: 16px;
+                }
+                div{
+                    align-items: center;
+                }
+            </style>
+            <span>value: {{value}}</span>
+            <span>mask:<input ::value="mask"></span>
+            <div class="horizontal">
+                <input @input="onInput" :value="maskedValue">
+            </div>
+        `,
+        mask: '# #.000',
+        value: 0,
+        get maskedValue(){
+
+
+
+            return this.value;
+        },
+        async onInput(e){
+            const char = e.data;
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            switch (e.inputType) {
+                case 'insertText': {
+
+                } break;
+                case 'deleteContentBackward': {
+
+                } break;
+                case 'deleteContentForward': {
+
+                } break;
+            }
+        }
+    })
+</script>

@@ -6,6 +6,6 @@ ODA({
     is: "demo-component",
     imports: './module2.js',
     template: `
-        <input value='Это мой компонент'>
+        <span style="border:dashed">Это demo-компонент</span>
     `,
 });

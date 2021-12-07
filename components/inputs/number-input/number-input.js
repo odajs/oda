@@ -20,6 +20,8 @@ ODA({is:'oda-number-input',
         <span>mask: {{mask}}</span>
         <input disabled :value>
         <input @input="_input" @select="selectionchange" :value="inputValue">
+        
+        
         <input disabled :value="displayValue">
         <input @oninvalid="onInvalid" type="text" pattern="[A-Za-z]{3}" title="Three letter country code" required>
         <input type="tel" pattern="2-[0-9]{3}-[0-9]{3}" placeholder="+_(__)___ __ __" title="Three letter country code" required>
@@ -71,7 +73,7 @@ ODA({is:'oda-number-input',
         decimalSeparator: '.',
         locale: 'RU',
         format: {
-            default: 'decimal',
+            default: 'currency',
             list: ['percent', 'currency', 'text', 'decimal', '0.00' , '0.00%', '# 0,0000'],
         },
         mask: {
@@ -102,7 +104,7 @@ ODA({is:'oda-number-input',
                 return new Intl.NumberFormat('ru-RU').format(this.value);
             case '0.00%':
                 return new Intl.NumberFormat('ru-RU', { style: 'percent', minimumIntegerDigits: minInt, minimumFractionDigits: minFract }).format(this.value)
-            case '# #00.00$':
+            case '# #00.000':
                 return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumIntegerDigits: minInt, minimumFractionDigits: minFract }).format(this.value)
         };
     }
