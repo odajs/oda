@@ -94,16 +94,23 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         <div class="horizontal flex" style="flex-wrap: wrap;">
            <div @tap="layout.$focused = item" ~for="layout?.items" class="horizontal"  style="align-items: center; " :focused="item === layout.$focused">
                 <label class="flex">{{item?.label}}</label>
-                <oda-button :icon-size @tap.stop="ungroup" ~if="designMode" icon="icons:close"></oda-button>
+                <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
         </div>
         <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
     `,
-    ungroup(e) {
-
-    },
     addTab() {
         this.layout.addTab();
+    },
+    removeTab(e, i) {
+        i.$owner.items.push(...i.items.filter(i => {
+            i.owner = i.$owner;
+            if (!i.isVirtual) return i;
+        }));
+        this.layout.items.splice(this.layout.items.indexOf(i), 1);
+        if (this.layout.items.length === 0) {
+            this.layout.owner.items.splice(this.layout.owner.items.indexOf(this.layout), 1);
+        }
     }
 })
 
@@ -398,7 +405,7 @@ const fnAction = (data, item, save = false) => {
         act = data.action, 
         props = act.props,
         jsonString = JSON.stringify(act);
-    if (data.lastAction === jsonString) return;
+    // if (data.lastAction === jsonString) return;
     data.lastAction = jsonString;
     const actions = {
         move: () => {
