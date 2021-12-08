@@ -196,7 +196,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="_tap" :draggable
-                ~class="{selected: designMode && data?.selection?.includes(layout), 'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
+                ~class="{selected: designMode && data?.selection?.includes(layout) && !layout.isVirtual, 'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
                     ~class="{group:layout.isGroup}" 
@@ -243,7 +243,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     layout: null,
     get draggable() {
-        return this.layout && this.designMode ? 'true' : 'false';
+        return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
     },
     toGroup() {
         return this.layout.toGroup();
@@ -301,10 +301,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this._clearDragTo();
     },
     _clearDragTo() {
-        this.capture = this.layout.dragTo = this.layout.owner.dragTo = '';
-        if (this.layout.owner.owner?.dragTo) this.layout.owner.owner.dragTo = '';
-        this.layout.owner?.items?.forEach(i => i.dragTo = '');
-        if (this.domHost && this.domHost.layout) this.domHost.layout.dragTo = '';
+        this.capture = this.layout.dragTo = '';
+        let owner = this.layout.owner;
+        while (owner) {
+            owner.dragTo = '';
+            owner.items?.forEach(i => i.dragTo = '');
+            owner = owner.owner;
+        }
         this.render();
     }
 })
@@ -367,7 +370,12 @@ KERNEL({
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this);
         this.items.push(tab)
+        tab.owner = this.owner;
+        tab.$owner = this.$owner;
         this.$focused = tab;
+        const block = new Layout({ label: `...` }, this.key, tab);
+        block.isVirtual = true;
+        tab.items = [block];
     }
 })
 
@@ -404,6 +412,10 @@ const fnAction = (data, item, save = false) => {
             idxTarg = props.to === 'left' ? idxTarg : idxTarg + 1;
             targItem.owner.items.splice(idxTarg, 0, drag);
             drag.owner = targItem.owner;
+            if (targItem.isVirtual) {
+                idxTarg = targItem.owner.items.indexOf(targItem);
+                targItem.owner.items.splice(idxTarg, 1);
+            }
         }
     }
     if (actions[act.action]) {
