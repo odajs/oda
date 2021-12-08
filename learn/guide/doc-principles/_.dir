@@ -13,5 +13,10 @@
         "name": "example",
         "label": "Пример раздела",
         "status": "ok"
+    },
+    {
+        "name": "markdown-doc.md",
+        "label": "Справка по Markdown",
+        "status": "ok"
     }
 ]
