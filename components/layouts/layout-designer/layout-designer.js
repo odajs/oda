@@ -275,15 +275,15 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             e.preventDefault();
             let to = '',
                 x = e.layerX,
-                y = e.layerY,
-                w = e.target.offsetWidth,
-                h = e.target.offsetHeight;
+                w = e.target.offsetWidth;
             x = (x - w / 2) / w * 2;
-            y = (y - h / 2) / h * 2;
-            if (Math.abs(x) > Math.abs(y))
+            // let y = e.layerY,
+            //     h = e.target.offsetHeight;
+            // y = (y - h / 2) / h * 2;
+            // if (Math.abs(x) > Math.abs(y))
                 to = x < 0 ? 'left' : 'right';
-            else
-                to = y < 0 ? 'top' : 'bottom';
+            // else
+            //     to = y < 0 ? 'top' : 'bottom';
             this.data.action = 'move';
             this.data.to = to;
             this.layout.dragTo = 'drag-to-' + to;
@@ -300,8 +300,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this._clearDragTo();
     },
     _clearDragTo() {
-        this.capture = '';
-        this.layout.dragTo = '';
+        this.capture = this.layout.dragTo = this.layout.owner.dragTo = '';
+        if (this.layout.owner.owner?.dragTo) this.layout.owner.owner.dragTo = ''; // ???
         this.layout.owner?.items?.forEach(i => i.dragTo = '');
         if (this.data.last) this.data.last.layout.dragTo = '';
         if (this.domHost && this.domHost.layout) this.domHost.layout.dragTo = '';
@@ -320,6 +320,7 @@ KERNEL({
     type: undefined,
     $expanded: false,
     get $owner() { return this._owner || this.owner?.$owner || this.owner || this },
+    set $owner(v) { this._owner = v },
     get items() {
         const items = this.data?.[this.key];
         if (items?.then) {
@@ -356,9 +357,12 @@ KERNEL({
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
+        group.owner = this.owner;
+        group.$owner = this.$owner;
         block.items = [this];
         this.owner.items.splice(myIdx, 1, group);
         this.owner = block;
+        this.$owner = this.$owner;
     },
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this);
@@ -393,12 +397,13 @@ const fnAction = (data, item, save = false) => {
             const dragItem = data.dragItem || findRecursive(data.dragItem.owner, act.props.item);
             const targItem = data.targetItem || findRecursive(data.targetItem.owner, act.props.target);
             if (!dragItem || !targItem) return;
-            const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
+            // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
             let idxTarg = targItem.owner.items.indexOf(targItem);
-            idxTarg = align === 'left' ? idxTarg - 1: idxTarg;
+            idxTarg = props.to === 'left' ? idxTarg : idxTarg + 1;
             targItem.owner.items.splice(idxTarg, 0, drag);
+            drag.owner = targItem.owner;
         }
     }
     if (actions[act.action]) {
