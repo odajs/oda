@@ -139,7 +139,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-                order: {{layout?.order || 'unset'}};
+                order: {{layout?._order || 'unset'}};
             }
             label{
                 font-size: small;
@@ -308,7 +308,7 @@ CLASS({ is: 'Layout',
         this.data = data || {};
         this.key = key;
         this.owner = owner;
-        this.order = order || 0;
+        this.order = this._order = order || 0;
         this._root = root;
     },
     owner: undefined,
@@ -320,10 +320,10 @@ CLASS({ is: 'Layout',
         const items = this.data?.[this.key];
         if (items?.then) {
             return items.then(items => {
-                this.items = items.map((i, order) => new Layout(i, this.key, this, this, order))
+                this.items = items.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
             })
         }
-        return this.items = items?.map((i, order) => new Layout(i, this.key, this, this, order))
+        return this.items = items?.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
     },
     get id() {
         return this.data?.id || this.data?.name || 'root';
@@ -368,6 +368,7 @@ CLASS({ is: 'Layout',
     removeTab(layout) {
         layout.root.items.splice(this.owner.items.indexOf(this), 0, ...layout.items.filter(i => {
             i.owner = i.root;
+            i._order = i.order;
             if (!i.isVirtual) return i;
         }));
         this.items.splice(this.items.indexOf(layout), 1);
@@ -388,8 +389,8 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 0, drag);
             drag.owner = targItem.owner;
         }
-        targItem.owner.items.sort((a, b) => a.order - b.oreder).map((i,idx) =>  i.order = idx < idxTarg ? idx : idx  + 1);
-        dragItem.order = idxTarg;
+        targItem.owner.items.sort((a, b) => a._order - b._oreder).map((i,idx) =>  i._order = idx < idxTarg ? idx : idx  + 1);
+        dragItem._order = idxTarg;
         if (targItem.isVirtual) {
             idxTarg = targItem.owner.items.indexOf(targItem);
             targItem.owner.items.splice(idxTarg, 1);
