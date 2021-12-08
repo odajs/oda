@@ -344,14 +344,13 @@ CLASS({ is: 'Layout',
     },
     toGroup() {
         const myIdx = this.owner.items.indexOf(this);
-        const group = new Layout({ label: `Group for ${this.label}` }, this.key, this, this.root);
+        const group = new Layout({ label: `Group for ${this.label}` }, this.key, this.owner, this.root);
         const block = new Layout({ label: `Group for ${this.label}` }, this.key, group, this.root);
         group.type = 'group';
         group.width = 0;
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
-        group.owner = this.owner;
         block.items = [this];
         this.owner.items.splice(myIdx, 1, group);
         this.owner = block;
@@ -359,7 +358,6 @@ CLASS({ is: 'Layout',
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
         this.items.push(tab)
-        tab.owner = this.owner;
         this.$focused = tab;
         const block = new Layout({ label: `...` }, this.key, tab, this.root);
         block.isVirtual = true;
