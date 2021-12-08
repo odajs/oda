@@ -12,14 +12,13 @@ ODA({ is: 'oda-layout-designer',
 <!--        <div ~if="designMode" :slot="designMode?'left-panel':'?'">дерево</div>-->
     `,
     data: null,
+    selection: [],
     props: {
         designMode: {
             default: false,
             set(n) {
-                if (this.data) {
-                    this.data.focused = null;
-                    this.data.selection = [];
-                }
+                if (!n)
+                    this.selection = [];
             }
         },
         keys: ''
@@ -45,7 +44,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 align-content: flex-start;
             }
         </style>
-        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size></oda-layout-designer-container>
+        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="selection.has(next)"></oda-layout-designer-container>
     `,
     layout: null,
     iconSize: 32,
@@ -55,7 +54,6 @@ ODA({ is: 'oda-layout-designer-structure',
     props: {
         settings: {
             default: { acts: [] },
-            save: true
         }
     },
     observers: [
@@ -145,6 +143,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /* flex-grow: {{layout?.noFlex?'1':'100'}}; */
                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /* flex-basis: auto; */
+                order: {{layout?.order}};
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
             }
@@ -161,10 +160,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
             .group{
                 @apply --header;
-            }
-            .selected {
-                @apply --focused;
-                background-color: lightyellow;
             }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);
@@ -203,7 +198,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="_tap" :draggable
-                ~class="{selected: designMode && data?.selection?.includes(layout) && !layout.isVirtual, 'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
+                ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
                     ~class="{group:layout.isGroup}" 
@@ -257,13 +252,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     _tap(e) {
         if (e.ctrlKey || e.metaKey) {
-            this.data.selection ||= [];
+            this.selection ||= [];
             if (this.data.focused && (e.target.domHost.layout.owner !== this.data.focused.owner)) return;
         } else {
-            this.data.selection = [];
+            this.selection = [];
         }
-        this.data.focused = this.layout;
-        this.data.selection.add(this.layout);
+        this.focused = this.layout;
+        this.selection.add(this.layout);
     },
     _dragstart(e) {
         e.stopPropagation();
@@ -278,7 +273,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this._clearDragTo();
         if (this.data?.dragItem) {
             this.layout.dragTo = 'drag-to-error';
-            if (this.data.dragItem.$owner !== this.layout.$owner || this.data.dragItem === this.layout) return;
+            if (this.data.dragItem.root !== this.layout.root || this.data.dragItem === this.layout) return;
             this._clearDragTo();
             e.preventDefault();
             let to = '',
@@ -318,24 +313,24 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this.render();
     }
 })
-KERNEL({
+CLASS({
     is: 'Layout',
-    ctor(data, key = 'items', owner, $owner) {
+    ctor(data, key = 'items', owner) {
         this.data = data || {};
         this.key = key;
         this.owner = owner;
-        this._owner = $owner;
     },
     owner: undefined,
     type: undefined,
     $expanded: false,
-    get $owner() { return this._owner || this.owner?.$owner || this.owner || this },
-    set $owner(v) { this._owner = v },
+    root(){
+        return this.owner || this;
+    },
     get items() {
         const items = this.data?.[this.key];
         if (items?.then) {
-            return items.then(items => {
-                this.items = items.map(i => new Layout(i, this.key, this, this))
+            return items.then((items, order) => {
+                this.items = items.map(i => new Layout(i, this.key, this, this, order))
             })
         }
         return this.items = items?.map(i => new Layout(i, this.key, this, this))
@@ -367,18 +362,14 @@ KERNEL({
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
-        group.owner = this.owner;
-        group.$owner = this.$owner;
         block.items = [this];
         this.owner.items.splice(myIdx, 1, group);
         this.owner = block;
-        this.$owner = this.$owner;
     },
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this);
         this.items.push(tab)
         tab.owner = this.owner;
-        tab.$owner = this.$owner;
         this.$focused = tab;
         const block = new Layout({ label: `...` }, this.key, tab);
         block.isVirtual = true;
@@ -429,10 +420,10 @@ const fnAction = (data, item, save = false) => {
         // console.log('..... execute action - ', jsonString);
         actions[act.action](data, item);
     }
-    if (save) {
-        item.$owner._structure.settings ||= {};
-        item.$owner._structure.settings.acts ||= [];
-        item.$owner._structure.settings.acts.push(act);
-        // console.log('..... acts - ', item.$owner._structure.settings.acts);
-    }
+    // if (save) {
+    //     item.$owner._structure.settings ||= {};
+    //     item.$owner._structure.settings.acts ||= [];
+    //     item.$owner._structure.settings.acts.push(act);
+    //     // console.log('..... acts - ', item.$owner._structure.settings.acts);
+    // }
 }
