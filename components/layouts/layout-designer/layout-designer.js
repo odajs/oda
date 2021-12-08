@@ -62,6 +62,7 @@ ODA({ is: 'oda-layout-designer-structure',
         function setLayout(layout) {
             if (layout) {
                 // console.log(layout)
+                this.data.$root ||= layout;
                 layout._structure = this;
             }
         }
@@ -301,9 +302,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     _clearDragTo() {
         this.capture = this.layout.dragTo = this.layout.owner.dragTo = '';
-        if (this.layout.owner.owner?.dragTo) this.layout.owner.owner.dragTo = ''; // ???
+        if (this.layout.owner.owner?.dragTo) this.layout.owner.owner.dragTo = '';
         this.layout.owner?.items?.forEach(i => i.dragTo = '');
-        if (this.data.last) this.data.last.layout.dragTo = '';
         if (this.domHost && this.domHost.layout) this.domHost.layout.dragTo = '';
         this.render();
     }
@@ -394,8 +394,8 @@ const fnAction = (data, item, save = false) => {
     data.lastAction = jsonString;
     const actions = {
         move: () => {
-            const dragItem = data.dragItem || findRecursive(data.dragItem.owner, act.props.item);
-            const targItem = data.targetItem || findRecursive(data.targetItem.owner, act.props.target);
+            const dragItem = data.dragItem || findRecursive(data.$root, act.props.item);
+            const targItem = data.targetItem || findRecursive(data.$root, act.props.target);
             if (!dragItem || !targItem) return;
             // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
