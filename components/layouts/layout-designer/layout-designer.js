@@ -13,12 +13,12 @@ ODA({ is: 'oda-layout-designer',
     `,
     data: null,
     selection: [],
+    dragInfo: {},
     props: {
         designMode: {
             default: false,
             set(n) {
-                if (!n)
-                    this.selection = [];
+                this.selection = [];
             }
         },
         keys: ''
@@ -44,7 +44,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 align-content: flex-start;
             }
         </style>
-        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="selection.has(next)"></oda-layout-designer-container>
+        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size></oda-layout-designer-container>
     `,
     layout: null,
     iconSize: 32,
@@ -54,17 +54,18 @@ ODA({ is: 'oda-layout-designer-structure',
     props: {
         settings: {
             default: { acts: [] },
+            save: true
         }
     },
-    observers: [
-        function setLayout(layout) {
-            if (layout) {
-                // console.log(layout)
-                this.data.$root ||= layout;
-                layout._structure = this;
-            }
-        }
-    ]
+    // observers: [
+    //     function setLayout(layout) {
+    //         if (layout) {
+    //             // console.log(layout)
+    //             this.dragInfo.$root ||= layout;
+    //             layout._structure = this;
+    //         }
+    //     }
+    // ]
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -100,15 +101,8 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     addTab() {
         this.layout.addTab();
     },
-    removeTab(e, i) {
-        i.$owner.items.push(...i.items.filter(i => {
-            i.owner = i.$owner;
-            if (!i.isVirtual) return i;
-        }));
-        this.layout.items.splice(this.layout.items.indexOf(i), 1);
-        if (this.layout.items.length === 0) {
-            this.layout.owner.items.splice(this.layout.owner.items.indexOf(this.layout), 1);
-        }
+    removeTab(e, layout) {
+        this.layout.removeTab(layout);
     }
 })
 
@@ -143,13 +137,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /* flex-grow: {{layout?.noFlex?'1':'100'}}; */
                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /* flex-basis: auto; */
-                order: {{layout?.order}};
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-            }
-            .structure{
-                margin-left: {{layout?.isGroup?0:iconSize}}px;
-                @apply --shadow; 
             }
             label{
                 font-size: small;
@@ -160,6 +149,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
             .group{
                 @apply --header;
+            }
+            [focused]{
+                @apply --content;
             }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);
@@ -194,10 +186,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         </style>
         <div ~if="designMode" ~is="designMode?'style':'div'">
              :host{
-                outline: 1px dashed blue;
+                outline: 1px dashed lightblue;
             }
         </div>
-        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="_tap" :draggable
+        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="onpointerdown" :draggable :focused="!layout.isVirtual && selection.has(layout)"
                 ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
@@ -233,11 +225,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }, { title: e.target.layout?.label });
             res.focusedItem.run.call(this)
         },
-        'dragstart': '_dragstart',
-        'dragend': '_dragend',
-        'dragover': '_dragover',
-        'dragleave': '_dragleave',
-        'drop': '_dragdrop',
+        'dragstart': 'ondragstart',
+        'dragend': 'ondragend',
+        'dragover': 'ondragover',
+        'dragleave': 'ondragleave',
+        'drop': 'ondragdrop',
     },
     labelPos: 'top',
     get showLabel() {
@@ -250,31 +242,28 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     toGroup() {
         return this.layout.toGroup();
     },
-    _tap(e) {
-        if (e.ctrlKey || e.metaKey) {
+    onpointerdown(e) {
+        if (e.ctrlKey || e.metaKey)
             this.selection ||= [];
-            if (this.data.focused && (e.target.domHost.layout.owner !== this.data.focused.owner)) return;
-        } else {
+        else
             this.selection = [];
-        }
-        this.focused = this.layout;
         this.selection.add(this.layout);
     },
-    _dragstart(e) {
+    ondragstart(e) {
         e.stopPropagation();
-        this.data.dragItem = this.layout;
-        e.dataTransfer.setDragImage((this.data.selection && this.data.selection.includes(this.data.dragItem) && this.data.selection.length) > 1 ? img3 : img, -20, 7);
+        this.dragInfo.dragItem = this.layout;
+        e.dataTransfer.setDragImage((this.selection && this.selection.includes(this.dragInfo.dragItem) && this.selection.length) > 1 ? img3 : img, -20, 7);
     },
-    _dragend(e) {
-        this._clearDragTo();
+    ondragend(e) {
+        this.clearDragTo();
     },
-    _dragover(e) {
+    ondragover(e) {
         e.stopPropagation();
-        this._clearDragTo();
-        if (this.data?.dragItem) {
+        this.clearDragTo();
+        if (this.dragInfo?.dragItem) {
             this.layout.dragTo = 'drag-to-error';
-            if (this.data.dragItem.root !== this.layout.root || this.data.dragItem === this.layout) return;
-            this._clearDragTo();
+            if (this.dragInfo.dragItem.root !== this.layout.root || this.dragInfo.dragItem === this.layout) return;
+            this.clearDragTo();
             e.preventDefault();
             let to = '',
                 x = e.layerX,
@@ -284,25 +273,25 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             //     h = e.target.offsetHeight;
             // y = (y - h / 2) / h * 2;
             // if (Math.abs(x) > Math.abs(y))
-                to = x < 0 ? 'left' : 'right';
+            to = x < 0 ? 'left' : 'right';
             // else
             //     to = y < 0 ? 'top' : 'bottom';
-            this.data.action = 'move';
-            this.data.to = to;
+            this.dragInfo.action = 'move';
+            this.dragInfo.to = to;
             this.layout.dragTo = 'drag-to-' + to;
-            this.data.targetItem = this.layout;
+            this.dragInfo.targetItem = this.layout;
         }
     },
-    _dragleave(e) {
-        this._clearDragTo();
+    ondragleave(e) {
+        this.clearDragTo();
     },
-    _dragdrop(e) {
+    ondragdrop(e) {
         e.stopPropagation();
-        this.data.action = { action: this.data.action, props: { item: this.data.dragItem.id, target: this.data.targetItem.id, to: this.data.to } };
-        fnAction(this.data, this.layout, true);
-        this._clearDragTo();
+        this.dragInfo.action = { action: this.dragInfo.action, props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
+        this.layout.move(this.dragInfo, true);
+        this.clearDragTo();
     },
-    _clearDragTo() {
+    clearDragTo() {
         this.capture = this.layout.dragTo = '';
         let owner = this.layout.owner;
         while (owner) {
@@ -313,27 +302,27 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this.render();
     }
 })
-CLASS({
-    is: 'Layout',
-    ctor(data, key = 'items', owner) {
+CLASS({ is: 'Layout',
+    ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
         this.key = key;
         this.owner = owner;
+        this.order = order || 0;
+        this._root = root;
     },
     owner: undefined,
     type: undefined,
     $expanded: false,
-    root(){
-        return this.owner || this;
-    },
+    get root() { return this._root || this.owner || this },
+    set root(v) { this._root = v },
     get items() {
         const items = this.data?.[this.key];
         if (items?.then) {
-            return items.then((items, order) => {
-                this.items = items.map(i => new Layout(i, this.key, this, this, order))
+            return items.then(items => {
+                this.items = items.map((i, order) => new Layout(i, this.key, this, this, order))
             })
         }
-        return this.items = items?.map(i => new Layout(i, this.key, this, this))
+        return this.items = items?.map((i, order) => new Layout(i, this.key, this, this, order))
     },
     get id() {
         return this.data?.id || this.data?.name || 'root';
@@ -355,75 +344,69 @@ CLASS({
     },
     toGroup() {
         const myIdx = this.owner.items.indexOf(this);
-        const group = new Layout({ label: `Group for ${this.label}` }, this.key, this);
-        const block = new Layout({ label: `Group for ${this.label}` }, this.key, group);
+        const group = new Layout({ label: `Group for ${this.label}` }, this.key, this, this.root);
+        const block = new Layout({ label: `Group for ${this.label}` }, this.key, group, this.root);
         group.type = 'group';
         group.width = 0;
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
+        group.owner = this.owner;
         block.items = [this];
         this.owner.items.splice(myIdx, 1, group);
         this.owner = block;
     },
     addTab() {
-        const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this);
+        const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
         this.items.push(tab)
         tab.owner = this.owner;
         this.$focused = tab;
-        const block = new Layout({ label: `...` }, this.key, tab);
+        const block = new Layout({ label: `...` }, this.key, tab, this.root);
         block.isVirtual = true;
         tab.items = [block];
+    },
+    removeTab(layout) {
+        layout.root.items.splice(this.owner.items.indexOf(this), 0, ...layout.items.filter(i => {
+            i.owner = i.root;
+            if (!i.isVirtual) return i;
+        }));
+        this.items.splice(this.items.indexOf(layout), 1);
+        if (this.items.length === 0) {
+            this.owner.items.splice(this.owner.items.indexOf(this), 1);
+        }
+    },
+    move(dragInfo, save = false) {
+        const dragItem = dragInfo.dragItem; // || findRecursive(dragInfo.$root, act.props.item);
+        const targItem = dragInfo.targetItem; // || findRecursive(dragInfo.$root, act.props.target);
+        if (!dragItem || !targItem) return;
+        // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
+        const idxDrag = dragItem.owner.items.indexOf(dragItem);
+        const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+        let idxTarg = targItem.owner.items.indexOf(targItem);
+        idxTarg = dragInfo.action.props.to === 'left' ? idxTarg : idxTarg + 1;
+        targItem.owner.items.splice(idxTarg, 0, drag);
+        drag.owner = targItem.owner;
+        if (targItem.isVirtual) {
+            idxTarg = targItem.owner.items.indexOf(targItem);
+            targItem.owner.items.splice(idxTarg, 1);
+        }
+        if (save) {
+            const action = JSON.stringify(dragInfo.action);
+            console.log(action);
+        }
     }
 })
 
-const getUUID = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) };
+// const getUUID = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) };
 const img = new Image();
 img.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAACXBIWXMAAAsSAAALEgHS3X78AAAAa0lEQVRIiWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcsDFpDjJ7p8kB5KjoeB/D0CDExDLeSRAcjtTIPHOeSBUQ8MNBj1wECDUQ8MNBj1wECDUQ8MNGACteqGquNBbgc3SUGtuiHZnH7L8gAAtichl6hs6rYAAAAASUVORK5CYII=`;
 const img3 = new Image();
 img3.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAUCAYAAADC1B7dAAAACXBIWXMAAAsSAAALEgHS3X78AAAA4klEQVRYhWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcuDqwWsNsiuZgF5ZqLLB+mh5BkYyN8jwMDAwIoixjTUYgYZ8LL/Ew9b/P2J9oTfR2DCTIPCZWQCQfb/LKDUBUplMBNYhponsAFYTIHy1JCOIRhAjqlh4SEYAJUHw8pDDEO9UMAGRj002MGohwY7GH4eArVaB4E7yAIffzFiaAM3wUGtVlDzAVTjDgmfQD3z6SdmAmOB9CdYGUBtoRbbodmNQI4peIwMl5hi/P//P4oCUEwN4Q7fU4yYQIqpodclf8vyAAC+a17T0iNSKwAAAABJRU5ErkJggg==`;
 
-const findRecursive = (owner, id) => {
-    if (!owner.items?.length) return;
-    return owner.items.reduce((res, i) => {
-        if (i.id + '' === id + '') res = i;
-        return res || findRecursive(i, id);
-    }, undefined);
-}
-
-const fnAction = (data, item, save = false) => {
-    const 
-        act = data.action, 
-        props = act.props,
-        jsonString = JSON.stringify(act);
-    // if (data.lastAction === jsonString) return;
-    data.lastAction = jsonString;
-    const actions = {
-        move: () => {
-            const dragItem = data.dragItem || findRecursive(data.$root, act.props.item);
-            const targItem = data.targetItem || findRecursive(data.$root, act.props.target);
-            if (!dragItem || !targItem) return;
-            // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
-            const idxDrag = dragItem.owner.items.indexOf(dragItem);
-            const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-            let idxTarg = targItem.owner.items.indexOf(targItem);
-            idxTarg = props.to === 'left' ? idxTarg : idxTarg + 1;
-            targItem.owner.items.splice(idxTarg, 0, drag);
-            drag.owner = targItem.owner;
-            if (targItem.isVirtual) {
-                idxTarg = targItem.owner.items.indexOf(targItem);
-                targItem.owner.items.splice(idxTarg, 1);
-            }
-        }
-    }
-    if (actions[act.action]) {
-        // console.log('..... execute action - ', jsonString);
-        actions[act.action](data, item);
-    }
-    // if (save) {
-    //     item.$owner._structure.settings ||= {};
-    //     item.$owner._structure.settings.acts ||= [];
-    //     item.$owner._structure.settings.acts.push(act);
-    //     // console.log('..... acts - ', item.$owner._structure.settings.acts);
-    // }
-}
+// const findRecursive = (owner, id) => {
+//     if (!owner.items?.length) return;
+//     return owner.items.reduce((res, i) => {
+//         if (i.id + '' === id + '') res = i;
+//         return res || findRecursive(i, id);
+//     }, undefined);
+// }
