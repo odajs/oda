@@ -25,31 +25,29 @@
         `,
         mask: '# #.000',
         value: [],
-        get amountOfNumbers () {
+        get rounding () {
             return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0;
         },
         get maskedValue () {
-            return (+this.value.join('')).toFixed(this.amountOfNumbers);
+            return (+this.value.join('')).toFixed(this.rounding).replace(/(?=(\d{3})+(?!\d)(?=\.))/g, " ");
         },
-        async onInput(e){
+        onInput(e){
             const char = e.data;
             const start = e.target.selectionStart;
             const end = e.target.selectionEnd;
             switch (e.inputType) {
                 case 'insertText': {
-                    this.value.splice(start-1, 0, char);
-                    this.maskedValue = undefined;
+                    /\d|\./.test(char) ? this.value.splice(start-1, 0, char) : false;
                 } break;
                 case 'deleteContentBackward': {
-                    this.value.splice(end, 1);
-                    e.target.setSelectionRange(start-1, end-1);
-                    this.maskedValue = undefined;
+                    this.value[start-1] === '.' ? this.value.splice(start-2, 2) : this.value.splice(start-1, 1);
+                    e.target.setSelectionRange(start, end);
                 } break;
                 case 'deleteContentForward': {
                     this.value.splice(start, 1);
-                    this.maskedValue = undefined;
                 } break;
             }
+            this.maskedValue = undefined;
         }
     })
 </script>

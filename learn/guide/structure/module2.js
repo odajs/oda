@@ -1,3 +1,3 @@
 //Пример для статьи Imports.
 
-document.body.append( document.createTextNode("- Загружен модуль module2.js -") );
+document.body.append( document.createTextNode("- Загружен модуль 2 -") );
