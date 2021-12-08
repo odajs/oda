@@ -29,6 +29,7 @@
     "@tools/theme-editor": "tools/styles/theme-editor.js",
     "@tools/modal": "tools/containers/modal/modal.js",
     "@tools/dialog": "tools/containers/dialog/dialog.js",
+    "@tools/dropdown": "tools/containers/dropdown/dropdown.js",
     "@tools/touch-router": "tools/touch-router/touch-router.js",
     "@tools/localization": "tools/localization/localization.js",
     "@oda/calculator": "components/tools/calculator/calculator.js"

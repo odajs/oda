@@ -25,32 +25,43 @@
         `,
         mask: '# 0.000',
         value: 0,
-        get rounding () {
-            return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0;
+        get minInt () {
+            return /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/) ? this.mask.match(/\d+(?=\.)/g)[0].length : 0 : 0;
+        },
+        get minFract () {
+            return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0; // a number of simbols after comma
         },
         get maskedValue () {
-            return (+this.value).toFixed(this.rounding).replace(/(?=(\d{3})+(?!\d)(?=\.))/g, " ");
+            const formattedValue = (+this.value).toFixed(this.minFract).replace(/\B(?=(\d{3})+(?!\d)(?=\.))/g, " ").padStart(this.minInt, 0); // formatted value
+            return `${formattedValue.toString().split('.')[0].padStart(this.minInt, 0)}.${formattedValue.toString().split('.')[1] || ''}`
         },
-        onInput(e){
-            const char = e.data;
-            const start = e.target.selectionStart;
-            const end = e.target.selectionEnd;
+        onInput (e) {
+            const char = e.data,
+                  start = e.target.selectionStart,
+                  end = e.target.selectionEnd,
+                  numberOfSeparators = this.maskedValue.match(/\s/g)?.length;
             switch (e.inputType) {
                 case 'insertText': {
-                    /\d|\./.test(char) ? this.value += char : false;
-                    this.value = this.value.replace(/^0+/, '');
+                    this.value = this.value.toString().replace(/^0+/, '');  // removing zeros in front of a number
+                    /\d|\./.test(char) ? this.value = this.value + char: false; // input only numbers and dots
+                    try {
+                        (new Function([], `with (this) {return ${this.value}}`));
+                    }
+                    catch (e) {
+                        this.value = this.value.replace(/.$/, '');
+                        this.maskedValue = undefined;
+                    }
                 } break;
                 case 'deleteContentBackward': {
-                    const lengthWithoutSpaces = this.maskedValue.replace(/\s/g, '').length-1;
-                    const numberOfSpaces = this.maskedValue.match(/\s/g)?.length;
-                    if (lengthWithoutSpaces === (start - numberOfSpaces) && this.value.length > lengthWithoutSpaces) {
+                    const lengthWithoutSpaces = this.maskedValue.replace(/\s/g, '').length-1; // number length without thousands separators
+                    if (this.maskedValue.length-1 === start && this.value.length > lengthWithoutSpaces) { // removing the last character from a formatted value
                         return this.value = this.value.slice(0, lengthWithoutSpaces - this.value.length)
                     }
-                    this.value = /\.$/.test(this.value) ? this.value.replace(/.{2}$/, '') : this.value.replace(/.$/, '');
+                    this.value = /\.$/.test(this.value) ? this.value.replace(/.{2}$/, '') : this.value.replace(/.$/, ''); // deletes the last character if it is not a period, and two characters if the last is a period
                     this.maskedValue = undefined;
                 } break;
                 case 'deleteContentForward': {
-                    this.value.splice(start, 1);
+                    this.value.replace(/.$/, '');
                 } break;
             }
             this.maskedValue = undefined;

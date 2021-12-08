@@ -1,36 +1,46 @@
 import ODA from '../../oda.js';
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
-Localization.path = import.meta.url.split('/').slice(0,-1).join('/');
-Localization.phraze = {}
-Localization.words= {}
 
 Localization.currentLocal = /* odaUserLocal || */ window.navigator.userLanguage || window.navigator.language || window.navigator.systemLanguage
-Localization.pathDictionary = Localization.path + '/ODA_dictionary.' + Localization.currentLocal + '.json'
-ODA.loadJSON(Localization.pathDictionary).then( res => { Localization.dictionary = res })
-    .catch( error => { console.log("Errol load dictionary: " + error)  })
+Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/../../locales/'; // locales path
+Localization.phraze = {}
+Localization.words = {}
+Localization.dictionary = { phraze:{'_':'_'}, words:{'_':'_'} }
 
+ODA.loadJSON(Localization.path + '_.dir').then(res => { 
+    Localization.localesAvailable = res    
+    Localization.lidx = res.findIndex(l => (l.name == Localization.currentLocal))
+    if ((res.find(l => (l.name == Localization.currentLocal)))!=undefined)
+        ODA.loadJSON(Localization.path + Localization.currentLocal + '.json').then(res => { Localization.dictionary = res})
+            .catch(error => { console.log("Errol load dictionary: " + error) })
+    }).catch(error => { console.log("Errol load locales available: " + error) })
+
+Localization._setDictionary = function(number) {
+    //let nn = Localization.localesAvailable[number].name
+    ODA.loadJSON(Localization.path + Localization.localesAvailable[number].name + '.json').then(res => { Localization.dictionary = res})
+        .catch(error => { console.log("Errol load dictionary: " + error) })
+    //console.log('dd',nn)
+}
 
 window.addEventListener('keydown', async e => {
-    if (e.code === 'KeyL' && e.altKey){
-        //console.log('dialog')
+    if (e.code === 'KeyL' && e.altKey) {
         var table = await ODA.createComponent("oda-localization-table");
-        //console.log(table)
-        //const lDialog = await 
-        ODA.showDialog( table, {}, {icon: 'icons:flag', title: 'Dictionarys',  
-                                    buttons: [{ label: 'Dowload', icon: 'icons:file-download' }] } )
-            .then( ok => {
-                ok.setNewDict() 
-                if (ok.focusedButton.label == 'Dowload') {ok.dlDict()}
-                
-                //console.log(ok.focusedButton)
+        ODA.showDialog(table, {}, {
+            icon: 'icons:flag', title: 'Dictionarys',
+            buttons: [{ label: 'Dowload', icon: 'icons:file-download' }]
+        })
+            .then(ok => {
+                ok.setNewDict()
+                if (ok.focusedButton.label == 'Dowload') { ok.dlDict() }
             })
-            .catch(err => {});
-        
+            .catch(err => { });
+
     }
 })
 
-ODA({ is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basic-input, @oda/toggle',
+ODA({
+    is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basic-input, @oda/toggle, @tools/dropdown, @oda/listbox',
     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
     template: /*html*/ `
         <style>
@@ -47,9 +57,9 @@ ODA({ is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basi
                 <div class='label'  @tap="eyeAll=!eyeAll"  :selected='!eyeAll'>Only visible</div>
                 <oda-toggle ::toggled='eyeAll' ></oda-toggle>
                 <div class='label' @tap="eyeAll=!eyeAll" :selected='eyeAll'>All</div></div>
-            <div class='selelem'> 
-                <oda-icon id='flag' :icon="'flags:'+ currentLocal.substr(0, 2).toLowerCase()"  :title="currentLocal" ></oda-icon>
-                <oda-basic-input :patern='"[A-Za-z]{2}-[A-Za-z]{2}"' ::value=currentLocal :read-only='true'><oda-basic-input></div>
+            <div class='selelem'>
+                <oda-selectbox :items="localesAvailable" ::sidx="lidx" ><oda-selectbox>
+            </div>
             
         </div>
         <oda-localization-grid ::content="phrazeBase" ~if="tDict" :header-names="['phraze','translate']" ></oda-localization-grid>
@@ -58,74 +68,73 @@ ODA({ is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basi
         <oda-localization-grid ::content="wordsDop" ~if="!tDict && eyeAll"></oda-localization-grid>
 
     `,
-    observers: ['_dataset( currentLocal )'],
-    props: { 
-        eyeAll:false, tDict:true, 
-        currentLocal : 'ru-Ru', // { get() {return ODA.localization.currentLocal} },
-        phrazeBase:[], phrazeDop:[], wordsBase:[], wordsDop:[],
-        
-    },
-    currentDict ()  {
-            let toObj = (arr, rez={}) => { for (let n of arr) { rez[n.key]=n.val }; return rez }
-            let extractObj = namE => toObj ( this[namE].filter(el => el.val != ''))
-            return { words: sumObAB ( extractObj ('wordsBase') , extractObj ('wordsDop')),
-                        phraze: sumObAB ( extractObj ('phrazeBase') , extractObj ('phrazeDop'))  }
+    observers: ['_dataset( currentLocal, lidx)'],
+    props: {
+        eyeAll: false, tDict: true,
+        currentLocal: 'ru-Ru', // { get() {return ODA.localization.currentLocal} },
+        phrazeBase: [], phrazeDop: [], wordsBase: [], wordsDop: [],
+        localesAvailable: [], lidx:{
+            set (lidx) {
+                Localization.lidx=lidx
+                Localization._setDictionary(lidx)
+            }
         },
-    setNewDict () { Localization.dictionary = this.currentDict() },
-    dlDict () {
+
+    },
+    currentDict() {
+        let toObj = (arr, rez = {}) => { for (let n of arr) { rez[n.key] = n.val }; return rez }
+        let extractObj = namE => toObj(this[namE].filter(el => el.val != ''))
+        return {
+            words: sumObAB(extractObj('wordsBase'), extractObj('wordsDop')),
+            phraze: sumObAB(extractObj('phrazeBase'), extractObj('phrazeDop'))
+        }
+    },
+    setNewDict() { Localization.dictionary = this.currentDict() },
+    dlDict() {
         const downLoad = document.createElement('a');
-        downLoad.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(this.currentDict(), null, '\t') );
+        downLoad.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(this.currentDict(), null, '\t'));
         downLoad.setAttribute('download', 'ODA_dictionary.' + this.currentLocal + '.json');
         downLoad.click();
     },
-    _nameDict(b) { return b ? 'phraze': 'words' },
-    _dataset( local ) {
+    _nameDict(b) { return b ? 'phraze' : 'words' },
+    _dataset(local,lidx) {
         const sPW = Localization.phraze, dP = Localization.dictionary.phraze,
-                sW = Localization.words, dW = Localization.dictionary.words, sP = subObAB(sPW,sW);
-                
-        let toData = (ob, rez=[]) => { for (let k in ob) { rez.push( {'key':k, 'val':ob[k]} ) }; return rez }
+            sW = Localization.words, dW = Localization.dictionary.words, sP = subObAB(sPW, sW);
 
-        this.wordsDop = toData ( subObAB(dW,sW) )
-        this.wordsBase = toData ( sumObAB( supObAB(dW,sW), sW) )
+        let toData = (ob, rez = []) => { for (let k in ob) { rez.push({ 'key': k, 'val': ob[k] }) }; return rez }
 
-        this.phrazeDop = toData ( subObAB(dP,sP) )
-        this.phrazeBase = toData ( sumObAB( supObAB(dP,sP), sP) )
+        this.wordsDop = toData(subObAB(dW, sW))
+        this.wordsBase = toData(sumObAB(supObAB(dW, sW), sW))
 
-        //const sss = ODA.localization.path  + '/ODA_dictionary.' + 'ru-RU' + '.json'
-        //console.log(sss)
-        
-        //const wordsDop = subObAB(dW,sW), phrazeDop = subObAB(dP,sP), words = supObAB(sW,dW), phraze = supObAB(sP,dP)
+        this.phrazeDop = toData(subObAB(dP, sP))
+        this.phrazeBase = toData(sumObAB(supObAB(dP, sP), sP))
 
-        
-        // console.log(toData( subObAB(dW,sW) ))
-        // console.log( sumObAB( supObAB(dW,sW), sW) )
+        //console.log(Localization.localesAvailable)
+        this.localesAvailable=Localization.localesAvailable
+        //if (Localization.lidx!=-1) this.lidx = Localization.lidx
 
-        
-        //this.headerNames = [this._nameDict(tDict),'translate']
-        //console.log(tDict)
-        // this.columns = [{label:this._nameDict(tDict), name:'key', template: 'oda-localization-cel',fix:'left'}
-        //                 , {label:'translate', name:'val', template: 'oda-localization-cel'}]
-        // let dict = ODA.localization.dictionary[this._nameDict(tDict)], 
-        //     curr = tDict ? subObAB(ODA.localization.phraze, ODA.localization.words) : ODA.localization.words,
-        //     dataOb = eyeAll ? sumObAB(dict,curr) : sumObAB( supObAB(dict,curr),curr)
-
-        //console.log( data )
-        // var dataArr = []
-        // for (let k in dataOb) { dataArr.push( {'key':k, 'val':dataOb[k]} ) }
-        // this.content = dataArr
+    },
+    _lselect () {//<oda-selectbox :items="localesAvailable" ><oda-selectbox></oda-selectbox>
+        const dropdown = document.createElement('oda-list-box');
+        //document.body.appendChild(dropdown);
+        //console.log(dropdown)
+        ODA.showDropdown(dropdown, {items:this.localesAvailable}, {}).then(resolve => {
+           // document.body.removeChild(dropdown);
+        });
     },
 
 })
 
-ODA({ is: 'oda-localization-cel', extends: 'oda-table-cell-base',
-    template: /*html*/ `<oda-basic-input ::value :read-only ></oda-basic-input>`,
+ODA({
+    is: 'oda-localization-cel', template: /*html*/ `<oda-basic-input ::value :read-only ></oda-basic-input>`,
     props: {
         value() { return this.item?.[this.column?.name] },
-        readOnly() { return (this.column?.name == 'key')}
+        readOnly() { return (this.column?.name == 'key') }
     }
 })
 
-ODA({ is: 'oda-localization-grid', imports: '@oda/basic-input', template: /*html*/ `
+ODA({
+    is: 'oda-localization-grid', imports: '@oda/basic-input', template: /*html*/ `
         <style>
             #gridall {display: grid; grid-template-columns: 1fr 1fr; grid-gap: 1px; background:#999; padding:2px;}
             .key {grid-column:1;background:#fff;}
@@ -140,18 +149,52 @@ ODA({ is: 'oda-localization-grid', imports: '@oda/basic-input', template: /*html
         <oda-basic-input :class="'val '+ ((index%2)? 'even':'odd')" :style="'grid-row:'+(index+2)" ~for="content" ::value="content[index].val"> </oda-basic-input>
         </div>
     `,
-    props:{
+    props: {
         content: [],
         headerNames: [],
-        
     },
-
 })
 
-function sumObAB (a,b) { return {...b, ...a} }
-function subObAB (a,b) { let rez = {...a}
+ODA({   is: 'oda-selectbox', imports: '@oda/button',  template: /*html*/ `
+        <style>
+            :host {position: relative; }
+            .line {display:flex; width:100%; justify-content: space-between; cursor: pointer; height:40px; }
+            .label {display: inline-grid;}
+            .hide-- {display: none;}
+            .option {position:absolute; background:rgb(240, 240, 240); z-index: 99; border:1px solid rgb(153, 153, 153); }
+            .option oda-button { justify-content: flex-start ; margin:1px -1px; padding:2px;}
+            
+        </style>
+        <div class="line" @tap="showOptions=!showOptions">
+            <oda-icon :icon="items[sidx].icon" ></oda-icon>
+            <div class="label">{{items[sidx].label}}</div>
+            <oda-icon icon="icons:arrow-drop-down" ></oda-icon>
+        </div>
+        <div ~if="showOptions" class="option">
+            <oda-button ~for="items"    @tap="focusedItem=index" :icon="item.icon" :label="item.label"></oda-button>
+        </div>
+        `,
+        props: {
+            items: [{ icon: "image:style", label: "style" }, { icon: "communication:vpn-key", label: "vpn-key" }],
+            sidx:0,
+            showOptions:false,
+            focusedItem: {set (e) {
+                this.sidx=e
+                this.showOptions=false
+            }}
+            
+        },
+    })
+
+
+function sumObAB(a, b) { return { ...b, ...a } }
+function subObAB(a, b) {
+    let rez = { ...a }
     for (let key in b) { if (key in a) delete rez[key] }
-    return rez }
-function supObAB (a,b) { let rez = {}
-    for (let key in a) { if (key in b) rez[key]=a[key] }
-    return rez }
+    return rez
+}
+function supObAB(a, b) {
+    let rez = {}
+    for (let key in a) { if (key in b) rez[key] = a[key] }
+    return rez
+}
