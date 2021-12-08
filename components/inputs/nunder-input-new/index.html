@@ -25,14 +25,19 @@
         `,
         mask: '# 0.000',
         value: 0,
+        get separator () {
+            return /\s/.test(this.mask) ? ' ' : ''
+        },
         get minInt () {
-            return /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/) ? this.mask.match(/\d+(?=\.)/g)[0].length : 0 : 0;
+            return /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/) ? this.mask.match(/\d+(?=\.)/g)[0].length : 0 : 0; // a number of simbols before comma
         },
         get minFract () {
             return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0; // a number of simbols after comma
         },
         get maskedValue () {
-            const formattedValue = (+this.value).toFixed(this.minFract).replace(/\B(?=(\d{3})+(?!\d)(?=\.))/g, " ").padStart(this.minInt, 0); // formatted value
+            const formattedValue = (+this.value).toFixed(this.minFract). // rounding
+                  replace(/\B(?=(\d{3})+(?!\d)(?=\.))/g, this.separator). // added digit capacity
+                  padStart(this.minInt, 0); // the integer part of the number is matched to the mask
             return `${formattedValue.toString().split('.')[0].padStart(this.minInt, 0)}.${formattedValue.toString().split('.')[1] || ''}`
         },
         onInput (e) {

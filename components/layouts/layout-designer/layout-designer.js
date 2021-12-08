@@ -139,6 +139,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
+                order: {{layout?.order || 'unset'}};
             }
             label{
                 font-size: small;
@@ -357,6 +358,7 @@ CLASS({ is: 'Layout',
     },
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
+        tab.type = 'group';
         this.items.push(tab)
         this.$focused = tab;
         const block = new Layout({ label: `...` }, this.key, tab, this.root);
@@ -379,11 +381,15 @@ CLASS({ is: 'Layout',
         if (!dragItem || !targItem) return;
         // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
-        const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
         let idxTarg = targItem.owner.items.indexOf(targItem);
         idxTarg = dragInfo.action.props.to === 'left' ? idxTarg : idxTarg + 1;
-        targItem.owner.items.splice(idxTarg, 0, drag);
-        drag.owner = targItem.owner;
+        if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
+            const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+            targItem.owner.items.splice(idxTarg, 0, drag);
+            drag.owner = targItem.owner;
+        }
+        targItem.owner.items.sort((a, b) => a.order - b.oreder).map((i,idx) =>  i.order = idx < idxTarg ? idx : idx  + 1);
+        dragItem.order = idxTarg;
         if (targItem.isVirtual) {
             idxTarg = targItem.owner.items.indexOf(targItem);
             targItem.owner.items.splice(idxTarg, 1);
