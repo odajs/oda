@@ -1,24 +1,12 @@
 <meta charset="utf-8">
 <oda-tester>
-    <oda-scheme-layout-test></oda-scheme-layout-test>
+    <oda-scheme-layout id="layout"></oda-scheme-layout>
 </oda-tester>
 
 <script type="module">
     import '/web/oda/oda.js'
     import './scheme-layout.js'
-    import '/web/oda/components/buttons/button/button.js'
-
-    ODA({
-        is: 'oda-scheme-layout-test', extends: 'oda-scheme-layout',
-        template: `
-        <oda-button slot="header-right" icon="editor:mode-edit" :fill="editMode?'red':''" @tap="editMode = !editMode"></oda-button>
-        <div slot="header-right" class="horizontal no-flex">
-            <oda-button icon="icons:zoom-in" @tap="zoomIn"></oda-button>
-            <oda-button id="resetZoomButton" style="padding: 0 4px" @tap="zoom = 1" :label="Math.round(zoom * 100) + '%'"></oda-button>
-            <oda-button icon="icons:zoom-out" @tap="zoomOut"></oda-button>
-        </div>
-        `,
-        items: [
+    layout.items = [
             {
                 "is": "oda-button", "id": '1',
                 "item": { "x": 100, "y": 180, "id": "id-1" },
@@ -127,10 +115,5 @@
                     ]
                 }
             }
-        ],
-
-        outerLinkTap(e) {
-            console.log('outerLink tap: ', e.target.item);
-        }
-    });
+            ]
 </script>

@@ -45,13 +45,24 @@
                     replace(/\B(?=(\d{3})+(?!\d))/g, this.separator).
                     padStart(this.minInt, 0); 
             }
-            return (formattedValue.toString().split('.').length > 1) ?
+            formattedValue =  (formattedValue.toString().split('.').length > 1) ?
                 `${formattedValue.toString().split('.')[0].padStart(this.minInt, 0)}.${formattedValue.toString().split('.')[1] || ''}` :
-                formattedValue.toString().padStart(this.minInt, 0)
+                formattedValue.toString().padStart(this.minInt, 0);
+            if(this.input) {
+                const start = this.input.selectionStart
+                const end = this.input.selectionEnd
+                this.async(()=>{
+                    this.input.selectionStart = start;
+                    this.input.selectionEnd = end;
+                })
+            }
+
+            return formattedValue;
         },
         onInput (e) {
+            this.input =  e.target;
             const char = e.data,
-                  start = e.target.selectionStart,
+                start = e.target.selectionStart,
                   end = e.target.selectionEnd,
                   numberOfSeparators = this.maskedValue.match(/\s/g)?.length;
             switch (e.inputType) {
@@ -63,7 +74,6 @@
                     }
                     catch (e) {
                         this.value = this.value.replace(/.$/, '');
-                        this.maskedValue = undefined;
                     }
                 } break;
                 case 'deleteContentBackward': {
@@ -72,13 +82,12 @@
                         return this.value = this.value.slice(0, lengthWithoutSpaces - this.value.length)
                     }
                     this.value = /\.$/.test(this.value) ? this.value.replace(/.{2}$/, '') : this.value.replace(/.$/, ''); // deletes the last character if it is not a period, and two characters if the last is a period
-                    this.maskedValue = undefined;
                 } break;
                 case 'deleteContentForward': {
                     this.value = this.value.slice(start+1);
                 } break;
             }
-            this.maskedValue = undefined;
+
         }
     })
 </script>

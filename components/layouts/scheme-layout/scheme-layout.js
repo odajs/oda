@@ -6,16 +6,17 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 @apply --flex;
                 position: relative;
                 overflow: auto;
-                @apply --header;
             }
             *[selected]{
                 z-index: 1;
             }
         </style>
-        <svg :width :height view-box="" style="z-index: 0">
-            <path ~for="link in links" stroke="blue" :stroke-width="(link === focusedItem) ? 2 : 1" :item="link" fill="transparent" :props="link" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
-        </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.has(itm)"></oda-scheme-container>
+        <div slot="content" class="flex vertical">
+            <svg :width :height view-box="" style="z-index: 0">
+                <path ~for="link in links" stroke="blue" :stroke-width="(link === focusedItem) ? 2 : 1" :item="link" fill="transparent" :props="link" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
+            </svg>
+            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.item?.x}px, \${itm?.item?.y}px, 0px)\`, zoom: zoom}" :selected="selection.has(itm)"></oda-scheme-container>      
+        </div>
     `,
     findPin(link){
         return this.$$('oda-scheme-container').find(i=>{
@@ -45,9 +46,9 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             i.links && res.push(...i.links);
             return res;
         }, []);
-        if(links.length)
+        // if(links.length)
             return links;
-        return undefined;
+        // return undefined;
     },
     props: {
         editMode: {
@@ -60,25 +61,25 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                     this.focusedLink = null;
                 }
             },
-            save: true
+            // save: true
         },
-        snapToGrid: {
-            default: true,
-            save: true
-        },
-        zoom: {
-            default: 1,
-            save: true,
-            set(n) {
-                this.dispatchEvent(new Event('resize'));
-                this.updateLinks();
-            }
-        }
+        // snapToGrid: {
+        //     default: true,
+        //     save: true
+        // },
+        // zoom: {
+        //     default: 1,
+        //     save: true,
+        //     set(n) {
+        //         this.dispatchEvent(new Event('resize'));
+        //         this.updateLinks();
+        //     }
+        // }
     },
     focusedItem: null,
     selection: [],
     items: [],
-    zoomKoef: 1.5,
+    // zoomKoef: 1.5,
     listeners: {
         contextmenu(e) {
             e.preventDefault();
@@ -142,22 +143,22 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             this.focusedItem = null;
             this.focusedLink = null;
         },
-        wheel(e) {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                if (e.wheelDelta > 0)
-                    this.zoomIn();
-                else
-                    this.zoomOut();
-                return;
-            }
-            if (e.shiftKey) {
-                e.preventDefault();
-                this.scrollLeft -= e.wheelDelta;
-                return;
-            }
-
-        },
+        // wheel(e) {
+        //     if (e.ctrlKey) {
+        //         e.preventDefault();
+        //         if (e.wheelDelta > 0)
+        //             this.zoomIn();
+        //         else
+        //             this.zoomOut();
+        //         return;
+        //     }
+        //     if (e.shiftKey) {
+        //         e.preventDefault();
+        //         this.scrollLeft -= e.wheelDelta;
+        //         return;
+        //     }
+        //
+        // },
     },
     select(e) {
         if (!this.editMode) return;
@@ -179,9 +180,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     zoomOut() {
         this.zoom = this.zoom / this.zoomKoef;
-    },
-    save() {
-
     },
     removeBlock(block) {
         this.items.remove(block);
@@ -279,7 +277,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     </style>
     <oda-scheme-pin ~for="connectors" :item></oda-scheme-pin ~props="con?.props">
     <div ~for="con of [...connectors]" class="pin-space" style="margin:4px;">
-        <div class="pin-space pin" ~if="editMode || con?.links?.length || isVisiblePin(con)"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
+        <div class="pin-space pin" ~if="editMode || con?.links?.length"  ~is="con?.is || 'div'" :props="con?.props || {}" :item="con" @down.stop :draggable="editMode?'true':'false'" @dragstart="dragstart" @dragover="dragover" @drop="drop"></div>
     </div>
     `,
     observers: [
