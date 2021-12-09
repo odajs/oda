@@ -43,29 +43,23 @@ ODA({ is: 'oda-layout-designer-structure',
                 padding: 8px; /*//{{layout?.isGroup?'8px':''}};*/
                 align-content: flex-start;
             }
+            [selected] {
+                background-color: var(--section-background);
+            }
         </style>
-        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size></oda-layout-designer-container>
+        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
     `,
     layout: null,
     iconSize: 32,
     get $saveKey() {
-        return this.layout?.name;
+        return this.layout?.root?.name || this.layout?.root?.id || 'root';
     },
     props: {
         settings: {
-            default: { acts: [] },
+            default: [],
             save: true
         }
-    },
-    // observers: [
-    //     function setLayout(layout) {
-    //         if (layout) {
-    //             // console.log(layout)
-    //             this.dragInfo.$root ||= layout;
-    //             layout._structure = this;
-    //         }
-    //     }
-    // ]
+    }
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -120,6 +114,7 @@ ODA({ is: 'oda-layout-designer-group-structure',
                 margin-left: {{iconSize}}px !important;
                 @apply --shadow;
             }
+
         </style>
         <oda-layout-designer-structure ~if="item === layout.$focused" class="flex" ~for="layout?.items" :layout="item"></oda-layout-designer-structure>
     `
@@ -190,9 +185,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 outline: 1px dashed lightblue;
             }
         </div>
-        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="onpointerdown" :draggable :focused="!layout.isVirtual && selection.has(layout)"
+        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="onpointerdown" :draggable
                 ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
-            <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap="expand()"></oda-icon>
+            <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
             <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
                     ~class="{group:layout.isGroup}" 
                     ~style="{alignItems: (width && !layout?.type)?'center':''}">
@@ -218,8 +213,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
                     label: 'grouping', run: () => {
-                        const action = { acts: "grouping", target: this.layout.id }
-                        this.settings.acts.push(action);
+                        const action = { action: "grouping", props: { target: this.layout.id } };
+                        this.settings.push(action);
                         action.id = this.toGroup(action);
                     }
                 }, { label: 'hide' }]
@@ -248,6 +243,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             this.selection ||= [];
         else
             this.selection = [];
+        if (this.selection?.[0] && this.selection[0].root !== this.layout.root) return;
         this.selection.add(this.layout);
     },
     ondragstart(e) {
@@ -290,6 +286,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         e.stopPropagation();
         this.dragInfo.action = { action: this.dragInfo.action, props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo, true);
+        this.settings.push(this.dragInfo.action);
         this.clearDragTo();
     },
     clearDragTo() {
@@ -376,7 +373,7 @@ CLASS({ is: 'Layout',
             this.owner.items.splice(this.owner.items.indexOf(this), 1);
         }
     },
-    move(dragInfo, save = false) {
+    move(dragInfo) {
         const dragItem = dragInfo.dragItem; // || findRecursive(dragInfo.$root, act.props.item);
         const targItem = dragInfo.targetItem; // || findRecursive(dragInfo.$root, act.props.target);
         if (!dragItem || !targItem) return;
@@ -394,10 +391,6 @@ CLASS({ is: 'Layout',
         if (targItem.isVirtual) {
             idxTarg = targItem.owner.items.indexOf(targItem);
             targItem.owner.items.splice(idxTarg, 1);
-        }
-        if (save) {
-            const action = JSON.stringify(dragInfo.action);
-            console.log(action);
         }
     }
 })

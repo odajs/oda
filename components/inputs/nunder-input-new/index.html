@@ -35,10 +35,19 @@
             return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0; // a number of simbols after comma
         },
         get maskedValue () {
-            const formattedValue = (+this.value).toFixed(this.minFract). // rounding
-                  replace(/\B(?=(\d{3})+(?!\d)(?=\.))/g, this.separator). // added digit capacity
-                  padStart(this.minInt, 0); // the integer part of the number is matched to the mask
-            return `${formattedValue.toString().split('.')[0].padStart(this.minInt, 0)}.${formattedValue.toString().split('.')[1] || ''}`
+            let formattedValue = 0;
+            if (/(?<=\.)\d+/.test(this.mask)) {
+                formattedValue = (+this.value).toFixed(this.minFract). // rounding
+                    replace(/\B(?=(\d{3})+(?!\d)(?=\.))/g, this.separator). // added digit capacity
+                    padStart(this.minInt, 0); // the integer part of the number is matched to the mask
+            } else {
+                formattedValue = (+this.value).toFixed(this.minFract).
+                    replace(/\B(?=(\d{3})+(?!\d))/g, this.separator).
+                    padStart(this.minInt, 0); 
+            }
+            return (formattedValue.toString().split('.').length > 1) ?
+                `${formattedValue.toString().split('.')[0].padStart(this.minInt, 0)}.${formattedValue.toString().split('.')[1] || ''}` :
+                formattedValue.toString().padStart(this.minInt, 0)
         },
         onInput (e) {
             const char = e.data,
@@ -66,7 +75,7 @@
                     this.maskedValue = undefined;
                 } break;
                 case 'deleteContentForward': {
-                    this.value.replace(/.$/, '');
+                    this.value = this.value.slice(start+1);
                 } break;
             }
             this.maskedValue = undefined;

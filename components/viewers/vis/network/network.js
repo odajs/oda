@@ -19,49 +19,12 @@ ODA({ is: 'oda-network', template: /*html*/`
     props: {
         dataSet: Array,
         items: Array,
-        options: {
-            type: Object,
-            default: {
-                locale: navigator.language.substr(0, 2),
-                nodes: {
-                    shape: 'box',
-                    shadow: true,
-                    color: {
-                        border: 'black',
-                        background: 'white'
-                    },
-                    size: 10,
-                    margin: 10
-                },
-                layout: {
-                    randomSeed: 8
-                },
-                /*clustering: {
-                    enabled: false,
-                    clusterEdgeThreshold: 50
-                },*/
-                physics: {
-                    stabilization: { enabled: true, iterations: 1000 },
-                    barnesHut: {
-                        gravitationalConstant: -60000,
-                        springConstant: 0.02
-                    },
-                    solver: 'barnesHut',
-                    // adaptiveTimestep: false,
-                    // timestep: 1
-                },
-                // smoothCurves: {dynamic:false},
-                // zoomExtentOnStabilize: true,
-                interaction: {
-                    hideEdgesOnDrag: true,
-                    keyboard: true
-                    //dragNodes: false
-                }
-            },
-            set(options) {
-                if (this._network) this._network.setOptions(options);
-            }
-        },
+        // options: {
+        //     type: Object,
+        //     set(options) {
+        //         if (this._network) this._network.setOptions(options);
+        //     }
+        // },
         focusedItem: Object,
         physics: {
             type: Boolean,
@@ -393,7 +356,44 @@ ODA({ is: 'oda-network', template: /*html*/`
             //height: this.offsetHeight + 'px'
             // height: '878px'
         };
-        Object.assign(opts, this.options);
+        const options = {
+            locale: navigator.language.substr(0, 2),
+            nodes: {
+                shape: 'box',
+                shadow: true,
+                color: {
+                    border: 'black',
+                    background: 'white'
+                },
+                size: 10,
+                margin: 10
+            },
+            layout: {
+                randomSeed: 8
+            },
+            /*clustering: {
+                enabled: false,
+                clusterEdgeThreshold: 50
+            },*/
+            physics: {
+                stabilization: { enabled: true, iterations: 1000 },
+                barnesHut: {
+                    gravitationalConstant: -60000,
+                    springConstant: 0.02
+                },
+                solver: 'barnesHut',
+                // adaptiveTimestep: false,
+                // timestep: 1
+            },
+            // smoothCurves: {dynamic:false},
+            // zoomExtentOnStabilize: true,
+            interaction: {
+                hideEdgesOnDrag: true,
+                keyboard: true
+                //dragNodes: false
+            }
+        };
+        Object.assign(opts, options);
 
         this._network = new vis.Network(this.$refs.network, data, opts);
     },
