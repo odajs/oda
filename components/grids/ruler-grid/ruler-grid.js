@@ -6,8 +6,7 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                 /*overflow: hidden;*/
             }
         </style>
-        <oda-ruler ~if="showScale" ></oda-ruler>
-
+        <oda-ruler ~if="showScale"></oda-ruler>
         <div ref="main" class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
             <div ref="grid" class="flex vertical" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render"   @resize="onResize">
@@ -95,18 +94,6 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
     get _h() {
         return (this.$refs?.main?.offsetHeight + this.$refs?.grid?.scrollTop || 0) / (this.zoom < 1 ? this.zoom : 1);
     },
-    // _scrollLeft() {
-    //     return this.$refs?.grid?.scrollLeft;
-    // },
-    // _scrollTop() {
-    //     return this.$refs?.grid?.scrollTop;
-    // },
-    _rulerHCount() {
-        return Math.ceil((window.outerWidth + this.$refs?.grid?.scrollLeft) / this.sizeBig) || 1;
-    },
-    _rulerVCount() {
-        return Math.ceil((window.outerHeight + this.$refs?.grid?.scrollTop) / this.sizeBig) || 1;
-    },
     get step(){
         return this.zoom === 1?10:10;
     },
@@ -129,16 +116,17 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
     //     }
     // }
 })
-ODA({is: 'oda-ruler',
-    template:`
+ODA({is: 'oda-ruler', template: /*html*/`
         <style>
-            :host{
+            :host {
+                @apply --horizontal;
                 @apply --shadow;
                 min-width: 24px;
                 min-height: 24px;
+                {{vertical?'width: 24px;':'height: 24px;'}}
             }
         </style>
-        <div style="font-size:12px; min-width: 30px;max-width:30px;">{{unit}}</div>
+        <div style="font-size:12px; min-width: 24px; max-width: 24px; text-align: center" class="no-flex" ~if="!vertical">{{unit}}</div>
         <svg class="flex" style="width: 100%; height: 100%">
             <g ~for="count">
                 <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
@@ -148,15 +136,20 @@ ODA({is: 'oda-ruler',
         </svg>
     `,
     props: {
-        vertical: false
+        vertical: {
+            type: Boolean,
+            reflectToAttribute: true
+        }
     },
-    count: 10,
+    get count() {
+        return Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
+    },
     getBigLine(index) {
         if (!this.vertical) {
             const x = index * this.sizeBig - this.domHost.scrollLeft;
             return {x1: x, x2: x, y1: 4, y2: 24};
         } else {
-            const y = index * this.sizeBig - this.domHost.scrollLeft;
+            const y = index * this.sizeBig - this.domHost.scrollTop;
             return {x1: 4, x2: 24, y1: y, y2: y};
         }
     },
@@ -165,7 +158,7 @@ ODA({is: 'oda-ruler',
             const x = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2;
             return {x1: x, x2: x, y1: 14, y2: 30};
         } else {
-            const y = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2;
+            const y = index * this.sizeBig - this.domHost.scrollTop + this.sizeBig / 2;
             return {x1: 14, x2: 30, y1: y, y2: y};
         }
     },
@@ -174,8 +167,8 @@ ODA({is: 'oda-ruler',
             const x = index * this.sizeBig + 4 - this.domHost.scrollLeft;
             return {x: x, y: 12};
         } else {
-            const y = index * this.sizeBig + 4 - this.domHost.scrollLeft;
-            return {x: 12, y: y};
+            const y = index * this.sizeBig + 14 - this.domHost.scrollTop;
+            return {x: 0, y: y};
         }
     },
 });
