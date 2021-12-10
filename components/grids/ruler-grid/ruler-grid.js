@@ -3,21 +3,14 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
             :host {
                 @apply --vertical;
                 @apply --flex;
-                overflow: hidden;
+                /*overflow: hidden;*/
             }
         </style>
         <oda-ruler ~if="showScale" ></oda-ruler>
 
         <div ref="main" class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
-<!--            <svg ~if="showScale" class="shadow" style="min-width: 30px; width:30px;">-->
-<!--                <g ~for="(it,i) in _rulerVCount()">-->
-<!--                    <line x1="2" :y1="i * sizeBig - _scrollTop()" x2="28" :y2="i * sizeBig - _scrollTop()" fill="none" stroke="gray" stroke-width="1"></line> &ndash;&gt;-->
-<!--                    <line x1="16" :y1="i * sizeBig - _scrollTop() + sizeBig / 2" x2="28" :y2="i * sizeBig - _scrollTop() + sizeBig / 2" fill="none" stroke="gray" stroke-width="1"></line>-->
-<!--                    <text :x="i * sizeBig + 4 - _scrollTop()" y="0" style="font-size:12px;fill:gray;transform: rotate(90deg);">{{i * _unitVal}}</text>-->
-<!--                </g>-->
-<!--            </svg>-->
-            <div ref="grid" class="flex vertical" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render">
+            <div ref="grid" class="flex vertical" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render"   @resize="onResize">
                 <svg ~show="showGrid" :width :height class="flex">
                     <defs>
                         <pattern id="smallGrid" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
@@ -32,7 +25,7 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                     </defs>
                     <rect :width="_w" :height="_h" fill="url(#grid)"></rect>
                 </svg>
-                <div id="slot" class="vertical no-flex" style="overflow: visible; position: absolute; top: 0px; left: 0px;" @resize="onResize">
+                <div id="slot" class="vertical flex" style="overflow: visible; position: absolute; top: 0px; left: 0px;">
                     <slot class="flex vertical" name="content" ></slot>
                 </div>
             </div>
@@ -47,6 +40,7 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
     props: {
         gridColor: {
             default: 'darkgray',
+            editor: '@oda/color-picker',
             save: true,
         },
         showGrid: {
@@ -56,11 +50,9 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         showScale: {
             default: true,
             save: true,
-        },
-        zoom: 1,
-
+        }
     },
-
+    zoom: 1,
     get sizeBig() {
         return this.sizeSmall * 10;
     },
@@ -103,12 +95,12 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
     get _h() {
         return (this.$refs?.main?.offsetHeight + this.$refs?.grid?.scrollTop || 0) / (this.zoom < 1 ? this.zoom : 1);
     },
-    _scrollLeft() {
-        return this.$refs?.grid?.scrollLeft;
-    },
-    _scrollTop() {
-        return this.$refs?.grid?.scrollTop;
-    },
+    // _scrollLeft() {
+    //     return this.$refs?.grid?.scrollLeft;
+    // },
+    // _scrollTop() {
+    //     return this.$refs?.grid?.scrollTop;
+    // },
     _rulerHCount() {
         return Math.ceil((window.outerWidth + this.$refs?.grid?.scrollLeft) / this.sizeBig) || 1;
     },
@@ -148,13 +140,30 @@ ODA({is: 'oda-ruler',
         </style>
         <div style="font-size:12px; min-width: 30px;max-width:30px ">{{unit}}</div>
         <svg class="flex">
-            <g ~for="(it,i) in count">
-                <line :x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - scrollLeft()" y2="24" fill="none" stroke="gray" stroke-width="1"></line>
-                <line :x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30" fill="none" stroke="gray" stroke-width="1"></line>
-                <text :x="i * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{i * unitVal}}</text>
+            <g ~for="count">
+                <line ~props="getBigLine(index)"  fill="none" stroke="gray" stroke-width="1"></line>
+                <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
+                <text :x="index * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{index * unitVal}}</text>
             </g>
         </svg>
     `,
-    count: 0,
+    count: 10,
+    getBigLine(index){
+        if (!vertical){
+            const x = index * this.sizeBig - this.domHost.scrollLeft;
+            return {x1: x, x2: x, y1: 4, y2: 24}
+        }
+
+    },
+    getSmallLine(index){
+    //:x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30"
+        if (!vertical){
+            const x = index * this.sizeBig - this.domHost.scrollLeft;
+            return {x1: x, x2: x, y1: 4, y2: 24}
+        }
+
+    },
     vertical: false
 })
+
+//:x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - scrollLeft()" y2="24"
