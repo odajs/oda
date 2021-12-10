@@ -9,20 +9,20 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         <oda-ruler ~if="showScale"></oda-ruler>
         <div ref="main" class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
-            <div ref="grid" class="flex vertical" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render"   @resize="onResize">
-                <svg ~show="showGrid" :width :height class="flex">
+            <div class="flex vertical" style="position:relative; overflow: hidden"  @resize="onResize">
+                <svg ~if="showGrid" class="flex">
                     <defs>
-                        <pattern id="smallGrid" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
+                        <pattern id="smallLines" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
                             <line x1="0" y1="0" x2="0" :y2="sizeSmall" fill="none" stroke="gray" stroke-width="0.5"></line>
                             <line x1="0" y1="0" y2="0" :x2="sizeSmall" fill="none" stroke="gray" stroke-width="0.5"></line>
                         </pattern>
-                        <pattern id="grid" patternUnits="userSpaceOnUse" :width="sizeBig" :height="sizeBig">
-                            <rect width="100%" height="100%" fill="url(#smallGrid)"></rect>
+                        <pattern id="bigLines" patternUnits="userSpaceOnUse" :width="sizeBig" :height="sizeBig">
                             <line x1="0" y1="0" x2="0" :y2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect :width="_w" :height="_h" fill="url(#grid)"></rect>
+                    <rect class="flex" fill="url(#bigLines)" :width :height></rect>
+                    <rect fill="url(#smallLines)" :width :height></rect>
                 </svg>
                 <div id="slot" class="vertical flex" style="overflow: visible; position: absolute; top: 0px; left: 0px;">
                     <slot class="flex vertical" name="content" ></slot>
@@ -49,7 +49,8 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         showScale: {
             default: true,
             save: true,
-        }
+        },
+        iconSize: 32
     },
     zoom: 1,
     get sizeBig() {
@@ -59,16 +60,22 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         return Math.round(this.step * this.zoom);
     },
     get unit() {
-        return this.step === 0.1 ? 'mm'
-            : (this.step === 1 || this.step === 10) ? 'cm'
-                : (this.step === 100 || this.step === 1000 || this.step === 10000) ? 'm'
-                    : 'km';
+        if (this.step<1)
+            return 'mm';
+        if (this.step<1000)
+            return 'cm';
+        if (this.step<100000)
+            return 'm';
+        return 'km';
     },
     get unitVal() {
-        return this.step === 0.1 ? 1
-            : (this.step === 1 || this.step === 10) ? this.step
-                : (this.step === 100 || this.step === 1000 || this.step === 10000) ? this.step / 100
-                    : this.step / 100000;
+        if (this.step<1)
+            return 1;
+        if (this.step<1000)
+            return this.step;
+        if (this.step<100000)
+            return this.step / 100;
+        return this.step / 1000000;
     },
     get percent() {
         return this.zoom === 1 ? '100%'
@@ -82,17 +89,7 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
             e.preventDefault();
             const k = 0.9;
             this.zoom = e.deltaY <= 0 ? Math.min(400, this.zoom / k) : Math.max(1 / 100000000, this.zoom * k);
-            // this._setStep();
         }
-    },
-    _mainHeight() {
-        return (window.innerHeight - (this.$refs?.main?.offsetTop || 0));
-    },
-    get _w() {
-        return (this.$refs?.main?.offsetWidth + this.$refs?.grid?.scrollLeft - 30 || 0) / (this.zoom < 1 ? this.zoom : 1);
-    },
-    get _h() {
-        return (this.$refs?.main?.offsetHeight + this.$refs?.grid?.scrollTop || 0) / (this.zoom < 1 ? this.zoom : 1);
     },
     get step(){
         return this.zoom === 1?10:10;
@@ -121,8 +118,8 @@ ODA({is: 'oda-ruler', template: /*html*/`
             :host {
                 @apply --horizontal;
                 @apply --shadow;
-                min-width: 24px;
-                min-height: 24px;
+                width: {{vertical?iconSize+'px':'auto'}};
+                height: {{!vertical?iconSize+'px':'auto'}};
                 {{vertical?'width: 24px;':'height: 24px;'}}
             }
         </style>
