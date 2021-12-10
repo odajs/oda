@@ -1,35 +1,24 @@
-ODA({
-    is: "oda-ruler-grid", template: /*html*/`
+ODA({is: "oda-ruler-grid", template: /*html*/`
         <style>
             :host {
                 @apply --vertical;
                 @apply --flex;
-                position: absolute;
                 overflow: hidden;
-                width: 100%;
-                height: 100%;
             }
         </style>
-       <div ~if="showScale" class="horizontal shadow" style="height: 24px;">
-            <div style="font-size:12px; min-width: 30px;max-width:30px ">{{_unit}}</div>
-            <svg class="flex">
-                <g ~for="(it,i) in _rulerHCount()">
-                    <line :x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - _scrollLeft()" y2="24" fill="none" stroke="gray" stroke-width="1"></line>
-                    <line :x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30" fill="none" stroke="gray" stroke-width="1"></line>
-                    <text :x="i * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{i * _unitVal}}</text>
-                </g>
-            </svg>
-        </div>
+        <oda-ruler ~if="showScale" ></oda-ruler>
+
         <div ref="main" class="horizontal flex">
-            <svg ~if="showScale" class="shadow" style="min-width: 30px; width:30px;">
-                <g ~for="(it,i) in _rulerVCount()">
-                    <line x1="2" :y1="i * sizeBig - _scrollTop()" x2="28" :y2="i * sizeBig - _scrollTop()" fill="none" stroke="gray" stroke-width="1"></line> -->
-                    <line x1="16" :y1="i * sizeBig - _scrollTop() + sizeBig / 2" x2="28" :y2="i * sizeBig - _scrollTop() + sizeBig / 2" fill="none" stroke="gray" stroke-width="1"></line>
-                    <text :x="i * sizeBig + 4 - _scrollTop()" y="0" style="font-size:12px;fill:gray;transform: rotate(90deg);">{{i * _unitVal}}</text>
-                </g>
-            </svg>
-            <div ref="grid" class="flex" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render">
-                <svg ~show="showGrid" :width :height style="width: 100%; height: 100%" >
+            <oda-ruler ~if="showScale" vertical></oda-ruler>
+<!--            <svg ~if="showScale" class="shadow" style="min-width: 30px; width:30px;">-->
+<!--                <g ~for="(it,i) in _rulerVCount()">-->
+<!--                    <line x1="2" :y1="i * sizeBig - _scrollTop()" x2="28" :y2="i * sizeBig - _scrollTop()" fill="none" stroke="gray" stroke-width="1"></line> &ndash;&gt;-->
+<!--                    <line x1="16" :y1="i * sizeBig - _scrollTop() + sizeBig / 2" x2="28" :y2="i * sizeBig - _scrollTop() + sizeBig / 2" fill="none" stroke="gray" stroke-width="1"></line>-->
+<!--                    <text :x="i * sizeBig + 4 - _scrollTop()" y="0" style="font-size:12px;fill:gray;transform: rotate(90deg);">{{i * _unitVal}}</text>-->
+<!--                </g>-->
+<!--            </svg>-->
+            <div ref="grid" class="flex vertical" style="position:relative; overflow: hidden" ~style="{height:_mainHeight(), width:_w}" @scroll="render">
+                <svg ~show="showGrid" :width :height class="flex">
                     <defs>
                         <pattern id="smallGrid" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
                             <line x1="0" y1="0" x2="0" :y2="sizeSmall" fill="none" stroke="gray" stroke-width="0.5"></line>
@@ -69,28 +58,28 @@ ODA({
             save: true,
         },
         zoom: 1,
-        step: 10,
+
     },
+
     get sizeBig() {
         return this.sizeSmall * 10;
     },
     get sizeSmall() {
-        // return this.step === 0.1 ? 0 : this.sizeBig / 10;
         return Math.round(this.step * this.zoom);
     },
-    get _unit() {
+    get unit() {
         return this.step === 0.1 ? 'mm'
             : (this.step === 1 || this.step === 10) ? 'cm'
                 : (this.step === 100 || this.step === 1000 || this.step === 10000) ? 'm'
                     : 'km';
     },
-    get _unitVal() {
+    get unitVal() {
         return this.step === 0.1 ? 1
             : (this.step === 1 || this.step === 10) ? this.step
                 : (this.step === 100 || this.step === 1000 || this.step === 10000) ? this.step / 100
                     : this.step / 100000;
     },
-    get _percent() {
+    get percent() {
         return this.zoom === 1 ? '100%'
             : this.zoom < 1 ? `${this.zoom < 0.0001 ? Math.round(this.zoom * 100000000) / 1000000 : Math.round(this.zoom * 10000) / 100}%`
                 : `${Math.round(this.zoom * 100)}%`;
@@ -102,15 +91,8 @@ ODA({
             e.preventDefault();
             const k = 0.9;
             this.zoom = e.deltaY <= 0 ? Math.min(400, this.zoom / k) : Math.max(1 / 100000000, this.zoom * k);
-            this._setStep();
+            // this._setStep();
         }
-    },
-    attached() {
-        this._resize = () => this._setStep();
-        window.addEventListener('resize', this._resize);
-    },
-    detached() {
-        window.removeEventListener('resize', this._resize);
     },
     _mainHeight() {
         return (window.innerHeight - (this.$refs?.main?.offsetTop || 0));
@@ -133,20 +115,46 @@ ODA({
     _rulerVCount() {
         return Math.ceil((window.outerHeight + this.$refs?.grid?.scrollTop) / this.sizeBig) || 1;
     },
-    _setStep(zoom = this.zoom, step = this.step) {
-        if (zoom === 1) {
-            this.zoom = 1;
-            this.step = 10;
-        } else {
-            zoom = zoom > 1 ? Math.min(400, zoom) : Math.max(1 / 100000000, zoom);
-            if (zoom === 400 || zoom === 1 / 100000000) {
-                this.zoom = zoom;
-            } else {
-                if ((step * zoom) > 50) step = step / 10;
-                else if ((step * zoom) < 5) step = step * 10;
-                if (step !== this.step) this.step = step;
+    get step(){
+        return this.zoom === 1?10:10;
+    },
+    // _setStep(zoom = this.zoom, step = this.step) {
+    //     if (zoom === 1) {
+    //         this.zoom = 1;
+    //         this.step = 10;
+    //     } else {
+    //         zoom = zoom > 1 ? Math.min(400, zoom) : Math.max(1 / 100000000, zoom);
+    //         if (zoom === 400 || zoom === 1 / 100000000) {
+    //             this.zoom = zoom;
+    //         } else {
+    //             if ((step * zoom) > 50)
+    //                 step = step / 10;
+    //             else if ((step * zoom) < 5)
+    //                 step = step * 10;
+    //             if (step !== this.step)
+    //                 this.step = step;
+    //         }
+    //     }
+    // }
+})
+ODA({is: 'oda-ruler',
+    template:`
+        <style>
+            :host{
+                @apply --shadow;
+                min-width: 24px;
+                min-height: 24px;
             }
-        }
-        this.render();
-    }
+        </style>
+        <div style="font-size:12px; min-width: 30px;max-width:30px ">{{unit}}</div>
+        <svg class="flex">
+            <g ~for="(it,i) in count">
+                <line :x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - scrollLeft()" y2="24" fill="none" stroke="gray" stroke-width="1"></line>
+                <line :x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30" fill="none" stroke="gray" stroke-width="1"></line>
+                <text :x="i * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{i * unitVal}}</text>
+            </g>
+        </svg>
+    `,
+    count: 0,
+    vertical: false
 })

@@ -324,6 +324,7 @@ if (!window.ODA) {
                         let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(parentElement.constructor.prototype), Object.getOwnPropertyDescriptors(parentElement));
                         for (let key in pdp) {
                             if (key in odaComponent) continue;
+                            // if (key in this.__proto__) continue;
                             if (key.startsWith('_')) continue;
                             if (key.startsWith('$obs$')) continue;
                             const d = pdp[key];
