@@ -323,25 +323,31 @@ if (!window.ODA) {
                         parentElement.$core.$pdp = {};
                         let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(parentElement.constructor.prototype), Object.getOwnPropertyDescriptors(parentElement));
                         for (let key in pdp) {
-                            if (key in odaComponent) continue;
+                            //todo: исключить все системные свойства и методы
+                            if (hooks.includes(key)) continue;
                             // if (key in this.__proto__) continue;
                             if (key.startsWith('_')) continue;
                             if (key.startsWith('$obs$')) continue;
                             const d = pdp[key];
-                            if (!d.get && !d.set) continue;
-                            parentElement.$core.$pdp[key] = {
-                                get() {
-                                    return parentElement[key];
-                                },
-                                set(val) {
-                                    parentElement[key] = val;
+                            if((typeof d.value === 'function') || d.get || d.set){
+                                parentElement.$core.$pdp[key] = {
+                                    get() {
+                                        return parentElement[key];
+                                    },
+                                    set(val) {
+                                        parentElement[key] = val;
+                                    }
                                 }
                             }
                         }
                     }
                     for (let key in parentElement.$core.$pdp){
                         if (key in this) continue;
-                        Object.defineProperty(this, key, parentElement.$core.$pdp[key])
+                        let desc = parentElement.$core.$pdp[key];
+                        if(typeof desc.value === 'function'){
+                            desc = Object.assign({}, desc, {value: desc.value.bind(this)});
+                        }
+                        Object.defineProperty(this, key, desc);
                     }
                 }
                 for (const key in this.$core.observers) {
