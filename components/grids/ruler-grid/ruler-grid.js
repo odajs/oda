@@ -10,20 +10,18 @@ ODA({
                 height: 100%;
             }
         </style>
-           <div ~if="showGrid && showScale" class="horizontal" style="height: 24px; margin-bottom: 5px">
-                <div style="font-size:12px;min-width:30px;max-width:30px">{{_unit}}</div>
-                <svg class="flex">
-                    <g ~for="(it,i) in _rulerHCount()">
-                        <line :x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - _scrollLeft()" y2="24" fill="none" stroke="gray" stroke-width="1"></line>
-                        <line :x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30" fill="none" stroke="gray" stroke-width="1"></line>
-                        <text :x="i * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{i * _unitVal}}</text>
-                    </g>
-                </svg>
-            </div>
-        
-        
+       <div ~if="showScale" class="horizontal shadow" style="height: 24px;">
+            <div style="font-size:12px; min-width: 30px;max-width:30px ">{{_unit}}</div>
+            <svg class="flex">
+                <g ~for="(it,i) in _rulerHCount()">
+                    <line :x1="i * sizeBig - _scrollLeft()" y1="4" :x2="i * sizeBig - _scrollLeft()" y2="24" fill="none" stroke="gray" stroke-width="1"></line>
+                    <line :x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30" fill="none" stroke="gray" stroke-width="1"></line>
+                    <text :x="i * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{i * _unitVal}}</text>
+                </g>
+            </svg>
+        </div>
         <div ref="main" class="horizontal flex">
-            <svg ~if="showGrid && showScale" style="min-width: 30px; width:30px;">
+            <svg ~if="showScale" class="shadow" style="min-width: 30px; width:30px;">
                 <g ~for="(it,i) in _rulerVCount()">
                     <line x1="2" :y1="i * sizeBig - _scrollTop()" x2="28" :y2="i * sizeBig - _scrollTop()" fill="none" stroke="gray" stroke-width="1"></line> -->
                     <line x1="16" :y1="i * sizeBig - _scrollTop() + sizeBig / 2" x2="28" :y2="i * sizeBig - _scrollTop() + sizeBig / 2" fill="none" stroke="gray" stroke-width="1"></line>

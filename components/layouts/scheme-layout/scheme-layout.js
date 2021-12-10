@@ -7,8 +7,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 position: relative;
                 overflow: auto;
             }
-            *[selected]{
-                z-index: 1;
+            oda-scheme-container[selected]{
+                z-index: 1 !important;
             }
         </style>
         <div slot="content" class="flex vertical">
@@ -133,7 +133,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                     this.async(() => {
                         this.inTrack = false;
                     });
-                    this.save();
+                    // this.save();
                 } break;
             }
 
@@ -183,7 +183,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     removeBlock(block) {
         this.items.remove(block);
-        this.save();
+        // this.save();
     }
 });
 
@@ -472,7 +472,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 pin.item.links = [];
             pin.item.links.push(pinTo);
             // this.fire('linkCreated', { from: pinFrom, to: pinTo });
-            this.layout.findBlock(pinFrom.block)?.save?.();
+            // this.layout.findBlock(pinFrom.block)?.save?.();
         }
     },
 });

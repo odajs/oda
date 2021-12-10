@@ -86,7 +86,11 @@
             switch (e.inputType) {
                 case 'insertText': {
                     this.value = this.value.replace(/^0+/, '');  // removing zeros in front of a number
-                    /\d|\./.test(char) ? this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) : false; // input only numbers and dots
+                    if (this.value.match(/(?<=\.)\d+/) && this.value.match(/(?<=\.)\d+/)[0].length >= 3 && start === this.input.value.length) {
+                        /\d|\./.test(char) ? this.value += char : false; // input only numbers and dots
+                    } else {
+                        /\d|\./.test(char) ? this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) : false;
+                    }
                     try {
                         (new Function([], `with (this) {return ${this.value}}`));
                     }
