@@ -2,7 +2,7 @@ ODA({is:'oda-minesweeper',
     template:`
         <style>
             :host{
-                align-self: center;
+                /*align-self: center;*/
                 @apply --vertical;
                 @apply --border;
             }
