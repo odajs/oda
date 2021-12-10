@@ -4,7 +4,7 @@ ODA({is:'oda-minesweeper',
             :host{
                 /*align-self: center;*/
                 @apply --vertical;
-                @apply --border;
+                /*@apply --border;*/
             }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
@@ -24,7 +24,7 @@ ODA({is:'oda-minesweeper',
         colors:['', 'blue', 'green', 'red', 'magenta'],
 
         cols:{
-            default: 20,
+            default: 10,
             // save: true
         },
         rows:{
@@ -32,8 +32,8 @@ ODA({is:'oda-minesweeper',
             // save: true
         },
         mineCount:{
-            default: 50,
-            save: true
+            default: 20,
+            // save: true
         },
         borderWidth:{
             default: 4,
@@ -68,10 +68,17 @@ ODA({is:'oda-minesweeper-title', imports: '@oda/button',
     template:`
         <style>
             :host{
-                @apply --border;
                 @apply --horizontal;
+                @apply --header;
                 align-items: center;
                 justify-content: space-between;
+                @apply --border;
+                border-width: {{borderWidth}}px;
+                box-sizing: border-box;
+                border-left-color: var(--content-background);
+                border-top-color: var(--content-background);
+                border-right-color: var(--header-background);
+                border-bottom-color: var(--header-background);
             }
         </style>
         <oda-minesweeper-display></oda-minesweeper-display>
@@ -103,6 +110,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
                 position: relative;
                 align-items: center;
                 @apply --horizontal;
+                outline: 1px dotted white;
             }
             .btn{
                 @apply --border;
@@ -115,6 +123,8 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
                 width: 100%;
                 height: 100%;
                 align-items: center;
+                z-index: 1;
+                opacity: .8;
             }
             .floor{
                 position: absolute;
@@ -126,16 +136,20 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
                 font-size: x-large;
                 align-items: center;
                 font-weight: bolder;
+                
             }
         </style>
-        <div ~if="mine?.status === 'opened'" class="horizontal floor">
+        <div ~if="count !== 0" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
         <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
             <oda-icon class="flex" :icon :icon-size="iconSize*.5"></oda-icon>
         </button>
     `,
-    mine: null,
+    set mine(n){
+        if (n)
+            n.el = this;
+    },
     get count(){
         if (this.mine.mine) return ''
         let count = 0;
@@ -177,11 +191,40 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
             this.game.bang();
         }
         else
-            this.mine.status = 'opened';
+            this.open();
+    },
+    open(){
+        if (this.mine.status === 'opened') return;
+        if (this.mine.mine) return;
+        this.mine.status = 'opened';
+        if (this.count === 0){
+            for (let x = (this.mine.x - 1); x <= (this.mine.x + 1); x++){
+                for (let y = (this.mine.y - 1); y <= (this.mine.y + 1); y++) {
+                    const item = this.model.find(i=>(i.y === y && i.x === x))
+                    if (!item) continue;
+                    if (item === this.mine) continue;
+                    item.el.open();
+                }
+            }
+        }
     }
 })
 ODA({is:'oda-minesweeper-display',
     template:`
-        дисплей
+        <style>
+            :host{
+                @apply --border;
+                border-width: {{borderWidth}}px;
+                box-sizing: border-box;
+                border-left-color: var(--content-background);
+                border-top-color: var(--content-background);
+                border-right-color: var(--header-background);
+                border-bottom-color: var(--header-background);
+            }
+        </style
+        <div>
+            дисплей
+        </div>
+        
     `
 })

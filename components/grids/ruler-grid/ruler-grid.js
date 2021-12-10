@@ -43,7 +43,7 @@ ODA({
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect :width="_w()" :height="_h()" fill="url(#grid)"></rect>
+                    <rect :width="_w" :height="_h" fill="url(#grid)"></rect>
                 </svg>
                 <div id="slot" class="vertical no-flex" style="overflow: visible; position: absolute; top: 0px; left: 0px;" @resize="onResize">
                     <slot class="flex vertical" name="content" ></slot>
