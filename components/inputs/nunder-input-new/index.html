@@ -103,7 +103,7 @@
                     if (this.maskedValue.length-1 === start && this.value.length > lengthWithoutThousandSeparators) { // removing the last character from a formatted value
                         return this.value = this.value.slice(0, lengthWithoutThousandSeparators - this.value.length)
                     }
-                    this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1); // deletes the last character if it is not a period, and two characters if the last is a period
+                    this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(end-this.numberOfThousandSeparators+1); // deletes the last character if it is not a period, and two characters if the last is a period
                 } break;
                 case 'deleteContentForward': {
                     this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1);

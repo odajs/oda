@@ -143,25 +143,23 @@ ODA({is: 'oda-ruler',
             <g ~for="count">
                 <line ~props="getBigLine(index)"  fill="none" stroke="gray" stroke-width="1"></line>
                 <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-                <text :x="index * sizeBig + 4 - _scrollLeft()" y="12" style="font-size:12px;fill:gray">{{index * unitVal}}</text>
+                <text :x="index * sizeBig + 4 - domHost.scrollLeft" y="12" style="font-size:12px;fill:gray">{{index * unitVal}}</text>
             </g>
         </svg>
     `,
     count: 10,
     getBigLine(index){
-        if (!vertical){
+        if (!this.vertical){
             const x = index * this.sizeBig - this.domHost.scrollLeft;
             return {x1: x, x2: x, y1: 4, y2: 24}
         }
-
     },
     getSmallLine(index){
     //:x1="i * sizeBig - _scrollLeft() + sizeBig / 2" y1="14" :x2="i * sizeBig - _scrollLeft() + sizeBig / 2" y2="30"
-        if (!vertical){
-            const x = index * this.sizeBig - this.domHost.scrollLeft;
-            return {x1: x, x2: x, y1: 4, y2: 24}
+        if (!this.vertical){
+            const x = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2;
+            return {x1: x, x2: x, y1: 14, y2: 30}
         }
-
     },
     vertical: false
 })
