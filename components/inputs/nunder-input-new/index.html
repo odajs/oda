@@ -106,15 +106,21 @@
                         return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + char + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
                     }
                     if (this.value.match(/(?<=\.)\d+/) && this.value.match(/(?<=\.)\d+/)[0].length >= this.minFract && start === this.input.value.length) {
-                        /\d|\./.test(char) ? this.value += char : false; // input only numbers and dots
+                        /\d/.test(char) ? this.value += char :
+                        /\./.test(char) ? /\./.test(this.value) ? false :
+                        this.value += char :
+                        false; // input only numbers and dots (if there are no dots in the number already)
                     } else {
-                        /\d|\./.test(char) ? this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) : false;
+                        /\d/.test(char) ? this .value = this.value.slice(0, start-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) :
+                        /\./.test(char) ? /\./.test(this.value) ? false :
+                        this .value = this.value.slice(0, start-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) :
+                        false;
                     }
                     try {
                         (new Function([], `with (this) {return ${this.value}}`));
                     }
                     catch (e) {
-                        this.value = this.value.replace(/.$/, '');
+                        this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + this.value.slice(end-this.numberOfThousandSeparators);
                     }
                 } break;
                 case 'deleteContentBackward': {
