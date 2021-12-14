@@ -1,11 +1,11 @@
 ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid',
     template: /*html*/`
-        <div ref="content" slot="content" class="flex vertical" ~style="{zoom: zoom}">
+        <div ref="grid" slot="content" class="flex vertical" ~style="{zoom: zoom}">
             <svg class="flex">
                 <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link?.d) ? 2 : 1" :item="link?.d" fill="transparent" :d="link?.d" @tap.stop="select" @push.stop :selected="selection.has(link?.d)"/>
             </svg>
             <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-            <oda-scheme-link ~for="link in links?.filter(i=>!i?.link)" :link></oda-scheme-link>      
+            <oda-scheme-link ~style="{position: 'absolute', left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}" ~for="link in links?.filter(i=>!i?.link)"></oda-scheme-link>
         </div>
     `,
     get srcPins(){
@@ -198,8 +198,14 @@ ODA({is: 'oda-scheme-container',
         return this;
     },
     set item(n){
-        if (n)
-            n.$$container = this;
+        if (n && typeof n === 'object'){
+            Object.defineProperty(n, '$$container', {
+                writable: true,
+                configurable: true,
+                enumerable: false,
+                value: this
+            })
+        }
         this.links = undefined;
 
     },
@@ -247,30 +253,30 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
         })
-        const container = this.layout.$refs.content;
-        let rect = this.getClientRect(container);
+        const grid = this.layout.$refs.grid;
+        let rect = this.getClientRect(grid);
         // let rect = this.getClientRect(this.layout);
         const center = rect.center;
         // let d = `M${center.x * this.zoom} ${center.y * this.zoom}`;
         let d = '';
         switch (this.align) {
             case 'l': {
-                d += `M${(rect.x - 4)} ${center.y} H ${(link?(center.x):0)}`;
+                d += `M${(rect.x - 4)} ${center.y} H ${(link?(center.x):center.x - 25)}`;
             } break;
             case 't': {
-                d += `M${center.x} ${rect.y - 4} V ${(link?(rect.y):0)}`;
+                d += `M${center.x} ${rect.y - 4} V ${(link?(rect.y):rect.y - 15)}`;
             } break;
             case 'b': {
-                d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):'999999')}`;
+                d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):rect.y + 30)}`;
             } break;
         }
         if (link){
             // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
-            rect = link.src.$$pin.getClientRect(container);
+            rect = link.src.$$pin.getClientRect(grid);
             d += `L ${(rect.right + this.pinSize)} ${rect.center.y} H ${rect.right + 4}`;
         }
         console.log(d)
-        return {d, link, align: this.align};
+        return {d, link, align: this.align, rect};
     },
     listeners:{
         dragstart(e) {
@@ -341,8 +347,15 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         return false
     },
     set pin(n){
-        if (typeof n === 'object')
-            n.$$pin = this;
+        if (n && typeof n === 'object'){
+            Object.defineProperty(n, '$$pin', {
+                writable: true,
+                configurable: true,
+                enumerable: false,
+                value: this
+            })
+        }
+
         this.link = undefined;
     },
     get color(){
@@ -400,9 +413,14 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         });
     },
     set interface(n){
-        if (typeof n ==='object')
-            n.$$interface = this;
-        // this.links = undefined;
+        if (n && typeof n ==='object'){
+            Object.defineProperty(n, '$$interface', {
+                writable: true,
+                configurable: true,
+                enumerable: false,
+                value: this
+            })
+        }
     },
     dragstart(e) {
         e.dataTransfer.setData('pin', JSON.stringify({
@@ -457,7 +475,18 @@ ODA({is:'oda-scheme-container-toolbar',
     }
 });
 ODA({is:'oda-scheme-link',
-    template:`
-    EXT
+    template: /*html*/`
+    <style>
+        :host{
+            @apply --content;
+            @apply --border;
+            border-radius: 45%;
+            min-width: {{iconSize}}px;
+            min-height: {{iconSize}}px;
+            cursor: pointer;
+            @apply --shadow;
+            z-index: 1;
+        }
+    </style>
     `,
 });
