@@ -58,28 +58,27 @@
                     this.async(() => {
                         this.input.selectionStart = start;
                         this.input.selectionEnd = end;
-                    }, 10);
+                    }, 1);
                 }
 
                 if (this.numberOfThousandSeparators > (this.input?.value.slice(0, start).match(/\s/g)?.length || 0)) {
                     this.async(() => {
                         this.input.selectionStart = start+1;
                         this.input.selectionEnd = end+1;
-                    }, 10);
+                    }, 1);
                 }
 
                 if (this.numberOfThousandSeparators < (this.input?.value.slice(0, start).match(/\s/g)?.length || 0)) {
                     this.async(() => {
                         this.input.selectionStart = start-1 < 0 ? 0 : start -1;
                         this.input.selectionEnd = end-1 < 0 ? 0 : end - 1;
-                    }, 10);
+                    }, 1);
                 }
             }
             return formattedValue
         },
         selectionchange (e) {
-            this.selectionStart = e.target.selectionStart;
-            this.selectionEnd = e.target.selectionEnd;
+            this.getSelectionRange(e);
             this.thousandSeparatorsFromEnd = this.maskedValue.slice(0, this.selectionEnd).match(/\s/g)?.length || 0, // number of thousands separators to selectionEnd
             this.thousandSeparatorsFromStart = this.maskedValue.slice(0, this.selectionStart).match(/\s/g)?.length || 0; // number of thousands separators to selectionStart
         },
@@ -91,10 +90,10 @@
             }
         },
         onmousedown (e) {
-            this.selectionStart = e.target.selectionStart;
-            this.selectionEnd = e.target.selectionEnd;
+            this.getSelectionRange(e);
         },
         onInput (e) {
+            e.preventDefault();
             const char = e.data === ',' ? '.' : e.data,
                   start = e.target.selectionStart,
                   end = e.target.selectionEnd;
@@ -121,7 +120,7 @@
                 case 'deleteContentBackward': {
                     const lengthWithoutThousandSeparators = this.maskedValue.replace(/\s/g, '').length-1; // number length without thousands separators
                     if (this.maskedValue.split('.')[0].length < start) {
-                        return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
+                        return this.value = this.value.slice(0, this.selectionStart-this.numberOfThousandSeparators) + this.value.slice(this.selectionEnd-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
                     }
                     if (this.selectionStart !== this.selectionEnd) { // deleting the selected part
                         return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
@@ -136,5 +135,9 @@
                 } break;
             }
         },
+        getSelectionRange (e) {
+            this.selectionStart = e.target.selectionStart;
+            this.selectionEnd = e.target.selectionEnd;
+        }
     })
 </script>

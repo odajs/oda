@@ -51,8 +51,8 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
     `,
     onResize(e){
         this.interval('resize', ()=>{
-            this.width = e.target.scrollWidth * this.zoom;
-            this.height = e.target.scrollHeight * this.zoom;
+            this.width = e.target.scrollWidth;
+            this.height = e.target.scrollHeight;
         })
     },
     width: 0,

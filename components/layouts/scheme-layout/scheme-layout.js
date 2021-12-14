@@ -2,9 +2,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     template: /*html*/`
         <div ref="content" slot="content" class="flex vertical" ~style="{zoom: zoom}">
             <svg class="flex">
-                <path ~for="link in links" stroke="blue" :stroke-width="selection.has(link) ? 2 : 1" :item="link" fill="transparent" :d="link" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
+                <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link) ? 2 : 1" :item="link" fill="transparent" :d="link.d" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
             </svg>
-            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>      
+            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
+            <oda-sheme-link ~for="link in links.filter(i=>!i.link)">EXT</oda-sheme-link>      
         </div>
     `,
     get srcPins(){
@@ -251,24 +252,24 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         const center = rect.center;
         // let d = `M${center.x * this.zoom} ${center.y * this.zoom}`;
         let d = '';
-        switch (this.align){
-            case 'l':{
+        switch (this.align) {
+            case 'l': {
                 d += `M${(rect.x - 4)} ${center.y} H ${(link?(center.x):0)}`;
             } break;
-            case 't':{
-                d += `M${center.x} ${rect.y } V ${(link?(rect.y):0)}`;
+            case 't': {
+                d += `M${center.x} ${rect.y - 4} V ${(link?(rect.y):0)}`;
             } break;
-            case 'b':{
+            case 'b': {
                 d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):this.layout.height)}`;
             } break;
         }
         if (link){
             // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
             rect = link.src.$$pin.getClientRect(container);
-            d+=` L ${((rect.right + this.pinSize))} ${rect.center.y} H ${rect.right}`;
+            d += `L ${(rect.right + this.pinSize)} ${rect.center.y} H ${rect.right + 4}`;
         }
         console.log(d)
-        return d;
+        return {d, link, align: this.align};
     },
     listeners:{
         dragstart(e) {
