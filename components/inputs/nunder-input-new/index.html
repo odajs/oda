@@ -119,11 +119,11 @@
                 } break;
                 case 'deleteContentBackward': {
                     const lengthWithoutThousandSeparators = this.maskedValue.replace(/\s/g, '').length-1; // number length without thousands separators
-                    if (this.maskedValue.split('.')[0].length < start) {
-                        return this.value = this.value.slice(0, this.selectionStart-this.numberOfThousandSeparators) + this.value.slice(this.selectionEnd-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
-                    }
                     if (this.selectionStart !== this.selectionEnd) { // deleting the selected part
                         return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
+                    }
+                    if (this.maskedValue.split('.')[0].length < start) {
+                        return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(end-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
                     }
                     this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(end-this.numberOfThousandSeparators+1);
                 } break;
