@@ -40,21 +40,30 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect fill="url(#bigLines)" :width :height></rect>
-                    <rect fill="url(#smallLines)" :width :height></rect>
+                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" :width="width*zoom" :height="height*zoom"></rect>
+                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" :width="width*zoom" :height="height*zoom"></rect>
                 </svg>
-                <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" >
+                <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll">
                     <slot class="flex vertical" name="content" ></slot>
                 </div>
             </div>
         </div> 
     `,
+    onScroll(e){
+        const target = e.target;
+        this.interval('on-scroll', ()=>{
+            this.left = target.scrollLeft;//e.target.scrollLeft;
+            this.top = target.scrollTop;//e.target.scrollTop;
+        })
+    },
     onResize(e){
-        this.interval('resize', ()=>{
+        this.interval('on-resize', ()=>{
             this.width = e.target.scrollWidth;
             this.height = e.target.scrollHeight;
         })
     },
+    left: 0,
+    top: 0,
     width: 0,
     height: 0,
     props: {
