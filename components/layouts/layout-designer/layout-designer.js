@@ -40,11 +40,10 @@ ODA({ is: 'oda-layout-designer-structure',
                 overflow: visible;
                 flex-wrap: wrap;
                 justify-content: space-around;
-                padding: 8px; /*//{{layout?.isGroup?'8px':''}};*/
                 align-content: flex-start;
             }
             [selected] {
-                background-color: var(--section-background);
+                background-color: var(--selection-background);
             }
         </style>
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
@@ -52,14 +51,22 @@ ODA({ is: 'oda-layout-designer-structure',
     layout: null,
     iconSize: 32,
     get $saveKey() {
-        return this.layout?.root?.name || this.layout?.root?.id || 'root';
+        return this.layout?.name || this.layout?.id || 'root';
     },
     props: {
         settings: {
             default: [],
             save: true
         }
-    }
+    },
+    // afterLoadSettings() {
+    //     console.log(this.settings);
+    // },
+    observers: [
+        function loadLayout(layout, settings) {
+            layout?.execute(settings);
+        }
+    ]
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -134,7 +141,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-                order: {{layout?._order || 'unset'}};
+                order: {{layout?._order ?? 'unset'}};
             }
             label{
                 font-size: small;
@@ -196,7 +203,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px; margin-right: 1px;"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px; margin-right: 1px; border-left: 1px dashed white;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
     `,
     width: undefined,
     get hasChildren() {
@@ -204,6 +211,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     expand() {
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
+        if (this.designMode) {
+            const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
+            this.settings ||= [];
+            this.settings.push(action);
+        }
     },
     listeners: {
         async contextmenu(e) {
@@ -214,8 +226,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 items: [{
                     label: 'grouping', run: () => {
                         const action = { action: "grouping", props: { target: this.layout.id } };
-                        this.settings.push(action);
                         action.id = this.toGroup(action);
+                        this.settings ||= [];
+                        this.settings.push(action);
                     }
                 }, { label: 'hide' }]
             }, { title: e.target.layout?.label });
@@ -286,6 +299,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         e.stopPropagation();
         this.dragInfo.action = { action: this.dragInfo.action, props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo, true);
+        this.settings ||= [];
         this.settings.push(this.dragInfo.action);
         this.clearDragTo();
     },
@@ -377,21 +391,42 @@ CLASS({ is: 'Layout',
         const dragItem = dragInfo.dragItem; // || findRecursive(dragInfo.$root, act.props.item);
         const targItem = dragInfo.targetItem; // || findRecursive(dragInfo.$root, act.props.target);
         if (!dragItem || !targItem) return;
-        // const align = ['left', 'right'].includes(props.to) ? 'row' : 'column';
-        const idxDrag = dragItem.owner.items.indexOf(dragItem);
-        let idxTarg = targItem.owner.items.indexOf(targItem);
-        idxTarg = dragInfo.action.props.to === 'left' ? idxTarg : idxTarg + 1;
+        let idxTarg = targItem._order;
+        dragItem._order = idxTarg = dragInfo.action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
+            const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
             targItem.owner.items.splice(idxTarg, 0, drag);
             drag.owner = targItem.owner;
         }
-        targItem.owner.items.sort((a, b) => a._order - b._oreder).map((i,idx) =>  i._order = idx < idxTarg ? idx : idx  + 1);
-        dragItem._order = idxTarg;
+        targItem.owner.items.sort((a, b) => a._order - b._order).map((i,idx) =>  {
+            i._order = idx - .1 <= idxTarg ? idx : idx + 1;
+        });
         if (targItem.isVirtual) {
             idxTarg = targItem.owner.items.indexOf(targItem);
             targItem.owner.items.splice(idxTarg, 1);
         }
+    },
+    expanded(action) {
+        const item = this.find(action.props.target);
+        if (item) {
+            item.$expanded = action.props.value;
+        }
+    },
+    execute(actions) {
+        if (!actions) return;
+        actions.forEach(i => {
+            if (i.action === 'expanded')
+                this[i.action]?.(i);
+        })
+    },
+    find(id, owner = this.root) {
+        let items = owner.items;
+        if (!items?.length) return;
+        return items.reduce((res, i) => {
+            if (i.id + '' === id + '') res = i;
+            return res || this.find(id, i);
+        }, undefined);
     }
 })
 
@@ -400,11 +435,3 @@ const img = new Image();
 img.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAACXBIWXMAAAsSAAALEgHS3X78AAAAa0lEQVRIiWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcsDFpDjJ7p8kB5KjoeB/D0CDExDLeSRAcjtTIPHOeSBUQ8MNBj1wECDUQ8MNBj1wECDUQ8MNGACteqGquNBbgc3SUGtuiHZnH7L8gAAtichl6hs6rYAAAAASUVORK5CYII=`;
 const img3 = new Image();
 img3.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAUCAYAAADC1B7dAAAACXBIWXMAAAsSAAALEgHS3X78AAAA4klEQVRYhWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcuDqwWsNsiuZgF5ZqLLB+mh5BkYyN8jwMDAwIoixjTUYgYZ8LL/Ew9b/P2J9oTfR2DCTIPCZWQCQfb/LKDUBUplMBNYhponsAFYTIHy1JCOIRhAjqlh4SEYAJUHw8pDDEO9UMAGRj002MGohwY7GH4eArVaB4E7yAIffzFiaAM3wUGtVlDzAVTjDgmfQD3z6SdmAmOB9CdYGUBtoRbbodmNQI4peIwMl5hi/P//P4oCUEwN4Q7fU4yYQIqpodclf8vyAAC+a17T0iNSKwAAAABJRU5ErkJggg==`;
-
-// const findRecursive = (owner, id) => {
-//     if (!owner.items?.length) return;
-//     return owner.items.reduce((res, i) => {
-//         if (i.id + '' === id + '') res = i;
-//         return res || findRecursive(i, id);
-//     }, undefined);
-// }

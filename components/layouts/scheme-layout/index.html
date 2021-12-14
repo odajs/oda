@@ -8,110 +8,70 @@
     import './scheme-layout.js'
     layout.items = [
             {
-                "is": "oda-button", "id": '1',
-                "item": { "x": 100, "y": 180, "id": "id-1" },
-                "props": {
-                    "icon": "icons:extension", "fill": "blue", "iconSize": 64, "label": "1:oda-button"
+                is: "oda-button", id: 1,  x: 280, y: 180,
+                props: {
+                    icon: "icons:extension", fill: "blue", iconSize: 64, label: "1:oda-button"
                 },
-                "interfaces": {
-                    "top": [
-                        { "id": '1-t1', props:{
+                interfaces: {
+                    top: [{ props:{
                             icon: 'icons:error'
-                        }},
-                        { "id": '1-t2', "links": [
-                            {"block": "5", "pin": "3333"},
-                        ]}
-                    ],
-                    "right": [
-                        { "id": "1-r1", links:[
-                            {block:'5', pin: '1'}
-                        ]},
-                        { "id": "1-r2", props: {}, tap(){
-                                //todo что-то делаем
-                                console.log('tap on 1-r2');
-                            },
-                            links: [
-                                {"block": "2", "pin": "2-l1"},
-                            ]
-                        },
-                        {
-                            "id": "1-r3",
-                            // is: 'oda-icon',  // ! если раскомментировать, то данный объект подменит собой item контейнера
-                            props: {
+                        }}, {link: 5, pin: 2}],
+                    right: [
+                            {link: 5, pin: 1},
+                            {link: 2, pin: 1}, {
+                                props: {
 
-                                my: 'dfkjlsfjl',
-                                icon: 'icons:error',
-                                iconSize: 30,
-                                style:'background: red;',
-                            },
-                            tap(e) {
-                                e.stopPropagation();
-                                console.log('tap on 1-r3');
-                            },
-                            contextmenu(e) {
-                                e.stopPropagation();
-                                console.log('contextmenu 1-r3');
-                            },
-                            links: [
-                                {block: '3', pin: '3-l1'}
-                            ]
-                    }
+                                    my: 'dfkjlsfjl',
+                                    icon: 'icons:error',
+                                    iconSize: 30,
+                                    style:'background: red;',
+                                },
+                                tap(e) {
+                                    e.stopPropagation();
+                                    console.log('tap on 1-r3');
+                                },
+                                contextmenu(e) {
+                                    e.stopPropagation();
+                                    console.log('contextmenu 1-r3');
+                                },
+                            link: 3, pin: '3-l1'
+                    }],
+                    left: [
+                        {},
+                        {link: 5, pin: 1}
                     ],
-                    "left": [
-                        { "id": '1-l1'},
-                        { "id": '1-l2', links: [
-                        {block: '5', pin: '1'}
-                        ]}
-                    ],
-                    "bottom": [
-                        { "id": '1-b1'},
-                        { "id": '1-b2', links: [
-                            {block: '5', pin: '1'}
-                        ]}
+                    bottom: [
+                        {},
+                        {link: 5, pin: 1}
                     ],
                 }
             },
             {
-                "is": "oda-button", "id":"2",
-                "item": { "x": 550, "y": 80, "id": "id-2" },
-                "props": {
-                    "icon": "icons:android", "fill": "green", "iconSize": 64, "label": "2:oda-button"
+                is: "oda-button", id: 2, x: 100, y: 30,
+                props: {
+                    icon: "icons:android", "fill": "green", "iconSize": 64, "label": "2:oda-button"
                 },
-                "interfaces": {
-                    "top": [
-                        { "id": "2-t1" },
-                    ],
-                    "left": [
-                        {
-                            "id": "2-l1",
-                            "links": []
-                        },
-
-                    ],
-                    "right": [
-                        { "id": '2-r1'},
-                        { "id": '2-r2'}
-                    ],
-                    "bottom": [
-                        { "id": '2-b1'},
-                        { "id": '2-b2', links: [
-                            {block: '3', pin: '3-t1'}
-                        ]}
-                    ],
+                interfaces: {
+                    top: [{}],
+                    left: [{}],
+                    right: [{}, {}],
+                    bottom: [{}, {link: 3, pin: 1}]
                 }
-            },
-            {
-                is: 'oda-button', id: '3', item: {x: 660, y: 360},
+            }, {
+                is: 'oda-button', id: 3, x: 100, y: 360,
                 props: {
                     label: '3:oda-button',
                     iconSize: 30
                 },
                 interfaces: {
                     top: [
-                        {id: '3-t1'}
+                        {}
                     ],
                     left: [
-                        {id: '3-l1'}
+                        {}
+                    ],
+                    right: [
+                        {},{}
                     ]
                 }
             }

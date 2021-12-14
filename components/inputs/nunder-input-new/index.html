@@ -20,7 +20,7 @@
             <span>value: {{value}}</span>
             <span>mask:<input ::value="mask"></span>
             <div class="horizontal">
-                <input @input="onInput" @select="selectionchange" :value="maskedValue">
+                <input @input="onInput" @select="selectionchange" @mousedown="onmousedown" @dblclick="onDblClick" :value="maskedValue">
             </div>
         `,
         mask: '# 0.000',
@@ -80,9 +80,22 @@
         selectionchange (e) {
             this.selectionStart = e.target.selectionStart;
             this.selectionEnd = e.target.selectionEnd;
+            this.thousandSeparatorsFromEnd = this.maskedValue.slice(0, this.selectionEnd).match(/\s/g)?.length || 0, // number of thousands separators to selectionEnd
+            this.thousandSeparatorsFromStart = this.maskedValue.slice(0, this.selectionStart).match(/\s/g)?.length || 0; // number of thousands separators to selectionStart
+        },
+        onDblClick (e) {
+            if (this.maskedValue.split('.')[0].length < this.selectionStart) {
+                e.target.setSelectionRange(this.maskedValue.split('.')[0].length + 1, this.maskedValue.length)
+            } else {
+                e.target.setSelectionRange(0, this.maskedValue.split('.')[0].length)
+            }
+        },
+        onmousedown (e) {
+            this.selectionStart = e.target.selectionStart;
+            this.selectionEnd = e.target.selectionEnd;
         },
         onInput (e) {
-            const char = e.data,
+            const char = e.data === ',' ? '.' : e.data,
                   start = e.target.selectionStart,
                   end = e.target.selectionEnd;
             this.input = e.target;
@@ -90,7 +103,10 @@
             switch (e.inputType) {
                 case 'insertText': {
                     this.value = this.value.replace(/^0+/, '');  // removing zeros in front of a number
-                    if (this.value.match(/(?<=\.)\d+/) && this.value.match(/(?<=\.)\d+/)[0].length >= 3 && start === this.input.value.length) {
+                    if (this.selectionStart !== this.selectionEnd) {
+                        return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + char + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
+                    }
+                    if (this.value.match(/(?<=\.)\d+/) && this.value.match(/(?<=\.)\d+/)[0].length >= this.minFract && start === this.input.value.length) {
                         /\d|\./.test(char) ? this.value += char : false; // input only numbers and dots
                     } else {
                         /\d|\./.test(char) ? this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) : false;
@@ -104,21 +120,21 @@
                 } break;
                 case 'deleteContentBackward': {
                     const lengthWithoutThousandSeparators = this.maskedValue.replace(/\s/g, '').length-1; // number length without thousands separators
-                    if (this.maskedValue.length-1 === start && this.value.length > lengthWithoutThousandSeparators) { // removing the last character from a formatted value
-                        return this.value = this.value.slice(0, lengthWithoutThousandSeparators - this.value.length)
+                    if (this.maskedValue.split('.')[0].length < start) {
+                        return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
                     }
-                    if (this.selectionStart !== this.selectionEnd) {
-                        // const deletionThousendSeparators = this.maskedValue.slice(this.selectionStart, this.selectionEnd).match(/\s/g)?.length || 0
-                        const thousandSeparatorsFromEnd = this.maskedValue.slice(0, this.selectionEnd).match(/\s/g)?.length || 0,
-                              thousandSeparatorsFromStart = this.maskedValue.slice(0, this.selectionStart).match(/\s/g)?.length || 0;
-                        return this.value = this.value.slice(0, this.selectionStart - thousandSeparatorsFromStart) + this.value.slice(this.selectionEnd-thousandSeparatorsFromEnd); // deletes the last character if it is not a period, and two characters if the last is a period
+                    if (this.selectionStart !== this.selectionEnd) { // deleting the selected part
+                        return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
                     }
                     this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(end-this.numberOfThousandSeparators+1);
                 } break;
                 case 'deleteContentForward': {
+                    if (this.maskedValue.split('.')[0].length < start) {
+                        return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
+                    }
                     this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1);
                 } break;
             }
-        }
+        },
     })
 </script>

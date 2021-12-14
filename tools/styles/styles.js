@@ -231,6 +231,7 @@ body[context-menu-show] *:not(oda-context-menu){
     --error-background: yellow;
     --info-color: blueviolet;
     --warning-color: orange;
+    --disabled-color: silver;
     --invert:{
         filter: invert(1);
     };

@@ -1,15 +1,34 @@
 ODA({is: "oda-ruler-grid", template: /*html*/`
         <style>
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            }
+            ::-webkit-scrollbar-thumb {
+                border-radius: 3px;
+                background: var(--header-background);
+                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                @apply --dark;
+                width: 16px;
+            }
             :host {
+                position: relative;
                 @apply --vertical;
                 @apply --flex;
-                /*overflow: hidden;*/
+                overflow: hidden;
+                background-color: {{backgroundColor}};
             }
         </style>
+
         <oda-ruler ~if="showScale"></oda-ruler>
         <div ref="main" class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
-            <div class="flex vertical" style="position:relative; overflow: hidden"  @resize="onResize">
+            <div class="flex vertical" style="overflow: hidden; position: relative;"  @resize="onResize">
                 <svg ~if="showGrid" class="flex">
                     <defs>
                         <pattern id="smallLines" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
@@ -21,24 +40,26 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect class="flex" fill="url(#bigLines)" :width :height></rect>
+                    <rect fill="url(#bigLines)" :width :height></rect>
                     <rect fill="url(#smallLines)" :width :height></rect>
                 </svg>
-                <div id="slot" class="vertical flex" style="overflow: visible; position: absolute; top: 0px; left: 0px;">
+                <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" >
                     <slot class="flex vertical" name="content" ></slot>
                 </div>
             </div>
         </div> 
     `,
     onResize(e){
-        this.width = e.target.scrollWidth;
-        this.height = e.target.scrollHeight;
+        this.interval('resize', ()=>{
+            this.width = e.target.scrollWidth * this.zoom;
+            this.height = e.target.scrollHeight * this.zoom;
+        })
     },
     width: 0,
     height: 0,
     props: {
-        gridColor: {
-            default: 'darkgray',
+        backgroundColor: {
+            default: 'white',
             editor: '@oda/color-picker',
             save: true,
         },
@@ -50,9 +71,12 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
             default: true,
             save: true,
         },
-        iconSize: 32
+        iconSize: 32,
+        zoom:{
+            default: 1,
+            save: true
+        },
     },
-    zoom: 1,
     get sizeBig() {
         return this.sizeSmall * 10;
     },
@@ -120,15 +144,16 @@ ODA({is: 'oda-ruler', template: /*html*/`
                 @apply --shadow;
                 width: {{vertical?iconSize+'px':'auto'}};
                 height: {{!vertical?iconSize+'px':'auto'}};
-                {{vertical?'width: 24px;':'height: 24px;'}}
+                {{vertical?'width: \${iconSize}px;':'height: \${iconSize}px;'}}
+                @apply --header;
             }
         </style>
-        <div style="font-size:12px; min-width: 24px; max-width: 24px; text-align: center" class="no-flex" ~if="!vertical">{{unit}}</div>
-        <svg class="flex" style="width: 100%; height: 100%">
+        <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
+        <svg class="flex content" style="width: 100%; height: 100%">
             <g ~for="count">
                 <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
                 <line ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-                <text ~props="getTextLine(index)" style="font-size:12px;fill:gray">{{index * unitVal}}</text>
+                <text ~props="getTextLine(index)" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
             </g>
         </svg>
     `,

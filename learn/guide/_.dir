@@ -35,8 +35,8 @@
         "status": "check"
     },
     {
-        "name": "smart-caching",
-        "label": "Smart-кэширование",
+        "name": "smart-caching-old",
+        "label": "Smart-кэширование-устаревшее",
         "status": "edit"
    },
    {

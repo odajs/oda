@@ -289,7 +289,7 @@ if (!window.ODA) {
                         }
                     });
                 }
-                for (let a of Array.prototype.filter.call(this.attributes, attr => attr.name.includes('.'))) {
+                for (let a of Array.prototype.filter.call(this.attributes, attr => !attr.name.includes('.'))) {
                     let val = a.value;
                     val = (val === '') ? true : (val === undefined ? false : val);
                     this.setProperty(a.name, val);
@@ -363,6 +363,11 @@ if (!window.ODA) {
                 this.render();
                 this.async(()=>{
                     callHook.call(this, 'attached');
+                    // Array.prototype.forEach.call(this.attributes, a=>{
+                    //     let val = a.value;
+                    //     val = (val === '') ? true : (val === undefined ? false : val);
+                    //     this.setProperty(a.name, val);
+                    // })
                 })
             }
             disconnectedCallback() {
@@ -846,6 +851,13 @@ if (!window.ODA) {
                     this.$proxy[key] = v;
                 }
                 Object.defineProperty(odaComponent.prototype, name, desc);
+                if(name in core.prototype){
+                    // console.log(name);
+                    Object.defineProperty(core.defaults, name, {
+                        configurable: true,
+                        enumerable: true,
+                    })
+                }
             }
         }
         Object.defineProperty(odaComponent, 'name', {
@@ -2175,7 +2187,7 @@ if (!window.ODA) {
                         }
                     }
                 }
-                else if (this.props && name in this.props && this[name] !== v) {
+                else if ((name in (this.props || {})) || (name in (this.$core?.prototype  || {}))) {
                         this[name] = v;
                         return;
                 }
@@ -2227,6 +2239,7 @@ if (!window.ODA) {
                 res.left -= rectHost.left || 0;
                 res.bottom -= rectHost.top || 0;
                 res.right -= rectHost.left || 0;
+                res.center = {x: res.left + (res.right-res.left)/2, y: res.top + (res.bottom-res.top)/2};
                 rect = res;
                 rect.host = host;
             }
