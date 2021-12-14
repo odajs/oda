@@ -11,7 +11,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     get srcPins(){
         return this.items.map(b=>{
             return b.interfaces?.right?.map((src,i)=>{
-                return {link: b.id, pin: i, src};
+                return {link: b.block, pin: i, src};
             });
         }).filter(i=>i).flat();
     },
@@ -96,16 +96,25 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         this.selection.splice(0, this.selection.length, this.lastdown.item);
                     }
                     this.selection.forEach(i=>{
-                        i.delta = {
-                            x: e.detail.start.x / this.zoom - i.x,
-                            y: e.detail.start.y / this.zoom - i.y
-                        };
+                        Object.defineProperty(i, 'delta', {
+                            writable: true,
+                            enumerable: false,
+                            configurable: true,
+                            value: {
+                                x: e.detail.start.x / this.zoom - i.x,
+                                y: e.detail.start.y / this.zoom - i.y
+                            }
+                        })
+                        // i.delta = {
+                        //     x: e.detail.start.x / this.zoom - i.x,
+                        //     y: e.detail.start.y / this.zoom - i.y
+                        // };
                     })
                 } break;
                 case 'track':{
                     this.selection.forEach(i=>{
-                        i.x = e.detail.x / this.zoom  - i.delta.x;//Math.round(((e.detail.x + i.delta.x) / this.zoom)/10) * 10;
-                        i.y = e.detail.y / this.zoom - i.delta.y;//Math.round(((e.detail.y + i.delta.y) / this.zoom)/10) * 10;
+                        i.x = e.detail.x / this.zoom  - i.delta.x;
+                        i.y = e.detail.y / this.zoom - i.delta.y;
                         i.x = Math.round(i.x / 10) * 10;
                         i.y = Math.round(i.y / 10) * 10;
                         if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {

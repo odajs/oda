@@ -155,6 +155,7 @@ ODA({is: 'oda-ruler', template: /*html*/`
                 height: {{!vertical?iconSize+'px':'auto'}};
                 {{vertical?'width: \${iconSize}px;':'height: \${iconSize}px;'}}
                 @apply --header;
+                z-index:2;
             }
         </style>
         <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
