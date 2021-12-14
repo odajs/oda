@@ -2,10 +2,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     template: /*html*/`
         <div ref="content" slot="content" class="flex vertical" ~style="{zoom: zoom}">
             <svg class="flex">
-                <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link) ? 2 : 1" :item="link" fill="transparent" :d="link.d" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
+                <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link?.d) ? 2 : 1" :item="link?.d" fill="transparent" :d="link?.d" @tap.stop="select" @push.stop :selected="selection.has(link?.d)"/>
             </svg>
             <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-            <oda-sheme-link ~for="link in links.filter(i=>!i.link)">EXT</oda-sheme-link>      
+            <oda-scheme-link ~for="link in links?.filter(i=>!i?.link)" :link></oda-scheme-link>      
         </div>
     `,
     get srcPins(){
@@ -242,6 +242,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     `,
     index: undefined,
     get link(){
+        const zoom = this.zoom;
         if (this.align === 'r' || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
@@ -260,7 +261,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
                 d += `M${center.x} ${rect.y - 4} V ${(link?(rect.y):0)}`;
             } break;
             case 'b': {
-                d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):this.layout.height)}`;
+                d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):'999999')}`;
             } break;
         }
         if (link){
@@ -454,4 +455,9 @@ ODA({is:'oda-scheme-container-toolbar',
         if (this.selection.has(this.item))
             this.removeSelection();
     }
+});
+ODA({is:'oda-scheme-link',
+    template:`
+    EXT
+    `,
 });
