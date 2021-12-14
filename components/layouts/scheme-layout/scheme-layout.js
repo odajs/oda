@@ -1,6 +1,6 @@
 ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid',
     template: /*html*/`
-        <div slot="content" class="flex vertical">
+        <div ref="content" slot="content" class="flex vertical">
             <svg class="flex">
                 <path ~for="link in links" stroke="blue" :stroke-width="selection.has(link) ? 2 : 1" :item="link" fill="transparent" :d="link" @tap.stop="select" @push.stop :selected="selection.has(link)"/>
             </svg>
@@ -82,7 +82,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             this.interval('my-resize', ()=>{
                 this.width = e.target.scrollWidth;
                 this.height = e.target.scrollHeight;
-                console.log('links');
                 this.links = undefined;
             });
         },
@@ -200,9 +199,7 @@ ODA({is: 'oda-scheme-container',
 
     },
     get links(){
-        return this.$$('oda-scheme-interface').map(i =>{
-            return i.links;
-        }).flat();
+        return this.$$('oda-scheme-interface').map(i => i.links).flat();
     },
     set links(n){
         this.$$('oda-scheme-interface').forEach(i=>{
@@ -218,8 +215,7 @@ ODA({is: 'oda-scheme-container',
         return this.$$('.block')?.[0];
     }
 });
-ODA({is:'oda-scheme-pin',
-    template:`
+ODA({is:'oda-scheme-pin', template: /*html*/`
         <style>
             :host{
                 @apply --content;
@@ -245,22 +241,26 @@ ODA({is:'oda-scheme-pin',
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
         })
-        let rect = this.getClientRect(this.layout);
+        const container = this.layout.$refs.content;
+        let rect = this.getClientRect(container);
+        // let rect = this.getClientRect(this.layout);
         const center = rect.center;
-        let d = '';// = `M${center.x * this.zoom} ${center.y * this.zoom} `;
+        // let d = `M${center.x * this.zoom} ${center.y * this.zoom}`;
+        let d = '';
         switch (this.align){
             case 'l':{
                 d += `M${(rect.x - 4) * this.zoom} ${center.y * this.zoom} H ${(link?(center.x * this.zoom):0)}`;
             } break;
             case 't':{
-                d += `M${center.x * this.zoom} ${(rect.y - 4)  * this.zoom} V ${(link?(rect.y * this.zoom):0)}`;
+                d += `M${center.x * this.zoom} ${rect.y  * this.zoom} V ${(link?(rect.y * this.zoom):0)}`;
             } break;
             case 'b':{
                 d += `M${center.x * this.zoom} ${(rect.bottom + 4) * this.zoom} V ${(link?(rect.bottom * this.zoom):this.layout.height)}`;
             } break;
         }
         if (link){
-            rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
+            // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
+            rect = link.src.$$pin.getClientRect(container);
             d+=` L ${((rect.right + this.pinSize) * this.zoom)} ${rect.center.y * this.zoom} H ${rect.right * this.zoom}`;
         }
         console.log(d)
@@ -370,6 +370,9 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
         </style>
         <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
+    attached(){
+        this.links = undefined;
+    },
     isVisiblePin(con) {
         if (!this.layout?.links?.length)
             return false;
