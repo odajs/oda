@@ -46,10 +46,10 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         },
     },
     attached () {
-        document.addEventListener('keydown', this._onKeyDown.bind(this));
+        this.listen('keydown', '_onKeyDown', {target: document});
     },
     detached () {
-        document.removeEventListener('keydown', this._onKeyDown.bind(this));
+        this.unlisten('keydown', '_onKeyDown', {target: document});
     },
     _onKeyDown (e) {
         e.key.match(/[0-9().*/+-]/) ? this.tap(e.key) : false;
@@ -109,7 +109,7 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         if (/^[a-zA-Z(]/.test(model?.expr || model?.name || model?.key) && /[0-9)]$/.test(this.stack[this.stack.length-2]?.key)) { // if immediately after the number certain symbols follow, you must substitute multiplication
             this.stack.splice(this.stack.length-1, 1, {key: model.key, name: model?.name, expr: `*${model?.expr}`, hint: model?.hint});
         }
-        if (/^\d/.test(model?.key || model?.expr) && /[a-zA-Z)]$/.test(this.stack[this.stack.length-2]?.expr || this.stack[this.stack.length-2]?.key)) { // if the number is written immediately after certain characters, it is necessary to insert multiplication
+        if (/^\d/.test(model?.key || model?.expr) && /[a-zA-Z)]$/.test(this.stack[this.stack.length-2]?.expr || this.stack[this.stack.length-2]?.key || 0)) { // if the number is written immediately after certain characters, it is necessary to insert multiplication
             this.stack.splice(this.stack.length-1, 1, {key: model.key, expr: `*${model.key}`})
         }
         this.expression = undefined;
