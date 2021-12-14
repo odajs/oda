@@ -71,13 +71,14 @@ ODA({
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
         eyeAll: false, tDict: true,
-        currentLocal: 'ru-Ru', // { get() {return ODA.localization.currentLocal} },
+        currentLocal: 'forInit', // { get() {return ODA.localization.currentLocal} },
         phrazeBase: [], phrazeDop: [], wordsBase: [], wordsDop: [],
         localesAvailable: [], lidx:{
             set (lidx) {
                 Localization.lidx=lidx
                 Localization._setDictionary(lidx)
-            }
+            },
+            get () {return  Localization.lidx}
         },
 
     },
@@ -166,12 +167,12 @@ ODA({   is: 'oda-selectbox', imports: '@oda/button',  template: /*html*/ `
             
         </style>
         <div class="line" @tap="showOptions=!showOptions">
-            <oda-icon :icon="items[sidx].icon" ></oda-icon>
-            <div class="label">{{items[sidx].label}}</div>
+            <oda-icon :icon="items[sidx]?.icon" ></oda-icon>
+            <div class="label">{{items[sidx]?.label}}</div>
             <oda-icon icon="icons:arrow-drop-down" ></oda-icon>
         </div>
         <div ~if="showOptions" class="option">
-            <oda-button ~for="items"    @tap="focusedItem=index" :icon="item.icon" :label="item.label"></oda-button>
+            <oda-button ~for="items"    @tap="focusedItem=index" :icon="item?.icon" :label="item.label"></oda-button>
         </div>
         `,
         props: {

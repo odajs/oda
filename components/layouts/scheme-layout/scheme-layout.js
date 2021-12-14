@@ -111,9 +111,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                             this.inTrack = true;
                         }
                     })
-                    this.interval('track', () => {
-                        this.links = undefined;
-                    })
+                    this.changed();
                 } break;
                 case 'end': {
                     this.lastdown = null;
@@ -127,6 +125,12 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             this.selection.clear();
             this.focusedPin = null;
         },
+    },
+    changed(){
+        this.interval('changed', () => {
+            this.links = undefined;
+        })
+        this.fire('changed');
     },
     select(e) {
         if (!this.editMode) return;
@@ -335,7 +339,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         return false
     },
     set pin(n){
-        if (n)
+        if (typeof n === 'object')
             n.$$pin = this;
         this.link = undefined;
     },
