@@ -344,7 +344,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         if (this.link){
             await ODA.showConfirm('oda-dialog-message',{message: `Replace link?`})
         }
-        this.pin.link = pin.container.item.id;
+        this.pin.link = pin.container.item.block;
         this.pin.pin = pin.index;
     },
     get vertical(){
@@ -400,12 +400,6 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
     `,
     attached(){
         this.links = undefined;
-    },
-    isVisiblePin(con) {
-        if (!this.layout?.links?.length)
-            return false;
-        const target = this.layout?.links?.find?.(l => l.to?.item?.id === con.id);
-        return !!target;
     },
     findPin(link){
         return this.$$('.pin').find(i=>{
