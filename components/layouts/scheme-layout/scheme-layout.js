@@ -6,7 +6,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             </svg>
             <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
             <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{position: 'absolute', left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}"></oda-scheme-link>
+            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}"></oda-scheme-link>
         </div>
     `,
     get srcPins(){
@@ -286,12 +286,11 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             } break;
         }
         if (link){
-            // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
             rect = link.src.$$pin.getClientRect(this._grid);
             d += `L ${rect.right + link.src.$$pin.size} ${rect.center.y} H ${rect.right}`;
         }
         // console.log(d)
-        return {d, link, align: this.align, rect};
+        return {d, link, align: this.align, rect, pin: this};
     },
     listeners:{
         dragstart(e) {
@@ -479,6 +478,7 @@ ODA({is:'oda-scheme-link',
     template: /*html*/`
     <style>
         :host{
+            position: absolute;
             @apply --content;
             @apply --border;
             border-radius: 45%;
@@ -486,7 +486,6 @@ ODA({is:'oda-scheme-link',
             height: {{iconSize}}px;
             cursor: pointer;
             @apply --shadow;
-            z-index: 1;
         }
     </style>
     `,
