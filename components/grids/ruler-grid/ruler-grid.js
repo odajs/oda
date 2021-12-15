@@ -129,26 +129,10 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         }
     },
     get step(){
-        return this.zoom === 1?10:10;
-    },
-    // _setStep(zoom = this.zoom, step = this.step) {
-    //     if (zoom === 1) {
-    //         this.zoom = 1;
-    //         this.step = 10;
-    //     } else {
-    //         zoom = zoom > 1 ? Math.min(400, zoom) : Math.max(1 / 100000000, zoom);
-    //         if (zoom === 400 || zoom === 1 / 100000000) {
-    //             this.zoom = zoom;
-    //         } else {
-    //             if ((step * zoom) > 50)
-    //                 step = step / 10;
-    //             else if ((step * zoom) < 5)
-    //                 step = step * 10;
-    //             if (step !== this.step)
-    //                 this.step = step;
-    //         }
-    //     }
-    // }
+        let step = this.zoom * 10;
+        step = Math.round(step / 10) * 10
+        return step;
+    }
 })
 ODA({is: 'oda-ruler', template: /*html*/`
         <style>
