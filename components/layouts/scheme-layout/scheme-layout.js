@@ -5,7 +5,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link?.d) ? 2 : 1" :item="link?.d" fill="transparent" :d="link?.d" @tap.stop="select" @push.stop :selected="selection.has(link?.d)"/>
             </svg>
             <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-            <oda-scheme-link ~style="{position: 'absolute', left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}" ~for="link in links?.filter(i=>!i?.link)"></oda-scheme-link>
+            <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
+            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{position: 'absolute', left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}"></oda-scheme-link>
         </div>
     `,
     get srcPins(){
@@ -490,8 +491,8 @@ ODA({is:'oda-scheme-link',
             @apply --content;
             @apply --border;
             border-radius: 45%;
-            min-width: {{iconSize}}px;
-            min-height: {{iconSize}}px;
+            width: {{iconSize}}px;
+            height: {{iconSize}}px;
             cursor: pointer;
             @apply --shadow;
             z-index: 1;
