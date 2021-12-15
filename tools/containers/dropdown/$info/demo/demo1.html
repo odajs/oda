@@ -13,7 +13,7 @@ ODA({
         </style>
         <button ref="calc" @tap="myOpened = !myOpened">Калькулятор</button>
         <oda-dropdown ::opened="myOpened" parent="$refs.calc">
-            <input ::value @keypress.prevent=""></input>
+            <input ::value @keypress.prevent="">
             <div>
                 <button class="digit" @tap="insertSign('1')">1</button>
                 <button class="digit" @tap="insertSign('2')">2</button>
@@ -94,7 +94,7 @@ ODA({
                         this.value += '.';
                     else {
                         var s = this.value.substring( lastIndex, this.value.length );
-                        if( s.search(/[\+\-\*\/]/) != -1 ) 
+                        if( s.search(/[\+\-\*\/]/) != -1 )
                             this.value += '.';
                     }
                 }
@@ -106,5 +106,5 @@ ODA({
 //            this.insertSign( e.key );
 //        }
 //    },
-}); 
+});
 </script>

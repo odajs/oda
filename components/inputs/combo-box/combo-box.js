@@ -6,7 +6,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 @apply --horizontal;
             }
         </style>
-        <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || ''"></input>
+        <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || ''">
         <oda-button :icon="value?'icons:close':'icons:chevron-right:90'" @tap="dropdown"></oda-button>
     `,
     items: [],

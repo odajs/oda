@@ -8,7 +8,7 @@ ODA({
     is: 'my-component',
     template: `
         <button @tap="myOpened= !myOpened" ref="button">Открыть | Закрыть</button>
-        <input type="checkbox" ::value="myIntersect">Перекрывать владельца</input>
+        <label><input type="checkbox" ::value="myIntersect">Перекрывать владельца</label>
         <oda-dropdown ::opened="myOpened" :parent="$refs.button" :intersect="myIntersect" >
             <div>Here must be some Dropdown content</div>
             <div>Here must be some Dropdown content</div>

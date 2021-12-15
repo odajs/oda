@@ -8,7 +8,7 @@
 ODA({
     is: 'my-input-component',
     template: `
-        <input ::value></input>
+        <input ::value>
         <button @tap="_clear">Очистить хранилище</button>
     `,
     props: {

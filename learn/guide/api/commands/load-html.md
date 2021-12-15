@@ -16,7 +16,7 @@ ODA.loadHTML(url);
 ODA({
     is: 'my-component',
     template: `
-        <label>URL-адрес: <input type="url" ::value style="width: 45%" ></input></label><br>
+        <label>URL-адрес: <input type="url" ::value style="width: 45%"></label><br>
         <textarea ::value="text" style="height: 100px; width: 25%" placeholder="Результат запроса"></textarea>
         <iframe ref="frame" width="25%" height="100"> </iframe><br>
         <button @tap="onTap">Загрузить</button>

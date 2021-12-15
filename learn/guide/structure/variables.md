@@ -46,7 +46,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        Текущее время: <input :value></input>
+        Текущее время: <input :value>
     `,
     value: '',
     time: undefined,

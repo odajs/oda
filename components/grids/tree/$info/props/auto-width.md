@@ -8,7 +8,7 @@ ODA({
     is: 'my-component',
     template: `
         <label>Привязка по ширине <input type="checkbox" ::value="autoWidth" checked></label> <br>
-        <label>Ширина контейнера <input style="width: 25vw;" type="range" max="150" ::value="boxWidth">{{boxWidth}}</input></label>
+        <label>Ширина контейнера <input style="width: 25vw;" type="range" max="150" ::value="boxWidth">{{boxWidth}}</label>
         <oda-tree :data-set :auto-width :style="{width: \`\${boxWidth}px\`}"></oda-tree>
     `,
     props: {

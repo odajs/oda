@@ -7,7 +7,7 @@
         <style>
             :host { display: block; padding: 16px; }
         </style>
-        <input style="width: 50vw;" type="range" max="5000" ::value="offset">{{offset}}</input>
+        <input style="width: 50vw;" type="range" max="5000" ::value="offset">{{offset}}
         <div :style="{marginLeft: \`\${offset}px\`}" ~ref="'noWake'">{{offset}}</div>
         <div :style="{marginLeft: \`\${offset}px\`}" ~ref="'wake'" ~wake>{{offset}}</div>
         <span>Содержимое элемента без ~wake: {{noWakeText}}</span><p></p>
@@ -32,6 +32,6 @@
 В отличие от него, элемент **div** с директивой **~wake** всегда изменяет свое содержимое, даже когда находится за пределами видимой области.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/2CXx7PBhzyg?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/2CXx7PBhzyg?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

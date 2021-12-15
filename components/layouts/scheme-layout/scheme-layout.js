@@ -6,7 +6,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             </svg>
             <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
             <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{left: link?.rect.x - iconSize / 4 + (link?.align === 'l'?-40:0), top: link?.rect.y - iconSize / 4 + (link?.align === 't'?-40:link?.align === 'b'?40:0)}"></oda-scheme-link>
+            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{left: link?.rect.x + (link?.align === 'l'?-(16 + link.pin.size):0), top: link?.rect.y + (link?.align === 't'?-(16 + link.pin.size):link?.align === 'b'?(16 + link.pin.size):0)}"></oda-scheme-link>
         </div>
     `,
     get srcPins(){
@@ -59,7 +59,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     props: {
         pinSize:{
-            default: 10,
+            default: 12,
             save: true,
         },
         editMode: {
@@ -243,8 +243,8 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
                 @apply --content;
                 @apply --border;
                 border-radius: 25%;
-                min-width: {{iconSize/2}}px;
-                min-height: {{iconSize/2}}px;
+                min-width: {{pinSize}}px;
+                min-height: {{pinSize}}px;
                 margin: 2px;
                 transition: transform ease-in-out .5s;
                 cursor: pointer;
@@ -265,7 +265,6 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         return this.pinSize * (this.index + 2);
     },
     get link(){
-
         const zoom = this.zoom;
         if (this.align === 'r' || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
@@ -482,8 +481,8 @@ ODA({is:'oda-scheme-link',
             @apply --content;
             @apply --border;
             border-radius: 45%;
-            width: {{iconSize}}px;
-            height: {{iconSize}}px;
+            width: {{pinSize}}px;
+            height: {{pinSize}}px;
             cursor: pointer;
             @apply --shadow;
         }

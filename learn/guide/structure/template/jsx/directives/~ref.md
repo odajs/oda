@@ -71,7 +71,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input ~ref="'myInput'"></input>
+        <input ~ref="'myInput'">
         <div>{{textDiv}}</div>
         <button @tap="textDiv = $refs.myInput.value">Изменить значение</button>
     `,
@@ -88,7 +88,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input ::value="textInput"></input>
+        <input ::value="textInput">
         <div>{{textDiv}}</div>
         <button @tap="textDiv = textInput">Изменить значение</button>
     `,
@@ -117,7 +117,7 @@ ODA({
 В элементе **span** в директиве **ref** идентификатор ссылки указан как простой набор символов. А в элементе **div** в директиве **~ref** идентификатор указан как символьная константа JavaScript.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/MEkicBcGy7w?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/MEkicBcGy7w?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

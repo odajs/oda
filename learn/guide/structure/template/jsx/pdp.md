@@ -8,7 +8,7 @@
 ODA({
     is: 'my-component1',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component2 ::pdp></my-component2>
     `,
     props: {
@@ -19,7 +19,7 @@ ODA({
 ODA({
     is: 'my-component2',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
     `,
     props: {
         pdp: 'Мы взаимосвязаны'
@@ -37,7 +37,7 @@ ODA({
 ODA({
     is: 'my-component1',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component2></my-component2>
     `,
     props: {
@@ -48,7 +48,7 @@ ODA({
 ODA({
     is: 'my-component2',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
     `
 });
 ```
@@ -65,7 +65,7 @@ ODA({
 ODA({
     is: 'my-component1',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component2></my-component2>
     `,
     props: {
@@ -76,7 +76,7 @@ ODA({
 ODA({
     is: 'my-component2',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component3></my-component3>
     `
 });
@@ -84,7 +84,7 @@ ODA({
 ODA({
     is: 'my-component3',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
     `
 });
 ```
@@ -101,7 +101,7 @@ ODA({
 ODA({
     is: 'my-component1',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component2></my-component2>
     `,
     props: {
@@ -112,7 +112,7 @@ ODA({
 ODA({
     is: 'my-component2',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component3></my-component3>
     `,
     props: {
@@ -123,7 +123,7 @@ ODA({
 ODA({
     is: 'my-component3',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
     `
 });
 ```
@@ -138,7 +138,7 @@ ODA({
 ODA({
     is: 'my-component1',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component2></my-component2>
     `,
     props: {
@@ -149,7 +149,7 @@ ODA({
 ODA({
     is: 'my-component2',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component3></my-component3>
     `,
 });
@@ -157,7 +157,7 @@ ODA({
 ODA({
     is: 'my-component3',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
         <my-component4></my-component4>
     `,
     props: {
@@ -168,7 +168,7 @@ ODA({
 ODA({
     is: 'my-component4',
     template: `
-        <input ::value="pdp"></input>
+        <input ::value="pdp">
     `
 });
 ```

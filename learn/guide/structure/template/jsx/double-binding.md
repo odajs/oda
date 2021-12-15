@@ -8,7 +8,7 @@
 ODA({
     is: 'my-component',
     template: `
-        <input ::value="text"></input>
+        <input ::value="text">
         <button @tap="_onTap">{{text}}</button>
     `,
     props: {
@@ -30,7 +30,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input ::value></input>
+        <input ::value>
         <button @tap="_onTap">{{value}}</button>
     `,
     props: {
@@ -95,6 +95,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/KVf8phiZZ10?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/KVf8phiZZ10?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

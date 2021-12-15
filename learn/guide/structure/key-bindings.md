@@ -10,7 +10,7 @@
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Набери abba"></input>
+        <input placeholder="Набери abba">
         <div>Нажата клавиша: {{keyPressed}}</div>
     `,
     keyBindings: {
@@ -38,7 +38,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Набери abBA или Фифа"></input>
+        <input placeholder="Набери abBA или Фифа">
         <div>Нажата клавиша: {{keyPressed}}</div>
     `,
     keyBindings: {
@@ -66,7 +66,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Набери abBA или Фифа"></input>
+        <input placeholder="Набери abBA или Фифа">
         <div>Нажата клавиша: {{keyPressed}}</div>
     `,
     keyBindings: {
@@ -94,7 +94,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Набери Фифа и abBA"></input>
+        <input placeholder="Набери Фифа и abBA">
         <div>Нажата клавиша: {{keyPressed}} </div>
     `,
     keyBindings: {
@@ -118,7 +118,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Нажми сочетание Ctrl+A"></input>
+        <input placeholder="Нажми сочетание Ctrl+A">
         <div>Нажата клавиша: {{keyPressed}}</div>
     `,
     keyBindings: {
@@ -173,7 +173,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Набери Фифа"></input>
+        <input placeholder="Набери Фифа">
         <div>Нажата клавиша: {{keyPressed}} </div>
     `,
     keyBindings: {
@@ -196,7 +196,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input placeholder="Нажми стрелку вверх или набери Фифа"></input>
+        <input placeholder="Нажми стрелку вверх или набери Фифа">
         <div>Нажата клавиша: {{keyPressed}} </div>
     `,
     keyBindings: {
@@ -217,6 +217,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/ZiiCxJ6MAIE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/ZiiCxJ6MAIE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

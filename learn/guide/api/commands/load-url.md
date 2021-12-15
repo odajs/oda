@@ -17,7 +17,7 @@ import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
     template: `
-        <label>URL-адрес: <input type="url" ::value></input></label><br>
+        <label>URL-адрес: <input type="url" ::value></label><br>
         <textarea ::value="text" style="height: 100px; width: 300px" placeholder="Результат запроса"></textarea><br>
         <button @tap="onTap">Загрузить</button>
     `,

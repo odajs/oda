@@ -103,7 +103,7 @@
                 template: `
                     <span part="my-style">{{text}}</span>
                     <div part="my-style">{{text}}</div>
-                    <input part="my-input" placeholder="Введите текст"></input>
+                    <input part="my-input" placeholder="Введите текст">
                 `,
                 props:{
                     text: 'Hello, part!'
@@ -192,6 +192,6 @@
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/IGBja7TURUY?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/IGBja7TURUY?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
