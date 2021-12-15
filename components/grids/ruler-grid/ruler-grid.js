@@ -80,6 +80,10 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
             default: true,
             save: true,
         },
+        snapToGrid:{
+            default: true,
+            save: true,
+        },
         iconSize: 32,
         zoom:{
             default: 1,

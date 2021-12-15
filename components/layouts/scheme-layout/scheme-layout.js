@@ -10,7 +10,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     `,
     get srcPins(){
         return this.items.map(b=>{
-            return b.interfaces?.right?.map?.((src,i)=>{
+            return b.interfaces?.$right?.map?.((src,i)=>{
                 return {link: b.block, pin: i, src};
             });
         }).filter(i=>i).flat();
@@ -126,7 +126,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         }
                         this.links = undefined;
                     })
-
                 } break;
                 case 'end': {
                     this.lastdown = null;
@@ -198,15 +197,15 @@ ODA({is: 'oda-scheme-container',
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
         <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
         <div>
-            <oda-scheme-interface ~if="item?.interfaces?.top" align="t" :interface="item?.interfaces?.top" class="horizontal"></oda-scheme-interface>
+            <oda-scheme-interface ~if="item?.interfaces?.$top" align="t" :interface="item?.interfaces?.$top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.left" align="l" :interface="item?.interfaces?.left"></oda-scheme-interface>
+                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left" align="l" :interface="item?.interfaces?.$left"></oda-scheme-interface>
                     <div class="flex shadow vertical content">
                         <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                     </div>
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.right" align="r" :interface="item?.interfaces?.right"></oda-scheme-interface>
+                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
             </div>
-            <oda-scheme-interface ~if="item?.interfaces?.bottom" align="b" :interface="item?.interfaces?.bottom" class="horizontal"></oda-scheme-interface>
+            <oda-scheme-interface ~if="item?.interfaces?.$bottom" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
         </div>
     `,
     get container(){
