@@ -58,12 +58,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         });
     },
     props: {
-        linkMargin:{
-            default: 40,
-            save: true,
-        },
         pinSize:{
-            default: 20,
+            default: 10,
             save: true,
         },
         editMode: {
@@ -265,7 +261,11 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     get _grid(){
         return this.container?.parentElement;
     },
+    get size(){
+        return this.pinSize * (this.index + 2);
+    },
     get link(){
+
         const zoom = this.zoom;
         if (this.align === 'r' || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
@@ -276,19 +276,19 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         let d = '';
         switch (this.align) {
             case 'l': {
-                d += `M${(rect.x - 4)} ${center.y} H ${(link?(center.x):center.x - 25)}`;
+                d += `M${rect.x} ${center.y} H ${rect.x - this.size}`;
             } break;
             case 't': {
-                d += `M${center.x} ${rect.y - 4} V ${(link?(rect.y):rect.y - 15)}`;
+                d += `M${center.x} ${rect.y} V ${rect.y - this.size}`;
             } break;
             case 'b': {
-                d += `M${center.x} ${(rect.bottom + 4)} V ${(link?(rect.bottom):rect.y + 30)}`;
+                d += `M${center.x} ${rect.bottom} V ${rect.bottom + this.size}`;
             } break;
         }
         if (link){
             // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
             rect = link.src.$$pin.getClientRect(this._grid);
-            d += `L ${(rect.right + this.pinSize)} ${rect.center.y} H ${rect.right + 4}`;
+            d += `L ${rect.right + link.src.$$pin.size} ${rect.center.y} H ${rect.right}`;
         }
         // console.log(d)
         return {d, link, align: this.align, rect};
