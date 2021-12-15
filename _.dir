@@ -26,8 +26,7 @@
         "label": "Темы"
     },
     {
-        "name": "about.md",
-        "path": "site/",
+        "name": "site/about.md",
         "label": "О нас"
     }
 ]
