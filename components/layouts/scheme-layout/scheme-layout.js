@@ -198,15 +198,15 @@ ODA({is: 'oda-scheme-container',
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
         <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
         <div>
-            <oda-scheme-interface ~if="item?.interfaces?.$top" align="t" :interface="item?.interfaces?.$top" class="horizontal"></oda-scheme-interface>
+            <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"></oda-scheme-interface>
             <div class="flex horizontal">
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left" align="l" :interface="item?.interfaces?.$left"></oda-scheme-interface>
+                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"></oda-scheme-interface>
                     <div class="flex shadow vertical content">
                         <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                     </div>
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
+                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
             </div>
-            <oda-scheme-interface ~if="item?.interfaces?.$bottom" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+            <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
         </div>
     `,
     get container(){
@@ -290,7 +290,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             rect = link.src.$$pin.getClientRect(this._grid);
             d += `L ${(rect.right + this.pinSize)} ${rect.center.y} H ${rect.right + 4}`;
         }
-        console.log(d)
+        // console.log(d)
         return {d, link, align: this.align, rect};
     },
     listeners:{
@@ -422,16 +422,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             i.link = undefined;
         });
     },
-    set interface(n){
-        if (n && typeof n ==='object'){
-            Object.defineProperty(n, '$$interface', {
-                writable: true,
-                configurable: true,
-                enumerable: false,
-                value: this
-            })
-        }
-    },
+    interface: [],
     dragstart(e) {
         e.dataTransfer.setData('pin', JSON.stringify({
             block: this.item.id,
