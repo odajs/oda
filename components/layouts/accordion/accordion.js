@@ -52,7 +52,7 @@ ODA({is: 'oda-accordion-item', template: /*html*/`
     </style>
     <div class="bar shadow no-flex header horizontal" @down="_expand">
         <oda-icon :icon-size :icon="icon" :hide-icon="!icon"></oda-icon>
-        <span class="flex" style="text-align: center; font-size: small">{{label}}</span>
+        <span class="flex" ~style="{ fontSize: fontSize, textAlign: textAlign }">{{label}}</span>
         <slot name="accordion-item-bar" class="more vertical no-flex" ~if="expanded"></slot>
         <oda-icon :icon-size :icon="expanded?'icons:chevron-right:90':'icons:chevron-right'" style="opacity: .5"></oda-icon>
     </div>
@@ -67,7 +67,9 @@ ODA({is: 'oda-accordion-item', template: /*html*/`
             type: Boolean,
             default: false,
             reflectToAttribute: true
-        }
+        },
+        fontSize: 'small',
+        textAlign: 'center',
     },
     _expand() {
         this.parentElement.fire('expanded-changed');
