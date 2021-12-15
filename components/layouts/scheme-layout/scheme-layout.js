@@ -10,7 +10,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     `,
     get srcPins(){
         return this.items.map(b=>{
-            return b.interfaces?.right?.map((src,i)=>{
+            return b.interfaces?.right?.map?.((src,i)=>{
                 return {link: b.block, pin: i, src};
             });
         }).filter(i=>i).flat();
@@ -57,6 +57,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         });
     },
     props: {
+        linkMargin:{
+            default: 40,
+            save: true,
+        },
         pinSize:{
             default: 20,
             save: true,
@@ -120,14 +124,16 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
                             this.inTrack = true;
                         }
+                        this.links = undefined;
                     })
-                    this.changed();
+
                 } break;
                 case 'end': {
                     this.lastdown = null;
                     this.async(() => {
                         this.inTrack = false;
                     });
+                    this.changed();
                 } break;
             }
         },
@@ -256,17 +262,17 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         </style>
     `,
     index: undefined,
+    get _grid(){
+        return this.container?.parentElement;
+    },
     get link(){
         const zoom = this.zoom;
         if (this.align === 'r' || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
         })
-        const grid = this.layout.$refs.grid;
-        let rect = this.getClientRect(grid);
-        // let rect = this.getClientRect(this.layout);
+        let rect = this.getClientRect(this._grid);
         const center = rect.center;
-        // let d = `M${center.x * this.zoom} ${center.y * this.zoom}`;
         let d = '';
         switch (this.align) {
             case 'l': {
@@ -281,7 +287,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         }
         if (link){
             // rect = link.src.$$pin.getClientRect(link.src.$$pin.container.parentElement);
-            rect = link.src.$$pin.getClientRect(grid);
+            rect = link.src.$$pin.getClientRect(this._grid);
             d += `L ${(rect.right + this.pinSize)} ${rect.center.y} H ${rect.right + 4}`;
         }
         console.log(d)
@@ -346,6 +352,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         }
         this.pin.link = pin.container.item.block;
         this.pin.pin = pin.index;
+        this.changed();
     },
     get vertical(){
         switch (this.align){

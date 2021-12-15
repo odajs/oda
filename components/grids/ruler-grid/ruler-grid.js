@@ -26,7 +26,7 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         </style>
 
         <oda-ruler ~if="showScale"></oda-ruler>
-        <div ref="main" class="horizontal flex">
+        <div class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
             <div class="flex vertical" style="overflow: hidden; position: relative;"  @resize="onResize">
                 <svg ~if="showGrid" class="flex">
