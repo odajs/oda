@@ -73,7 +73,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                     this.selection.clear();
                 }
             },
-            // save: true
+            save: true
         },
     },
     selection: [],
@@ -202,7 +202,7 @@ ODA({is: 'oda-scheme-container',
             <div class="flex horizontal">
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.left" align="l" :interface="item?.interfaces?.left"></oda-scheme-interface>
                     <div class="flex shadow vertical content">
-                        <div disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
+                        <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                     </div>
                 <oda-scheme-interface class="vertical" ~if="item?.interfaces?.right" align="r" :interface="item?.interfaces?.right"></oda-scheme-interface>
             </div>

@@ -415,10 +415,10 @@ CLASS({ is: 'Layout',
     },
     execute(actions) {
         if (!actions) return;
-        actions.forEach(i => {
-            if (i.action === 'expanded')
-                this[i.action]?.(i);
-        })
+        // actions.forEach(i => {
+        //     if (i.action === 'expanded')
+        //         this[i.action]?.(i);
+        // })
     },
     find(id, owner = this.root) {
         let items = owner.items;
