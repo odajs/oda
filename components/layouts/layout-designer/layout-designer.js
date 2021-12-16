@@ -50,9 +50,9 @@ ODA({ is: 'oda-layout-designer-structure',
     `,
     layout: null,
     iconSize: 32,
-    get saveKey() {
-        return this.layout?.name || this.layout?.id || 'root';
-    },
+    // get saveKey() {
+    //     return this.layout?.name || this.layout?.id || 'root';
+    // },
     props: {
         settings: {
             default: [],
@@ -62,9 +62,11 @@ ODA({ is: 'oda-layout-designer-structure',
     observers: [
         function loadLayout(layout, settings) {
             layout?.execute(settings);
-            console.log(layout.id, this.saveKey, settings)
         }
-    ]
+    ],
+    attached() {
+        this.saveKey = this.layout?.name || this.layout?.id || 'root'
+    }
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -420,11 +422,21 @@ CLASS({ is: 'Layout',
     },
     find(id, owner = this.root) {
         let items = owner.items;
-        if (!items?.length) return;
-        return items.reduce((res, i) => {
-            if (i.id + '' === id + '') res = i;
-            return res || this.find(id, i);
-        }, undefined);
+        if (items?.then) {
+            items.then(_items => {
+                if (!_items?.length) return;
+                return _items.reduce((res, i) => {
+                    if (i.id + '' === id + '') res = i;
+                    return res || this.find(id, i);
+                }, undefined);
+            })
+        } else {
+            if (!items?.length) return;
+            return items.reduce((res, i) => {
+                if (i.id + '' === id + '') res = i;
+                return res || this.find(id, i);
+            }, undefined);
+        }
     }
 })
 

@@ -96,20 +96,20 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         return Math.round(this.step * this.zoom);
     },
     get unit() {
-        if (this.step<1)
+        if (this.step===1)
             return 'mm';
-        if (this.step<1000)
+        if (this.step===10)
             return 'cm';
-        if (this.step<100000)
+        if (this.step===100)
             return 'm';
         return 'km';
     },
     get unitVal() {
-        if (this.step<1)
+        if (this.step===1)
             return 1;
-        if (this.step<1000)
+        if (this.step===10)
             return this.step;
-        if (this.step<100000)
+        if (this.step===100)
             return this.step / 100;
         return this.step / 1000000;
     },
@@ -134,7 +134,8 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         } else {
             let zoom = this.zoom > 1 ? Math.min(400, this.zoom) : Math.max(1 / 100000000, this.zoom);
             if (zoom === 400 || zoom === 1 / 100000000) {
-                // this.zoom = zoom;
+                // debugger;
+                this.zoom = zoom;
             } else {
                 if ((step * zoom) > 50)
                     step = step / 10;
