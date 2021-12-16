@@ -3,30 +3,5 @@
         "name": "introduction.md",
         "label": "Основные принципы",
         "status": "check"
-   },
-    {
-        "name": "no-influence.md",
-        "label": "Особенности кэширования",
-        "status": "check"
-   },
-    {
-        "name": "getter-caching.md",
-        "label": "Кэширование геттеров",
-        "status": "check"
-   },
-    {
-        "name": "method-caching.md",
-        "label": "Кэширование методов",
-        "status": "check"
-   },
-    {
-        "name": "method-event-caching.md",
-        "label": "Реакция кэша на события",
-        "status": "check"
-   },
-    {
-        "name": "brief.md",
-        "label": "Краткие выводы",
-        "status": "check"
    }
 ]
