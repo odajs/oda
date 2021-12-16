@@ -40,8 +40,8 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" :width="width*zoom" :height="height*zoom"></rect>
-                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" :width="width*zoom" :height="height*zoom"></rect>
+                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" :width="left + width/zoom" :height="top+ height/zoom"></rect>
+                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" width="10000" height="10000"></rect>
                 </svg>
                 <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll">
                     <slot class="flex vertical" name="content" ></slot>
@@ -162,7 +162,9 @@ ODA({is: 'oda-ruler', template: /*html*/`
         }
     },
     get count() {
-        return Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
+        const count = Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
+        console.warn(count)
+        return count;
     },
     getBigLine(index) {
         if (!this.vertical) {
