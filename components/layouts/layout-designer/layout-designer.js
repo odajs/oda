@@ -61,13 +61,11 @@ ODA({ is: 'oda-layout-designer-structure',
     },
     observers: [
         function loadLayout(layout, settings) {
-            this.async(() => {
-                layout?.execute(settings);
-            }, 500)
+            this.async(() => layout?.execute(settings));
         }
     ],
     attached() {
-        this.saveKey = this.layout?.name || this.layout?.id || 'root'
+        this.saveKey = this.layout?.name || this.layout?.id || 'root';
     }
 })
 
@@ -288,7 +286,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             to = x < 0 ? 'left' : 'right';
             // else
             //     to = y < 0 ? 'top' : 'bottom';
-            this.dragInfo.action = 'move';
             this.dragInfo.to = to;
             this.layout.dragTo = 'drag-to-' + to;
             this.dragInfo.targetItem = this.layout;
@@ -299,10 +296,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     ondragdrop(e) {
         e.stopPropagation();
-        this.dragInfo.action = { action: this.dragInfo.action, props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
-        this.layout.move(this.dragInfo, true);
+        this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
+        this.layout.move(this.dragInfo);
         this.settings ||= [];
-        this.settings.push(this.dragInfo.action);
+        this.settings.push(this.dragInfo._action);
         this.clearDragTo();
     },
     clearDragTo() {
@@ -390,11 +387,12 @@ CLASS({ is: 'Layout',
         }
     },
     move(dragInfo) {
-        const dragItem = dragInfo.dragItem; // || findRecursive(dragInfo.$root, act.props.item);
-        const targItem = dragInfo.targetItem; // || findRecursive(dragInfo.$root, act.props.target);
+        const action = dragInfo._action || dragInfo;
+        const dragItem = dragInfo.dragItem || this.find(action.props.item);
+        const targItem = dragInfo.targetItem || this.find(action.props.target);
         if (!dragItem || !targItem) return;
         let idxTarg = targItem._order;
-        dragItem._order = idxTarg = dragInfo.action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
+        dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
@@ -418,7 +416,7 @@ CLASS({ is: 'Layout',
     execute(actions) {
         if (!actions) return;
         actions.forEach(i => {
-            if (i.action === 'expanded')
+            // if (i.action === 'expanded')
                 this[i.action]?.(i);
         })
     },

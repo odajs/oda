@@ -3,5 +3,10 @@
         "name": "introduction.md",
         "label": "Основные принципы",
         "status": "check"
+   },
+    {
+        "name": "features.md",
+        "label": "Особенности кэширования",
+        "status": "check"
    }
 ]
