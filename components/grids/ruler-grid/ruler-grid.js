@@ -24,7 +24,6 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                 background-color: {{backgroundColor}};
             }
         </style>
-
         <oda-ruler ~if="showScale"></oda-ruler>
         <div class="horizontal flex">
             <oda-ruler ~if="showScale" vertical></oda-ruler>
@@ -40,14 +39,14 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
                             <line x1="0" y1="0" y2="0" :x2="sizeBig" fill="none" stroke="gray" stroke-width="1"></line>
                         </pattern>
                     </defs>
-                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" :width="left + width/zoom" :height="top+ height/zoom"></rect>
+                    <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" width="10000" height="10000"></rect>
                     <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" width="10000" height="10000"></rect>
                 </svg>
                 <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll">
                     <slot class="flex vertical" name="content" ></slot>
                 </div>
             </div>
-        </div> 
+        </div>
     `,
     onScroll(e){
         const target = e.target;
@@ -129,9 +128,24 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
         }
     },
     get step(){
-        let step = this.zoom * 10;
-        step = Math.round(step / 10) * 10
+        let step = 10;
+        if (this.zoom === 1) {
+            step = this.zoom * 10;
+        } else {
+            let zoom = this.zoom > 1 ? Math.min(400, this.zoom) : Math.max(1 / 100000000, this.zoom);
+            if (zoom === 400 || zoom === 1 / 100000000) {
+                // this.zoom = zoom;
+            } else {
+                if ((step * zoom) > 50)
+                    step = step / 10;
+                else if ((step * zoom) < 5)
+                    step = step * 10;
+            }
+        }
         return step;
+        // let step = this.zoom * 10;
+        // step = Math.round((step < 5 ? 5 : step) / 10) * 10;
+        // return step;
     }
 })
 ODA({is: 'oda-ruler', template: /*html*/`

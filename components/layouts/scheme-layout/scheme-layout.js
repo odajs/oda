@@ -69,6 +69,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 if (o) {
                     this.selection.clear();
                 }
+                this.focusedPin = null;
             },
             save: true
         },
@@ -308,9 +309,11 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     },
     listeners:{
         dragstart(e) {
+            if (!this.editMode) return;
             this.focusedPin = this;
         },
         dragover(e) {
+            if (!this.editMode) return;
             if (!this.focusedPin) return;
             if (this.focusedPin.container === this.container) return;
             switch (this.focusedPin.align){
@@ -337,6 +340,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         }
     },
     _link(){
+        if (!this.editMode) return;
         if (this.focusedPin && this.focusedPin.container !== this.container){
             switch (this.focusedPin.align){
                 case 'r':{
@@ -360,6 +364,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             this.focusedPin = this;
     },
     async __link(pin){
+        if (!this.editMode) return;
         if (this.link){
             await ODA.showConfirm('oda-dialog-message',{message: `Replace link?`})
         }

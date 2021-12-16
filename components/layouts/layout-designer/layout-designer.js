@@ -50,7 +50,7 @@ ODA({ is: 'oda-layout-designer-structure',
     `,
     layout: null,
     iconSize: 32,
-    get $saveKey() {
+    get saveKey() {
         return this.layout?.name || this.layout?.id || 'root';
     },
     props: {
@@ -59,12 +59,10 @@ ODA({ is: 'oda-layout-designer-structure',
             save: true
         }
     },
-    // afterLoadSettings() {
-    //     console.log(this.settings);
-    // },
     observers: [
         function loadLayout(layout, settings) {
             layout?.execute(settings);
+            console.log(layout.id, this.saveKey, settings)
         }
     ]
 })
@@ -415,10 +413,10 @@ CLASS({ is: 'Layout',
     },
     execute(actions) {
         if (!actions) return;
-        // actions.forEach(i => {
-        //     if (i.action === 'expanded')
-        //         this[i.action]?.(i);
-        // })
+        actions.forEach(i => {
+            if (i.action === 'expanded')
+                this[i.action]?.(i);
+        })
     },
     find(id, owner = this.root) {
         let items = owner.items;

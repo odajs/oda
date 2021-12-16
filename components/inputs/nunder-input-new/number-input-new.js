@@ -25,10 +25,10 @@ ODA({is:'oda-number',
         return /\s/.test(this.mask) ? ' ' : ''
     },
     get minInt () {
-        return /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/) ? this.mask.match(/\d+(?=\.)/g)[0].length : 0 : 0; // a number of simbols before comma
+        return /0/.test(this.mask) ? this.mask.match(/\d+(?=\.)/) ? this.mask.match(/\d+(?=\.)/g)[0].length : 0 : 0 // a number of simbols before comma
     },
     get minFract () {
-        return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0; // a number of simbols after comma
+        return /0/.test(this.mask) ? this.mask.match(/(?<=\.)\d+/) ? this.mask.match(/(?<=\.)\d+/)[0].length : 0 : 0 // a number of simbols after comma
     },
     get maskedValue () {
         let formattedValue = '0';
@@ -91,7 +91,7 @@ ODA({is:'oda-number',
     onmousedown (e) {
         this.getSelectionRange(e);
     },
-    onInput (e) {
+    async onInput (e) {
         const char = e.data === ',' ? '.' : e.data,
                 start = e.target.selectionStart,
                 end = e.target.selectionEnd;
@@ -104,7 +104,7 @@ ODA({is:'oda-number',
                 }
                 this.value = this.value.replace(/^0+/, '');  // removing zeros in front of a number
                 if (this.selectionStart !== this.selectionEnd) {
-                    return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + char + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1);
+                    return this.value = this.value.slice(0, this.selectionStart - this.thousandSeparatorsFromStart) + char + this.value.slice(this.selectionEnd-this.thousandSeparatorsFromEnd, this.value.split('.')[0].length + this.minFract + 1)
                 }
                 if (this.value.match(/(?<=\.)\d+/) && this.value.match(/(?<=\.)\d+/)[0].length >= this.minFract && start === this.input.value.length) {
                     /\d/.test(char) ? this.value += char :
@@ -124,8 +124,11 @@ ODA({is:'oda-number',
                     this.value = this.value.slice(0, end-this.numberOfThousandSeparators-1) + this.value.slice(end-this.numberOfThousandSeparators);
                 }
             } break;
+            case 'insertFromPaste': {
+                const clip = await navigator.clipboard.readText().then(text => text.split('').join('')); // get an array of inserted elements
+                this.value = this.value.slice(0, this.selectionStart - this.numberOfThousandSeparators - clip.length) + clip + this.value.slice(this.selectionEnd-this.numberOfThousandSeparators-clip.length); // subtract the length of the inserted line from the starting point to get the correct insertion point
+            } break;
             case 'deleteContentBackward': {
-                const lengthWithoutThousandSeparators = this.maskedValue.replace(/\s/g, '').length-1; // number length without thousands separators
                 this.thousandSeparatorsFromStart = this.value.split('.')[0].length > 0 ? this.thousandSeparatorsFromStart : this.thousandSeparatorsFromStart + 1;
                 this.numberOfThousandSeparators = this.value.split('.')[0].length > 0 ? this.numberOfThousandSeparators : this.numberOfThousandSeparators + 1;
                 if (this.selectionStart !== this.selectionEnd) { // deleting the selected part
@@ -141,7 +144,7 @@ ODA({is:'oda-number',
             } break;
             case 'deleteContentForward': {
                 if (this.maskedValue.split('.')[0].length < start) {
-                    return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1);
+                    return this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1, this.value.split('.')[0].length + this.minFract + 1)
                 }
                 this.value = this.value.slice(0, start-this.numberOfThousandSeparators) + this.value.slice(start-this.numberOfThousandSeparators+1);
             } break;
