@@ -163,7 +163,7 @@ ODA({is: 'oda-ruler', template: /*html*/`
     },
     get count() {
         const count = Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
-        console.warn(count)
+        // console.warn(count)
         return count;
     },
     getBigLine(index) {

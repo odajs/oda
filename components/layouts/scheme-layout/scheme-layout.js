@@ -182,6 +182,8 @@ ODA({is: 'oda-scheme-container',
                 min-height: 8px;
                 @apply --vertical;
                 /*@apply --content;*/
+                left: {{-left}}px;
+                top: {{-top}}px;
             }
             :host([selected]).block{
                 outline: 1px dotted gray !important;
@@ -194,9 +196,9 @@ ODA({is: 'oda-scheme-container',
         <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
         <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
         <div>
-            <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"></oda-scheme-interface>
+            <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
             <div class="flex horizontal">
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"></oda-scheme-interface>
+                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
                     <div class="flex shadow vertical content">
                         <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                     </div>
@@ -205,9 +207,22 @@ ODA({is: 'oda-scheme-container',
             <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
         </div>
     `,
+    onResize(e){
+        switch (e.target.align){
+            case 'l':
+                this.left = e.target.offsetWidth;
+                break;
+            case 't':
+                this.top = e.target.offsetHeight;
+                break;
+        }
+        console.dir(e.target)
+    },
     get container(){
         return this;
     },
+    left: 0,
+    top: 0,
     set item(n){
         if (n && typeof n === 'object'){
             Object.defineProperty(n, '$$container', {
@@ -401,7 +416,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
                 justify-content: center;
             }
         </style>
-        <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+        <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached(){
         this.links = undefined;
@@ -446,6 +461,18 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
             pin.item.links.push(pinTo);
         }
     },
+    listeners:{
+        resize(e) {
+            this.width = undefined;
+            this.height = undefined;
+        }
+    },
+    get width(){
+        return this.offsetWidth;
+    },
+    get height(){
+        return this.offsetHeight;
+    }
 });
 ODA({is:'oda-scheme-container-toolbar',
     template:`
