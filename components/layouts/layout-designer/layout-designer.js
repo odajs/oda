@@ -61,7 +61,9 @@ ODA({ is: 'oda-layout-designer-structure',
     },
     observers: [
         function loadLayout(layout, settings) {
-            layout?.execute(settings);
+            this.async(() => {
+                layout?.execute(settings);
+            }, 500)
         }
     ],
     attached() {

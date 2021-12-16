@@ -115,11 +115,12 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                 } break;
                 case 'track':{
                     this.selection.forEach(i=>{
-                        i.x = e.detail.x / this.zoom  - i.delta.x;
-                        i.y = e.detail.y / this.zoom - i.delta.y;
-                        i.x = Math.round(i.x / 10) * 10;
-                        i.y = Math.round(i.y / 10) * 10;
-                        if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
+                        // i.x = Math.round((e.detail.x / this.zoom - i.delta.x) / 10) * 10;
+                        // i.y = Math.round((e.detail.y / this.zoom - i.delta.y) / 10) * 10;
+                        // if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
+                        i.x = Math.round((e.detail.x / this.zoom - i.delta.x) / this.step) * this.step;
+                        i.y = Math.round((e.detail.y / this.zoom - i.delta.y) / this.step) * this.step;
+                        if (Math.abs(i.delta.x - e.detail.x) > this.step || Math.abs(i.delta.y - e.detail.y) > this.step) {
                             this.inTrack = true;
                         }
                         this.links = undefined;

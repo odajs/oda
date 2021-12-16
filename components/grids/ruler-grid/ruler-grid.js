@@ -133,13 +133,13 @@ ODA({is: "oda-ruler-grid", template: /*html*/`
             step = this.zoom * 10;
         } else {
             let zoom = this.zoom > 1 ? Math.min(400, this.zoom) : Math.max(1 / 100000000, this.zoom);
-            if (zoom === 400 || zoom === 1 / 100000000) {
-                // debugger;
+            if (zoom === 400 || zoom === 1 / 100000000) { // min & max zoom предел
                 this.zoom = zoom;
+                step = 1;
             } else {
-                if ((step * zoom) > 50)
+                if ((step * zoom) > 50) // zoom in && step to lower
                     step = step / 10;
-                else if ((step * zoom) < 5)
+                else if ((step * zoom) < 5) // zoom out && step to high
                     step = step * 10;
             }
         }
