@@ -14,6 +14,7 @@ ODA({ is: 'oda-layout-designer',
     data: null,
     selection: [],
     dragInfo: {},
+    useSettings: [],
     props: {
         designMode: {
             default: false,
@@ -50,9 +51,6 @@ ODA({ is: 'oda-layout-designer-structure',
     `,
     layout: null,
     iconSize: 32,
-    // get saveKey() {
-    //     return this.layout?.name || this.layout?.id || 'root';
-    // },
     props: {
         settings: {
             default: [],
@@ -60,8 +58,15 @@ ODA({ is: 'oda-layout-designer-structure',
         }
     },
     observers: [
-        function loadLayout(layout, settings) {
-            this.async(() => layout?.execute(settings));
+        function loadLayout(layout, settings, saveKey) {
+            if (layout && settings && saveKey) {
+                this.useSettings ||= [];
+                if (this.useSettings.has(saveKey)) return;
+                this.async(() => {
+                    layout.execute(settings);
+                    this.useSettings.add(saveKey);
+                }, 100);
+            }
         }
     ],
     attached() {
@@ -225,8 +230,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
                     label: 'grouping', run: () => {
-                        const action = { action: "grouping", props: { target: this.layout.id } };
-                        action.id = this.toGroup(action);
+                        const action = { action: "toGroup", props: { target: this.layout.id } };
+                        action.id = this.toGroup();
                         this.settings ||= [];
                         this.settings.push(action);
                     }
@@ -353,18 +358,19 @@ CLASS({ is: 'Layout',
     get isGroup() {
         return this.type === "group";
     },
-    toGroup() {
-        const myIdx = this.owner.items.indexOf(this);
-        const group = new Layout({ label: `Group for ${this.label}` }, this.key, this.owner, this.root);
-        const block = new Layout({ label: `Group for ${this.label}` }, this.key, group, this.root);
+    async toGroup(action) {
+        const item = action ? await this.find(action.props.target) : this;
+        const myIdx = item.owner.items.indexOf(item);
+        const group = new Layout({ label: `Group for ${item.label}` }, item.key, item.owner, item.root);
+        const block = new Layout({ label: `Group for ${item.label}` }, item.key, group, item.root);
         group.type = 'group';
         group.width = 0;
         group.items = [block];
         group.$expanded = true;
         group.$focused = block;
-        block.items = [this];
-        this.owner.items.splice(myIdx, 1, group);
-        this.owner = block;
+        block.items = [item];
+        item.owner.items.splice(myIdx, 1, group);
+        item.owner = block;
     },
     addTab() {
         const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
