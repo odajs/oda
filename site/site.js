@@ -94,6 +94,8 @@ site: {
                 <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
                     <img src="site/youtube.png" height="20" style="margin: 6px 0 0 16px"/>
                 </a>
+                <a class="no-flex" href="https://github.com/odajs/oda" target="_blank" style="margin: 0 0 0 16px"/>
+                    <oda-icon icon="social-media:github" :icon-size="32" ></oda-icon></a>
                 <oda-site-header :items ::part ></oda-site-header>
             </div>
             <oda-site-nav-tree ~show="focusedItem && !focusedItem.hideLeft" :slot="focusedItem && !focusedItem.hideLeft && part?'left-panel':'?'" :part ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
@@ -296,7 +298,7 @@ content: {
     });
     ODA({
         is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: ['@oda/table'],
-        template: `
+        template: /*html*/ `
             <style>
                 :host * {
                     @apply --user-select;
@@ -342,7 +344,7 @@ content: {
     });
 
     ODA({
-        is: 'oda-nav', template: `
+        is: 'oda-nav', template: /*html*/ `
             <oda-nav-btn ~if="focusedItem?.prev?.label" :goal=focusedItem.prev @tap="_tap(focusedItem.prev)" :isnext=0></oda-nav-btn>
             <oda-nav-btn ~if="focusedItem?.next?.label" :goal=focusedItem.next @tap="_tap(focusedItem.next)" :isnext=1 style="right:0px;"></oda-nav-btn>
         `,
@@ -356,7 +358,7 @@ content: {
 
     ODA({
         is: 'oda-nav-btn', extends: 'oda-button', imports: ['@oda/button'],
-        template: `
+        template: /*html*/ `
             <style>
                 :host {
                     height: {{iconSize}}px;
@@ -449,22 +451,11 @@ navigator: {
     });
     ODA({
         is: 'oda-status-cell', extends: 'oda-table-cell', imports: '@oda/table',
-        template: `
+        template: /*html*/ `
         <style>
-            :host{
-                min-width: 22px;
-                max-width: 22px;
-            }
-            :hover {
-                cursor: pointer;
-            }
-            div {
-                width: 14px;
-                height: 14px;
-                border: 2px solid lightgreen;
-                border-radius: 50%;
-                cursor: pointer;
-            }
+            :host { min-width: 22px; max-width: 22px; }
+            :hover { cursor: pointer; }
+            div {  width: 14px; height: 14px; border: 2px solid lightgreen; border-radius: 50%; cursor: pointer;  }
         </style>
         <div ~if="item && item._statusReady" :title @tap="_tap(item)" ~style="_style"></div>
         <oda-icon ~if="item && !item._statusReady" :icon-size="20" :icon="item.status && item.status.icon" ~style="{fill:item.status?item.status.color:''}" :title="item && item.$id" @tap="_tap(item)"></oda-icon>`,
@@ -492,15 +483,10 @@ navigator: {
     });
     ODA({
         is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: ['@oda/table'],
-        template: `
+        template: /*html*/ `
         <style>
-            :host{
-                @apply --header;
-                cursor: pointer;
-            }
-            :host(:hover){
-                @apply --selected;
-            }
+            :host{ @apply --header; cursor: pointer; }
+            :host(:hover){ @apply --selected; }
         </style>
         <oda-icon ~if="icon" :icon="icon" :icon-size="iconSize * .7" style="margin-right: 8px;"></oda-icon>
         <span ~html="value" ~style="{color: item && ((item.name && item.name.includes('.md')) || (item.content && item.content.link)) ? '#6699cc' : '#336699'}" style="overflow: hidden;" :title="value"></span>`,
@@ -525,7 +511,7 @@ navigator: {
 header: {
     ODA({
         is: 'oda-site-header',
-        template: `
+        template: /*html*/  `
         <style>
             :host{
                 width: 100%;

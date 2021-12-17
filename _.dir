@@ -26,7 +26,13 @@
         "label": "Темы"
     },
     {
-        "name": "site/about.md",
-        "label": "Контакты"
+        "name": "about",
+        "path": "/site/",
+        "label": "Контакты",
+        "content": {   
+            "abstract": "по адресу:г. Рязань, ул. Ленина, д. 47."
+            },
+        "status": "ok"
+
     }
 ]
