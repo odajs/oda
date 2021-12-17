@@ -56,9 +56,10 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
         })
     },
     onResize(e) {
+        const target = e.target;
         this.interval('on-resize', () => {
-            this.width = e.target.scrollWidth;
-            this.height = e.target.scrollHeight;
+            this.width = target.scrollWidth;
+            this.height = target.scrollHeight;
         })
     },
     left: 0,
@@ -162,7 +163,7 @@ ODA({ is: 'oda-ruler', template: /*html*/`
         }
     </style>
     <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
-    <svg class="flex content" style="width: 100%; height: 100%">
+    <svg class="flex content">
         <g ~for="count">
             <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
             <line ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
