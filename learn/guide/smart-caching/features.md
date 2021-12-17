@@ -10,17 +10,16 @@ ODA({
     template: `
         <input ::value="change1.a">
         <input ::value="change2[0]">
-        <div>Значение из геттера: {{getterChange}}</div>
-        <div>Значение из метода: {{methodChange()}}</div>
+        <div>Время из геттера: {{getterTime}}</div>
     `,
     props: {
         change1: {
             a:"Измени свойство объекта"
         },
         change2: ["Измени элемент массива"],
-        getterChange: {
+        getterTime: {
             get() {
-                this.change1.a 
+                this.change1.a;
                 this.change2[0];
                 var d = new Date();
                 return d.toLocaleTimeString() + '.' + d.getMilliseconds();
