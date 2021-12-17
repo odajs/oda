@@ -106,9 +106,15 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     `,
     addTab() {
         this.layout.addTab();
+        const action = { action: "addTab", props: { target: this.layout.id } };
+        this.settings ||= [];
+        // this.settings.push(action);
     },
-    removeTab(e, layout) {
-        this.layout.removeTab(layout);
+    removeTab(e, item) {
+        this.layout.removeTab(item);
+        const action = { action: "removeTab", props: { target: this.layout.id, tab: item.id } };
+        this.settings ||= [];
+        // this.settings.push(action);
     }
 })
 
