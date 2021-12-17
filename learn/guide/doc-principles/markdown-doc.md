@@ -64,7 +64,7 @@
 
 *Курсив*
 
-```info
+```info_md
 *Курсив*
 _Курсив_
 ```
@@ -180,7 +180,20 @@ let a = "Программый код"
 Нажмите [здесь](https://github.com/odajs/oda/blob/main/README.md "Всплывающая подсказка")
 ```
 
-Нажмите [здесь](https://github.com/odajs/oda/blob/main/README.md)
+Нажмите [здесь](https://github.com/odajs/oda/blob/main/README.md "Всплывающая подсказка")
+
+# **Изображения**
+
+```text
+![Альтернативный текст] (https://odajs/learn/images/logo/logo-150-x-150.png "Всплывающая подсказка")
+```
+
+![Альтернативный текст] (https://odajs/learn/images/logo/logo-150-x-150.png "Всплывающая подсказка")
+
+```text
+![Локальное изображение] (learn\images\logo\logo-150-x-150.png "Всплывающая подсказка")
+```
+
 
 # **Подчеркивание**
 

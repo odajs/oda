@@ -184,19 +184,19 @@ ODA({ is: 'oda-ruler', template: /*html*/`
     },
     getBigLine(index) {
         if (!this.vertical) {
-            const x = index * this.sizeBig - this.domHost.scrollLeft;
+            const x = index * this.sizeBig - this.domHost.scrollLeft + 0.5;
             return { x1: x, x2: x, y1: 4, y2: 24 };
         } else {
-            const y = index * this.sizeBig - this.domHost.scrollTop;
+            const y = index * this.sizeBig - this.domHost.scrollTop + 0.5;
             return { x1: 4, x2: 24, y1: y, y2: y };
         }
     },
     getSmallLine(index) {
         if (!this.vertical) {
-            const x = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2;
+            const x = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2 + 0.5;
             return { x1: x, x2: x, y1: 14, y2: 30 };
         } else {
-            const y = index * this.sizeBig - this.domHost.scrollTop + this.sizeBig / 2;
+            const y = index * this.sizeBig - this.domHost.scrollTop + this.sizeBig / 2 + 0.5;
             return { x1: 14, x2: 30, y1: y, y2: y };
         }
     },
@@ -206,7 +206,7 @@ ODA({ is: 'oda-ruler', template: /*html*/`
             return { x: x, y: 12 };
         } else {
             const y = index * this.sizeBig + 14 - this.domHost.scrollTop;
-            return { x: 0, y: y };
+            return { x: 5, y: y };
         }
     },
 });
