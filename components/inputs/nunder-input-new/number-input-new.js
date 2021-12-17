@@ -93,8 +93,8 @@ ODA({is:'oda-number',
     },
     async onInput (e) {
         const char = e.data === ',' ? '.' : e.data,
-                start = e.target.selectionStart,
-                end = e.target.selectionEnd;
+              start = e.target.selectionStart,
+              end = e.target.selectionEnd;
         this.input = e.target;
         this.numberOfThousandSeparators = this.input.value.slice(0, start).match(/\s/g)?.length || 0;
         switch (e.inputType) {
@@ -112,7 +112,7 @@ ODA({is:'oda-number',
                     this.value += char :
                     false; // input only numbers and dots (if there are no dots in the number already)
                 } else {
-                    /\d/.test(char) ? this .value = this.value.slice(0, start-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) :
+                    /\d/.test(char) ? this.value = this.value.slice(0, start-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) :
                     /\./.test(char) ? /\./.test(this.value) ? false :
                     this .value = this.value.slice(0, start-this.numberOfThousandSeparators-1) + char + this.value.slice(end-this.numberOfThousandSeparators-1) :
                     false;
@@ -126,7 +126,7 @@ ODA({is:'oda-number',
             } break;
             case 'insertFromPaste': {
                 const clip = await navigator.clipboard.readText().then(text => text.split('').join('')); // get an array of inserted elements
-                this.value = this.value.slice(0, this.selectionStart - this.numberOfThousandSeparators - clip.length) + clip + this.value.slice(this.selectionEnd-this.numberOfThousandSeparators-clip.length); // subtract the length of the inserted line from the starting point to get the correct insertion point
+                this.value = this.value.slice(0, start - this.numberOfThousandSeparators - clip.length) + clip + this.value.slice(end-this.numberOfThousandSeparators-clip.length); // subtract the length of the inserted line from the starting point to get the correct insertion point
             } break;
             case 'deleteContentBackward': {
                 this.thousandSeparatorsFromStart = this.value.split('.')[0].length > 0 ? this.thousandSeparatorsFromStart : this.thousandSeparatorsFromStart + 1;

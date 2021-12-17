@@ -386,10 +386,10 @@ CLASS({ is: 'Layout',
             this.owner.items.splice(this.owner.items.indexOf(this), 1);
         }
     },
-    move(dragInfo) {
+    async move(dragInfo) {
         const action = dragInfo._action || dragInfo;
-        const dragItem = dragInfo.dragItem || this.find(action.props.item);
-        const targItem = dragInfo.targetItem || this.find(action.props.target);
+        const dragItem = dragInfo.dragItem || await this.find(action.props.item);
+        const targItem = dragInfo.targetItem || await this.find(action.props.target);
         if (!dragItem || !targItem) return;
         let idxTarg = targItem._order;
         dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
@@ -399,7 +399,7 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 0, drag);
             drag.owner = targItem.owner;
         }
-        targItem.owner.items.sort((a, b) => a._order - b._order).map((i,idx) =>  {
+        targItem.owner.items.sort((a, b) => a._order - b._order).map((i, idx) => {
             i._order = idx - .1 <= idxTarg ? idx : idx + 1;
         });
         if (targItem.isVirtual) {
@@ -407,8 +407,8 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 1);
         }
     },
-    expanded(action) {
-        const item = this.find(action.props.target);
+    async expanded(action) {
+        const item = await this.find(action.props.target);
         if (item) {
             item.$expanded = action.props.value;
         }
@@ -417,26 +417,16 @@ CLASS({ is: 'Layout',
         if (!actions) return;
         actions.forEach(i => {
             // if (i.action === 'expanded')
-                this[i.action]?.(i);
+            this[i.action]?.(i);
         })
     },
-    find(id, owner = this.root) {
-        let items = owner.items;
-        if (items?.then) {
-            items.then(_items => {
-                if (!_items?.length) return;
-                return _items.reduce((res, i) => {
-                    if (i.id + '' === id + '') res = i;
-                    return res || this.find(id, i);
-                }, undefined);
-            })
-        } else {
-            if (!items?.length) return;
-            return items.reduce((res, i) => {
-                if (i.id + '' === id + '') res = i;
-                return res || this.find(id, i);
-            }, undefined);
-        }
+    async find(id, owner = this.root) {
+        let items = await owner.items;
+        if (!owner?.items?.length) return;
+        return await owner.items.reduce(async (res, i) => {
+            if ((i.id + '') === (id + '')) res = i;
+            return await res || await this.find(id, i);
+        }, undefined);
     }
 })
 
