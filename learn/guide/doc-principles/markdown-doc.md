@@ -156,7 +156,7 @@ ___Полужирный курсив___
 + Полупроводник
 + Диэлектрик
 
-# **Блок кода**
+# **Подсветка кода**
 
 \```javastring
 
@@ -167,8 +167,6 @@ let a = "Программый код"
 ```javastring
 let a = "Программый код"
 ```
-
-# **Строчный блок кода**
 
 Текст \`кода\` в одну строку
 
@@ -204,17 +202,17 @@ let a = "Программый код"
 
 ![Локальное изображение] (learn\images\logo\logo-150-x-150.png "Всплывающая подсказка")
 
-# **Таблица**
+# **Таблицы**
 
 | Столбец 1 | Столбец 2 | Столбец 3 |
-|-----------|----------:|:---------:|
+|:----------|----------:|:---------:|
 |1          |2          |3
 |4          |5          |6
 
-Первые и последние прямые черты можно не указывать. Пробелы значения ни имеют. Дефис можно указывать только один. Выравнивание в столбце задается двоеточием. По умолчанию выравнивание происходит по правому краю.
+Первые и последние вертикальные линии можно не указывать. Пробелы значения ни имеют. Дефис можно указывать только один. Выравнивание в столбце задается двоеточием. По умолчанию выравнивание происходит по правому краю.
 
 Столбец 1|Столбец 2|Столбец 3
-:-|-:|:-:
+-|-:|:-:
 1|2|3
 4|5|6
 
@@ -318,7 +316,7 @@ c угловая скобкой
 
 «!» - восклицательный знак.
 
-## **Inline HTML**
+## **Встроенный HTML**
 
 ```html
 <p>
@@ -334,3 +332,29 @@ c угловая скобкой
   " Экранировать не нужно &quot; <br/>
   & Экранировать не нужно &amp; <br/>
 </p>
+
+## **Видео Youtube**
+
+```text
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/gUqDEQthLwk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>
+```
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/gUqDEQthLwk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>
+
+```text <a href="http://www.youtube.com/watch?feature=player_embedded&v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE" target="_blank"><img src="http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg"
+alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10" /></a>
+```
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE" target="_blank"><img src="http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg"
+alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10" /></a>
+
+```text
+[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg)](http://www.youtube.com/watch?v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE)
+```
+[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg)](http://www.youtube.com/watch?v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE)
