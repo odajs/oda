@@ -188,6 +188,23 @@ let a = "Программый код"
 
 <address@example.com>
 
+# **Сноски**
+
+Раньше работали. Теперь не работают
+
+```text
+[Текст сноски][Идентификатор сноски]:
+
+[Идентификатор сноски]: http://example.com/ "Необязательная подсказка"
+
+[Пример][Example]:
+[Example] http://example.com Это пример
+```
+
+[Пример][Example]:
+
+[Example] http://example.com Это пример
+
 # **Изображения**
 
 ```text
@@ -250,15 +267,35 @@ ___
 >Это цитата
 с угловой скобкой
 вначале абзаца.
+```
 
 >Это цитата
->c угловая скобкой
+c угловая скобкой
+вначале абзаца.
+
+```text
+>Это та жа цитата
+>c угловыми скобками
+>на каждой строке.
+```
+
+>Это та жа цитата
+>c угловыми скобками
 >на каждой строке.
 
+```text
 >Это две цитаты,
 
 >указанные в разных абзацах.
+```
 
+>Это две цитаты,
+
+>в разных параграфах.
+
+Это вложенные цитаты
+
+```text
 > Первый уровень цитирования
 >> Второй уровень цитирования
 >>> Третий уровень цитирования
@@ -268,29 +305,18 @@ ___
 > Первый уровень цитирования
 ```
 
->Это цитата
-c угловая скобкой
-вначале абзаца.
-
-> Это цитата
->c угловая скобкой
->на каждой строке.
-
->Это две цитаты
-
->На разных абзацах.
-
 > Первый уровень цитирования
 >> Второй уровень цитирования
 >>> Третий уровень цитирования
 >>
->> Второй уровень цитирования
+>>Второй уровень цитирования
 >
 > Первый уровень цитирования
+>Это цитата
 
-# **Экранирование**
+# **Экранирование символов**
 
-Следующие символы должны быть заэкранированы, символом обратного слеша, чтобы в тексте они воспринимались в буквальном значении:
+Следующие символы в Markdown должны быть заэкранированы, символом обратного слеша, чтобы они воспринимались в буквальном значении:
 
 «\» - слеш;
 
@@ -320,12 +346,17 @@ c угловая скобкой
 
 ```html
 <p>
-  Это параграф <br/> <b>HTML</b>
+  Это встроенный <b>HTML</b> <br/>
+  < Экранировать не нужно &lt; <br/>
+  > Экранировать не нужно &gt; <br/>
+  ' Экранировать не нужно &#039; <br/>
+  " Экранировать не нужно &quot; <br/>
+  & Экранировать не нужно &amp; <br/>
 </p>
 ```
 
 <p>
-  Это <b>HTML</b> <br/>
+  Это встроенный <b>HTML</b> <br/>
   < Экранировать не нужно &lt; <br/>
   > Экранировать не нужно &gt; <br/>
   ' Экранировать не нужно &#039; <br/>
@@ -335,26 +366,33 @@ c угловая скобкой
 
 ## **Видео Youtube**
 
+В виде iframe
+
 ```text
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/gUqDEQthLwk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    <iframe src="https://www.youtube.com/embed/bi2xKlZfYos?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/gUqDEQthLwk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    <iframe src="https://www.youtube.com/embed/bi2xKlZfYos?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 
-```text <a href="http://www.youtube.com/watch?feature=player_embedded&v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE" target="_blank"><img src="http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg"
+С рамкой и с размерами
+
+```text <a href="https://www.youtube.com/watch?feature=player_embedded&v=bi2xKlZfYos" target="_blank"><img src="https://img.youtube.com/vi/bi2xKlZfYos/0.jpg"
 alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10" /></a>
 ```
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE" target="_blank"><img src="http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg"
+<a href="https://www.youtube.com/watch?feature=player_embedded&v=bi2xKlZfYos" target="_blank"><img src="https://img.youtube.com/vi/bi2xKlZfYos/0.jpg"
 alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10" /></a>
+
+Без рамки и без размеров
 
 ```text
-[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg)](http://www.youtube.com/watch?v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE)
+[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](https://img.youtube.com/vi/bi2xKlZfYos/0.jpg)](https://www.youtube.com/watch?v=bi2xKlZfYos)
 ```
-[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](http://img.youtube.com/vi/ID_ВИДЕОРОЛИКА_НА_YOUTUBE/0.jpg)](http://www.youtube.com/watch?v=ID_ВИДЕОРОЛИКА_НА_YOUTUBE)
+
+[![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](https://img.youtube.com/vi/bi2xKlZfYos/0.jpg)](http://www.youtube.com/watch?v=bi2xKlZfYos)
