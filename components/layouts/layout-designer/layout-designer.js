@@ -236,7 +236,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
                     label: 'grouping', run: () => {
-                        const action = { id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
+                        const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
                         this.layout.toGroup(action);
                         this.settings ||= [];
                         this.settings.push(action);
@@ -363,8 +363,9 @@ CLASS({ is: 'Layout',
     },
     async toGroup(action) {
         const item = action ? await this.find(action.props.target) : this;
+        if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const group = new Layout({ label: `Group for ${item.label}` }, item.key, item.owner, item.root);
+        const group = new Layout({ id: action.groupId, label: `Group for ${item.label}` }, item.key, item.owner, item.root);
         const block = new Layout({ id: action.id, label: `Group for ${item.label}` }, item.key, group, item.root);
         group.type = 'group';
         group.width = 0;
@@ -375,12 +376,14 @@ CLASS({ is: 'Layout',
         item.owner.items.splice(myIdx, 1, group);
         item.owner = block;
     },
-    addTab(action) {
-        const tab = new Layout({ id: action.id, label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
+    async addTab(action) {
+        const item = action ? await this.find(action.props.target) : this;
+        if (!item) return;
+        const tab = new Layout({ id: action.id, label: `Tab ${item.items.length + 1}` }, item.key, item, item.root);
         tab.type = 'group';
-        this.items.push(tab)
-        this.$focused = tab;
-        const block = new Layout({ label: `...` }, this.key, tab, this.root);
+        item.items.push(tab)
+        item.$focused = tab;
+        const block = new Layout({ label: `...` }, item.key, tab, item.root);
         block.isVirtual = true;
         tab.items = [block];
     },
@@ -429,10 +432,11 @@ CLASS({ is: 'Layout',
             this[i.action]?.(i);
         })
     },
-    async find(id, owner = this.root) {
-        let items = await owner.items;
-        if (!owner?.items?.length) return;
-        return await owner.items.reduce(async (res, i) => {
+    async find(id) {
+        let items = await this?.root?.items;
+        items ||= this?.root?.items;
+        if (!items?.length) return;
+        return await items.reduce(async (res, i) => {
             if ((i.id + '') === (id + '')) res = i;
             return await res || await this.find(id, i);
         }, undefined);

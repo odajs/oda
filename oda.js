@@ -289,7 +289,7 @@ if (!window.ODA) {
                         }
                     });
                 }
-                for (let a of Array.prototype.filter.call(this.attributes, attr => !attr.name.includes('.'))) {
+                for (let a of Array.prototype.filter.call(this.attributes, attr => attr.name.includes('.'))) {
                     let val = a.value;
                     val = (val === '') ? true : (val === undefined ? false : val);
                     this.setProperty(a.name, val);
