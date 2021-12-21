@@ -1,13 +1,12 @@
-ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid',
-    template: /*html*/`
-        <div ref="grid" slot="content" class="flex vertical" ~style="{zoom: zoom}">
-            <svg class="flex" :width="width / 2" :height="height / 2">
-                <path ~for="link in links" :stroke="link?.link?'blue':'gray'" :stroke-width="selection.has(link?.d) ? 2 : 1" :item="link?.d" fill="transparent" :d="link?.d" @tap.stop="select" @push.stop :selected="selection.has(link?.d)"/>
-            </svg>
-            <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-            <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-            <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'l'?-(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 't'?-(16 + link.pin.size):link?.align === 'b'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
-        </div>
+ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid', template: /*html*/`
+    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}">
+        <svg class="flex" :width="width / 2" :height="height / 2">
+            <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
+        </svg>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
+        <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
+        <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'l'?-(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 't'?-(16 + link.pin.size):link?.align === 'b'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
+    </div>
     `,
     get srcPins(){
         return this.items.map(b=>{
@@ -29,10 +28,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         this.selection.clear();
     },
     findLink(pin){
-        const block = this.items.find(i=>i.id === pin.link);
-        if (block) {
+        // const block = this.items.find(i=>i.id === pin.link);
+        // if (block) {
 
-        }
+        // }
         return this.$$('oda-scheme-container').find(i=>{
             return i.item?.id === link.block;
         })?.findPin(link);
@@ -73,9 +72,14 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             },
             save: true
         },
+        snapToGrid: {
+            default: true,
+            save: true,
+        },
     },
     selection: [],
     items: [],
+    _cursor: 'auto',
     listeners: {
         contextmenu(e) {
             e.preventDefault();
@@ -89,10 +93,25 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             });
         },
         track(e) {
+            if(e.sourceEvent.which === 2) {
+                switch(e.detail.state){
+                    case 'start':{
+                        this._cursor = 'move';
+                    } break;
+                    case 'track': {
+                        this.$('#slot').scrollLeft -= e.detail.ddx;
+                        this.$('#slot').scrollTop -= e.detail.ddy;
+                    } break;
+                    case 'end': {
+                        this._cursor = 'auto';
+                    } break;
+                }
+                return;
+            }
             if (!this.lastdown) return;
             if (e.sourceEvent.ctrlKey) return;
             if (!this.editMode) return;
-            switch(e.detail.state ){
+            switch(e.detail.state){
                 case 'start':{
                     if(!this.selection.has(this.lastdown.item)){
                         this.selection.splice(0, this.selection.length, this.lastdown.item);
@@ -118,9 +137,10 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
                         // i.x = Math.round((e.detail.x / this.zoom - i.delta.x) / 10) * 10;
                         // i.y = Math.round((e.detail.y / this.zoom - i.delta.y) / 10) * 10;
                         // if (Math.abs(i.delta.x - e.detail.x) > 10 || Math.abs(i.delta.y - e.detail.y) > 10) {
-                        i.x = Math.round((e.detail.x / this.zoom - i.delta.x) / this.step) * this.step;
-                        i.y = Math.round((e.detail.y / this.zoom - i.delta.y) / this.step) * this.step;
-                        if (Math.abs(i.delta.x - e.detail.x) > this.step || Math.abs(i.delta.y - e.detail.y) > this.step) {
+                        const step = this.snapToGrid ? this.step : 1;
+                        i.x = Math.round((e.detail.x / this.zoom - i.delta.x) / step) * step;
+                        i.y = Math.round((e.detail.y / this.zoom - i.delta.y) / step) * step;
+                        if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) {
                             this.inTrack = true;
                         }
                         this.links = undefined;
@@ -174,7 +194,38 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         }
     }
 });
-
+ODA({is:'oda-scheme-container-toolbar',
+    template: /*html*/`
+        <style>
+            :host{
+                border-radius: {{iconSize/4}}px;
+                justify-content: right;
+                position: absolute;
+                top: -{{topPosition}}px;
+                right: 0px;
+                @apply --horizontal;
+                @apply --header;
+                @apply --shadow;    
+                opacity: .3;
+            }
+            :host(:hover){
+                opacity: 1;
+                transition: opacity ease-in-out .5s;
+            }
+        </style>
+        <oda-button icon="icons:close" class="error" @tap.stop="removeBlock"></oda-button>
+    `,
+    async removeBlock(e) {
+        if (this.selection.has(this.item))
+            this.removeSelection();
+    },
+    listeners: {
+        resize(e) {
+            this.topPosition = this.offsetHeight;
+        }
+    },
+    topPosition: 0
+});
 ODA({is: 'oda-scheme-container',
     template: /*html*/`
         <style>
@@ -254,6 +305,71 @@ ODA({is: 'oda-scheme-container',
         return this.$$('.block')?.[0];
     }
 });
+ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
+    template: /*html*/`
+        <style>
+            :host{
+                justify-content: center;
+            }
+        </style>
+        <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    `,
+    attached(){
+        this.links = undefined;
+    },
+    findPin(link){
+        return this.$$('.pin').find(i=>{
+            return i.item.id === link.pin;
+        })
+    },
+    align: '',
+    get links(){
+        return this.$$('oda-scheme-pin').map(i =>i.link).filter(i=>i);
+    },
+    set links(n){
+        this.$$('oda-scheme-pin').forEach(i=> {
+            i.link = undefined;
+        });
+    },
+    interface: [],
+    dragstart(e) {
+        e.dataTransfer.setData('pin', JSON.stringify({
+            block: this.item.id,
+            pin: e.target.item.id
+        }))
+    },
+    dragover(e) {
+        e.preventDefault();
+    },
+    drop(e) {
+        e.stopPropagation();
+        const pinFrom = JSON.parse(e.dataTransfer.getData('pin'));
+        const pinTo = {
+            block: e.target.domHost.item.id,
+            pin: e.target.item.id
+        };
+        if (pinFrom.block === pinTo.block)
+            return;
+        const pin = this.layout.findPin(pinFrom);
+        if (pin) {
+            if (!pin.item.links)
+                pin.item.links = [];
+            pin.item.links.push(pinTo);
+        }
+    },
+    listeners:{
+        resize(e) {
+            this.width = undefined;
+            this.height = undefined;
+        }
+    },
+    get width(){
+        return this.offsetWidth;
+    },
+    get height(){
+        return this.offsetHeight;
+    }
+});
 ODA({is:'oda-scheme-pin', template: /*html*/`
         <style>
             :host{
@@ -303,9 +419,8 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         }
         if (link){
             rect = link.src.$$pin.getClientRect(this._grid);
-            d += `L ${rect.right + link.src.$$pin.size} ${rect.center.y} H ${rect.right}`;
+            d += ` L ${rect.right + link.src.$$pin.size} ${rect.center.y} H ${rect.right}`;
         }
-        // console.log(d)
         return {d, link, align: this.align, rect, pin: this};
     },
     listeners:{
@@ -400,14 +515,14 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             return 'var(--info-color)';
         if (this.focusedPin.container === this.container)
             return 'var(--disabled-color)';
-        switch (this.focusedPin.align){
-            case 'r':{
+        switch (this.focusedPin.align) {
+            case 'r': {
                 if (this.align === 'r')
                     return 'var(--error-color)';
                 if (this.pin.link)
                     return 'var(--warning-color)';
             } break;
-            default:{
+            default: {
                 if (this.align !== 'r')
                     return 'var(--error-color)';
             } break;
@@ -415,97 +530,6 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         return 'var(--success-color)';
     }
 })
-ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
-    template: /*html*/`
-        <style>
-            :host{
-                justify-content: center;
-            }
-        </style>
-        <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
-    `,
-    attached(){
-        this.links = undefined;
-    },
-    findPin(link){
-        return this.$$('.pin').find(i=>{
-            return i.item.id === link.pin;
-        })
-    },
-    align: '',
-    get links(){
-        return this.$$('oda-scheme-pin').map(i =>i.link).filter(i=>i);
-    },
-    set links(n){
-        this.$$('oda-scheme-pin').forEach(i=> {
-            i.link = undefined;
-        });
-    },
-    interface: [],
-    dragstart(e) {
-        e.dataTransfer.setData('pin', JSON.stringify({
-            block: this.item.id,
-            pin: e.target.item.id
-        }))
-    },
-    dragover(e) {
-        e.preventDefault();
-    },
-    drop(e) {
-        e.stopPropagation();
-        const pinFrom = JSON.parse(e.dataTransfer.getData('pin'));
-        const pinTo = {
-            block: e.target.domHost.item.id,
-            pin: e.target.item.id
-        };
-        if (pinFrom.block === pinTo.block)
-            return;
-        const pin = this.layout.findPin(pinFrom);
-        if (pin) {
-            if (!pin.item.links)
-                pin.item.links = [];
-            pin.item.links.push(pinTo);
-        }
-    },
-    listeners:{
-        resize(e) {
-            this.width = undefined;
-            this.height = undefined;
-        }
-    },
-    get width(){
-        return this.offsetWidth;
-    },
-    get height(){
-        return this.offsetHeight;
-    }
-});
-ODA({is:'oda-scheme-container-toolbar',
-    template:`
-        <style>
-            :host{
-                border-radius: {{iconSize/4}}px;
-                justify-content: right;
-                position: absolute;
-                top: -{{offsetHeight}}px;
-                right: 0px;
-                @apply --horizontal;
-                @apply --header;
-                @apply --shadow;    
-                opacity: .3;
-            }
-            :host(:hover){
-                opacity: 1;
-                transition: opacity ease-in-out .5s;
-            }
-        </style>
-        <oda-button icon="icons:close" class="error" @tap.stop="removeBlock"></oda-button>
-    `,
-    async removeBlock(e) {
-        if (this.selection.has(this.item))
-            this.removeSelection();
-    }
-});
 ODA({is:'oda-scheme-link',
     template: /*html*/`
     <style>

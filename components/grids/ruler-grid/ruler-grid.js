@@ -80,10 +80,6 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
             default: true,
             save: true,
         },
-        snapToGrid: {
-            default: true,
-            save: true,
-        },
         iconSize: 32,
         zoom: {
             default: 1,
@@ -126,6 +122,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
             e.preventDefault();
             const k = 0.9;
             this.zoom = e.deltaY <= 0 ? Math.min(400, this.zoom / k) : Math.max(1 / 100000000, this.zoom * k);
+            // this.$('#slot').scrollBy(e.clientX, e.clientY);
         }
     },
     get step() {

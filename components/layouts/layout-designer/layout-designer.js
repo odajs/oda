@@ -430,19 +430,19 @@ CLASS({ is: 'Layout',
     },
     execute(actions) {
         if (!actions) return;
-        actions.forEach(i => {
-             this[i.action]?.(i);
+        actions.forEach(async i => {
+             await this[i.action]?.(i);
         })
     },
-    async find(id, item = this.owner || this.root) {
+    async find(id, item = this.root) {
         let items = item.items || item;
         let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
 
-        return _items.then(items => {
+        return _items.then(async items => {
             if (!items?.length) return;
-            return items.reduce(async (res, i) => {
+            return await items.reduce(async (res, i) => {
                 if ((i.id + '') === (id + '')) res = i;
-                return await res || this.find(id, i);
+                return await res || await this.find(id, i);
             }, undefined);
         })
         
