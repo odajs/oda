@@ -432,13 +432,13 @@ CLASS({ is: 'Layout',
             this[i.action]?.(i);
         })
     },
-    async find(id) {
-        let items = await this?.root?.items;
-        items ||= this?.root?.items;
+    async find(id, i) {
+        let items = await i?.items || await this?.root?.items;
+        items ||= await i?.items || this?.root?.items;
         if (!items?.length) return;
-        return await items.reduce(async (res, i) => {
+        return items.reduce(async (res, i) => {
             if ((i.id + '') === (id + '')) res = i;
-            return await res || await this.find(id, i);
+            return res || await this.find(id, i);
         }, undefined);
     }
 })
