@@ -62,15 +62,18 @@ ODA({ is: 'oda-layout-designer-structure',
             if (layout && settings && saveKey) {
                 this.useSettings ||= [];
                 if (this.useSettings.has(saveKey)) return;
-                this.async(() => {
-                    layout.execute(settings);
+                this.async(async () => {
+                    await layout.execute(settings);
                     this.useSettings.add(saveKey);
-                }, 100);
+                }, 500);
             }
         }
     ],
     attached() {
-        this.saveKey = this.layout?.name || this.layout?.id || 'root';
+        let name = this.layout?.name || this.layout?.id || 'root';
+        let id = this.data.fullPath || this.data.id || '';
+        name = name === id ? 'root' : name;
+        this.saveKey = id ? id + '/' + name : name;
     }
 })
 
@@ -399,7 +402,7 @@ CLASS({ is: 'Layout',
         }
     },
     async move(dragInfo) {
-        const action = dragInfo._action || dragInfo;
+        const action = dragInfo?._action || dragInfo;
         const dragItem = dragInfo.dragItem || await this.find(action.props.item);
         const targItem = dragInfo.targetItem || await this.find(action.props.target);
         if (!dragItem || !targItem) return;
@@ -420,7 +423,7 @@ CLASS({ is: 'Layout',
         }
     },
     async expanded(action) {
-        const item = await this.find(action.props.target);
+        const item = await this.find(action?.props?.target);
         if (item) {
             item.$expanded = action.props.value;
         }
@@ -428,18 +431,28 @@ CLASS({ is: 'Layout',
     execute(actions) {
         if (!actions) return;
         actions.forEach(i => {
-            // if (i.action === 'expanded')
-            this[i.action]?.(i);
+             this[i.action]?.(i);
         })
     },
-    async find(id, i) {
-        let items = await i?.items || await this?.root?.items;
-        items ||= await i?.items || this?.root?.items;
-        if (!items?.length) return;
-        return items.reduce(async (res, i) => {
-            if ((i.id + '') === (id + '')) res = i;
-            return res || await this.find(id, i);
-        }, undefined);
+    async find(id, item = this.owner || this.root) {
+        let items = item.items || item;
+        let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
+
+        return _items.then(items => {
+            if (!items?.length) return;
+            return items.reduce(async (res, i) => {
+                if ((i.id + '') === (id + '')) res = i;
+                return await res || this.find(id, i);
+            }, undefined);
+        })
+        
+        // items = await _items;
+        // items ||= _items;
+        // if (!items?.length) return;
+        // return await items.reduce(async (res, i) => {
+        //     if ((i.id + '') === (id + '')) res = i;
+        //     return await res || await this.find(id, i);
+        // }, undefined);
     }
 })
 
