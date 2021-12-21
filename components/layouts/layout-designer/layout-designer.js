@@ -105,10 +105,10 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
     `,
     addTab() {
-        this.layout.addTab();
-        const action = { action: "addTab", props: { target: this.layout.id } };
+        const action = { id: getUUID(), action: "addTab", props: { target: this.layout.id } };
+        this.layout.addTab(action);
         this.settings ||= [];
-        // this.settings.push(action);
+        this.settings.push(action);
     },
     removeTab(e, item) {
         this.layout.removeTab(item);
@@ -236,8 +236,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
                     label: 'grouping', run: () => {
-                        const action = { action: "toGroup", props: { target: this.layout.id } };
-                        action.id = this.toGroup();
+                        const action = { id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
+                        this.layout.toGroup(action);
                         this.settings ||= [];
                         this.settings.push(action);
                     }
@@ -258,9 +258,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     layout: null,
     get draggable() {
         return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
-    },
-    toGroup() {
-        return this.layout.toGroup();
     },
     onpointerdown(e) {
         if (e.ctrlKey || e.metaKey)
@@ -368,7 +365,7 @@ CLASS({ is: 'Layout',
         const item = action ? await this.find(action.props.target) : this;
         const myIdx = item.owner.items.indexOf(item);
         const group = new Layout({ label: `Group for ${item.label}` }, item.key, item.owner, item.root);
-        const block = new Layout({ label: `Group for ${item.label}` }, item.key, group, item.root);
+        const block = new Layout({ id: action.id, label: `Group for ${item.label}` }, item.key, group, item.root);
         group.type = 'group';
         group.width = 0;
         group.items = [block];
@@ -378,8 +375,8 @@ CLASS({ is: 'Layout',
         item.owner.items.splice(myIdx, 1, group);
         item.owner = block;
     },
-    addTab() {
-        const tab = new Layout({ label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
+    addTab(action) {
+        const tab = new Layout({ id: action.id, label: `Tab ${this.items.length + 1}` }, this.key, this, this.root);
         tab.type = 'group';
         this.items.push(tab)
         this.$focused = tab;
@@ -442,7 +439,7 @@ CLASS({ is: 'Layout',
     }
 })
 
-// const getUUID = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) };
+const getUUID = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) };
 const img = new Image();
 img.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAACXBIWXMAAAsSAAALEgHS3X78AAAAa0lEQVRIiWPU6v91RFv4jwIv+78/DEMIfP7JxHL1LcsDFpDjJ7p8kB5KjoeB/D0CDExDLeSRAcjtTIPHOeSBUQ8MNBj1wECDUQ8MNBj1wECDUQ8MNGACteqGquNBbgc3SUGtuiHZnH7L8gAAtichl6hs6rYAAAAASUVORK5CYII=`;
 const img3 = new Image();
