@@ -437,7 +437,7 @@ CLASS({ is: 'Layout',
         }
     },
     execute(actions) {
-        if (!actions) return;
+        if (!actions || !Array.isArray(actions)) return;
         actions.forEach(async i => {
             console.log('execute - ', JSON.stringify(i));
             await this[i.action]?.(i);
