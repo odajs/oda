@@ -413,6 +413,7 @@ CLASS({ is: 'Layout',
         const dragItem = dragInfo.dragItem || await this.find(action.props.item);
         const targItem = dragInfo.targetItem || await this.find(action.props.target);
         if (!dragItem || !targItem) return;
+        console.log('move - ', JSON.stringify(action));
         let idxTarg = targItem._order;
         dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
@@ -438,7 +439,8 @@ CLASS({ is: 'Layout',
     execute(actions) {
         if (!actions) return;
         actions.forEach(async i => {
-             await this[i.action]?.(i);
+            console.log('execute - ', JSON.stringify(i));
+            await this[i.action]?.(i);
         })
     },
     async find(id, item = this.root) {
@@ -452,7 +454,7 @@ CLASS({ is: 'Layout',
                 return await res || await this.find(id, i);
             }, undefined);
         })
-        
+
         // items = await _items;
         // items ||= _items;
         // if (!items?.length) return;
