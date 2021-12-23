@@ -1,6 +1,6 @@
 ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid', template: /*html*/`
     <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}">
-        <svg class="flex" :width="width / 2" :height="height / 2">
+        <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
@@ -194,26 +194,25 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         }
     }
 });
-ODA({is:'oda-scheme-container-toolbar',
-    template: /*html*/`
-        <style>
-            :host{
-                border-radius: {{iconSize/4}}px;
-                justify-content: right;
-                position: absolute;
-                top: -{{topPosition}}px;
-                right: 0px;
-                @apply --horizontal;
-                @apply --header;
-                @apply --shadow;    
-                opacity: .3;
-            }
-            :host(:hover){
-                opacity: 1;
-                transition: opacity ease-in-out .5s;
-            }
-        </style>
-        <oda-button icon="icons:close" class="error" @tap.stop="removeBlock"></oda-button>
+ODA({is:'oda-scheme-container-toolbar', template: /*html*/`
+    <style>
+        :host{
+            border-radius: {{iconSize/4}}px;
+            justify-content: right;
+            position: absolute;
+            top: -{{topPosition}}px;
+            right: 0px;
+            @apply --horizontal;
+            @apply --header;
+            @apply --shadow;    
+            opacity: .3;
+        }
+        :host(:hover){
+            opacity: 1;
+            transition: opacity ease-in-out .5s;
+        }
+    </style>
+    <oda-button icon="icons:close" class="error" @tap.stop="removeBlock"></oda-button>
     `,
     async removeBlock(e) {
         if (this.selection.has(this.item))
@@ -226,39 +225,38 @@ ODA({is:'oda-scheme-container-toolbar',
     },
     topPosition: 0
 });
-ODA({is: 'oda-scheme-container',
-    template: /*html*/`
-        <style>
-            :host {
-                position: absolute;
-                min-width: 8px;
-                min-height: 8px;
-                @apply --vertical;
-                /*@apply --content;*/
-                left: {{-left}}px;
-                top: {{-top}}px;
-            }
-            :host([selected]).block{
-                outline: 1px dotted gray !important;
-            }
-            .block{
-                border: 1px solid gray;
-                @apply --content;
-            }
-        </style>
-        <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
-        <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
-        <div>
-            <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
-            <div class="flex horizontal">
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
-                    <div class="flex shadow vertical content">
-                        <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
-                    </div>
-                <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
-            </div>
-            <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+ODA({is: 'oda-scheme-container', template: /*html*/`
+    <style>
+        :host {
+            position: absolute;
+            min-width: 8px;
+            min-height: 8px;
+            @apply --vertical;
+            /*@apply --content;*/
+            left: {{-left}}px;
+            top: {{-top}}px;
+        }
+        :host([selected]).block{
+            outline: 1px dotted gray !important;
+        }
+        .block{
+            border: 1px solid gray;
+            @apply --content;
+        }
+    </style>
+    <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
+    <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
+    <div>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
+        <div class="flex horizontal">
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
+                <div class="flex shadow vertical content">
+                    <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
+                </div>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
+        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+    </div>
     `,
     onResize(e){
         switch (e.target.align){
@@ -305,14 +303,13 @@ ODA({is: 'oda-scheme-container',
         return this.$$('.block')?.[0];
     }
 });
-ODA({is: 'oda-scheme-interface', imports: '@oda/icon',
-    template: /*html*/`
-        <style>
-            :host{
-                justify-content: center;
-            }
-        </style>
-        <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+ODA({is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
+    <style>
+        :host{
+            justify-content: center;
+        }
+    </style>
+    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached(){
         this.links = undefined;
@@ -530,8 +527,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         return 'var(--success-color)';
     }
 })
-ODA({is:'oda-scheme-link',
-    template: /*html*/`
+ODA({is:'oda-scheme-link', template: /*html*/`
     <style>
         :host{
             position: absolute;
