@@ -56,11 +56,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             i.$$container.links = undefined;
         });
     },
+    pinSize: 12,
     props: {
-        pinSize:{
-            default: 12,
-            save: true,
-        },
         editMode: {
             type: Boolean,
             reflectToAttribute: true,

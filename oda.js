@@ -1082,11 +1082,17 @@ if (!window.ODA) {
                     return ODA.telemetry.components[prototype.is];
                 }
             }
+            setTimeout(() => {
+                ODA.calledDeferred.reduce((res, d, i) => {
+                    if (d.tagName === prototype.is) {
+                        res.push(i);
+                        ODA.deferred[d.tagName]?.reg(d.context);
+                    }
+                    return res;
+                }, []).forEach(i => ODA.calledDeferred.splice(i, 1));
+            });
         }
         return prototype;
-    }
-    ODA.tryReg = function (tagName, context){
-        return ODA.deferred[tagName]?.reg(context);
     }
     ODA.modules = Object.create(null);
     ODA.regHotKey = function (key, handle){
@@ -1542,7 +1548,6 @@ if (!window.ODA) {
         ODA.tryReg(tag.localName);
         return _appendChild.call(this, tag, ...args);
     }
-
     function createElement(src, tag, old) {
         let $el;
         if (tag === '#comment')
@@ -1818,6 +1823,15 @@ if (!window.ODA) {
     const modifierRE = /\.[^.]+/g;
     ODA.origin = origin;
     ODA.deferred = {};
+    ODA.calledDeferred = [];
+    ODA.tryReg = function (tagName = '', context) {
+        const def = ODA.deferred[tagName];
+        if (def)
+            return def.reg(context);
+        if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context))
+            ODA.calledDeferred.push({tagName, context});
+
+    }
     ODA.updateStyle=(changes = ODA.cssRules, el)=>{
         if (el?.style) {
             for (let p in changes)
