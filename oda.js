@@ -1085,8 +1085,8 @@ if (!window.ODA) {
         }
         return prototype;
     }
-    ODA.tryReg = function (tagName){
-        return ODA.deferred[tagName]?.reg();
+    ODA.tryReg = function (tagName, context){
+        return ODA.deferred[tagName]?.reg(context);
     }
     ODA.modules = Object.create(null);
     ODA.regHotKey = function (key, handle){
@@ -1537,8 +1537,8 @@ if (!window.ODA) {
         return h;
     }
 
-    const  _appendChild = Node.prototype.appendChild;
-    Node.prototype.appendChild = function (tag, ...args){
+    const  _appendChild = HTMLElement.prototype.appendChild;
+    HTMLElement.prototype.appendChild = function (tag, ...args){
         ODA.tryReg(tag.localName);
         return _appendChild.call(this, tag, ...args);
     }

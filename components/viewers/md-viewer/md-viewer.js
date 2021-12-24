@@ -53,9 +53,6 @@ ODA({ is: 'oda-md-viewer', template: `
         },
         options: {}
     },
-    ready() {
-        //ODA.deferred['oda-md-code']?.reg();
-    },
     async _import() {
         if (mdShowdown.makeHtml) return;
         for (let s of ['./dist/showdown.min.js', './dist/decodeHTML.min.js', './dist/highlight.min.js', './dist/showdown-youtube.min.js']) { await import(s); }
