@@ -231,15 +231,17 @@ if (!window.ODA) {
                     if (!!entry.target.$sleep !== entry.isIntersecting) continue;
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
-                        entry.target.domHost?.render();
-                        // requestAnimationFrame(() => {
-                            // entry.target.render.call(entry.target)
-                            // updateDom.call(entry.target.domHost, entry.target.$node, entry.target, entry.target.parentNode || entry.target.domHost.$core.shadowRoot, entry.target.$for);
-                        // });
+                        if (entry.target.localName in ODA.deferred){
+                            ODA.deferred[entry.target.localName].reg().then(res=>{
+                                entry.target.domHost?.render();
+                            })
+                        }
+                        else
+                            entry.target.domHost?.render();
                     }
-                        // entry.target.domHost?.render();
-
-
+                    // else{
+                    //     entry.target.domHost?.render();
+                    // }
                 }
             }, { rootMargin: '20%' }),
             resize: new ResizeObserver(entries => {
@@ -1532,38 +1534,38 @@ if (!window.ODA) {
                 for (let i = 0; i < items.length; items[i++] = i);
             }
             return items.map((item, i)=>{
-                return { child, params: [...p, item, i, items] }
+                return { child, params: [...p, items[i], i, items] }
             })
         };
         h.src = child;
         return h;
     }
-    const  _createElement = document.createElement;
-    document.createElement = function (tag, ...args){
-        const el = _createElement.call(this, tag, ...args);
-        const def = ODA.deferred[tag.toLowerCase()] //todo toLowerCase убрать
-        if (def){
-            def.reg()?.then?.(res=>{
-                if (el.domHost){
-                    el.domHost.render();
-                    // updateDom.call(el.domHost, el.$node, el, el.parentNode || el.domHost.$core.shadowRoot, el.$for);
-                }
-            });
-        } else {
-            setTimeout(() => { // временное решение: "запасная дорегистрация компонентов"
-                const def = ODA.deferred[tag.toLowerCase()];
-                if (def){
-                    def.reg()?.then?.(res=>{
-                        if (el.domHost){
-                            el.domHost.render();
-                        }
-                    });
-                }
-            }, 15);
-        }
-        return el;
+
+    const  _appendChild = Node.prototype.appendChild;
+    Node.prototype.appendChild = function (tag, ...args){
+        ODA.deferred[tag.localName]?.reg();
+        return _appendChild.call(this, tag, ...args);
     }
+
     function createElement(src, tag, old) {
+        // let def = ODA.deferred[tag.toLowerCase()] //todo toLowerCase убрать
+        // if (def) {
+        //     def.reg()?.then?.(res => {
+        //         this.render();
+        //     })
+        // }
+        // } else {
+        //     setTimeout(() => { // временное решение: "запасная дорегистрация компонентов"
+        //         const def = ODA.deferred[tag.toLowerCase()];
+        //         if (def){
+        //             def.reg()?.then?.(res=>{
+        //                 if (el.domHost){
+        //                     el.domHost.render();
+        //                 }
+        //             });
+        //         }
+        //     }, 100);
+        // }
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));

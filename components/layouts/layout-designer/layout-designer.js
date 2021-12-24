@@ -29,7 +29,12 @@ ODA({ is: 'oda-layout-designer',
     },
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
+    async loadScript(){
+        return this.settings;
+    },
+    async saveScript(){
 
+    },
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -54,9 +59,20 @@ ODA({ is: 'oda-layout-designer-structure',
     props: {
         settings: {
             default: [],
-            save: true
+            save: true,
+            set(n){
+                if(!Array.isArray(n)){
+                    this.settings = [];
+                }
+            }
+        },
+        saveKey: {
+            get (){
+                return this.layout?.name || this.layout?.id;
+            }
         }
     },
+
     observers: [
         function loadLayout(layout, settings, saveKey) {
             if (layout && settings && saveKey) {
@@ -69,12 +85,12 @@ ODA({ is: 'oda-layout-designer-structure',
             }
         }
     ],
-    attached() {
-        let name = this.layout?.name || this.layout?.id || 'root';
-        let id = this.data.fullPath || this.data.id || '';
-        name = name === id ? 'root' : name;
-        this.saveKey = id ? id + '/' + name : name;
-    }
+    // attached() {
+    //     let name = this.layout?.name || this.layout?.id || 'root';
+    //     let id = this.data.fullPath || this.data.id || '';
+    //     name = name === id ? 'root' : name;
+    //     this.saveKey = id ? id + '/' + name : name;
+    // }
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -196,7 +212,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 background-color: rgba(0,255,0,.3);
             }
             .drag-to-error:after {
-                content: "not allow drop";
+                content: "";
                 pointer-events: none;
                 background-color: rgba(255,0,0,.3) !important;
             }
