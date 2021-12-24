@@ -1824,13 +1824,16 @@ if (!window.ODA) {
     ODA.origin = origin;
     ODA.deferred = {};
     ODA.calledDeferred = [];
-    ODA.tryReg = function (tagName = '', context) {
+    ODA.tryReg = function (tagName, context) {
+        if(!tagName?.includes('-'))
+            return;
         const def = ODA.deferred[tagName];
         if (def)
             return def.reg(context);
-        if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context))
+        if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context)){
             ODA.calledDeferred.push({tagName, context});
-
+            console.warn(ODA.calledDeferred, tagName, context)
+        }
     }
     ODA.updateStyle=(changes = ODA.cssRules, el)=>{
         if (el?.style) {
