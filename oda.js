@@ -92,7 +92,7 @@ if (!window.ODA) {
                 ext = ext.trim();
                 if (ext === 'this')
                     return ext;
-                let parent = ODA.telemetry.components[ext] || (await ODA.deferred[ext]?.reg());
+                let parent = ODA.telemetry.components[ext] || (await ODA.tryReg(ext));
                 if (!parent)
                     throw new Error(`Not found inherit parent "${ext}"`);
                 return parent;
@@ -205,13 +205,6 @@ if (!window.ODA) {
         finally {
             delete ODA.deferred[prototype.is];
             delete prototype.$system.reg;
-
-            // const deps = Object.values(ODA.deferred).filter(i=>{ // ???
-            //     return i.is !== prototype.is && i.url === prototype.$system.url;
-            // })
-            // for(let i of deps){
-            //     i.reg(context);
-            // }
         }
     }
     function ComponentFactory(prototype, proto = HTMLElement) {
@@ -232,7 +225,7 @@ if (!window.ODA) {
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
                         if (entry.target.localName in ODA.deferred){
-                            ODA.deferred[entry.target.localName].reg().then(res=>{
+                            ODA.tryReg(entry.target.localName)?.then(res=>{
                                 entry.target.domHost?.render();
                             })
                         }
@@ -1092,6 +1085,9 @@ if (!window.ODA) {
         }
         return prototype;
     }
+    ODA.tryReg = function (tagName){
+        return ODA.deferred[tagName]?.reg();
+    }
     ODA.modules = Object.create(null);
     ODA.regHotKey = function (key, handle){
         ODA.$hotKeys = ODA.$hotKeys || {};
@@ -1543,29 +1539,11 @@ if (!window.ODA) {
 
     const  _appendChild = Node.prototype.appendChild;
     Node.prototype.appendChild = function (tag, ...args){
-        ODA.deferred[tag.localName]?.reg();
+        ODA.tryReg(tag.localName);
         return _appendChild.call(this, tag, ...args);
     }
 
     function createElement(src, tag, old) {
-        // let def = ODA.deferred[tag.toLowerCase()] //todo toLowerCase убрать
-        // if (def) {
-        //     def.reg()?.then?.(res => {
-        //         this.render();
-        //     })
-        // }
-        // } else {
-        //     setTimeout(() => { // временное решение: "запасная дорегистрация компонентов"
-        //         const def = ODA.deferred[tag.toLowerCase()];
-        //         if (def){
-        //             def.reg()?.then?.(res=>{
-        //                 if (el.domHost){
-        //                     el.domHost.render();
-        //                 }
-        //             });
-        //         }
-        //     }, 100);
-        // }
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
@@ -2145,7 +2123,7 @@ if (!window.ODA) {
                 window.document.body.style.visibility = 'hidden';
                 // document.body.style.display = 'none';
                 import('./tools/tester/tester.js').then(async () => {
-                    await ODA.deferred['oda-tester']?.reg();
+                    await ODA.tryReg('oda-tester');
                     // document.body.style.display = '';
                     window.document.body.style.visibility = 'visible';
                 });
@@ -2161,7 +2139,7 @@ if (!window.ODA) {
         for (let tag in ODA.deferred){
             const el = document.querySelector(tag);
             if (el)
-                ODA.deferred[tag]?.reg();
+                ODA.tryReg(tag);
         }
     }
     Node:{
@@ -2327,8 +2305,8 @@ if (!window.ODA) {
         // return (ODA.modules[path] = await import(url));
     }
     Qarantine:{
-        ODA.createComponent = async (id, props = {}) => {
-            await ODA.deferred[id]?.reg();
+        ODA.createComponent = (id, props = {}) => {
+            ODA.tryReg(id);
             let el = document.createElement(id);
             for (let p in props) {
                 el[p] = props[p];

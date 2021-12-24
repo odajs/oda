@@ -380,10 +380,10 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
                 cursor: pointer;
                 background-color: {{color}};
                 @apply --shadow;
+                z-index: 1;
             }
             :host([focused]), :host(:hover){
                 transform: scale(1.5);
-                z-index: 1;
             }
         </style>
     `,
