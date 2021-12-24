@@ -1834,7 +1834,6 @@ if (!window.ODA) {
             return def.reg(context);
         if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context)){
             ODA.calledDeferred.push({tagName, context});
-            console.warn(ODA.calledDeferred, tagName, context)
         }
     }
     ODA.updateStyle=(changes = ODA.cssRules, el)=>{
