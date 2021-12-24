@@ -224,17 +224,14 @@ if (!window.ODA) {
                     if (!!entry.target.$sleep !== entry.isIntersecting) continue;
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
-                        if (entry.target.localName in ODA.deferred){
-                            ODA.tryReg(entry.target.localName)?.then(res=>{
-                                entry.target.domHost?.render();
-                            })
-                        }
-                        else
+                        // if (entry.target.localName in ODA.deferred){
+                        //     ODA.tryReg(entry.target.localName)?.then(res=>{
+                        //         entry.target.domHost?.render();
+                        //     })
+                        // }
+                        // else
                             entry.target.domHost?.render();
                     }
-                    // else{
-                    //     entry.target.domHost?.render();
-                    // }
                 }
             }, { rootMargin: '20%' }),
             resize: new ResizeObserver(entries => {
@@ -1543,10 +1540,15 @@ if (!window.ODA) {
         return h;
     }
 
-    const  _appendChild = HTMLElement.prototype.appendChild;
-    HTMLElement.prototype.appendChild = function (tag, ...args){
-        ODA.tryReg(tag.localName);
-        return _appendChild.call(this, tag, ...args);
+    // const  _appendChild = HTMLElement.prototype.appendChild;
+    // HTMLElement.prototype.appendChild = function (tag, ...args){
+    //     ODA.tryReg(tag.localName);
+    //     return _appendChild.call(this, tag, ...args);
+    // }
+    const  _createElement = document.createElement;
+    document.createElement = function (tag, ...args){
+        ODA.tryReg(tag.toLowerCase());
+        return _createElement.call(this, tag, ...args);
     }
     function createElement(src, tag, old) {
         let $el;
