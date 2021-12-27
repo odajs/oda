@@ -27,7 +27,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
     <oda-ruler ~if="showScale"></oda-ruler>
     <div class="horizontal flex">
         <oda-ruler ~if="showScale" vertical></oda-ruler>
-        <div class="flex vertical" style="overflow: hidden; position: relative;"  @resize="onResize">
+        <div class="flex vertical" style="overflow: hidden; position: relative;" @resize="onResize">
             <svg ~if="showGrid" class="flex">
                 <defs>
                     <pattern id="smallLines" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
@@ -162,9 +162,9 @@ ODA({ is: 'oda-ruler', template: /*html*/`
     <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
     <svg class="flex content">
         <g ~for="count">
-            <line ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-            <line ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-            <text ~props="getTextLine(index)" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
+            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
+            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
+            <text :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getTextLine(index)" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
         </g>
     </svg>
     `,
