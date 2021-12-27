@@ -115,11 +115,12 @@ ODA({is: 'oda-number',
     onSelect(e) {
         const start = e.target.selectionStart;
         const end = e.target.selectionEnd;
+        const length = this.inputValue.length;
         const decimalPos = this.inputValue.indexOf(this.decimalSeparator);
-        if ((start <= decimalPos) && (decimalPos < end)) {
+        if ((start <= decimalPos) && (decimalPos < end) && (start !== 0) && (end !== length)) {
             // выделять весь текст, если в выделении присутствует разделитель дробной части
             e.target.selectionStart = 0;
-            e.target.selectionEnd = this.inputValue.length;
+            e.target.selectionEnd = length;
         }
         else if ((start === end) && (start > 0)
             && (this.inputValue[start - 1] === this.thousandSeparator)) {
@@ -155,14 +156,23 @@ ODA({is: 'oda-number',
             // смещать выделение слева от разделителя тысячных
             e.target.selectionStart = (++e.target.selectionEnd);
         }
+        if(e.detail > 1){
+            e.preventDefault();
+        }
     },
     onMouseDown(e) {
-        if (e.detail > 1) {
+        const length = this.inputValue.length
+        if (e.detail === 3) {
+            // выделять всё
+            e.preventDefault();
+            e.target.selectionStart = 0;
+            e.target.selectionEnd = length;
+        }
+        else if (e.detail === 2) {
             e.preventDefault();
 
             const start = e.target.selectionStart;
             const end = e.target.selectionEnd;
-            const length = this.inputValue.length
             if ((start === end) || ((start === 0) && (end === length))) {
                 // выделять только дробную/целую часть
                 const decimalPos = this.inputValue.indexOf(this.decimalSeparator);
@@ -175,10 +185,6 @@ ODA({is: 'oda-number',
                     e.target.selectionStart = decimalPos + 1;
                     e.target.selectionEnd = length;
                 }
-            } else {
-                // выделять всё
-                e.target.selectionStart = 0;
-                e.target.selectionEnd = length;
             }
         }
     },
