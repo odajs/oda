@@ -2,7 +2,7 @@
 
 Он позволяет форматировать электронные документы с сохранением максимальной читаемости их текста человеком.
 
-Все файлы, размеченные таким образом, должны иметь расширение **.md** и размещаться внутри определенных папок.
+Все файлы, размеченные в этом формате, должны иметь расширение **.md** и размещаться внутри определенных папок.
 
 Каждая такая папка фактически становится отдельным разделом справочной системы, участвуя в динамическом формировании документации на основе текущей иерархии папок и их внутреннего содержимого.
 
@@ -139,6 +139,34 @@ FAQ
 run_line_edit_loadoda_[my-component.js]_h=100_
 
 run_line_edit_loadoda_[my-component.js]_h=190_
+
+```text
+    ```javascript _run_line_edit
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<input placeholder="Модификатор run">';
+    document.body.append(newElement);
+    ```
+```
+
+```javascript _run_line_edit
+let newElement = document.createElement('div');
+newElement.innerHTML = '<input placeholder="Модификатор run">';
+document.body.append(newElement);
+```
+
+```text
+    ```javascript _run_line_edit_[my-component.js]
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<input placeholder="Модификатор run">';
+    document.body.append(newElement);
+    ```
+```
+
+```javascript _run_line_edit_[my-component.js]
+let newElement = document.createElement('div');
+newElement.innerHTML = '<input placeholder="Модификатор run">';
+document.body.append(newElement);
+```
 
 1. Модификатор **run** говорит, что код будет не только по определенному подсвечиваться, но и исполняться.
 
