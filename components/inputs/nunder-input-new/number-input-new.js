@@ -109,7 +109,7 @@ ODA({is: 'oda-number',
                 }
                 break;
             default:
-                return;
+                return true;
         }
     },
     onSelect(e) {
@@ -210,11 +210,13 @@ ODA({is: 'oda-number',
             const zeroBefore = getZeroCount(value);
             value = value.slice(0, start) + e.data + value.slice(end);
             const decimalPos = value.indexOf(this.decimalSeparator);
-            if ((value.length - decimalPos) > this.precision + 1) {
-                // ограничение по точности
-                value = value.slice(0, decimalPos + this.precision + 1)
-            } else {
-                value += '0'.repeat(this.precision + 1 - (value.length - decimalPos));
+            if (~decimalPos) {
+                if ((value.length - decimalPos) > this.precision + 1) {
+                    // ограничение по точности
+                    value = value.slice(0, decimalPos + this.precision + 1)
+                } else {
+                    value += '0'.repeat(this.precision + 1 - (value.length - decimalPos));
+                }
             }
             const zeroAfter = getZeroCount(value);
             // const curPrec = value.length - value.indexOf(this.decimalSeparator) - 1;
