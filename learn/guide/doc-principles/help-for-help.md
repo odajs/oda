@@ -140,34 +140,6 @@ run_line_edit_loadoda_[my-component.js]_h=100_
 
 run_line_edit_loadoda_[my-component.js]_h=190_
 
-```text
-    ```javascript _run_line_edit
-    let newElement = document.createElement('div');
-    newElement.innerHTML = '<input placeholder="Модификатор run">';
-    document.body.append(newElement);
-    ```
-```
-
-```javascript _run_line_edit
-let newElement = document.createElement('div');
-newElement.innerHTML = '<input placeholder="Модификатор run">';
-document.body.append(newElement);
-```
-
-```text
-    ```javascript _run_line_edit_[my-component.js]
-    let newElement = document.createElement('div');
-    newElement.innerHTML = '<input placeholder="Модификатор run">';
-    document.body.append(newElement);
-    ```
-```
-
-```javascript _run_line_edit_[my-component.js]
-let newElement = document.createElement('div');
-newElement.innerHTML = '<input placeholder="Модификатор run">';
-document.body.append(newElement);
-```
-
 1. Модификатор **run** говорит, что код будет не только по определенному подсвечиваться, но и исполняться.
 
 ```text
@@ -180,7 +152,7 @@ document.body.append(newElement);
 
 При его использовании под самим кодом появится дополнительная область, в которой будет выводится результат его выполнения.
 
-```javascript run
+```javascript run_[my-component.js]
     let newElement = document.createElement('div');
     newElement.innerHTML = '<input placeholder="Модификатор run">';
     document.body.append(newElement);
@@ -198,7 +170,7 @@ document.body.append(newElement);
 
 При использовании этого модификатора текст кода можно редактировать, при этом любые изменения кода будут автоматически приводить к его автоматическому выполнению.
 
-```javascript run_edit
+```javascript run_edit_[my-component.js]
     let newElement = document.createElement('div');
     newElement.innerHTML = '<h1>Модификатор edit</h1>';
     document.body.append(newElement);

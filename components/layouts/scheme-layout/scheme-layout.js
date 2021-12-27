@@ -78,6 +78,11 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     items: [],
     _cursor: 'auto',
     listeners: {
+        dragover(e){
+            if(!this.editMode)
+                return;
+            e.preventDefault();
+        },
         contextmenu(e) {
             e.preventDefault();
             console.log('context menu in oda-scheme-layout: ', e);
