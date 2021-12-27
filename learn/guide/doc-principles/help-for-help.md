@@ -1,6 +1,6 @@
 Для создания документации используется облегченный язык разметки **Markdown**.
 
-Он позволяет форматировать электронные документы с сохранением максимальной их читаемости человеком.
+Он позволяет форматировать электронные документы с сохранением максимальной читаемости их текста человеком.
 
 Все файлы, размеченные таким образом, должны иметь расширение **.md** и размещаться внутри определенных папок.
 
@@ -144,36 +144,56 @@ run_line_edit_loadoda_[my-component.js]_h=190_
 
 ```text
     ```javascript run
-        newElement = document.createElement(<div>);
+        let newElement = document.createElement('div');
         newElement.innerHTML = '<input placeholder="Модификатор run">';
-        document.body.append(newDiv);
+        document.body.append(newElement);
     ```
 ```
 
-При его использовании под текстом кода появится дополнительная область, в которой будет выводится результат его выполнения.
+При его использовании под самим кодом появится дополнительная область, в которой будет выводится результат его выполнения.
 
 ```javascript run
-    newElement = document.createElement(<div>);
+    let newElement = document.createElement('div');
     newElement.innerHTML = '<input placeholder="Модификатор run">';
-    document.body.append(newDiv);
+    document.body.append(newElement);
 ```
 
-1. Модификатор **edit** говорит, что код будет не только выполнятся при загрузке загрузке страница, но и его можно будет редактировать.
+1. Модификатор **edit** говорит, что текст кода можно будет не только исполнять, но и редактировать.
 
 ```text
     ```javascript run_edit
-        newElement = document.createElement(<div>);
-        newElement.innerHTML = '<input placeholder="Модификатор edit">';
-        document.body.append(newDiv);
+        let newElement = document.createElement('div');
+        newElement.innerHTML = '<h1>Модификатор edit</h1>';
+        document.body.append(newElement);
     ```
 ```
 
-При его использовании под текстом кода появится дополнительная область, в которой будет выводится результат его выполнения.
+При использовании этого модификатора текст кода можно редактировать, при этом любые изменения кода будут автоматически приводить к его автоматическому выполнению.
 
 ```javascript run_edit
-    newElement = document.createElement(<div>);
-    newElement.innerHTML = '<input placeholder="Модификатор edit">';
-    document.body.append(newDiv);
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<h1>Модификатор edit</h1>';
+    document.body.append(newElement);
+```
+
+В этом примере можно изменить текст заголовка в самом коде и убедиться, что результат будет изменяться автоматически при вводе любого символа.
+
+1. Модификатор **line** говорит, что текст кода можно будет не только исполнять, но и редактировать.
+
+```text
+    ```javascript run_edit_line
+        let newElement = document.createElement('div');
+        newElement.innerHTML = '<h1>Модификатор edit</h1>';
+        document.body.append(newElement);
+    ```
+```
+
+При использовании этого модификатора текст кода можно редактировать, при этом любые изменения кода будут автоматически приводить к его автоматическому выполнению.
+
+```javascript run_edit_line
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<h1>Модификатор edit</h1>';
+    document.body.append(newElement);
 ```
 
 Весь код, записанный между
