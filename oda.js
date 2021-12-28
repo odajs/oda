@@ -1091,7 +1091,6 @@ if (!window.ODA) {
         }
         return prototype;
     }
-    ODA.modules = Object.create(null);
     ODA.regHotKey = function (key, handle){
         ODA.$hotKeys = ODA.$hotKeys || {};
         ODA.$hotKeys[key] =  handle;
