@@ -27,7 +27,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
     <oda-ruler ~if="showScale"></oda-ruler>
     <div class="horizontal flex">
         <oda-ruler ~if="showScale" vertical></oda-ruler>
-        <div class="flex vertical" style="overflow: hidden; position: relative;" @resize="onResize">
+        <div class="flex vertical" style="overflow: hidden; position: relative;" >
             <svg ~if="showGrid" class="flex">
                 <defs>
                     <pattern id="smallLines" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
@@ -42,7 +42,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
                 <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#bigLines)" width="10000" height="10000"></rect>
                 <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" width="10000" height="10000"></rect>
             </svg>
-            <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll">
+            <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll" @resize="onResize">
                 <slot class="flex vertical" name="content" ></slot>
             </div>
         </div>
