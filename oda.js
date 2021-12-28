@@ -1104,7 +1104,8 @@ if (!window.ODA) {
     ODA.regTool = function (name){
         return ODA[name] || (ODA[name] = Object.create(null));
     }
-    ODA.rootPath = ODA.$dir = import.meta.url.split('/').slice(0,-1).join('/'); //todo что-то убрать
+    ODA.rootPath = import.meta.url;
+    ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
 
     Object.defineProperty(ODA, 'cssRules', {
@@ -2135,20 +2136,14 @@ if (!window.ODA) {
             return false;
         };
         await import('./tools/styles/styles.js');
-
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 window.document.body.style.visibility = 'hidden';
-                // document.body.style.display = 'none';
                 import('./tools/tester/tester.js').then(async () => {
                     await ODA.tryReg('oda-tester');
-                    // document.body.style.display = '';
-                    window.document.body.style.visibility = 'visible';
                 });
             }
-            else{
-                window.document.body.style.visibility = 'visible';
-            }
+            window.document.body.style.visibility = 'visible';
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
         }
         ODA.init();
@@ -2295,9 +2290,8 @@ if (!window.ODA) {
         }
     }
     ODA.import = async function (path, context, prototype){
-        // if (!ODA.modules[path]){
             path = path.trim();
-            ODA.paths = ODA.paths || await ODA.loadJSON(ODA.$dir + '/' + ODA.mapUrl);
+            ODA.paths = ODA.paths || await ODA.loadJSON(ODA.rootPath + '/aliases.json');
             let url = path;
             if (context && !url.startsWith('@oda')){
                 url = context+'/'+url;
@@ -2306,7 +2300,7 @@ if (!window.ODA) {
                 if (url.startsWith('@')){
                     const p = ODA.paths[url];
                     if (p)
-                        url = ODA.$dir + '/' + ODA.paths[url];
+                        url = ODA.rootPath + '/' + ODA.paths[url];
                     else
                         url = `/${url}`;
                 }
@@ -2316,11 +2310,7 @@ if (!window.ODA) {
                     url = prototype.$system.dir +'/'+url;
             }
             url = url.replace(/\/\//g, '/');
-            //return import(url);
-            return  (ODA.modules[path] = await import(url));
-        // }
-        // return ODA.modules[path];
-        // return (ODA.modules[path] = await import(url));
+            return import(url);
     }
     Qarantine:{
         ODA.createComponent = (id, props = {}) => {
@@ -2390,7 +2380,6 @@ if (!window.ODA) {
         return ++componentCounter;
     }
 }
-ODA.mapUrl = 'paths.json';
 ODA.moduleScopes = {};
 ODA.convertToModule = async function (url, scope){
     const text = await (await fetch(url)).text();
