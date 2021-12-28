@@ -35,7 +35,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=60_
+```javascript_run_line_edit_[my-component.js]_h=40_
 ODA({
     is: 'my-component',
     template: `

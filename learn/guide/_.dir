@@ -53,5 +53,10 @@
         "name": "doc-principles",
         "label": "Принципы документирования",
         "status": "check"
+    },
+    {
+        "name": "example",
+        "label": "Пример раздела",
+        "status": "ok"
     }
 ]

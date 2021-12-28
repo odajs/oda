@@ -18,10 +18,5 @@
         "name": "markdown-doc.md",
         "label": "Справочник по формату Markdown",
         "status": "ok"
-    },
-    {
-        "name": "example",
-        "label": "Пример раздела",
-        "status": "ok"
     }
 ]
