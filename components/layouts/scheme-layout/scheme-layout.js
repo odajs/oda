@@ -4,8 +4,8 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-        <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'l'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 't'?-linkMargin:link?.align === 'b'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-        <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'l'?-(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 't'?-(16 + link.pin.size):link?.align === 'b'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
+        <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 'top'?-linkMargin:link?.align === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
+        <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'left'?-(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 'top'?-(16 + link.pin.size):link?.align === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
     </div>
     `,
     get srcPins(){
@@ -15,7 +15,6 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             });
         }).filter(i=>i).flat();
     },
-    __delete: '',
     hostAttributes:{
         tabindex: 1
     },
@@ -58,6 +57,12 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     pinSize: 12,
     props: {
+        inputs:{
+            top: false,
+            right: false,
+            bottom: false,
+            left: true
+        },
         editMode: {
             type: Boolean,
             reflectToAttribute: true,
@@ -184,16 +189,9 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
         this.selection.add(item);
     },
     async removeSelection() {
-        try{
-            this.__delete = true;
-            this.render();
-            await ODA.showConfirm('oda-dialog-message',{message: `Remove (${this.selection?.length})?`});
-            this.selection.forEach(i=>this.items.remove(i));
-            this.selection.clear();
-        }
-        finally {
-            this.__delete = false;
-        }
+        await ODA.showConfirm('oda-dialog-message',{message: `Remove (${this.selection?.length})?`});
+        this.selection.forEach(i=>this.items.remove(i));
+        this.selection.clear();
     }
 });
 ODA({is:'oda-scheme-container-toolbar', template: /*html*/`
@@ -249,23 +247,23 @@ ODA({is: 'oda-scheme-container', template: /*html*/`
     <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="t" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="top" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
         <div class="flex horizontal">
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="l" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="left" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
                 <div class="flex shadow vertical content">
                     <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                 </div>
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="r" :interface="item?.interfaces?.$right"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
-        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="b" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="bottom" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
     </div>
     `,
     onResize(e){
         switch (e.target.align){
-            case 'l':
+            case 'left':
                 this.left = e.target.offsetWidth;
                 break;
-            case 't':
+            case 'top':
                 this.top = e.target.offsetHeight;
                 break;
         }
@@ -311,7 +309,7 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='r' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || align==='right' || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached(){
         this.links = undefined;
@@ -398,7 +396,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     },
     get link(){
         const zoom = this.zoom;
-        if (this.align === 'r' || !this.pin?.link) return '';
+        if (this.align === 'right' || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
         })
@@ -406,13 +404,13 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         const center = rect.center;
         let d = '';
         switch (this.align) {
-            case 'l': {
+            case 'left': {
                 d += `M${rect.x} ${center.y} H ${rect.x - this.size}`;
             } break;
-            case 't': {
+            case 'top': {
                 d += `M${center.x} ${rect.y} V ${rect.y - this.size}`;
             } break;
-            case 'b': {
+            case 'bottom': {
                 d += `M${center.x} ${rect.bottom} V ${rect.bottom + this.size}`;
             } break;
         }
@@ -432,12 +430,12 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             if (!this.focusedPin) return;
             if (this.focusedPin.container === this.container) return;
             switch (this.focusedPin.align){
-                case 'r':{
-                    if (this.align === 'r')
+                case 'right':{
+                    if (this.align === 'right')
                         return;
                 } break;
                 default :{
-                    if (this.align !== 'r')
+                    if (this.align !== 'right')
                         return;
                 } break;
             }
@@ -458,15 +456,15 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
         if (!this.editMode) return;
         if (this.focusedPin && this.focusedPin.container !== this.container){
             switch (this.focusedPin.align){
-                case 'r':{
-                    if (this.align === 'r'){
+                case 'right':{
+                    if (this.align === 'right'){
                         this.focusedPin = this;
                         return;
                     }
                     this.__link(this.focusedPin);
                 } break;
                 default:{
-                    if (this.align !== 'r'){
+                    if (this.align !== 'right'){
                         this.focusedPin = this;
                         return;
                     }
@@ -489,8 +487,8 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     },
     get vertical(){
         switch (this.align){
-            case 'l':
-            case 'r':
+            case 'left':
+            case 'right':
                 return true;
         }
         return false
@@ -514,18 +512,31 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
             return 'var(--info-color)';
         if (this.focusedPin.container === this.container)
             return 'var(--disabled-color)';
-        switch (this.focusedPin.align) {
-            case 'r': {
-                if (this.align === 'r')
-                    return 'var(--error-color)';
-                if (this.pin.link)
-                    return 'var(--warning-color)';
-            } break;
-            default: {
-                if (this.align !== 'r')
-                    return 'var(--error-color)';
-            } break;
+        if (this.inputs[this.focusedPin.align]){
+            //подсвечиваем выходы
+            if (this.inputs[this.align])
+                return 'var(--error-color)';
         }
+        else{
+
+            //подсвечиваем входы
+            if (!this.inputs[this.align])
+                return 'var(--error-color)';
+            if (this.pin.link)
+                return 'var(--warning-color)';
+        }
+        // switch (this.focusedPin.align) {
+        //     case 'right': {
+        //         if (this.align === 'right')
+        //             return 'var(--error-color)';
+        //         if (this.pin.link)
+        //             return 'var(--warning-color)';
+        //     } break;
+        //     default: {
+        //         if (this.align !== 'right')
+        //             return 'var(--error-color)';
+        //     } break;
+        // }
         return 'var(--success-color)';
     }
 })

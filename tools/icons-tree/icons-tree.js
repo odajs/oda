@@ -7,15 +7,17 @@ function getIconItem(el, group) {
     obj.name = el.getAttribute('id');
     obj.label = obj.name;
     obj.icon = group ? `${group}:${obj.name}` : '';
+    obj.search = [group, obj.name, obj.label].join(' ');
     return obj;
 }
 function getIconFolder(template) {
+    const content = template.content;
     const obj = {};
     obj.name = template.getAttribute('name');
     obj.label = obj.name
     obj.icon = 'odant:folder';
-    obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`
-    const content = template.content;
+    obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`;
+    obj.search = [obj.name, obj.label, ...[...content.children].map(c => ` ${c.name || ''} ${c.label || ''}`)].join(' ');
     obj.items = Array.prototype.map.call(content.children, g => getIconItem(g, obj.name));
     return obj;
 }
@@ -29,11 +31,27 @@ async function loadIcons(items) {
     })));
 }
 ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
-    template:`
-        <div class="horizontal">
-          <input class="flex" type="search" ::value="filterVal">
-          <oda-button :icon-size icon="icons:search"></oda-button>
-        </div>
+    template: /*html*/`
+    <style>
+        :host input {
+            outline: none;
+            min-width: 0;
+            background-color: inherit;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            padding: 0px;
+            font-family: inherit;
+            font-size: inherit;
+            text-align: inherit;
+            font-weight: inherit;
+            padding-left: 4px;
+        }
+    </style>
+    <div class="horizontal">
+        <input class="flex" type="search" ::value="filterVal">
+        <oda-button :icon-size icon="icons:search"></oda-button>
+    </div>
     `,
     props: {
         allowFocus: true,
@@ -44,24 +62,21 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
             type: Array,
             async set(v) {
                 this.dataSet = await loadIcons(v);
-                this.suggestions = this.dataSet.flatMap(i => i.items).reduce((res, i) => {
-                    res.push(i.name);
-                    return res;
-                }, []);
             }
         },
-        columns: [{ name: 'label', treeMode: true, $sort: 1 }],
         filterVal: {
             default: '',
             set(filter) {
-                this.columns[0].$filter = filter === '*' ? '' : filter;
-                this.hideRoot = Boolean(filter);
+                this.debounce('filterVal', () => {
+                    this.columns[1].$filter = filter === '*' ? '' : filter.split(':').join('&&');
+                    this.hideRoot = Boolean(filter);
+                }, 150);
             }
         },
         defaultTemplate: 'oda-icons-icon',
         rootPath: '/',
-        suggestions: []
     },
+    columns: [{ name: 'label', treeMode: true, $sort: 1 }, {name: 'search', hidden: true, }],
     async _onDragStart(e) {
         const el = e.path.find(p => p.row);
         if (el.row.subIcon) {
@@ -86,7 +101,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
     // },
     async ready() {
         this.iconsList = await (await fetch(iconsPath + 'info.json')).json();
-    }
+    },
 });
 
 ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
@@ -115,7 +130,11 @@ ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
         this.icon = item?.icon;
         this.fill = item?.subIcon && 'orange';
     },
-
+    listeners: {
+        tap(e) {
+            if (this.item.$hasChildren) e.stopPropagation();
+        }
+    },
     _copyToClipboard() {
         const s = this.icon;
         const input = document.createElement('input');

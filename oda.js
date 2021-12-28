@@ -81,7 +81,7 @@ if (!window.ODA) {
                 if (typeof prototype.imports === 'string')
                     prototype.imports = prototype.imports.split(',');
                 await Promise.allSettled((prototype.imports).map(async i => {
-                    await ODA.import(i, context, prototype);
+                    return ODA.import(i, context, prototype);
                 }));
             }
 
@@ -2291,24 +2291,15 @@ if (!window.ODA) {
     }
     ODA.import = async function (url, context, prototype){
         url = url.trim();
-            if (context && !url.startsWith('@oda')){
-                url = context+'/'+url;
-            }
-            else{
-                if (url.startsWith('@')){
-                    const p = ODA.aliases[url];
-                    if (p)
-                        url = ODA.rootPath + '/' + ODA.aliases[url];
-                    else
-                        url = `/${url}`;
-                }
-                if (url.startsWith('./'))
-                    url = prototype.$system.dir + url.substring(1);
-                else if (url.startsWith('../'))
-                    url = prototype.$system.dir +'/'+url;
-            }
-            url = url.replace(/\/\//g, '/');
-            return import(url);
+        if (url in ODA.aliases)
+            url = ODA.rootPath + '/' + ODA.aliases[url];
+        else if (url.startsWith('./'))
+            url = prototype.$system.dir + url.substring(1);
+        else if (url.startsWith('../'))
+            url = prototype.$system.dir +'/'+url;
+
+        url = url.replace(/\/\//g, '/');
+        return import(url);
     }
     Qarantine:{
         ODA.createComponent = (id, props = {}) => {
