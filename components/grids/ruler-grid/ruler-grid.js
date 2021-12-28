@@ -161,9 +161,17 @@ ODA({ is: 'oda-ruler', template: /*html*/`
     </style>
     <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
     <svg class="flex content">
+        <pattern id="rullerBigLines" :width="!vertical?sizeBig:1" :height="vertical?sizeBig:1" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" fill="none" stroke="gray" stroke-width="1"></line>
+        </pattern>
+        <pattern id="rullerSmallLines" :width="!vertical?sizeSmall:1" :height="vertical?sizeSmall:1" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" fill="none" stroke="gray" stroke-width="0.5"></line>
+        </pattern>
+        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerBigLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
+        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerSmallLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
         <g ~for="count">
-            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
+            <!-- <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
+            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line> -->
             <text :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getTextLine(index)" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
         </g>
     </svg>

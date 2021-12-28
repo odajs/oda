@@ -8,5 +8,10 @@
         "name": "features.md",
         "label": "Особенности кэширования",
         "status": "check"
+   },
+    {
+        "name": "getter-caching.md",
+        "label": "Дополнительные сведения",
+        "status": "check"
    }
 ]
