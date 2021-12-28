@@ -79,7 +79,6 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
         this.editor.innerHTML = '';
     },
     async attached() {
-        // const { pell } = await ODA.importOld('./lib/pell.js');
         this.editor = pell.init({
             element: this.$refs.editor,
             onChange: html => this.fire('change', html),

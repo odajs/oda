@@ -2136,6 +2136,7 @@ if (!window.ODA) {
             return false;
         };
         await import('./tools/styles/styles.js');
+        ODA.aliases = await ODA.loadJSON(ODA.rootPath + '/aliases.json');
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 window.document.body.style.visibility = 'hidden';
@@ -2289,18 +2290,16 @@ if (!window.ODA) {
             };
         }
     }
-    ODA.import = async function (path, context, prototype){
-            path = path.trim();
-            ODA.paths = ODA.paths || await ODA.loadJSON(ODA.rootPath + '/aliases.json');
-            let url = path;
+    ODA.import = async function (url, context, prototype){
+        url = url.trim();
             if (context && !url.startsWith('@oda')){
                 url = context+'/'+url;
             }
             else{
                 if (url.startsWith('@')){
-                    const p = ODA.paths[url];
+                    const p = ODA.aliases[url];
                     if (p)
-                        url = ODA.rootPath + '/' + ODA.paths[url];
+                        url = ODA.rootPath + '/' + ODA.aliases[url];
                     else
                         url = `/${url}`;
                 }
@@ -2379,32 +2378,5 @@ if (!window.ODA) {
     function nextId() {
         return ++componentCounter;
     }
-}
-ODA.moduleScopes = {};
-ODA.convertToModule = async function (url, scope){
-    const text = await (await fetch(url)).text();
-    let s = /*javascript*/`const obj = {};
-    function fn(){
-        var global = this;
-        ${Object.keys(ODA.moduleScopes[url]).map(key => {
-            return `\nvar ${key} = ODA.moduleScopes['${url}']['${key}']`;
-        }).join(';\n')};
-        ${text};
-        Object.assign(ODA.moduleScopes['${url}'], this);
-        return this;
-    }
-`;
-    const module = await import(`data:text/javascript;base64,${btoa(unescape(encodeURIComponent(s + 'export default fn.call(obj);')))}`);
-    let ss = s + '\nfn.call(obj);\n';
-    for (const k in module.default) {
-        ss += `export const ${k} = obj['${k}'];\n`;
-    }
-    return `data:text/javascript;base64,${btoa(unescape(encodeURIComponent(ss)))}`;
-}
-ODA.importOld = async function (url, scope) {
-    ODA.moduleScopes[url] = scope || ODA.moduleScopes[url] || {};
-    const module = await import(await ODA.convertToModule(url));
-    Object.assign(ODA.moduleScopes[url], module);
-    return module;
 }
 export default ODA;
