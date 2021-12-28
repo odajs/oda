@@ -85,7 +85,7 @@
 
 ```text
     ```warning
-        Ошибка
+        Предупреждение
     ```
 ```
 
@@ -183,16 +183,16 @@ run_line_edit_loadoda_[my-component.js]_h=190_
 ```text
     ```javascript run_edit_line_[my-component.js]
         let newElement = document.createElement('div');
-        newElement.innerHTML = '<h1>Модификатор edit</h1>';
+        newElement.innerHTML = '<h1>Модификатор line</h1>';
         document.body.append(newElement);
     ```
 ```
 
 В этом случае с правой стороны от источника кода появляется дополнительная полоса, на которой последовательно выводятся номера строк.
 
-```javascript run_edit_line
+```javascript run_edit_line_[my-component.js]
     let newElement = document.createElement('div');
-    newElement.innerHTML = '<h1>Модификатор edit</h1>';
+    newElement.innerHTML = '<h1>Модификатор line</h1>';
     document.body.append(newElement);
 ```
 
@@ -213,7 +213,7 @@ run_line_edit_loadoda_[my-component.js]_h=190_
     }
 ```
 
-В правом верхнем углу этого окна консоли располагаются три кнопки для управления ее сообщениями:
+В правом верхнем углу этого окна консоли располагаются три кнопки управления:
 
 1. Кнопка «**Clear**» — очищает область консоли, удаляя все сообщения из нее.
 
@@ -221,11 +221,10 @@ run_line_edit_loadoda_[my-component.js]_h=190_
 
 1. Кнопка «**Close**» — закрывает область консоли.
 
-
-
 В этом случае не придется открывать стандартную консоль браузера, чтобы прочитать сообщения отправленные в консоль.
 
 Весь код, записанный между
+
 Эти теги записываются после тега года ``` через пробел.
 
 Оповещения ("Примечание", "Совет", "Важно!", "Внимание!", "Предупреждение")
