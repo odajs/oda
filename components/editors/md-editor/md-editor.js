@@ -98,6 +98,6 @@ ODA({ is: 'oda-md-editor', imports: '@oda/ace-editor, @oda/button',
     },
     async _run() {
         let src = URL.createObjectURL(new Blob([this.value], { type: 'text/html' }));
-        window.open(ODA.$dir + '/components/viewers/md-viewer/md-viewer.html?s=' + src, 'HTML');
+        window.open(ODA.rootPath + '/components/viewers/md-viewer/md-viewer.html?s=' + src, 'HTML');
     }
 });

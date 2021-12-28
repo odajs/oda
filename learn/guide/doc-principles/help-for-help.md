@@ -224,7 +224,7 @@ run_line_edit_loadoda_[my-component.js]_h=190_
 1. Модификатор **loadoda** позволяет автоматически подключить библиотеку «**oda.js**».
 
 ```text
-    ```javascript run_edit_line_console_loadoda[my-component.js]
+    ```javascript run_edit_line_console_loadoda_[my-component.js]
         ODA({
             is: 'my-component',
             template: `
@@ -245,13 +245,77 @@ run_line_edit_loadoda_[my-component.js]_h=190_
     });
 ```
 
-В правом верхнем углу этого окна консоли располагаются три кнопки управления:
+Без его использования библиотеку «**oda.js**» придется подключать с помощью тега «**script**» следующим образом:
 
-1. Кнопка «**Clear**» — очищает область консоли, удаляя все сообщения из нее.
+`<script type="module" src="oda.js"> </script>`.
 
-1. Кнопка «**Refresh**» — выполняет код повторно, предварительно удаляя все предыдущие сообщения.
+Например,
 
-1. Кнопка «**Close**» — закрывает область консоли.
+```text
+    ```javascript run_edit_line_console
+        <script type="module" src="oda.js"> </script>
+        ODA({
+            is: 'my-component',
+            template: `
+                <span> Модификатор loadoda</span>
+            `,
+        });
+    ```
+```
+
+1. Модификатор **h** позволяет задать высоту области вывода результата выполнения кода.
+
+```text
+    ```javascript run_edit_line_console_loadoda_[my-component.js]_h=180_
+        ODA({
+            is: 'my-component',
+            template: `
+                <span> Модификатор h</span>
+            `,
+        });
+    ```
+```
+
+Высота области вывода указывается в пикселях. Эти единицы измерения отдельно не указываются. После значения обязательно записать один символ подчеркивания.
+
+```javascript run_edit_line_console_[my-component.js]_h=180_
+    ODA({
+        is: 'my-component',
+        template: `
+            <span> Модификатор h</span>
+        `,
+    });
+```
+
+Если результат выполнения кода превысит указанную высоту области вывода, то для его просмотра с правой стороны появится стандартная полоса прокрутки.
+
+1. Модификатор **eh** позволяет задать высоту области редактора кода.
+
+```text
+    ```javascript run_edit_line_console_loadoda_[my-component.js]_h=180_
+        ODA({
+            is: 'my-component',
+            template: `
+                <span> Модификатор h</span>
+            `,
+        });
+    ```
+```
+
+Высота области редактора кода указывается в пикселях. Эти единицы измерения отдельно не указываются. После значения высоты обязательно записать один символ подчеркивания.
+
+```javascript run_edit_line_console_[my-component.js]_h=180_eh=40_
+    ODA({
+        is: 'my-component',
+        template: `
+            <span> Модификатор h</span>
+        `,
+    });
+```
+
+Если высота источника кода превысит указанное значение, то с правой стороны окна редактора кода появится стандартная полоса прокрутки, с помощью которой можно просмотреть любой участок кода.
+
+
 
 
 

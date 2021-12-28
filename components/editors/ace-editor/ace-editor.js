@@ -158,7 +158,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         },
     },
     attached() {
-        ['basePath', 'modePath', 'themePath', 'workerPath'].map(o => ace.config.set(o, ODA.$dir + '/components/editors/ace-editor/src/'));
+        ['basePath', 'modePath', 'themePath', 'workerPath'].map(o => ace.config.set(o, ODA.rootPath + '/components/editors/ace-editor/src/'));
         this.editor = ace.edit(this.$('div'));
         this.editor.session.on('change', (e)=>{
             this['#value'] = undefined;
