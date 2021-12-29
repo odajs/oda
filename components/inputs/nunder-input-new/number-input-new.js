@@ -219,12 +219,6 @@ ODA({is: 'oda-number',
                 return count;
             };
 
-            const zeroBefore = getZeroCount(value);
-            const zeroData = getZeroCount(data);
-
-            // изменение значения
-            value = value.slice(0, start) + data + value.slice(end);
-
             let decimalPos = value.indexOf(this.decimalSeparator);
             // необходимое смещение каретки
             let offset = 0;//length - end;
@@ -235,38 +229,21 @@ ODA({is: 'oda-number',
                     offset = 0;
                 } else {
                     // если меняется дробная часть
-
-                    // приведение значения к "маске"
-                    if ((value.length - decimalPos) > (this.precision + 1)) {
-                        // ограничение по точности
-                        value = value.slice(0, decimalPos + this.precision + 1);
-                    } else {
-                        // добавление необходимых 0 на конце согласно маске
-                        value += '0'.repeat(this.precision + 1 - (value.length - decimalPos));
-                    }
-
-                    const zeroAfter = getZeroCount(value);
-                    if (zeroBefore === zeroAfter) {
-                        // todo: check
-                        // если кол-во 0 на конце не поменялось
-                        if ((zeroAfter === 0) || ((length - end) > zeroAfter)) {
-                            // если вводим до 0 на конце (или их нет)
-                            offset = ((start === end) ? -1 : 0) + end - start - data.length + zeroData - zeroAfter - 1;
+                    let before = value.substring(decimalPos + this.decimalSeparator.length, start);
+                    if (before.length >= this.precision) {
+                        offset = 0;
+                    } else {                        
+                        let middle = data.substr(0, Math.min(this.precision - before.length, data.length));
+                        const zeroData = getZeroCount(middle);
+                        const after = value.substr(end, this.precision - before.length - middle.length);
+                        const zeroAfter = getZeroCount(after);
+                        if (after.length &&  (zeroAfter < after.length)) {
+                            offset = ((start === end) ? -1 : 0) - middle.length + 1;
                         } else {
-                            // если вводим после 0 на конце
-                            offset = zeroAfter - (length - end);
-                        }
-                    } else {
-                        // todo: check
-                        if (zeroBefore < zeroAfter) {
-                            // если кол-во 0 увеличилось
-                            offset = zeroAfter - (length - end);
-                        } else {
-                            // если кол-во 0 уменьшилось
-                            if (zeroAfter + 1 > (length - end)) {
-                                offset = length - end - zeroAfter;
-                            } else {
-                                offset = end - start - data.length + zeroData;//((start === end) ? -1 : 0) - data.length + zeroData + 1;
+                            // todo
+                            offset = end - start - 1 + zeroData - data.length + 1;
+                            if (zeroData >= middle.length) {
+                                offset -= getZeroCount(before);
                             }
                         }
                     }
@@ -300,6 +277,13 @@ ODA({is: 'oda-number',
             }
             
             this.selectionFromEnd = length - end + offset;
+
+            // изменение значения
+            value = value.slice(0, start) + data + value.slice(end);
+            if ((value.length - decimalPos) > (this.precision + 1)) {
+                // ограничение по точности
+                value = value.slice(0, decimalPos + this.precision + 1);
+            }
             value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
             this.value = +value;
         }
