@@ -428,7 +428,20 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         }
         if (link) {
             const outputRect = link.src.$$pin.getClientRect(this._grid);
-            d += ` L ${outputRect.right + link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
+            switch (link.src.$$pin.align) {
+                case 'top': {
+                    d += ` L ${outputRect.top} ${outputRect.center.y - link.src.$$pin.size} H ${outputRect.right}`;
+                } break;
+                case 'right': {
+                    d += ` L ${outputRect.right + link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
+                } break;
+                case 'bottom': {
+                    d += ` L ${outputRect.bottom} ${outputRect.center.y + link.src.$$pin.size} H ${outputRect.right}`;
+                } break;
+                case 'left': {
+                    d += ` L ${outputRect.left - link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
+                } break;
+            }
         }
         return { d, link, align: this.align, rect: inputRect, pin: this };
     },
