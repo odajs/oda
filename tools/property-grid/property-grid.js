@@ -147,7 +147,9 @@ ODA({ is: 'oda-pg-string',
         <style>
             input{
                 font-size: medium;
-                padding: 0px; 
+                padding: 0px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         </style>
         <input class="flex" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" @tap.stop.prevent @keydown.stop>

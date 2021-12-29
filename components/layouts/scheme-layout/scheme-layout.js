@@ -1,4 +1,4 @@
-ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid', template: /*html*/`
+ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative;">
         <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
@@ -400,32 +400,37 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         if (!this.inputs[this.align] || !this.pin?.link) return '';
         const link = this.srcPins.find(i => {
             return i.link === this.pin.link && i.pin === this.pin.pin;
-        })
-        let rect = this.getClientRect(this._grid);
-        const center = rect.center;
+        });
+        const inputRect = this.getClientRect(this._grid);
+        const center = inputRect.center;
         let d = '';
         switch (this.align) {
-            case 'left': {
-                d += !link ? `M ${rect.x} ${center.y}` : 
-                    `M ${rect.x - 5} ${center.y - 5} L ${rect.x} ${center.y} L ${rect.x - 5} ${center.y + 5} L ${rect.x} ${center.y}`;
-                d += ` H ${rect.x - this.size}`;
-            } break;
             case 'top': {
-                d += !link ? `M ${center.x} ${rect.y}` :
-                    `M ${center.x + 5} ${rect.y - 5} L ${center.x} ${rect.y} L ${center.x - 5} ${rect.y - 5} L ${center.x} ${rect.y}`;
-                d += ` V ${rect.y - this.size}`;
+                d += !link ? `M ${center.x} ${inputRect.y}` :
+                    `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y}`;
+                d += ` V ${inputRect.y - this.size}`;
+            } break;
+            case 'right': {
+                d += !link ? `M ${inputRect.x} ${center.y}` :
+                    `M ${inputRect.x + 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x + 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
+                d += ` H ${inputRect.x - this.size}`;
             } break;
             case 'bottom': {
-                d += !link ? `M ${center.x} ${rect.bottom}` :
-                    `M ${center.x + 5} ${rect.bottom + 5} L ${center.x} ${rect.bottom} L ${center.x - 5} ${rect.bottom + 5} L ${center.x} ${rect.bottom}`;
-                d += ` V ${rect.bottom + this.size}`;
+                d += !link ? `M ${center.x} ${inputRect.bottom}` :
+                    `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom}`;
+                d += ` V ${inputRect.bottom + this.size}`;
+            } break;
+            case 'left': {
+                d += !link ? `M ${inputRect.x} ${center.y}` :
+                    `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
+                d += ` H ${inputRect.x - this.size}`;
             } break;
         }
         if (link) {
-            rect = link.src.$$pin.getClientRect(this._grid);
-            d += ` L ${rect.right + link.src.$$pin.size} ${rect.center.y} H ${rect.right}`;
+            const outputRect = link.src.$$pin.getClientRect(this._grid);
+            d += ` L ${outputRect.right + link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
         }
-        return { d, link, align: this.align, rect, pin: this };
+        return { d, link, align: this.align, rect: inputRect, pin: this };
     },
     listeners: {
         dragstart(e) {

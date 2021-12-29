@@ -128,7 +128,7 @@ ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
     </style>
     <oda-icon ~if="item?.subIcon" :icon="item.subIcon" :icon-size="iconSize*.4" style="position: absolute; transform: skew(340deg, 360deg); filter: invert(1)" ~style="{left: iconSize/3+'px'}"></oda-icon>
     <label class="label flex">{{item.label}}</label>
-    <oda-button ~if="!item?.subIcon" icon="icons:content-copy" @tap="_copyToClipboard"></oda-button>`,
+    <oda-button ~if="!item?.subIcon" icon="icons:content-copy" @tap.stop="_copyToClipboard"></oda-button>`,
     set item(item){
         this.icon = item?.icon;
         this.fill = item?.subIcon && 'orange';
