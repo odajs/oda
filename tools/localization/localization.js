@@ -71,7 +71,7 @@ ODA({
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
         eyeAll: false, tDict: true,
-        currentLocal: 'forInit', // { get() {return ODA.localization.currentLocal} },
+        currentLocal: 'forInit', // {get() {return ODA.localization.currentLocal}},
         phrazeBase: [], phrazeDop: [], wordsBase: [], wordsDop: [],
         localesAvailable: [], lidx:{
             set (lidx) {
