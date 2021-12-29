@@ -41,9 +41,20 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.appendChild(ctrl);
             host.style.opacity = 0;
             document.body.appendChild(host);
-            setTimeout(()=>{
+            setTimeout(() => {
                 host.style.opacity = 1;
-            }, 100)
+                let timeOutId, intervalId;
+                let f = (force) => {
+                    const s = ctrl.computedStyleMap();
+                    if (force || (s.get('visibility')?.value === 'visible' && s.get('opacity')?.value > 0 && s.get('display')?.value !== 'none')) {
+                        clearTimeout(timeOutId);
+                        clearInterval(intervalId);
+                        ctrl.focus?.();
+                    }
+                };
+                timeOutId = setTimeout(f, 3000, [true]);
+                intervalId = setInterval(f, 16);
+            }, 100);
             if (host.allowClose === false) {
                 containerStack.unshift(host);
             } else {

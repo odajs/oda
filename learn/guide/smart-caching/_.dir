@@ -13,5 +13,10 @@
         "name": "getter-caching.md",
         "label": "Дополнительные сведения",
         "status": "check"
+   },
+    {
+        "name": "brief.md",
+        "label": "Быстро о кешировании",
+        "status": "check"
    }
 ]

@@ -102,6 +102,9 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
     async ready() {
         this.iconsList = await (await fetch(iconsPath + 'info.json')).json();
     },
+    focus() {
+        this.$('input').focus();
+    }
 });
 
 ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
