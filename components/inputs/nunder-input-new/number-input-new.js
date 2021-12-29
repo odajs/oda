@@ -9,6 +9,9 @@ ODA({is: 'oda-number',
             width: 200px;
             margin: 16px;
             cursor: text;
+            font-family: monospace;
+            /*todo сделать хорошо*/
+            font-size: larger;
         }
         div {
             align-items: center;
@@ -24,7 +27,7 @@ ODA({is: 'oda-number',
     precision: 3,
     thousandSeparator: ' ',
     decimalSeparator: '.',
-    selectionFromEnd: -1,
+    selectionFromEnd: NaN,
     value: 5476.547576,
     get inputValue() {
         let int = this.value.toLocaleString();
@@ -136,16 +139,16 @@ ODA({is: 'oda-number',
         let value = this.inputValue;
         this.selectionFromEnd = length - end;
         value = value.slice(0, start) + value.slice(end);
-        value = value.replace(/\s/g, '')
+        value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
         this.value = +value;
     },
     onRender(e) {
         // установку курсора каретки после удаления
         this.debounce('onRender', () => {
-            if (~this.selectionFromEnd && this.$refs.input?.value) {
+            if (!Number.isNaN(this.selectionFromEnd) && this.$refs.input?.value) {
                 const selection = this.$refs.input.value.length - this.selectionFromEnd;
                 this.$refs.input.selectionStart = this.$refs.input.selectionEnd = selection;
-                this.selectionFromEnd = -1;
+                this.selectionFromEnd = NaN;
             }
         });
     },
@@ -156,7 +159,7 @@ ODA({is: 'oda-number',
             // смещать выделение слева от разделителя тысячных
             e.target.selectionStart = (++e.target.selectionEnd);
         }
-        if(e.detail > 1){
+        if (e.detail > 1) {
             e.preventDefault();
         }
     },
@@ -191,37 +194,111 @@ ODA({is: 'oda-number',
     async onBeforeInput(e) {
         e.preventDefault();
         if ((e.inputType === 'insertText') || (e.inputType === 'insertFromPaste')) {
-            if (!e.data.match(/^\d*\.?,?\d*$/g))
+            // проверка, что вводим число
+            let data = e.data.replace(/\s/g, '');//e.data.replaceAll(this.thousandSeparator, '');
+            if (!data.match(/^\d*\.?,?\d*$/g))
                 return;
 
             const start = e.target.selectionStart
             const end = e.target.selectionEnd;
-            const length = this.inputValue.length;
             let value = this.inputValue;
+            const length = value.length;
+            
+            // если вставляем число с разделителем, не заменяя всё (только в дробную или только в целую часть)
+            if (~data.indexOf('.') && (start !== 0) && (end !== length))
+                return;
+            
+            // возвращает кол-во 0, на конце аргумента
             let getZeroCount = (value) => {
                 if (!value) return 0;
                 let count = 0;
                 for (let i = (value.length - 1); i >= 0; i--) {
-                    if (value[i] === '0')
-                        count++;
+                    if (value[i] === '0') count++;
+                    else break;
                 }
                 return count;
             };
+
             const zeroBefore = getZeroCount(value);
-            value = value.slice(0, start) + e.data + value.slice(end);
-            const decimalPos = value.indexOf(this.decimalSeparator);
+            const zeroData = getZeroCount(data);
+
+            // изменение значения
+            value = value.slice(0, start) + data + value.slice(end);
+
+            let decimalPos = value.indexOf(this.decimalSeparator);
+            // необходимое смещение каретки
+            let offset = 0;//length - end;
             if (~decimalPos) {
-                if ((value.length - decimalPos) > this.precision + 1) {
-                    // ограничение по точности
-                    value = value.slice(0, decimalPos + this.precision + 1)
+                // если итоговое число с разделителем дробной части
+                if (end < decimalPos) {
+                    // если меняется целая часть
+                    offset = 0;
                 } else {
-                    value += '0'.repeat(this.precision + 1 - (value.length - decimalPos));
+                    // если меняется дробная часть
+
+                    // приведение значения к "маске"
+                    if ((value.length - decimalPos) > (this.precision + 1)) {
+                        // ограничение по точности
+                        value = value.slice(0, decimalPos + this.precision + 1);
+                    } else {
+                        // добавление необходимых 0 на конце согласно маске
+                        value += '0'.repeat(this.precision + 1 - (value.length - decimalPos));
+                    }
+
+                    const zeroAfter = getZeroCount(value);
+                    if (zeroBefore === zeroAfter) {
+                        // todo: check
+                        // если кол-во 0 на конце не поменялось
+                        if ((zeroAfter === 0) || ((length - end) > zeroAfter)) {
+                            // если вводим до 0 на конце (или их нет)
+                            offset = ((start === end) ? -1 : 0) + end - start - data.length + zeroData - zeroAfter - 1;
+                        } else {
+                            // если вводим после 0 на конце
+                            offset = zeroAfter - (length - end);
+                        }
+                    } else {
+                        // todo: check
+                        if (zeroBefore < zeroAfter) {
+                            // если кол-во 0 увеличилось
+                            offset = zeroAfter - (length - end);
+                        } else {
+                            // если кол-во 0 уменьшилось
+                            if (zeroAfter + 1 > (length - end)) {
+                                offset = length - end - zeroAfter;
+                            } else {
+                                offset = end - start - data.length + zeroData;//((start === end) ? -1 : 0) - data.length + zeroData + 1;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // если итоговое число без разделителя дробной части
+                decimalPos = data.indexOf(this.decimalSeparator);
+                if (!~decimalPos) {
+                    decimalPos = data.indexOf('.');
+                    if (!~decimalPos) {
+                        decimalPos = data.indexOf(',');
+                    }
+                }
+                if (!~decimalPos || (decimalPos === data.length)) {
+                    // вставляем данные без разделителя дробной части 
+                    offset = (this.precision || 0) + (this.decimalSeparator?.length || 0);
+                } else {
+                    // вставляем данные с разделителем дробной части
+
+                    // приведение вводимых данных к "маске"
+                    if ((data.length - decimalPos) > (this.precision + 1)) {
+                        // ограничение по точности
+                        data = data.slice(0, decimalPos + this.precision + 1);
+                    } else {
+                        // добавление необходимых 0 на конце согласно маске
+                        data += '0'.repeat(this.precision + 1 - (data.length - decimalPos));
+                    }
+
+                    offset = getZeroCount(data);
                 }
             }
-            const zeroAfter = getZeroCount(value);
-            // const curPrec = value.length - value.indexOf(this.decimalSeparator) - 1;
-            // const offset = (curPrec < this.precision) ? (this.precision - curPrec) : 0;
-            const offset = zeroAfter - zeroBefore;
+            
             this.selectionFromEnd = length - end + offset;
             value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
             this.value = +value;
