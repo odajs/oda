@@ -406,13 +406,19 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         let d = '';
         switch (this.align) {
             case 'left': {
-                d += `M${rect.x} ${center.y} H ${rect.x - this.size}`;
+                d += !link ? `M ${rect.x} ${center.y}` : 
+                    `M ${rect.x - 5} ${center.y - 5} L ${rect.x} ${center.y} L ${rect.x - 5} ${center.y + 5} L ${rect.x} ${center.y}`;
+                d += ` H ${rect.x - this.size}`;
             } break;
             case 'top': {
-                d += `M${center.x} ${rect.y} V ${rect.y - this.size}`;
+                d += !link ? `M ${center.x} ${rect.y}` :
+                    `M ${center.x + 5} ${rect.y - 5} L ${center.x} ${rect.y} L ${center.x - 5} ${rect.y - 5} L ${center.x} ${rect.y}`;
+                d += ` V ${rect.y - this.size}`;
             } break;
             case 'bottom': {
-                d += `M${center.x} ${rect.bottom} V ${rect.bottom + this.size}`;
+                d += !link ? `M ${center.x} ${rect.bottom}` :
+                    `M ${center.x + 5} ${rect.bottom + 5} L ${center.x} ${rect.bottom} L ${center.x - 5} ${rect.bottom + 5} L ${center.x} ${rect.bottom}`;
+                d += ` V ${rect.bottom + this.size}`;
             } break;
         }
         if (link) {

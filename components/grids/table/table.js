@@ -192,7 +192,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
 
 
                     <div class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :column="col" :item="row" :tabindex="_getTabIndex(col, row, c, r)"
-                    :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1 + '&#11165;') : ''"
+                    :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''"
                     ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)"
                     ~class="[row.$group ? 'group' : 'col-' + col.id]"></div>
 
