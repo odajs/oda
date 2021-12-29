@@ -27,7 +27,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
     <oda-ruler ~if="showScale"></oda-ruler>
     <div class="horizontal flex">
         <oda-ruler ~if="showScale" vertical></oda-ruler>
-        <div class="flex vertical" style="overflow: hidden; position: relative;" >
+        <div class="flex vertical" style="overflow: hidden; position: relative;">
             <svg ~if="showGrid" class="flex">
                 <defs>
                     <pattern id="smallLines" patternUnits="userSpaceOnUse" :width="sizeSmall" :height="sizeSmall">
@@ -43,29 +43,44 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
                 <rect :transform="\`translate(\${-left} \${-top})\`" fill="url(#smallLines)" width="10000" height="10000"></rect>
             </svg>
             <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll" @resize="onResize">
-                <slot class="flex vertical" name="content" ></slot>
+                <slot class="flex vertical" name="content"></slot>
             </div>
         </div>
     </div>
     `,
     onScroll(e) {
-        const target = e.target;
-        this.interval('on-scroll', () => {
-            this.left = target.scrollLeft; // e.target.scrollLeft;
-            this.top = target.scrollTop; // e.target.scrollTop;
-        })
+        this.left = undefined;
+        this.top = undefined;
     },
     onResize(e) {
-        const target = e.target;
-        this.interval('on-resize', () => {
-            this.width = target.scrollWidth;
-            this.height = target.scrollHeight;
-        })
+        this.slot.style.overflow = 'hidden';
+        this.width = undefined;
+        this.height = undefined;
+        this.left = undefined;
+        this.top = undefined;
+        this.interval('rul-resize', () => {
+            this.slot.style.overflow = 'auto';
+        });
     },
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
+    get left() {
+        return this.slot?.scrollLeft || 0;
+    },
+    get top() {
+        return this.slot?.scrollTop || 0;
+    },
+    get width() {
+        return this.slot?.scrollWidth;
+    },
+    get height() {
+        return this.slot?.scrollHeight;
+    },
+    get slot() {
+        return this.$('#slot') || undefined;
+    },
+    // left: 0,
+    // top: 0,
+    // width: 0,
+    // height: 0,
     props: {
         backgroundColor: {
             default: 'white',
@@ -168,12 +183,10 @@ ODA({ is: 'oda-ruler', template: /*html*/`
             <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" fill="none" stroke="gray" stroke-width="0.5"></line>
         </pattern>
         <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerBigLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
-        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerSmallLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
-        <g ~for="count">
-            <!-- <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getBigLine(index)" fill="none" stroke="gray" stroke-width="1"></line>
-            <line :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getSmallLine(index)" fill="none" stroke="gray" stroke-width="1"></line> -->
-            <text :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" ~props="getTextLine(index)" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
-        </g>
+        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerSmallLines)" :width="vertical?iconSize/2:'10000'" :height="!vertical?iconSize/2:10000"></rect>
+        <!-- <g ~for="count">
+            <text :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
+        </g> -->
     </svg>
     `,
     props: {

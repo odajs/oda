@@ -1,6 +1,6 @@
 ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 'oda-ruler-grid', template: /*html*/`
-    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}">
-        <svg class="flex">
+    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative;">
+        <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
@@ -81,6 +81,11 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
     },
     selection: [],
     items: [],
+    attached() {
+        this.async(() => {
+            this.links = undefined;
+        }, 100)
+    },
     _cursor: 'auto',
     listeners: {
         dragover(e){
@@ -93,11 +98,7 @@ ODA({is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button', extends: 
             console.log('context menu in oda-scheme-layout: ', e);
         },
         resize(e) {
-            this.interval('my-resize', ()=>{
-                this.width = e.target.scrollWidth;
-                this.height = e.target.scrollHeight;
-                this.links = undefined;
-            });
+            this.links = undefined;
         },
         track(e) {
             if(e.sourceEvent.which === 2) {
@@ -315,13 +316,13 @@ ODA({is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
         this.links = undefined;
     },
     findPin(link){
-        return this.$$('.pin').find(i=>{
+        return this.$$('.pin').find(i => {
             return i.item.id === link.pin;
         })
     },
     align: '',
     get links(){
-        return this.$$('oda-scheme-pin').map(i =>i.link).filter(i=>i);
+        return this.$$('oda-scheme-pin').map(i => i.link).filter(i => i);
     },
     set links(n){
         this.$$('oda-scheme-pin').forEach(i=> {
@@ -396,7 +397,7 @@ ODA({is:'oda-scheme-pin', template: /*html*/`
     },
     get link(){
         const zoom = this.zoom;
-        if (this.align === 'right' || !this.pin?.link) return '';
+        if (!this.inputs[this.align] || !this.pin?.link) return '';
         const link = this.srcPins.find(i=>{
             return i.link === this.pin.link && i.pin === this.pin.pin;
         })
