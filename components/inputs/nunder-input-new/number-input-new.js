@@ -224,7 +224,7 @@ ODA({is: 'oda-number',
             let offset = 0;//length - end;
             if (~decimalPos) {
                 // если итоговое число с разделителем дробной части
-                if (end < decimalPos) {
+                if (end <= decimalPos) {
                     // если меняется целая часть
                     offset = 0;
                 } else {
@@ -280,7 +280,7 @@ ODA({is: 'oda-number',
 
             // изменение значения
             value = value.slice(0, start) + data + value.slice(end);
-            if ((value.length - decimalPos) > (this.precision + 1)) {
+            if ((value.length - decimalPos - this.decimalSeparator.length) > (this.precision + 1)) {
                 // ограничение по точности
                 value = value.slice(0, decimalPos + this.precision + 1);
             }
