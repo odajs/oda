@@ -417,9 +417,9 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
                 d += ` V ${inputRect.y - this.size}`;
             } break;
             case 'right': {
-                d += !link ? `M ${inputRect.x} ${center.y}` :
-                    `M ${inputRect.x + 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x + 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
-                d += ` H ${inputRect.x - this.size}`;
+                d += !link ? `M ${inputRect.right} ${center.y}` :
+                    `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y}`;
+                d += ` H ${inputRect.right + this.size}`;
             } break;
             case 'bottom': {
                 d += !link ? `M ${center.x} ${inputRect.bottom}` :
