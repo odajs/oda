@@ -10,7 +10,13 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     `,
     get srcPins() {
         return this.items.map(b => {
-            return b.interfaces?.$right?.map?.((src, i) => {
+            let outputs = [];
+            for(const align in b.interfaces) {
+                if(!this.inputs[align.slice(1)]) {
+                    outputs = outputs.concat(b.interfaces[align]);
+                }
+            }
+            return outputs?.map?.((src, i) => {
                 return { link: b.block, pin: i, src };
             });
         }).filter(i => i).flat();
