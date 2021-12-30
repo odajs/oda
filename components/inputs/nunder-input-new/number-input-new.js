@@ -236,14 +236,14 @@ ODA({is: 'oda-number',
                         let middle = data.substr(0, Math.min(this.precision - before.length, data.length));
                         const zeroData = getZeroCount(middle);
                         const after = value.substr(end, this.precision - before.length - middle.length);
-                        const zeroAfter = getZeroCount(after);
+                        const zeroAfter = this.precision - before.length - middle.length + getZeroCount(after) - after.length;
                         if (after.length &&  (zeroAfter < after.length)) {
                             offset = ((start === end) ? -1 : 0) - middle.length + 1;
                         } else {
                             // todo
-                            offset = end - start - 1 + zeroData - data.length + 1;
+                            offset = end - start + zeroData - middle.length;
                             if (zeroData >= middle.length) {
-                                offset -= getZeroCount(before);
+                                offset += getZeroCount(before);
                             }
                         }
                     }
