@@ -7,7 +7,7 @@ this is a \:smile\: => :smile: emoji
 **Имя** компонента обязательно должно содержать хотя бы один дефис в соответствии с требованиями [стандарта HTML](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)   
 ```
 
-```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=120_hideGutter_
+```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=120_
 import '/components/buttons/icon/icon.js';
 
 ODA({
@@ -309,16 +309,16 @@ An [example](http://example.com).
 [ ZIP-архив](https://odant.org/web/oda/dist/oda.zip)
 
 CDN
-~~~html
+~~~html_hideGutter_
 <script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda-framework@master/oda.js"></script>
 ~~~
-~~~html
+~~~html_hideGutter_
 <script type="module" src="https://unpkg.com/browse/oda-framework@0.0.1/oda.json"></script>
 ~~~
 
 NPM
 
-~~~
+~~~_hideGutter_
  npm i oda-framework
 ~~~
 

@@ -93,7 +93,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         },
         highlightActiveLine: true,
         highlightSelectedWord: true,
-        readonly: false,
+        readOnly: false,
         cursorStyle: {
             default: 'slim',
             list: ['ace', 'slim', 'smooth', 'wide']
