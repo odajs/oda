@@ -7,7 +7,7 @@ this is a \:smile\: => :smile: emoji
 **Имя** компонента обязательно должно содержать хотя бы один дефис в соответствии с требованиями [стандарта HTML](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)   
 ```
 
-```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=120_
+```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=120_hideGutter_
 import '/components/buttons/icon/icon.js';
 
 ODA({

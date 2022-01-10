@@ -131,7 +131,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                         ~if="infpnl" :title="infpnl"></oda-icon>
                 <code ~if="md" ref="code" :contenteditable="enableEdit" ~class="md?'md':'hljs'" ~html="html" @input="_changed" style="outline:0px solid transparent;"
                         ~style="md?'font-family:var(--font-family);font-size:.95em':'font-size:1.25em;line-height: 1.3em;'"></code>
-                <oda-ace-editor ref="code" ~if="!md" ::value="_code" style="flex :1" font-size="16" :mode="_mode" @change="_changed"></oda-ace-editor>
+                <oda-ace-editor ref="code" :show-gutter="!hideGutter" ~if="!md" ::value="_code" style="flex :1" font-size="16" :mode="_mode" @change="_changed"></oda-ace-editor>
             </pre>
             <iframe ref="iframe" ~if="showRun" :src="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
                     onload="setTimeout(()=>{this.style.height=this.contentDocument.body.scrollHeight+'px'},500)" ~style="{'min-height': (_h||28)+'px'}"></iframe>
@@ -188,6 +188,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                     this.bcopy = n.includes('copy') && !n.includes('nocopy');
                     this.enableEdit = n.includes('edit');
                     this.showRun = n.includes('run');
+                    this.hideGutter = n.includes('hideGutter');
                     this.line = n.includes('line');
                     this.md = n.includes('md');
                     this.filename = n.includes('[') && n.includes(']') ? /(?:\[)(.*)(?:\])/g.exec(n)[1] : '';
@@ -210,6 +211,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                 }
             }
         },
+        hideGutter: false,
         bcopy: true,
         _show: false,
         enableEdit: false,
