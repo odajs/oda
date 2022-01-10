@@ -5,7 +5,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 'top'?-linkMargin:link?.align === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-        <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'left'?-(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 'top'?-(16 + link.pin.size):link?.align === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
+        <oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" :link ~style="{left: link?.rect.x + (link?.align === 'left'?-(16 + link.pin.size):link?.align === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 'top'?-(16 + link.pin.size):link?.align === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
     </div>
     `,
     get srcPins() {
@@ -87,11 +87,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     },
     selection: [],
     items: [],
-    attached() {
-        this.async(() => {
-            this.links = undefined;
-        }, 100)
-    },
     _cursor: 'auto',
     listeners: {
         dragover(e) {
@@ -211,7 +206,7 @@ ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
             right: 0px;
             @apply --horizontal;
             @apply --header;
-            @apply --shadow;    
+            @apply --shadow;
             opacity: .3;
         }
         :host(:hover){
@@ -291,7 +286,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             })
         }
         this.links = undefined;
-
     },
     get links() {
         return this.$$('oda-scheme-interface').map(i => i.links).flat();
@@ -463,16 +457,6 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             if((!this.inputs[this.focusedPin.align] && !this.inputs[this.align]) ||
                 (this.inputs[this.focusedPin.align] && this.inputs[this.align]))
                     return;
-            // switch (this.focusedPin.align) {
-            //     case 'right': {
-            //         if (this.align === 'right')
-            //             return;
-            //     } break;
-            //     default: {
-            //         if (this.align !== 'right')
-            //             return;
-            //     } break;
-            // }
             e.preventDefault();
         },
         dragend(e) {
@@ -502,22 +486,6 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
                 }
                 this.focusedPin.__link(this);
             }
-            // switch (this.focusedPin.align) {
-            //     case 'right': {
-            //         if (this.align === 'right') {
-            //             this.focusedPin = this;
-            //             return;
-            //         }
-            //         this.__link(this.focusedPin);
-            //     } break;
-            //     default: {
-            //         if (this.align !== 'right') {
-            //             this.focusedPin = this;
-            //             return;
-            //         }
-            //         this.focusedPin.__link(this);
-            //     } break;
-            // }
             this.focusedPin = null;
         }
         else
@@ -560,30 +528,15 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         if (this.focusedPin.container === this.container)
             return 'var(--disabled-color)';
         if (this.inputs[this.focusedPin.align]) {
-            //подсвечиваем выходы
             if (this.inputs[this.align])
                 return 'var(--error-color)';
         }
         else {
-
-            //подсвечиваем входы
             if (!this.inputs[this.align])
                 return 'var(--error-color)';
             if (this.pin.link)
                 return 'var(--warning-color)';
         }
-        // switch (this.focusedPin.align) {
-        //     case 'right': {
-        //         if (this.align === 'right')
-        //             return 'var(--error-color)';
-        //         if (this.pin.link)
-        //             return 'var(--warning-color)';
-        //     } break;
-        //     default: {
-        //         if (this.align !== 'right')
-        //             return 'var(--error-color)';
-        //     } break;
-        // }
         return 'var(--success-color)';
     }
 })

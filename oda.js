@@ -577,7 +577,7 @@ if (!window.ODA) {
                 }
             }
             $(path){
-                return this.$core.shadowRoot.querySelector(path);
+                return this.$core.shadowRoot.querySelector(path) || undefined;
             }
             $$(path){
                 return Array.from(this.$core.shadowRoot.querySelectorAll(path));

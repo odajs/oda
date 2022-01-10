@@ -77,10 +77,6 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
     get slot() {
         return this.$('#slot') || undefined;
     },
-    // left: 0,
-    // top: 0,
-    // width: 0,
-    // height: 0,
     props: {
         backgroundColor: {
             default: 'white',
@@ -182,13 +178,19 @@ ODA({ is: 'oda-ruler', template: /*html*/`
         <pattern id="rullerSmallLines" :width="!vertical?sizeSmall:1" :height="vertical?sizeSmall:1" patternUnits="userSpaceOnUse">
             <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" fill="none" stroke="gray" stroke-width="0.5"></line>
         </pattern>
-        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerBigLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
-        <rect :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" fill="url(#rullerSmallLines)" :width="vertical?iconSize/2:'10000'" :height="!vertical?iconSize/2:10000"></rect>
+        <rect :transform fill="url(#rullerBigLines)" :width="vertical?iconSize:'10000'" :height="!vertical?iconSize:10000"></rect>
+        <rect :transform fill="url(#rullerSmallLines)" :width="vertical?iconSize/2:'10000'" :height="!vertical?iconSize/2:10000"></rect>
         <!-- <g ~for="count">
             <text :transform="\`translate(\${vertical?0:-left} \${vertical?-top:0})\`" style="font-size: xx-small; fill: gray">{{index * unitVal}}</text>
         </g> -->
     </svg>
     `,
+    get transform(){
+        const size = this.iconSize/2;
+        const x = this.vertical?size:-this.left;
+        const y = this.vertical?-this.top:size;
+        return `translate(${x} ${y})`;
+    },
     props: {
         vertical: {
             type: Boolean,
@@ -196,9 +198,7 @@ ODA({ is: 'oda-ruler', template: /*html*/`
         }
     },
     get count() {
-        const count = Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
-        // console.warn(count)
-        return count;
+        return Math.ceil((this.vertical ? (this.height + this.domHost.scrollTop) : (this.width + this.domHost.scrollLeft)) / this.sizeBig) || 1;
     },
     getBigLine(index) {
         if (!this.vertical) {
