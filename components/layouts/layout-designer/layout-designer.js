@@ -22,18 +22,28 @@ ODA({ is: 'oda-layout-designer',
                 this.selection = [];
             }
         },
-        keys: ''
+        keys: '',
+        settings: {
+            default: [],
+            save: true,
+            set(n) {
+                if (!Array.isArray(n)) {
+                    this.settings = [];
+                }
+            }
+        }
     },
     get layout() {
         return this.data && new Layout(this.data, this.keys)
     },
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
-    async loadScript(){
+    async loadScript() {
         return this.settings;
     },
-    async saveScript(){
-
+    async saveScript(action) {
+        this.settings ||= [];
+        this.settings.push(action);
     },
 })
 
@@ -57,33 +67,24 @@ ODA({ is: 'oda-layout-designer-structure',
     layout: null,
     iconSize: 32,
     props: {
-        settings: {
-            default: [],
-            save: true,
-            set(n){
-                if(!Array.isArray(n)){
-                    this.settings = [];
-                }
-            }
-        },
         saveKey: {
-            get (){
+            get() {
                 return this.layout?.name || this.layout?.id;
             }
         }
     },
 
     observers: [
-        function loadLayout(layout, settings, saveKey) {
-            if (layout && settings && saveKey) {
-                this.useSettings ||= [];
-                if (this.useSettings.has(saveKey)) return;
-                this.async(async () => {
-                    await layout.execute(settings);
-                    this.useSettings.add(saveKey);
-                }, 500);
-            }
-        }
+        // function loadLayout(layout, saveKey) {
+        //     if (layout && saveKey) {
+        //         this.useSettings ||= [];
+        //         if (this.useSettings.has(saveKey)) return;
+        //         this.async(async () => {
+        //             await layout.execute(settings);
+        //             this.useSettings.add(saveKey);
+        //         }, 500);
+        //     }
+        // }
     ],
     // attached() {
     //     let name = this.layout?.name || this.layout?.id || 'root';
@@ -126,14 +127,12 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     addTab() {
         const action = { id: getUUID(), action: "addTab", props: { group: this.layout.id, tab: this.layout.id } };
         this.layout.addTab(action, this.layout);
-        this.settings ||= [];
-        this.settings.push(action);
+        this.saveScript(action)
     },
     removeTab(e, item) {
         const action = { action: "removeTab", props: { group: this.layout.id, tab: item.id } };
         this.layout.removeTab(action, item);
-        this.settings ||= [];
-        this.settings.push(action);
+        this.saveScript(action)
     }
 })
 
@@ -243,8 +242,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
-            this.settings ||= [];
-            this.settings.push(action);
+            this.saveScript(action)
         }
     },
     listeners: {
@@ -257,8 +255,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                     label: 'grouping', run: () => {
                         const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
                         this.layout.toGroup(action);
-                        this.settings ||= [];
-                        this.settings.push(action);
+                        this.saveScript(action)
                     }
                 }, { label: 'hide' }]
             }, { title: e.target.layout?.label });
@@ -325,8 +322,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         e.stopPropagation();
         this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo);
-        this.settings ||= [];
-        this.settings.push(this.dragInfo._action);
+        this.saveScript(this.dragInfo._action);
         this.clearDragTo();
     },
     clearDragTo() {
