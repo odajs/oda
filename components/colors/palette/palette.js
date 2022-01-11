@@ -1,5 +1,5 @@
-import '../../buttons/button/button.js';
-ODA({ is: 'oda-palette', template: /*html*/`
+ODA({ is: 'oda-palette', imports: '@oda/button',
+    template: /*html*/`
         <style>
             :host {
                 @apply --horizontal;
