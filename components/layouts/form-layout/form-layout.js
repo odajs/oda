@@ -303,7 +303,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
     _top() {
         if (this.modal) {
             const my = Number(getComputedStyle(this)["zIndex"]);
-            const z = this.getModals().reduce((res, el) => {
+            const z = this._getModals().reduce((res, el) => {
                 const z = Number(getComputedStyle(el)["zIndex"]);
                 if (z > res)
                     res = z;
@@ -314,7 +314,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             }
         }
     },
-    getModals() {
+    _getModals() {
         const parent = this.parentElement;
         if (parent) return Array.from(parent.children).filter(el => el !== this && el.localName === this.localName);
         return [];

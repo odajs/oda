@@ -121,14 +121,14 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         // window.top.odaAppLayoutDrawers.left.add(this.left);
         // window.top.odaAppLayoutDrawers.right.add(this.right);
         this.persistent = this.offsetWidth < this.offsetHeight;
-        const me = this.unique && this.getModals().find(i => i.unique === this.unique);
+        const me = this.unique && this._getModals().find(i => i.unique === this.unique);
         if (me) {
             me._top();
             this.remove();
             return;
         }
         this._transition?.();
-        if (this.getModals().some(el => el.modal)) {
+        if (this._getModals().some(el => el.modal)) {
             this.pos.x = this.pos.x + this.iconSize;
             this.pos.y = this.pos.y + this.iconSize;
             this._fixPos();
