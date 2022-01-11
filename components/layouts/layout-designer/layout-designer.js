@@ -24,14 +24,12 @@ ODA({ is: 'oda-layout-designer',
         },
         keys: '',
         settings: {
-            default: [],
-            save: true,
-            set(n) {
-                if (!Array.isArray(n)) {
-                    this.settings = [];
-                }
-            }
+            default: {},
+            save: true
         }
+    },
+    get saveKey() { 
+        return this.layout?.name || this.layout?.id || this.id || '';
     },
     get layout() {
         return this.data && new Layout(this.data, this.keys)
@@ -41,9 +39,13 @@ ODA({ is: 'oda-layout-designer',
     async loadScript() {
         return this.settings;
     },
-    async saveScript(action) {
-        this.settings ||= [];
-        this.settings.push(action);
+    async saveScript(layout, action) {
+        let saveKey = layout.root?.saveKey;
+        console.log('..... saveScript', saveKey, action)
+        if (typeof this.settings !== 'object')
+            this.settings = {};
+        this.settings[saveKey] ||= [];
+        this.settings[saveKey].push(action);
     },
 })
 
@@ -64,34 +66,18 @@ ODA({ is: 'oda-layout-designer-structure',
         </style>
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
     `,
-    layout: null,
-    iconSize: 32,
     props: {
-        saveKey: {
-            get() {
-                return this.layout?.name || this.layout?.id;
+        layout: {
+            default: null,
+            async set(n) {
+                if (n) {
+                    this.layout.saveKey = n.name || n.id;
+                    await this.layout.execute(this.settings[this.layout.saveKey]);
+                }
             }
-        }
+        },
     },
-
-    observers: [
-        // function loadLayout(layout, saveKey) {
-        //     if (layout && saveKey) {
-        //         this.useSettings ||= [];
-        //         if (this.useSettings.has(saveKey)) return;
-        //         this.async(async () => {
-        //             await layout.execute(settings);
-        //             this.useSettings.add(saveKey);
-        //         }, 500);
-        //     }
-        // }
-    ],
-    // attached() {
-    //     let name = this.layout?.name || this.layout?.id || 'root';
-    //     let id = this.data.fullPath || this.data.id || '';
-    //     name = name === id ? 'root' : name;
-    //     this.saveKey = id ? id + '/' + name : name;
-    // }
+    iconSize: 32
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -127,12 +113,12 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     addTab() {
         const action = { id: getUUID(), action: "addTab", props: { group: this.layout.id, tab: this.layout.id } };
         this.layout.addTab(action, this.layout);
-        this.saveScript(action)
+        this.saveScript(this.layout, action)
     },
     removeTab(e, item) {
         const action = { action: "removeTab", props: { group: this.layout.id, tab: item.id } };
         this.layout.removeTab(action, item);
-        this.saveScript(action)
+        this.saveScript(this.layout, action)
     }
 })
 
@@ -242,7 +228,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
-            this.saveScript(action)
+            this.saveScript(this.layout, action)
         }
     },
     listeners: {
@@ -255,7 +241,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                     label: 'grouping', run: () => {
                         const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
                         this.layout.toGroup(action);
-                        this.saveScript(action)
+                        this.saveScript(this.layout, action)
                     }
                 }, { label: 'hide' }]
             }, { title: e.target.layout?.label });
@@ -322,7 +308,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         e.stopPropagation();
         this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo);
-        this.saveScript(this.dragInfo._action);
+        this.saveScript(this.layout, this.dragInfo._action);
         this.clearDragTo();
     },
     clearDragTo() {
@@ -456,24 +442,15 @@ CLASS({ is: 'Layout',
         })
     },
     async find(id, item = this.root) {
-        let items = item.items || item;
-        let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
-
-        return _items.then(async items => {
-            if (!items?.length) return;
-            return await items.reduce(async (res, i) => {
-                if ((i.id + '') === (id + '')) res = i;
-                return await res || await this.find(id, i);
-            }, undefined);
-        })
-
+        let items = await item.items || item;
+        // let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
         // items = await _items;
         // items ||= _items;
-        // if (!items?.length) return;
-        // return await items.reduce(async (res, i) => {
-        //     if ((i.id + '') === (id + '')) res = i;
-        //     return await res || await this.find(id, i);
-        // }, undefined);
+        if (!items?.length) return;
+        return await items.reduce(async (res, i) => {
+            if ((i.id + '') === (id + '')) res = i;
+            return await res || await this.find(id, i);
+        }, undefined);
     }
 })
 
