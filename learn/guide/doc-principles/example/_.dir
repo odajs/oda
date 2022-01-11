@@ -4,6 +4,7 @@
         "label": "<b style='color:blue'>Название пункта</b> оглавления",
         "content": {
             "abstract": "\n~~~md\n Краткая аннотация.\n~~~"
-        }
+        },
+        "status": "edit"
     }
 ]
