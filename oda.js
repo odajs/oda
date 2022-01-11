@@ -1817,7 +1817,7 @@ if (!window.ODA) {
             return fn.call(this, ...p);
         }
         catch (e) {
-            console.error('%c' + fn?.toString() + '\r\n', 'color: blue; padding: 4px;', this, e);
+            console.warn('%c' + fn?.toString() + '\r\n', 'color: blue; padding: 4px;', this, e);
         }
     }
     const forVars = ['item', 'index', 'items'];
