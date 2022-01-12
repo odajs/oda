@@ -61,7 +61,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             set(n, o){
                 if (n && this.toggleGroup){
                     for (let button of Groups[this.toggleGroup]){
-                        if(button !== this && button.parentElement === this.parentElement)
+                        if(button !== this && (button.parentElement === this.parentElement || button.domHost === this.domHost))
                             button.toggled = false;
                     }
                 }
