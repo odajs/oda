@@ -18,7 +18,7 @@ const defaultOptions = {
     tasklists: false, //'Turn on/off GFM tasklist support',
     smoothLivePreview: false, //'Prevents weird effects in live previews due to incomplete input',
     smartIndentationFix: false, //'Tries to smartly fix indentation in es6 strings',
-    disableForced4SpacesIndentedSublists: false, //'Disables the requirement of indenting nested sublists by 4 spaces',
+    disableForced4SpacesIndentedSublists: true, //'Disables the requirement of indenting nested sublists by 4 spaces',
     simpleLineBreaks: false, //'Parses simple line breaks as <br> (GFM Style)',
     requireSpaceBeforeHeadingText: false, //'Makes adding a space between `#` and the header text mandatory (GFM Style)',
     ghMentions: false, //'Enables github @mentions',
@@ -41,6 +41,7 @@ ODA({ is: 'oda-md-viewer', template: `
             th { @apply --header; border: 1px solid darkgray; padding: 2px; }
             td { border: 1px solid lightgray; padding: 2px; }
             img { max-width: 96%; height: auto; }
+            blockquote { border-left: 2px solid lightgray; padding-left: 16px; }
         </style>
         <div ~html="html" style="padding: 2px 10px;"></div>
         <oda-md-code style="display: none"></oda-md-code>
@@ -131,7 +132,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                         ~if="infpnl" :title="infpnl"></oda-icon>
                 <code ~if="md" ref="code" :contenteditable="enableEdit" ~class="md?'md':'hljs'" ~html="html" @input="_changed" style="outline:0px solid transparent;"
                         ~style="md?'font-family:var(--font-family);font-size:.95em':'font-size:1.25em;line-height: 1.3em;'"></code>
-                <oda-ace-editor ref="code" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" ~if="!md" ::value="_code" style="flex :1" font-size="16" :mode="_mode" @change="_changed"></oda-ace-editor>
+                <oda-ace-editor ref="code" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" ~if="!md" ::value="_code" style="flex :1" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0'}" highlight-active-line="false" min-lines="1"></oda-ace-editor>
             </pre>
             <iframe ref="iframe" ~if="showRun" :src="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
                     onload="setTimeout(()=>{this.style.height=this.contentDocument.body.scrollHeight+'px'},500)" ~style="{'min-height': (_h||28)+'px'}"></iframe>
@@ -308,7 +309,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
         if (!this.showRun || !this._code) return;
         let css = '';
         let code = files.get(this.filename) && files.get(this.filename);
-        if (this.filename.includes('.js')) {
+        if (this.filename.includes('.js') || this._lang.includes('javascript')) {
             if (this.components && this.components.length) {
                 for (const c of this.components) {
                     if (c.endsWith('.css')) {
@@ -329,7 +330,7 @@ ${this._scriptODA()}
 <script type="module">
 ${code}
 </script>
-<${this.filename.replace('.js', '')}></${this.filename.replace('.js', '')}>
+${this.filename.includes('.js') ? `<${this.filename.replace('.js', '')}></${this.filename.replace('.js', '')}>` : ''}
 `;
         } else if (this.filename && this.filename.includes('.html') || this._lang.includes('html')) {
             code = code.replace(/\<script.*src="\//g, `<script type="module" src="${ODA.rootPath}/`);

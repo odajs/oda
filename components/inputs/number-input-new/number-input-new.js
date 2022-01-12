@@ -2,41 +2,52 @@ ODA({is: 'oda-number',
     template: /*html*/`
     <style>
         :host {
-            @apply --vertical;
+            /*@apply --vertical;*/
+            /*align-items: center;*/
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            flex-direction: row;
         }
         input {
+            overflow: hidden;
+            text-overflow: ellipsis;
             text-align: right;
-            width: 200px;
-            margin: 16px;
+            outline: none;
+            border: none;
+            height: 100%;
+            /*width: 200px;*/
+            /*margin: 16px;*/
             cursor: text;
             font-family: monospace;
             /*todo сделать хорошо*/
             font-size: larger;
         }
-        div {
-            align-items: center;
+        input[read-only] {
+            pointer-events: none;
+            opacity: .7;
         }
     </style>
-    <span>value: {{value}}</span>
-    <div class="horizontal">
-        <input ref="input" @keydown="onKeyDown" @select="onSelect" @beforeinput="onBeforeInput" @cut="onCut"
-        @mouseup="onMouseUp" @render="onRender" @mousedown="onMouseDown"
-        :value="inputValue">
-    </div>
+    <input ref="input" class="flex" @keydown="onKeyDown" @select="onSelect" @beforeinput="onBeforeInput" @cut="onCut"
+    @mouseup="onMouseUp" @render="onRender" @mousedown="onMouseDown"
+    :value="inputValue" :read-only>
     `,
     precision: 3,
+    percent: false,
     thousandSeparator: ' ',
     decimalSeparator: '.',
     selectionFromEnd: NaN,
     value: 5476.547576,
+    readOnly: false,
     get inputValue() {
-        let int = this.value.toLocaleString();
+        const value = this.value * (this.percent ? 100 : 1)
+        let int = value.toLocaleString();
         if (int.includes(','))
             int = int.slice(0, int.indexOf(','));
 
         int = int.replace(/\s/g, this.thousandSeparator);//.replaceAll(' ', this.thousandSeparator);
 
-        let fract = this.value.toString();
+        let fract = value.toString();
         fract = fract.includes('.') ? fract.slice(fract.indexOf('.') + 1) : '';
         // ограничение по точности
         if (fract.length > this.precision) fract = fract.slice(0, this.precision);
@@ -62,18 +73,18 @@ ODA({is: 'oda-number',
                     if (end === 0) return;
 
                     // если удаляется разделитель дробной части
-                    if (end === (decimalPos + 1)) return;
+                    if (end === (decimalPos + this.decimalSeparator.length)) return;
 
                     value = value.slice(0, end - 1) + value.slice(end);
                 }
                 else {
                     value = value.slice(0, start) + value.slice(end);
                 }
-                const curPrec = value.length - value.indexOf(this.decimalSeparator) - 1;
+                const curPrec = value.length - value.indexOf(this.decimalSeparator) - this.decimalSeparator.length;
                 const offset = (curPrec < this.precision) ? (this.precision - curPrec) : 0;
                 this.selectionFromEnd = length - end + offset;
                 value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
-                this.value = +value;
+                this.value = (+value / (this.percent ? 100 : 1));
             } break;
             case 'Delete': {
                 e.preventDefault();
@@ -81,21 +92,23 @@ ODA({is: 'oda-number',
                 if (start === end) {
                     if (end === length) return;
 
-                    if ((end > decimalPos) && (this.inputValue[end] === '0')) return;
+                    // todo: запрещать, если после end только '0'
+                    if ((end > decimalPos) && this.inputValue.slice(end).split('').every(s => s === '0')) return;
+
                     // если удаляется разделитель дробной части
                     if (start === decimalPos) return;
 
-                    offset = (this.inputValue[end] === this.thousandSeparator) ? 2 : 1;
+                    offset = 1 + (this.inputValue[end] === this.thousandSeparator) ? this.thousandSeparator.length : 0;
                     value = value.slice(0, end) + value.slice(end + offset);
                 }
                 else {
                     value = value.slice(0, start) + value.slice(end);
                 }
-                const curPrec = value.length - value.indexOf(this.decimalSeparator) - 1;
+                const curPrec = value.length - value.indexOf(this.decimalSeparator) - this.decimalSeparator.length;
                 if (curPrec < this.precision) offset -= (this.precision - curPrec);
                 this.selectionFromEnd = length - end - offset;
                 value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
-                this.value = +value;
+                this.value = (+value / (this.percent ? 100 : 1));
             } break;
             case 'ArrowRight':
                 // "перескакивать" разделитель тысячных
@@ -120,7 +133,7 @@ ODA({is: 'oda-number',
         const end = e.target.selectionEnd;
         const length = this.inputValue.length;
         const decimalPos = this.inputValue.indexOf(this.decimalSeparator);
-        if ((start <= decimalPos) && (decimalPos < end) && (start !== 0) && (end !== length)) {
+        if ((start < (decimalPos + this.decimalSeparator.length)) && (decimalPos < end) && ((start !== 0) || (end !== length))) {
             // выделять весь текст, если в выделении присутствует разделитель дробной части
             e.target.selectionStart = 0;
             e.target.selectionEnd = length;
@@ -140,7 +153,7 @@ ODA({is: 'oda-number',
         this.selectionFromEnd = length - end;
         value = value.slice(0, start) + value.slice(end);
         value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
-        this.value = +value;
+        this.value = (+value / (this.percent ? 100 : 1));;
     },
     onRender(e) {
         // установку курсора каретки после удаления
@@ -185,7 +198,7 @@ ODA({is: 'oda-number',
                     e.target.selectionEnd = decimalPos;
                 } else {
                     // дробная
-                    e.target.selectionStart = decimalPos + 1;
+                    e.target.selectionStart = decimalPos + this.decimalSeparator.length;
                     e.target.selectionEnd = length;
                 }
             }
@@ -203,11 +216,11 @@ ODA({is: 'oda-number',
             const end = e.target.selectionEnd;
             let value = this.inputValue;
             const length = value.length;
-            
+
             // если вставляем число с разделителем, не заменяя всё (только в дробную или только в целую часть)
             if (~data.indexOf('.') && (start !== 0) && (end !== length))
                 return;
-            
+
             // возвращает кол-во 0, на конце аргумента
             let getZeroCount = (value) => {
                 if (!value) return 0;
@@ -232,15 +245,15 @@ ODA({is: 'oda-number',
                     let before = value.substring(decimalPos + this.decimalSeparator.length, start);
                     if (before.length >= this.precision) {
                         offset = 0;
-                    } else {                        
+                    } else {
                         let middle = data.substr(0, Math.min(this.precision - before.length, data.length));
                         const zeroData = getZeroCount(middle);
                         const after = value.substr(end, this.precision - before.length - middle.length);
                         const zeroAfter = this.precision - before.length - middle.length + getZeroCount(after) - after.length;
-                        if (after.length &&  (zeroAfter < after.length)) {
+                        if (after.length && (zeroAfter < after.length)) {
                             offset = ((start === end) ? -1 : 0) - middle.length + 1;
                         } else {
-                            // todo
+                            // todo check
                             offset = end - start + zeroData - middle.length;
                             if (zeroData >= middle.length) {
                                 offset += getZeroCount(before);
@@ -275,7 +288,7 @@ ODA({is: 'oda-number',
                     offset = getZeroCount(data);
                 }
             }
-            
+
             this.selectionFromEnd = length - end + offset;
 
             // изменение значения
@@ -285,7 +298,7 @@ ODA({is: 'oda-number',
                 value = value.slice(0, decimalPos + this.precision + 1);
             }
             value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
-            this.value = +value;
+            this.value = (+value / (this.percent ? 100 : 1));
         }
         // switch (e.inputType) {
         //     case 'insertText': {
