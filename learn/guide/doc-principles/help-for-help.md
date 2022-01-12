@@ -172,6 +172,12 @@
         document.body.append(newElement);
     ```
 
+    ```javascript [my-component.js]
+        let newElement = document.createElement('div');
+        newElement.innerHTML = '<input placeholder="Модификатор run">';
+        document.body.append(newElement);
+    ```
+
     Область вывода результата представляет собой плавающий фрейм (HTML-элемент iframe), в котором автоматически формируется стандартный HTML-документ. Этот документ можно использовать для вывода любого результат текущего примера.
 
 1. Модификатор «**edit**» говорит о том, что текст в редакторе кода можно будет редактировать.
@@ -237,6 +243,10 @@
         document.body.append(myComponent);
     ```
 
+    ```javascript run_edit_loadoda
+        let myComponent = document.createElement('my-component');
+        document.body.append(myComponent);
+    ```
 
 1. Имени компонента, например, my-component.
 1. Расширения **js**.
