@@ -1,6 +1,26 @@
 ### Showdown's Wiki pages 
 [Окрыть wiki в новом окне](https://github.com/showdownjs/showdown/wiki)
 
+CDN
+~~~html _hideGutter_
+<script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda-framework@master/oda.js"></script>
+~~~
+~~~html _hideGutter_
+<script type="module" src="https://unpkg.com/browse/oda-framework@0.0.1/oda.json"></script>
+~~~
+
+NPM
+
+~~~info_hideGutter_
+ npm i oda-framework
+~~~
+
+~~~error_hideGutter_hideicon_
+ npm i oda-framework
+~~~
+
+Текст `let a = "Программный код"` в одну строку
+
 1.  level 1
     1.  Level 2
         *   Level 3

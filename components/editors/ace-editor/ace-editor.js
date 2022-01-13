@@ -19,13 +19,13 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             .ace_content{
                 min-height: 100%;
                 min-width: 100%;
-
             }
             :host>div {
                 border-radius: 2px;
                 width: inherit !important;
                 min-height: 100%;
             }
+            .ace_hidden-cursors { opacity: 0; }
         </style>
         <div></div>
     `,

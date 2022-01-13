@@ -42,6 +42,7 @@ ODA({ is: 'oda-md-viewer', template: `
             td { border: 1px solid lightgray; padding: 2px; }
             img { max-width: 96%; height: auto; }
             blockquote { border-left: 2px solid lightgray; padding-left: 16px; }
+            code { background-color: #f8f8f8; border: 1px solid #dfdfdf; color: #333; font-family: Consolas,"Liberation Mono",Courier,monospace; font-weight: normal; padding: 0.125rem 0.3125rem 0.0625rem;}
         </style>
         <div ~html="html" style="padding: 2px 10px;"></div>
         <oda-md-code style="display: none"></oda-md-code>
@@ -129,10 +130,10 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
             <pre class="hljs" style="display:flex;border: .5px solid darkgray;border-radius:2px;overflow:auto;overflow-x:auto;min-height:32px"
                     ~style="line? '' : 'white-space:pre-wrap;'+_getColor(true)">
                 <oda-icon class="icon-info" ~class="infpnl" ~style="_getColor" :icon="_getInfoIcon" style="position:absolute;left:-11px;top:22px;background:white; border-radius: 50%; z-index: 9"
-                        ~if="infpnl" :title="infpnl"></oda-icon>
+                        ~if="infpnl && !hideicon" :title="infpnl"></oda-icon>
                 <code ~if="md" ref="code" :contenteditable="enableEdit" ~class="md?'md':'hljs'" ~html="html" @input="_changed" style="outline:0px solid transparent;"
                         ~style="md?'font-family:var(--font-family);font-size:.95em':'font-size:1.25em;line-height: 1.3em;'"></code>
-                <oda-ace-editor ref="code" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" ~if="!md" ::value="_code" style="flex :1" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0'}" highlight-active-line="false" min-lines="1"></oda-ace-editor>
+                <oda-ace-editor ref="code" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" ~if="!md" ::value="_code" style="flex: 1; background-color: white" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0', 'padding-top': hideGutter ? '16px' : 0 }" highlight-active-line="false" min-lines="1"></oda-ace-editor>
             </pre>
             <iframe ref="iframe" ~if="showRun" :src="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
                     onload="setTimeout(()=>{this.style.height=this.contentDocument.body.scrollHeight+'px'},500)" ~style="{'min-height': (_h||28)+'px'}"></iframe>
@@ -189,6 +190,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                     this.bcopy = n.includes('copy') && !n.includes('nocopy');
                     this.enableEdit = n.includes('edit');
                     this.showRun = n.includes('run');
+                    this.hideicon = n.includes('hideicon');
                     this.hideGutter = n.includes('hideGutter');
                     this.line = n.includes('line');
                     this.md = n.includes('md');
@@ -212,6 +214,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                 }
             }
         },
+        hideicon: false,
         hideGutter: false,
         bcopy: true,
         _show: false,

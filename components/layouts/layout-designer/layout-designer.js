@@ -29,7 +29,7 @@ ODA({ is: 'oda-layout-designer',
         }
     },
     get saveKey() { 
-        return this.layout?.name || this.layout?.id || this.id || '';
+        return this.layout?.id || this.layout?.name || this.id || '';
     },
     get layout() {
         return this.data && new Layout(this.data, this.keys)
@@ -45,6 +45,8 @@ ODA({ is: 'oda-layout-designer',
         if (typeof this.settings !== 'object')
             this.settings = {};
         this.settings[saveKey] ||= [];
+        if (!Array.isArray(this.settings[saveKey]))
+            this.settings[saveKey] = [];
         this.settings[saveKey].push(action);
     },
 })
