@@ -87,6 +87,11 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     },
     selection: [],
     items: [],
+    attached() {
+        this.async(() => {
+            this.links = undefined;
+        }, 100)
+    },
     _cursor: 'auto',
     listeners: {
         dragover(e) {
@@ -209,7 +214,7 @@ ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
             @apply --shadow;
             opacity: .3;
         }
-        :host(:hover){
+        :host(:hover) {
             opacity: 1;
             transition: opacity ease-in-out .5s;
         }
@@ -238,10 +243,10 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             left: {{-left}}px;
             top: {{-top}}px;
         }
-        :host([selected]).block{
+        :host([selected]).block {
             outline: 1px dotted gray !important;
         }
-        .block{
+        .block {
             border: 1px solid gray;
             @apply --content;
         }
@@ -306,7 +311,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
 });
 ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
     <style>
-        :host{
+        :host {
             justify-content: center;
         }
     </style>
@@ -370,7 +375,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
 });
 ODA({ is: 'oda-scheme-pin', template: /*html*/`
     <style>
-        :host{
+        :host {
             @apply --content;
             @apply --border;
             border-radius: 25%;
@@ -383,7 +388,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             @apply --shadow;
             z-index: 1;
         }
-        :host([focused]), :host(:hover){
+        :host([focused]), :host(:hover) {
             transform: scale(1.5);
         }
     </style>
@@ -406,40 +411,36 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         let d = '';
         switch (this.align) {
             case 'top': {
-                d += !link ? `M ${center.x} ${inputRect.y}` :
-                    `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y}`;
-                d += ` V ${inputRect.y - this.size}`;
+                d += !link ? `M ${center.x} ${inputRect.y} V ${inputRect.y - this.size}` :
+                    `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} C ${center.x},${inputRect.y - this.size * 2}`;
             } break;
             case 'right': {
-                d += !link ? `M ${inputRect.right} ${center.y}` :
-                    `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y}`;
-                d += ` H ${inputRect.right + this.size}`;
+                d += !link ? `M ${inputRect.right} ${center.y} H ${inputRect.right + this.size}` :
+                    `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y} C ${inputRect.right + this.size * 2},${center.y}`;
             } break;
             case 'bottom': {
-                d += !link ? `M ${center.x} ${inputRect.bottom}` :
-                    `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom}`;
-                d += ` V ${inputRect.bottom + this.size}`;
+                d += !link ? `M ${center.x} ${inputRect.bottom} V ${inputRect.bottom + this.size}` :
+                    `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} C ${center.x},${inputRect.bottom + this.size * 2}`;
             } break;
             case 'left': {
-                d += !link ? `M ${inputRect.x} ${center.y}` :
-                    `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
-                d += ` H ${inputRect.x - this.size}`;
+                d += !link ? `M ${inputRect.x} ${center.y} H ${inputRect.x - this.size}` :
+                    `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y} C ${inputRect.x - this.size * 2},${center.y}`;
             } break;
         }
         if (link) {
             const outputRect = link.src.$$pin.getClientRect(this._grid);
             switch (link.src.$$pin.align) {
                 case 'top': {
-                    d += ` L ${outputRect.top} ${outputRect.center.y - link.src.$$pin.size} H ${outputRect.right}`;
+                    d += ` ${outputRect.top},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.right},${outputRect.center.y}`;
                 } break;
                 case 'right': {
-                    d += ` L ${outputRect.right + link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
+                    d += ` ${outputRect.right + link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right},${outputRect.center.y}`;
                 } break;
                 case 'bottom': {
-                    d += ` L ${outputRect.bottom} ${outputRect.center.y + link.src.$$pin.size} H ${outputRect.right}`;
+                    d += ` ${outputRect.bottom},${outputRect.center.y + link.src.$$pin.size * 2} ${outputRect.right},${outputRect.center.y}`;
                 } break;
                 case 'left': {
-                    d += ` L ${outputRect.left - link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
+                    d += ` ${outputRect.left - link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right},${outputRect.center.y}`;
                 } break;
             }
         }
@@ -542,7 +543,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
 })
 ODA({ is: 'oda-scheme-link', template: /*html*/`
     <style>
-        :host{
+        :host {
             position: absolute;
             @apply --content;
             @apply --border;

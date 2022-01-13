@@ -28,9 +28,9 @@ ODA({ is: 'oda-layout-designer',
             save: true
         }
     },
-    get saveKey() { 
-        return this.layout?.id || this.layout?.name || this.id || '';
-    },
+    // get saveKey() { 
+    //     return this.layout?.id || this.layout?.name || this.id || '';
+    // },
     get layout() {
         return this.data && new Layout(this.data, this.keys)
     },
@@ -68,21 +68,13 @@ ODA({ is: 'oda-layout-designer-structure',
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
     `,
     props: {
-        layout: {
-            default: null,
-            async set(n) {
-                if (n) {
-                    this.layout.saveKey = n.id || n.name;
-                    // if (this.settings?.[this.layout.saveKey])
-                    //     await this.layout.execute(this.settings[this.layout.saveKey]);
-                }
-            }
-        },
+        layout: null,
     },
     iconSize: 32,
     observers: [
         async function execute(layout, settings) {
             if (layout && settings) {
+                layout.saveKey ||= layout.id || layout.name;
                 if (settings?.[layout.saveKey])
                     await this.layout.execute(settings[layout.saveKey]);
             }
@@ -335,6 +327,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
 CLASS({ is: 'Layout',
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
+        this.saveKey = data.saveKey || data.$class?.id || undefined;
         this.key = key;
         this.owner = owner;
         this.order = this._order = order || 0;
