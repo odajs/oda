@@ -41,14 +41,13 @@ ODA({ is: 'oda-layout-designer',
     },
     async saveScript(layout, action) {
         let saveKey = layout.root?.saveKey;
-        // console.log('..... saveScript', saveKey, action);
         if (typeof this.settings !== 'object')
             this.settings = {};
         this.settings[saveKey] ||= [];
         if (!Array.isArray(this.settings[saveKey]))
             this.settings[saveKey] = [];
         this.settings[saveKey].push(action);
-    },
+    }
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -73,22 +72,13 @@ ODA({ is: 'oda-layout-designer-structure',
             default: null,
             async set(n) {
                 if (n) {
-                    this.layout.saveKey = n.name || n.id;
-                    // console.log('..... this.settings - ', this.layout.saveKey, this.settings[this.layout.saveKey])
-                    // await this.layout.execute(this.settings[this.layout.saveKey]);
+                    this.layout.saveKey = n.id || n.name;
+                    await this.layout.execute(this.settings[this.layout.saveKey]);
                 }
             }
         },
     },
-    iconSize: 32,
-    observers: [
-        async function execute(layout, settings) {
-            if (layout && settings) {
-                console.log('..... this.settings - ', layout.saveKey, settings[layout.saveKey])
-                await this.layout.execute(settings[layout.saveKey]);
-            }
-        }
-    ],
+    iconSize: 32
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -422,7 +412,6 @@ CLASS({ is: 'Layout',
         const dragItem = dragInfo.dragItem || await this.find(action.props.item);
         const targItem = dragInfo.targetItem || await this.find(action.props.target);
         if (!dragItem || !targItem) return;
-        // console.log('move - ', JSON.stringify(action));
         let idxTarg = targItem._order;
         dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
@@ -445,34 +434,18 @@ CLASS({ is: 'Layout',
             item.$expanded = action.props.value;
         }
     },
-    execute(actions) {
+    async execute(actions) {
         if (!actions || !Array.isArray(actions)) return;
-        actions.forEach(async i => {
-            // console.log('execute - ', JSON.stringify(i));
+        for (const i of actions)
             await this[i.action]?.(i);
-        })
     },
     async find(id, item = this.root) {
-        let items = item.items || item;
-        let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
-
-        return _items.then(async items => {
-            if (!items?.length) return;
-            return await items.reduce(async (res, i) => {
-                if ((i.id + '') === (id + '')) res = i;
-                return await res || await this.find(id, i);
-            }, undefined);
-        })
-
-        // let items = await item.items || item;
-        // let _items = items.then ? items : new Promise(resolve => setTimeout(() => resolve(items), 0)); // for debugging
-        // items = await _items;
-        // items ||= _items;
-        // if (!items?.length) return;
-        // return await items.reduce(async (res, i) => {
-        //     if ((i.id + '') === (id + '')) res = i;
-        //     return await res || await this.find(id, i);
-        // }, undefined);
+        let items = await item.items;
+        if (!items?.length) return;
+        return items.reduce(async (res, i) => {
+            if ((i.id + '') === (id + '')) res = i;
+            return await res || this.find(id, i);
+        }, undefined);
     }
 })
 
