@@ -326,7 +326,7 @@ c угловой скобкой
 
 >Вторая цитата
 
-Это вложенные цитаты
+Это вложенные цитаты.
 
 ```info _hideGutter_hideicon
 > Первый уровень цитирования
@@ -378,16 +378,16 @@ c угловой скобкой
 Например,
 
 ```info _hideGutter_hideicon
-Текст `без экранирования`
+Текст без `экранирования`
 ```
 
 Текст `без экранирования`
 
 ```info _hideGutter_hideicon
-Текст \`c экранированием`
+Текст c \`экранированием`
 ```
 
-Текст \`c экранированием`
+Текст c \`экранированием`
 
 # **Встроенный HTML**
 
@@ -415,7 +415,7 @@ c угловой скобкой
 
 ## **Видео Youtube**
 
-В виде **iframe**
+В виде **iframe**.
 
 ```info _hideGutter_hideicon
 <div style="position:relative;padding-bottom:48%; margin:10px">
@@ -429,7 +429,7 @@ c угловой скобкой
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 
-С рамкой и с размерами
+С рамкой и с размерами.
 
 ```info _hideGutter_hideicon
 <a href="https://www.youtube.com/watch?feature=player_embedded&v=bi2xKlZfYos" target="_blank"><img src="https://img.youtube.com/vi/bi2xKlZfYos/0.jpg"
@@ -439,7 +439,7 @@ alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10"
 <a href="https://www.youtube.com/watch?feature=player_embedded&v=bi2xKlZfYos" target="_blank"><img src="https://img.youtube.com/vi/bi2xKlZfYos/0.jpg"
 alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10" /></a>
 
-Без рамки и без размеров
+Без рамки и без размеров.
 
 ```info _hideGutter_hideicon
 [![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](https://img.youtube.com/vi/bi2xKlZfYos/0.jpg)](https://www.youtube.com/watch?v=bi2xKlZfYos)
