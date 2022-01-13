@@ -73,12 +73,21 @@ ODA({ is: 'oda-layout-designer-structure',
             async set(n) {
                 if (n) {
                     this.layout.saveKey = n.id || n.name;
-                    await this.layout.execute(this.settings[this.layout.saveKey]);
+                    // if (this.settings?.[this.layout.saveKey])
+                    //     await this.layout.execute(this.settings[this.layout.saveKey]);
                 }
             }
         },
     },
-    iconSize: 32
+    iconSize: 32,
+    observers: [
+        async function execute(layout, settings) {
+            if (layout && settings) {
+                if (settings?.[layout.saveKey])
+                    await this.layout.execute(settings[layout.saveKey]);
+            }
+        }
+    ],
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -441,6 +450,7 @@ CLASS({ is: 'Layout',
     },
     async find(id, item = this.root) {
         let items = await item.items;
+        items = item.items
         if (!items?.length) return;
         return items.reduce(async (res, i) => {
             if ((i.id + '') === (id + '')) res = i;
