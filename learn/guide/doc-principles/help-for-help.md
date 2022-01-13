@@ -12,7 +12,7 @@
 
     Задается в блоке подсветки кода «**Markdown**» с помощью модификатора «**info**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```info md
         Информация
         ```
@@ -28,7 +28,7 @@
 
     Задается с помощью модификатора «**success**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```success md
         Успешно
         ```
@@ -44,7 +44,7 @@
 
     Задается с помощью модификатора «**error**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```error md
         Ошибка
         ```
@@ -60,7 +60,7 @@
 
     Задается с помощью модификатора «**warning**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```warning md
         Предупреждение
         ```
@@ -76,7 +76,7 @@
 
     Задается с помощью модификатора «**help**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```help md
         Помощь
         ```
@@ -92,7 +92,7 @@
 
     Задается с помощью модификатора «**like**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```like md
         Нравится
         ```
@@ -108,7 +108,7 @@
 
     Задается с помощью модификатора «**faq**».
 
-    ```text
+    ```text hideGutter_hideicon
         ```faq md
         FAQ
         ```
@@ -124,7 +124,7 @@
 
 Например,
 
-```text
+```text hideGutter_hideicon
     ```info md
     **Markdown** внутри **markdown**
     ```
@@ -138,7 +138,7 @@
 
 Например,
 
-```text
+```text hideGutter_hideicon
     ```info
     **Markdown** внутри **markdown**
     ```
@@ -154,7 +154,7 @@
 
 Например,
 
-```text
+```text hideGutter_hideicon
     ```info
     **Не** markdown внутри **markdown**
     ```

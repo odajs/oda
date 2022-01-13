@@ -14,7 +14,6 @@ ODA({ is: 'oda-layout-designer',
     data: null,
     selection: [],
     dragInfo: {},
-    useSettings: [],
     props: {
         designMode: {
             default: false,
@@ -28,9 +27,6 @@ ODA({ is: 'oda-layout-designer',
             save: true
         }
     },
-    // get saveKey() { 
-    //     return this.layout?.id || this.layout?.name || this.id || '';
-    // },
     get layout() {
         return this.data && new Layout(this.data, this.keys)
     },
@@ -40,7 +36,7 @@ ODA({ is: 'oda-layout-designer',
         return this.settings;
     },
     async saveScript(layout, action) {
-        let saveKey = layout.root?.saveKey;
+        const saveKey = layout.root?.saveKey;
         if (typeof this.settings !== 'object')
             this.settings = {};
         this.settings[saveKey] ||= [];
@@ -79,7 +75,7 @@ ODA({ is: 'oda-layout-designer-structure',
                     await this.layout.execute(settings[layout.saveKey]);
             }
         }
-    ],
+    ]
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
@@ -432,9 +428,8 @@ CLASS({ is: 'Layout',
     },
     async expanded(action) {
         const item = await this.find(action?.props?.target);
-        if (item) {
+        if (item)
             item.$expanded = action.props.value;
-        }
     },
     async execute(actions) {
         if (!actions || !Array.isArray(actions)) return;
@@ -443,7 +438,7 @@ CLASS({ is: 'Layout',
     },
     async find(id, item = this.root) {
         let items = await item.items;
-        items = item.items
+        items = item.items;
         if (!items?.length) return;
         return items.reduce(async (res, i) => {
             if ((i.id + '') === (id + '')) res = i;

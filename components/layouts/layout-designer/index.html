@@ -1,27 +1,20 @@
 <meta charset="utf-8">
 <script type="module" src="/web/oda/oda.js"></script>
 <script type="module" src="./layout-designer.js"></script>
-<oda-layout-designer keys="fields" id="testLayoutDesigner" design-mode dev-mode></oda-layout-designer>
+<oda-layout-designer keys="fields" id="testLayoutDesigner" design-mode></oda-layout-designer>
 <script type="module">
     testLayoutDesigner.data =
-        // {
-        //     fields: [
-        //             { name: 1, labelPosition: 'top', style: { 'background-color': 'lightyellow' } },
-        //             { name: 2, fields: [{ name: '2.1' }, { name: '2.2' }, { name: '2.3' }, { name: '2.4' }, { name: '2.5' }, { name: '2.6' }] },
-        //         ]
-        // }
-
-        {
-            saveKey: 'root',
-            id: 'test-layout-designer',
+    {
+        saveKey: 'root',
+        id: 'test-layout-designer',
         fields: [
             { name: 1, labelPosition: 'top', style: { 'background-color': 'lightyellow' } },
             { name: 2, fields: [{ name: '2.1' }, { name: '2.2' }, { name: '2.3' }, { name: '2.4' }, { name: '2.5' }, { name: '2.6' }] },
             { name: 3, template: 'oda-button', props: { icon: 'icons:warning' } },
             { name: 4 },
             { name: 5 },
-            { name: 6, }, // fields: subFields },
-            { name: 7, }, // fields: brokenSubFields },
+            { name: 6, },
+            { name: 7, },
             { name: 8 },
             { name: 9 },
             { name: 10 },
@@ -47,7 +40,7 @@
                             { name: '14.2.3' },
                             { name: '14.2.4' },
                             { name: '14.2.5' }],
-    
+
                     },
                     { name: '14.3' },
                     { name: '14.4' },
