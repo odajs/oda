@@ -411,36 +411,48 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         let d = '';
         switch (this.align) {
             case 'top': {
-                d += !link ? `M ${center.x} ${inputRect.y} V ${inputRect.y - this.size}` :
-                    `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} C ${center.x},${inputRect.y - this.size * 2}`;
+                d += !link ? `M ${center.x} ${inputRect.y}` :
+                    `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y}`;
+                d += ` V ${inputRect.y - this.size}`;
+                if(link)
+                    d += ` C ${center.x},${inputRect.y - this.size * 2}`;
             } break;
             case 'right': {
-                d += !link ? `M ${inputRect.right} ${center.y} H ${inputRect.right + this.size}` :
-                    `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y} C ${inputRect.right + this.size * 2},${center.y}`;
+                d += !link ? `M ${inputRect.right} ${center.y}` :
+                    `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y}`;
+                d += ` H ${inputRect.right + this.size}`;
+                if(link)
+                    d += ` C ${inputRect.right + this.size * 2},${center.y}`;
             } break;
             case 'bottom': {
-                d += !link ? `M ${center.x} ${inputRect.bottom} V ${inputRect.bottom + this.size}` :
-                    `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} C ${center.x},${inputRect.bottom + this.size * 2}`;
+                d += !link ? `M ${center.x} ${inputRect.bottom}` :
+                    `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom}`;
+                d += ` V ${inputRect.bottom + this.size}`;
+                if(link)
+                    d += ` C ${center.x},${inputRect.bottom + this.size * 2}`;
             } break;
             case 'left': {
-                d += !link ? `M ${inputRect.x} ${center.y} H ${inputRect.x - this.size}` :
-                    `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y} C ${inputRect.x - this.size * 2},${center.y}`;
+                d += !link ? `M ${inputRect.x} ${center.y}` :
+                    `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
+                d += ` H ${inputRect.x - this.size}`;
+                if(link)
+                    d += ` C ${inputRect.x - this.size * 2},${center.y}`;
             } break;
         }
         if (link) {
             const outputRect = link.src.$$pin.getClientRect(this._grid);
             switch (link.src.$$pin.align) {
                 case 'top': {
-                    d += ` ${outputRect.top},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.right},${outputRect.center.y}`;
+                    d += ` ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
                 } break;
                 case 'right': {
-                    d += ` ${outputRect.right + link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right},${outputRect.center.y}`;
+                    d += ` ${outputRect.right + link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right + link.src.$$pin.size},${outputRect.center.y} H ${outputRect.right}`;
                 } break;
                 case 'bottom': {
-                    d += ` ${outputRect.bottom},${outputRect.center.y + link.src.$$pin.size * 2} ${outputRect.right},${outputRect.center.y}`;
+                    d += ` ${outputRect.center.x},${outputRect.center.y + link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y + link.src.$$pin.size} V ${outputRect.bottom}`;
                 } break;
                 case 'left': {
-                    d += ` ${outputRect.left - link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right},${outputRect.center.y}`;
+                    d += ` ${outputRect.left - link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.left - link.src.$$pin.size},${outputRect.center.y} H ${outputRect.left}`;
                 } break;
             }
         }
