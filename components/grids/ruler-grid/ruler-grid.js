@@ -53,28 +53,28 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
         this.top = undefined;
     },
     onResize(e) {
-        this.slot.style.overflow = 'hidden';
+        this.slotDiv.style.overflow = 'hidden';
         this.width = undefined;
         this.height = undefined;
         this.left = undefined;
         this.top = undefined;
         this.interval('rul-resize', () => {
-            this.slot.style.overflow = 'auto';
+            this.slotDiv.style.overflow = 'auto';
         });
     },
     get left() {
-        return this.slot?.scrollLeft || 0;
+        return this.slotDiv?.scrollLeft || 0;
     },
     get top() {
-        return this.slot?.scrollTop || 0;
+        return this.slotDiv?.scrollTop || 0;
     },
     get width() {
-        return this.slot?.scrollWidth;
+        return this.slotDiv?.scrollWidth;
     },
     get height() {
-        return this.slot?.scrollHeight;
+        return this.slotDiv?.scrollHeight;
     },
-    get slot() {
+    get slotDiv() {
         return this.$('#slot') || undefined;
     },
     props: {
