@@ -10,6 +10,7 @@ ODA({is: 'oda-number',
             flex-direction: row;
         }
         input {
+            background-color: transparent;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: right;
