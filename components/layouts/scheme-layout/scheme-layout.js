@@ -64,9 +64,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     pinSize: 12,
     props: {
         inputs: {
-            top: false,
+            top: true,
             right: false,
-            bottom: false,
+            bottom: true,
             left: true
         },
         editMode: {
@@ -203,7 +203,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
 });
 ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
     <style>
-        :host{
+        :host {
             border-radius: {{iconSize/4}}px;
             justify-content: right;
             position: absolute;
