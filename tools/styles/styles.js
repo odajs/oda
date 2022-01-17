@@ -336,15 +336,18 @@ body[context-menu-show] *:not(oda-context-menu){
     --dark-background: gray;
     --dark: {
         color: var(--dark-color) !important;
+        fill: var(--dark-color) !important;
         background-color: var(--dark-background) !important;
     };
 
     --active: {
         color: var(--selected-color) !important;
+        fill: var(--selected-color) !important;
         background-color: var(--selected-background) !important;
     };
     --selected: {
         color: var(--selected-color) !important;
+        fill: var(--selected-color) !important;
         filter: brightness(0.8) contrast(1.2);
     };
     --focused:{

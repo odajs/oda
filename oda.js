@@ -1516,13 +1516,12 @@ if (!window.ODA) {
                 items = await items;
             else if (typeof items === 'string')
                 items = items.split('');
-            else if (isObject(items) && !Array.isArray(items))
-                items = Object.keys(items).map(key=>{
-                    const obj = items[key];
-                    if (obj)
-                        obj.key = obj.key || key;
-                    return obj;
-                });
+            else if (isObject(items) && !Array.isArray(items)){
+                const forFunc = (key, index)=>{
+                    return {child, params: [...p, items[key], index, items, key]}
+                }
+                return Object.keys(items).map(forFunc);
+            }
             if (!Array.isArray(items)) {
                 items = +items || 0;
                 if (items < 0)
@@ -1532,13 +1531,15 @@ if (!window.ODA) {
                     items = 0;
                 for (let i = 0; i < items.length; items[i++] = i);
             }
-            return items.map((item, i)=>{
-                return { child, params: [...p, items[i], i, items] }
-            })
+            const forFunc = (item, index)=>{
+                return { child, params: [...p, item, index, items, index] }
+            }
+            return items.map(forFunc);
         };
         h.src = child;
         return h;
     }
+
 
     // const  _appendChild = HTMLElement.prototype.appendChild;
     // HTMLElement.prototype.appendChild = function (tag, ...args){
@@ -1820,7 +1821,7 @@ if (!window.ODA) {
             console.warn('%c' + fn?.toString() + '\r\n', 'color: blue; padding: 4px;', this, e);
         }
     }
-    const forVars = ['item', 'index', 'items'];
+    const forVars = ['item', 'index', 'items', 'key'];
     const svgNS = "http://www.w3.org/2000/svg";
     const modifierRE = /\.[^.]+/g;
     ODA.origin = origin;
