@@ -107,3 +107,8 @@
 ![Главное меню](learn/images/help_menu.jpg "Главное меню")
 
 Разделы более низких уровней появляться в главном меню сайта не будут. Получить доступ к ним можно будет только через оглавление, расположенное в области «**Навигатора**».
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/AvNX36qXoNU?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>
