@@ -86,7 +86,7 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
         return  []
     },
     set dataSet(n){
-        this.style.visibility = 'hidden';
+        // this.style.visibility = 'hidden';
         this.scrollTop = 0;
     },
     get bodyHeight(){

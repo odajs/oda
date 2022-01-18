@@ -11,8 +11,8 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <slot ~show="false"  @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'label', width: 200, label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
-            { name: 'value', template: 'oda-property-grid-cell', header: 'oda-property-grid-header-cell', width: 'auto' },
+            { name: 'name', width: 200, label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell', width: 'auto' },
             { name: 'category', hidden: true, $sortGroups: 0 },
         ]
     },
@@ -31,23 +31,82 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         allowSort: true,
         groupExpandingMode: 'first',
 
-        dataSet: {
-            get() {
-                return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
-            }
+        dataSet() {
+            return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
         },
+        // dataSet(){
+        //     return this.PropertyGridDataSet.items;//parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
+        // },
         onlySave: false,
+    },
+    get PropertyGridDataSet(){
+        return new PropertyGridDataSet(this.inspectedObject);
     },
     ready() {
         this.groups = [this.columns.find(c => c.name === 'category')];
     },
     onSlot(e) {
-        this.inspectedObject = e.target.assignedElements()?.[0];
+        this.inspectedObject = e.target.assignedElements();
     },
    _beforeExpand(node, force) {
         if (!force && node?.items?.length)
             return node?.items || [];
         return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
+    }
+})
+CLASS({is: 'PropertyGridDataSet',
+    ctor(inspectedObject, mode){
+        this.mode = mode;
+        this.inspectedObjects = Array.isArray(inspectedObject)?inspectedObject:[inspectedObject];
+    },
+    get items(){
+        const items = [];
+        for (let obj of this.inspectedObjects || []){
+            const props = obj.props;
+            let proto = obj;
+            while (proto) {
+                const descriptors = Object.getOwnPropertyDescriptors(proto);
+                for (let name in descriptors){
+                    let d = descriptors[name];
+                    const p = props[name];
+                    const node = {name, category: proto.constructor.name, ro: p?.readOnly || typeof d.value === 'object'};
+                    Object.defineProperty(node, 'value', {
+                        get(){
+                            return obj[name];
+                        },
+                        set(n){
+                            obj[name] = n;
+                        }
+                    })
+                    items.push(node)
+                }
+                proto = proto.__proto__;
+            }
+        }
+        return items;
+    }
+})
+ODA({ is: 'oda-pg-cell-value',
+    template: /* html */`
+        <style>
+            :host{
+                padding-left: 4px;
+            }
+            :host>span[disabled]{
+                pointer-events: auto;
+                user-select: text;
+            }
+            span{
+                @apply --fidabled;
+            }
+        </style>
+        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
+        <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
+    `,
+    item: null,
+    async showDD(e){
+        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
+        this.item.value = res.focusedItem.value;
     }
 })
 function parseInspectedObject(io, expertMode, onlySave) {
@@ -68,7 +127,7 @@ function parseInspectedObject(io, expertMode, onlySave) {
                 if (typeof d.value === 'function') continue;
                 if (name.startsWith('#') || name === 'props' || name === '__proto__' || name === '__op__') continue;
                 if (result.some(i => i.name === name)) continue;
-                const row = { label: name, name, category: p?.category || proto?.constructor?.name, ro: p?.readOnly || typeof d.value === 'object', list: p?.list };
+                const row = {name, category: p?.category || proto?.constructor?.name, ro: p?.readOnly || typeof d.value === 'object', list: p?.list };
 
                 let editor = p?.editor;
                 if (editor?.includes('/')){
@@ -80,27 +139,35 @@ function parseInspectedObject(io, expertMode, onlySave) {
                 else{
                     row.editor = editor || getTypeEditor(p?.type || typeof d.value || typeof p.default)
                 }
+                const handler = {}
 
+                Object.defineProperty(row, 'value', {
+                    get(){
+                        return io[name];
+                    },
+                    set(n){
+                        io[name] = n;
+                    }
+                })
+                // d = Object.assign({}, d)
 
-                d = Object.assign({}, d)
-                if (row.readOnly) d.writable = false;
-                if (d.get || d.set) {
-                    if (d.set) {
-                        d.set = function (value) {
-                            row.ro = row.ro || (typeof value === 'object');
-                            io[name] = value;
-                        }
-                    }
-                    else {
-                        row.ro = true;
-                    }
-                    d.get = function () {
-                        const value = io[name];
-                        row.ro = row.ro || (typeof value === 'object');
-                        return value || '';
-                    }
-                }
-                Object.defineProperty(row, 'value', d)
+                // if (d.get || d.set) {
+                //     if (d.set) {
+                //         d.set = function (value) {
+                //             row.ro = row.ro || (typeof value === 'object');
+                //             io[name] = value;
+                //         }
+                //     }
+                //     else {
+                //         row.ro = true;
+                //     }
+                //     d.get = function () {
+                //         const value = io[name];
+                //         row.ro = row.ro || (typeof value === 'object');
+                //         return value || '';
+                //     }
+                // }
+                // Object.defineProperty(row, 'value', d)
                 result.push(row);
             }
             if (!expertMode && result.length)

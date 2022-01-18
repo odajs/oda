@@ -2364,6 +2364,21 @@ if (!window.ODA) {
                 fialog.remove();
             })
         };
+
+        ODA.saveJSON = async (fileName, json)=> {
+            const contents = JSON.stringify(json);
+            const opts = {
+                types: [{
+                    filename: fileName,
+                    description: 'Json file',
+                    accept: {'text/plain': ['.json']},
+                }],
+            };
+            const fileHandle = await window.showSaveFilePicker(opts);
+            const writable = await fileHandle.createWritable();
+            await writable.write(contents);
+            await writable.close();
+        };
     }
     let componentCounter = 0;
     function nextId() {
