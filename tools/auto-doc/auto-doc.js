@@ -84,42 +84,42 @@ ODA({
             </div>
             <hr>
         </div>
-        <div ~for="key in Object.keys(apiSort)">
-            <h2>{{key}}</h2>
-            <div ~for="i in Object.keys(apiSort[key])" :style="apiSort[key][i].isPrivate? 'background: #ccc;': 'background: #eee;'">
+        <div ~for="k in Object.keys(apiSort)">
+            <h2>{{k}}</h2>
+            <div ~for="i in Object.keys(apiSort[k])" :style="apiSort[k][i].isPrivate? 'background: #ccc;': 'background: #eee;'">
                 <hr>
                 <div class="horizontal">
-                    <span class="colA">{{apiSort[key][i].f || i}}</span>
-                    <span class="colT" style="font-size: 90%;;">{{apiSort[key][i]['typeName']}}</span>
-                    <span class="colV" style="font-size: 90%;">{{apiSort[key][i]['defVal']}}</span>
-                    <oda-icon ~if="apiSort[key][i]['_docs']" icon="icons:info-outline" fill="darkgray" style="cursor:pointer;margin-right:10px;"
-                            @tap="_tap(apiSort[key][i])" :title="apiSort[key][i]._docs.title" :fill="apiSort[key][i]['_docs'].color"></oda-icon>
-                    <div ~if="!apiSort[key][i]['_docs']" style="width:36px"></div>
+                    <span class="colA">{{apiSort[k][i].f || i}}</span>
+                    <span class="colT" style="font-size: 90%;;">{{apiSort[k][i]['typeName']}}</span>
+                    <span class="colV" style="font-size: 90%;">{{apiSort[k][i]['defVal']}}</span>
+                    <oda-icon ~if="apiSort[k][i]['_docs']" icon="icons:info-outline" fill="darkgray" style="cursor:pointer;margin-right:10px;"
+                            @tap="_tap(apiSort[k][i])" :title="apiSort[k][i]._docs.title" :fill="apiSort[k][i]['_docs'].color"></oda-icon>
+                    <div ~if="!apiSort[k][i]['_docs']" style="width:36px"></div>
                 </div>
-                <div ~if="apiSort[key][i]._docs && apiSort[key][i]._docs.title && apiSort[key][i]._docs.title">
+                <div ~if="apiSort[k][i]._docs && apiSort[k][i]._docs.title && apiSort[k][i]._docs.title">
                     <hr style="opacity: 0.3">
-                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;color:#6699cc;cursor:pointer" @tap="_tap(apiSort[key][i])">{{ apiSort[key][i]._docs.title }}</span>
+                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;color:#6699cc;cursor:pointer" @tap="_tap(apiSort[k][i])">{{ apiSort[k][i]._docs.title }}</span>
                 </div>
-                <div ~if="apiSort[key][i]['description']">
+                <div ~if="apiSort[k][i]['description']">
                     <hr style="opacity: 0.3">
-                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;">description: {{ apiSort[key][i]['description'] }}</span>
+                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;">description: {{ apiSort[k][i]['description'] }}</span>
                 </div>
-                <div ~if="apiSort[key][i]['category'] || apiSort[key][i]['label'] || apiSort[key][i]['reflectToAttribute'] || apiSort[key][i]['notify'] ||
-                        apiSort[key][i]['freeze']">
+                <div ~if="apiSort[k][i]['category'] || apiSort[k][i]['label'] || apiSort[k][i]['reflectToAttribute'] || apiSort[k][i]['notify'] ||
+                        apiSort[k][i]['freeze']">
                     <hr style="opacity: 0.3">
                     <span style="font-size: 80%; font-style: italic;word-wrap: break-word;" align="left">
-                        {{ apiSort[key][i]['category'] ? 'category : ' + apiSort[key][i]['category'] + '; ': '' }}
-                        {{ apiSort[key][i]['label'] ? 'label : ' + apiSort[key][i]['label'] + '; ': '' }}
-                        {{ apiSort[key][i]['reflectToAttribute'] ? 'reflectToAttribute; ': '' }}
-                        {{ apiSort[key][i]['notify'] ? 'notify; ': '' }}
-                        {{ apiSort[key][i]['freeze'] ? 'freeze; ': '' }}
+                        {{ apiSort[k][i]['category'] ? 'category : ' + apiSort[k][i]['category'] + '; ': '' }}
+                        {{ apiSort[k][i]['label'] ? 'label : ' + apiSort[k][i]['label'] + '; ': '' }}
+                        {{ apiSort[k][i]['reflectToAttribute'] ? 'reflectToAttribute; ': '' }}
+                        {{ apiSort[k][i]['notify'] ? 'notify; ': '' }}
+                        {{ apiSort[k][i]['freeze'] ? 'freeze; ': '' }}
                     </span>
                 </div>
-                <div ~if="apiSort[key][i]['list']">
+                <div ~if="apiSort[k][i]['list']">
                     <hr style="opacity: 0.3">
-                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;">list: {{ apiSort[key][i]['list'] }}</span>
+                    <span style="font-size: 80%; font-style: italic;word-wrap: break-word;">list: {{ apiSort[k][i]['list'] }}</span>
                 </div>
-                <div ~if="selected && apiSort[key][i]._docs && apiSort[key][i]._docs.src && selected === apiSort[key][i]._docs.src"
+                <div ~if="selected && apiSort[k][i]._docs && apiSort[k][i]._docs.src && selected === apiSort[k][i]._docs.src"
                         style="margin:6px;border:1px solid #6699cc;background:white;padding:6px">
                     <oda-button icon="icons:close"  @tap="selected=''" size=32
                             style="border: 1px solid red;background-color:lightyellow;position:sticky;top:10px;float:right;z-index:99;width:32; margin:2px;border-radius:2px"></oda-button>
@@ -170,9 +170,11 @@ ODA({
         selected: {}
     },
     _getAPI(o = this.component) {
-        if (!o) return;
-        this._getType(o.props, 'props');
-        if (o.$core) this._getType(o.$core.prototype, 'methods');
+        this.async(() => {
+            if (!o) return;
+            this._getType(o.props, 'props');
+            if (o.$core) this._getType(o.$core.prototype, 'methods');
+        }, 100)
     },
     _getType(obj, type) {
         if (obj) {
