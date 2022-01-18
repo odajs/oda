@@ -22,6 +22,7 @@ ODA({
             }
             #clr {
                 width: 24px;
+                min-width: 24px;
             }
         </style>
         <input id="txt" ref="txt" :value="value" @change="_setTxt"/>

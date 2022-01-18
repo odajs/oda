@@ -76,9 +76,9 @@ ODA({
             <div class="splitter2" ref="splitter2"></div>
             <div class="splitter" ref="splitter" @down="_splitter=true"></div>
 
-            <div class="group" ~for="key in Object.keys(item || {})">
-                <div ~show="group" class="header" @tap="focused=item[key][0].obj">{{key}} [{{item[key] && item[key].length}}]</div>
-                <oda-property-tree class="tree" :item="item[key]" ::focused :args :label-column="labelColumn"></oda-property-tree>
+            <div class="group" ~for="i in Object.keys(item || {})">
+                <div ~show="group" class="header" @tap="focused=item[i][0].obj">{{i}} [{{item[i] && item[i].length}}]</div>
+                <oda-property-tree class="tree" :item="item[i]" ::focused :args :label-column="labelColumn"></oda-property-tree>
             </div>
         </div>
         <div class="horizontal">
@@ -148,19 +148,21 @@ ODA({
         })
     },
     getData(io = this.io, _io) {
-        if (!_io)
-            this._io = makeData(io, this.args);
-        const obj = {};
-        this.ioLength = 0;
-        this._io.items.map(i => {
-            let cat = i.category || 'props';
-            obj[cat] = obj[cat] || [];
-            obj[cat].push(i);
-            this.ioLength++;
-        })
-        this.item = obj;
-        if (this.$refs?.cnt) this.$refs.cnt.scrollTop = 0;
-        this.render();
+        this.async(() => {
+            if (!_io)
+                this._io = makeData(io, this.args);
+            const obj = {};
+            this.ioLength = 0;
+            this._io.items.map(i => {
+                let cat = i.category || 'props';
+                obj[cat] = obj[cat] || [];
+                obj[cat].push(i);
+                this.ioLength++;
+            })
+            this.item = obj;
+            if (this.$refs?.cnt) this.$refs.cnt.scrollTop = 0;
+            this.render();
+        }, 100)
     },
     _expert(e) {
         if (e === 'expert') this.expertMode = !this.expertMode;
