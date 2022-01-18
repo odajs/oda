@@ -110,7 +110,7 @@ ODA({
         }
     },
     async showList() {
-        const result = await ODA.showDropdown('oda-list', { items: this.devices }, { parent: this.$refs.btn })
+        const result = await ODA.showDropdown('oda-list', { items: this.devices, itemTemplate: 'oda-mobile-template' }, { parent: this.$refs.btn })
         if (result)
             this._focused = result.focusedItem;
     },
@@ -120,4 +120,18 @@ ODA({
     _resize() {
         this._screen = { h: this.offsetHeight, w: this.offsetWidth };
     }
+})
+
+ODA({ is: 'oda-mobile-template', template: /*html*/`
+        <style>
+            :host {
+                cursor: pointer;
+            }
+        </style>
+        <div class="horizontal row">
+            <oda-icon :icon="item.icon"></oda-icon> 
+            <div>{{item.label}}</div>
+        </div>
+    `,
+    item: {}
 })

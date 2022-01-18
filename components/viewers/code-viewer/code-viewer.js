@@ -50,7 +50,9 @@ ODA({ is: 'oda-code-viewer', imports: ['@oda/ace-editor'],
             var url = new URL(window.location);
             var s = url.searchParams.get("s");
             this._load(s ? s : this.src);
-        });
+            let mode = this.label.endsWith('.html') ? 'html' : this.label.endsWith('.md') ? 'markdown' : 'javascript';
+            this.$('oda-ace-editor').mode = mode;
+        }, 100);
     },
     async _load(s) {
         if (s) {
