@@ -2366,16 +2366,20 @@ if (!window.ODA) {
         };
 
         ODA.saveJSON = async (fileName, json)=> {
-            const contents = JSON.stringify(json);
+
             const opts = {
                 types: [{
-                    filename: fileName,
-                    description: 'Json file',
+
+                    description: 'JSON file',
                     accept: {'text/plain': ['.json']},
+
                 }],
+                suggestedName: fileName,
+                excludeAcceptAllOption: true
             };
             const fileHandle = await window.showSaveFilePicker(opts);
             const writable = await fileHandle.createWritable();
+            const contents = JSON.stringify(json);
             await writable.write(contents);
             await writable.close();
         };
