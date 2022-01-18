@@ -10,6 +10,16 @@
         "status": "ok"
     },
     {
+        "name": "alert-elements.md",
+        "label": "Элементы оповещения",
+        "status": "ok"
+    },
+    {
+        "name": "code-modifiers.md",
+        "label": "Модификаторы кода",
+        "status": "ok"
+    },
+    {
         "name": "help-for-component.md",
         "label": "Документирование компонентов",
         "status": "ok"
