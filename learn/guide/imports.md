@@ -4,7 +4,7 @@
 
 Например, для того, чтобы использовать компонент **oda-icon** необходимо первоначально подключить его модуль **icon.js** , который располагается в папке **/components/buttons/icon/**.
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=100_
+```javascript run_edit_loadoda_[my-component.js]_h=100
 import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
@@ -25,7 +25,7 @@ ODA({
 
 Для устранения этих недостатков в ODA-компонентах можно использовать специальную директиву **imports**, которая указывается внутри класса компонента следующим образом:
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=100_
+```javascript run_edit_loadoda_[my-component.js]_h=100
 ODA({
     is: 'my-component',
     imports: ['@oda/icon'],
@@ -41,7 +41,7 @@ ODA({
 
 Например, для того, чтобы использовать компонент **oda-icon** необходимо первоначально подключить его модуль **icon.js** , который располагается в папке **/components/buttons/button** следующим образом:.
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=190_
+```javascript run_edit_loadoda_[my-component.js]_h=190
 import '/components/buttons/button/button.js';
 ODA({
     is: 'my-component',
@@ -77,7 +77,7 @@ import '/tools/router/router.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=190_
+```javascript run_edit_loadoda_[my-component.js]_h=190
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -149,7 +149,7 @@ create(rule, callback);
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=190_
+```javascript run_edit_loadoda_[my-component.js]_h=190
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -231,7 +231,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_loadoda_[my-component.js]_h=200
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
