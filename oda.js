@@ -598,7 +598,7 @@ if (!window.ODA) {
             //     return ODA.telemetry.imports[prototype.$system.url];
             // }
             get $$modules() {
-                return ODA.telemetry.modules[this.$url].filter(i => i !== prototype.is)
+                return ODA.telemetry.modules[this.$url]?.filter(i => i !== prototype.is) || []
             }
             get $refs() {
                 if (!this.$core.refs || Object.keys(this.$core.refs).length === 0) {

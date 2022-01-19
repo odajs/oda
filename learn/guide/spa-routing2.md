@@ -36,7 +36,7 @@ import '/tools/router/router.js';
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -107,7 +107,7 @@ window.history.pushState(state, title [, url]);
 
 Пример использования метода **ODA.router.go**:
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -164,7 +164,7 @@ ODA({
 
 Используя символы подстановки можно создать одно правило для всех состояний страницы из предыдущего примера:
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -212,7 +212,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -258,7 +258,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -308,7 +308,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -352,11 +352,11 @@ ODA({
 
 В данном примере первый обработчик изменяет в компоненте свойство **note**, а второй обработчик изменяет свойство **note2**.
 
-Механизм SPA-роутинга позволяет имитировать вложенность страниц. По умолчанию уровень вложенности равен 0, что соответствует корневой странице. Для имитации необходимо во втором параметре метода **ODA.router.go** указать уровень вложенности и учитывать его в обработчике состояния страницы. 
+Механизм SPA-роутинга позволяет имитировать вложенность страниц. По умолчанию уровень вложенности равен 0, что соответствует корневой странице. Для имитации необходимо во втором параметре метода **ODA.router.go** указать уровень вложенности и учитывать его в обработчике состояния страницы.
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -422,7 +422,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',

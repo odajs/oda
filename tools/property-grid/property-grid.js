@@ -31,16 +31,16 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         allowSort: true,
         groupExpandingMode: 'first',
 
-        dataSet() {
-            return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
-        },
-        // dataSet(){
-        //     return this.PropertyGridDataSet.items;//parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
+        // dataSet() {
+        //     return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
         // },
+        dataSet(){
+            return this.PropertyGridDataSet.items;
+        },
         onlySave: false,
     },
     get PropertyGridDataSet(){
-        return new PropertyGridDataSet(this.inspectedObject);
+        return new PropertyGridDataSet(this.inspectedObject, this.expertMode);
     },
     ready() {
         this.groups = [this.columns.find(c => c.name === 'category')];
@@ -55,32 +55,67 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     }
 })
 CLASS({is: 'PropertyGridDataSet',
-    ctor(inspectedObject, mode){
-        this.mode = mode;
+    ctor(inspectedObject, expert){
+        this.expert = expert;
         this.inspectedObjects = Array.isArray(inspectedObject)?inspectedObject:[inspectedObject];
     },
     get items(){
-        const items = [];
+        const items = []
         for (let obj of this.inspectedObjects || []){
-            const props = obj.props;
-            let proto = obj;
+            const props = obj.props
+            const propsNames = Object.keys(props)
+            let proto = obj
             while (proto) {
-                const descriptors = Object.getOwnPropertyDescriptors(proto);
-                for (let name in descriptors){
-                    let d = descriptors[name];
-                    const p = props[name];
-                    const node = {name, category: proto.constructor.name, ro: p?.readOnly || typeof d.value === 'object'};
+                const descriptors = Object.getOwnPropertyDescriptors(proto)
+                for (let name in descriptors) {
+                    if (!this.expert) {
+                        // исключение свойств не описанных в props, вне экспертного режима
+                        const idx = propsNames.indexOf(name)
+                        if (!~idx) continue
+                        else propsNames.splice(idx, 1)
+                    }
+                    // исключение системных и скрытых свойств
+                    if (name.startsWith('_') ||
+                        name.startsWith('#') ||
+                        name.startsWith('$obs$') ||
+                        name === 'props' || name === '__proto__' ||
+                        name === '__op__' || name === '$$savePath'
+                    ) continue
+
+                    let d = descriptors[name]
+                    const p = props[name]
+                    const node = {name, category: proto.constructor.name, ro: typeof d.value === 'object'}
+                    if (p) {
+                        // исключение свойств помеченных как приватные
+                        if (p.private && !this.expert) continue
+                        if (p.category) node.category = p.category
+                        if (p.readOnly) node.ro = p.readOnly
+                        let editor = p.editor
+                        if (editor?.includes('/')) {
+                            ODA.import(editor).then(async imp => {
+                                node.editor = (await imp?.default)?.is || getTypeEditor(p.type || typeof d.value || typeof p.default)
+                                this.render()
+                            })
+                        }
+                        else {
+                            node.editor = editor || getTypeEditor(p?.type || typeof d.value || typeof p.default)
+                        }
+                    }
                     Object.defineProperty(node, 'value', {
-                        get(){
-                            return obj[name];
+                        get() {
+                            const value = obj[name]
+                            node.ro = node.ro || typeof value === 'object'
+                            return value
                         },
-                        set(n){
-                            obj[name] = n;
+                        set(n) {
+                            node.ro = node.ro || typeof n === 'object'
+                            obj[name] = n
                         }
                     })
+
                     items.push(node)
                 }
-                proto = proto.__proto__;
+                proto = proto.__proto__
             }
         }
         return items;
@@ -92,12 +127,9 @@ ODA({ is: 'oda-pg-cell-value',
             :host{
                 padding-left: 4px;
             }
-            :host>span[disabled]{
-                pointer-events: auto;
+            :host>span{
+                @apply --dimmed;
                 user-select: text;
-            }
-            span{
-                @apply --fidabled;
             }
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
@@ -121,8 +153,7 @@ function parseInspectedObject(io, expertMode, onlySave) {
             for (let name in descriptors) {
                 if (!expertMode && (name.startsWith('$obs$') || name === '$$savePath')) continue; //todo: найти другое решение
                 const p = props[name];
-                if (!expertMode && (!p || p.private || (onlySave && p && !p.save)))
-                    continue;
+                if (!expertMode && (!p || p.private || (onlySave && p && !p.save))) continue;
                 let d = descriptors[name];
                 if (typeof d.value === 'function') continue;
                 if (name.startsWith('#') || name === 'props' || name === '__proto__' || name === '__op__') continue;
