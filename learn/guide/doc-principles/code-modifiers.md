@@ -12,7 +12,7 @@
     ```
 ```
 
-В этом примере используется модификатор «**javascript**», который говорит о том, что текст внутри блока написан на языке «**JavaScript**» и его необходимо подсветить определенным образом.
+В этом примере указан тип «**javascript**», который говорит о том, что текст внутри блока написан на языке «**JavaScript**» и его необходимо подсвечивать определенным способом, принятым для этого типа.
 
 ```javascript
     let newElement = document.createElement('div');
@@ -38,7 +38,7 @@
 
     ```javascript run
         let newElement = document.createElement('div');
-        newElement.innerHTML = '<input type="text" placeholder="Модификатор run">';
+        newElement.innerHTML = '<input placeholder="Модификатор run">';
         document.body.append(newElement);
     ```
 
@@ -46,7 +46,7 @@
 
 1. Модификатор «**edit**» говорит о том, что текст в редакторе кода можно будет редактировать.
 
-    Например,
+    Он задается следующим образом:
 
     ```text
         ```javascript run_edit
@@ -62,11 +62,11 @@
 
     ```javascript run_edit_[my-component.js]
         let newElement = document.createElement('div');
-        newElement.innerHTML = '<input type="text" value="Модификатор edit">';
+        newElement.innerHTML = '<input type="number" value="Модификатор edit">';
         document.body.append(newElement);
     ```
 
-    Если изменить тип элемента «**input**» со значения «**text**» на «**radio**», то эти изменения сразу отобразятся в окне вывода.
+    Попробуйте поменять тип элемента «**input**» на значение «**radio**» и Вы увидите, что все сделанные изменения сразу отобразятся в окне вывода.
 
     ```info hideGutter
     Обратите внимание, что если во время редактирования код будет содержать ошибки, то в окне вывода никакой результат выводится уже не будет.
