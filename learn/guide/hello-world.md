@@ -1,6 +1,6 @@
 Для понимания того, что представляет собой ODA-фреймворк, давайте создадим простейший компонент **Hello, World!**
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>

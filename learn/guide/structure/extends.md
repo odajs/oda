@@ -2,7 +2,7 @@
 
 Для организации списка сначала необходимо объявить родительские компоненты.
 
-```javascript run_line_edit_console_[base-component-1.js]
+```javascript run_edit_console_[base-component-1.js]
 ODA({
     is: 'base-component-1',
     template: `
@@ -13,7 +13,7 @@ ODA({
 
 Фреймворк поддерживает множественное наследование, т.е. у одного и того же компонента может быть несколько родителей.
 
-```javascript run_line_edit_console_[base-component-2.js]
+```javascript run_edit_console_[base-component-2.js]
 ODA({
     is: 'base-component-2',
     template: `
@@ -24,7 +24,7 @@ ODA({
 
 В списке **extends** родители указываются через запятую.
 
-```javascript _run_line_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
+```javascript _run_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
 ODA({
     is: 'my-component',
     extends: 'base-component-1, base-component-2',
@@ -36,7 +36,7 @@ ODA({
 
 Порядок следования родителей в списке можно менять.
 
-```javascript _run_line_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
+```javascript _run_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
 ODA({
     is: 'my-component',
     extends: 'base-component-2, base-component-1',
@@ -50,7 +50,7 @@ ODA({
 
 Элементы самого наследника добавляются по умолчанию только после всех его родителей. Это правило можно изменить, указав в списке **extends** ключевое слово **this**, определяющее порядок следования именно его элементов.
 
-```javascript _run_line_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
+```javascript _run_edit_console_[my-component.js]_{base-component-1.js_base-component-2.js}
 ODA({
     is: 'my-component',
     extends: 'base-component-1, this, base-component-2',
