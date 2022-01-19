@@ -2,7 +2,7 @@
 
 Для организации списка сначала необходимо объявить родительские компоненты.
 
-```javascript _run_line_edit_console_[base-component-1.js]
+```javascript run_line_edit_console_[base-component-1.js]
 ODA({
     is: 'base-component-1',
     template: `
@@ -13,7 +13,7 @@ ODA({
 
 Фреймворк поддерживает множественное наследование, т.е. у одного и того же компонента может быть несколько родителей.
 
-```javascript _run_line_edit_console_[base-component-2.js]
+```javascript run_line_edit_console_[base-component-2.js]
 ODA({
     is: 'base-component-2',
     template: `
