@@ -49,9 +49,6 @@ ODA({
             }
         }
     },
-    methodChange() {
-        return this.change;
-    },
     created() {
         this.change = this.change || "Измени меня";
     }
