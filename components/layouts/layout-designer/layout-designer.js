@@ -101,7 +101,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             }
         </style>
         <div class="horizontal flex" style="flex-wrap: wrap;">
-           <div @tap="layout.$focused = item" ~for="layout?.items" class="horizontal"  style="align-items: center; " :focused="item === layout.$focused">
+           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal"  style="align-items: center; " :focused="item === layout.$focused">
                 <label class="flex">{{item?.label}}</label>
                 <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
@@ -109,14 +109,20 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
     `,
     addTab() {
-        const action = { id: getUUID(), action: "addTab", props: { group: this.layout.id, tab: this.layout.id } };
+        const tabID = getUUID();
+        const action = { id: tabID, action: "addTab", props: { group: this.layout.id, tab: tabID } };
         this.layout.addTab(action, this.layout);
-        this.saveScript(this.layout, action)
+        this.saveScript(this.layout, action);
     },
     removeTab(e, item) {
         const action = { action: "removeTab", props: { group: this.layout.id, tab: item.id } };
         this.layout.removeTab(action, item);
-        this.saveScript(this.layout, action)
+        this.saveScript(this.layout, action);
+    },
+    ontap(e, item) {
+        const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
+        this.layout.$focused = item;
+        this.saveScript(this.layout, action);
     }
 })
 
@@ -404,6 +410,12 @@ CLASS({ is: 'Layout',
         if (group.items.length === 0) {
             group.owner.items.splice(group.owner.items.indexOf(group), 1);
         }
+    },
+    async selectTab(action, layout) {
+        const group = layout ? this : await this.find(action.props.group);
+        const tab = layout ? layout : await this.find(action.props.tab);
+        if (!group || !tab) return;
+        group.$focused = tab;
     },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
