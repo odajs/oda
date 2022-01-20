@@ -127,9 +127,11 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         this.saveScript(this.layout, action);
     },
     ontap(e, item) {
-        const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
         this.layout.$focused = item;
-        this.saveScript(this.layout, action);
+        if (this.designMode) {
+            const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
+            this.saveScript(this.layout, action);
+        }
     },
     ondragstart(e, item) {
         e.stopPropagation();
@@ -138,7 +140,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     },
     ondragover(e, item) {
         e.stopPropagation();
-        if (this.dragInfo.dragItem.root !== item.root) return;
+        if (this.dragInfo.dragItem.root !== item.root || !this.dragInfo.isMoveTab) return;
         e.preventDefault();
         this.hoverItem = item;
     },
@@ -305,6 +307,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     },
     ondragstart(e) {
         e.stopPropagation();
+        this.dragInfo.isMoveTab  = false;
         this.dragInfo.dragItem = this.layout;
         e.dataTransfer.setDragImage((this.selection && this.selection.includes(this.dragInfo.dragItem) && this.selection.length) > 1 ? img3 : img, -20, 7);
     },
