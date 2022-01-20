@@ -26,9 +26,9 @@ ODA({
 
 Переменные можно объявлять, используя kebab-нотацию. Для этого имя переменной необходимо заключить в кавычки, а обращаться к ней с помощью оператора квадратных скобок **this['my-variable']**.
 
-Напимер,
+Например,
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -40,9 +40,9 @@ ODA({
 
 Переменные, также как и свойства в разделе в разделе **props**, обладают полной реактивностью. Переменные могут использоваться в директивах биндинга и двойного биндинга для обмена данными с элементами компонента. Для переменных можно создавать обозреватели.
 
-Напимер,
+Например,
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -69,7 +69,7 @@ ODA({
 
 Например:
 
-```javascript _line_edit_[base-component.js]
+```javascript edit_[base-component.js]
 ODA({
     is: 'base-component',
     template: `
@@ -83,7 +83,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[my-component.js]_{base-component.js}
+```javascript run_edit_blob_[my-component.js]_{base-component.js}
 ODA({
     is: 'my-component',
     template: `
@@ -99,7 +99,7 @@ ODA({
 
 Например:
 
-```javascript _line_edit_[base-component2.js]
+```javascript edit_[base-component2.js]
 ODA({
     is: 'my-component',
     template: `
@@ -113,7 +113,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[my-view.js]_{base-component2.js}_h=200_
+```javascript run_edit_blob_[my-view.js]_{base-component2.js}_h=200
 import 'https://odajs.org/tools/property-grid/property-grid.js';
 ODA({
     is: 'my-view',
@@ -124,4 +124,3 @@ ODA({
     `
 });
 ```
-
