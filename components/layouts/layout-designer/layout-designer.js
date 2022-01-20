@@ -101,13 +101,19 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             }
         </style>
         <div class="horizontal flex" style="flex-wrap: wrap;">
-           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal"  style="align-items: center; " :focused="item === layout.$focused">
+           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: center" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+                    :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
+                    @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="flex">{{item?.label}}</label>
                 <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
         </div>
         <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
     `,
+    get draggable() {
+        return this.layout && this.designMode ? 'true' : 'false';
+    },
+    hoverItem: undefined,
     addTab() {
         const tabID = getUUID();
         const blockID = getUUID();
@@ -124,7 +130,30 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
         this.layout.$focused = item;
         this.saveScript(this.layout, action);
-    }
+    },
+    ondragstart(e, item) {
+        e.stopPropagation();
+        this.dragInfo.dragItem = item;
+        this.dragInfo.isMoveTab = true;
+    },
+    ondragover(e, item) {
+        e.stopPropagation();
+        if (this.dragInfo.dragItem.root !== item.root) return;
+        e.preventDefault();
+        this.hoverItem = item;
+    },
+    ondragleave(e) {
+        this.hoverItem = undefined;
+    },
+    ondrop(e, item) {
+        e.stopPropagation();
+        this.dragInfo.targetItem = item;
+        this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: 'left' } };
+        this.layout.move(this.dragInfo);
+        this.saveScript(this.layout, this.dragInfo._action);
+        this.hoverItem = undefined;
+        this.dragInfo.isMoveTab = false;
+    },
 })
 
 ODA({ is: 'oda-layout-designer-group-structure',
@@ -285,7 +314,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
     ondragover(e) {
         e.stopPropagation();
         this.clearDragTo();
-        if (this.dragInfo?.dragItem) {
+        if (this.dragInfo?.dragItem && !this.dragInfo.isMoveTab) {
             this.layout.dragTo = 'drag-to-error';
             if (this.dragInfo.dragItem.root !== this.layout.root || this.dragInfo.dragItem === this.layout) return;
             this.clearDragTo();
