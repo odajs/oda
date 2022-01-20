@@ -71,8 +71,10 @@ ODA({ is: 'oda-layout-designer-structure',
         async function execute(layout, settings) {
             if (layout && settings) {
                 layout.saveKey ||= layout.id || layout.name;
-                if (settings?.[layout.saveKey])
+                if (settings?.[layout.saveKey] && !this.isExecute) {
                     await this.layout.execute(settings[layout.saveKey]);
+                    this.isExecute = true;
+                }
             }
         }
     ]
