@@ -1,6 +1,6 @@
 Чтобы понять что из себя представляет код компонента, давайте посмотрим на простейший компонент **Hello, World!**, созданный на ODA-фреймворке:
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>

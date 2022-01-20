@@ -16,7 +16,7 @@ ODA.loadComponent = async(id, props = {}, folder = 'components')
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=100_
+```javascript run_edit_loadoda_[my-component.js]_h=100
 ODA({
     is: 'my-component',
     template: `
