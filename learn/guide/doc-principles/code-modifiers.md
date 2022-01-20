@@ -6,40 +6,40 @@
 
 ```text hideGutter
     ```javascript
-        let newElement = document.createElement('div');
-        newElement.innerHTML = '<input placeholder="Модификатор run">';
-        document.body.append(newElement);
-    ```
-```
-
-В этом примере указан тип «**javascript**», который говорит о том, что текст внутри блока написан на языке «**JavaScript**» и его необходимо подсвечивать определенным способом, принятым для этого типа.
-
-```javascript
     let newElement = document.createElement('div');
     newElement.innerHTML = '<input placeholder="Модификатор run">';
     document.body.append(newElement);
+    ```
 ```
 
-В системе документации синтаксис стандартного блок подсветки кода был расширен дополнительными модификаторами, которые позволяют существенно увеличить его функциональные возможности. К таким модификаторам относятся:
+В этом примере указан тип «**javascript**», который говорит о том, что текст внутри блока написан на языке «**JavaScript**» и его необходимо подсвечивать определенным способом, специально принятым для данного типа.
 
-1. Модификатор «**run**» позволяет не только подсвечивать код, но и выполнять его.
+```javascript
+let newElement = document.createElement('div');
+newElement.innerHTML = '<input placeholder="Модификатор run">';
+document.body.append(newElement);
+```
+
+В нашей системе документации возможности стандартного блока подсветки кода были существенно расширены  специальными модификаторами. К таким модификаторам относятся:
+
+1. Модификатор «**run**». Он позволяет не только подсвечивать код, но и выполнять его.
 
     Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run
-            let newElement = document.createElement('div');
-            newElement.innerHTML = '<input placeholder="Модификатор run">';
-            document.body.append(newElement);
+        let newElement = document.createElement('div');
+        newElement.innerHTML = '<input placeholder="Модификатор run">';
+        document.body.append(newElement);
         ```
     ```
 
     При его указании под редактором кода появляется дополнительная область, в которой будет выводится результат выполнения этого кода при условии, что он был написан на языке «**JavaScript**». Для этого в заголовке обязательно необходимо указать модификатор «**javascript**».
 
     ```javascript run
-        let newElement = document.createElement('div');
-        newElement.innerHTML = '<input placeholder="Модификатор run">';
-        document.body.append(newElement);
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<input placeholder="Модификатор run">';
+    document.body.append(newElement);
     ```
 
     Область вывода представляет собой плавающий фрейм (HTML-элемент «**iframe**»), в котором автоматически формируется стандартный HTML-документ. В заголовок этого документа добавляется тэг «**script**» с типом «**module**», в который записывается код, указанный в редакторе. Этот документ и отображается в окне вывода, выполняя указанный скрипт во вовремя загрузки страницы с этим примером.
@@ -48,23 +48,25 @@
 
     Он задается следующим образом:
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit
-            let newElement = document.createElement('div');
-            newElement.innerHTML = ''<input type="number" placeholder="Модификатор run">'<h1>Модификатор edit</h1>';
-            document.body.append(newElement);
+        let newElement = document.createElement('div');
+        newElement.innerHTML = ''<input type="number" placeholder="Модификатор edit">;
+        document.body.append(newElement);
         ```
     ```
 
     Если одновременно указать оба модификатора «**run**» и «**edit**», то любое изменение кода в редакторе будет мгновенно приводить к его выполнению.
 
-    Например, в следующим примере можно изменить тип элемента  «**input**» на «**radio**» и убедиться, что сделанные изменения отобразятся в области вывода.
+    Например,
 
-    ```javascript run_edit_[my-component.js]
-        let newElement = document.createElement('div');
-        newElement.innerHTML = '<input type="number" value="Модификатор edit">';
-        document.body.append(newElement);
+    ```javascript run_edit
+    let newElement = document.createElement('div');
+    newElement.innerHTML = '<input type="number" placeholder="Модификатор edit">';
+    document.body.append(newElement);
     ```
+
+    Если в этом примере изменить тип элемента  «**input**» на «**radio**», то можно убедиться, что сделанные изменения немедленно отобразятся в области вывода.
 
     ```info hideGutter
     Обратите внимание, что если во время редактирования код будет содержать ошибки, то в окне вывода никакой результат выводится не будет.
@@ -74,7 +76,7 @@
 
     Он задается следующим образом:
 
-    ```text
+    ```text hideGutter
         ```javascript run_copy
             let newElement = document.createElement('div');
             newElement.innerHTML = ''<input type="text" placeholder="Модификатор copy">;
@@ -82,40 +84,42 @@
         ```
     ```
 
-    В этом случае не нужно будет выделять весь текст и нажимать сочетание клавиш «Ctrl+C» для его копирование. Это будет осуществляться автоматически.
+    В этом случае не нужно будет выделять весь текст и нажимать сочетание клавиш «Ctrl+C» для того, чтобы  скопировать его. Это будет осуществляться автоматически при нажатии на кнопку «**copy**».
 
     Например,
 
     ```javascript run_copy
-            let newElement = document.createElement('div');
-            newElement.innerHTML = ''<input type="text" placeholder="Модификатор copy">;
-            document.body.append(newElement);
+    let newElement = document.createElement('div');
+    newElement.innerHTML = ''<input type="text" placeholder="Модификатор copy">;
+    document.body.append(newElement);
     ```
+
+    Чтобы проверить работу кнопки «**copy**», скопированный с ее помощью текст можно вставить в элемент «**input**» этого примера.
 
 1. Модификатор Web-компонента «**[имя-компонента.js]**» говорит о том, что в тело HTML-документа, который используется для вывода результата, будет автоматически добавлен тэг пользовательского компонента с именем, указанным в квадратных скобках без расширения «**.js**».
 
     Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]
-            ODA({
-                is: 'my-component',
-                template: `
-                    <input type="number" placeholder="Модификатор Web-компонента">
-                `
-            });
-        ```
-    ```
-
-    Фактически этот тэг станет хостом одноименного пользовательского компонента. Кроме этого, к заголовку HTML-документа вывода будет автоматически подключена библиотека «oda.js». В результате этого, ODA-компонент, записанный в редакторе кода, будет отображаться в окне вывода без каких-либо дополнительных подключений.
-
-    ```javascript run_edit_[my-component.js]
         ODA({
             is: 'my-component',
             template: `
                 <input type="number" placeholder="Модификатор Web-компонента">
             `
         });
+        ```
+    ```
+
+    Фактически этот тэг станет хостом одноименного пользовательского компонента. Кроме этого, к заголовку HTML-документа вывода будет автоматически подключена библиотека «oda.js». В результате этого, ODA-компонент, записанный в редакторе кода, будет отображаться в окне вывода без каких-либо дополнительных подключений.
+
+    ```javascript run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <input type="number" placeholder="Модификатор Web-компонента">
+        `
+    });
     ```
 
     Без этого модификатора тэг пользовательского компонента пришлось бы в теле HTML-документа создавать в ручном режиме. Например, вот так.
