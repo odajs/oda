@@ -70,7 +70,6 @@ ODA({ is: 'oda-layout-designer-structure',
     observers: [
         async function execute(layout, settings) {
             if (layout && settings) {
-                // layout.saveKey ||= layout.id || layout.name;
                 layout.saveKey = layout.id || layout.name;
                 if (settings?.[layout.saveKey])
                     await this.layout.execute(settings[layout.saveKey]);
