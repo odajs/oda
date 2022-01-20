@@ -315,7 +315,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.block" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached() {
         this.links = undefined;
@@ -402,9 +402,9 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
     },
     get link() {
         const zoom = this.zoom;
-        if (!this.inputs[this.align] || !this.pin?.block) return '';
+        if (!this.inputs[this.align] || !this.pin?.link) return '';
         const link = this.srcPins.find(i => {
-            return i.link === this.pin.block && i.pin === this.pin.pin;
+            return i.link === this.pin.link && i.pin === this.pin.pin;
         });
         const inputRect = this.getClientRect(this._grid);
         const center = inputRect.center;
@@ -509,7 +509,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         if (this.link) {
             await ODA.showConfirm('oda-dialog-message', { message: `Replace link?` })
         }
-        this.pin.block = pin.container.item.block;
+        this.pin.link = pin.container.item.block;
         this.pin.pin = pin.index;
         this.changed();
     },
@@ -547,7 +547,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         else {
             if (!this.inputs[this.align])
                 return 'var(--error-color)';
-            if (this.pin.block)
+            if (this.pin.link)
                 return 'var(--warning-color)';
         }
         return 'var(--success-color)';

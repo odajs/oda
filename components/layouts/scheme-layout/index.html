@@ -17,10 +17,10 @@
                         { props:{
                             icon: 'icons:error'
                         }},
-                        {block: 5, pin: 2}],
+                        {link: 5, pin: 2}],
                     $right: [
-                            {block: 5, pin: 1},
-                            {block: 2, pin: 1}, {
+                            {link: 5, pin: 1},
+                            {link: 2, pin: 1}, {
                                 props: {
                                     my: 'dfkjlsfjl',
                                     icon: 'icons:error',
@@ -35,14 +35,14 @@
                                     e.stopPropagation();
                                     console.log('contextmenu 1-r3');
                                 },
-                            block: 3, pin: 0
+                            link: 3, pin: 0
                     }],
                     $left: [
-                        {block: 5, pin: 3},
-                        {block: 5, pin: 1}
+                        {link: 5, pin: 3},
+                        {link: 5, pin: 1}
                     ],
                     $bottom: [
-                        {block: 5, pin: 2},
+                        {link: 5, pin: 2},
                         {}
                     ],
                 }
@@ -56,7 +56,7 @@
                     $top: [{}],
                     $left: [{}],
                     $right: [{}, {}],
-                    $bottom: [{}, {block: 3, pin: 1}]
+                    $bottom: [{}, {link: 3, pin: 1}]
                 }
             }, {
                 is: 'oda-button', block: 3, x: 100, y: 360,
