@@ -18,7 +18,9 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     get grid() {
         return this;
     },
+    sorts: [],
     props:{
+        allowSort: false,
         lines:{
             default:{
                 cols: false,
@@ -116,8 +118,17 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
     get items() {
         if (!this.dataSet?.length) return [];
         const extract = (items, level, parent) => {
-            if (!this.groups.length && this.allowSort && this.sorts.length)
-                this._sort(items);
+            if (!this.groups.length && this.allowSort && this.sorts.length){
+                items.sort((a, b)=>{
+                    for(let col of this.sorts) {
+                        const va = a[col.name];
+                        const vb = b[col.name];
+                        if(va>vb) return col.$sort;
+                        if(va<vb) return -col.$sort;
+                    }
+                    return 0;
+                })
+            }
             return items.reduce((res, i) => {
                 i.$parent = parent;
                 i.$level = level;
@@ -141,7 +152,6 @@ ODA({is: 'oda-grid', imports: '@oda/button, @oda/checkbox, @oda/menu',
                 return res;
             }, []);
         };
-
         let array = Object.assign([], this.dataSet);
         array = extract(array, this.hideRoot || this.hideTop ? -1 : 0);
         this.applyColumnFilters(array);
