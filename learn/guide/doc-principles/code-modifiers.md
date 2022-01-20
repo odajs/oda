@@ -316,7 +316,7 @@ document.body.append(newElement);
 
     Если действительная высота результата будет превышать указанное значение, то с правой стороны области вывода появится стандартная полоса прокрутки, с помощью которой можно будет просмотреть весь полученный результат.
 
-    ```javascript run_edit_[my-component.js]_h=20_
+    ```javascript run_edit_[my-component.js]_h=60_
     ODA({
         is: 'my-component',
         template: `
