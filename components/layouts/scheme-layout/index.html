@@ -10,19 +10,18 @@
             {
                 is: "oda-button", block: 1,  x: 280, y: 180,
                 props: {
-                    icon: "icons:extension", fill: "blue", iconSize: 64, label: "1:oda-button"
+                    label: "1:oda-button", icon: "icons:extension", fill: "blue", iconSize: 64
                 },
                 interfaces: {
                     $top: [
                         { props:{
                             icon: 'icons:error'
                         }},
-                        {link: 5, pin: 2}],
+                        {block: 5, pin: 2}],
                     $right: [
-                            {link: 5, pin: 1},
-                            {link: 2, pin: 1}, {
+                            {block: 5, pin: 1},
+                            {block: 2, pin: 1}, {
                                 props: {
-
                                     my: 'dfkjlsfjl',
                                     icon: 'icons:error',
                                     iconSize: 30,
@@ -36,34 +35,33 @@
                                     e.stopPropagation();
                                     console.log('contextmenu 1-r3');
                                 },
-                            link: 3, pin: 0
+                            block: 3, pin: 0
                     }],
                     $left: [
-                        {link: 5, pin: 3},
-                        {link: 5, pin: 1}
+                        {block: 5, pin: 3},
+                        {block: 5, pin: 1}
                     ],
                     $bottom: [
-                        {link: 5, pin: 2},
-                        {link: 5, pin: 1}
+                        {block: 5, pin: 2},
+                        {}
                     ],
                 }
             },
             {
                 is: "oda-button", block: 2, x: 100, y: 30,
                 props: {
-                    icon: "icons:android", "fill": "green", "iconSize": 64, "label": "2:oda-button"
+                    label: "2:oda-button", icon: "icons:android", fill: "green", iconSize: 64
                 },
                 interfaces: {
                     $top: [{}],
                     $left: [{}],
                     $right: [{}, {}],
-                    $bottom: [{}, {link: 3, pin: 1}]
+                    $bottom: [{}, {block: 3, pin: 1}]
                 }
             }, {
                 is: 'oda-button', block: 3, x: 100, y: 360,
                 props: {
-                    label: '3:oda-button',
-                    iconSize: 30
+                    label: '3:oda-button', iconSize: 30
                 },
                 interfaces: {
                     $top: [

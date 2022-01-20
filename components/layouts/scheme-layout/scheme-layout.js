@@ -315,7 +315,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.block" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached() {
         this.links = undefined;
@@ -335,31 +335,31 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
         });
     },
     interface: [],
-    dragstart(e) {
-        e.dataTransfer.setData('pin', JSON.stringify({
-            block: this.item.id,
-            pin: e.target.item.id
-        }))
-    },
-    dragover(e) {
-        e.preventDefault();
-    },
-    drop(e) {
-        e.stopPropagation();
-        const pinFrom = JSON.parse(e.dataTransfer.getData('pin'));
-        const pinTo = {
-            block: e.target.domHost.item.id,
-            pin: e.target.item.id
-        };
-        if (pinFrom.block === pinTo.block)
-            return;
-        const pin = this.layout.findPin(pinFrom);
-        if (pin) {
-            if (!pin.item.links)
-                pin.item.links = [];
-            pin.item.links.push(pinTo);
-        }
-    },
+    // dragstart(e) {
+    //     e.dataTransfer.setData('pin', JSON.stringify({
+    //         block: this.item.id,
+    //         pin: e.target.item.id
+    //     }))
+    // },
+    // dragover(e) {
+    //     e.preventDefault();
+    // },
+    // drop(e) {
+    //     e.stopPropagation();
+    //     const pinFrom = JSON.parse(e.dataTransfer.getData('pin'));
+    //     const pinTo = {
+    //         block: e.target.domHost.item.id,
+    //         pin: e.target.item.id
+    //     };
+    //     if (pinFrom.block === pinTo.block)
+    //         return;
+    //     const pin = this.layout.findPin(pinFrom);
+    //     if (pin) {
+    //         if (!pin.item.links)
+    //             pin.item.links = [];
+    //         pin.item.links.push(pinTo);
+    //     }
+    // },
     listeners: {
         resize(e) {
             this.width = undefined;
@@ -402,9 +402,9 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
     },
     get link() {
         const zoom = this.zoom;
-        if (!this.inputs[this.align] || !this.pin?.link) return '';
+        if (!this.inputs[this.align] || !this.pin?.block) return '';
         const link = this.srcPins.find(i => {
-            return i.link === this.pin.link && i.pin === this.pin.pin;
+            return i.link === this.pin.block && i.pin === this.pin.pin;
         });
         const inputRect = this.getClientRect(this._grid);
         const center = inputRect.center;
@@ -509,7 +509,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         if (this.link) {
             await ODA.showConfirm('oda-dialog-message', { message: `Replace link?` })
         }
-        this.pin.link = pin.container.item.block;
+        this.pin.block = pin.container.item.block;
         this.pin.pin = pin.index;
         this.changed();
     },
@@ -547,7 +547,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         else {
             if (!this.inputs[this.align])
                 return 'var(--error-color)';
-            if (this.pin.link)
+            if (this.pin.block)
                 return 'var(--warning-color)';
         }
         return 'var(--success-color)';
