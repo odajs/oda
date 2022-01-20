@@ -198,7 +198,7 @@ document.body.append(newElement);
     После этого, в блоке наследника можно подключить скрип с кодом родительского компонента, указав его имя в фигурных скобках.
 
     ```text
-        ```javascript _run_edit_[my-component.js]_{base-component.js}
+        ```javascript _run_edit_[my-component.js]_{base-component.js}_h=60
         ODA({
             is: 'my-component',
             extends: 'base-component',
@@ -211,7 +211,7 @@ document.body.append(newElement);
 
     В результате этого в текущем блоке не придется повторно объявлять родительский компонент, усложняя тем самым код  примера с наследником.
 
-    ```javascript _run_edit_[my-component.js]_{base-component.js}
+    ```javascript _run_edit_[my-component.js]_{base-component.js}_h=60
     ODA({
         is: 'my-component',
         extends: 'base-component',
@@ -230,7 +230,7 @@ document.body.append(newElement);
         ODA({
             is: 'base-component-1',
             template: `
-                <div>Первый родитель</div>
+                <div>Родитель 1</div>
             `
         });
         ```
@@ -242,7 +242,7 @@ document.body.append(newElement);
     ODA({
         is: 'base-component-1',
         template: `
-            <div>Первый родитель</div>
+            <div>Родитель 1</div>
         `
     });
     ```
@@ -254,7 +254,7 @@ document.body.append(newElement);
         ODA({
             is: 'base-component-2',
             template: `
-                <div>Второй родитель</div>
+                <div>Родитель 2</div>
             `
         });
         ```
@@ -271,7 +271,7 @@ document.body.append(newElement);
     });
     ```
 
-    При объявлении наследника, подключим к его блоку скрипты двух предыдущих компонентов, указав их имена в фигурных скобках, разделяя их символом подчеркивания.
+    При объявлении наследника, подключим к его блоку скрипты двух предыдущих компонентов, указав их имена в фигурных скобках, отделяя их друг от друга символом подчеркивания.
 
     ```text
         ```javascript run_edit_[my-component.js]_{base-component-1.js_base-component-2.js}
@@ -287,7 +287,7 @@ document.body.append(newElement);
 
     В результате этого наследник приобретет все элементы своих родителей, несмотря на то, что в его примере родительские компоненты явно не задаются.
 
-    ```javascript run_edit_[my-component.js]_{base-component-1.js_base-component-2.js}
+    ```javascript run_edit_[my-component.js]_{base-component-1.js_base-component-2.js}_h=120_
     ODA({
         is: 'my-component',
         extends: 'base-component-1, base-component-2',
@@ -304,7 +304,7 @@ document.body.append(newElement);
     Например,
 
     ```text
-        ```javascript run_edit_[my-component.js]_h=60
+        ```javascript run_edit_[my-component.js]_h=10
         ODA({
             is: 'my-component',
             template: `
@@ -314,9 +314,9 @@ document.body.append(newElement);
         ```
     ```
 
-    Если высота результата будет превышать предусмотренную высоту окна для его вывода, то с правой стороны появится стандартная полоса прокрутки. С ее помощью можно будет последовательно просмотреть весь полученный результат.
+    Если действительная высота результата будет превышать указанное значение, то с правой стороны области вывода появится стандартная полоса прокрутки, с помощью которой можно будет просмотреть весь полученный результат.
 
-    ```javascript run_edit_[my-component.js]_h=60
+    ```javascript run_edit_[my-component.js]_h=15
     ODA({
         is: 'my-component',
         template: `
