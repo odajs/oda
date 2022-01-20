@@ -493,5 +493,15 @@
         "name": "lesson-98.md",
         "label": "Урок №98. SPA-роутинг",
         "status": "ok"
+    },
+    {
+        "name": "lesson-99.md",
+        "label": "Урок №99. Основные принципы Smart-кеширования",
+        "status": "ok"
+    },
+    {
+        "name": "lesson-105.md",
+        "label": "Урок №105. Формирование оглавления",
+        "status": "ok"
     }
 ]

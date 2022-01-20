@@ -110,7 +110,8 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     `,
     addTab() {
         const tabID = getUUID();
-        const action = { id: tabID, action: "addTab", props: { group: this.layout.id, tab: tabID } };
+        const blockID = getUUID();
+        const action = { id: tabID, action: "addTab", props: { group: this.layout.id, tab: tabID, block: blockID } };
         this.layout.addTab(action, this.layout);
         this.saveScript(this.layout, action);
     },
@@ -386,7 +387,7 @@ CLASS({ is: 'Layout',
         item.owner = tab;
     },
     async addTab(action, layout) {
-        const group = layout ? layout : await this.find(action.props.group);
+        const group = layout || await this.find(action.props.group);
         if (!group) return;
         const tab = new Layout({ id: action.id, label: `Tab ${group.items.length + 1}` }, group.key, group, group.root);
         tab.type = 'group';
@@ -394,12 +395,13 @@ CLASS({ is: 'Layout',
         group.$focused = tab;
         const block = new Layout({ label: `...` }, group.key, tab, group.root);
         block.isVirtual = true;
+        block.id = action.props.block;
         tab.items = [block];
         tab.order = tab._order = group.items.length
     },
     async removeTab(action, layout) {
         const group = layout ? this : await this.find(action.props.group);
-        const tab = layout ? layout : await this.find(action.props.tab);
+        const tab = layout || await this.find(action.props.tab);
         if (!group || !tab) return;
         tab.root.items.splice(tab.owner.items.indexOf(group), 0, ...tab.items.filter(i => {
             i.owner = i.root;

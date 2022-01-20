@@ -167,6 +167,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         oda-table-footer{
             border-color: white !important;
         }
+        .header{
+            @apply --shadow;
+            margin-bottom: 1px;
+            z-index: 1;
+        }
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
@@ -437,8 +442,17 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     get items() {
         if (!this.dataSet?.length) return [];
         const extract = (items, level, parent) => {
-            if (!this.groups.length && this.allowSort && this.sorts.length)
-                this._sort(items);
+            if (!this.groups.length && this.allowSort && this.sorts.length){
+                items.sort((a, b)=>{
+                    for(let col of this.sorts) {
+                        const va = a[col.name];
+                        const vb = b[col.name];
+                        if(va>vb) return col.$sort;
+                        if(va<vb) return -col.$sort;
+                    }
+                    return 0;
+                })
+            }
             return items.reduce((res, i) => {
                 i.$parent = parent;
                 i.$level = level;
