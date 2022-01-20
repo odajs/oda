@@ -1,6 +1,11 @@
 <meta charset="utf-8">
 <script type="module" src="/web/oda/oda.js"></script>
 <script type="module" src="./layout-designer.js"></script>
+<div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray;">
+    <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode" style="margin: 4px;">Design mode</button>
+    <button onclick="testLayoutDesigner.clearSettings()" style="margin: 4px;">Clear settings</button>
+    <button onclick="document.location.reload()" style="margin: 4px;">Reload page</button>
+</div>
 <oda-layout-designer keys="fields" id="testLayoutDesigner" design-mode></oda-layout-designer>
 <script type="module">
     testLayoutDesigner.data =

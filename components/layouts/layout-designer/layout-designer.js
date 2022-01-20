@@ -43,6 +43,12 @@ ODA({ is: 'oda-layout-designer',
         if (!Array.isArray(this.settings[saveKey]))
             this.settings[saveKey] = [];
         this.settings[saveKey].push(action);
+    },
+    clearSettings() {
+        const keys = this.keys;
+        this.settings = {};
+        this.keys = '...';
+        this.keys = keys; 
     }
 })
 
