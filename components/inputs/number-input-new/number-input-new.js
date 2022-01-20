@@ -33,16 +33,28 @@ ODA({is: 'oda-number',
     @mouseup="onMouseUp" @render="onRender" @mousedown="onMouseDown"
     :value="inputValue" :read-only>
     `,
-    precision: 3,
-    percent: false,
-    thousandSeparator: ' ',
-    decimalSeparator: '.',
-    selectionFromEnd: NaN,
-    value: 5476.547576,
+    props: {
+        useMinMax: false,
+        min: Number,
+        max: Number,
+        locale: 'ru-RU',        
+        precision: 3,
+        thousandSeparator: ' ',
+        decimalSeparator: '.',
+        // todo придумать имя свойства, отвечающее за процент/не процент
+        percent: false
+    },
     readOnly: false,
+    value: 5476.547576,
+    selectionFromEnd: NaN,
     get inputValue() {
-        const value = this.value * (this.percent ? 100 : 1)
-        let int = value.toLocaleString();
+        let value = this.value * (this.percent ? 100 : 1);
+        if (this.useMinMax) {
+            if (value < this.min) value = this.min;
+            else if (value > this.max) value = this.max;
+        }
+
+        let int = value.toLocaleString(this.locale);
         if (int.includes(','))
             int = int.slice(0, int.indexOf(','));
 
@@ -68,6 +80,20 @@ ODA({is: 'oda-number',
         const decimalPos = value.indexOf(this.decimalSeparator);
         //this.input = e.target;
         switch (char) {
+            case '-': {
+                e.preventDefault();
+                value = -(value.replace(/\s/g, ''));//value.replaceAll(this.thousandSeparator, '');
+                if (this.useMinMax && ((value < this.min) || (value > this.max))) return;
+                this.value = value;
+            } break;
+            case ',':
+            case '.':
+            case this.decimalSeparator: {
+                // "перескакивать" разделитель дробной части
+                e.preventDefault();
+                if ((start === end) && (value.substr(end, this.decimalSeparator.length) === this.decimalSeparator))
+                    e.target.selectionStart = (e.target.selectionEnd += 1);
+            } break;
             case 'Backspace': {
                 e.preventDefault();
                 if (start === end) {
@@ -290,16 +316,16 @@ ODA({is: 'oda-number',
                 }
             }
 
-            this.selectionFromEnd = length - end + offset;
-
             // изменение значения
             value = value.slice(0, start) + data + value.slice(end);
             if ((value.length - decimalPos - this.decimalSeparator.length) > (this.precision + 1)) {
                 // ограничение по точности
                 value = value.slice(0, decimalPos + this.precision + 1);
             }
-            value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
-            this.value = (+value / (this.percent ? 100 : 1));
+            value = +(value.replace(/\s/g, ''));//value.replaceAll(this.thousandSeparator, '');
+            if (this.useMinMax && ((value < this.min) || (value > this.max))) return;
+            this.selectionFromEnd = length - end + offset;
+            this.value = (value / (this.percent ? 100 : 1));
         }
         // switch (e.inputType) {
         //     case 'insertText': {
