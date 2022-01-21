@@ -1,0 +1,22 @@
+[
+    {
+        "name": "introduction.md",
+        "label": "Основные принципы",
+        "status": "check"
+   },
+    {
+        "name": "features.md",
+        "label": "Особенности рендеринга",
+        "status": "check"
+   },
+    {
+        "name": "additional.md",
+        "label": "Дополнительные сведения",
+        "status": "check"
+   },
+    {
+        "name": "brief.md",
+        "label": "Коротко о рендеринге",
+        "status": "check"
+   }
+]

@@ -40,9 +40,9 @@
         "status": "check"
    },
     {
-        "name": "smart-caching-old",
-        "label": "Smart-кэширование-устаревшее",
-        "status": "edit"
+        "name": "smart-rendering",
+        "label": "Smart-рендеринг",
+        "status": "check"
    },
    {
         "name": "my-first-component.md",
