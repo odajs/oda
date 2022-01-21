@@ -40,7 +40,7 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         onlySave: false,
     },
     get PropertyGridDataSet(){
-        return new PropertyGridDataSet(this.inspectedObject, this.expertMode);
+        return new PropertyGridDataSet(this.inspectedObject, this.expertMode, this.onlySave)
     },
     ready() {
         this.groups = [this.columns.find(c => c.name === 'category')];
@@ -51,18 +51,20 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
    _beforeExpand(node, force) {
         if (!force && node?.items?.length)
             return node?.items || [];
-        return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
+        return (node.items = new PropertyGridDataSet(node.value, this.expertMode, this.onlySave).items);
+        // return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
     }
 })
 CLASS({is: 'PropertyGridDataSet',
-    ctor(inspectedObject, expert){
+    ctor(inspectedObject, expert, onlySave){
         this.expert = expert;
+        this.onlySave = onlySave;
         this.inspectedObjects = Array.isArray(inspectedObject)?inspectedObject:[inspectedObject];
     },
     get items(){
         const items = []
         for (let obj of this.inspectedObjects || []){
-            const props = obj.props
+            const props = obj.props || {}
             const propsNames = Object.keys(props)
             let proto = obj
             while (proto) {
@@ -87,7 +89,7 @@ CLASS({is: 'PropertyGridDataSet',
                     const node = {name, category: proto.constructor.name, ro: typeof d.value === 'object'}
                     if (p) {
                         // исключение свойств помеченных как приватные
-                        if (p.private && !this.expert) continue
+                        if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
                         if (p.category) node.category = p.category
                         if (p.readOnly) node.ro = p.readOnly
                         let editor = p.editor
