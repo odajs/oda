@@ -45,6 +45,7 @@ ODA({ is: 'oda-layout-designer',
     },
     clearSettings() {
         const keys = this.keys;
+        console.log('..... keys - ', keys);
         this.settings = {};
         this.keys = '...';
         this.keys = keys; 
@@ -94,7 +95,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             [focused]{
                 @apply --content;
             }
-            label{
+            label, input {
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 font-weight: bold;
@@ -109,7 +110,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
            <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: center" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
-                <label class="flex">{{item?.label}}</label>
+                <label ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab=designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)">{{item?.label}}</label>
                 <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
         </div>
@@ -122,6 +123,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         return this.layout && this.designMode ? 'true' : 'false';
     },
     hoverItem: undefined,
+    editTab: undefined,
     addTab() {
         const tabID = getUUID();
         const blockID = getUUID();
@@ -164,6 +166,13 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         this.hoverItem = undefined;
         this.dragInfo.isMoveTab = false;
     },
+    tabRename(e, item) {
+        this.editTab = undefined;
+        if (this.designMode) {
+            const action = { action: "renameTab", label: item.label, props: { tab: item.id } };
+            this.saveScript(this.layout, action)
+        }
+    }
 })
 
 ODA({ is: 'oda-layout-designer-group-structure',
@@ -474,6 +483,11 @@ CLASS({ is: 'Layout',
         const tab = layout || await this.find(action.props.tab);
         if (!group || !tab) return;
         group.$focused = tab;
+    },
+    async renameTab(action, layout) {
+        const tab = layout || await this.find(action.props.tab);
+        if (!tab) return;
+        tab.label = action.label;
     },
     async hide(action, layout) {
         const item = layout || await this.find(action.props.target);
