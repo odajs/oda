@@ -9,7 +9,6 @@ ODA({ is: 'oda-layout-designer',
         </style>
         <oda-layout-designer-structure class="flex content" :layout style="flex:0;"></oda-layout-designer-structure>
         <div class="flex"></div>
-<!--        <div ~if="designMode" :slot="designMode?'left-panel':'?'">дерево</div>-->
     `,
     data: null,
     selection: [],
@@ -116,6 +115,9 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         </div>
         <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
     `,
+    // attached() {
+    //     this.layout.$focused = this.layout.items[0];
+    // },
     get draggable() {
         return this.layout && this.designMode ? 'true' : 'false';
     },
@@ -199,6 +201,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
+                display: {{layout?.isHide && !designMode ? 'none' : 'unset'}};
             }
             label{
                 font-size: small;
@@ -245,8 +248,18 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             }
         </style>
         <div ~if="designMode" ~is="designMode?'style':'div'">
-             :host{
+            :host{
                 outline: 1px dashed lightblue;
+            }
+        </div>
+        <div ~if="designMode && layout?.isVirtual" ~is="designMode?'style':'div'">
+            :host{
+                outline: 1px dashed blue;
+            }
+        </div>
+        <div ~if="designMode && layout?.isHide" ~is="designMode?'style':'div'">
+            :host{
+                outline: 1px dashed red;
             }
         </div>
         <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="onpointerdown" :draggable
@@ -285,7 +298,12 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                         this.layout.toGroup(action);
                         this.saveScript(this.layout, action)
                     }
-                }, { label: 'hide' }]
+                }, { label: 'hide / unhide', run: () => {
+                        this.layout.isHide = !this.layout.isHide;
+                        const action = { action: "hide", hide: this.layout.isHide, props: { target: this.layout.id } };
+                        this.saveScript(this.layout, action)
+                    }
+                }]
             }, { title: e.target.layout?.label });
             res.focusedItem.run.call(this)
         },
@@ -431,7 +449,7 @@ CLASS({ is: 'Layout',
         tab.type = 'group';
         group.items.push(tab)
         group.$focused = tab;
-        const block = new Layout({ label: `...` }, group.key, tab, group.root);
+        const block = new Layout({ label: ` ` }, group.key, tab, group.root);
         block.isVirtual = true;
         block.id = action.props.block;
         tab.items = [block];
@@ -453,9 +471,14 @@ CLASS({ is: 'Layout',
     },
     async selectTab(action, layout) {
         const group = layout ? this : await this.find(action.props.group);
-        const tab = layout ? layout : await this.find(action.props.tab);
+        const tab = layout || await this.find(action.props.tab);
         if (!group || !tab) return;
         group.$focused = tab;
+    },
+    async hide(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        item.isHide = action.hide;
     },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
