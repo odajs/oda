@@ -478,3 +478,16 @@ document.body.append(newElement);
 
     });
     ```
+
+    ```javascript run_edit_[my-component.js]_console_info
+    ODA({
+        is: 'my-component',
+        template: `
+            <div>Чтобы увидеть консоль, нажмите на кнопку в правом верхнем углу редактора.</div>
+        `,
+        ready() {
+            console.log('Вывод в консоль');
+        }
+
+    });
+    ```
