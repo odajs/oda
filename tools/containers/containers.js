@@ -42,6 +42,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.style.opacity = 0;
             document.body.appendChild(host);
             setTimeout(() => {
+                ctrl.setPDP();
                 host.style.opacity = 1;
                 let timeOutId, intervalId;
                 let f = (force) => {

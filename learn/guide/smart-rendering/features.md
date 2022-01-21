@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=60_
+```javascript_run_line_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -33,7 +33,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <div>Счетчик из метода: {{methodCount()}}</div>
+        <div>Значение счетчика: {{methodCount()}}</div>
     `,
     props: {
         count: 0,
@@ -44,7 +44,7 @@ ODA({
 });
 ```
 
-В примере видно, что изменение свойства **count** в методе **methodCount** приводит к непрерывному рендерингу компонента.
+В примере значение счетчика непрерывно увеличивается, т.к. при рендеринге происходит вызов метода **methodCount** и инкремент свойства **count**, что в свою очередь вызывает рендеринг компонента, и процесс зацикливается.
 
 ```info_md
 Изменение состояния одного независимого компонента не влияет на рендеринг другого независимого компонента.
@@ -52,7 +52,7 @@ ODA({
 
 Например:
 
-```html run_line_edit_h=46_
+```html run_line_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -67,7 +67,7 @@ ODA({
             ODA({
                 is: 'my-time',
                 template: `
-                    <div>Время из метода: {{methodTime()}}</div>
+                    <div>Время: {{methodTime()}}</div>
                 `,
                 methodTime() {
                     var d = new Date();
@@ -93,7 +93,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=46_
+```javascript_run_line_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -105,7 +105,7 @@ ODA({
 ODA({
     is: 'my-time',
     template: `
-        <div>Время из метода: {{methodTime()}}</div>
+        <div>Время: {{methodTime()}}</div>
     `,
     methodTime() {
         var d = new Date();
@@ -128,12 +128,12 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=46_
+```javascript_run_line_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
         <my-change></my-change>
-        <div>Время из метода: {{methodTime()}}</div>
+        <div>Время: {{methodTime()}}</div>
     `,
     methodTime() {
         var d = new Date();
@@ -156,12 +156,12 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=46_
+```javascript_run_line_edit_[my-component.js]
 ODA({
     is: 'my-component',
     extends: 'my-change',
     template: `
-        <div>Время из метода: {{methodTime()}}</div>
+        <div>Время: {{methodTime()}}</div>
     `,
     methodTime() {
         var d = new Date();
@@ -181,5 +181,5 @@ ODA({
 В примере изменение текста в строке ввода в родительском компоненте **my-change** изменяет состояние всего компонента **my-component**, поэтому время на странице обновляется.
 
 ```info_md
-Рендеринг запускается одновременно для всех компонентов, объединенных в одном компоненте, независимо от метода объединения.
+Обратите внимание, что рендеринг запускается одновременно для всех компонентов, объединенных в одном компоненте, независимо от метода объединения.
 ```

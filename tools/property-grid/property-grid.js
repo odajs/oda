@@ -63,7 +63,8 @@ CLASS({is: 'PropertyGridDataSet',
     },
     get items(){
         const items = []
-        for (let obj of this.inspectedObjects || []){
+        for (let obj of this.inspectedObjects || []) {
+            if (!obj) continue
             const props = obj.props || {}
             const propsNames = Object.keys(props)
             let proto = obj
