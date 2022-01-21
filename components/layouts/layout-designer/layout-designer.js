@@ -43,9 +43,8 @@ ODA({ is: 'oda-layout-designer',
             this.settings[saveKey] = [];
         this.settings[saveKey].push(action);
     },
-    clearSettings() {
+    resetSettings() {
         const keys = this.keys;
-        console.log('..... keys - ', keys);
         this.settings = {};
         this.keys = '...';
         this.keys = keys; 
