@@ -328,8 +328,11 @@ rows:{
                 text-overflow: ellipsis;
             }
         </style>
-        <span class="flex" ~for="col in columns" ~is="getTemplate(col)" :col ~style="getStyle(col)">{{row?.[col?.name]}}</span>
+        <span class="flex" ~for="col in columns" ~is="getTemplate(col)" :col ~style="getStyle(col)" @tap="onCellTap">{{row?.[col?.name]}}</span>
     `,
+        onCellTap(e){
+
+        },
         get columns(){
             return this.cellCols;
         },
@@ -477,7 +480,7 @@ cells: {
                 border: none;
             }
         </style>
-        <div class="flex vertical">
+        <div class="flex vertical" style="cursor: pointer" @tap.stop="onTapSort">
             <div class="flex horizontal">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-grid-cell-expand ~if="col?.items?.length" class="no-flex" :row="col"></oda-grid-cell-expand>
@@ -626,12 +629,10 @@ cells: {
                 } break;
             }
         },
-        _sort(e) {
-            e.stopPropagation();
-            if (this.allowSort) {
-                const sort = this.col.$sort;
-                this.col.$sort = sort === 1 ? -1 : sort === -1 ? 0 : 1;
-            }
+        onTapSort(e) {
+            if (!this.allowSort) return
+            const sort = (this.col.$sort ||) + 1;
+            this.col.$sort = sort>1?-1:sort;
         },
         async showDD(e) {
             const dataSet = this.items.reduce((res, i) => {

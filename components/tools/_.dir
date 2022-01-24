@@ -3,7 +3,7 @@
     "name": "calculator",
     "label": "Калькулятор",
     "content": {
-      "abstract": "\n~~~md\n<b>Components:</b> button, checkbox, icon, icon-ext, toggle\n~~~",
+      "abstract": "\n~~~md\n<b>Components:</b> calculator\n~~~",
       "link": "index.html"
     }
   }
