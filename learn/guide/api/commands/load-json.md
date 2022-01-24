@@ -12,7 +12,7 @@ ODA.loadJSON(url);
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=100_
+```javascript run_edit_[my-component.js]_h=100_
 import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
