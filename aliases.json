@@ -32,6 +32,8 @@
     "@tools/dropdown": "tools/containers/dropdown/dropdown.js",
     "@tools/touch-router": "tools/touch-router/touch-router.js",
     "@tools/localization": "tools/localization/localization.js",
+    "@tools/matrix": "tools/utils/matrix/matrix.js",
+    "@tools/activation": "tools/utils/activation/activation.js",
 
     "@lib/item-menu": "../core/item/lib/item-menu/item-menu.js",
     "@lib/item-tree": "../core/item/lib/item-tree/item-tree.js",
