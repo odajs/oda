@@ -74,7 +74,7 @@ ODA({ is: 'oda-layout-designer-structure',
     iconSize: 32,
     observers: [
         async function execute(layout, settings) {
-            if (layout && settings) {
+            if (layout) {
                 layout.saveKey = layout.id || layout.name;
                 if (settings?.[layout.saveKey])
                     await this.layout.execute(settings[layout.saveKey]);
@@ -394,7 +394,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
 CLASS({ is: 'Layout',
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
-        this.saveKey = data.saveKey || data.$class?.id || undefined;
+        // this.saveKey = data.saveKey || data.$class?.id || undefined;
         this.key = key;
         this.owner = owner;
         this.order = this._order = order || 0;

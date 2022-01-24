@@ -279,6 +279,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         }
         console.dir(e.target)
     },
+    contextItem: Object, // test
     get container() {
         return this;
     },
