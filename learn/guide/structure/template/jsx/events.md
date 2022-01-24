@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -33,7 +33,7 @@ ODA({
 
 В списке его параметров можно указать ссылку на объект, используя которую можно получить дополнительную информации о событии.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -59,7 +59,7 @@ ODA({
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -94,7 +94,7 @@ ODA({
 
 Из-за этого узнать часть информации об исходном событии явно не удастся. Например, в объекте события нельзя непосредственно узнать координаты щелчка мыши: **clientX** и **clientY**, левая или правая кнопка была нажата и т.д.
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -121,7 +121,7 @@ ODA({
 
 Получить доступ к нему можно через второй параметр **$detail** метода обработчика события, которому он передается автоматически.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -151,7 +151,7 @@ ODA({
 
 Свойство **sourceEvent** есть у самого события, и обратиться к нему явно можно через сам указатель на объект.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -178,7 +178,7 @@ ODA({
 
 При переходе через теневое дерево свойство **sourceEvent** тоже изменяется.
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -214,7 +214,7 @@ ODA({
 
 Модификатор **stop** останавливает дальнейшее всплытие, фактически вызывая для события метод **stopPropagation**.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -241,7 +241,7 @@ ODA({
 
 Вместо метода можно указывать inline-выражение. Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

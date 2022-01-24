@@ -10,7 +10,7 @@
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

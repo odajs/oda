@@ -8,7 +8,7 @@
 
 Пример 1
 
-```javascript _line_edit_[my-input-component.js]
+```javascript _edit_[my-input-component.js]
 ODA({
     is: 'my-input-component',
     template: `
@@ -33,7 +33,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -71,7 +71,7 @@ ODA({
 
 Пример 2
 
-```javascript _run_line_edit_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-derived-component',
     extends: 'my-input-component',

@@ -18,7 +18,7 @@ debounce (key, handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -49,7 +49,7 @@ debounce (key, handler, delay = 0)
 
 Если в качестве задержки указать значение 0 (ноль), то обработка события произойдет не мгновенно, а только тогда, когда браузер обновит страницу в следующий раз, так как метод **debounce** в этом случае выполняет указанную функцию или метод в контексте метода **requestAnimationFrame**, который вызывается браузером примерно 60 раз в секунду при стандартной частоте обновления кадров 60 fps. При большей загрузке браузера эта частота может уменьшаться.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `

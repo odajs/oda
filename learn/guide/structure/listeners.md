@@ -6,7 +6,7 @@
 
 Пример 1:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -30,7 +30,7 @@ ODA({
 
 Пример 2:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ ODA({
 
 Пример 3:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -86,7 +86,7 @@ ODA({
 
 Пример 4:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -113,7 +113,7 @@ ODA({
 
 Пример 5:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -142,7 +142,7 @@ ODA({
 
 Пример 6:
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -165,7 +165,7 @@ ODA({
 
 Пример 7:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -189,7 +189,7 @@ ODA({
 
 Пример 8:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -236,6 +236,6 @@ ODA({
 В этом примере нажатия на кнопки мыши изначально не будут обрабатываться. После добавления к компоненту слушателей, обработка событий появится. А после удаления слушателей, реакция на нажатия кнопок мыши вновь исчезнет.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/GxRfh9Ayuh8?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/GxRfh9Ayuh8?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -16,7 +16,7 @@
 
 Рассмотрим пример:
 
-```javascript_run_line_edit_[my-component.js]_h=60_
+```javascript_run_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
@@ -50,7 +50,7 @@ ODA({
 
 Добавим в геттер **getterTime** обращение к свойству **change**:
 
-```javascript_run_line_edit_[my-component.js]_h=60_
+```javascript_run_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
@@ -81,7 +81,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]_h=40_
+```javascript_run_edit_[my-component.js]_h=40_
 ODA({
     is: 'my-component',
     template: `

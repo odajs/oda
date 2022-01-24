@@ -18,7 +18,7 @@ ODA.console.«модификатор»(«список параметров»)
 
 Например, при использовании модификатора **log** в консоль будут отправляться сообщения обычного типа.
 
-```javascript run_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -53,7 +53,7 @@ ODA.console.«модификатор»(«список параметров»)
 
 Например,
 
-```javascript run_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -79,7 +79,7 @@ ODA.console.«модификатор»(«список параметров»)
 
 Например,
 
-```javascript run_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

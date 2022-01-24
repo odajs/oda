@@ -6,7 +6,7 @@
 
 Пример 1
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -30,7 +30,7 @@ ODA({
 
 Пример 2
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -49,7 +49,7 @@ ODA({
 
 Пример 3
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -66,7 +66,7 @@ ODA({
 
 Пример 4
 
-```javascript _run_line_edit_[my-component.js]_h=50_
+```javascript _run_edit_[my-component.js]_h=50_
 ODA({
     is: 'my-component',
     template: `
@@ -85,7 +85,7 @@ ODA({
 
 Пример 5
 
-```javascript _run_line_edit_[my-component.js]_h=50_
+```javascript _run_edit_[my-component.js]_h=50_
 ODA({
     is: 'my-component',
     template: `
@@ -101,6 +101,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/VRX8CG8Wa3E?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/VRX8CG8Wa3E?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

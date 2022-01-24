@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_[my-button.js]
+```javascript _run_edit_[my-button.js]
 ODA({
     is: 'my-button',
     template: `
@@ -50,7 +50,7 @@ ODA({
 
 Информацию о появившемся атрибуте можно использовать для стилизации вложенного компонента. Например, во внешнем компоненте можно задать CSS-правила с селектором по атрибуту вложенного компонента.
 
-```javascript _run_line_edit_console_[my-component.js]_{my-button.js}
+```javascript _run_edit_console_[my-component.js]_{my-button.js}
 ODA({
     is: 'my-component',
     template: `
@@ -77,7 +77,7 @@ CSS-объявления применяются только к самому к�
 
 Для ненаследуемых CSS-объявлений стилизацию внутренних элементов можно организовать с помощью псевдокласса **:host**, связанного с хостом самого компонента.
 
-```javascript _run_line_edit_console_[my-button.js]
+```javascript _run_edit_console_[my-button.js]
 ODA({
     is: 'my-button',
     template: `
@@ -114,6 +114,6 @@ ODA({
 В этом пример стиль задается внутри теневого дерева компонента с помощью псевдокласса **:host** с указанием комбинатора дочерних элементов **>** на элемент **button**. В результате этого кнопка будет изменять стиль отображения при каждом нажатии на нее.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/vM9AMqLOfyc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/vM9AMqLOfyc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

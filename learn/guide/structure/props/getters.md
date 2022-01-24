@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -31,7 +31,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -77,7 +77,7 @@ ODA({
 
 По этой причине для формирования возвращаемого значения в геттере можно обращаться только к другим свойствам, а не к своему собственному.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -98,7 +98,7 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/C08B6QTjIQc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/C08B6QTjIQc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

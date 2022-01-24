@@ -1,6 +1,6 @@
 Директива **~show** используется для отображения HTML-элемента по условию.
 
-```javascript_run_line_edit_console_[my-component.js]
+```javascript_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -29,6 +29,6 @@ HTML-элемент, в котором указана директива **~show
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/V13DE79qlB0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/V13DE79qlB0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

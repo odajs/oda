@@ -4,7 +4,7 @@
 В этой директиве обязательно должно быть указано как имя самого массива, так и ссылка на его текущий элемент.
 ```
 Пример 1:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -23,7 +23,7 @@ ODA({
 В расширенной форме записи, помимо значения текущего элемента массива, можно указать еще и ссылку на его индекс.
 
 Пример 2:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -44,7 +44,7 @@ ODA({
 ```
 
 Пример 3:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -63,7 +63,7 @@ ODA({
 Кроме этого, существует упрощенная форма записи директивы **~for**, в которой можно не указывать ссылки на элемент массива и его индекс.
 
 Пример 4:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -84,7 +84,7 @@ ODA({
 ```
 
 Пример 5:
-```javascript _error_run_line_edit_[my-component.js]
+```javascript _error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -109,7 +109,7 @@ ODA({
 С помощью директивы **~for** можно вывести последовательность целых чисел, начиная с 1, если значение, указанное в JS-выражении, можно привести к целому типу.
 
 Пример 6:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -124,7 +124,7 @@ ODA({
 Вычисленное значение директивы в этом случае определяет последнее число в генерируемой последовательности. В данном примере это значение равно 10.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/5grvyQc4-bI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/5grvyQc4-bI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

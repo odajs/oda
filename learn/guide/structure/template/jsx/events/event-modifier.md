@@ -11,7 +11,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -36,7 +36,7 @@ ODA({
 
 Однако если у события указать модификатор **stop**, то при каждом щелчке мыши счетчик будет увеличиваться на единицу только один раз из-за того, что событие всплывать больше не будет, и соответствующий слушатель никогда больше не выполнится.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ ODA({
 
 Например, если этот модификатор указать у элемента **checkbox**, то обработка события щелчка мыши по умолчанию на нем будет отменена. В результате этого галочка устанавливаться и убираться автоматически у него уже не будет.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -86,7 +86,7 @@ ODA({
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -110,6 +110,6 @@ ODA({
 В этом случае будут отменены как выполнение события по умолчанию, так и процесс всплытия исходного события. Т.е. счетчик будет увеличиваться на единицу только один раз, а галочка появляться не будет.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/c05qvFibTBM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/c05qvFibTBM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

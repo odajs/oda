@@ -7,7 +7,7 @@
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -25,7 +25,7 @@ ODA({
 
 Если в директиве **@** указано inline-выражение, то событию будет автоматически назначен обработчик, в теле которого и будет выполняться это выражение.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -40,7 +40,7 @@ ODA({
 
 Метод компонента можно вызвать в контексте inline-выражения. Для этого будет достаточно записать после его имени круглые скобки с параметрами или без.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ ODA({
 
 Если в inline-выражении у метода не указать круглые скобки, то этот метод вызываться не будет. Вместо этого будет возвращаться значение свойства компонента, в котором это метод был объявлен.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -80,7 +80,7 @@ ODA({
 
 В inline-выражениях и в интерполяционной подстановке **{{}}** ключевое слово **this** можно не указывать. Оно подставляется автоматически ко всем элементам компонента с помощью инструкции **with**. Тем не менее, если указать **this** явно, то никакой ошибки не будет.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -101,7 +101,7 @@ ODA({
 
 Кроме того, имя метода с ключевым словом **this** и без указания круглых скобок будет восприниматься как inline-выражение, т.е. в данном случае метод не будет вызываться в качестве обработчика события.
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -120,7 +120,7 @@ ODA({
 
 Если в директиве **@** убрать указатель **this**, то компонент начнет работать так, как это ожидалось, т.е. метод **_onTap** будет вызываться как обработчик соответствующего события.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -138,6 +138,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/bUmIQhC8AvQ?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/bUmIQhC8AvQ?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -4,7 +4,7 @@
 
 Пример 1.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -22,7 +22,7 @@ ODA({
 
 Пример 2.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -45,7 +45,7 @@ ODA({
 
 Пример 3.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -58,7 +58,7 @@ ODA({
 
 Пример 4.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -71,7 +71,7 @@ ODA({
 
 Пример 5:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -86,7 +86,7 @@ ODA({
 
 Пример 6.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -99,7 +99,7 @@ ODA({
 
 Пример 7.
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -112,7 +112,7 @@ ODA({
 
 Пример 8.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -132,7 +132,7 @@ ODA({
 
 Пример 9.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -157,7 +157,7 @@ ODA({
 
 Пример 10.
 
-```javascript _error_run_line_edit_[my-component.js]
+```javascript _error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -180,7 +180,7 @@ ODA({
 
 Пример 11.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -201,7 +201,7 @@ ODA({
 
 Пример 12.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -224,7 +224,7 @@ ODA({
 
 Пример 11.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -247,7 +247,7 @@ ODA({
 
 Пример 12.
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -270,7 +270,7 @@ ODA({
 
 Пример 13.
 
-```javascript _run_line_edit_error_[my-component.js]
+```javascript _run_edit_error_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -298,7 +298,7 @@ ODA({
 
 Пример 14.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -319,7 +319,7 @@ ODA({
 
 Пример 15.
 
- ```javascript _run_line_edit_[my-component.js]
+ ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

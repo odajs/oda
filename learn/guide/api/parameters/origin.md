@@ -14,7 +14,7 @@
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',

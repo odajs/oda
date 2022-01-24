@@ -67,11 +67,15 @@
 
 ![JavaScript код компонента] (https://odajs.org/learn/images/components/component3.png "JavaScript код компонента")
 
-Имя этого файла принято задавать по имени компонента без приставки «**oda**». Например, для компонента «**oda-calculator**» его файл должен называться «**calculator.js**».
+Имя этого файла принято задавать по имени компонента без приставки «**oda**».
+
+Например, для компонента «**oda-calculator**» его файл должен называться «**calculator.js**».
 
 ![JavaScript файл компонента] (https://odajs.org/learn/images/components/component2.png "JavaScript файл компонента")
 
-Существует негласное соглашение, что папка компонента должна иметь такое же имя, что и его файл, но без расширения «**.js**».
+Существует негласное соглашение, что папка компонента должна иметь такое же имя, как и его файл, но без расширения «**.js**».
+
+Например, для компонента «**oda-calculator**» его папку желательно назвать «**calculator**».
 
 ![JavaScript файл компонента] (https://odajs.org/learn/images/components/component.png "JavaScript файл компонента")
 
@@ -109,7 +113,7 @@
 
 ![JavaScript код компонента] (https://odajs.org/learn/images/components/component3.png "JavaScript код компонента")
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>

@@ -15,7 +15,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -31,7 +31,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -47,7 +47,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -69,7 +69,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -91,7 +91,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -135,7 +135,7 @@ ODA({
 
 Например,
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -157,6 +157,6 @@ ODA({
 Каждая из существующих групп глобальных стилей со всеми предусмотренными в ней CSS-свойствами и миксинами будет подробно рассмотрена в соответствующем разделе.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/V1qVR8Fmdns?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/V1qVR8Fmdns?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

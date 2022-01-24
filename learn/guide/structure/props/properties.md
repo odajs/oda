@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -22,7 +22,7 @@ ODA({
 
 Если у компонента необходимо объявить сразу несколько свойств, то они должны быть перечислены в разделе **props** через запятую.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -40,7 +40,7 @@ ODA({
 
 Если имя свойства не является валидным [JS-идентификатором](https://ecma-international.org/ecma-262/6.0/#sec-object-initializer), то его необходимо записывать в одинарных или двойных кавычках.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -60,6 +60,6 @@ this.myProp;
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/S87eQFzFefU?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/S87eQFzFefU?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -6,7 +6,7 @@
 
 Пример 1:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -34,7 +34,7 @@ ODA({
 Регистр символов для алфавитных клавиш значения не имеют. Строчные и прописные буквы на любой раскладке клавиатуры будут восприниматься одинаково.
 
 Пример 2:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -62,7 +62,7 @@ ODA({
 Алфавитные клавиши нельзя задать буквами с использованием любой локализации. В следующем примере нажатые клавиши "a/ф" и "b/и"  сработают только при условии, что раскладка клавиатуры переключена на кириллицу.
 
 Пример 3:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -90,7 +90,7 @@ ODA({
 Если нескольким клавишам необходимо одновременно назначить один и тот же обработчик, то их имена нужно записать в виде строкового литерала через запятую.
 
 Пример 4:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -114,7 +114,7 @@ ODA({
 Модификаторы указываются перед или после названия клавиши через знак **плюс**. Имя свойства в этом случае обязательно должно записываться в одинарных или двойных кавычках.
 
 Пример 5:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -146,7 +146,7 @@ ODA({
 ```
 
 Пример 6:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -169,7 +169,7 @@ ODA({
 Кроме этого, вместо названия клавиш можно использовать их [коды](https://www.w3.org/TR/uievents-code/#keyboard-key-codes "UI Events KeyboardEvent code Values"), которые уже не зависят от используемых устройств и раскладок клавиатуры.
 
 Пример 7:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -192,7 +192,7 @@ ODA({
 В упрощенной форме записи вместо свойства у объекта **keyBindings** можно указать только метод обработчика события. В этом случае его имя должно совпадать с именем клавиши или ее кодом.
 
 Пример 8:
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

@@ -2,7 +2,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-input.js]
+```javascript _run_edit_console_[my-input.js]
  ODA({
     is: 'my-input',
     template: `
@@ -20,7 +20,7 @@
 
 Любое изменение содержимого элемента **input** этого компонента будет передаваться свойству **value**. Так как у этого свойства задан модификатор **notify** со значением **true**, то при каждом изменение значения этого свойства автоматически будет генерироваться событие с именем **value-changed**. Это событие можно будет обработать во внешнем компоненте, узнав, что во вложенном компоненте произошли какие-то изменения.
 
-```javascript _run_line_edit_console_[full-name.js]_{my-input.js}
+```javascript _run_edit_console_[full-name.js]_{my-input.js}
 ODA({
     is: 'full-name',
     template: `
@@ -31,7 +31,7 @@ ODA({
     props: {
         fullName: "Иванов Иван"
     },
-    onChanged() {  
+    onChanged() {
         this.fullName = this.$refs.lastName.value + " " + this.$refs.firstName.value;
     }
 });
@@ -41,7 +41,7 @@ ODA({
 
 Узнать какие изменения произошли можно с помощью параметра события **detail**. В этом случае у обработчика необходимо указать входящий параметр для самого объекта события.
 
-```javascript _run_line_edit_console_[full-name.js]_{my-input.js}
+```javascript _run_edit_console_[full-name.js]_{my-input.js}
 ODA({
     is: 'full-name',
     template: `
@@ -63,7 +63,7 @@ ODA({
 
 Внутри самого компонента событие **\*\*-changed** можно отловить в его слушателях.
 
-```javascript _run_line_edit_console_[my-color-input.js]
+```javascript _run_edit_console_[my-color-input.js]
  ODA({
     is: 'my-color-input',
     template: `
@@ -103,7 +103,7 @@ ODA({
 
 Событие **«имя-свойства-changed»** генерируется только тогда, когда задан его обработчик или слушатель внутри данного компонента. После обработки события его дальнейшее всплытие останавливается, поэтому будет невозможно продолжить его обработку во внешнем компоненте.
 
-```javascript _run_line_edit_console_[color-name.js]_{my-color-input.js}
+```javascript _run_edit_console_[color-name.js]_{my-color-input.js}
 ODA({
     is: 'color-name',
     template: `

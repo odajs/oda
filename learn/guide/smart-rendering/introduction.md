@@ -8,7 +8,7 @@ Smart-рендеринг основан на принципе, что если �
 
 Рассмотрим пример, отображающий текущее время на странице:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -37,7 +37,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

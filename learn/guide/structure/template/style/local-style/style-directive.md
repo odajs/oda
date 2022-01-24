@@ -4,7 +4,7 @@
 
 Указанное в ней значение автоматически добавляется в атрибут **style** соответствующего HTML-элемента компонента.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -18,7 +18,7 @@ ODA({
 
 Директива **~style** поддерживает механизм реактивности. В результате этого любое изменение ее значения будет автоматически приводить к изменению значения атрибута **style** того HTML-элемента, в котором она была указана.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -36,6 +36,6 @@ ODA({
 В результате этого стиль отображения соответствующего элемента будет изменяться динамически.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/Uku9FfTUVdk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/Uku9FfTUVdk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

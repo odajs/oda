@@ -4,7 +4,7 @@
 
 Например, для того, чтобы использовать компонент **oda-icon** необходимо подключить его модуль **icon.js** , который располагается в папке **/components/buttons/icon/**.
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
@@ -25,7 +25,7 @@ ODA({
 
 Для устранения этих недостатков в прототипах ODA-компонентов можно использовать специальный атрибут **imports**, в котором указываются полные пути к файлам модулей или условные имена компонентов:
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     imports: '/components/buttons/icon/icon.js',
@@ -40,7 +40,7 @@ ODA({
 
 Чтобы отказаться от привязки к полному пути к файлу модуля в атрибуте **imports** можно указать условное имя компонента:
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     imports: '@oda/icon',
@@ -77,7 +77,7 @@ imports: '@oda/icon, @oda/checkbox'
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     imports: '@oda/icon, @oda/checkbox',
@@ -96,7 +96,7 @@ imports: ['@oda/icon', '@oda/checkbox']
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     imports: ['@oda/icon','@oda/checkbox'],
@@ -111,7 +111,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=60
+```javascript _run_edit_[my-component.js]_h=60
 ODA({
     is: 'my-component',
     imports: '@oda/icon, /components/buttons/checkbox/checkbox.js',
@@ -152,7 +152,7 @@ document.body.append( document.createTextNode("- Загружен модуль 2
 
 В основном тексте программы объявим компонент **main-component**, который будет создавать компонент **demo-component** только при нажатии на кнопку **Добавить компонент**.
 
-```javascript _run_line_edit_[main-component.js]_h=60_
+```javascript _run_edit_[main-component.js]_h=60_
 ODA({
     is: 'main-component',
     imports: '/learn/guide/structure/module1.js',

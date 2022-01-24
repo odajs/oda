@@ -14,7 +14,7 @@ ODA.showModal(component, props = {}, hostProps = {})
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/icon/icon.js';
  ODA({
     is: 'my-component',
@@ -37,7 +37,7 @@ import '/components/buttons/icon/icon.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -54,7 +54,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -80,7 +80,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',

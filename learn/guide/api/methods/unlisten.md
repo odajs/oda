@@ -16,7 +16,7 @@ unlisten(event='', callback, props = {target: this, useCapture: false})
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -57,7 +57,7 @@ unlisten(event='', callback, props = {target: this, useCapture: false})
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -90,7 +90,7 @@ unlisten(event='', callback, props = {target: this, useCapture: false})
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -121,7 +121,7 @@ unlisten(event='', callback, props = {target: this, useCapture: false})
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -155,7 +155,7 @@ unlisten(event='', callback, props = {target: this, useCapture: false})
 
 Например,
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -188,6 +188,6 @@ ODA({
 В данном примере слушатель события **click** не будет удален, так как в методе **listen** обработчик был зарегистрирован для фазы погружения (**useCapture: true**), а его пытаются удалить для фазы всплытия, так как в методе **unlisten** значение **useCapture** вообще не было указано. В этом случае оно принимается равным значению **false**.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/rKUpOHvGhls?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/rKUpOHvGhls?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

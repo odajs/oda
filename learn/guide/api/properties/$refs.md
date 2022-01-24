@@ -4,7 +4,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -24,7 +24,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -46,7 +46,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -68,7 +68,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -88,7 +88,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -108,7 +108,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -128,7 +128,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -148,7 +148,7 @@
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -170,6 +170,6 @@
 Из двух вариантов только последний является правильным. Поэтому всегда используйте геттер **$refs** для доступа к элементам компонента при обращении к ним по идентификатору.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/0bs64UjGgIM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/0bs64UjGgIM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

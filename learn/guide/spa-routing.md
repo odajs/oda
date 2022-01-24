@@ -16,7 +16,7 @@ import '/tools/router/router.js';
 
 Например,
 
-```javascript run_edit_loadoda_[my-component.js]_h=190
+```javascript run_edit_[my-component.js]_h=190_
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -88,7 +88,7 @@ create(rule, callback);
 
 Например,
 
-```javascript run_edit_loadoda_[my-component.js]_h=190
+```javascript run_edit_[my-component.js]_h=190_
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',
@@ -170,7 +170,7 @@ ODA({
 
 Например,
 
-```javascript run_edit_loadoda_[my-component.js]_h=200
+```javascript run_edit_[my-component.js]_h=200_
 import '/tools/router/router.js';
 ODA({
     is: 'my-component',

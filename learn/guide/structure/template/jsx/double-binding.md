@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -26,7 +26,7 @@ ODA({
 Если имена взаимосвязанных свойств совпадают, то знак **=** и второе свойство, идущее после него, в целях упрощения можно не указывать.
 ```
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -48,7 +48,7 @@ ODA({
 
 Например:
 
-```javascript _line_edit_[second-component.js]
+```javascript _edit_[second-component.js]
 ODA({
     is: 'second-component',
     template: `
@@ -71,7 +71,7 @@ ODA({
 Для того чтобы директива двойного связывания работала, необходимо разрешить вложенному компоненту передачу внешнему компоненту сообщения об изменении значения его свойства. Для этого у его свойства необходимо задать модификатор **notify** со значением **true**. У внешнего компонента этот модификатор указывать не нужно. Все изменения будут передаваться во вложенный компонент автоматически, как при обычном связывании.
 ```
 
-```javascript _error_run_line_edit_[first-component.js]_{second-component.js}
+```javascript _error_run_edit_[first-component.js]_{second-component.js}
 ODA({
     is: 'first-component',
     template: `

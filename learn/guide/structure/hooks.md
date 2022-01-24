@@ -15,7 +15,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -45,7 +45,7 @@ ODA({
 
 В конструкторе этого класса назначаются свойства компонента на основе информации о них из раздела **props** его прототипа, осуществляется регистрация их реактивности с помощью метода **makeReactive** и создается теневое дерево методом **attachShadow**, который возвращает указатель на его корень в закрытом режиме. После этого вызывается хук **created**, если он предусмотрен в компоненте.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -69,7 +69,7 @@ ODA({
 
 Изначальное теневое дерево является пустым.
 
-```javascript_run_line_edit_console_[my-component.js]
+```javascript_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

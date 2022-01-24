@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -24,7 +24,7 @@
 
 Этот список будет отображаться в инспекторе свойств компонента **property-grid** при нажатии на кнопку со стрелкой вниз с правой стороны от значения соответствующего свойства.
 
-```javascript _run_line_edit_console_loadoda_[my-view.js]_{my-component.js}_h=170_
+```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=170_
 import 'https://odajs.org/tools/tester/tester.js';
  ODA({
     is: 'my-view',
@@ -43,7 +43,7 @@ import 'https://odajs.org/tools/tester/tester.js';
 Например, если записать значения **start** или **end** в ручном режиме, то текст в элементе **div** будет выравниваться по левому или по правому краю в зависимости от его направления.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/NRh19dpFaio?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/NRh19dpFaio?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

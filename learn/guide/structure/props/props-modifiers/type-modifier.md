@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -33,7 +33,7 @@ ODA({
 
 Модификатор **type** можно не указывать, если тип свойства однозначно определяется по его начальному значению. Так в предыдущем примере начальное значение **0** однозначно относит свойство **_counter** к типу **Number**, и указывать явно модификатор **type** не имеет смысла.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -54,7 +54,7 @@ ODA({
 
 Если тип начального значения не будет совпадать с явным типом свойства, то текущий тип свойства будет задан по начальному значению. Однако при первом обращении к свойству текущий тип будет автоматически преобразован в тип, указанный в модификаторе **type**.
 
-```javascript _error_run_line_edit_console_[my-component.js]
+```javascript _error_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -76,7 +76,7 @@ ODA({
 
 Однако если в предыдущем примере тип свойства не указать или записать его правильно, то ошибка исчезнет. Компонент будет работать корректно.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -96,7 +96,7 @@ ODA({
 
 Наиболее ярко данная особенность проявляется для логического типа **Boolean**. Любые формы записи логических констант **true** или **false** (кроме строчных букв) будут восприниматься как ошибка.
 
-```javascript _error_run_line_edit_console_[my-component.js]
+```javascript _error_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -113,7 +113,7 @@ ODA({
 
 Однако начальное логическое значение можно указать в кавычках. В этом случае оно будет рассматриваться как строка. Так как не пустая строка рассматривается как логическое значение **true**, то изначально элемент **checkbox** будет отмечен по ошибке. Однако после первого присвоения начальный тип свойства изменится на реальный и состояние **checkbox** будет определяться правильно. **Такое поведение свойства является очень странным.**
 
-```javascript _error_run_line_edit_console_[my-component.js]
+```javascript _error_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -132,7 +132,7 @@ ODA({
 
 Помимо примитивных типов в модификаторе **type** также можно использовать тип **Object** или любой из его наследников.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -153,7 +153,7 @@ ODA({
 
 У свойства можно задать несколько альтернативных типов с помощью модификатора **type**. В этом случае их имена указываются в виде элементов массива в квадратных скобках.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -177,7 +177,7 @@ ODA({
 
 Если альтернативный тип не указан, то при попытке присвоения свойству несовместимого значения возникнет ошибка.
 
-```javascript error_run_line_edit_console_[my-component.js]
+```javascript error_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -201,7 +201,7 @@ ODA({
 
 Если присваиваемое значения можно привести к указанному типу, то альтернативные типы можно не задавать.
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -224,7 +224,7 @@ ODA({
 Здесь массиву присваивается число. Тип **Number** можно привести к типу **Array**. Поэтому предыдущая ошибка в этом примере не возникает.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/yHueM94LlbA?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/yHueM94LlbA?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -28,7 +28,7 @@ ODA({
 
 Однако в процессе всплытия целевой источник события автоматически изменится при переходе через теневое дерево — новым источником события станет сам компонент независимо от того, какой элемент был инициатором события внутри него.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -60,6 +60,6 @@ ODA({
 В результате этого невозможно узнать какой элемент стал источником возникновения события за границами теневого дерева. В качестве него всегда будет выступать сам компонент.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/HKN9EnQQquA?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/HKN9EnQQquA?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

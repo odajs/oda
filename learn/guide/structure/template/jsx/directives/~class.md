@@ -4,7 +4,7 @@
 Значение этой директивы должно быть именем или списком имен CSS-классов, разделенных пробелами. Сами CSS-классы, указываемые в директиве, должны быть объявлены заранее в разделе шаблона **style** компонента.
 ```
 Пример 1:
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -23,7 +23,7 @@ ODA({
 При формировании имени или списка CSS-классов можно использовать inline-выражение, свойство или метод компонента.
 
 Пример 2:
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -50,7 +50,7 @@ ODA({
 Директива **~class** поддерживает механизм реактивности, т.е. при любом изменении значения директивы автоматически будет изменяться значение атрибута **class** HTML-элемента, в котором она указана.
 
 Пример 3:
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -79,6 +79,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/H43hAmTDLqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/H43hAmTDLqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

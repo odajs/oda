@@ -6,13 +6,13 @@
 
 Код классического подхода будет иметь вид:
 
-```html run_line_edit
+```html run_edit
 <button onClick='threeNewDigits();'>Get Three Digits</button>
 <script>
     threeNewDigits();
     function threeNewDigits() {
         var digits=[];
-        for( var i=0 ; i<3 ; ++i ) 
+        for( var i=0 ; i<3 ; ++i )
             digits[i] = Math.floor( Math.random() * 10 );
         digits.forEach( (item,index)=>{
             var div = document.getElementById( "div" + index );
@@ -31,7 +31,7 @@
 
 Сравним с примером, использующим директиву **~for**:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is:'my-component',
     template: `
@@ -55,10 +55,10 @@ ODA({
 
 Еще раз сравним объем кода требуемого для решения данной задачи классическим способом:
 
-```javascript 
+```javascript
 function threeNewDigits() {
     var digits=[];
-    for( var i=0 ; i<3 ; ++i ) 
+    for( var i=0 ; i<3 ; ++i )
         digits[i] = Math.floor( Math.random() * 10 );
     digits.forEach( (item,index)=>{
         var div = document.getElementById( "div" + index );

@@ -8,7 +8,7 @@ CSS-свойства позволяют задавать значения, ко�
 
  В соответствие с этим регламентом имя пользовательского свойства обязательно должно начинаться с двух дефисов **--**, после которых должен идти валидный [CSS-идентификатор](https://drafts.csswg.org/css-syntax-3/#identifier "CSS Syntax Module").
 
-```javascript_run_edit_line_h=120[my-component.js]
+```javascript_run_edit_h=120[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -150,6 +150,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/jMZqU-lbmV0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/jMZqU-lbmV0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -4,7 +4,7 @@
 
 Например,
 
-```javascript _line_edit_[my-component.js]
+```javascript _edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -21,7 +21,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -50,7 +50,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=120_
+```javascript _run_edit_[my-component.js]_h=120_
  ODA({
     is: 'my-component',
     template: `
@@ -73,7 +73,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -87,7 +87,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'base-component',
     template: `
@@ -126,7 +126,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=100_
+```javascript _run_edit_[my-component.js]_h=100_
  ODA({
     is: 'my-component',
     template: `
@@ -148,7 +148,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=100_
+```javascript _run_edit_[my-component.js]_h=100_
  ODA({
     is: 'my-component',
     template: `
@@ -173,7 +173,7 @@ ODA({
 
 Например,
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <body>
@@ -196,7 +196,7 @@ ODA({
 
 Например,
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -224,7 +224,7 @@ ODA({
 
 Например,
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -253,7 +253,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component1.js]_h=100_
+```javascript _run_edit_[my-component1.js]_h=100_
 
 ODA({
     is: 'my-component1',
@@ -276,7 +276,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -313,7 +313,7 @@ ODA({
 
 Данный механизм не зависит от того, где расположены HTML-элементы: внутри тега компонента или нет.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 
 ODA({
     is: 'base-component',
@@ -353,7 +353,7 @@ ODA({
 
 Если у вложенных компонентов нет подходящих слотов на одном уровне ниже, то элементы будут вставляться в слот текущего компонента.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -389,7 +389,7 @@ ODA({
 
 Если у самого компонента и у вложенных компонентов нет подходящих слотов на одном уровне ниже, то HTML-элементы будут вставляться в слот родительского компонента не зависимо от уровня его расположения.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -419,7 +419,7 @@ ODA({
 
 Для элементов по умолчанию сохраняются те же самые правила, что и для именованных слотов, но они должны быть обязательно указаны внутри тегов компонентов.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 
 ODA({
     is: 'base-component',
@@ -457,7 +457,7 @@ ODA({
 
 Если элементы по умолчанию указать вне тегов компонента, то они будут рассматриваться как элементы самого компонента и не будут добавляться в слоты по умолчанию.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -493,7 +493,7 @@ ODA({
 
 Если в родительском компоненте будут указаны сразу несколько вложенных компонентов, у каждого из которых есть слот с одним и тем же именем, то родительские HTML-элементы будут добавляться только в слот того компонента, который был указан у родителя первым.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -524,7 +524,7 @@ ODA({
 
 Если у нескольких вложенных компонентов есть элементы с именем родительского слота, то все они будут добавлены в слот родительского компонента.
 
-```javascript _run_line_edit_[base-component.js]_h=100_
+```javascript _run_edit_[base-component.js]_h=100_
 ODA({
     is: 'base-component',
     template: `
@@ -555,7 +555,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -577,6 +577,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/AVo1Umu9dTE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/AVo1Umu9dTE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

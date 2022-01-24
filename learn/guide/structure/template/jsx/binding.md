@@ -3,7 +3,7 @@
 При любом изменении значения JS-выражения связанное с ним свойство или атрибут элемента, в котором указана директива биндинга, будет автоматически изменяться. Имя связанного свойства или атрибута записывается в ней непосредственно перед JS-выражением через символ **=**.
 
 Пример 1
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -26,7 +26,7 @@ ODA({
 ```
 
 Пример 2
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -49,7 +49,7 @@ ODA({
 ```
 
 Пример 3
-```javascript _run_line_edit_[my-component.js]_h=100_
+```javascript _run_edit_[my-component.js]_h=100_
 ODA({
     is: 'my-component',
     template: `
@@ -66,7 +66,7 @@ ODA({
 Аналогичным образом можно связывать свойства вложенного и родительского компонентов.
 
 Пример 4
-```javascript _line_edit_[second-component.js]
+```javascript _edit_[second-component.js]
 ODA({
     is: 'second-component',
     template: `
@@ -80,7 +80,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[first-component.js]_{second-component.js}
+```javascript _run_edit_blob_[first-component.js]_{second-component.js}
 ODA({
     is: 'first-component',
     template: `
@@ -107,7 +107,7 @@ ODA({
 Директивой биндинга можно привязать к вложенному компоненту не только свойства родительского компонента, но и его методы.
 
 Пример 5
-```javascript _line_edit_[second-component2.js]
+```javascript _edit_[second-component2.js]
 ODA({
     is: 'second-component',
     template: `
@@ -121,7 +121,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[first-component.js]_{second-component2.js}
+```javascript _run_edit_blob_[first-component.js]_{second-component2.js}
 ODA({
     is: 'first-component',
     template: `
@@ -142,7 +142,7 @@ ODA({
 
 Пример 6 показывает особенности биндинга объектов:
 
-```javascript _line_edit_[second-component3.js]
+```javascript _edit_[second-component3.js]
 ODA({
     is: 'second-component',
     template: `
@@ -157,7 +157,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[first-component.js]_{second-component3.js}
+```javascript _run_edit_blob_[first-component.js]_{second-component3.js}
 ODA({
     is: 'first-component',
     template: `
@@ -180,7 +180,7 @@ ODA({
 Аналогичным образом при связывании массивов передаются не данные, а ссылка на массив, принадлежащий родительскому компоненту. Данные в обоих массивах также становятся общими.
 
 Пример 7
-```javascript _line_edit_[second-component4.js]
+```javascript _edit_[second-component4.js]
 ODA({
     is: 'second-component',
     template: `
@@ -193,7 +193,7 @@ ODA({
 });
 ```
 
-```javascript _run_line_edit_blob_[first-component.js]_{second-component4.js}
+```javascript _run_edit_blob_[first-component.js]_{second-component4.js}
 ODA({
     is: 'first-component',
     template: `

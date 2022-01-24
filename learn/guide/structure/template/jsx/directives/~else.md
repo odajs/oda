@@ -1,6 +1,6 @@
 Директива ~else используется для рендеринга HTML-элемента, когда условие не выполняется.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

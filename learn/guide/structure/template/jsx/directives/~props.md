@@ -5,7 +5,7 @@
 Сам объект группового связывания можно указать в inline-выражении, либо в литеральной форме, либо в виде отдельного свойства с типом **Object**, как это сделано в следующем примере:
 
 Пример 1
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -29,7 +29,7 @@ ODA({
 Директиву **~props** можно использовать совместно с директивой **~for**. В этом случае в ней указывается не один групповой объект, а массив объектов. В каждом объекте этого массива перечисляются необходимые имена свойств и их значения для соответствующих HTML-элементов, создаваемых директивой **~for**.
 
 Пример 2
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -53,7 +53,7 @@ ODA({
 
 Пример 3
 
-```javascript_error_run_line_edit_[my-component.js]
+```javascript_error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -74,7 +74,7 @@ ODA({
 
 Пример 4
 
-```javascript_run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript_run_edit_[my-component.js]_h=200_
 import 'https://odajs.org/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
@@ -92,6 +92,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/JU-T3ZRUhqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/JU-T3ZRUhqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

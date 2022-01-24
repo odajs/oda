@@ -17,7 +17,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -41,7 +41,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -67,7 +67,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -91,7 +91,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -110,7 +110,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -129,7 +129,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -150,7 +150,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -174,7 +174,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -198,7 +198,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -225,7 +225,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -247,7 +247,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Метод **listen** позволяет задать любой целевой источник обработки события, а не только сам компонент.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -274,7 +274,7 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 
 Кроме этого, метод **listen** позволяет для одного и того же события задать несколько разных обработчиков.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -302,6 +302,6 @@ listen(event='', callback, props = {target: this, once: false, useCapture: false
 В данном примере метод **listen** вызывается несколько раз для одного и того же события **tap**: первый — для задания обработчика **onTap1**, а второй — для задания обработчика **onTap2**. При возникновении этого события будут срабатывать оба обработчика, каждый из которых будет изменять значение своего собственного счетчика.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/uGq1lTUq1c0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/uGq1lTUq1c0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

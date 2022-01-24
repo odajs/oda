@@ -13,7 +13,7 @@ CSS-переменные можно использовать как в **inline*
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -35,7 +35,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -210,7 +210,7 @@ ODA({
 
 С их помощью, например, можно изменить способ расположения HTML-элементов.
 
-```javascript _run_line_edit_[my-component.js]_h=60_
+```javascript _run_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
@@ -297,6 +297,6 @@ body {
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/6PMdJWAi168?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/6PMdJWAi168?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -2,7 +2,7 @@
 
 **Для массивов** в этой директиве обязательно должно быть указано имя самого массива данных и ссылка на его текущий элемент.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -22,7 +22,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -44,7 +44,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -62,7 +62,7 @@ ODA({
 
 **Для объектов** в директиве ~for обязательно должно быть указано имя самого объекта и ссылка на значение его текущего свойства.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -80,7 +80,7 @@ ODA({
 
 В расширенной форме записи, кроме значения текущего свойства объекта можно указать имя самого свойства, используя ссылку на него. Это ссылка должна быть записана после ссылки на значения самого свойства через запятую.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -97,7 +97,7 @@ ODA({
 
 В полной форме, кроме ссылки на значение и имя текущего свойства можно указать еще и индекс на это свойство через запятую.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -118,7 +118,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

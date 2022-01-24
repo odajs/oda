@@ -18,7 +18,7 @@ interval (key, handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -51,7 +51,7 @@ interval (key, handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `

@@ -66,7 +66,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=150_
+```javascript _run_edit_[my-component.js]_h=150_
 ODA({
     is: 'my-component',
     template: `
@@ -111,7 +111,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=150_
+```javascript _run_edit_[my-component.js]_h=150_
 ODA({
     is: 'my-component',
     template: `
@@ -162,6 +162,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/W4ZWaqGVDqE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/W4ZWaqGVDqE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

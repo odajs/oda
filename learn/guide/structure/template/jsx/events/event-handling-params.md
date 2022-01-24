@@ -5,7 +5,7 @@
 
 Для обращения к этим значениям в обработчиках необходимо предусмотреть соответствующие параметры.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -30,7 +30,7 @@ ODA({
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -47,7 +47,7 @@ ODA({
 
 Эти значения можно передавать методам явно, когда те вызываются в контексте inline-выражения.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -68,7 +68,7 @@ ODA({
 
 Если во втором значение **$detail** нет необходимости, то параметр для него в методе можно не предусматривать.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -86,7 +86,7 @@ ODA({
 
 Если оба значения **$event** и **$detail** не используются в теле метода, то и параметры для них не нужны.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -106,7 +106,7 @@ ODA({
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -126,6 +126,6 @@ ODA({
 Для некоторых типов событий второй параметр **detail** может иметь другое назначение. В нем, например, в свойстве **sourceEvent** может храниться исходное событие.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/2LCTb4EZJzk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/2LCTb4EZJzk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

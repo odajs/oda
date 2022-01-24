@@ -55,7 +55,7 @@
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -98,12 +98,12 @@ ODA({
 });
 ```
 
-В этом примере: 
+В этом примере:
 а) при отмеченном чекбоксе первый input деактивируется и активируется при снятии отметки;
 б) при нажатой левой кнопки мыши на первом input "Я активен" изменяется его стиль, а также текстовое значение на "--active";
 в) нажатая левая кнопка мыши на каждом из остальных input изменится его стиль на соответствующий.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/pJ1TCwMwbi0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/pJ1TCwMwbi0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

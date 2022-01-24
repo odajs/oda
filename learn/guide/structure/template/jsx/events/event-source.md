@@ -2,7 +2,7 @@
 
 События мыши, например, хранят координаты указателя мыши, которые были в момент возникновения события. События нажатия клавиш хранят коды нажатых клавиш и т.п.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -32,7 +32,7 @@ ODA({
 
 В обработчике **tap**, например, нельзя непосредственно узнать координаты щелчка мыши у самого события.
 
-```javascript error_run_line_edit_[my-component.js]
+```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -55,7 +55,7 @@ ODA({
 
 Получить доступ к этому свойству можно через второй параметр обработчика, в котором передается значение **$detail**.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -76,7 +76,7 @@ ODA({
 
 Свойство **sourceEvent** есть у самого объекта события, и обратиться к нему можно через указатель, передаваемый обработчику первым параметром в списке параметров.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -104,7 +104,7 @@ ODA({
 
 Например:
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -129,7 +129,7 @@ ODA({
 В этом примере координаты щелчка мыши будут автоматически пересчитаны относительно компонента, а не выведены относительно положения курсора мыши на кнопке, как в исходном событии. В результате этого будет невозможно узнать внутренний источник события. Информационная безопасность компонента будет сохранена.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/8NpTWyaK-Uo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/8NpTWyaK-Uo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

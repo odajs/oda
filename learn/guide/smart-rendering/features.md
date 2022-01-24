@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -29,7 +29,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -52,7 +52,7 @@ ODA({
 
 Например:
 
-```html run_line_edit
+```html run_edit
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -93,7 +93,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -128,7 +128,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -156,7 +156,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     extends: 'my-change',

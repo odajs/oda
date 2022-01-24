@@ -2,7 +2,7 @@
 
 Например:
 
-```javascript_run_line_edit_console_[my-component.js]_h=60_
+```javascript_run_edit_console_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     template: `
@@ -49,7 +49,7 @@ ODA({
 
 Например:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -67,7 +67,7 @@ ODA({
 
 Однако, перехват события для всего компонента с помощью атрибута **listeners** не вызывает рендеринга:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -93,7 +93,7 @@ ODA({
 
 Аналогично, перехват событий нажатия клавиш с помощью атрибута **keyBindings** не приводит к рендерингу компонента:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -122,7 +122,7 @@ ODA({
 
 Аналогично, перехват событий с помощью метода **listen** не приводит к рендерингу компонента:
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

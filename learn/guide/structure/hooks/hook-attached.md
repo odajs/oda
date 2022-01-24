@@ -14,7 +14,7 @@
 
 Например:
 
-```javascript_run_line_edit_console_[my-component.js]
+```javascript_run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -49,6 +49,6 @@ ODA({
 В этом хуке чаще всего задаются пользовательские действия, которые необходимо выполнить до первого использования компонента. В нем, например, можно сообщить другим, что компонент был создан, загрузить дополнительные данные для него и т.д.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/DEuK558YTpQ?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/DEuK558YTpQ?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

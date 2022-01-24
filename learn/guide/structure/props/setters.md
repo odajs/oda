@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -36,7 +36,7 @@
 Крайне нежелательно в сеттере присваивать значение свойству, в котором этот сеттер был объявлен. При определенных обстоятельствах это может привести к возникновению бесконечной рекурсии, когда сеттер будет вызывать самого себя до бесконечности.
 ```
 
-```javascript _error_run_line_edit_console_[my-component.js]
+```javascript _error_run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -65,7 +65,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -94,7 +94,7 @@
 
 Однако стоит избегать взаимного изменения двух свойств внутри их сеттеров.
 
-```javascript _error_run_line_edit_console_[my-component.js]
+```javascript _error_run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -125,7 +125,7 @@
 Эта ситуация приводит к возникновению бесконечной рекурсии. Однако фреймворк умеет отслеживать ее автоматически и останавливает бесконечный цикл взаимных изменений после определенного количества шагов. По этой причине переполнение стека в этом примере не происходит, но значение счетчика будет формироваться неправильно. Оно будет увеличиваться не на единицу, как ожидалось, а на определенное значение, через которое цикл бесконечных изменений будет автоматически остановлен.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/P9ykMjS3LUo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/P9ykMjS3LUo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
 

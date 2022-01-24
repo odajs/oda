@@ -16,7 +16,7 @@ ODA.telemetry = {proxy: 0,  modules: {}, imports:{}, components: {count: 0}, cle
 
 С помощью объекта телеметрии можно, например, получить список все компонентов, созданных на HTML-странице.
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -53,7 +53,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -91,7 +91,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',

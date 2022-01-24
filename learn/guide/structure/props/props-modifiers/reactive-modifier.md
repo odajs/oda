@@ -2,7 +2,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -29,7 +29,7 @@ ODA({
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -56,6 +56,6 @@ ODA({
 Если вычисляемое свойство не зависит от элементов массива, то использовать директиву **reactive** нет необходимости — механизм реактивности для такого свойства будет работать изначально.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/wQA1eKdR6VY?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/wQA1eKdR6VY?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

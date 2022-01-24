@@ -4,7 +4,7 @@
 В соответствии со спецификацией [CSS Scoping Module](https://drafts.csswg.org/css-scoping/#host-selector) псевдокласс **:host** не имеет никакого значения вне контекста теневого дерева.
 ```
 
-```xml_css_line_edit_[my-component.css]
+```xml_css_edit_[my-component.css]
 <style>
     :host {
         background-color: red;
@@ -13,7 +13,7 @@
 </style>
 ```
 
-```javascript_run_edit_line_[my-component.js]_{my-component.css}
+```javascript_run_edit_[my-component.js]_{my-component.css}
 ODA({
     is: 'my-component',
     template: `
@@ -27,7 +27,7 @@ ODA({
 
 В контексте теневого дерева псевдокласс **:host** позволяет задавать CSS-стили, которые будут применятся к хосту компонента, и следовательно, ко всем элементам хоста, расположенным внутри его теневого дерева.
 
-```javascript_run_edit_line_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -47,7 +47,7 @@ ODA({
 
 После имени псевдокласса **:host** можно указать любой селектор для стилизации определенных элементов внутри теневого дерева.
 
-```javascript_run_edit_line_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -70,7 +70,7 @@ ODA({
 
 Также в псевдоклассе **:host** можно указать сразу несколько [селекторов](https://drafts.csswg.org/selectors-4/#typedef-compound-selector-list).
 
-```javascript_run_edit_line_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -195,6 +195,6 @@ ODA({
 В этом примере первый стиль будет применен к первому компоненту **my-component**, так как у него задан CSS-класс **my-style**. Второй стиль будет применен к компоненту без каких-либо дополнительных селекторов. Третий стиль будет применен к хосту третьего компонента ввиду того, что его родителем является элемент **div**.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/kXtjakXxmuE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/kXtjakXxmuE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

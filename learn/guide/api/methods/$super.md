@@ -14,7 +14,7 @@ $super (parentName, name, ...args) {...}
 
 При наследовании компонент по умолчанию приобретает все методы своих родителей и вызывает их автоматически относительно своего контекста. Однако если в наследнике задать метод с тем же самым именем, что и у родительского компонента, то будет уже невозможно вызвать родительский метод. Для это придется использовать метод **$super**, так как это показано в следующем примере.
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-parent',
     template: `
@@ -45,7 +45,7 @@ ODA({
 
 Например,
 
-```javascript run_line_edit_[my-component.js]
+```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-parent',
     template: `

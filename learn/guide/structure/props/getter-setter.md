@@ -4,7 +4,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -29,7 +29,7 @@
 
 Однако данные можно хранить в одних свойствах, а формировать их ввод и вывод в геттерах и сеттерах других свойств.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -59,6 +59,6 @@
 Как видно из этого примера, геттер и сеттер свойства **fullName** обращаются только к свойствам **firstName** и **lastName**, которые хранят непосредственно данные. Само свойство **fullName** данные не хранит, а только формирует их. При вводе сеттер будет сохранять значение в свойствах **firstName** и **lastName**, а при выводе — геттер будет формировать из них полное имя. Сами геттер и сеттер к своему свойству не обращаются. В результате никаких ошибок не возникает. Значения всех свойств будут изменяться динамически.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/fxk6FzfX1D4?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/fxk6FzfX1D4?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

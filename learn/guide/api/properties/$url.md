@@ -2,7 +2,7 @@
 
 С его помощью можно узнать по какому адресу располагается файл модуля. Например, компонента **oda-button**.
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -19,7 +19,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -35,6 +35,6 @@ import '/components/buttons/button/button.js';
 В данном примере компонент **my-component** создается в контексте фрейма текущей страницы, имя которого задается в виде универсального уникального идентификатора **UUID**. Это имя добавляется к URL-адресу HTML-страницы и становится эквивалентом адреса модуля самого компонента.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/HhW9EH3K4dc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/HhW9EH3K4dc?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

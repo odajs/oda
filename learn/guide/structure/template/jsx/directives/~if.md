@@ -4,7 +4,7 @@
 В противном случае, если директива **~if** имеет значение **false**, то HTML-элемент будет автоматически удален из DOM, и на HTML-странице он отображаться не будет.
 
 Пример 1
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -35,7 +35,7 @@ ODA({
 Директива **~else** используется для условного рендеринга HTML-элемента, когда условие предыдущей директивы **~if** не выполняется.
 
 Пример 2
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ HTML-элемент с директивой **~else** должен обязат�
 Директива **~else-if** используется для условного рендеринга HTML-элемента, когда директива **~if** у предыдущего элемента не выполняется, но при этом следующий HTML-элемент необходимо отображать не всегда, а только при выполнении дополнительного условия, указанного в директиве **~else-if**.
 
 Пример 3
-```javascript_run_line_edit_h=80_[my-component.js]
+```javascript_run_edit_h=80_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -113,7 +113,7 @@ HTML-элемент, в котором указана директива **~else
 
 Пример 4
 
-```javascript_run_line_edit_loadoda_[my-component.js]_h=100_
+```javascript_run_edit_[my-component.js]_h=100_
 import 'https://odajs.org/components/buttons/icon/icon.js';
 ODA({
     is: 'my-icon',
@@ -147,6 +147,6 @@ ODA({
 В данном примере нажатие на кнопку **Изменить цвет** изменяет в компоненте **my-icon** цвет иконки на оранжевый. Но после каждой операции условного рендеринга компонента, вызванного нажатием на кнопку **Показать/Скрыть**, иконка приобретает цвет заданный по умолчанию, так как компонент создается заново.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/M6QI9qut0wI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/M6QI9qut0wI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

@@ -4,7 +4,7 @@
 
 Пример 1
 
-```javascript _line_edit_[my-input-component.js]
+```javascript _edit_[my-input-component.js]
 ODA({
     is: 'my-input-component',
     template: `
@@ -28,7 +28,7 @@ ODA({
 
 Пример 2
 
-```javascript _run_line_edit_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -41,7 +41,7 @@ ODA({
 
  Пример 3
 
-```javascript _run_line_edit_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -62,7 +62,7 @@ ODA({
 
 При нажатии на эту красную кнопку восстанавливаются значения по умолчанию для всех примеров на данной странице:
 
-```javascript _run_line_edit_nocopy_[my-component.js]
+```javascript _run_edit_nocopy_[my-component.js]
 ODA({
     is: 'my-component',
     template:`
@@ -83,7 +83,7 @@ ODA({
 
 Пример 3
 
-```javascript _run_line_edit_nocopy_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_nocopy_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -103,7 +103,7 @@ ODA({
 
 Пример 4
 
-```javascript_run_line_edit_nocopy_[my-component.js]_{my-input-component.js}
+```javascript_run_edit_nocopy_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -123,7 +123,7 @@ ODA({
 
 Пример 5
 
-```javascript _run_line_edit_nocopy_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_nocopy_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`

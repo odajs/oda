@@ -14,7 +14,7 @@ ODA.showDropdown(component, props = {}, hostProps = {})
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=80_
+```javascript run_edit_[my-component.js]_h=80_
 import '/components/buttons/icon/icon.js';
  ODA({
     is: 'my-component',
@@ -31,7 +31,7 @@ import '/components/buttons/icon/icon.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=80_
+```javascript run_edit_[my-component.js]_h=80_
 import '/components/buttons/icon/icon.js';
  ODA({
     is: 'my-component',
@@ -52,7 +52,7 @@ import '/components/buttons/icon/icon.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=150_
+```javascript run_edit_[my-component.js]_h=150_
 import '/components/colors/palette/palette.js';
  ODA({
     is: 'my-component',
@@ -75,7 +75,7 @@ import '/components/colors/palette/palette.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -95,7 +95,7 @@ import '/components/buttons/button/button.js';
 
 Например, в предыдущим примере во втором параметре можно указать неопределенное (**undefined**) или пустое (**null**) значение.
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=200_
+```javascript run_edit_[my-component.js]_h=200_
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -123,7 +123,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=150_
+```javascript run_edit_[my-component.js]_h=150_
 import '/components/buttons/icon/icon.js';
  ODA({
     is: 'my-component',

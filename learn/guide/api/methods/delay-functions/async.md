@@ -13,7 +13,7 @@ async (handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -35,7 +35,7 @@ async (handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -61,7 +61,7 @@ async (handler, delay = 0)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -81,6 +81,6 @@ async (handler, delay = 0)
 Таким образом, при использовании метода **async** к не стрелочным функциям необходимо явно привязывать контекст компонента с помощью метода **bind**, так как в противном случае указатель **this** внутри обработчиков будет ссылаться на глобальный объект **window**, а не на сам компонент.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/aPL3cwOJOCs?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/aPL3cwOJOCs?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

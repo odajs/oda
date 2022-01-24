@@ -2,7 +2,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `

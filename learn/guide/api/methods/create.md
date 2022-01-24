@@ -14,7 +14,7 @@ create(tagName, props={}, inner)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=120_
+```javascript _run_edit_[my-component.js]_h=120_
  ODA({
     is: 'my-component',
     template: `
@@ -34,7 +34,7 @@ create(tagName, props={}, inner)
 
 Например,
 
-```javascript _run_line_edit_[my-component.js]_h=120_
+```javascript _run_edit_[my-component.js]_h=120_
  ODA({
     is: 'my-component',
     template: `
@@ -54,6 +54,6 @@ create(tagName, props={}, inner)
 В этом примере при каждом нажатии на кнопку будет создаваться новый вложенный маркированный список, в котором будет только один пункт, так как в параметре **inner** метода **create** можно указать только один дочерний элемент для вновь создаваемого элемента.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/vKjJISZI4Yw?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/vKjJISZI4Yw?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

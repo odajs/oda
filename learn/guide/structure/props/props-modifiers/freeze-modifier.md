@@ -4,7 +4,7 @@
 
 В результате этого изменение значения одного свойства автоматически будет приводить к изменению значения всех зависящих от него свойств так, как это показано в следующем примере:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -31,7 +31,7 @@
 
 Например:
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -59,7 +59,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -86,7 +86,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -116,7 +116,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -152,7 +152,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -181,7 +181,7 @@
 
 Например,
 
-```javascript _run_line_edit_console_[my-component.js]
+```javascript _run_edit_console_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
@@ -209,6 +209,6 @@
 По этой причине модификатор **freeze** следует использовать только для структурных свойств от элементов и свойств которых никакие другие свойства не зависят. В этом случае блокирование механизма реактивности приведет к повышению скорости обработки данных при большом количестве элементов в массивах или при сложной иерархической структуре свойств объектов.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/E4KS8qnFuT0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/E4KS8qnFuT0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

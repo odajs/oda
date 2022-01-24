@@ -2,7 +2,7 @@
 
 Оно задается на основе свойства **$url** путем отбрасывания названия файла модуля компонента и его расширения.
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -19,7 +19,7 @@ import '/components/buttons/button/button.js';
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]
+```javascript run_edit_[my-component.js]
 import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
@@ -33,6 +33,6 @@ import '/components/buttons/button/button.js';
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/tKXZs868MU0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/tKXZs868MU0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>

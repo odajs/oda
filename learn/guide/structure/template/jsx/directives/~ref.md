@@ -1,7 +1,7 @@
 ﻿Директива **~ref** предназначена для создания прямой ссылки на HTML-элемент. Для создания ссылки в директиве необходимо указать уникальный идентификатор элемента. Идентификатор представляет собой символьную строку, формируемую JavaScript-выражением. Все ссылки сохраняются в специальном объекте **$refs**, и обращение к ссылке осуществляется через вызов объекта **$refs** с указанием идентификатора ссылки:
 
 Пример 1
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -23,7 +23,7 @@ ODA({
 ```
 
 Пример 2
-```javascript_error_run_line_edit_[my-component.js]
+```javascript_error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -47,7 +47,7 @@ ODA({
 Директиву **~ref** нужно использовать крайне аккуратно. Она формирует список всех связанных элементов и хранит их в отдельном объекте. Если компонент будет сложным, и количество ссылок **~ref** в нем будет велико, то это может привести к неоправданно большим затратам памяти и времени на формирование списка. Для отдельных элементов, где это вообще возможно, более эффективной стратегией будет использование обычных свойств.
 ```
 Пример 3
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -67,7 +67,7 @@ ODA({
 Ссылки можно использовать для обмена данным между элементами компонента.
 
 Пример 4
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -84,7 +84,7 @@ ODA({
 Однако для экономии памяти можно осуществлять обмен данными и без использования ссылок.
 
 Пример 5
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -102,7 +102,7 @@ ODA({
 Для поклонников фреймворка [Vue](https://ru.vuejs.org/v2/api/#ref) предусмотрена возможность использования директивы **~ref** с упрощенным синтаксисом. В нем идентификатор ссылки задается простым строковым литералом, а перед именем директивы отсутствует префикс **~** (**ref**).
 
 Пример 6
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `

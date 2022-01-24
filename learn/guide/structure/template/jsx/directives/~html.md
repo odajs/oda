@@ -1,6 +1,6 @@
 ﻿Значение выражения, записанное в двойных фигурных скобках {{ Mustache }}, или в директиве **~text** подставляется как простой текст независимо от его внутреннего формата. Если необходимо вместо обычного текста выводить текст с HTML разметкой, то необходимо вместо директивы **~text** использовать специальную директиву **~html**.
 
-```javascript_run_line_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -31,7 +31,7 @@ ODA({
 
 Если HTML-элемент содержит вложенные элементы, то директива **~html** игнорируется.
 
-```javascript _run_line_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -46,6 +46,6 @@ ODA({
 ```
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/vZwCdAMvuqw?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen 
+    <iframe src="https://www.youtube.com/embed/vZwCdAMvuqw?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
