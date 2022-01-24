@@ -120,12 +120,13 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
             .hjln span:before { content:counter(l) }
             .light { background-color: #ddd; display: inline-block;}
             .icon-info { display: flex; }
+            .copy:active:before { position: absolute; right: 0; top: -26px; color: red; content:"copied"; }
         </style>
         <div ~if="_show" class="flex vertical" ~style="{'margin-left': infpnl?'10px':''}" style=" position: relative;padding:0;color:darkgray">
             <div ~if="showFilename" style="font-size:.8em;position: absolute; top:-4px;left:2px;">{{filename}}</div>
             <div style="cursor:pointer;position: absolute; top:18px;right:4px;display: flex">
                 <oda-icon ~if="showRun && showConsole" icon="device:developer-mode" icon-size="16" style="cursor:pointer; z-index: 9;" @tap="_switchConsole" title="show console"></oda-icon>
-                <oda-icon ~if="bcopy" icon="icons:content-copy" icon-size="16" style="cursor:pointer; z-index: 9;" @tap="_copy"  title="copy to clipboard"></oda-icon>
+                <oda-icon class="copy" ~if="bcopy" icon="icons:content-copy" icon-size="16" style="cursor:pointer; z-index: 9;" @tap="_copy"  title="copy to clipboard"></oda-icon>
             </div>
             <pre class="hljs" style="display:flex;border: .5px solid darkgray;border-radius:2px;overflow:auto;overflow-x:auto;min-height:32px"
                     ~style="line? '' : 'white-space:pre-wrap;'+_getColor(true)">
@@ -260,7 +261,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
         else this._console = '';
     },
     _setConsole(e) {
-        if (this._showConsole && this.$refs.iframe) {
+        if (this._showConsole && this.$('iframe')) {
             this.async(() => {
                 const _cons = (e) => {
                     if (!this.warn && e.startsWith('console.warn > ')) return;
@@ -295,7 +296,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                     };
                 }(this.$refs.iframe.contentWindow.console));
                 this.$refs.iframe.contentWindow.console = cons;
-            }, 10);
+            }, 30);
         }
     },
     async _copy() {
