@@ -12,7 +12,7 @@ ODA.loadHTML(url);
 
 Например,
 
-```javascript run_line_edit_loadoda_[my-component.js]_h=150_
+```javascript run_edit_[my-component.js]_h=150_
 ODA({
     is: 'my-component',
     template: `

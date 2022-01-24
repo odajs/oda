@@ -209,7 +209,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
-                display: {{layout?.isHide && !designMode ? 'none' : 'unset'}};
+                display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
             }
             label{
                 font-size: small;
@@ -302,7 +302,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
                     label: 'grouping', run: () => {
-                        const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id } };
+                        const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id, block: getUUID() } };
                         this.layout.toGroup(action);
                         this.saveScript(this.layout, action)
                     }
@@ -447,6 +447,8 @@ CLASS({ is: 'Layout',
         group._order = item._order;
         tab.items = [item];
         tab.order = tab._order = 0;
+        tab.type = 'tab';
+        tab.blockID = action.props.block;
         item.owner.items.splice(myIdx, 1, group);
         item.owner = tab;
     },
@@ -454,12 +456,12 @@ CLASS({ is: 'Layout',
         const group = layout || await this.find(action.props.group);
         if (!group) return;
         const tab = new Layout({ id: action.id, label: `Tab ${group.items.length + 1}` }, group.key, group, group.root);
-        tab.type = 'group';
+        tab.type = 'tab';
         group.items.push(tab)
         group.$focused = tab;
         const block = new Layout({ label: ` ` }, group.key, tab, group.root);
         block.isVirtual = true;
-        block.id = action.props.block;
+        tab.blockID = block.id = action.props.block;
         tab.items = [block];
         tab.order = tab._order = group.items.length
     },
@@ -503,6 +505,12 @@ CLASS({ is: 'Layout',
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+            if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
+                const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
+                block.isVirtual = true;
+                block.id = dragItem.blockID;
+                dragItem.owner.items = [block];
+            }
             targItem.owner.items.splice(idxTarg, 0, drag);
             drag.owner = targItem.owner;
         }
