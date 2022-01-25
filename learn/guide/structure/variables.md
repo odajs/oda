@@ -113,7 +113,7 @@ ODA({
 });
 ```
 
-```javascript run_edit_blob_[my-view.js]_{base-component2.js}_h=200
+```javascript run_edit_blob_[my-view.js]_{base-component2.js}_h=200_
 import 'https://odajs.org/tools/property-grid/property-grid.js';
 ODA({
     is: 'my-view',

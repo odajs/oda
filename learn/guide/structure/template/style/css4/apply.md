@@ -14,7 +14,7 @@
 
 Имена миксинов обязательно должны начинаться с двух дефисов **--**, после которых должен идти валидный [CSS-идентификатор](https://drafts.csswg.org/css-syntax-3/#identifier "CSS Syntax Module").
 
-```javascript_run_edit_h=120[my-component.js]
+```javascript_run_edit_[my-component.js]_h=120_
 ODA({
     is: 'my-component',
     template: `

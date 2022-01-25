@@ -111,7 +111,7 @@ ODA({
 
 Например,
 
-```javascript _run_edit_[my-component.js]_h=60
+```javascript _run_edit_[my-component.js]_h=60_
 ODA({
     is: 'my-component',
     imports: '@oda/icon, /components/buttons/checkbox/checkbox.js',
