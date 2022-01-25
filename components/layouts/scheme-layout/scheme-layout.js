@@ -480,14 +480,14 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             this.focusedPin = null;
         },
         drop(e) {
-            this._link();
+            this.prepareLink();
         },
         tap(e) {
             e.stopPropagation();
-            this._link();
+            this.prepareLink();
         }
     },
-    _link() {
+    prepareLink() {
         if (!this.editMode) return;
         if (this.focusedPin && this.focusedPin.container !== this.container) {
             if(!this.inputs[this.focusedPin.align]) {
@@ -495,20 +495,20 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
                     this.focusedPin = this;
                     return;
                 }
-                this.__link(this.focusedPin);
+                this.setLink(this.focusedPin);
             } else {
                 if(this.inputs[this.align]) {
                     this.focusedPin = this;
                     return;
                 }
-                this.focusedPin.__link(this);
+                this.focusedPin.setLink(this);
             }
             this.focusedPin = null;
         }
         else
             this.focusedPin = this;
     },
-    async __link(pin) {
+    async setLink(pin) {
         if (!this.editMode) return;
         if (this.link) {
             await ODA.showConfirm('oda-dialog-message', { message: `Replace link?` })
