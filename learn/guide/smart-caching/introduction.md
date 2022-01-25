@@ -77,7 +77,7 @@ ODA({
 
 Измените значение в строке ввода. Теперь и геттер и метод обновляют время на экране при каждом добавлении или удалении символа. Обратите внимание, что в коде геттера свойство **change** просто упоминается, никаких операций с ним не производится. То есть для сброса кэша геттера и его выполнения достаточно изменить значение используемого в нем свойства компонента.
 
-В контекст геттера также включаются отдельные свойства объектов и элементы массивов.
+В контекст геттера также включаются отдельные свойства объектов.
 
 Например:
 
@@ -85,19 +85,14 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input ::value="change1.a">
-        <input ::value="change2[0]">
-        <div>Время из геттера: {{getterTime}}</div>
+        <input ::value="change.a">
+        <div>Время: {{getterTime}}</div>
     `,
     props: {
-        change1: {
-            a:"Измени свойство объекта"
-        },
-        change2: ["Измени элемент массива"],
+        change: {a: "Измени свойство объекта"},
         getterTime: {
             get() {
-                this.change1.a;
-                this.change2[0];
+                this.change.a;
                 var d = new Date();
                 return d.toLocaleTimeString() + '.' + d.getMilliseconds();
             }
@@ -106,7 +101,33 @@ ODA({
 });
 ```
 
-В примере при изменении в соответствующих строках ввода значений свойства объекта **change1.a** и элемента массива **change2[0]** будет сбрасываться кэш геттера и обновляться текущее время на странице.
+В примере при изменении в строке ввода значения свойства объекта **change.a** будет сбрасываться кэш геттера и обновляться текущее время на странице.
+
+В контекст геттера также включаются отдельные элементы массивов.
+
+Например:
+
+```javascript_run_edit_[my-component.js]_h=40_
+ODA({
+    is: 'my-component',
+    template: `
+        <input ::value="change[0]">
+        <div>Время: {{getterTime}}</div>
+    `,
+    props: {
+        change: ["Измени элемент массива"],
+        getterTime: {
+            get() {
+                this.change[0];
+                var d = new Date();
+                return d.toLocaleTimeString() + '.' + d.getMilliseconds();
+            }
+        }
+    }
+});
+```
+
+В примере при изменении в строке ввода значения элемента массива **change[0]** будет сбрасываться кэш геттера и обновляться текущее время на странице.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/uOGqAEWWQ3c?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
