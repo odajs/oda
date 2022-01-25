@@ -55,8 +55,8 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.lastdown = null;
     },
     get links() {
-        const containers = this.items.filter(i => i.$$container);
-        if (containers.length)
+        const containers = this.items?.filter(i => i.$$container);
+        if (containers?.length)
             return containers.map(i => i.$$container.links).flat();
     },
     set links(n) {
