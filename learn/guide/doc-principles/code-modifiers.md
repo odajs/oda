@@ -68,9 +68,9 @@ document.body.append(newElement);
     document.body.append(newElement);
     ```
 
-    Если в этом примере тип элемента  «**input**» заменить на «**radio**» или на любой другой разрешенный тип, то можно убедиться, что все сделанные изменения немедленно отобразятся в области вывода.
+    Если в этом примере тип элемента «**input**» поменять с «**number**» на «**radio**» или на любой другой разрешенный тип, то можно убедиться, что все сделанные изменения немедленно отобразятся в области вывода.
 
-    ```info hideGutter
+    ```warning hideGutter
     Обратите внимание, что если во время редактирования код будет содержать ошибки, то в окне вывода никакой результат выводится не будет.
     ```
 
@@ -175,7 +175,7 @@ document.body.append(newElement);
 
     Для использования этого модификатора сначала необходимо объявить родительский компонент.
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[base-component.js]
         ODA({
             is: 'base-component',
@@ -199,8 +199,8 @@ document.body.append(newElement);
 
     После этого, в блоке наследника можно подключить скрип с кодом родительского компонента, указав его имя в фигурных скобках.
 
-    ```text
-        ```javascript _run_edit_[my-component.js]_{base-component.js}
+    ```text hideGutter
+        ```javascript run_edit_[my-component.js]_{base-component.js}
         ODA({
             is: 'my-component',
             extends: 'base-component',
@@ -213,7 +213,7 @@ document.body.append(newElement);
 
     В результате этого в текущем блоке не придется повторно объявлять родительский компонент, усложняя тем самым код  примера с наследником.
 
-    ```javascript _run_edit_[my-component.js]_{base-component.js}_h=40_
+    ```javascript run_edit_[my-component.js]_{base-component.js}_h=40_
     ODA({
         is: 'my-component',
         extends: 'base-component',
@@ -227,7 +227,7 @@ document.body.append(newElement);
 
     Например, объявим первого родителя с именем «**base-component-1**».
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[base-component-1.js]
         ODA({
             is: 'base-component-1',
@@ -251,7 +251,7 @@ document.body.append(newElement);
 
     Второго родителя объявим с именем скрипта «**base-component-2.js**».
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[base-component-2.js]
         ODA({
             is: 'base-component-2',
@@ -275,7 +275,7 @@ document.body.append(newElement);
 
     При объявлении наследника, подключим к его блоку скрипты двух предыдущих компонентов, указав их имена в фигурных скобках, отделяя их друг от друга символом подчеркивания.
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_{base-component-1.js_base-component-2.js}
         ODA({
             is: 'my-component',
@@ -301,7 +301,7 @@ document.body.append(newElement);
 
     Это существенно упрощает понимание работы наследника, не отягощая его код лишней информацией о всех его родителях.
 
-1. Модификатор «**h=значение**» позволяет задать фиксированную высоту области вывода результата.
+1. Модификатор «**h=значение**» позволяет задать фиксированную высоту области вывода результата в пикселях.
 
     По умолчанию высота окна вывода определяется автоматически по высоте контента результата так, чтобы стандартная полоса прокрутки никогда не появлялась.
 
@@ -342,7 +342,7 @@ document.body.append(newElement);
     });
     ```
 
-    ```info md
+    ```warning md
     Обратите внимание, что после значения высоты обязательно нужно указывать знак подчеркивания. В противном случае высота окна фиксироваться не будет.
     ```
 
