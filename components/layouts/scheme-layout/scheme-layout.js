@@ -14,7 +14,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     get srcPins() {
         return this.items.map(b => {
             let outputs = [];
-            for(const align in b.interfaces) {
+            for(const align in Object.getOwnPropertyNames(b.interfaces)) {
                 if(!this.inputs[align.slice(1)]) {
                     outputs = outputs.concat(b.interfaces[align]);
                 }
