@@ -60,7 +60,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             return containers.map(i => i.$$container.links).flat();
     },
     set links(n) {
-        this.items.filter(i => i.$$container).forEach(i => {
+        this.items?.filter(i => i.$$container).forEach(i => {
             i.$$container.links = undefined;
         });
     },
