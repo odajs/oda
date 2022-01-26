@@ -14,11 +14,11 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     get srcPins() {
         return this.items.map(b => {
             let outputs = [];
-            for(const align in Object.getOwnPropertyNames(b.interfaces)) {
-                if(!this.inputs[align.slice(1)]) {
+            Object.getOwnPropertyNames(b.interfaces).forEach(align => {
+                if(this.inputs[align.slice(1)] === false) {
                     outputs = outputs.concat(b.interfaces[align]);
                 }
-            }
+            });
             return outputs?.map?.((src, i) => {
                 return { link: b.block, pin: i, src };
             });
