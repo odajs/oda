@@ -318,7 +318,7 @@ document.body.append(newElement);
 
     Однако высоту этого окна можно ограничить так, чтобы оно всегда имело фиксированный размер. Для этого достаточное указать требуемое значение в пикселях, при этом единицы измерения отдельно указывать не нужно.
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_h=20_
         ODA({
             is: 'my-component',
@@ -350,7 +350,7 @@ document.body.append(newElement);
 
     Значение высоты в этом случае задается в пикселях без указание единицы измерения. Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_eh=90_
         ODA({
             is: 'my-component',
@@ -384,7 +384,7 @@ document.body.append(newElement);
 
     Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_console
         ODA({
             is: 'my-component',
@@ -445,7 +445,7 @@ document.body.append(newElement);
 
     Например, чтобы вывести иконку с изображением красного крестика, символизирующего наличие ошибки в коде, необходимо указать модификатор «**error**».
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_error
         ODA({
             is: 'my-component',
@@ -480,7 +480,7 @@ document.body.append(newElement);
 
     Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_error_hideicon
         ODA({
             is: 'my-component',
@@ -506,7 +506,7 @@ document.body.append(newElement);
 
     Например,
 
-    ```text
+    ```text hideGutter
         ```javascript run_edit_[my-component.js]_error_hideicon_hideGutter
         ODA({
             is: 'my-component',
