@@ -1,7 +1,8 @@
 ODA({is:'oda-dialog', extends: 'oda-modal',
     imports: ['@tools/modal'],
     template: /*html*/`
-        <oda-dialog-footer ~if="control" :control class="no-flex" slot="*"  :buttons :hide-ok-button :hide-cancel-button></oda-dialog-footer>
+        <oda-dialog-footer ~if="control" :control class="no-flex" slot="*"  :buttons :hide-ok-button :hide-cancel-button>
+        </oda-dialog-footer> 
     `,
     buttons: [],
     focusedButton: null,
@@ -56,6 +57,7 @@ ODA({is: 'oda-dialog-footer',
         </style>
         <div class="flex horizontal">
             <slot></slot>
+            <slot name="footer"></slot>
             <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="focusedButton = $event.target" :disabled="item?.disabled?.call(this, control)"></oda-button>
         </div>
         <div class="no-flex horizontal">
