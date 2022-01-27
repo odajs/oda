@@ -1,99 +1,92 @@
-import '../../../oda.js';
-import '../../../components/layouts/app-layout/app-layout.js';
-import '../../../components/colors/color-input/color-input.js';
-import '../../../components/grids/table/table.js';
-import '../../property-grid/test/new/property-grid.js';
-
-ODA({
-    is: 'oda-theme-editor',
-    template: `
-        <style>
-            :host {
-                height: 100%;
-                filter: {{filter}};
-            }
-            ._header {
-                width: 100%;
-                height: 32px;
-                margin-bottom: 4px;
-            }
-            ._label {
-                font-size: large;
-                text-decoration: underline;
-                margin: 8px;
-                color: {{contentColor}};
-            }
-        </style>
-        <oda-app-layout>
-            <div slot="title" class="horizontal no-flex header border">
-                <div class="flex"></div>
-                <div>
-                    <div style="font-size:x-large">oda-theme-editor-000</div>
-                </div>
-                <div class="flex"></div>
+ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-input, @oda/table, @tools/property-grid',
+    template: /*html*/`
+    <style>
+        :host {
+            height: 100%;
+            filter: {{filter}};
+        }
+        ._header {
+            width: 100%;
+            height: 32px;
+            margin-bottom: 4px;
+        }
+        ._label {
+            font-size: large;
+            text-decoration: underline;
+            margin: 8px;
+            color: {{contentColor}};
+        }
+    </style>
+    <oda-app-layout>
+        <div slot="title" class="horizontal no-flex header border">
+            <div class="flex"></div>
+            <div>
+                <div style="font-size:x-large">oda-theme-editor-000</div>
             </div>
-            <div slot="left-panel" class="vertical flex border" style="overflow: auto;">
-                <oda-button ~for="themes" @tap="theme = item">{{item}}</oda-button>
-            </div>
-            <div slot="main" class="vertical" style="margin:10px; border: 1px solid lightgray">
-                <div class="_header horizontal center header border">Header</div>
-                <div class="flex _main vertical">
-                    <div class="center no-flex _label">Main</div>
-                    <div class="flex horizontal">
-                        <div class="vertical flex">
-                            <div class="_label">Icons:</div>
-                            <div class="buttons horizontal">
-                                <oda-icon icon="icons:search" class="content" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:code" class="accent" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:check-box" class="success" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:warning" class="warning" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:error" class="error" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:info" class="info" style="margin: 4px"></oda-icon>
-                            </div>
-                            <div class="_label">Icons (invert):</div>
-                            <div class="buttons horizontal">
-                                <oda-icon icon="icons:search" class="content-invert" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:code" class="accent-invert" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:check-box" class="success-invert" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:warning" class="warning-invert" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:error" class="error-invert" style="margin: 4px"></oda-icon>
-                                <oda-icon icon="icons:info" class="info-invert" style="margin: 4px"></oda-icon>
-                            </div>
-                            <div  class="_label">Buttons:</div>
-                            <div class="buttons horizontal">
-                                <oda-button class="content" style="margin: 4px; width: 62px;">Normal</oda-button>
-                                <oda-button class="accent" style="margin: 4px; width: 62px;">Accent</oda-button>
-                                <oda-button class="success" style="margin: 4px; width: 62px;">Succes</oda-button>
-                                <oda-button class="warning" style="margin: 4px; width: 62px;">Warning</oda-button>
-                                <oda-button class="error" style="margin: 4px; width: 62px;">Error</oda-button>
-                                <oda-button class="info" style="margin: 4px; width: 62px;">Info</oda-button>
-                            </div>
-                            <div class="buttons horizontal">
-                                <oda-button class="content border" style="margin: 4px; width: 60px;">Normal</oda-button>
-                                <oda-button class="accent border" style="margin: 4px; width: 60px;">Accent</oda-button>
-                                <oda-button class="success border" style="margin: 4px; width: 60px;">Succes</oda-button>
-                                <oda-button class="warning border" style="margin: 4px; width: 60px;">Warning</oda-button>
-                                <oda-button class="error border" style="margin: 4px; width: 60px;">Error</oda-button>
-                                <oda-button class="info border" style="margin: 4px; width: 60px;">Info</oda-button>
-                            </div>
-                            <div class="buttons horizontal">
-                                <oda-button class="content content-invert" style="margin: 4px; width: 62px;">Normal</oda-button>
-                                <oda-button class="accent accent-invert" style="margin: 4px; width: 62px;">Accent</oda-button>
-                                <oda-button class="success success-invert" style="margin: 4px; width: 62px;">Succes</oda-button>
-                                <oda-button class="warning warning-invert" style="margin: 4px; width: 62px;">Warning</oda-button>
-                                <oda-button class="error error-invert" style="margin: 4px; width: 62px;">Error</oda-button>
-                                <oda-button class="info info-invert" style="margin: 4px; width: 62px;">Info</oda-button>
-                            </div>
+            <div class="flex"></div>
+        </div>
+        <div slot="left-panel" class="vertical flex border" style="overflow: auto;">
+            <oda-button ~for="themes" @tap="theme = item">{{item}}</oda-button>
+        </div>
+        <div slot="main" class="vertical" style="margin:10px; border: 1px solid lightgray">
+            <div class="_header horizontal center header border">Header</div>
+            <div class="flex _main vertical">
+                <div class="center no-flex _label">Main</div>
+                <div class="flex horizontal">
+                    <div class="vertical flex">
+                        <div class="_label">Icons:</div>
+                        <div class="buttons horizontal">
+                            <oda-icon icon="icons:search" class="content" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:code" class="accent" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:check-box" class="success" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:warning" class="warning" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:error" class="error" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:info" class="info" style="margin: 4px"></oda-icon>
                         </div>
-                        <div class="vertical flex" style="overflow:hidden">
-                            <oda-table ref="table" allow-check="double" lazy col-lines row-lines show-footer show-group-footer show-header allow-focus allow-selection allow-sort even-odd style="height: 100px"></oda-table>
+                        <div class="_label">Icons (invert):</div>
+                        <div class="buttons horizontal">
+                            <oda-icon icon="icons:search" class="content-invert" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:code" class="accent-invert" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:check-box" class="success-invert" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:warning" class="warning-invert" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:error" class="error-invert" style="margin: 4px"></oda-icon>
+                            <oda-icon icon="icons:info" class="info-invert" style="margin: 4px"></oda-icon>
+                        </div>
+                        <div  class="_label">Buttons:</div>
+                        <div class="buttons horizontal">
+                            <oda-button class="content" style="margin: 4px; width: 62px;">Normal</oda-button>
+                            <oda-button class="accent" style="margin: 4px; width: 62px;">Accent</oda-button>
+                            <oda-button class="success" style="margin: 4px; width: 62px;">Succes</oda-button>
+                            <oda-button class="warning" style="margin: 4px; width: 62px;">Warning</oda-button>
+                            <oda-button class="error" style="margin: 4px; width: 62px;">Error</oda-button>
+                            <oda-button class="info" style="margin: 4px; width: 62px;">Info</oda-button>
+                        </div>
+                        <div class="buttons horizontal">
+                            <oda-button class="content border" style="margin: 4px; width: 60px;">Normal</oda-button>
+                            <oda-button class="accent border" style="margin: 4px; width: 60px;">Accent</oda-button>
+                            <oda-button class="success border" style="margin: 4px; width: 60px;">Succes</oda-button>
+                            <oda-button class="warning border" style="margin: 4px; width: 60px;">Warning</oda-button>
+                            <oda-button class="error border" style="margin: 4px; width: 60px;">Error</oda-button>
+                            <oda-button class="info border" style="margin: 4px; width: 60px;">Info</oda-button>
+                        </div>
+                        <div class="buttons horizontal">
+                            <oda-button class="content content-invert" style="margin: 4px; width: 62px;">Normal</oda-button>
+                            <oda-button class="accent accent-invert" style="margin: 4px; width: 62px;">Accent</oda-button>
+                            <oda-button class="success success-invert" style="margin: 4px; width: 62px;">Succes</oda-button>
+                            <oda-button class="warning warning-invert" style="margin: 4px; width: 62px;">Warning</oda-button>
+                            <oda-button class="error error-invert" style="margin: 4px; width: 62px;">Error</oda-button>
+                            <oda-button class="info info-invert" style="margin: 4px; width: 62px;">Info</oda-button>
                         </div>
                     </div>
+                    <div class="vertical flex" style="overflow:hidden">
+                        <oda-table ref="table" allow-check="double" lazy col-lines row-lines show-footer show-group-footer show-header allow-focus allow-selection allow-sort even-odd style="height: 100px"></oda-table>
+                    </div>
                 </div>
-                <div class="_header horizontal center header border">Footer</div>
             </div>
-            <oda-property-grid2 slot="right-panel" class="vertical flex border" label="Theme settings" :io="this" style="padding:0"></oda-property-grid2>
-        </oda-app-layout>
+            <div class="_header horizontal center header border">Footer</div>
+        </div>
+        <oda-property-grid2 slot="right-panel" class="vertical flex border" label="Theme settings" :io="this" style="padding:0"></oda-property-grid2>
+    </oda-app-layout>
     `,
     props: {
         themes: Array,
