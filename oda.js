@@ -2232,10 +2232,11 @@ if (!window.ODA) {
     }
     Element:{
         Element.prototype.getClientRect = function (host) {
+            const res = { x: 0, y: 0, top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 };
+            if (!(this instanceof DOMRect)) return res;
             let rect = this.getBoundingClientRect();
             if (host) {
                 const rectHost = host.getBoundingClientRect?.() || host;
-                const res = { x: 0, y: 0, top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 };
                 for (let n in res)
                     res[n] = rect[n];
                 res.x -= rectHost.x || 0;
