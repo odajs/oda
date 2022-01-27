@@ -363,11 +363,10 @@ if (!window.ODA) {
 
                 this._retractSlots();
                 callHook.call(this, 'detached');
-                this.clearPDP();
             }
             setPDP() {
                 const parentElement = this.domHost || this.parentNode;
-                this.__pdpList ??= []
+                if (!parentElement.$core) return
                 for (let key in parentElement.$core.$pdp){
                     if (key in this) continue;
                     let desc = parentElement.$core.$pdp[key];
@@ -375,12 +374,7 @@ if (!window.ODA) {
                         desc = Object.assign({}, desc, {value: desc.value.bind(this)});
                     }
                     Object.defineProperty(this, key, desc);
-                    this.__pdpList.push(key)
                 }
-            }
-            clearPDP() {
-                this.__pdpList?.forEach(key => { try { delete this[key] } catch (e) { } })
-                this.__pdpList?.slice(0, this.__pdpList.length)
             }
             get rootHost(){
                 return this.domHost?.rootHost || (this.parentElement?.$core?this.parentElement.rootHost:this.domHost || this);
@@ -2232,7 +2226,7 @@ if (!window.ODA) {
     }
     Element:{
         Element.prototype.getClientRect = function (host) {
-            let rect = this.getBoundingClientRect();
+            let rect = this.getBoundingClientRect.call(this);
             if (host) {
                 const rectHost = host.getBoundingClientRect?.() || host;
                 const res = { x: 0, y: 0, top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 };
