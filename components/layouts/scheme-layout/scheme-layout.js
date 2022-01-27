@@ -401,6 +401,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             transform: scale(1.5);
         }
     </style>
+    <div></div>
     `,
     index: undefined,
     get _grid() {
