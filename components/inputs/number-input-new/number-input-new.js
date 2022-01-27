@@ -82,6 +82,7 @@ ODA({is: 'oda-number',
         switch (char) {
             case '-': {
                 e.preventDefault();
+                // todo: сделать правильный selection
                 value = -(value.replace(/\s/g, ''));//value.replaceAll(this.thousandSeparator, '');
                 if (this.useMinMax && ((value < this.min) || (value > this.max))) return;
                 this.value = value;
