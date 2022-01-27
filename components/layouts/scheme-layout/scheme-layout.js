@@ -401,7 +401,6 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             transform: scale(1.5);
         }
     </style>
-    <div></div>
     `,
     index: undefined,
     get _grid() {
@@ -450,7 +449,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
             } break;
         }
         if (link) {
-            const outputRect = this.getClientRect.call(link.src.$$pin, this._grid);
+            const outputRect = link.src.$$pin.getClientRect(this._grid);
             switch (link.src.$$pin.align) {
                 case 'top': {
                     d += ` ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
