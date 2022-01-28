@@ -145,22 +145,21 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     //         delete  window.top.odaAppLayoutDrawers;
     // },
     _scroll(e) {
-        this.debounce('hide-header', () => {
-            requestAnimationFrame(() => {
-                let h = this.$refs.appHeader;
-                let t = e.target;
-                if (e.detail && e.detail.value === 'clearScroll') {
-                    h.style.marginTop = '0';
-                    return;
-                }
-                if (t.slot !== 'main') return;
-                if (e.wheelDelta >= 0 || e.detail > 0) {
-                    h.style.marginTop = '0';
-                } else {
-                    h.style.marginTop = `-${h.offsetHeight}px`;
-                }
-            });
-        }, 100);
+        if (e.ctrlKey || e.shiftKey || e.altKey) return
+        this.interval('hide-header', () => {
+            let h = this.$refs.appHeader;
+            let t = e.target;
+            if (e.detail && e.detail.value === 'clearScroll') {
+                h.style.marginTop = '0';
+                return;
+            }
+            if (t.slot !== 'main') return;
+            if (e.wheelDelta >= 0 || e.detail > 0) {
+                h.style.marginTop = '0';
+            } else {
+                h.style.marginTop = `-${h.offsetHeight}px`;
+            }
+        });
     },
     listeners:{
         resize(e){
