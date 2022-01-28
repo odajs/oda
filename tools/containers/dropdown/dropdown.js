@@ -104,11 +104,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
-        if (!height || !width) {
-            top += 'px';
-            left += 'px';
-            return { top, left };
-        }
+        if (!height || !width) 
+            return { top: top + 'px', left: left + 'px' };
 
         let winWidth = window.innerWidth;
         let winHeight = window.innerHeight;
