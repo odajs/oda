@@ -42,7 +42,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.style.opacity = 0;
             document.body.appendChild(host);
             setTimeout(() => {
-                ctrl.setPDP?.();
+                ctrl.setPDP();
                 host.style.opacity = 1;
                 let timeOutId, intervalId;
                 let f = (force) => {
@@ -61,12 +61,12 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             } else {
                 containerStack.push(host);
             }
-            const close = (e, condition) => {
+            const close = (e, condition, fireEvent = true) => {
                 const list = containerStack.filter(c => c.allowClose !== false);
                 while (condition(list)) {
                     const c = list.pop();
                     if (c) {
-                        c.fire('cancel');
+                        if (fireEvent) c.fire('cancel');
                         containerStack.remove(c);
                     }
                 }
@@ -91,7 +91,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
 
                     }
                     this.okEvent = e => {
-                        setTimeout(()=>{
+                        close(e, (list) => list.length, false);
+                        setTimeout(() => {
                             resolve(ctrl);
                         },100)
                     }

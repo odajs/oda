@@ -2,7 +2,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
             :host {
-                pointer-events: none;
                 z-index: 100;
                 transition: background-color 5s;
             }
