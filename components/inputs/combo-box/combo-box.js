@@ -6,7 +6,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 @apply --horizontal;
             }
         </style>
-        <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || ''">
+        <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || value || ''">
         <oda-button :icon="value?'icons:close':'icons:chevron-right:90'" @tap="dropdown"></oda-button>
     `,
     items: [],
@@ -15,7 +15,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     },
     filter: '',
     async dropdown(e){
-
         try{
             if (this.value) {
                 this.value = null;
@@ -86,7 +85,7 @@ ODA({is:'oda-combo-list',
             }
 
         </style>
-        <label style="min-height: 24px; align-content: center;" ~for="items" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label}}</label>
+        <label style="min-height: 24px; align-content: center;" ~for="items" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label || item}}</label>
     `,
     attached(){
         if (!this.focusedItem)

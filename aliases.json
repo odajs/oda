@@ -1,5 +1,6 @@
 {
     "@oda/icon": "components/buttons/icon/icon.js",
+    "@oda/combo-box": "components/inputs/combo-box/combo-box.js",
     "@oda/basic-input": "components/inputs/basic-input/basic-input.js",
     "@oda/menu": "components/menus/menu/menu.js",
     "@oda/button": "components/buttons/button/button.js",

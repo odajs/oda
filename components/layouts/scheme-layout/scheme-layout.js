@@ -284,7 +284,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         }
         console.dir(e.target)
     },
-    contextItem: Object, // test
+    contextItem: null, // test
     get container() {
         return this;
     },
@@ -520,7 +520,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         }
         this.pin.link = pin.container.item.block;
         this.pin.pin = pin.index;
-        this.changed();
+        this.container.domHost.changed(); // TODO: контекст вызываемых методов провалившихся по pdp
     },
     get vertical() {
         switch (this.align) {

@@ -1,8 +1,8 @@
 <meta charset="utf-8">
-<script src="./gpu-browser.js"></script>
+<script src="./gpu-browser.min.js"></script>
 <script type="module">
     //1. Сгенерируйте матрицы
-    const size = 1024;
+    const size = 4;
     const generateMatrices = () => {
         const matrices = [[], []]
         for (let y = 0; y < size; y++){
@@ -34,7 +34,6 @@
     //4. Выходная матрица
 
     // console.log(out[y][x]) // Logs the element at the xth row and the yth column of the matrix
-    console.log(out[10][12]) // Logs the element at the 10th row and the 12th column of the output matrix
 
-    document.body.innerText = out[10][12]
+    document.body.innerText = out
 </script>

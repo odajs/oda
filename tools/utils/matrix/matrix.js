@@ -1,4 +1,29 @@
 
+//Сложение матриц в массив по произведению
+
+export function multiplyMatrix2SumArray(A, B) { //На входе одномерный массив значений
+    const m = A?.length || 0;
+    const n = A?.[0]?.length || 0;
+    const C = [];
+    for (let i = 0; i < m; i++) {
+        C[i] = 0.0;
+        for (let j = 0; j < n; j++)
+            C[i] += A[i][j] * B[i][j];
+    }
+    return C;
+}
+//Усреднение матриц
+export function averageMatrix(A, B) { //На входе двумерные массивы одинаковой размерности
+    const m = A?.length || 0;
+    const n = A?.[0]?.length || 0;
+    const C = [];
+    for (let i = 0; i < m; i++) {
+        C[i] = [];
+        for (let j = 0; j < n; j++)
+            C[i][j] = (A[i][j] + B[i][j])/2;
+    }
+    return C;
+}
 // Транспонирование матрицы
 export function transMatrix(A){//На входе двумерный массив
     const m = A?.length || 0;
@@ -26,7 +51,7 @@ export function sumMatrix(A, B) { //На входе двумерные масс�
 }
 
 // Умножение матрицы на число
-export function multMatrixNumber(a, A) {// a - число, A - матрица (двумерный массив)
+export function multiplyMatrixNumber(a, A) {// a - число, A - матрица (двумерный массив)
     const m = A?.length || 0;
     const n = A?.[0]?.length || 0;
     const B = [];
@@ -178,4 +203,39 @@ export function inverseMatrix(A) {// A - двумерный квадратный
             A[i][j] /= det;
     }
     return A;
+}
+const _gpu = new GPU();
+export function GPU_multiplyMatrix(A, B){
+    const size = A?.length || 0;
+    const fn = _gpu.createKernel(function(a, b, size) {
+        let sum = 0;
+        for (let i = 0; i < size; i++) {
+            sum += a[this.thread.y][i] * b[i][this.thread.x];
+        }
+        return sum;
+    }).setOutput([size, size]);
+    const res = fn(A,B, size);
+    return res;
+}
+
+export function GPU_multiplyMatrix2SumArray(A, B) {
+    const size = A?.length || 0;
+    const n = A?.[0]?.length || 0;
+    const func = _gpu.createKernel(function(a, b, n) {
+        let sum = 0;
+        for (let i = 0; i < n; i++) {
+            sum += a[this.thread.x][i] * b[this.thread.x][i];
+        }
+        return sum;
+    }).setOutput([size]);
+    return func(A,B, n);
+}
+
+export function GPU_sumMatrix(A, B) {
+    const size = A?.length || 0;
+    const n = A?.[0]?.length || 0;
+    const func = _gpu.createKernel(function(a, b) {
+        return (a[this.thread.y][this.thread.x] + b[this.thread.y][this.thread.x]);
+    }).setOutput([size, n]);
+    return func(A, B);
 }

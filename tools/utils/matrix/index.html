@@ -1,0 +1,192 @@
+<meta charset="utf-8" xmlns="">
+<script src="../gpu-browser/gpu-browser.min.js" ></script>
+<oda-matrix-test precision="2">
+
+</oda-matrix-test>
+<script type="module">
+    import * as MATRIX from './matrix.js';
+    import '/web/oda/oda.js';
+    ODA({is: 'oda-matrix-test', imports: '@oda/combo-box, @oda/checkbox',
+        template: `
+          <style>
+              :host{
+                  @apply --vertical;
+                  @apply --flex;
+                  overflow: hidden;
+                  height: 100%;
+              }
+              :host>div>div{
+                  padding: 8px 16px;
+                  @apply --horizontal;
+              }
+              span{
+                  text-align: center;
+                  margin: 4px;
+              }
+          </style>
+          <div class="horizontal" style="align-items: center; flex-wrap: wrap;">
+              <span>Width:</span>
+              <input ::value="width" type="number">
+              <span>Height:</span>
+              <input ::value="height" type="number">
+              <span>Function:</span>
+              <oda-combo-box :items="this.props.funcName.list" ::value="funcName"></oda-combo-box>
+              <span>GPU:</span>
+              <oda-checkbox ::value="gpu"></oda-checkbox>
+          </div>
+          <div class="flex vertical" style="overflow-y: auto">
+               <oda-matrix-result></oda-matrix-result>
+              <oda-matrix-result :func-name="funcName"></oda-matrix-result>
+              <div class="flex" style="height: 0px;"></div>
+          </div>
+      `,
+        focusedRow: -1,
+        focusedCol: -1,
+        props:{
+            width:{
+                default: 8,
+                save: true
+            },
+            height:{
+                default: 8,
+                save: true
+            },
+            gpu: {
+                default: false,
+                save: true
+            },
+            precision: 3,
+            funcName:{
+                default: 'sumMatrix',
+                list: ['sumMatrix', 'multiplyMatrix2SumArray', 'multiplyMatrix'],
+                save: true
+            }
+        },
+        get rounds(){
+            return Math.pow(10, this.precision);
+        },
+        get A(){
+            return this.genMatrix();
+        },
+        get B(){
+            return this.genMatrix();
+        },
+        genMatrix(){
+            const a = [];
+            for (let x=0; x<this.height; x++){
+                a[x] = [];
+                for (let y=0; y<this.width; y++){
+                    a[x][y] = Math.random() * 2 - 1;
+                }
+            }
+            return a;
+        }
+    })
+    ODA({is: 'oda-matrix',
+        template:`
+          <style>
+              :host{
+                  @apply --vertical;
+                  padding: 8px;
+                  font-size: xx-small;
+              }
+              div{
+                  padding: 2px;
+                  text-align: right;
+                  @apply --content;
+                  cursor: pointer;
+              }
+          </style>
+          <div ~for="matrix" class="flex horizontal" :invert="focusedRow === index" style="justify-content: space-between">
+              <div :invert="focusedCol === index1" class="no-flex" ~for="item?.length?item:[item]" style="flex: 10; width: 20px" @tap="focusedRow = index; focusedCol = index1;">
+                  <oda-matrix-val :val="item1"></oda-matrix-val>
+              </div>
+          </div>
+      `,
+        matrix:[]
+    })
+    ODA({is: 'oda-matrix-result', imports: '@oda/button',
+        template: `
+            <style>
+                :host{
+                    @apply --no-flex;
+                    @apply --header;
+                    @apply --vertical;
+                    overflow: auto;
+                    margin-bottom: 2px;
+                    @apply --shadow;
+                }
+                span{
+                    text-align: center;
+                    @apply --flex;
+                    @apply --header;
+                    font-weight: bold;
+                }
+                div{
+                    padding: 4px;
+                    align-items: center;
+                }
+            </style>
+            <div class="horizontal">
+                <oda-button :icon="expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="expanded = !expanded"></oda-button>
+                <oda-button allow-toggle ::toggled="show">show</oda-button>
+                <span>{{funcName || 'Sources'}}</span>
+                <span class="no-flex" style="min-width: 200px; text-align: right;">{{Math.round((computed && time)*100)/100}} ms</span>
+            </div>
+
+            <div ~if="show && expanded" class="horizontal flex">
+                 <div class="flex vertical">
+                    <span>Matrix A:</span>
+                    <oda-matrix :matrix="matrixA"></oda-matrix>
+                </div>
+                <div class="flex vertical">
+                    <span>Matrix B:</span>
+                    <oda-matrix :matrix="matrixB"></oda-matrix>
+                </div>
+            </div>
+        `,
+        show: false,
+        expanded: false,
+        props:{
+            funcName: ''
+        },
+        get func(){
+            return MATRIX[(this.gpu?'GPU_':'')+this.funcName];
+        },
+        get computed(){
+            this.time = 0;
+            if (!this.expanded) return [[],[]];
+            let startTime = performance.now();
+            if (!this.func)
+                return [this.A, this.B];
+            let res = this.func(Array.from(this.A), Array.from(this.B));
+            startTime = performance.now() - startTime;
+            this.async(()=>{
+                this.time = startTime;
+            },100)
+            return res;
+        },
+        time: 0,
+        get matrixA(){
+            return this.funcName?this.computed:(this.computed[0] || []);
+        },
+        get matrixB(){
+            return this.funcName?[]:(this.computed[1] || []);
+        }
+    })
+    ODA({is: 'oda-matrix-val',
+        template: `
+            <style>
+                :host{
+                    min-width: 140px;
+                    @apply --no-flex;
+                }
+            </style>
+            {{text}}
+        `,
+        val: 0,
+        get text(){
+            return Math.round(this.val * this.rounds)/ this.rounds;
+        }
+    })
+</script>
