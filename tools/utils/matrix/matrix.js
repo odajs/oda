@@ -204,7 +204,7 @@ export function inverseMatrix(A) {// A - двумерный квадратный
     }
     return A;
 }
-const _gpu = new GPU();
+const _gpu = new GPU({mode: 'gpu'});
 export function GPU_multiplyMatrix(A, B){
     const size = A?.length || 0;
     const fn = _gpu.createKernel(function(a, b, size) {
@@ -219,23 +219,37 @@ export function GPU_multiplyMatrix(A, B){
 }
 
 export function GPU_multiplyMatrix2SumArray(A, B) {
-    const size = A?.length || 0;
+    const y = A?.length || 0;
     const n = A?.[0]?.length || 0;
     const func = _gpu.createKernel(function(a, b, n) {
         let sum = 0;
         for (let i = 0; i < n; i++) {
-            sum += a[this.thread.x][i] * b[this.thread.x][i];
+            sum += a[this.thread.y][i] * b[this.thread.y][i];
         }
         return sum;
-    }).setOutput([size]);
-    return func(A,B, n);
+    }).setOutput([y]);
+    return func(A, B, n);
 }
 
 export function GPU_sumMatrix(A, B) {
-    const size = A?.length || 0;
-    const n = A?.[0]?.length || 0;
+    const y = A?.length || 0;
+    const x = A?.[0]?.length || 0;
     const func = _gpu.createKernel(function(a, b) {
+
         return (a[this.thread.y][this.thread.x] + b[this.thread.y][this.thread.x]);
-    }).setOutput([size, n]);
+    }).setOutput([x, y]);
     return func(A, B);
+}
+
+export function GPU_MyFunc(A, B) {
+    const size = B?.length || 0;
+    const width = A?.length || 0;
+    const func = _gpu.createKernel(function(a, b, width) {
+        let sum = 0;
+        for (let i = 0; i<width; i++){
+            sum += a[i] * b[this.thread.x][i];
+        }
+        return 1/(1+Math.pow(Math.E, sum));
+    }).setOutput([size]);
+    return func(A, B, width);
 }

@@ -182,11 +182,11 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.focusedPin = null;
         },
     },
-    changed() {
+    changed(item) {
         this.interval('changed', () => {
             this.links = undefined;
         })
-        this.fire('changed');
+        this.fire('changed', item);
     },
     select(e) {
         if (!this.editMode) return;
@@ -413,7 +413,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         const zoom = this.zoom;
         if (!this.inputs[this.align] || !this.pin?.link) return '';
         const link = this.srcPins.find(i => {
-            return i.link === this.pin.link && i.pin === this.pin.pin;
+            return i.link === this.pin.link && i.pin == this.pin.pin;
         });
         const inputRect = this.getClientRect(this._grid);
         const center = inputRect.center;
@@ -520,7 +520,7 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         }
         this.pin.link = pin.container.item.block;
         this.pin.pin = pin.index;
-        this.container.domHost.changed(); // TODO: контекст вызываемых методов провалившихся по pdp
+        this.container.domHost.changed(this.container.item); // TODO: контекст вызываемых методов провалившихся по pdp
     },
     get vertical() {
         switch (this.align) {
