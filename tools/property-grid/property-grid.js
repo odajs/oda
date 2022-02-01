@@ -135,7 +135,7 @@ ODA({ is: 'oda-pg-cell-value',
                 user-select: text;
             }
         </style>
-        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value">{{item?.value}}</span>
+        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
     `,
     item: null,
