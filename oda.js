@@ -2214,9 +2214,9 @@ if (!window.ODA) {
                 ch.setProperty(name, v)
 
         };
-        Node.prototype.fire = function (event, detail) {
+        Node.prototype.fire = function (event, detail, options = {}) {
             if (!this.$wake && this.$sleep) return;
-            event = new odaCustomEvent(event, { detail: { value: detail }, composed: true });
+            event = new odaCustomEvent(event, { detail: { value: detail }, composed: true, ...options});
             this.dispatchEvent(event);
         };
         Node.prototype.render = function () {

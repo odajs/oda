@@ -135,7 +135,7 @@ ODA({ is: 'oda-pg-cell-value',
                 user-select: text;
             }
         </style>
-        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
+        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
     `,
     item: null,
@@ -244,7 +244,7 @@ ODA({ is: 'oda-pg-object',
 })
 
 ODA({ is: 'oda-pg-string',
-    template: `
+    template: /*html*/`
         <style>
             input{
                 font-size: medium;
@@ -257,13 +257,13 @@ ODA({ is: 'oda-pg-string',
     `,
 })
 ODA({ is: 'oda-pg-number',
-    template: `
+    template: /*html*/`
         <input class="flex"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent>
     `,
 })
 
 ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
-    template: `
+    template: /*html*/`
         <style>
             :host{
                 @apply --horizontal;

@@ -102,7 +102,7 @@ ODA({
             set(value) {
                 if (this.readOnly) return;
                 this.value = value;
-                this.fire('value-changed', value);
+                this.fire('value-changed', value, {bubbles: false});
             }
         },
         type: 'text',
