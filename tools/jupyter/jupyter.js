@@ -1,5 +1,5 @@
 ODA({ is: 'oda-jupyter',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 @apply --flex;
@@ -30,7 +30,7 @@ ODA({ is: 'oda-jupyter',
                 this.editedCell = undefined
             }
         },
-        borderOnEdit: false
+        showBorder: false // show border if not readOnly
     },
     notebook: {},
     editedCell: undefined,
@@ -43,19 +43,21 @@ ODA({ is: 'oda-jupyter',
 })
 
 ODA({ is: 'oda-jupyter-cell',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 display: block;
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{readOnly || (!readOnly && !borderOnEdit) ? '' : 'inset 0px 0px 0px 1px lightgray'}};
+                box-shadow: {{(!readOnly && showBorder) || !cell?.cell_type ? 'inset 0px 0px 0px 1px lightgray' : ''}};
             }
 
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
         <div ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell style="min-height: 24px;"></div>
+        <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
     props: {
         idx: {
@@ -74,7 +76,7 @@ ODA({ is: 'oda-jupyter-cell',
 })
 
 ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 display: flex;
@@ -94,6 +96,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         <oda-button icon="icons:arrow-back:90" :icon-size @tap="tapOrder($event, -1.1)" :disabled="cell.order<=0" title="move up"></oda-button>
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
         <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
+        <oda-button ~if="editedCell===cell" icon="icons:settings" :icon-size></oda-button>
         <div class="flex"></div>
         <oda-button icon="icons:delete" :icon-size @tap="" title="delete"></oda-button>
     `,
@@ -106,13 +109,39 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
     }
 })
 
+ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button',
+    template: /*html*/`
+        <style>
+            :host {
+                display: flex;
+                position: absolute;
+                left: -8px;
+                top: {{ position==='top' ? '-12px' : 'unset' }};
+                bottom: {{ position!=='top' ? '-12px' : 'unset' }};
+                z-index: 21;
+                border: 1px solid lightgray;
+                border-radius: 50%;
+                background: white;
+            }
+            oda-button {
+                border-radius: 3px;
+            }
+        </style>
+        <oda-button icon="icons:add" :icon-size title="add cell"></oda-button>
+    `,
+    props: {
+        position: 'top'
+    },
+    iconSize: 12,
+    cell: {}
+})
+
 ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor, @oda/splitter',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 @apply --horizontal;
                 @apply --flex;
-                min-height: 24px;
             }
             oda-ace-editor {
                 height: unset;
@@ -146,7 +175,7 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
 })
 
 ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 position: relative;
