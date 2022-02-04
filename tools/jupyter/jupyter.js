@@ -5,19 +5,18 @@ ODA({ is: 'oda-jupyter',
                 @apply --flex;
                 @apply --vertical;
                 padding: 12px 0;
+                position: relative;
+                min-height: 28px;
             }
         </style>
+        <oda-jupyter-cell-addbutton ~if="!notebook?.cells?.length" style="top: 6px; left: 4px;"></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
     `,
     props: {
         url: {
             default: '',
             async set(n) {
-                if (n) {
-                    fetch(n)
-                        .then(response => response.json())
-                        .then(json => this.notebook = json);
-                }
+                await this.loadURL(n);
             }
         },
         readOnly: false,
@@ -27,15 +26,14 @@ ODA({ is: 'oda-jupyter',
                 this.editedCell = undefined
             }
         },
-        showBorder: false // show border if not readOnly
+        showBorder: false // show cell border for mode is not readOnly
     },
     notebook: {},
     editedCell: undefined,
-    reset() {
+    loadURL(url = this.url) {
         this.focusedCell = undefined;
-        fetch(this.url)
-            .then(response => response.json())
-            .then(json => this.notebook = json);
+        if (url) 
+            fetch(url).then(response => response.json()).then(json => this.notebook = json);
     }
 })
 
@@ -47,7 +45,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{(!readOnly && showBorder) || !cell?.cell_type ? 'inset 0px 0px 0px 1px lightgray' : ''}};
+                box-shadow: {{!readOnly && showBorder ? 'inset 0px 0px 0px 1px lightgray' : ''}};
             }
             .focused {
                 box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
@@ -62,7 +60,7 @@ ODA({ is: 'oda-jupyter-cell',
         idx: {
             type: Number,
             set(v) {
-                this.cell._order = this.cell.order = v;
+                this.cell.order = v;
             }
         }
     },
@@ -85,19 +83,21 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 z-index: 21;
                 box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
                 background: white;
-                width: 160px;
+                width: 200px;
                 height: 24px;
             }
             oda-button {
                 border-radius: 3px;
+                margin: 2px 0px;
             }
         </style>
         <oda-button icon="icons:arrow-back:90" :icon-size @tap="tapOrder($event, -1.1)" :disabled="cell.order<=0" title="move up"></oda-button>
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
+        <oda-button icon="icons:select-all" :icon-size title="show cells border" @tap="showBorder=!showBorder" allow-tooglle ::toggled="showBorder"></oda-button>
         <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
         <oda-button ~if="editedCell===cell" icon="icons:settings" :icon-size></oda-button>
         <div class="flex"></div>
-        <oda-button icon="icons:delete" :icon-size @tap="" title="delete"></oda-button>
+        <oda-button icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
     `,
     iconSize: 14,
     cell: {},
@@ -105,6 +105,13 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         if (this.focusedCell !== this.cell) return;
         const ord = this.cell.order = this.cell.order + v;
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - 1.1 <= ord ? idx : idx + 1);
+    },
+    tapDelete() {
+        if (this.cell.source === '🔴...' || this.cell.source === ' ' || !this.cell.source) {
+            this.notebook.cells.splice(this.cell.order, 1);
+            this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx);
+            this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
+        }
     }
 })
 
@@ -138,9 +145,10 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button',
     iconSize: 14,
     cell: {},
     addCell() {
-        const idx = this.cell.order; 
+        const idx = this.cell?.order || 0;
         const ord = this.position === 'top' ? idx - .1 : idx + .1;
-        const cell = {  cell_type: 'markdown', order: ord, source: '🔴...' };
+        const cell = { cell_type: 'markdown', order: ord, source: '🔴...' };
+        this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, cell);
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
     }
