@@ -29,7 +29,8 @@ ODA({ is: 'oda-jupyter',
             set(v) {
                 this.editedCell = undefined
             }
-        }
+        },
+        borderOnEdit: false
     },
     notebook: {},
     editedCell: undefined,
@@ -49,7 +50,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{readOnly ? '' : 'inset 0px 0px 0px 1px lightgray'}};
+                box-shadow: {{readOnly || (!readOnly && !borderOnEdit) ? '' : 'inset 0px 0px 0px 1px lightgray'}};
             }
 
         </style>
