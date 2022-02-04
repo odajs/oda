@@ -96,6 +96,7 @@ ODA({ is: 'oda-md-viewer', template: `
                 src = await fetch(s);
                 src = src && src.ok ? await src.text() : s;
             }
+            this.source = src;
             src = src.replace('~~~~~_~~~~~', '');
             src = src.replace(/(```\S*|~~~\S*)( +)/g, '$1' + '_');
             this.html = mdShowdown.makeHtml(src);

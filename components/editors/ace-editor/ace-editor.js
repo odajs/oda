@@ -54,7 +54,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                 }
             },
             get() {
-                return this.editor?.getValue();
+                return this.editor?.getValue() || ' ';
             }
         },
         mode: {

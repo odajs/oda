@@ -49,11 +49,12 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
+                box-shadow: {{readOnly ? '' : 'inset 0px 0px 0px 1px lightgray'}};
             }
 
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell></div>
+        <div ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell style="min-height: 24px;"></div>
     `,
     props: {
         idx: {
@@ -110,6 +111,7 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
             :host {
                 @apply --horizontal;
                 @apply --flex;
+                min-height: 24px;
             }
             oda-ace-editor {
                 height: unset;
@@ -124,7 +126,7 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
     source: '',
     listeners: {
         change(e) {
-            this.source = this.$('oda-ace-editor').value
+            this.source = this.$('oda-ace-editor').value;
             this.debounce('changeCellValue', () => {
                 this.cell.source = this.source;
             }, 1000);
@@ -132,7 +134,14 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
         dblclick(e) {
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         }
-    }
+    },
+    observers: [
+        function setEditedCell(editedCell) {
+            if (editedCell === this.cell) {
+                this.source = this.$('oda-md-viewer').source;
+            }
+        }
+    ]
 })
 
 ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
