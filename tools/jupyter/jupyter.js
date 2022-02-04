@@ -6,11 +6,8 @@ ODA({ is: 'oda-jupyter',
                 @apply --vertical;
                 padding: 12px 0;
             }
-            .focused {
-                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
-            }
         </style>
-        <oda-jupyter-cell ~class="{focused:!readOnly&&focusedCell===cell}" ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
+        <oda-jupyter-cell ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
     `,
     props: {
         url: {
@@ -52,10 +49,12 @@ ODA({ is: 'oda-jupyter-cell',
                 order: {{cell?.order || 0}};
                 box-shadow: {{(!readOnly && showBorder) || !cell?.cell_type ? 'inset 0px 0px 0px 1px lightgray' : ''}};
             }
-
+            .focused {
+                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
+            }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell style="min-height: 24px;"></div>
+        <div ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell></div>
         <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
@@ -122,18 +121,29 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button',
                 border: 1px solid lightgray;
                 border-radius: 50%;
                 background: white;
+                opacity: 0.7;
+            }
+            :host(:hover) {
+                opacity: 1;
             }
             oda-button {
                 border-radius: 3px;
             }
         </style>
-        <oda-button icon="icons:add" :icon-size title="add cell"></oda-button>
+        <oda-button icon="icons:add" :icon-size title="add cell" @tap="addCell"></oda-button>
     `,
     props: {
         position: 'top'
     },
-    iconSize: 12,
-    cell: {}
+    iconSize: 14,
+    cell: {},
+    addCell() {
+        const idx = this.cell.order; 
+        const ord = this.position === 'top' ? idx - .1 : idx + .1;
+        const cell = {  cell_type: 'markdown', order: ord, source: '🔴...' };
+        this.notebook.cells.splice(idx, 0, cell);
+        this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
+    }
 })
 
 ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor, @oda/splitter',
@@ -142,13 +152,14 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
             :host {
                 @apply --horizontal;
                 @apply --flex;
+                min-height: 28px;
             }
-            oda-ace-editor {
+            .ace {
                 height: unset;
                 min-width: 50%;
             }
         </style>
-        <oda-ace-editor class="flex" ~if="!readOnly&&editedCell===cell" :value="source || cell?.source" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+        <oda-ace-editor class="flex ace" ~if="!readOnly&&editedCell===cell" :value="source || cell?.source" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
     `,
@@ -182,7 +193,6 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
                 @apply --horizontal;
                 @apply -- flex;
                 border: 1px solid #eee;
-                align-items: flex-start;
                 padding: 4px;
             }
             .box {
@@ -191,9 +201,14 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
                 align-self: flex-start;
                 padding-right: 4px;
             }
+            .ace {
+                height: unset;
+            }
         </style>
-        <div class="box vertical no-flex">[...]</div>
-        <oda-ace-editor class="flex" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly"></oda-ace-editor>
+        <div class="box vertical no-flex">
+            <div>[...]</div>
+        </div>
+        <oda-ace-editor class="flex ace" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly"></oda-ace-editor>
     `,
     cell: {},
     listeners: {
