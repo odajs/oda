@@ -85,7 +85,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             left: 0px;
             right: 0px;
             top: 0px;
-            outline: 2px dashed cyan;
+            outline: 1px dashed gray;
             outline-offset: -3px;
             z-index: 2;
             pointer-events: none;
@@ -175,7 +175,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <div ref="body" tabindex="0" class="flex vertical" style="overflow: auto; min-height: 0px; max-height: 100vh; flex: auto;" @scroll="_scroll" @touchmove="_bodyTouchmove">
+    <div ref="body" tabindex="0" class="flex vertical" style="overflow: auto; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
         <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: _rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
             <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
         </div>
@@ -569,6 +569,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         this._scroll();
     },
 
+    focus(){ this.$refs.body.focus?.() },
+
     observers: [
         function obs_selectAll(items, _selectedAll) {
             if (_selectedAll)
@@ -709,7 +711,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         },
         'space'(e) {
-            // e.preventDefault();
+             e.preventDefault();
             this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         }
     },
@@ -755,6 +757,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _tapRows(e) {
         const evt = e.sourceEvent || e;
         if (evt.which !== 1) return;
+        this.highlightedRow = null;
         this._select(evt);
         this._focus(evt);
     },

@@ -8,15 +8,6 @@
         "label": "Компоненты"
     },
     {
-        "name": "apps",
-        "label": "Приложения"
-    },
-    {
-        "name": "benchmarks",
-        "label": "Тесты"
-    },
-
-    {
         "name": "locales",
         "label": "Языки"
     },
@@ -26,13 +17,11 @@
         "label": "Темы"
     },
     {
-        "name": "about",
-        "path": "/site/",
-        "label": "Контакты",
-        "content": {   
-            "abstract": "по адресу:г. Рязань, ул. Ленина, д. 47."
-            },
-        "status": "ok"
-
+        "name": "benchmarks",
+        "label": "Тесты"
+    },
+    {
+        "name": "apps",
+        "label": "Примеры"
     }
 ]

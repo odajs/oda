@@ -9,7 +9,7 @@
 
     <g  id="puff" size="44" >
         <g fill="none" fill-rule="evenodd" stroke-width="2">
-            <circle cx="22" cy="22" r="1">
+            <circle cx="22" cy="22" r="1" stroke="#03a">
                 <animate attributeName="r"
                          begin="0s" dur="1.8s"
                          values="1; 20"
@@ -25,7 +25,7 @@
                          keySplines="0.3, 0.61, 0.355, 1"
                          repeatCount="indefinite" ></animate>
             </circle>
-            <circle cx="22" cy="22" r="1">
+            <circle cx="22" cy="22" r="1" stroke="#0a3">
                 <animate attributeName="r"
                          begin="-0.9s" dur="1.8s"
                          values="1; 20"
@@ -68,7 +68,7 @@
 
     <g id="loader" size="100">
 
-        <circle fill="none" stroke="#fff" stroke-width="6" stroke-miterlimit="15" stroke-dasharray="14.2472,14.2472" cx="50" cy="50" r="47" >
+        <circle fill="none" stroke="#0a3" stroke-width="6" stroke-miterlimit="15" stroke-dasharray="14.2472,14.2472" cx="50" cy="50" r="47" >
             <animateTransform
                     attributeName="transform"
                     attributeType="XML"
@@ -78,7 +78,7 @@
                     to="360 50 50"
                     repeatCount="indefinite" ></animateTransform>
         </circle>
-        <circle fill="none" stroke="#fff" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="10,10" cx="50" cy="50" r="39">
+        <circle fill="none" stroke="#0a3" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="10,10" cx="50" cy="50" r="39">
             <animateTransform
                     attributeName="transform"
                     attributeType="XML"
@@ -88,7 +88,7 @@
                     to="-360 50 50"
                     repeatCount="indefinite" ></animateTransform>
         </circle>
-        <g fill="#fff">
+        <g>
             <rect x="30" y="35" width="5" height="30">
                 <animateTransform
                         attributeName="transform"
@@ -167,8 +167,8 @@
     <!-- Loader 3 -->
 
     <g id="dot" size="100">
-        <circle fill="none" stroke="#fff" stroke-width="4" cx="50" cy="50" r="44" style="opacity:0.5;"></circle>
-        <circle fill="#fff" stroke="#e74c3c" stroke-width="3" cx="8" cy="54" r="6" >
+        <circle fill="none" stroke="#888" stroke-width="4" cx="50" cy="50" r="44" style="opacity:0.5;"></circle>
+        <circle stroke="#e74c3c" fill="none" stroke-width="3" cx="8" cy="54" r="6" >
             <animateTransform
                     attributeName="transform"
                     dur="2s"
@@ -311,7 +311,7 @@
     <!-- Loader 8 -->
 
     <g id="equalizer">
-        <rect fill="#fff" width="3" height="100" transform="translate(0) rotate(180 3 50)">
+        <rect width="3" height="100" transform="translate(0) rotate(180 3 50)">
             <animate
                     attributeName="height"
                     attributeType="XML"
@@ -319,7 +319,7 @@
                     values="30; 100; 30"
                     repeatCount="indefinite"></animate>
         </rect>
-        <rect x="17" fill="#fff" width="3" height="100" transform="translate(0) rotate(180 20 50)">
+        <rect x="17" width="3" height="100" transform="translate(0) rotate(180 20 50)">
             <animate
                     attributeName="height"
                     attributeType="XML"
@@ -328,7 +328,7 @@
                     repeatCount="indefinite"
                     begin="0.1s"></animate>
         </rect>
-        <rect x="40" fill="#fff" width="3" height="100" transform="translate(0) rotate(180 40 50)">
+        <rect x="40" width="3" height="100" transform="translate(0) rotate(180 40 50)">
             <animate
                     attributeName="height"
                     attributeType="XML"
@@ -337,7 +337,7 @@
                     repeatCount="indefinite"
                     begin="0.3s"></animate>
         </rect>
-        <rect x="60" fill="#fff" width="3" height="100" transform="translate(0) rotate(180 58 50)">
+        <rect x="60" width="3" height="100" transform="translate(0) rotate(180 58 50)">
             <animate
                     attributeName="height"
                     attributeType="XML"
@@ -346,7 +346,7 @@
                     repeatCount="indefinite"
                     begin="0.5s"></animate>
         </rect>
-        <rect x="80" fill="#fff" width="3" height="100" transform="translate(0) rotate(180 76 50)">
+        <rect x="80" width="3" height="100" transform="translate(0) rotate(180 76 50)">
             <animate
                     attributeName="height"
                     attributeType="XML"
@@ -361,19 +361,19 @@
     <!-- Loader 9 -->
 
     <g id="lines">
-        <rect x="20" y="50" width="4" height="10" fill="#fff">
+        <rect x="20" y="50" width="4" height="10">
             <animateTransform attributeType="xml"
                               attributeName="transform" type="translate"
                               values="0 0; 0 20; 0 0"
                               begin="0" dur="0.6s" repeatCount="indefinite" ></animateTransform>
         </rect>
-        <rect x="30" y="50" width="4" height="10" fill="#fff">
+        <rect x="30" y="50" width="4" height="10">
             <animateTransform attributeType="xml"
                               attributeName="transform" type="translate"
                               values="0 0; 0 20; 0 0"
                               begin="0.2s" dur="0.6s" repeatCount="indefinite" ></animateTransform>
         </rect>
-        <rect x="40" y="50" width="4" height="10" fill="#fff">
+        <rect x="40" y="50" width="4" height="10">
             <animateTransform attributeType="xml"
                               attributeName="transform" type="translate"
                               values="0 0; 0 20; 0 0"
@@ -385,7 +385,7 @@
     <!-- Loader 10 -->
 
     <g id="half-circle">
-        <path fill="#fff" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
+        <path d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
             <animateTransform
                     attributeName="transform"
                     attributeType="XML"
@@ -431,7 +431,7 @@
 
     <g id="ball-triangle" size="57" fill="none" fill-rule="evenodd">
         <g transform="translate(1 1)" stroke-width="2">
-            <circle cx="5" cy="50" r="5">
+            <circle cx="5" cy="50" r="5" stroke="#0a3">
                 <animate attributeName="cy"
                          begin="0s" dur="2.2s"
                          values="50;5;50;50"
@@ -443,7 +443,7 @@
                          calcMode="linear"
                          repeatCount="indefinite" ></animate>
             </circle>
-            <circle cx="27" cy="5" r="5">
+            <circle cx="27" cy="5" r="5" stroke="#03a">
                 <animate attributeName="cy"
                          begin="0s" dur="2.2s"
                          from="5" to="5"
@@ -457,7 +457,7 @@
                          calcMode="linear"
                          repeatCount="indefinite" ></animate>
             </circle>
-            <circle cx="49" cy="50" r="5">
+            <circle cx="49" cy="50" r="5" stroke="#a30">
                 <animate attributeName="cy"
                          begin="0s" dur="2.2s"
                          values="50;50;5;50"
@@ -604,7 +604,7 @@
         <g fill="none" fill-rule="evenodd">
             <g transform="translate(1 1)" stroke-width="2">
                 <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
-                <path d="M36 18c0-9.94-8.06-18-18-18">
+                <path stroke="#0a3" d="M36 18c0-9.94-8.06-18-18-18">
                     <animateTransform
                             attributeName="transform"
                             type="rotate"
@@ -618,7 +618,7 @@
     </g>
     <g size="45" id="rings">
         <g fill="none" fill-rule="evenodd" transform="translate(1 1)" stroke-width="2">
-            <circle cx="22" cy="22" r="6" stroke-opacity="0">
+            <circle cx="22" cy="22" r="6" stroke-opacity="0" stroke="#0a3">
                 <animate attributeName="r"
                          begin="1.5s" dur="3s"
                          values="6;22"
@@ -633,7 +633,7 @@
                          values="2;0" calcMode="linear"
                          repeatCount="indefinite" ></animate>
             </circle>
-            <circle cx="22" cy="22" r="6" stroke-opacity="0">
+            <circle cx="22" cy="22" r="6" stroke-opacity="0" stroke="#03a">
                 <animate attributeName="r"
                          begin="3s" dur="3s"
                          values="6;22"
@@ -648,7 +648,7 @@
                          values="2;0" calcMode="linear"
                          repeatCount="indefinite" ></animate>
             </circle>
-            <circle cx="22" cy="22" r="8">
+            <circle cx="22" cy="22" r="8" stroke="#a30">
                 <animate attributeName="r"
                          begin="0s" dur="1.5s"
                          values="6;1;2;3;4;5;6"
@@ -714,9 +714,9 @@
     <g size="38" id="tail-spin">
         <defs>
             <linearGradient x1="8.042%" y1="0%" x2="65.682%" y2="23.865%" id="a">
-                <stop stop-color="#fff" stop-opacity="0" offset="0%"></stop>
-                <stop stop-color="#fff" stop-opacity=".631" offset="63.146%"></stop>
-                <stop stop-color="#fff" offset="100%"></stop>
+                <stop stop-color="#03a" stop-opacity="0" offset="0%"></stop>
+                <stop stop-color="#03a" stop-opacity=".631" offset="63.146%"></stop>
+                <stop stop-color="#03a" offset="100%"></stop>
             </linearGradient>
         </defs>
         <g fill="none" fill-rule="evenodd">

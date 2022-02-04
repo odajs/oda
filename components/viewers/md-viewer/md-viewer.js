@@ -49,6 +49,10 @@ ODA({ is: 'oda-md-viewer', template: `
     `,
     props: {
         html: String,
+        srcmd: {
+            type: String,
+            set(n) { this._setHTML(n); }
+        },
         src: {
             type: String,
             set(n) { this._setHTML(n); }
@@ -77,7 +81,7 @@ ODA({ is: 'oda-md-viewer', template: `
     },
     attached() {
         this.async(() => {
-            if (!this.src) {
+            if (!this.src && !this.srcmd) {
                 let url = new URL(window.location);
                 let s = url.searchParams.get("s");
                 this._setHTML(s);
@@ -88,7 +92,7 @@ ODA({ is: 'oda-md-viewer', template: `
         if (s) {
             await this._import();
             let src = s;
-            if (s.endsWith('.md') || !(s.includes('~~~') || s.includes('```'))) {
+            if (!this.srcmd && (s.endsWith('.md') || !(s.includes('~~~') || s.includes('```')))) {
                 src = await fetch(s);
                 src = src && src.ok ? await src.text() : s;
             }

@@ -27,11 +27,20 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             }
             .ace_hidden-cursors { opacity: 0; }
         </style>
-        <div></div>
+        <div @keydown.stop></div>
     `,
     isChanged: false,
     text: '',
     props: {
+        readOnly: {
+            type: Boolean,
+            default: false,
+            set(n) {
+                if (this.editor) {
+                    this.editor.setReadOnly(n);
+                }
+            }
+        },
         value: { //todo: возможно есть другое решение
             set(n) {
                 if (this.editor) {
@@ -93,7 +102,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         },
         highlightActiveLine: true,
         highlightSelectedWord: true,
-        readOnly: false,
+        // readOnly: false,
         cursorStyle: {
             default: 'slim',
             list: ['ace', 'slim', 'smooth', 'wide']
@@ -170,6 +179,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         const snippets = snippetManager.parseSnippetFile(snippet, this.mode);
         snippetManager.register(snippets, this.mode);
     },
+    focus(){ this.editor?.focus() },
     // updated() {
     //     this.editor?.setOptions(this.options);
     // },
@@ -222,13 +232,14 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                 }));
             }
         })
+        editor.setReadOnly(this.readOnly);
     },
     get options() {
         const options = {
             mode: 'ace/mode/' + this.mode,
             theme: 'ace/theme/' + this.theme
         }, props = [
-            'highlightActiveLine', 'highlightSelectedWord', 'readOnly', 'cursorStyle', 'autoScrollEditorIntoView',
+            'highlightActiveLine', 'highlightSelectedWord', 'cursorStyle', 'autoScrollEditorIntoView',
             'copyWithEmptySelection', 'useSoftTabs', 'navigateWithinSoftTabs', 'enableMultiselect',
             'hScrollBarAlwaysVisible', 'vScrollBarAlwaysVisible', 'highlightGutterLine', 'animatedScroll', 'showInvisibles',
             'showPrintMargin', 'printMarginColumn', 'fadeFoldWidgets', 'showFoldWidgets', 'showLineNumbers', 'showGutter',

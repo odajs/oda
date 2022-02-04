@@ -13,7 +13,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     elm.fire('cancel');
                 }
         }
-        ODA[('show-' + id).toCamelCase()] = async function (component, props = {}, hostProps = {}) {
+        ODA[('show-' + id).toCamelCase()] = async function (component, props = {}, hostProps = {}, onVisible) {
             await import(path + '/' + id + '/' + id + '.js');
             const host = await ODA.createComponent('oda-' + id, hostProps);
             let ctrl = component;
@@ -42,7 +42,6 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.style.opacity = 0;
             document.body.appendChild(host);
             setTimeout(() => {
-                ctrl.setPDP();
                 host.style.opacity = 1;
                 let timeOutId, intervalId;
                 let f = (force) => {
@@ -50,6 +49,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     if (force || (s.get('visibility')?.value === 'visible' && s.get('opacity')?.value > 0 && s.get('display')?.value !== 'none')) {
                         clearTimeout(timeOutId);
                         clearInterval(intervalId);
+                        ctrl.setPDP?.();
+                        onVisible?.(ctrl);
                         ctrl.focus?.();
                     }
                 };

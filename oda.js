@@ -1500,7 +1500,7 @@ if (!window.ODA) {
     function forDirective(prototype, src, name, expr, vars, attrName) {
         const newVars = expr.replace(/\s(in|of)\s/, '\n').split('\n');
         expr = newVars.pop();
-        const params = (newVars.shift() || '').replace('(', '').replace(')', '').split(',');
+        const params = (newVars.shift() || '').replace('(', '').replace(')', '').split(',').map(s => s.trim());
         forVars.forEach((varName, i) => {
             let p = (params[i] || forVars[i]).trim();
             let pp = p;

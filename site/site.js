@@ -10,7 +10,7 @@ import '../tools/router/router.js';
 // import '../tools/containers/modal/modal.js';
 import '../components/viewers/md-viewer/md-viewer.js';
 import '../components/buttons/button/button.js';
-import '../tools/documentation/documentation.js';
+// import '../tools/documentation/documentation.js';
 
 const statuses = [
     { id: 'no', icon: '', color: 'lightgray' },
@@ -297,7 +297,7 @@ content: {
         _tap(i) { route(i); }
     });
     ODA({
-        is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: ['@oda/table'],
+        is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: '@oda/table, @tools/jupyter',
         template: /*html*/ `
             <style>
                 :host * {
@@ -317,7 +317,8 @@ content: {
             </style>
             <div class="vertical flex" style="padding: 2px 2px;">
                 <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
-                <oda-documentation :item></oda-documentation>
+                <!-- <oda-documentation :item></oda-documentation> -->
+                <oda-jupyter ~if="useJupyter" :notebook></oda-jupyter>
             </div>
         `,
         props: {
@@ -336,7 +337,23 @@ content: {
                 get() {
                     return this.item?.label || this.item?.name;
                 }
+            },
+            item: Object
+        },
+        get notebook() {
+            return { 
+                cells: [
+                    {
+                        cell_type: 'markdown',
+                        src: this.item?.content?.abstract ? this.item.content.abstract 
+                            : (this.item?.name?.includes('.md') && this.item?.$level === 0) ?
+                                this.item?.$id || this.item?.content?.link || this.item?.content?.src || '' : ''
+                    }
+                ]
             }
+        },
+        get useJupyter() {
+            return this.notebook?.cells?.filter(i => i.src).length;
         },
         _tap(e) {
             route(this.item)
@@ -605,7 +622,7 @@ header: {
                     elm.fire('cancel');
                 }
             //window.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 27 }));
-            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this });
+            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none' });
             this.value = res?.value;
         },
         _tap() {

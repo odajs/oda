@@ -21,6 +21,7 @@
     "@oda/ruler-grid": "components/grids/ruler-grid/ruler-grid.js",
     "@oda/leaflet": "components/viewers/leaflet/leaflet.js",
     "@oda/calculator": "components/tools/calculator/calculator.js",
+    "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 
@@ -35,6 +36,7 @@
     "@tools/localization": "tools/localization/localization.js",
     "@tools/matrix": "tools/utils/matrix/matrix.js",
     "@tools/activation": "tools/utils/activation/activation.js",
+    "@tools/jupyter": "tools/jupyter/jupyter.js",
 
     "@lib/item-menu": "../core/item/lib/item-menu/item-menu.js",
     "@lib/item-tree": "../core/item/lib/item-tree/item-tree.js",
