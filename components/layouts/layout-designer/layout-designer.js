@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0;" :_savekey="data.savekey || savekey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0;" :root-savekey></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -26,7 +26,7 @@ ODA({ is: 'oda-layout-designer',
             save: true
         }
     },
-    get savekey() {
+    get rootSavekey() {
         return this.data?.savekey || 'root';
     },
     get layout() {
@@ -73,13 +73,14 @@ ODA({ is: 'oda-layout-designer-structure',
     `,
     props: {
         layout: null,
-        _savekey: ''
+        rootSavekey: ''
     },
     iconSize: 32,
     observers: [
         async function execute(layout, settings) {
             if (layout) {
-                layout.saveKey = this._savekey || (this.savekey + '_' + (layout.id || layout.name || ''));
+                console.log('rootSavekey ... ', this.rootSavekey)
+                layout.saveKey = this.rootSavekey || (this.savekey + '_' + (layout.id || layout.name || ''));
                 if (settings?.[layout.saveKey])
                     await this.layout.execute(settings[layout.saveKey]);
             }
