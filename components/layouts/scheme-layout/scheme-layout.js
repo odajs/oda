@@ -382,7 +382,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
         return this.offsetHeight;
     }
 });
-ODA({ is: 'oda-scheme-pin', template: /*html*/`
+ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     <style>
         :host {
             @apply --content;
@@ -402,6 +402,9 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         }
     </style>
     `,
+    props: {
+        iconSize: 16
+    },
     index: undefined,
     get _grid() {
         return this.container?.parentElement;
@@ -489,7 +492,11 @@ ODA({ is: 'oda-scheme-pin', template: /*html*/`
         },
         tap(e) {
             e.stopPropagation();
-            this.prepareLink();
+            if(this.pin.tap)
+                this.pin.tap.call(this, e)
+            else
+                this.prepareLink();
+            this.async(() => { this.layout.links = undefined }, 100);
         }
     },
     prepareLink() {

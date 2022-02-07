@@ -219,7 +219,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
             label{
                 font-size: small;
                 font-weight: bold;
-                padding: 8px;
+                padding: 8px 4px 4px 4px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
