@@ -454,7 +454,19 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 })
             }
             return items.reduce((res, i) => {
-                i.$parent = parent;
+                if (parent){
+                    Object.defineProperty(i, '$parent', {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: parent
+                    })
+                    // i.$parent = parent;
+                }
+                else {
+                    delete i.$parent;
+                }
+
                 i.$level = level;
                 if (!this.hideTop || level > -1) res.push(i);
 
