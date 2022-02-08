@@ -324,7 +324,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached() {
         this.links = undefined;
@@ -545,11 +545,6 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                 enumerable: false,
                 value: this
             });
-            if(n.props) {
-                for(let key in n.props) {
-                    this[key] = n.props[key];
-                }
-            }
         }
 
         this.link = undefined;

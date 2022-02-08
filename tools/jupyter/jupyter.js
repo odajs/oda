@@ -9,7 +9,7 @@ ODA({ is: 'oda-jupyter',
                 min-height: 28px;
             }
         </style>
-        <oda-jupyter-cell-addbuttons ~if="!notebook?.cells?.length" style="top: 6px; left: 4px;"></oda-jupyter-cell-addbuttons>
+        <oda-jupyter-cell-addbutton ~if="!notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
     `,
     props: {
@@ -53,8 +53,8 @@ ODA({ is: 'oda-jupyter-cell',
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
         <div ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell></div>
-        <oda-jupyter-cell-addbuttons ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-addbuttons>
-        <oda-jupyter-cell-addbuttons ~if="!readOnly && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbuttons>
+        <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
     props: {
         idx: {
@@ -79,7 +79,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 display: flex;
                 position: absolute;
                 right: 8px;
-                top: -18px;
+                top: -12px;
                 z-index: 21;
                 box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
                 background: white;
@@ -91,6 +91,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 margin: 2px 0px;
             }
         </style>
+        <oda-button icon="icons:done" :icon-size @tap="focusedCell=undefined"></oda-button>
         <oda-button icon="icons:arrow-back:90" :icon-size @tap="tapOrder($event, -1.1)" :disabled="cell.order<=0" title="move up"></oda-button>
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
         <oda-button icon="icons:select-all" :icon-size title="show cells border" @tap="showBorder=!showBorder" allow-tooglle ::toggled="showBorder"></oda-button>
@@ -107,7 +108,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - 1.1 <= ord ? idx : idx + 1);
     },
     tapDelete() {
-        if (this.cell.source === '🔴...' || this.cell.source === ' ' || !this.cell.source) {
+        if (['🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫️', '⚪️'].includes(this.cell.source.slice(0, 2)) || this.cell.source === ' ' || !this.cell.source) {
             this.notebook.cells.splice(this.cell.order, 1);
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx);
             this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
@@ -115,48 +116,84 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell-addbuttons', imports: '@oda/button',
+ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers',
     template: /*html*/`
         <style>
-            :host {
+            .btn {
                 display: flex;
                 position: absolute;
-                left: 8px;
+                left: -8px;
                 z-index: 21;
-                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
+                border: 1px solid lightgray;
+                border-radius: 50%;
                 background: white;
-                /* width: 200px; */
-                height: 24px;
                 opacity: 0.7;
-                top: {{ position==='top' ? '-18px' : 'unset' }};
-                bottom: {{ position!=='top' ? '-18px' : 'unset' }};
+                top: {{ position==='top' ? '-12px' : 'unset' }};
+                bottom: {{ position!=='top' ? '-12px' : 'unset' }};
             }
-            :host(:hover) {
+            .btn:hover {
                 opacity: 1;
             }
-            oda-button {
-                border-radius: 3px;
-                margin: 2px 0px;
+            .cell {
+                position: absolute;
+                top: -12px;
+                left: 20px;
+                z-index: 21;
+                font-size: 10px;
+                cursor: pointer;
             }
         </style>
-        <oda-button title="add markdown" @tap="addCell('markdown','md','🟠...')" ~style="{color: extType === 'md' || extType === 'markdown'? 'red' : ''}">md</oda-button>
-        <!-- <oda-button title="add html" @tap="addCell('html','html','🟢​...')" ~style="{color: extType === 'html' ? 'red' : ''}">html</oda-button> -->
-        <oda-button title="add code" @tap="addCell('code','code','🔴...')" ~style="{color: extType === 'code' ? 'red' : ''}">code</oda-button>
+        <oda-button class="btn" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
+        <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type" ~style="{color: cell?.color || 'gray'}">{{cell.label || cell.cell_type}}</div>
     `,
-    // ​🔴​🟠​🟡​🟢​🔵​🟣​⚫️​⚪️​🟤​
     props: {
         position: 'top'
     },
     iconSize: 14,
     cell: {},
-    get extType() { return this.cell?.cell_extType || this.cell?.cell_type || '' },
-    addCell(cell_type, cell_extType, source) {
+    async showCellViews(view) {
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, {});
+    }
+})
+
+ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
+    template: /*html*/`
+        <style>
+            :host {
+                @apply --vertical;
+                min-width: 140px;
+            }
+        </style>
+        <div class="header flex" style="text-align: center; padding: 1px; width: 100%">{{view}} cell</div>
+        <oda-button class="horizontal flex" ~for="cellViews" @tap="addCell(item)" style="justify-content: start">{{item.source + item.label}}</oda-button>
+    `,
+    props: {
+        position: 'top',
+        view: 'add'
+    },
+    iconSize: 14,
+    cell: {},
+    notebook: {},
+    get cellViews() { 
+        return [
+            { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
+            // { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'editor' },
+            { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
+        ]
+    },
+    addCell(item) {
         const idx = this.cell?.order || 0;
-        const ord = this.position === 'top' ? idx - .1 : idx + .1;
-        const cell = { order: ord, cell_type, cell_extType, source };
-        this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, cell);
-        this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
+        if (this.view === 'add') {
+            const ord = this.position === 'top' ? idx - .1 : idx + .1;
+            const cell = { order: ord, cell_type: item.cell_type, cell_extType: item.cell_extType, source: item.source, color: item.color, label: item.label };
+            this.notebook.cells ||= [];
+            this.notebook.cells.splice(idx, 0, cell);
+            this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
+        } else if (this.view === 'select type') {
+            const cell = { ...this.cell, ...{ cell_type: item.cell_type, cell_extType: item.cell_extType, color: item.color, label: item.label  } };
+            this.notebook.cells.splice(idx, 1, cell);
+        }
+        this.fire('ok');
     }
 })
 
