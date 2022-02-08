@@ -1,5 +1,5 @@
 ODA({ is: 'oda-layout-designer',
-    template: `
+    template: /*html*/`
         <style>
             :host{
                 overflow-x: hidden;
@@ -79,7 +79,6 @@ ODA({ is: 'oda-layout-designer-structure',
     observers: [
         async function execute(layout, settings) {
             if (layout) {
-                console.log('rootSavekey ... ', this.rootSavekey)
                 layout.saveKey = this.rootSavekey || (this.savekey + '_' + (layout.id || layout.name || ''));
                 if (settings?.[layout.saveKey])
                     await this.layout.execute(settings[layout.saveKey]);
@@ -89,36 +88,46 @@ ODA({ is: 'oda-layout-designer-structure',
 })
 
 ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
-    template: `
+    template: /*html*/`
         <style>
             :host{
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --flex;
                 height: 100%;
+                margin-top: 8px;
             }
             [focused]{
                 @apply --content;
             }
-            label, input {
+            .tab {
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                font-weight: bold;
+                /* font-weight: bold; */
                 padding: 4px;
             }
             oda-button{
                 transform: scale(.7);
                 padding: 0px;
             }
+            .group-label {
+                border: 1px solid lightgray;
+                font-weight: bold;
+                padding: 8px 4px 4px 4px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
         </style>
-        <div class="horizontal flex" style="flex-wrap: wrap;">
+        <label class="group-label">{{layout.label}}</label>
+        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;">
            <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: center" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
-                <label ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab=designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)">{{item?.label}}</label>
+                <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab=designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)">{{item?.label}}</label>
                 <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
+            <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
         </div>
-        <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
+
     `,
     // attached() {
     //     this.layout.$focused = this.layout.items[0];
@@ -180,7 +189,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
 })
 
 ODA({ is: 'oda-layout-designer-group-structure',
-    template: `
+    template: /*html*/`
         <style>
             :host{
                 @apply --horizontal;
@@ -199,7 +208,7 @@ ODA({ is: 'oda-layout-designer-group-structure',
     `
 })
 
-ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
+ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
     template: /*html*/`
         <style>
             :host{
@@ -224,7 +233,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
                 white-space: nowrap;
             }
             .group{
-                @apply --header;
+                /* @apply --header; */
             }
             [focused]{
                 @apply --content;
@@ -396,6 +405,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu',
         this.render();
     }
 })
+
 CLASS({ is: 'Layout',
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
@@ -441,7 +451,7 @@ CLASS({ is: 'Layout',
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const group = new Layout({ id: action.groupId, label: `Group ${action.groupId}` }, item.key, item.owner, item.root);
+        const group = new Layout({ id: action.groupId, label: `Group` }, item.key, item.owner, item.root);
         const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, group, item.root);
         group.type = 'group';
         group.width = 0;
