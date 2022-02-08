@@ -9,7 +9,7 @@ ODA({ is: 'oda-jupyter',
                 min-height: 28px;
             }
         </style>
-        <oda-jupyter-cell-addbutton ~if="!notebook?.cells?.length" style="top: 6px; left: 4px;"></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell-addbuttons ~if="!notebook?.cells?.length" style="top: 6px; left: 4px;"></oda-jupyter-cell-addbuttons>
         <oda-jupyter-cell ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
     `,
     props: {
@@ -53,8 +53,8 @@ ODA({ is: 'oda-jupyter-cell',
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
         <div ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell></div>
-        <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
-        <oda-jupyter-cell-addbutton ~if="!readOnly && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell-addbuttons ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-addbuttons>
+        <oda-jupyter-cell-addbuttons ~if="!readOnly && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbuttons>
     `,
     props: {
         idx: {
@@ -79,7 +79,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 display: flex;
                 position: absolute;
                 right: 8px;
-                top: -12px;
+                top: -18px;
                 z-index: 21;
                 box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
                 background: white;
@@ -115,39 +115,45 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button',
+ODA({ is: 'oda-jupyter-cell-addbuttons', imports: '@oda/button',
     template: /*html*/`
         <style>
             :host {
                 display: flex;
                 position: absolute;
-                left: -8px;
-                top: {{ position==='top' ? '-12px' : 'unset' }};
-                bottom: {{ position!=='top' ? '-12px' : 'unset' }};
+                left: 8px;
                 z-index: 21;
-                border: 1px solid lightgray;
-                border-radius: 50%;
+                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
                 background: white;
+                /* width: 200px; */
+                height: 24px;
                 opacity: 0.7;
+                top: {{ position==='top' ? '-18px' : 'unset' }};
+                bottom: {{ position!=='top' ? '-18px' : 'unset' }};
             }
             :host(:hover) {
                 opacity: 1;
             }
             oda-button {
                 border-radius: 3px;
+                margin: 2px 0px;
             }
         </style>
-        <oda-button icon="icons:add" :icon-size title="add cell" @tap="addCell"></oda-button>
+        <oda-button title="add markdown" @tap="addCell('markdown','md','🟠...')" ~style="{color: extType === 'md' || extType === 'markdown'? 'red' : ''}">md</oda-button>
+        <!-- <oda-button title="add html" @tap="addCell('html','html','🟢​...')" ~style="{color: extType === 'html' ? 'red' : ''}">html</oda-button> -->
+        <oda-button title="add code" @tap="addCell('code','code','🔴...')" ~style="{color: extType === 'code' ? 'red' : ''}">code</oda-button>
     `,
+    // ​🔴​🟠​🟡​🟢​🔵​🟣​⚫️​⚪️​🟤​
     props: {
         position: 'top'
     },
     iconSize: 14,
     cell: {},
-    addCell() {
+    get extType() { return this.cell?.cell_extType || this.cell?.cell_type || '' },
+    addCell(cell_type, cell_extType, source) {
         const idx = this.cell?.order || 0;
         const ord = this.position === 'top' ? idx - .1 : idx + .1;
-        const cell = { cell_type: 'markdown', order: ord, source: '🔴...' };
+        const cell = { order: ord, cell_type, cell_extType, source };
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, cell);
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
