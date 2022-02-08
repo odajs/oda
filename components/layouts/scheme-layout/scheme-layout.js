@@ -69,7 +69,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             i.$$container.links = undefined;
         });
     },
-    pinSize: 12,
+    iconSize: 12,
     props: {
         inputs: {
             top: true,
@@ -388,8 +388,8 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             @apply --content;
             @apply --border;
             border-radius: 25%;
-            min-width: {{pinSize}}px;
-            min-height: {{pinSize}}px;
+            /*min-width: {{iconSize}}px;
+            min-height: {{iconSize}}px;*/
             margin: 2px;
             transition: transform ease-in-out .5s;
             cursor: pointer;
@@ -403,14 +403,14 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     </style>
     `,
     props: {
-        iconSize: 16
+        iconSize: 12
     },
     index: undefined,
     get _grid() {
         return this.container?.parentElement;
     },
     get size() {
-        return this.pinSize * (this.index + 2);
+        return this.iconSize * (this.index + 2);
     },
     get link() {
         const zoom = this.zoom;
@@ -544,7 +544,12 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                 configurable: true,
                 enumerable: false,
                 value: this
-            })
+            });
+            if(n.props) {
+                for(let key in n.props) {
+                    this[key] = n.props[key];
+                }
+            }
         }
 
         this.link = undefined;
@@ -576,8 +581,8 @@ ODA({ is: 'oda-scheme-link', template: /*html*/`
             @apply --content;
             @apply --border;
             border-radius: 45%;
-            width: {{pinSize}}px;
-            height: {{pinSize}}px;
+            width: {{iconSize}}px;
+            height: {{iconSize}}px;
             cursor: pointer;
             @apply --shadow;
         }
