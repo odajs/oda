@@ -102,36 +102,46 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             .tab {
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                /* font-weight: bold; */
-                padding: 4px;
+                margin: 2px;
+                padding: 8px;
+                font-size: {{fontSize}};
+            }
+            input {
+                border: none;
+                outline: none;
+                margin: 1px;
+                font-size: {{fontSize}};
             }
             oda-button{
-                transform: scale(.7);
+                transform: scale(.6);
                 padding: 0px;
+                margin-left: auto;
             }
             .group-label {
                 border: 1px solid lightgray;
                 font-weight: bold;
+                margin: 1px;
                 padding: 8px 4px 4px 4px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+                cursor: {{designMode ? 'pointer' : 'unset'}};
+                font-size: {{fontSize}};
             }
         </style>
-        <label class="group-label">{{layout.label}}</label>
-        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;">
-           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: center" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+        <label class="group-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
+        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white; border-left: 1px solid lightgray;">
+           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
-                <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab=designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)">{{item?.label}}</label>
+                <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
                 <oda-button :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
         </div>
-
     `,
-    // attached() {
-    //     this.layout.$focused = this.layout.items[0];
-    // },
+    props: { 
+        fontSize: '14px'
+    },
     get draggable() {
         return this.layout && this.designMode ? 'true' : 'false';
     },
@@ -150,6 +160,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         this.saveScript(this.layout, action);
     },
     ontap(e, item) {
+        this.layout.$expanded = true;
         this.layout.$focused = item;
         if (this.designMode) {
             const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
