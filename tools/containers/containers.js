@@ -50,7 +50,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         clearTimeout(timeOutId);
                         clearInterval(intervalId);
                         ctrl.setPDP?.();
-                        onVisible?.(ctrl);
+                        onVisible?.(host, ctrl);
                         ctrl.focus?.();
                     }
                 };
