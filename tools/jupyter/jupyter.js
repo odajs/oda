@@ -212,30 +212,33 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
                 min-width: 50%;
             }
         </style>
-        <oda-ace-editor class="flex ace" ~if="!readOnly&&editedCell===cell" :value="source || cell?.source" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+        <oda-ace-editor class="flex ace" ~if="!readOnly&&editedCell===cell" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
     `,
     cell: {},
-    source: '',
     listeners: {
         change(e) {
-            this.source = this.$('oda-ace-editor').value;
             this.debounce('changeCellValue', () => {
-                this.cell.source = this.source;
+                this.cell.source = this.$('oda-ace-editor').value;
             }, 1000);
         },
         dblclick(e) {
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
+            if (!this.editedCell) return;
+            let ace = this.$('oda-ace-editor'), count = 0;
+            let handle = setInterval(() => {
+                if (ace || count > 20) {
+                    clearInterval(handle);
+                    ace.value = this.cell.source
+                    // console.log(count);
+                    return;
+                }
+                count++;
+                ace = this.$('oda-ace-editor');
+            }, 50);
         }
-    },
-    observers: [
-        function setEditedCell(editedCell) {
-            if (editedCell === this.cell) {
-                this.source = this.$('oda-md-viewer').source;
-            }
-        }
-    ]
+    }
 })
 
 ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
@@ -300,24 +303,22 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
     cell: {},
     listeners: {
         change(e) {
-            if (this.editedCell && this.editedCell === this.cell)
-                this.cell.source = e.detail.value;
+            this.cell.source = e.detail.value;
         },
         dblclick(e) {
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
-            if (this.editedCell) {
-                let pell = this.$('oda-pell-editor'), count = 0;
-                let handle = setInterval(() => {
-                    if (pell?.editor || count > 20) {
-                        clearInterval(handle);
-                        if (pell?.editor) pell.editor.content.innerHTML = this.cell.source
-                        console.log(count);
-                        return;
-                    }
-                    count++;
-                    pell = this.$('oda-pell-editor')
-                }, 50);
-            }
+            if (!this.editedCell) return;
+            let pell = this.$('oda-pell-editor'), count = 0;
+            let handle = setInterval(() => {
+                if (pell?.editor || count > 20) {
+                    clearInterval(handle);
+                    if (pell?.editor) pell.editor.content.innerHTML = this.cell.source
+                    // console.log(count);
+                    return;
+                }
+                count++;
+                pell = this.$('oda-pell-editor')
+            }, 50);
         }
     }
 })
