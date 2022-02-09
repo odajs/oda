@@ -67,6 +67,7 @@ ODA({ is: 'oda-jupyter-cell',
     cell: {},
     get cellType() {
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
+        if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
         return 'div';
     }
@@ -91,7 +92,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 margin: 2px 0px;
             }
         </style>
-        <oda-button icon="icons:done" :icon-size @tap="focusedCell=undefined"></oda-button>
+        <oda-button icon="icons:close" :icon-size @tap="focusedCell=undefined"></oda-button>
         <oda-button icon="icons:arrow-back:90" :icon-size @tap="tapOrder($event, -1.1)" :disabled="cell.order<=0" title="move up"></oda-button>
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
         <oda-button icon="icons:select-all" :icon-size title="show cells border" @tap="showBorder=!showBorder" allow-tooglle ::toggled="showBorder"></oda-button>
@@ -153,6 +154,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     cell: {},
     async showCellViews(view) {
         const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, {});
+        if (res && view === 'add') this.editedCell = undefined;
     }
 })
 
@@ -177,7 +179,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     get cellViews() { 
         return [
             { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
-            // { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'editor' },
+            { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html' },
             { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
         ]
     },
@@ -274,5 +276,48 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
         if (this.cell?.cell_props?.editable) return false;
         if (this.cell?.cell_props?.editable === false) return true;
         return this.editedCell !== this.cell || this.readOnly;
+    }
+})
+
+ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
+    template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --flex;
+                min-height: 28px;
+            }
+            .pell {
+                height: unset;
+                min-width: 50%;
+                max-width: 50%;
+            }
+        </style>
+        <oda-pell-editor class="flex pell" ~if="!readOnly&&editedCell===cell"></oda-pell-editor>
+        <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
+        <div :html="cell.source" style="width: 100%; padding: 8px;"></div>
+    `,
+    cell: {},
+    listeners: {
+        change(e) {
+            if (this.editedCell && this.editedCell === this.cell)
+                this.cell.source = e.detail.value;
+        },
+        dblclick(e) {
+            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
+            if (this.editedCell) {
+                let pell = this.$('oda-pell-editor'), count = 0;
+                let handle = setInterval(() => {
+                    if (pell?.editor || count > 20) {
+                        clearInterval(handle);
+                        if (pell?.editor) pell.editor.content.innerHTML = this.cell.source
+                        console.log(count);
+                        return;
+                    }
+                    count++;
+                    pell = this.$('oda-pell-editor')
+                }, 50);
+            }
+        }
     }
 })
