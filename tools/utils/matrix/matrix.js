@@ -15,7 +15,7 @@ export function cosSimilar(A, B) { //На входе 2 вектора
         avgA += a * a;
         avgB += b * b;
     }
-    return (scalar && scalar / (Math.sqrt(avgA) * Math.sqrt(avgB))) || 0 ;
+    return Math.abs((scalar && scalar / (Math.sqrt(avgA) * Math.sqrt(avgB))) || 0) ;
 }
 
 
