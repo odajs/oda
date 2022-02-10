@@ -1,5 +1,5 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
-    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative;">
+    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative">
         <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
         </svg>
@@ -212,14 +212,14 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
 ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
     <style>
         :host {
+            @apply --horizontal;
+            @apply --header;
+            @apply --shadow;
             border-radius: {{iconSize/4}}px;
             justify-content: right;
             position: absolute;
             top: -{{topPosition}}px;
-            right: 0px;
-            @apply --horizontal;
-            @apply --header;
-            @apply --shadow;
+            right: 0;
             opacity: .3;
         }
         :host(:hover) {
@@ -489,6 +489,10 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         },
         drop(e) {
             this.prepareLink();
+        },
+        contextmenu(e) {
+            e.preventDefault();
+            if(this.pin.contextmenu) this.pin.contextmenu.call(this, e);
         },
         tap(e) {
             e.stopPropagation();
