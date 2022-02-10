@@ -212,31 +212,21 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
                 min-width: 50%;
             }
         </style>
-        <oda-ace-editor class="flex ace" ~if="!readOnly&&editedCell===cell" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+        <oda-ace-editor class="flex ace" ~show="!readOnly&&editedCell===cell" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
     `,
     cell: {},
     listeners: {
         change(e) {
-            this.debounce('changeCellValue', () => {
+            //this.debounce('changeCellValue', () => {
                 this.cell.source = this.$('oda-ace-editor').value;
-            }, 1000);
+            //}, 1000);
         },
         dblclick(e) {
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
             if (!this.editedCell) return;
-            let ace = this.$('oda-ace-editor'), count = 0;
-            let handle = setInterval(() => {
-                if (ace || count > 20) {
-                    clearInterval(handle);
-                    ace.value = this.cell.source
-                    // console.log(count);
-                    return;
-                }
-                count++;
-                ace = this.$('oda-ace-editor');
-            }, 50);
+            this.$('oda-ace-editor').value = this.cell.source
         }
     }
 })
@@ -290,13 +280,13 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
                 @apply --flex;
                 min-height: 28px;
             }
-            .pell {
+            #parent, .pell {
                 height: unset;
                 min-width: 50%;
                 max-width: 50%;
             }
         </style>
-        <oda-pell-editor class="flex pell" ~if="!readOnly&&editedCell===cell"></oda-pell-editor>
+        <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell></oda-pell-editor>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <div :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
@@ -308,17 +298,7 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
         dblclick(e) {
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
             if (!this.editedCell) return;
-            let pell = this.$('oda-pell-editor'), count = 0;
-            let handle = setInterval(() => {
-                if (pell?.editor || count > 20) {
-                    clearInterval(handle);
-                    if (pell?.editor) pell.editor.content.innerHTML = this.cell.source
-                    // console.log(count);
-                    return;
-                }
-                count++;
-                pell = this.$('oda-pell-editor')
-            }, 50);
+            this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
         }
     }
 })

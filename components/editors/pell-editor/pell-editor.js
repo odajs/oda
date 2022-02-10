@@ -44,18 +44,12 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
     _x: 0,
     _y: 0,
     _showAce: false,
+    get _editor() { 
+        this._editor = this.$('#editor');
+        return this._editor;
+    },
     attached() {
-        let ed = this.$('#editor'), count = 0;
-        let handle = setInterval(() => {
-            if (ed || count > 20) {
-                clearInterval(handle);
-                if (ed) this._update();
-                // console.log(count);
-                return;
-            }
-            count++;
-            ed = this.$('#editor')
-        }, 50);
+        this._update();;
     },
     listeners: {
         pointerdown: function(e) {
@@ -65,7 +59,7 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
         }
     },
     _update() {
-        if (!this.editor)
+        if (this._editor)
             this.editor = pell.init({
                 element: this.$('#editor'),
                 onChange: () => this.fire('change', this.editor.content.innerHTML),
