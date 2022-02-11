@@ -232,10 +232,14 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
         dblclick(e) {
             if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
-            if (!this.editedCell) return;
-            this.$('oda-ace-editor').value = this.$('oda-md-viewer').source
         }
-    }
+    },
+    observers: [
+        function setEditedCell(editedCell) {
+            if (editedCell && editedCell === this.cell)
+                this.$('oda-ace-editor').value = this.$('oda-md-viewer').source;
+        }
+    ]
 })
 
 ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
@@ -301,8 +305,12 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
         dblclick(e) {
             if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
-            if (!this.editedCell) return;
-            this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
         }
-    }
+    },
+    observers: [
+        function setEditedCell(editedCell) {
+            if (editedCell && editedCell === this.cell)
+                this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
+        }
+    ]
 })
