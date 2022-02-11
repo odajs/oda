@@ -24,6 +24,7 @@
     "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
     "@oda/pell-editor": "components/editors/pell-editor/pell-editor.js",
     "@oda/color-input": "components/colors/color-input/color-input.js",
+    "@oda/label-to-name": "components/inputs/label-to-name/label-to-name.js",
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 

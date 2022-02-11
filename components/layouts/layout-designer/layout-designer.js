@@ -118,7 +118,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
                 margin-left: auto;
             }
             .group-label {
-                border: 1px solid lightgray;
+                border-bottom: 1px solid lightgray;
                 font-weight: bold;
                 margin: 1px;
                 padding: 8px 4px 4px 4px;
@@ -129,8 +129,8 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             }
         </style>
         <label class="group-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
-        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white; border-left: 1px solid lightgray;">
-           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;">
+           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-left: 1px solid white;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
