@@ -23,11 +23,13 @@
     "@oda/calculator": "components/tools/calculator/calculator.js",
     "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
     "@oda/pell-editor": "components/editors/pell-editor/pell-editor.js",
+    "@oda/color-input": "components/colors/color-input/color-input.js",
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 
     "@tools/containers": "tools/containers/containers.js",
     "@tools/property-grid": "tools/property-grid/property-grid.js",
+    "@tools/property-grid2": "tools/property-grid/test/new/property-grid.js",
     "@tools/styles": "tools/styles/styles.js",
     "@tools/theme-editor": "tools/styles/theme-editor.js",
     "@tools/modal": "tools/containers/modal/modal.js",

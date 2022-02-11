@@ -1,9 +1,5 @@
-import '../../../../components/buttons/button/button.js';
-import '../../../../components/grids/list/list.js';
-import '../../../containers/containers.js';
-
-ODA({
-    is: "oda-property-grid2", template: `
+ODA({ is: "oda-property-grid2", imports: '@oda/button, @oda/list, @tools/containers', 
+    template: `
         <style>
             :host {
                 display: flex;

@@ -1,4 +1,4 @@
-ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-input, @oda/table, @tools/property-grid',
+ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-input, @oda/table, @tools/property-grid2',
     template: /*html*/`
     <style>
         :host {
