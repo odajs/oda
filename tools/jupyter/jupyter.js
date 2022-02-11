@@ -202,6 +202,9 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
 ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor, @oda/splitter',
     template: /*html*/`
         <style>
+            ::-webkit-scrollbar { width: 4px; height: 4px; }
+            ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+            ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
             :host {
                 @apply --horizontal;
                 @apply --flex;
@@ -258,13 +261,13 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
         <div class="box vertical no-flex">
             <div>[...]</div>
         </div>
-        <oda-ace-editor class="flex ace" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly"></oda-ace-editor>
+        <oda-ace-editor class="flex ace" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
     `,
     cell: {},
     listeners: {
         change(e) {
-            if (this.readOnly || this.editedCell !== this.cell) return;
-            this.cell.source = this.$('oda-ace-editor').value;
+            if (!this.isReadOnly || this.editedCell === this.cell) 
+            this.cell.source = this.$('oda-ace-editor').value;        
         },
         dblclick(e) {
             if (this.readOnly) return;
@@ -272,9 +275,7 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
         }
     },
     get isReadOnly() {
-        if (this.cell?.cell_props?.editable) return false;
-        if (this.cell?.cell_props?.editable === false) return true;
-        return this.editedCell !== this.cell || this.readOnly;
+        return this.cell?.cell_props?.readOnly;
     }
 })
 

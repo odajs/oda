@@ -40,9 +40,9 @@
         {
             "cell_type": "code",
             "cell_props": {
-                "editable": true
+                "readOnly": true
             },
-            "source": "console.log('hello world')",
+            "source": "console.log('hello world') // is readOnly code in view mode",
             "metadata": {
                 "trusted": true
             },
