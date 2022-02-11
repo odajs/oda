@@ -206,15 +206,17 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
                 @apply --horizontal;
                 @apply --flex;
                 min-height: 28px;
-            }
-            .ace {
-                height: unset;
-                min-width: 50%;
+                height: 100%;
+                max-height: {{!readOnly&&editedCell===cell ? '80vh' : ''}};
             }
         </style>
-        <oda-ace-editor class="flex ace" ~show="!readOnly&&editedCell===cell" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+        <div class="flex" ~show="!readOnly&&editedCell===cell" style="min-width: 50%; overflow: auto;">
+            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+        </div>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
-        <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
+        <div class="flex" style="min-width: 50%; overflow: auto">
+            <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
+        </div>
     `,
     cell: {},
     listeners: {
@@ -276,7 +278,7 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
+ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
     template: /*html*/`
         <style>
             :host {
@@ -287,7 +289,6 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
 
         </style>
         <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell></oda-pell-editor>
-        <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <div  ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
