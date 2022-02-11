@@ -1,4 +1,4 @@
-ODA({ is: 'oda-tester', imports: ['@oda/app-layout', '@tools/property-grid'],
+ODA({ is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/containers',
     extends: 'oda-app-layout', template: `
         <app-layout-toolbar slot="header">
             <div class="horizontal" slot="header-left" style="align-items:center; width: 100%">

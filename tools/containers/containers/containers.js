@@ -1,5 +1,5 @@
-ODA({
-    is: 'oda-containers',
+import '../containers.js';
+ODA({ is: 'oda-containers', //imports: '@tools/containers.js',
     template: `
         <style>
             :host{
@@ -38,6 +38,7 @@ ODA({
             }
         },
         containers: {
+            type: Array,
             get() {
                 return ODA.containers?.items || [];
             }

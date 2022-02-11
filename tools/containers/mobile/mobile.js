@@ -1,5 +1,6 @@
 import '../base/base.js';
 import '../../../components/grids/list/list.js';
+import '../containers.js';
 const url = import.meta.url;
 ODA({
     is: 'oda-mobile',
