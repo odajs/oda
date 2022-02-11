@@ -55,7 +55,7 @@ ODA({ is: 'oda-md-viewer', template: `
         },
         src: {
             type: String,
-            set(n) { this._setHTML(n); }
+            set(n) { if (!this.srcmd) this._setHTML(n); }
         },
         options: {}
     },

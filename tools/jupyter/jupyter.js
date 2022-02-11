@@ -219,14 +219,16 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
     cell: {},
     listeners: {
         change(e) {
+            if (this.readOnly || this.editedCell !== this.cell) return;
             //this.debounce('changeCellValue', () => {
                 this.cell.source = this.$('oda-ace-editor').value;
             //}, 1000);
         },
         dblclick(e) {
+            if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
             if (!this.editedCell) return;
-            this.$('oda-ace-editor').value = this.cell.source
+            this.$('oda-ace-editor').value = this.$('oda-md-viewer').source
         }
     }
 })
@@ -259,9 +261,11 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
     cell: {},
     listeners: {
         change(e) {
+            if (this.readOnly || this.editedCell !== this.cell) return;
             this.cell.source = this.$('oda-ace-editor').value;
         },
         dblclick(e) {
+            if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         }
     },
@@ -280,22 +284,20 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor, @oda/splitter',
                 @apply --flex;
                 min-height: 28px;
             }
-            #parent, .pell {
-                height: unset;
-                min-width: 50%;
-                max-width: 50%;
-            }
+
         </style>
         <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell></oda-pell-editor>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
-        <div :html="cell.source" style="width: 100%; padding: 8px;"></div>
+        <div  ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
     listeners: {
         change(e) {
+            if (this.readOnly || this.editedCell !== this.cell) return;
             this.cell.source = e.detail.value;
         },
         dblclick(e) {
+            if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
             if (!this.editedCell) return;
             this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
