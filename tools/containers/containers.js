@@ -19,20 +19,21 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             let ctrl = component;
             if (typeof ctrl === 'string')
                 ctrl = await ODA.createComponent(ctrl, props);
-            else if (ctrl.parentElement) {
-                if (ctrl.containerHost)
-                    ctrl.containerHost.fire('cancel');
-                const comment = document.createComment(ctrl.innerHTML);
-                comment.slotTarget = ctrl;
-                ctrl.slotProxy = comment;
-                ctrl.containerHost = host;
-                comment.$slot = ctrl.slot;
-                delete ctrl.slot;
-                for (let i in props){
+            else {
+                if (ctrl.parentElement) {
+                    if (ctrl.containerHost)
+                        ctrl.containerHost.fire('cancel');
+                    const comment = document.createComment(ctrl.innerHTML);
+                    comment.slotTarget = ctrl;
+                    ctrl.slotProxy = comment;
+                    ctrl.containerHost = host;
+                    comment.$slot = ctrl.slot;
+                    delete ctrl.slot;
+                    ctrl.parentElement.replaceChild(comment, ctrl);
+                }
+                for (let i in props) {
                     ctrl[i] = props[i];
                 }
-
-                ctrl.parentElement.replaceChild(comment, ctrl);
             }
             host.style.position = 'absolute';
             host.style.width = '100%';
