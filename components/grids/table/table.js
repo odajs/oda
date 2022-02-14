@@ -463,7 +463,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     })
                     // i.$parent = parent;
                 }
-                else {
+                else if (i.$parent) {
                     delete i.$parent;
                 }
 

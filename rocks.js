@@ -50,7 +50,7 @@ if (!globalThis.KERNEL) {
                 }
                 else if (options.target instanceof Promise){
                     options.target.then(res=>{
-                        res = makeReactive.call(this, res, options.$saveName);
+                        res = makeReactive.call(this, res, options.$$saveName);
                         options.target[key] = res?.[key];
                     })
                     return undefined;
