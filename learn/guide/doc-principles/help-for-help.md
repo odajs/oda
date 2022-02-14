@@ -27,3 +27,8 @@
 ```
 
 Ознакомится со всеми этими модификаторами можно подробно в учебном материале [«**Модификаторы редактора кода**»](https://odajs.org/#learn/guide/doc-principles/code-modifiers.md "Модификаторы редактора кода").
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/snRnJfQzysI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>

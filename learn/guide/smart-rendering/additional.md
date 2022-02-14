@@ -148,3 +148,7 @@ ODA({
 
 В примере обработчики нажатий клавиш мыши **onTap** и **onContextmenu**, заданные с помощью метода **listen**, не изменяют состояние компонента, записывая выводимый текст непосредственно в элемент **div**. Их вызов также не приводит к рендерингу компонента, поэтому текущее время выводится только при загрузке страницы и больше не обновляется.
 
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/_aP0P6q3MIw?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>

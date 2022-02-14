@@ -169,6 +169,7 @@ site: {
                         this.src = url;
                         setTimeout(() => {
                             this.$refs.iframe.contentDocument._editMode = this._editMode;
+                            this.isEditMode = this._editMode;
                             this.bubbleIframeMouseWheel(this.$refs.iframe);
                         }, 300);
                         return;
@@ -185,6 +186,7 @@ site: {
                 return (this.focusedItem && (!this.focusedItem.items || this.focusedItem.items.length === 0)) && this.src;
             }
         },
+        isEditMode: false,
         bubbleIframeMouseWheel(iframe) {
             if (!this.hideOnScroll) return;
             var existingOnMouseWheel = iframe.contentWindow.onwheel;
@@ -318,7 +320,7 @@ content: {
             <div class="vertical flex" style="padding: 2px 2px;">
                 <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
                 <!-- <oda-documentation :item></oda-documentation> -->
-                <oda-jupyter ~if="useJupyter" :notebook></oda-jupyter>
+                <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode"></oda-jupyter>
             </div>
         `,
         props: {
@@ -672,6 +674,7 @@ header: {
         },
         async chaossee(e) {
             this._editMode = e.currentTarget.value === '~~~' || e.currentTarget.value === '###';
+            this.isEditMode = this._editMode;
             //this._iframe.contentDocument._editMode = this._editMode;
             if (e.currentTarget.value === '???') {
                 //const path = window.location.pathname;

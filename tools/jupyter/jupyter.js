@@ -225,9 +225,9 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
     listeners: {
         change(e) {
             if (this.readOnly || this.editedCell !== this.cell) return;
-            //this.debounce('changeCellValue', () => {
+            this.debounce('changeCellValue', () => {
                 this.cell.source = this.$('oda-ace-editor').value;
-            //}, 1000);
+            }, 1000);
         },
         dblclick(e) {
             if (this.readOnly) return;
