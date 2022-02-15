@@ -501,6 +501,13 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             else
                 this.prepareLink();
             this.async(() => { this.layout.links = undefined }, 100);
+        },
+        dblclick(e) {
+            e.stopPropagation();
+            if(this.pin.dblclick)
+                this.pin.dblclick.call(this, e)
+            else
+                this.layout?.onPinDblClick?.(this.pin);
         }
     },
     prepareLink() {
