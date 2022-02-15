@@ -4,7 +4,7 @@ ODA({ is: 'oda-jupyter',
             :host {
                 @apply --flex;
                 @apply --vertical;
-                padding: 12px 0;
+                padding: 16px 0;
                 position: relative;
                 min-height: 28px;
             }
@@ -46,10 +46,11 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{!readOnly && showBorder ? 'inset 0px 0px 0px 1px lightgray' : ''}};
+                box-shadow: {{focusedCell!==cell && !readOnly && showBorder ? 'inset 0px 0px 0px 1px lightgray' : ''}};
             }
             .focused {
-                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
+                box-shadow: 0 0 0 1px dodgerblue;
+                /* box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4); */
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
@@ -82,9 +83,10 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 display: flex;
                 position: absolute;
                 right: 8px;
-                top: -12px;
-                z-index: 21;
-                box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4);
+                top: -18px;
+                z-index: 41;
+                box-shadow: 0 0 0 1px dodgerblue;
+                /* box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4); */
                 background: white;
                 width: 200px;
                 height: 24px;
@@ -127,15 +129,11 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
                 position: absolute;
                 left: -8px;
                 z-index: 21;
-                border: 1px solid lightgray;
+                border: 1px solid dodgerblue;
                 border-radius: 50%;
                 background: white;
-                opacity: 0.7;
-                top: {{ position==='top' ? '-12px' : 'unset' }};
-                bottom: {{ position!=='top' ? '-12px' : 'unset' }};
-            }
-            .btn:hover {
-                opacity: 1;
+                top: {{ position==='top' ? '-18px' : 'unset' }};
+                bottom: {{ position!=='top' ? '-18px' : 'unset' }};
             }
             .cell {
                 position: absolute;
