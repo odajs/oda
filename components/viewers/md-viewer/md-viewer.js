@@ -57,20 +57,52 @@ ODA({ is: 'oda-md-viewer', template: `
             type: String,
             set(n) { if (!this.srcmd) this._setHTML(n); }
         },
-        options: {}
+        options: {},
+        editMode: {
+            default: false,
+            set(v) {
+                this._setHTML(this.srcmd || this.src);
+            }
+        }
     },
     async _import() {
-        if (mdShowdown.makeHtml) return;
-        for (let s of ['./dist/showdown.min.js', './dist/decodeHTML.min.js', './dist/highlight.min.js', './dist/showdown-youtube.min.js']) { await import(s); }
+        //if (mdShowdown.makeHtml) return;
+        if (!this._hasImports)
+            for (let s of ['./dist/showdown.min.js', './dist/decodeHTML.min.js', './dist/highlight.min.js', './dist/showdown-youtube.min.js']) { await import(s); }
+       this._hasImports = true;
         mdShowdown = new showdown.Converter({
             ...defaultOptions, ...this.options,
-            extensions: ['youtube', () => {
+            extensions: ['youtube', (editMode = this.editMode) => {
                 return [{
                     type: "output",
                     filter(text) {
                         let left = "<pre><code\\b[^>]*>", right = "</code></pre>", flags = "g";
                         const replacement = (wholeMatch, match, left) => {
                             let lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
+                            let html = lang && hljs.getLanguage(lang) ? hljs.highlight(lang, htmlDecode(match)).value : hljs.highlightAuto(htmlDecode(match)).value;
+                            if (editMode) return `
+                                <style>
+                                    .hljs { @apply --layout; display: block; padding: 0; width: 100%}
+                                    .hljs-comment, .hljs-quote { color: #93a1a1; }
+                                    .hljs-keyword, .hljs-selector-tag, .hljs-addition { color: #859900; }
+                                    .hljs-number, .hljs-string, hljs-meta .hljs-meta-string, .hljs-literal, .hljs-doctag, .hljs-regexp { color: #2aa198; }
+                                    .hljs-title, .hljs-section, .hljs-name, .hljs-selector-id, .hljs-selector-class { color: #268bd2; }
+                                    .hljs-attribute, .hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-class .hljs-title, .hljs-type { color: #b58900; }
+                                    .hljs-symbol, .hljs-bullet, .hljs-subst, .hljs-meta, .hljs-meta .hljs-keyword, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-link { color: #cb4b16; }
+                                    .hljs-built_in, .hljs-deletion { color: #dc322f; }
+                                    .hljs-formula { background: #eee8d5; }
+                                    .hljs-emphasis { font-style: italic; }
+                                    .hljs-strong { font-weight: bold; }
+                                    .hjln { min-width:34px; color:gray; border-right:.1em solid; counter-reset: l; cursor:default; float:left; padding:8px 0; margin:0 0.5em 0 0; text-align:right; -moz-user-select:none; -webkit-user-select:none }
+                                    .hjln span { counter-increment:l; display:block;padding:0 .5em 0 1em }
+                                    .hjln span:before { content:counter(l) }
+                                    .light { background-color: #ddd; display: inline-block;}
+                                    .icon-info { display: flex; }
+                                    .copy:active:before { position: absolute; right: 0; top: -26px; color: red; content:"copied"; }
+                                </style>
+                                <pre class="hljs" style="display: flex; border: .5px solid lightgray; border-radius: 2px; min-height:32px; background: #FFE5; overflow: auto;">
+                                    <code class="hljs" style="outline: 0px solid transparent; white-space: pre-wrap;">${html}</code>
+                                </pre>`;
                             return `<oda-md-code code="${htmlEncode(match)}" lang="${lang}"></oda-md-code>`;
                         };
                         return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);

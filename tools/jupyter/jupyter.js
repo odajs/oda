@@ -153,7 +153,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     iconSize: 14,
     cell: {},
     async showCellViews(view) {
-        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, {});
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, {parent: this.$('oda-button')});
         if (res && view === 'add') this.editedCell = undefined;
     }
 })
@@ -214,20 +214,18 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
             }
         </style>
         <div class="flex" ~show="!readOnly&&editedCell===cell" style="min-width: 50%; overflow: auto;">
-            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+            <oda-ace-editor class="flex" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
         </div>
         <!-- <oda-splitter class="no-flex" ~if="!readOnly&&editedCell===cell" style="width: 4px;"></oda-splitter> -->
         <div class="flex" style="min-width: 50%; overflow: auto">
-            <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src"></oda-md-viewer>
+            <oda-md-viewer class="flex" :srcmd="cell?.source" :src="cell?.src" :edit-mode="!readOnly&&editedCell===cell"></oda-md-viewer>
         </div>
     `,
     cell: {},
     listeners: {
         change(e) {
             if (this.readOnly || this.editedCell !== this.cell) return;
-            this.debounce('changeCellValue', () => {
-                this.cell.source = this.$('oda-ace-editor').value;
-            }, 1000);
+            this.cell.source = this.$('oda-ace-editor').value;
         },
         dblclick(e) {
             if (this.readOnly) return;
