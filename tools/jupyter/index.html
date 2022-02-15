@@ -3,6 +3,7 @@
 
 <div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
     <oda-button onclick="jupyter.readOnly = !jupyter.readOnly" style="margin: 4px;" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
+    <oda-button onclick="jupyter.extMode = !jupyter.extMode" style="margin: 4px;" allow-toggle ::toggled="jupyter.extMode">extMode</oda-button>
     <oda-button onclick="jupyter.loadURL()" style="margin: 4px;">Reset view</oda-button>
     <oda-button onclick="jupyter.notebook.cells = []" style="margin: 4px;">Clear all data</oda-button>
     <oda-button onclick="document.location.reload()" style="margin: 4px;">Reload page</oda-button>
