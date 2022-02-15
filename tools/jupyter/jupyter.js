@@ -26,11 +26,11 @@ ODA({ is: 'oda-jupyter',
                 this.editedCell = undefined
             }
         },
-        showBorder: false, // show cell border for mode is not readOnly
-        extViews: []
+        showBorder: false // show cell border for mode is not readOnly
     },
     notebook: {},
     editedCell: undefined,
+    extViews: [],
     loadURL(url = this.url) {
         this.focusedCell = undefined;
         if (url) 
@@ -70,6 +70,7 @@ ODA({ is: 'oda-jupyter-cell',
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
+        if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
         return 'div';
     }
 })

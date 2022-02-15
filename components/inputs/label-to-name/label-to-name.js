@@ -6,7 +6,8 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
             min-width: 100px;
             padding: 8px;
         }
-        input{
+        input {
+            outline: none;
             margin: 1px;
             padding: 2px 4px;
             min-height: 24px;
