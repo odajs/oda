@@ -29,6 +29,16 @@ ODA({ is: 'oda-icon', template: /*html*/`
         :host>div{
             position: relative;
         }
+        .subicon{
+            @apply --content;
+            opacity: .9;
+            position: absolute;
+            @apply --shadow;
+            left: {{iconSize/2}}px;
+            top: {{iconSize/2}}px;
+            border-radius: {{iconSize/16}}px;
+        }
+        
         
     </style>
     <div :bubble="_bubble" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
@@ -40,8 +50,9 @@ ODA({ is: 'oda-icon', template: /*html*/`
                 </g>
             </defs>
             <g ~html="_icon?.body"></g>
-        </svg>
+        </svg> 
     </div>
+    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/1.68"></oda-icon>
     `,
     get _icon(){
         return this._obj?.body || this._def?.body;
@@ -88,6 +99,7 @@ ODA({ is: 'oda-icon', template: /*html*/`
         stroke: '',
         fill: '',
         blink: 0,
+        subIcon: ''
     },
     get _bubble() {
         if (this.bubble > 1) {
