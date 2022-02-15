@@ -100,7 +100,7 @@ ODA({is: 'oda-menu-template', imports: '@oda/icon',
         :host(:hover) {
             @apply --active;
         }
-        oda-icon {
+        div > oda-icon {
             opacity: .5;
             align-items: center;
             padding: 9px 4px;
@@ -115,7 +115,7 @@ ODA({is: 'oda-menu-template', imports: '@oda/icon',
         }
     </style>
     <div ~if="!item?.group" class="no-flex icon-box">
-        <oda-icon class="header" :icon-size="Math.floor(iconSize * .7)" :icon="item?.icon"></oda-icon>
+        <oda-icon class="header" :icon-size="Math.floor(iconSize * .7)" :icon="item?.icon" :sub-icon="item?.subIcon"></oda-icon>
     </div>
     <span class="flex" :title="item?.label">{{item.label}}</span>
     `,
