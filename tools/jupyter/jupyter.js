@@ -27,7 +27,7 @@ ODA({ is: 'oda-jupyter',
             }
         },
         showBorder: false, // show cell border for mode is not readOnly
-        extMode: false
+        extViews: []
     },
     notebook: {},
     editedCell: undefined,
@@ -154,7 +154,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     iconSize: 14,
     cell: {},
     async showCellViews(view) {
-        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view, extMode: this.extMode }, {parent: this.$('oda-button')});
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view, extViews: this.extViews }, {parent: this.$('oda-button')});
         if (res && view === 'add') this.editedCell = undefined;
     }
 })
@@ -177,20 +177,14 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     iconSize: 14,
     cell: {},
     notebook: {},
+    extViews: [],
     get cellViews() { 
         let views = [
             { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
             { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html' },
             { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
         ]
-        if (this.extMode) {
-            views = [...views, ...[
-                { cell_type: 'html', cell_extType: 'odant-help-info', color: '#e1ad21', source: '🟡... ', label: 'odant-help-info' },
-                { cell_type: 'html', cell_extType: 'odant-help-fields', color: '#886CE4', source: '🟣... ', label: 'odant-help-fields' },
-                { cell_type: 'html', cell_extType: 'odant-help-methods', color: '#8E562E', source: '🟤... ', label: 'odant-help-methods' },
-                { cell_type: 'html', cell_extType: 'odant-help-price', color: '#E81224', source: '🔴... ', label: 'odant-help-price' },
-            ]]
-        }
+        views = [...views, ...(this.extViews || [])]
         return views;
     },
     addCell(item) {

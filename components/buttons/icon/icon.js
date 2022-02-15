@@ -1,14 +1,14 @@
-const path = import.meta.url.split('/').slice(0,-1).join('/');
+const path = import.meta.url.split('/').slice(0, -1).join('/');
 const libs = {};
 const icons = {};
-ODA({ is: 'oda-icon', template: /*html*/`
+ODA({is: 'oda-icon', template: `
     <style>
         :host {
-            display: flex;
             @apply --horizontal;
-            align-items: center;
             @apply --no-flex;
-
+            display: flex;
+            align-items: center;
+            position: relative;
         }
         :host([bubble]) > div:not([bubble="-"])::before{
             content: attr(bubble);
@@ -26,10 +26,10 @@ ODA({ is: 'oda-icon', template: /*html*/`
             padding: 1px;
             font-size: .7em;
         }
-        :host>div{
+        :host > div {
             position: relative;
         }
-        .subicon{
+        .subicon {
             @apply --content;
             opacity: .9;
             position: absolute;
@@ -38,8 +38,6 @@ ODA({ is: 'oda-icon', template: /*html*/`
             top: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
         }
-        
-        
     </style>
     <div :bubble="_bubble" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
         <svg ~show="_icon" ~style="_style" :stroke :fill :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
@@ -54,19 +52,19 @@ ODA({ is: 'oda-icon', template: /*html*/`
     </div>
     <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/1.68"></oda-icon>
     `,
-    get _icon(){
+    get _icon() {
         return this._obj?.body || this._def?.body;
     },
-    get _rotate(){
+    get _rotate() {
         return this._obj?.rotate || 0;
     },
-    get _obj(){
-        if (this.icon){
+    get _obj() {
+        if (this.icon) {
             const obj = icons[this.icon];
-            if (obj === undefined){
-                getIcon.call(this, this.icon).then(res=>{
+            if (obj === undefined) {
+                getIcon.call(this, this.icon).then(res => {
                     return (this._obj = icons[this.icon] || res);
-                }).catch(e=>{
+                }).catch(e => {
                     console.log(e)
                 })
                 return null;
@@ -74,13 +72,13 @@ ODA({ is: 'oda-icon', template: /*html*/`
             return obj;
         }
     },
-    get _def(){
-        if (this.default){
+    get _def() {
+        if (this.default) {
             const obj = icons[this.default];
-            if (obj === undefined){
-                getIcon.call(this, this.default).then(res=>{
+            if (obj === undefined) {
+                getIcon.call(this, this.default).then(res => {
                     return (this._def = icons[this.default] || res);
-                }).catch(e=>{
+                }).catch(e => {
                     console.log(e)
                 })
             }
@@ -144,7 +142,7 @@ async function loadIcons(name) {
 async function getIcon(n) {
     const key = n;
     let obj = icons[key];
-    if (!obj){
+    if (!obj) {
         obj = Object.create(null);
         if (/:[0-9]+$/.test(n)) {
             let s = n.match(/:[0-9]+$/)[0];
@@ -153,16 +151,16 @@ async function getIcon(n) {
         }
         else
             obj.rotate = 0;
-        if (isSVG(n)){
+        if (isSVG(n)) {
             n = n.split(':');
             let name = n.shift();
             let content = await loadIcons(name);
             n = n[0];
             const g = content?.getElementById(n);
             if (g)
-                obj.body =  { body: g.outerHTML, size: (+g.getAttribute('size') || content.size)};
+                obj.body = { body: g.outerHTML, size: (+g.getAttribute('size') || content.size) };
         }
-        else{
+        else {
             if (!n.includes('.'))
                 n += '.png';
             if (!n.includes('/'))
