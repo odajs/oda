@@ -21,7 +21,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
     props: {
         label: {
             type: String,
-            async set(label, o) {
+            set(label, o) {
                 this.name = label ? label.trim() : null;
             }
         },
