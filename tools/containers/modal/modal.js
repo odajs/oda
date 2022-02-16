@@ -18,12 +18,12 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         ::slotted(*) {
             @apply --flex;
         }
-        :host>div {
+        :host > div {
             animation: scale {{animation}}ms ease-in-out;
             max-height: {{fullSize?100:80}}vh;
             max-width: {{fullSize?100:80}}%;
         }
-        :host>div>div {
+        :host > div > div {
             align-items: center;
         }
         @keyframes fadin {
@@ -40,6 +40,9 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     </style>
     
     <div class="vertical shadow" ~class="{flex:fullSize}" ~style="{alignSelf:fullSize?'none':'center'}" style="border: 4px solid transparent" @mousemove="onMouseMove"  @down="onDown">
+        <div slot="title-left">
+            <slot name="modal-title"></slot>
+        </div>
         <oda-title ~if="title" :title :icon :icon-size allow-close @close="fire('cancel')" :help></oda-title>
         <slot @slotchange="_slot" @tap.stop class="content flex vertical" @dblclick.stop></slot>
     </div>
@@ -67,12 +70,12 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     _slot(e) {
         this.control = this.control || e.target.assignedNodes()?.[0]
     },
-    listeners:{
-        mousemove(e){
+    listeners: {
+        mousemove(e) {
             return this.style.cursor = '';
         }
     },
-    onDown(e){
+    onDown(e) {
         e.stopPropagation();
     },
     onMouseMove(e) {

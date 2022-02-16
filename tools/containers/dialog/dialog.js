@@ -57,7 +57,9 @@ ODA({is: 'oda-dialog-footer',
     <div class="flex horizontal">
         <slot></slot>
         <slot name="footer"></slot>
-        <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="focusedButton = $event.target" :disabled="item?.disabled?.call(this, control)"></oda-button>
+        <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="focusedButton = $event.target"
+        :label="item?.label?.call?.(this, control) || item?.label"
+        :disabled="item?.disabled?.call(this, control)"></oda-button>
     </div>
     <div class="no-flex horizontal">
         <oda-button hide-icon ~if="!hideOkButton" @tap="domHost.fire('ok')" style="font-weight: bold;" tabindex="0">OK</oda-button>

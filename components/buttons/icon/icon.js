@@ -50,7 +50,7 @@ ODA({is: 'oda-icon', template: `
             <g ~html="_icon?.body"></g>
         </svg> 
     </div>
-    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/1.68"></oda-icon>
+    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/2.5"></oda-icon>
     `,
     get _icon() {
         return this._obj?.body || this._def?.body;

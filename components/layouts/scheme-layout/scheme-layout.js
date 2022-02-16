@@ -1,11 +1,11 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative">
         <svg class="flex" :width :height>
-            <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item?.d) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item?.d)"/>
+            <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item)"/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
-        <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.align === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.align === 'top'?-linkMargin:link?.align === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
-        <oda-scheme-link ~for="link in filteredLinks" :link ~style="{left: link?.rect.x + (link?.align === 'left'?-(16 + link.pin.size):link?.align === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.align === 'top'?-(16 + link.pin.size):link?.align === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
+        <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.pos === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.pos === 'top'?-linkMargin:link?.pos === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
+        <oda-scheme-link ~for="link in filteredLinks" :link ~style="{left: link?.rect.x + (link?.pos === 'left'?-(16 + link.pin.size):link?.pos === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.pos === 'top'?-(16 + link.pin.size):link?.pos === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
     </div>
     `,
     get filteredLinks(){
@@ -14,14 +14,14 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     get srcPins() {
         return this.items.map(b => {
             let outputs = [];
-            // Object.getOwnPropertyNames(b.interfaces).forEach(align => {
-            //     if(this.inputs[align.slice(1)] === false) {
-            //         outputs = outputs.concat(b.interfaces[align]);
+            // Object.getOwnPropertyNames(b.interfaces).forEach(pos => {
+            //     if(this.inputs[pos.slice(1)] === false) {
+            //         outputs = outputs.concat(b.interfaces[pos]);
             //     }
             // });
-            for(const align in b.interfaces) {
-                if(this.inputs[align.slice(1)] === false) {
-                    outputs = outputs.concat(b.interfaces[align]);
+            for(const pos in b.interfaces) {
+                if(this.inputs[pos.slice(1)] === false) {
+                    outputs = outputs.concat(b.interfaces[pos]);
                 }
             }
             return outputs?.map?.((src, i) => {
@@ -262,19 +262,19 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" align="top" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
         <div class="flex horizontal">
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" align="left" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
                 <div class="flex shadow vertical content">
                     <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                 </div>
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" align="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" pos="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
-        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" align="bottom" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" pos="bottom" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
     </div>
     `,
     onResize(e) {
-        switch (e.target.align) {
+        switch (e.target.pos) {
             case 'left':
                 this.left = e.target.offsetWidth;
                 break;
@@ -324,11 +324,9 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[pos] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
-    props: {
-        align: ''
-    },
+    pos: '',
     attached() {
         this.links = undefined;
     },
@@ -416,14 +414,14 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     },
     get link() {
         const zoom = this.zoom;
-        if (!this.inputs[this.align] || !this.pin?.link) return '';
+        if (!this.inputs[this.pos] || !this.pin?.link) return '';
         const link = this.srcPins.find(i => {
             return i.link === this.pin.link && i.pin == this.pin.pin;
         });
         const inputRect = this.getClientRect(this._grid);
         const center = inputRect.center;
         let d = '';
-        switch (this.align) {
+        switch (this.pos) {
             case 'top': {
                 d += !link ? `M ${center.x} ${inputRect.y}` :
                     `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y}`;
@@ -455,7 +453,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         }
         if (link) {
             const outputRect = link.src.$$pin.getClientRect(this._grid);
-            switch (link.src.$$pin.align) {
+            switch (link.src.$$pin.pos) {
                 case 'top': {
                     d += ` ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
                 } break;
@@ -470,7 +468,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                 } break;
             }
         }
-        return { d, link, align: this.align, rect: inputRect, pin: this };
+        return { d, link, pos: this.pos, rect: inputRect, pin: this };
     },
     listeners: {
         dragstart(e) {
@@ -481,8 +479,8 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             if (!this.editMode) return;
             if (!this.focusedPin) return;
             if (this.focusedPin.container === this.container) return;
-            if((!this.inputs[this.focusedPin.align] && !this.inputs[this.align]) ||
-                (this.inputs[this.focusedPin.align] && this.inputs[this.align]))
+            if((!this.inputs[this.focusedPin.pos] && !this.inputs[this.pos]) ||
+                (this.inputs[this.focusedPin.pos] && this.inputs[this.pos]))
                     return;
             e.preventDefault();
         },
@@ -515,14 +513,14 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     prepareLink() {
         if (!this.editMode) return;
         if (this.focusedPin && this.focusedPin.container !== this.container) {
-            if(!this.inputs[this.focusedPin.align]) {
-                if(!this.inputs[this.align]) {
+            if(!this.inputs[this.focusedPin.pos]) {
+                if(!this.inputs[this.pos]) {
                     this.focusedPin = this;
                     return;
                 }
                 this.setLink(this.focusedPin);
             } else {
-                if(this.inputs[this.align]) {
+                if(this.inputs[this.pos]) {
                     this.focusedPin = this;
                     return;
                 }
@@ -543,7 +541,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         this.container.domHost.changed(this.container.item); // TODO: контекст вызываемых методов провалившихся по pdp
     },
     get vertical() {
-        switch (this.align) {
+        switch (this.pos) {
             case 'left':
             case 'right':
                 return true;
@@ -569,12 +567,12 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             return 'var(--info-color)';
         if (this.focusedPin.container === this.container)
             return 'var(--disabled-color)';
-        if (this.inputs[this.focusedPin.align]) {
-            if (this.inputs[this.align])
+        if (this.inputs[this.focusedPin.pos]) {
+            if (this.inputs[this.pos])
                 return 'var(--error-color)';
         }
         else {
-            if (!this.inputs[this.align])
+            if (!this.inputs[this.pos])
                 return 'var(--error-color)';
             if (this.pin.link)
                 return 'var(--warning-color)';
