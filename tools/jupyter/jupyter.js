@@ -71,6 +71,7 @@ ODA({ is: 'oda-jupyter-cell',
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
+        if (this.cell?.cell_type === 'html-code') return 'oda-jupyter-cell-html-code';
         if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
         return 'div';
     }
@@ -182,6 +183,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
             { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
             { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html' },
             { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
+            { cell_type: 'html-code', cell_extType: 'html-code', color: 'gray', source: '⚪️... ', label: 'html-code' },
         ]
         views = [...views, ...(this.extViews || [])]
         return views;
@@ -316,4 +318,59 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
                 this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
         }
     ]
+})
+
+ODA({ is: 'oda-jupyter-cell-html-code', imports: '@oda/ace-editor, @oda/splitter2',
+    template: /*html*/`
+        <style>
+            ::-webkit-scrollbar { width: 4px; height: 4px; }
+            ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+            ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
+            :host {
+                @apply --horizontal;
+                @apply --flex;
+                min-height: 28px;
+                height: 100%;
+            }
+            .box {
+                width: 24px;
+                cursor: pointer;
+                align-self: flex-start;
+                padding: 0 2px 0 4px;
+            }
+            .ace {
+                height: unset;
+            }
+        </style>
+        <div class="box vertical no-flex">
+            <div>[...]</div>
+        </div>
+        <div class="vertical flex" style="overflow: hidden">
+            <div class="horizontal flex" style="overflow: hidden; height: 20em;">
+                <div style="width: 50%; overflow: auto;">
+                    <oda-ace-editor class="flex ace" :value="cell?.source" mode="html" theme="cobalt" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+                </div>
+                <oda-splitter2 size="3px" color="dodgerblue" style="opacity: .3"></oda-splitter2>
+                <div class="flex" style="overflow: auto; flex: 1">
+                    <iframe :srcdoc="cell?.source" style="border: none; width: 100%; height: 100%"></iframe>
+                </div>
+            </div>
+            <oda-splitter2 direction="horizontal" size="3px" color="dodgerblue" style="opacity: .3" resize-h></oda-splitter2>
+            <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
+        </div>
+    `,
+    cell: {},
+    listeners: {
+        change(e) {
+            if (!this.isReadOnly || this.editedCell === this.cell) 
+            this.cell.source = this.$('oda-ace-editor').value;        
+        },
+        dblclick(e) {
+            if (this.readOnly) return;
+            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
+        }
+    },
+    get isReadOnly() {
+        return this.cell?.cell_props?.readOnly;
+    }
 })

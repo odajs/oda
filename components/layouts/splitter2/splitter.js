@@ -12,9 +12,10 @@ ODA({ is: 'oda-splitter2', template: `
     props: {
         direction: 'vertical', // 'horizontal'
         size: '2px',
-        color: 'lightgray'
+        color: 'lightgray',
+        resizeH: false
     },
-    ready() {
+    attached() {
         const splitter = this,
             prevSibling = this.previousElementSibling,
             nextSibling = this.nextElementSibling;
@@ -40,8 +41,15 @@ ODA({ is: 'oda-splitter2', template: `
                 const w = ((prevSiblingWidth + dx) * 100) / this.parentNode.getBoundingClientRect().width;
                 prevSibling.style.width = `${w}%`;
             } else {
-                const h = ((prevSiblingHeight + dy) * 100) / this.parentNode.getBoundingClientRect().height;
-                prevSibling.style.height = `${h}%`;
+                let h;
+                if (this.resizeH) {
+                    this.parentNode.style.height = this.parentNode.getBoundingClientRect().height + (dy / 100);
+                    h = ((prevSiblingHeight + (dy / 100)));
+                    prevSibling.style.height = `${h}px`;
+                } else {
+                    h = ((prevSiblingHeight + dy)) * 100 / this.parentNode.getBoundingClientRect().height;
+                    prevSibling.style.height = `${h}%`;
+                }
             }
 
             const cursor = this.direction === 'vertical' ? 'col-resize' : 'row-resize';

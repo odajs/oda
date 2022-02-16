@@ -22,6 +22,11 @@
     "nbformat": 4,
     "cells": [
         {
+            "cell_type": "markdown",
+            "source": "# oda-jupyter-notebook\n\n![](https://odajs.org/site/icon.webp)",
+            "metadata": {}
+        },
+        {
             "cell_type": "html",
             "source": "<h3 style='color: green'>I'm HTML editor ...</h3>",
             "color": "#16C60C",
@@ -29,7 +34,14 @@
         },
         {
             "cell_type": "markdown",
-            "source": "# JavaScript in `oda-jupyter-notebook`\n\n![](https://odajs.org/site/icon.webp)",
+            "source": "##Авто исполняемый код:",
+            "metadata": {}
+        },
+        {
+            "cell_type": "html-code",
+            "cell_extType": "html-code",
+            "source": "<style>\nbody {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n}\n</style>\n\n<h1 style=\"color: red\">1234567890</div>\n",
+            "color": "#16C60C",
             "metadata": {}
         },
         {
