@@ -79,8 +79,10 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             }
         </style>
         <div class="title-bar horizontal" @mouseenter="_onHeader = true" @mouseleave="_onHeader = false">
-            <slot class="horizontal flex" ref="titleBar" name="title-bar"></slot>
-            <div ~if="modal" class="horizontal no-flex">
+            <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
+            <div class="flex"></div>
+            <slot class="horizontal no-flex" name="title-buttons"></slot>
+            <div ~if="modal && !hideMinMax" class="horizontal no-flex">
                 <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
                 <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
             </div>
@@ -133,8 +135,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 show: false,
             },
         },
-        minWidth: 300,
-        minHeight: 300,
+        minWidth: 325,
+        minHeight: 325,
         _resizeDir: String,
         _curPos: String,
         _onBorder: false,
@@ -151,6 +153,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             default: 0
         },
         showCloseBtn: false,
+        hideMinMax: false,
     },
     listeners: {
         mousemove(e) {
@@ -201,8 +204,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 this._fixPos();
             }
             if (this._sizing || !this._moving && this._onBorder) {
-                const maxW = this._parentWidth - 8 * this._bw;
-                const maxH = this._parentHeight - 8 * this._bw;
                 switch (state) {
                     case 'start':
                         this._sizing = true;
@@ -246,13 +247,10 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         },
     },
     observers: [
-        '_setTransform(modal, pos)',
-        //function _smoothly(size) {
-        //    this._transition();
-        //}
+        '_setTransform(modal, pos)'
     ],
     _setTransform(modal = this.modal, pos = this.pos) {
-        const parent = this.parentElement;
+        const parent = this.parentElement || this.domHost;
         if (!parent) return;
         this._parentWidth = parent.offsetWidth;
         this._parentHeight = parent.offsetHeight;

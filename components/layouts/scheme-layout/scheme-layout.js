@@ -1,8 +1,9 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative">
         <svg class="flex" :width :height>
-            <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.has(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop :selected="selection.has(item)"/>
+            <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
         </svg>
+        <!--<oda-button icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.pos === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.pos === 'top'?-linkMargin:link?.pos === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
         <oda-scheme-link ~for="link in filteredLinks" :link ~style="{left: link?.rect.x + (link?.pos === 'left'?-(16 + link.pin.size):link?.pos === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.pos === 'top'?-(16 + link.pin.size):link?.pos === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
@@ -262,15 +263,15 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" :pos="'top'" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
         <div class="flex horizontal">
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" :pos="'left'" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
                 <div class="flex shadow vertical content">
                     <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                 </div>
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" pos="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" :pos="'right'" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
-        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" pos="bottom" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" :pos="'bottom'" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
     </div>
     `,
     onResize(e) {

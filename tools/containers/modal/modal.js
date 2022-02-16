@@ -38,14 +38,10 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             overflow: hidden;
         }
     </style>
-    
-    <div class="vertical shadow" ~class="{flex:fullSize}" ~style="{alignSelf:fullSize?'none':'center'}" style="border: 4px solid transparent" @mousemove="onMouseMove"  @down="onDown">
-        <div slot="title-left">
-            <slot name="modal-title"></slot>
-        </div>
-        <oda-title ~if="title" :title :icon :icon-size allow-close @close="fire('cancel')" :help></oda-title>
+    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'">
+        <slot class="no-flex" name="modal-title" slot="title-bar"></slot>
         <slot @slotchange="_slot" @tap.stop class="content flex vertical" @dblclick.stop></slot>
-    </div>
+    </oda-dialog-content>
     `,
     help: '',
     props: {
@@ -70,38 +66,18 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     _slot(e) {
         this.control = this.control || e.target.assignedNodes()?.[0]
     },
-    listeners: {
-        mousemove(e) {
-            return this.style.cursor = '';
-        }
-    },
     onDown(e) {
         e.stopPropagation();
     },
-    onMouseMove(e) {
-        e.stopPropagation();
-        if (this.autoSize)
-            return;
-        const bw = this.borderWidth;
-        const bw2 = bw * 2;
-        const h = e.target.offsetHeight;
-        const w = e.target.offsetWidth;
-
-        let str = '';
-        str += e.offsetY <= 0 ? 'n' : '';
-        str += e.offsetY >= h - bw2 ? 's' : '';
-        str += e.offsetX <= 0 ? 'w' : '';
-        str += e.offsetX >= w - bw2 ? 'e' : '';
-
-        this._curPos = str;
-        if (str) {
-            this._onBorder = true;
-            this.style.cursor = `${str}-resize`;
-        } else {
-            this._onBorder = false;
-            return this.style.cursor = '';
-        }
-    },
+})
+ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
+    template: /*html*/`<slot></slot> `,
+    modal: true,
+    size: 'normal',
+    hideMinMax: true,
+    _close() {
+        this.fire('cancel');
+    }
 })
 ODA({is: 'oda-dialog-message', imports: '@oda/icon',
     template: /*html*/`
