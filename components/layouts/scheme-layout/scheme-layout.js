@@ -326,6 +326,9 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
     </style>
     <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~if="editMode || !inputs[align] || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
+    props: {
+        align: ''
+    },
     attached() {
         this.links = undefined;
     },
@@ -334,7 +337,6 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             return i.item.id === link.pin;
         })
     },
-    align: '',
     get links() {
         return this.$$('oda-scheme-pin').map(i => i.link).filter(i => i);
     },
