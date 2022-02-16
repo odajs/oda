@@ -12,6 +12,7 @@
     "@oda/form-layout": "components/layouts/form-layout/form-layout.js",
     "@oda/app-layout": "components/layouts/app-layout/app-layout.js",
     "@oda/splitter": "components/layouts/splitter/splitter.js",
+    "@oda/splitter2": "components/layouts/splitter2/splitter.js",
     "@oda/checkbox": "components/buttons/checkbox/checkbox.js",
     "@oda/palette": "components/colors/palette/palette.js",
     "@oda/color-picker": "components/colors/color-picker/color-picker.js",

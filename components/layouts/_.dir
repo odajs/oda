@@ -48,6 +48,14 @@
     "status": "ok"
   },
   {
+    "name": "splitter2",
+    "label": "<b style='color: #f66'>oda-splitter2:</b> Сплиттер2",
+    "content": {
+      "link": "index.html"
+    },
+    "status": "ok"
+  },
+  {
     "name": "title",
     "label": "<b style='color: #f66'>oda-title:</b> Заголовок",
     "content": {
