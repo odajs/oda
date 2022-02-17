@@ -50,7 +50,6 @@ ODA({ is: 'oda-jupyter',
         if (_lzs) {
             try {
                 _lzs = LZString.decompressFromEncodedURIComponent(_lzs)
-                console.log(_lzs);
                 this.notebook = JSON.parse(_lzs);
                 return;
             } catch (err) {  }
@@ -100,6 +99,7 @@ ODA({ is: 'oda-jupyter-cell',
     get cellType() {
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
+        if (this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
         if (this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
         if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
@@ -210,10 +210,11 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     extViews: [],
     get cellViews() { 
         let views = [
-            { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
-            { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html' },
+            { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md-showdown' },
+            { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html-pell-editor' },
+            { cell_type: 'html-cde', cell_extType: 'html-cde', color: '#16C60C', source: '🟢... ', label: 'html-CDEditor' },
             { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
-            { cell_type: 'html-executable', cell_extType: 'html-executable', color: 'gray', source: '⚪️... ', label: 'html-executable' },
+            { cell_type: 'html-executable', cell_extType: 'html-executable', color: '#0078D7', source: '🔵... ', label: 'code-html-executable' },
         ]
         views = [...views, ...(this.extViews || [])]
         return views;
@@ -403,4 +404,36 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
     get isReadOnly() {
         return this.cell?.cell_props?.readOnly;
     }
+})
+
+ODA({ is: 'oda-jupyter-cell-html-cde',
+    template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --flex;
+                min-height: 28px;
+            }
+        </style>
+        <iframe ~show="editedCell===cell" style="border: none; width: 100%; height: 80vh"></iframe>
+        <div ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
+    `,
+    cell: {},
+    get srcdoc() { return `<style>::-webkit-scrollbar { width: 4px; height: 4px; };::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }</style><div id="editor">\r\n<p>${this.cell?.source || ''}</p>\r\n</div>\r\n\x3Cscript src="https://cdn.ckeditor.com/4.13.0/full/ckeditor.js">\x3C/script>\r\n\x3Cscript>\r\nlet editor = CKEDITOR.replace('editor');\r\neditor.on('change',function(e){document.dispatchEvent(new CustomEvent('change', {detail: e.editor.getData()}));});\r\neditor.on( 'instanceReady', function(event){if(event.editor.getCommand( 'maximize' ).state==CKEDITOR.TRISTATE_OFF);event.editor.execCommand( 'maximize');});\r\n\x3C/script>\r\n` },
+    listeners: {
+        dblclick(e) {
+            if (this.readOnly) return;
+            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
+        }
+    },
+    observers: [
+        function setEditedCell(editedCell) {
+            if (editedCell && editedCell === this.cell) {
+                const iframe = this.$('iframe');
+                iframe.srcdoc = this.srcdoc;
+                this.async(() => (iframe.contentDocument || iframe.contentWindow)
+                    .addEventListener("change", (e) => this.cell.source = e.detail));
+            }
+        }
+    ]
 })
