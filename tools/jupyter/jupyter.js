@@ -419,7 +419,11 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
         <div ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
-    get srcdoc() { return `<style>::-webkit-scrollbar { width: 4px; height: 4px; };::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }</style><div id="editor">\r\n<p>${this.cell?.source || ''}</p>\r\n</div>\r\n\x3Cscript src="https://cdn.ckeditor.com/4.13.0/full/ckeditor.js">\x3C/script>\r\n\x3Cscript>\r\nlet editor = CKEDITOR.replace('editor');\r\neditor.on('change',function(e){document.dispatchEvent(new CustomEvent('change', {detail: e.editor.getData()}));});\r\neditor.on( 'instanceReady', function(event){if(event.editor.getCommand( 'maximize' ).state==CKEDITOR.TRISTATE_OFF);event.editor.execCommand( 'maximize');});\r\n\x3C/script>\r\n` },
+    get srcEditor() { return 'https://cdn.ckeditor.com/4.13.0/full/ckeditor.js'},
+    get initEditor() { return `let editor = CKEDITOR.replace('editor');` },
+    get eventChange() { return `editor.on('change',function(e){document.dispatchEvent(new CustomEvent('change',{detail: e.editor.getData()}));});` },
+    get events() { return `editor.on( 'instanceReady',function(event){if(event.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF);event.editor.execCommand('maximize');});`},
+    get srcdoc() { return `<style>::-webkit-scrollbar { width: 4px; height: 4px; };::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }</style><div id="editor">\r\n<p>${this.cell?.source || ''}</p>\r\n</div>\r\n\x3Cscript src="${this.srcEditor}">\x3C/script>\r\n\x3Cscript>\r\n${this.initEditor}\r\n${this.eventChange}\r\n${this.events}\r\n\x3C/script>\r\n` },
     listeners: {
         dblclick(e) {
             if (this.readOnly) return;
