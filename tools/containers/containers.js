@@ -63,23 +63,33 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             } else {
                 containerStack.push(host);
             }
-            const close = (e, condition, fireEvent = true) => {
-                const list = containerStack.filter(c => c.allowClose !== false);
-                while (condition(list)) {
-                    const c = list.pop();
-                    if (c) {
-                        if (fireEvent) c.fire('cancel');
-                        containerStack.remove(c);
+
+            let close, onMouseDown, onKeyDown, onCancel, onOk;
+            const windows = [...Array.prototype.map.call(window.top, w => w), window];
+            windows.add(window.top);
+
+            const result = new Promise((resolve, reject) => {
+                close = (e, condition, fireEvent = true) => {
+                    const list = containerStack.filter(c => c.allowClose !== false);
+
+                    while (condition(list)) {
+                        const c = list.pop();
+                        if (c) {
+                            if (fireEvent) c.fire('cancel');
+                            containerStack.remove(c);
+                        }
                     }
                 }
-            }
-            try {
-                return await new Promise((resolve, reject) => {
-
-                    this.cancelEvent = e => {
-                        reject();
+                onMouseDown = (e) => {
+                    let inside = false; // курсор внутри контейнера
+                    for (const ch of host.$core?.shadowRoot?.children) {
+                        const r = ch.getBoundingClientRect?.();
+                        if (r) {
+                            inside = (e.x >= r.x && e.x <= r.x + r.width) && (e.y >= r.y && e.y <= r.y + r.height);
+                            if(inside) break;
+                        }
                     }
-                    this.mouseEvent = e => {
+                    if (!inside) {
                         close(e, (list) => list.includes(e.target.parentElement) && list.last !== e.target.parentElement);
 
                         if (containerStack.last === host && e.target !== ctrl) {
@@ -90,55 +100,44 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                             }
                             close(e, (list) => list.length);
                         }
-
                     }
-                    this.okEvent = e => {
-                        close(e, (list) => list.length, false);
-                        setTimeout(() => {
-                            resolve(ctrl);
-                        },100)
-                    }
-                    host.addEventListener('cancel', this.cancelEvent);
-                    host.addEventListener('ok', this.okEvent);
+                }
+                onKeyDown = (e) => {
+                    if (e.keyCode === 27) onCancel(e);
+                    else if (e.keyCode === 13) onOk(e); 
+                }
+                onCancel = (e) => {
+                    reject();
+                }
+                onOk = (e) => {
+                    close(e, (list) => list.length, false);
+                    setTimeout(() => resolve(ctrl), 100);
+                }
 
-                    this.keyboardEvent = e => {
-                        if (e.keyCode === 27) {
-                            this.cancelEvent();
-                            // close(e, (list) => list.length);
-                        }
-                        else if (e.keyCode === 13){
-                            this.okEvent();
-                        }
-                    }
+                host.addEventListener('cancel', onCancel);
+                host.addEventListener('ok', onOk);
 
-
-                    window.addEventListener('keydown', this.keyboardEvent, true);
-                    const windows = [...Array.prototype.map.call(window.top, w => w), window];
-                    if (window !== window.top) windows.push(window.top);
-                    windows.forEach(w => {
-                        w.document.addEventListener('mousedown', this.mouseEvent, true);
-                    });
-                })
-            }
-            catch (e) {
-                return Promise.reject();
-            }
-            finally {
+                windows.forEach(w => {
+                    w.addEventListener('keydown', onKeyDown, true);
+                    w.addEventListener('mousedown', onMouseDown, true);
+                });
+            });
+            result.finally(() => {
                 if (ctrl.slotProxy) {
                     ctrl.slot = ctrl.slotProxy.$slot;
                     ctrl.slotProxy.parentElement.replaceChild(ctrl, ctrl.slotProxy);
                 }
-                host.removeEventListener('cancel', this.cancelEvent);
-                host.removeEventListener('ok', this.okEvent);
-                window.removeEventListener('keydown', this.keyboardEvent, true);
-                // document.removeEventListener('mousedown', this.mouseEvent, true);
-                const windows = [...Array.prototype.map.call(window.top, w => w), window];
-                if (window !== window.top) windows.push(window.top);
+                host.removeEventListener('cancel', onCancel);
+                host.removeEventListener('ok', onOk);
+
                 windows.forEach(w => {
-                    w.document.removeEventListener('mousedown', this.mouseEvent, true);
+                    w.removeEventListener('keydown', onKeyDown, true);
+                    w.removeEventListener('mousedown', onMouseDown, true);
                 });
+
                 host.remove();
-            }
+            })
+            return result;
         }
     }
 })
