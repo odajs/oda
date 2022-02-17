@@ -56,13 +56,6 @@
     }
   },
   {
-    "name": "wiki",
-    "label": "oda-wiki (prototype)",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
     "name": "sierpinski-triangle",
     "label": "sierpinski-triangle",
     "content": {
@@ -81,6 +74,20 @@
     "label": "HTML editor with live preview",
     "content": {
       "link": "demo.html"
+    }
+  },
+  {
+    "name": "jupyter",
+    "label": "ODA Jupyter Notebook",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "wiki",
+    "label": "oda-wiki (prototype)",
+    "content": {
+      "link": "index.html"
     }
   }
 ]

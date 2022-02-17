@@ -1,3 +1,5 @@
+import { LZString } from './lib/lz-string.js';
+
 ODA({ is: 'oda-jupyter',
     template: /*html*/`
         <style>
@@ -16,7 +18,13 @@ ODA({ is: 'oda-jupyter',
         url: {
             default: '',
             async set(n) {
-                await this.loadURL(n);
+                await this.loadURL();
+            }
+        },
+        lzs: {
+            default: '',
+            async set(n) {
+                await this.loadURL();
             }
         },
         readOnly: false,
@@ -31,10 +39,32 @@ ODA({ is: 'oda-jupyter',
     notebook: {},
     editedCell: undefined,
     extViews: [],
-    loadURL(url = this.url) {
+    attached() {
+        this.loadURL();
+    },
+    loadURL() {
         this.focusedCell = undefined;
-        if (url) 
-            fetch(url).then(response => response.json()).then(json => this.notebook = json);
+        this._location = window.location.href;
+        let _lzs = this._location.split('?lzs=')[1];
+        _lzs = _lzs || this.lzs;
+        if (_lzs) {
+            try {
+                _lzs = LZString.decompressFromEncodedURIComponent(_lzs)
+                console.log(_lzs);
+                this.notebook = JSON.parse(_lzs);
+                return;
+            } catch (err) {  }
+        } 
+        if (this.url) {
+            fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
+        }
+    },
+    share() {
+        const str = JSON.stringify(this.notebook);
+        if (str) {
+            let url = this.$url.replace('jupyter.js', 'index.html#?lzs=') + LZString.compressToEncodedURIComponent(str);
+            window.open(url, '_blank').focus();
+        }
     }
 })
 
@@ -71,7 +101,7 @@ ODA({ is: 'oda-jupyter-cell',
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
-        if (this.cell?.cell_type === 'html-code') return 'oda-jupyter-cell-html-code';
+        if (this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
         if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
         return 'div';
     }
@@ -183,7 +213,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
             { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md' },
             { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html' },
             { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
-            { cell_type: 'html-code', cell_extType: 'html-code', color: 'gray', source: '⚪️... ', label: 'html-code' },
+            { cell_type: 'html-executable', cell_extType: 'html-executable', color: 'gray', source: '⚪️... ', label: 'html-executable' },
         ]
         views = [...views, ...(this.extViews || [])]
         return views;
@@ -320,7 +350,7 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
     ]
 })
 
-ODA({ is: 'oda-jupyter-cell-html-code', imports: '@oda/ace-editor, @oda/splitter2',
+ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/splitter2',
     template: /*html*/`
         <style>
             ::-webkit-scrollbar { width: 4px; height: 4px; }
