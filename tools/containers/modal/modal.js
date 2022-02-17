@@ -71,12 +71,17 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     },
 })
 ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
-    template: /*html*/`<slot></slot> `,
+    template: /*html*/`<style> :host{ border-radius: 4px; } </style><slot></slot> `,
     modal: true,
     size: 'normal',
     hideMinMax: true,
     _close() {
         this.fire('cancel');
+    },
+    props: {
+        minHeight() {
+            return this.iconSize * 8;
+        }
     }
 })
 ODA({is: 'oda-dialog-message', imports: '@oda/icon',

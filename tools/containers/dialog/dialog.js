@@ -31,6 +31,7 @@ ODA({is: 'oda-dialog-footer',
             @apply --horizontal;
             @apply --header;
             /*order: 10;*/
+            /*border-radius: 4px;*/
         }
         oda-button{
             margin: 4px;
@@ -40,7 +41,7 @@ ODA({is: 'oda-dialog-footer',
             @apply --content;
             @apply --raised;
             transition: opacity .2s;
-            border-radius: 5px;
+            border-radius: 4px;
         }
         oda-button:hover{
             opacity: 1;
@@ -50,7 +51,7 @@ ODA({is: 'oda-dialog-footer',
         }
         [accent]{
             font-weight: bolder;
-            border: 2px solid black;
+            border: 1px solid black;
             @apply --header; 
         }
     </style>
