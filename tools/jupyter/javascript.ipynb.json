@@ -1,25 +1,4 @@
 {
-    "metadata": {
-        "language_info": {
-            "codemirror_mode": {
-                "name": "javascript"
-            },
-            "file_extension": ".js",
-            "mimetype": "text/javascript",
-            "name": "javascript",
-            "nbconvert_exporter": "javascript",
-            "pygments_lexer": "javascript",
-            "version": "es2017"
-        },
-        "kernelspec": {
-            "name": "javascript",
-            "display_name": "JavaScript",
-            "language": "javascript"
-        },
-        "toc-showcode": true
-    },
-    "nbformat_minor": 4,
-    "nbformat": 4,
     "cells": [
         {
             "cell_type": "markdown",
@@ -28,7 +7,13 @@
         },
         {
             "cell_type": "html",
-            "source": "<h3 style='color: green'>I'm HTML editor ...</h3>",
+            "source": "<h2><font color='#006600' face='Comic Sans MS, cursive'>I'm an HTML viewer with a Pell editor...</font></h2>",
+            "color": "#16C60C",
+            "metadata": {}
+        },
+        {
+            "cell_type": "html-cde",
+            "source": "<h2><strong><span style='color:#006600; font-family:Comic Sans MS,cursive'>I&#39;m an HTML viewer with a CDEditor ...</span></strong></h2>",
             "color": "#16C60C",
             "metadata": {}
         },
