@@ -88,6 +88,9 @@ ODA({is: 'oda-button', extends: 'oda-icon',
                 e.stopPropagation();
                 this.toggled = !this.toggled;
             }
+        },
+        keydown(e) {
+            if (e.keyCode === 13) this.click();
         }
     }
 });

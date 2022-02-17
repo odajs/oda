@@ -1,9 +1,12 @@
 ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     template: /*html*/`
-    <oda-dialog-footer ~if="control" :control class="no-flex" slot="*"  :buttons :hide-ok-button :hide-cancel-button>
+    <oda-dialog-footer ~if="control" ref="footer" :control class="no-flex" slot="*" :buttons :hide-ok-button :hide-cancel-button>
     </oda-dialog-footer> 
     `,
     buttons: [],
+    get buttonElems() {
+        return this.$refs.footer.$refs.buttons;
+    },
     focusedButton: null,
     props: {
         title: 'Dialog'
@@ -58,16 +61,15 @@ ODA({is: 'oda-dialog-footer',
     <div class="flex horizontal">
         <slot></slot>
         <slot name="footer"></slot>
-        <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="focusedButton = $event.target"
-        :label="item?.label?.call?.(this, control) || item?.label"
-        :disabled="item?.disabled?.call(this, control)"></oda-button>
+        <oda-button ref="buttons" ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn"  @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
     </div>
     <div class="no-flex horizontal">
-        <oda-button hide-icon ~if="!hideOkButton" @tap="domHost.fire('ok')" style="font-weight: bold;" tabindex="0">OK</oda-button>
-        <oda-button hide-icon ~if="!hideCancelButton" @tap="domHost.fire('cancel')" style="width: 70px">Cancel</oda-button>
+        <oda-button hide-icon ~if="!hideOkButton" @tap="domHost.fire('ok')" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">OK</oda-button>
+        <oda-button hide-icon ~if="!hideCancelButton" @tap="domHost.fire('cancel')" style="width: 70px" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">Cancel</oda-button>
     </div>
     `,
     clickBtn(e) {
+        if (e.target.hasAttribute('disabled')) return true;
         this.focusedButton = e.target;
         const item = e.target.item;
         if (item.execute)
@@ -80,4 +82,10 @@ ODA({is: 'oda-dialog-footer',
         hideOkButton: false,
         hideCancelButton: false,
     },
+    onFocusIn(e) {
+        this.focusedButton = e.target;
+    },
+    onBlur(e) {
+        this.focusedButton = null;
+    }
 })

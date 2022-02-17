@@ -54,15 +54,6 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         borderWidth: 4,
     },
     control: null,
-    keyBindings: {
-        escape() {
-            this.fire('cancel');
-        },
-        enter() {
-            this.focusedButton?.item?.execute?.();
-            this.fire('ok');
-        }
-    },
     _slot(e) {
         this.control = this.control || e.target.assignedNodes()?.[0]
     },
