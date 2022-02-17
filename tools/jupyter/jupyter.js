@@ -329,7 +329,7 @@ ODA({ is: 'oda-jupyter-cell-html-code', imports: '@oda/ace-editor, @oda/splitter
             :host {
                 @apply --horizontal;
                 @apply --flex;
-                min-height: 28px;
+                min-height: 24px;
                 height: 100%;
             }
             .box {
@@ -345,7 +345,7 @@ ODA({ is: 'oda-jupyter-cell-html-code', imports: '@oda/ace-editor, @oda/splitter
         <div class="box vertical no-flex">
             <div>[...]</div>
         </div>
-        <div class="vertical flex" style="overflow: hidden">
+        <div class="vertical flex" style="overflow: hidden; min-height: 24px;">
             <div class="horizontal flex" style="overflow: hidden; height: 20em;">
                 <div style="width: 50%; overflow: auto;">
                     <oda-ace-editor class="flex ace" :value="cell?.source" mode="html" theme="cobalt" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
@@ -355,7 +355,7 @@ ODA({ is: 'oda-jupyter-cell-html-code', imports: '@oda/ace-editor, @oda/splitter
                     <iframe :srcdoc="cell?.source" style="border: none; width: 100%; height: 100%"></iframe>
                 </div>
             </div>
-            <oda-splitter2 direction="horizontal" size="3px" color="dodgerblue" style="opacity: .3" resize-h></oda-splitter2>
+            <oda-splitter2 direction="horizontal" size="3px" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
     `,

@@ -13,7 +13,7 @@ ODA({ is: 'oda-splitter2', template: `
         direction: 'vertical', // 'horizontal'
         size: '2px',
         color: 'lightgray',
-        resizeH: false
+        resize: false
     },
     attached() {
         const splitter = this,
@@ -41,13 +41,10 @@ ODA({ is: 'oda-splitter2', template: `
                 const w = ((prevSiblingWidth + dx) * 100) / this.parentNode.getBoundingClientRect().width;
                 prevSibling.style.width = `${w}%`;
             } else {
-                let h;
-                if (this.resizeH) {
-                    this.parentNode.style.height = this.parentNode.getBoundingClientRect().height + (dy / 100);
-                    h = ((prevSiblingHeight + (dy / 100)));
-                    prevSibling.style.height = `${h}px`;
+                if (this.resize) {
+                    this.parentNode.style.height = `${prevSiblingHeight + dy}px`;
                 } else {
-                    h = ((prevSiblingHeight + dy)) * 100 / this.parentNode.getBoundingClientRect().height;
+                    const h = ((prevSiblingHeight + dy) * 100) / this.parentNode.getBoundingClientRect().height;
                     prevSibling.style.height = `${h}%`;
                 }
             }
