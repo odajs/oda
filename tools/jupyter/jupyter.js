@@ -75,7 +75,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{focusedCell!==cell && !readOnly && showBorder ? 'inset 0px 0px 0px 1px lightgray' : ''}};
+                box-shadow: {{focusedCell!==cell && !readOnly && showBorder ? '0px 0px 0px 1px lightgray' : ''}};
             }
             .focused {
                 box-shadow: 0 0 0 1px dodgerblue;
@@ -286,21 +286,11 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
                 @apply --horizontal;
                 @apply -- flex;
                 border: 1px solid #eee;
-                padding: 4px;
-            }
-            .box {
-                width: 24px;
-                cursor: pointer;
-                align-self: flex-start;
-                padding-right: 4px;
             }
             .ace {
                 height: unset;
             }
         </style>
-        <div class="box vertical no-flex">
-            <div>[...]</div>
-        </div>
         <oda-ace-editor class="flex ace" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
     `,
     cell: {},

@@ -442,7 +442,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         <div class="vertical bt" style="height: 100%;">
             <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" :rotate="-sign*90" ~style="{transform: \`rotate(\${sign*90}deg)\`}" @down.stop="setFocus(item)" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'" :toggled="focused === item"></oda-button>
             <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
-            <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="item?.tap?.($event)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
+            <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
         <oda-icon class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ></oda-icon>
     </div>
@@ -510,6 +510,13 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     },
     get opened(){
         return (!this.hideTabs && this.$$('oda-button.tab').some(i=>i.toggled)) || undefined;
+    },
+    execTap(e, item) {
+        switch (e.detail.sourceEvent.button) {
+            case 0: item?.tap?.(e); break;
+            case 1:
+            default: item?.contextMenu?.(e); break;
+        }
     },
     close(){
         this.focused = null;
