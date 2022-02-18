@@ -367,18 +367,24 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 font-size: 12px;
                 padding: 0 4px;
             }
+            span:hover {
+                background: lightgray;
+            }
             .mode {
                 color: red;
                 background: white;
             }
         </style>
-        <div class="vertical flex" style="overflow: hidden; min-height: 24px;">
+        <div class="vertical flex" style="overflow: hidden; height: 200px">
             <div class="horizontal flex" style="overflow: hidden; height: 20em;">
                 <div class="vertical" style="width: 50%; overflow: auto;">
                     <div class="horizontal header" style="padding: 4px;">
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
                         <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
                         <span @tap="mode='css'" :class="{mode: mode==='css'}">css</span>
+                        <div class="flex"></div>
+                        <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=''; setValue()">clear</span>
+                        <span @tap="_srcdoc = _srcdoc ? '' : ' '">refresh</span>
                     </div>
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':'dawn'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
@@ -400,8 +406,9 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         }
     },
     cell: {},
+    _srcdoc: '',
     get srcdoc() {
-        return `<style>${this.cell?.sourceCSS || ''}</style>${this.cell?.source}<script type="module">${this.cell?.sourceJS}</script>`
+        return `<style>${this.cell?.sourceCSS || ''}</style>${this.cell?.source || ''}<script type="module">${this.cell?.sourceJS || ''}</script>${this._srcdoc || ''}`
     },
     attached() {
         this.setValue();
