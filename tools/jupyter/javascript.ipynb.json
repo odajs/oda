@@ -25,7 +25,9 @@
         {
             "cell_type": "html-executable",
             "cell_extType": "html-executable",
-            "source": "<style>\nbody {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n}\n</style>\n\n<h1 style=\"color: red\">1234567890</div>\n",
+            "source": "\n<h1 id='txt' style=\"color: red\">1000000</div>\n",
+            "sourceJS": "const txt = document.querySelector('#txt');\nsetInterval(() => {\n\ttxt.innerText = +txt.innerText + 1;\n}, 100);\n",
+            "sourceCSS": "body {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n}\n",
             "color": "#16C60C",
             "metadata": {}
         },

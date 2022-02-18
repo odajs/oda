@@ -358,7 +358,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
             ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
             :host {
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --flex;
                 min-height: 24px;
                 height: 100%;
@@ -372,29 +372,60 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             .ace {
                 height: unset;
             }
+            span {
+                cursor: pointer;
+                font-size: 12px;
+                padding: 0 4px;
+            }
+            .mode {
+                color: red;
+                background: white;
+            }
         </style>
-        <div class="box vertical no-flex">
-            <div>[...]</div>
-        </div>
         <div class="vertical flex" style="overflow: hidden; min-height: 24px;">
             <div class="horizontal flex" style="overflow: hidden; height: 20em;">
-                <div style="width: 50%; overflow: auto;">
-                    <oda-ace-editor class="flex ace" :value="cell?.source" mode="html" theme="cobalt" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+                <div class="vertical" style="width: 50%; overflow: auto;">
+                    <div class="horizontal header" style="padding: 4px;">
+                        <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
+                        <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
+                        <span @tap="mode='css'" :class="{mode: mode==='css'}">css</span>
+                    </div>
+                    <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':'dawn'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
                 <oda-splitter2 size="3px" color="dodgerblue" style="opacity: .3"></oda-splitter2>
                 <div class="flex" style="overflow: auto; flex: 1">
-                    <iframe :srcdoc="cell?.source" style="border: none; width: 100%; height: 100%"></iframe>
+                    <iframe :srcdoc style="border: none; width: 100%; height: 100%"></iframe>
                 </div>
             </div>
             <oda-splitter2 direction="horizontal" size="3px" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
     `,
+    props: {
+        mode: {
+            default: 'html',
+            set(v) {
+                this.setValue();
+            }
+        }
+    },
     cell: {},
+    get srcdoc() {
+        return `<style>${this.cell?.sourceCSS || ''}</style>${this.cell?.source}<script type="module">${this.cell?.sourceJS}</script>`
+    },
+    attached() {
+        this.setValue();
+    },
     listeners: {
         change(e) {
-            if (!this.isReadOnly || this.editedCell === this.cell) 
-            this.cell.source = this.$('oda-ace-editor').value;        
+            if (this.focusedCell !== this.cell) return;
+            const v = this.$('oda-ace-editor').value;
+            if (this.mode === 'javascript')
+                this.cell.sourceJS = v;
+            if (this.mode === 'html')
+                this.cell.source = v;
+            if (this.mode === 'css')
+                this.cell.sourceCSS = v;
         },
         dblclick(e) {
             if (this.readOnly) return;
@@ -403,6 +434,15 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
     },
     get isReadOnly() {
         return this.cell?.cell_props?.readOnly;
+    },
+    setValue(mode = this.mode) {
+        let ed = this.$('oda-ace-editor');
+        if (mode === 'javascript')
+            ed.value = this.cell.sourceJS || '';
+        if (mode === 'html')
+            ed.value = this.cell.source || '';
+        if (mode === 'css')
+            ed.value = this.cell.sourceCSS || '';
     }
 })
 
