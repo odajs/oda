@@ -2,93 +2,72 @@
     "cells": [
         {
             "cell_type": "markdown",
-            "source": "# oda-jupyter-notebook\n\n![](https://odajs.org/site/icon.webp)",
-            "metadata": {}
+            "source": "# oda-jupyter-notebook\n\n![](https://odajs.org/site/icon.webp)"
         },
         {
             "cell_type": "html",
             "source": "<h2><font color='#006600' face='Comic Sans MS, cursive'>I'm an HTML viewer with a Pell editor...</font></h2>",
-            "color": "#16C60C",
-            "metadata": {}
+            "color": "#16C60C"
         },
         {
             "cell_type": "html-cde",
             "source": "<h2><strong><span style='color:#006600; font-family:Comic Sans MS,cursive'>I&#39;m an HTML viewer with a CDEditor ...</span></strong></h2>",
-            "color": "#16C60C",
-            "metadata": {}
+            "color": "#16C60C"
         },
         {
             "cell_type": "markdown",
-            "source": "##Авто исполняемый код:",
-            "metadata": {}
+            "source": "##Авто исполняемый код:"
         },
         {
             "cell_type": "html-executable",
             "cell_extType": "html-executable",
-            "source": "\n<h1 id='txt' style=\"color: red\">1000000</div>\n",
-            "sourceJS": "const txt = document.querySelector('#txt');\nsetInterval(() => {\n\ttxt.innerText = +txt.innerText + 1;\n}, 100);\n",
-            "sourceCSS": "body {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n}\n",
-            "color": "#16C60C",
-            "metadata": {}
+            "source": "<h2>setInterval :</h2>\n<h1 id='txt' style='color: blue'>10000</div>\n<h3 style='color: red'>result : </h3>",
+            "sourceJS": "const txt = document.querySelector('#txt');\nconst start = new Date();\nconst int = setInterval(() => {\n\ttxt.innerText = +txt.innerText - 1;\n\t\tif (+txt.innerText < 0) {\n\t\tclearInterval(int);\n\t\tdocument.querySelector('h3').innerText += new Date - start + ' ms';\n\t}\n});",
+            "sourceCSS": "body {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n\tcolor: gray;\n}\n",
+            "cell_h": "160px"
+        },
+        {
+            "cell_type": "html-executable",
+            "cell_extType": "html-executable",
+            "source": "<h2>setInterval :</h2>\n<h1 id='txt' style='color: blue'>10000</div>\n<h3 style='color: red'>result : </h3>",
+            "sourceJS": "if (!globalThis.setImmediate) {\n    const tasksByHandle = {};\n    let nextHandle = 1;\n    let currentlyRunningATask = false;\n    let registerImmediate;\n    globalThis.setImmediate = function setImmediate(callback) {\n        tasksByHandle[nextHandle] = callback;\n        registerImmediate(nextHandle);\n        return nextHandle++\n    }\n    globalThis.clearImmediate = function clearImmediate(handle) {\n        delete tasksByHandle[handle]\n    }\n\n    function runIfPresent(handle) {\n        if (currentlyRunningATask) {\n            setTimeout(runIfPresent, 0, handle);\n        } else {\n            const task = tasksByHandle[handle];\n            if (task) {\n                currentlyRunningATask = true;\n                try {\n                    task();\n                } finally {\n                    clearImmediate(handle);\n                    currentlyRunningATask = false;\n                }\n            }\n        }\n    }\n\n    function installNextTickImplementation() {\n        registerImmediate = handle => process.nextTick(() => {\n            runIfPresent(handle)\n        })\n    }\n\n    function installPostMessageImplementation() {\n        const messagePrefix = `setImmediate$${Math.random()}$`;\n        const onGlobalMessage = event => {\n            if (event.source === globalThis &&\n                typeof event.data === 'string' &&\n                event.data.indexOf(messagePrefix) === 0) {\n                runIfPresent(+event.data.slice(messagePrefix.length));\n            }\n        }\n        globalThis.addEventListener('message', onGlobalMessage, false);\n        registerImmediate = handle => globalThis.postMessage(messagePrefix + handle, '*');\n    }\n    if ({}.toString.call(globalThis.process) === '[object process]') installNextTickImplementation();\n    else installPostMessageImplementation();\n}\n\nconst txt = document.querySelector('h1');\nconst start = new Date();\n\nsetImmediate(function go() {\n    txt.innerText = +txt.innerText - 1;\n    if (+txt.innerText < 0) {\n        document.querySelector('h3').innerText += new Date - start + 'ms';\n    } else {\n        setImmediate(go);\n    }\n});\n",
+            "sourceCSS": "body {\n\tbackground-color: white;\n\tbackground-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;\n\tbackground-image: \n\t\tlinear-gradient(gray 1px, transparent 0), \n\t\tlinear-gradient(90deg, gray 1px, transparent 0),\n\t\tlinear-gradient(lightgray 1px, transparent 0),\n\t\tlinear-gradient(90deg, lightgray 1px, transparent 0);\n\tcolor: gray;\n}\n",
+            "cell_h": "160px"
         },
         {
             "cell_type": "markdown",
-            "source": "## Standard streams",
-            "metadata": {}
+            "source": "## Standard streams"
         },
         {
             "cell_type": "code",
             "cell_props": {
                 "readOnly": true
             },
-            "source": "console.log('hello world') // is readOnly code in view mode",
-            "metadata": {
-                "trusted": true
-            },
-            "execution_count": null,
-            "outputs": []
+            "source": "console.log('hello world') // is readOnly code in view mode"
         },
         {
             "cell_type": "code",
-            "source": "console.error('error')",
-            "metadata": {
-                "trusted": true
-            },
-            "execution_count": null,
-            "outputs": []
+            "source": "console.error('error')"
         },
         {
             "cell_type": "markdown",
-            "source": "## JavaScript specific constructs",
-            "metadata": {}
+            "source": "## JavaScript specific constructs"
         },
         {
             "cell_type": "code",
-            "source": "const delay = 2000;\n\nsetTimeout(() => {\n    console.log('done');\n}, delay);",
-            "metadata": {
-                "trusted": true
-            },
-            "execution_count": null,
-            "outputs": []
+            "source": "const delay = 2000;\n\nsetTimeout(() => {\n    console.log('done');\n}, delay);"
         },
         {
             "cell_type": "code",
-            "source": "var str = \"hello world\"\nstr.split('').forEach(c => {\n    console.log(c)\n})",
-            "metadata": {
-                "trusted": true
-            },
-            "execution_count": null,
-            "outputs": []
+            "source": "var str = \"hello world\"\nstr.split('').forEach(c => {\n    console.log(c)\n})"
         },
         {
             "cell_type": "markdown",
-            "source": "<hr><h3 style='color: red'>use old oda-site-md-style in Markdown cells</h3><hr>",
-            "metadata": {}
+            "source": "<hr><h3 style='color: red'>use old oda-site-md-style in Markdown cells</h3><hr>"
         },
         {
             "cell_type": "markdown",
-            "source": "Директива **~style** используется для реактивной стилизации любого HTML-элемента, объявленного внутри компонента. \r\n\r\nЗначение директивы **~style** автоматически связывается со значение атрибута **style** любого HTML-элемента, задавая стиль его отображения.\r\n\r\n### Пример 1.\r\n\r\n```javascript _run_edit_[my-component.js]\r\nODA({\r\n    is: 'my-component',\r\n    template: `\r\n        <div ~style=\"myStyle\" @tap=\"_changeStyle\">Щелкни по мне</div>\r\n    `,\r\n    props: {\r\n        myStyle: \"background: green; color: yellow; padding: 10px\"\r\n    },\r\n    _changeStyle() {\r\n        let myStyle1 = \"background: green; color: yellow; padding: 10px\";\r\n        let myStyle2 = \"background: yellow; color: green; padding: 10px\";\r\n        this.myStyle = this.myStyle === myStyle1 ? myStyle2 : myStyle1;\r\n    }\r\n});\r\n```\r\n\r\nЗдесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана эта директива **~style**.\r\n\r\nЗначение директивы **~style** можно задать не только в виде свойства компонента, но в виде обычной строки.\r\n\r\n<hr>",
-            "metadata": {}
+            "source": "Директива **~style** используется для реактивной стилизации любого HTML-элемента, объявленного внутри компонента. \r\n\r\nЗначение директивы **~style** автоматически связывается со значение атрибута **style** любого HTML-элемента, задавая стиль его отображения.\r\n\r\n### Пример 1.\r\n\r\n```javascript _run_edit_[my-component.js]\r\nODA({\r\n    is: 'my-component',\r\n    template: `\r\n        <div ~style=\"myStyle\" @tap=\"_changeStyle\">Щелкни по мне</div>\r\n    `,\r\n    props: {\r\n        myStyle: \"background: green; color: yellow; padding: 10px\"\r\n    },\r\n    _changeStyle() {\r\n        let myStyle1 = \"background: green; color: yellow; padding: 10px\";\r\n        let myStyle2 = \"background: yellow; color: green; padding: 10px\";\r\n        this.myStyle = this.myStyle === myStyle1 ? myStyle2 : myStyle1;\r\n    }\r\n});\r\n```\r\n\r\nЗдесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана эта директива **~style**.\r\n\r\nЗначение директивы **~style** можно задать не только в виде свойства компонента, но в виде обычной строки.\r\n\r\n<hr>"
         }
     ]
 }
