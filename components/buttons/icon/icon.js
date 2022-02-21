@@ -38,6 +38,11 @@ ODA({is: 'oda-icon', template: `
             top: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
         }
+        svg{
+            top: 0px;
+            left: 0px;
+            position: absolute;
+        }
     </style>
     <div :bubble="_bubble" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
         <svg ~show="_icon" ~style="_style" :stroke :fill :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">

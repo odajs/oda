@@ -86,7 +86,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         const r = ch.getBoundingClientRect?.();
                         if (r) {
                             inside = (e.x >= r.x && e.x <= r.x + r.width) && (e.y >= r.y && e.y <= r.y + r.height);
-                            if(inside) break;
+                            if (inside) break;
                         }
                     }
                     if (!inside) {
@@ -116,11 +116,11 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     }
                 }
                 onCancel = (e) => {
-                    reject();
+                    setTimeout(() => reject());
                 }
                 onOk = (e) => {
                     close(e, (list) => list.length, false);
-                    setTimeout(() => resolve(ctrl), 100);
+                    setTimeout(() => resolve(ctrl));
                 }
 
                 host.addEventListener('cancel', onCancel);
@@ -144,7 +144,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     w.removeEventListener('mousedown', onMouseDown, true);
                 });
 
-                host.remove();
+                setTimeout(() => host.remove());
             })
             return result;
         }
