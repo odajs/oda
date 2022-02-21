@@ -76,7 +76,7 @@ ODA({ is: 'oda-jupyter',
         let str = JSON.stringify(this.notebook);
         if (!str) return;
         const blob = new Blob([str], { type: "text/plain" });
-        const fileHandle = await window.showSaveFilePicker({ types: [{ escription: "Json file", accept: { "text/plain": [".json"] } }] });
+        const fileHandle = await window.showSaveFilePicker({ suggestedName: this.notebook.label || 'jupyter-000' + '.json', types: [{ description: "Json file", accept: { "text/plain": [".json"] } }] });
         const fileStream = await fileHandle.createWritable();
         await fileStream.write(blob);
         await fileStream.close();

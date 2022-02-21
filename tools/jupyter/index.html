@@ -1,13 +1,19 @@
 <meta charset="utf-8">
 <title>oda-jupyter test</title>
 
+<style>
+    oda-button {
+        font-size: 12px;
+    }
+</style>
+
 <div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
     <oda-button onclick="jupyter.share()" style="margin: 4px;">share</oda-button>
-    <oda-button id="save" style="margin: 4px;">save</oda-button>
-    <oda-button for="load" style="margin: 4px;" onclick="document.querySelector('#load').click()">load</oda-button>
+    <oda-button id="save" style="margin: 4px;">save json</oda-button>
+    <oda-button for="load" style="margin: 4px;" onclick="document.querySelector('#load').click()">load json</oda-button>
     <input id="load" type="file" style="display: none" />
     <oda-button onclick="jupyter.readOnly = !jupyter.readOnly" style="margin: 4px;" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
-    <oda-button onclick="jupyter.loadURL()" style="margin: 4px;">Reset view</oda-button>
+    <oda-button onclick="jupyter.loadURL()" style="margin: 4px;">Restore view</oda-button>
     <oda-button onclick="jupyter.notebook.cells = []" style="margin: 4px;">Clear all data</oda-button>
     <oda-button onclick="document.location.reload()" style="margin: 4px;">Reload page</oda-button>
 </div>
