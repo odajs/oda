@@ -52,8 +52,8 @@ ODA({ is: 'oda-jupyter',
                 _lzs = LZString.decompressFromEncodedURIComponent(_lzs)
                 this.notebook = JSON.parse(_lzs);
                 return;
-            } catch (err) {  }
-        } 
+            } catch (err) { }
+        }
         if (this.url) {
             fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
         }
@@ -65,6 +65,21 @@ ODA({ is: 'oda-jupyter',
             let url = this.$url.replace('jupyter.js', 'index.html#?lzs=') + LZString.compressToEncodedURIComponent(str);
             window.open(url, '_blank').focus();
         }
+    },
+    loadFile(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async e => this.notebook = JSON.parse(e.target.result);
+        reader.readAsText(file, 'UTF-8');
+    },
+    async saveFile(e) {
+        let str = JSON.stringify(this.notebook);
+        if (!str) return;
+        const blob = new Blob([str], { type: "text/plain" });
+        const fileHandle = await window.showSaveFilePicker({ types: [{ escription: "Json file", accept: { "text/plain": [".json"] } }] });
+        const fileStream = await fileHandle.createWritable();
+        await fileStream.write(blob);
+        await fileStream.close();
     }
 })
 
@@ -176,7 +191,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     iconSize: 14,
     cell: {},
     async showCellViews(view) {
-        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view, extViews: this.extViews }, {parent: this.$('oda-button')});
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view, extViews: this.extViews }, { parent: this.$('oda-button') });
         if (res && view === 'add') this.editedCell = undefined;
     }
 })
@@ -200,7 +215,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     cell: {},
     notebook: {},
     extViews: [],
-    get cellViews() { 
+    get cellViews() {
         let views = [
             { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
             { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-pell-editor' },
@@ -220,7 +235,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
             this.notebook.cells.splice(idx, 0, cell);
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
         } else if (this.view === 'select type') {
-            const cell = { ...this.cell, ...{ cell_type: item.cell_type, cell_extType: item.cell_extType, color: item.color, label: item.label  } };
+            const cell = { ...this.cell, ...{ cell_type: item.cell_type, cell_extType: item.cell_extType, color: item.color, label: item.label } };
             this.notebook.cells.splice(idx, 1, cell);
         }
         this.fire('ok');
@@ -288,8 +303,8 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
     cell: {},
     listeners: {
         change(e) {
-            if (!this.isReadOnly || this.editedCell === this.cell) 
-            this.cell.source = this.$('oda-ace-editor').value;        
+            if (!this.isReadOnly || this.editedCell === this.cell)
+                this.cell.source = this.$('oda-ace-editor').value;
         },
         dblclick(e) {
             if (this.readOnly) return;
@@ -458,10 +473,10 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
         <div ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
-    get srcEditor() { return 'https://cdn.ckeditor.com/4.13.0/full/ckeditor.js'},
+    get srcEditor() { return 'https://cdn.ckeditor.com/4.13.0/full/ckeditor.js' },
     get initEditor() { return `let editor = CKEDITOR.replace('editor');` },
     get eventChange() { return `editor.on('change',function(e){document.dispatchEvent(new CustomEvent('change',{detail: e.editor.getData()}));});` },
-    get events() { return `editor.on( 'instanceReady',function(event){if(event.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF);event.editor.execCommand('maximize');});`},
+    get events() { return `editor.on( 'instanceReady',function(event){if(event.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF);event.editor.execCommand('maximize');});` },
     get srcdoc() { return `<style>::-webkit-scrollbar { width: 4px; height: 4px; };::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }</style><div id="editor">\r\n<p>${this.cell?.source || ''}</p>\r\n</div>\r\n\x3Cscript src="${this.srcEditor}">\x3C/script>\r\n\x3Cscript>\r\n${this.initEditor}\r\n${this.eventChange}\r\n${this.events}\r\n\x3C/script>\r\n` },
     listeners: {
         dblclick(e) {
