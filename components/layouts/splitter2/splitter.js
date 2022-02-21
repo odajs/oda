@@ -71,6 +71,8 @@ ODA({ is: 'oda-splitter2', template: `
 
             document.removeEventListener('pointermove', this._moveHandler);
             document.removeEventListener('pointerup', this._upHandler);
+
+            this.fire('endSplitterMove', { direction: this.direction, resize: this.resize, prevSiblingWidth, prevSiblingHeight, h: this.parentNode.style.height });
         }
         splitter.addEventListener('pointerdown', downHandler);
     }

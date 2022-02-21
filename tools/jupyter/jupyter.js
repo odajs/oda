@@ -34,7 +34,7 @@ ODA({ is: 'oda-jupyter',
                 this.editedCell = undefined
             }
         },
-        showBorder: false // show cell border for mode is not readOnly
+        showBorder: false
     },
     notebook: {},
     editedCell: undefined,
@@ -373,8 +373,12 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 color: red;
                 background: white;
             }
+            .editor {
+                overflow: hidden; 
+                height: {{this.cell?.cell_h || '200px'}};
+            }
         </style>
-        <div class="vertical flex" style="overflow: hidden; height: 200px">
+        <div class="vertical flex editor">
             <div class="horizontal flex" style="overflow: hidden; height: 20em;">
                 <div class="vertical" style="width: 50%; overflow: auto;">
                     <div class="horizontal header" style="padding: 4px;">
@@ -426,6 +430,12 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         dblclick(e) {
             if (this.readOnly) return;
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
+        },
+        endSplitterMove(e) {
+            if (!this.readOnly && e?.detail?.value?.direction === 'horizontal' && e?.detail?.value?.resize) {
+                // console.log(e.detail);
+                this.cell.cell_h = e.detail.value.h;
+            }
         }
     },
     get isReadOnly() {
