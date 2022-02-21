@@ -79,7 +79,6 @@ ODA({ is: 'oda-jupyter-cell',
             }
             .focused {
                 box-shadow: 0 0 0 1px dodgerblue;
-                /* box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4); */
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
@@ -117,7 +116,6 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 top: -18px;
                 z-index: 41;
                 box-shadow: 0 0 0 1px dodgerblue;
-                /* box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.4); */
                 background: white;
                 width: 200px;
                 height: 24px;
@@ -144,7 +142,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - 1.1 <= ord ? idx : idx + 1);
     },
     tapDelete() {
-        if (['🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫️', '⚪️'].includes(this.cell.source.slice(0, 2)) || this.cell.source === ' ' || !this.cell.source) {
+        if (this.cell?.source.trim() === '' || !this.cell.source) {
             this.notebook.cells.splice(this.cell.order, 1);
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx);
             this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
@@ -173,10 +171,11 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
                 z-index: 21;
                 font-size: 10px;
                 cursor: pointer;
+                color: dodgerblue;
             }
         </style>
         <oda-button class="btn" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
-        <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type" ~style="{color: cell?.color || 'gray'}">{{cell.label || cell.cell_type}}</div>
+        <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type">{{cell.label || cell.cell_type}}</div>
     `,
     props: {
         position: 'top'
@@ -198,7 +197,7 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
             }
         </style>
         <div class="header flex" style="text-align: center; padding: 1px; width: 100%">{{view}} cell</div>
-        <oda-button class="horizontal flex" ~for="cellViews" @tap="addCell(item)" style="justify-content: start">{{item.source + item.label}}</oda-button>
+        <oda-button class="horizontal flex" ~for="cellViews" @tap="addCell(item)" style="justify-content: start;">{{index + '. ' + item.label}}</oda-button>
     `,
     props: {
         position: 'top',
@@ -210,11 +209,11 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     extViews: [],
     get cellViews() { 
         let views = [
-            { cell_type: 'markdown', cell_extType: 'md', color: '#F7630C', source: '🟠... ', label: 'md-showdown' },
-            { cell_type: 'html', cell_extType: 'html', color: '#16C60C', source: '🟢... ', label: 'html-pell-editor' },
-            { cell_type: 'html-cde', cell_extType: 'html-cde', color: '#16C60C', source: '🟢... ', label: 'html-CDEditor' },
-            { cell_type: 'code', cell_extType: 'code', color: '#0078D7', source: '🔵... ', label: 'code' },
-            { cell_type: 'html-executable', cell_extType: 'html-executable', color: '#0078D7', source: '🔵... ', label: 'code-html-executable' },
+            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
+            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-pell-editor' },
+            { cell_type: 'html-cde', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
+            { cell_type: 'code', cell_extType: 'code', source: '', label: 'code' },
+            { cell_type: 'html-executable', cell_extType: 'html-executable', source: '', label: 'code-html-executable' },
         ]
         views = [...views, ...(this.extViews || [])]
         return views;
