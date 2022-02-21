@@ -402,7 +402,7 @@ if (!globalThis.KERNEL) {
                         handler = event;
                         event = '__any__';
                     }
-                    const ev = this.__handlers__ || (this.__handlers__ = {});
+                    const ev = this.__handlers__ ??= {};
                     (ev[event] || (ev[event] = [])).add(handler);
                 }
             },
