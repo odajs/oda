@@ -12,7 +12,7 @@ ODA({ is: 'oda-jupyter',
             }
         </style>
         <oda-jupyter-cell-addbutton ~if="!notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
-        <oda-jupyter-cell ~for="cell in notebook?.cells" :cell :idx="index"></oda-jupyter-cell>
+        <oda-jupyter-cell ~for="cell in notebook?.cells" :cell></oda-jupyter-cell>
     `,
     props: {
         url: {
@@ -57,6 +57,7 @@ ODA({ is: 'oda-jupyter',
         if (this.url) {
             fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
         }
+        (this.notebook?.cells || []).map((i, idx) => i.order ||= idx);
     },
     share() {
         const str = JSON.stringify(this.notebook);
@@ -86,14 +87,6 @@ ODA({ is: 'oda-jupyter-cell',
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
-    props: {
-        idx: {
-            type: Number,
-            set(v) {
-                this.cell.order = v;
-            }
-        }
-    },
     cell: {},
     get cellType() {
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
@@ -142,7 +135,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - 1.1 <= ord ? idx : idx + 1);
     },
     tapDelete() {
-        if (this.cell?.source.trim() === '' || !this.cell.source) {
+        if (this.cell?.source.trim() === '' || !this.cell.source || window.confirm(`Do you really want delete current cell ?`)) {
             this.notebook.cells.splice(this.cell.order, 1);
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx);
             this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
