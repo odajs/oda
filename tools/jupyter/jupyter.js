@@ -139,7 +139,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
         <oda-button ~if="editedCell===cell" icon="icons:settings" :icon-size></oda-button>
         <div class="flex"></div>
-        <oda-button icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
+        <oda-button ~if="cell.allowDeletion" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
     `,
     iconSize: 14,
     cell: {},
