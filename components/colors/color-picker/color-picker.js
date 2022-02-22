@@ -12,7 +12,7 @@ export default ODA({ is: 'oda-color-picker',
                 padding: 0px;
                 background-image: {{gradientMode?value:''}};
                 background-color: {{gradientMode?'':value}};
-                font-size: xx-small;
+                font-size: small;
                 @apply --raised;
                 @apply --text-shadow;
                 color: white;

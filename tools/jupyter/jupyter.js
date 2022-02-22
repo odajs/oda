@@ -38,7 +38,6 @@ ODA({ is: 'oda-jupyter',
     },
     notebook: {},
     editedCell: undefined,
-    extViews: [],
     attached() {
         this.loadURL();
     },
@@ -76,10 +75,10 @@ ODA({ is: 'oda-jupyter',
         let str = JSON.stringify(this.notebook);
         if (!str) return;
         const blob = new Blob([str], { type: "text/plain" });
-        const fileHandle = await window.showSaveFilePicker({ suggestedName: this.notebook.label || 'jupyter-000' + '.json', types: [{ description: "Json file", accept: { "text/plain": [".json"] } }] });
-        const fileStream = await fileHandle.createWritable();
-        await fileStream.write(blob);
-        await fileStream.close();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = (this.notebook.label || 'oda-jupyter') + '.json';
+        a.click();
     }
 })
 
@@ -191,7 +190,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     iconSize: 14,
     cell: {},
     async showCellViews(view) {
-        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view, extViews: this.extViews }, { parent: this.$('oda-button') });
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, { parent: this.$('oda-button') });
         if (res && view === 'add') this.editedCell = undefined;
     }
 })
@@ -214,7 +213,6 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     iconSize: 14,
     cell: {},
     notebook: {},
-    extViews: [],
     get cellViews() {
         let views = [
             { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
@@ -223,7 +221,6 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
             { cell_type: 'code', cell_extType: 'code', source: '', label: 'code' },
             { cell_type: 'html-executable', cell_extType: 'html-executable', source: '', label: 'code-html-executable' },
         ]
-        views = [...views, ...(this.extViews || [])]
         return views;
     },
     addCell(item) {
