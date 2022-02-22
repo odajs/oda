@@ -9,10 +9,16 @@ ODA({ is: 'oda-jupyter',
                 padding: 16px 0;
                 position: relative;
                 min-height: 28px;
+                opacity: 0;
+                animation: ani 4.0s forwards;
+            }
+            @keyframes ani {
+                0% {opacity: 0;}
+                100% {opacity: 1;}
             }
         </style>
-        <oda-jupyter-cell-addbutton ~if="!notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
-        <oda-jupyter-cell ~for="cell in notebook?.cells" :cell></oda-jupyter-cell>
+        <oda-jupyter-cell-addbutton ~if="isReady && !notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell ~if="isReady" ~for="cell in notebook?.cells" :cell></oda-jupyter-cell>
     `,
     props: {
         url: {
@@ -28,6 +34,7 @@ ODA({ is: 'oda-jupyter',
             }
         },
         readOnly: false,
+        isReady: false,
         focusedCell: {
             type: Object,
             set(v) {
@@ -57,6 +64,9 @@ ODA({ is: 'oda-jupyter',
             fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
         }
         (this.notebook?.cells || []).map((i, idx) => i.order ||= idx);
+        this.async(() => {
+            this.isReady = true;
+        }, 300)
     },
     share() {
         const str = JSON.stringify(this.notebook);
@@ -124,7 +134,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 z-index: 41;
                 box-shadow: 0 0 0 1px dodgerblue;
                 background: white;
-                width: 200px;
+                /* width: 200px; */
                 height: 24px;
             }
             oda-button {
@@ -139,7 +149,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
         <oda-button ~if="editedCell===cell" icon="icons:settings" :icon-size></oda-button>
         <div class="flex"></div>
-        <oda-button ~if="cell.allowDeletion" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
+        <oda-button ~if="!cell.noDelete" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
     `,
     iconSize: 14,
     cell: {},
