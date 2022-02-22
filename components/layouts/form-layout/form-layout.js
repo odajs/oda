@@ -36,21 +36,18 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             :host .title-bar{
                 @apply --heading;
             }
-        </style>
-        <style ~if="showCloseBtn || modal">
-            :host .title-bar{
+
+            :host([modal]) .title-bar, :host([show-close-btn]) .title-bar{
                 min-height: {{iconSize + iconSize / 8 + 5}}px;
                 max-height: {{iconSize + iconSize / 8 + 5}}px;
             }
-            :host .title-bar{
+            :host([modal]) .title-bar, :host([show-close-btn]) .title-bar{
                 line-height: {{iconSize + iconSize / 8}}px;
             }
-            :host .title-bar oda-button{
+            :host([modal]) .title-bar oda-button, :host([show-close-btn]) .title-bar oda-button{
                  padding: {{iconSize / 8}}px;
             }
-        </style>
-        <style ~if="modal && !isMinimized">
-            :host{
+            :host(:not([autosize])[modal]:not([is-minimized])){
                 box-sizing: border-box;
                 box-shadow: var(--box-shadow);
                 filter: opacity(1);
@@ -65,9 +62,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 top: {{_getPosition('top')}};
                 {{isMinimized ? \`max-height: \${iconSize}px;\` : ''}}
             }
-        </style>
-        <style ~if="modal && isMinimized" >
-            :host{
+            :host(:not([autosize])[modal][is-minimized]){
                 box-sizing: border-box;
                 box-shadow: var(--box-shadow);
                 max-width: 300px;
@@ -76,6 +71,12 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
                 left: {{_getPosition('left')}};
                 top: {{_getPosition('top')}};
+            }
+            :host([autosize]){
+                height: unset;
+                width: unset;
+                margin: 0 0 0 50%;
+                transform: translate3d(-50%, 0, 0);
             }
         </style>
         <div class="title-bar horizontal" @mouseenter="_onHeader = true" @mouseleave="_onHeader = false">
@@ -96,7 +97,22 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             default: 24,
             shared: true
         },
+        autosize: {
+            default: false,
+            reflectToAttribute: true
+        },
         modal: {
+            default: false,
+            reflectToAttribute: true
+        },
+        isMinimized: {
+            default: false,
+            set() {
+                this._fixPos();
+            },
+            reflectToAttribute: true
+        },
+        showCloseBtn: {
             default: false,
             reflectToAttribute: true
         },
@@ -107,12 +123,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             // set(){
             //     if(this.parentNode) this._transition();
             // }
-        },
-        isMinimized: {
-            default: false,
-            set() {
-                this._fixPos();
-            }
         },
         pos: {
             default: {
@@ -152,11 +162,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             type: Number,
             default: 0
         },
-        showCloseBtn: false,
         hideMinMax: false,
     },
     listeners: {
         mousemove(e) {
+            if (this.autosize) return;
             if (!this.modal || this.size !== 'normal' || this.isMinimized) {
                 return this.style.cursor = '';
             }
@@ -181,6 +191,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             }
         },
         track(e, d) {
+            if (this.autosize) return;
             if (!this.modal || e.sourceEvent.button !== 0) return;
             const state = d.state;
             const x = d.ddx || 0;
@@ -250,6 +261,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         '_setTransform(modal, pos)'
     ],
     _setTransform(modal = this.modal, pos = this.pos) {
+        if (this.autosize) return;
         const parent = this.parentElement || this.domHost;
         if (!parent) return;
         this._parentWidth = parent.offsetWidth;
@@ -257,6 +269,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         this._fixPos();
     },
     _resize() {
+        if (this.autosize) return;
         // this.interval('resize', ()=>{
         if (this.modal && this.size !== 'max' && window.innerWidth < this.maxWidth) {
             this.size = 'max';
@@ -270,6 +283,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
 
     },
     _fixPos(pos = this.pos) {
+        if (this.autosize) return;
         pos.width = Math.min(Math.max(this.minWidth, pos.width || this.minWidth), this._parentWidth);
         pos.height = Math.min(Math.max(this.minHeight, pos.height || this.minHeight), this._parentHeight);
         const maxW = this._parentWidth - (this.isMinimized ? 300 : pos.width);

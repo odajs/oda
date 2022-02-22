@@ -38,14 +38,14 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             overflow: hidden;
         }
     </style>
-    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'">
+    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'" :autosize>
         <slot class="no-flex" name="modal-title" slot="title-bar"></slot>
         <slot @slotchange="_slot" @tap.stop class="content flex vertical" @dblclick.stop></slot>
     </oda-dialog-content>
     `,
     help: '',
     props: {
-        autoSize: false,
+        autosize: true,
         icon: '',
         title: '',
         fullSize: false,
@@ -66,14 +66,17 @@ ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-l
     modal: true,
     size: 'normal',
     hideMinMax: true,
-    _close() {
-        this.fire('cancel');
-    },
     props: {
         minHeight() {
             return this.iconSize * 8;
-        }
-    }
+        },
+        saveKey() {
+            return this.contextItem?.typeName + this.control?.localName;
+        },
+    },
+    _close() {
+        this.fire('cancel');
+    },
 })
 ODA({is: 'oda-dialog-message', imports: '@oda/icon',
     template: /*html*/`

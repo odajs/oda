@@ -34,17 +34,17 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         <slot name="header" class="horizontal no-flex"></slot>
     </div>
     <div class="main-container content"  ~class="{'stop-pointer-events': size === 'min'}" ~style="{'zoom': size === 'min' ? '50%' : ''}">
-        <div class="main vertical flex shadow"   @wheel="_scroll"  style="order:1" ~style="{filter: (persistent && opened)?'brightness(.5)':'none', pointerEvents: (persistent && opened)?'none':'auto'}">
+        <div class="main vertical flex shadow"   @wheel="_scroll"  style="order:1" ~style="{filter: (allowPersistent && persistent && opened)?'brightness(.5)':'none', pointerEvents: (allowPersistent && persistent && opened)?'none':'auto'}">
             <slot name="top" class="vertical no-flex"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
             <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
         </div>
 
-        <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!persistent || !r_opened">
+        <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowPersistent || !persistent || !r_opened">
             <slot name="left-header" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
-        <app-layout-drawer pos="right" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!persistent || !l_opened">
+        <app-layout-drawer pos="right" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowPersistent || !persistent || !l_opened">
             <slot name="right-header" slot="panel-header"></slot>
             <slot name="right-panel"></slot>
         </app-layout-drawer>
@@ -98,6 +98,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             }
         },
         persistent: false,
+        allowPersistent: true
     },
     // ready(){
     //     this.listen('app-layout-swipe', 'swipeX', {target: window});
@@ -169,7 +170,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         //     this.swipeX(e)
         // },
         down(e){
-            if (this.persistent && this.opened){
+            if (this.allowPersistent && this.persistent && this.opened){
                 this.close();
             }
         },
@@ -224,7 +225,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
 
         if (!router.$startSide) {
             let startSide;
-            if (this.persistent)
+            if (this.allowPersistent && this.persistent)
                 startSide = this.l_opened ? 'left' : this.r_opened ? 'right': '';
             if (!startSide)
                 startSide = startX <= Math.round(window.top.screen.width / 2) ? 'left' : 'right';
@@ -448,12 +449,12 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     </div>
     <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal content drawer no-flex"
         ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
-                maxWidth: persistent?'70vw':(width + 'px'),
+                maxWidth: allowPersistent && persistent?'70vw':(width + 'px'),
                 minWidth: width + 'px',
                 display: (hideTabs || !focused) ? 'none' : '',
-                position: persistent?'absolute':'relative',
-                left: (persistent && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':''),
-                right: (persistent && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':''),
+                position: allowPersistent && persistent?'absolute':'relative',
+                left: (allowPersistent && persistent && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':''),
+                right: (allowPersistent && persistent && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':''),
                 transform: \`translateX(\${-sign*swipe}px)\`}">
 
         <div class="flex vertical" style="overflow: hidden;">
@@ -464,7 +465,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
-        <oda-splitter :sign="pos==='left'?-1:1" :max="persistent?max:0" ~if="!hideResize" ::width></oda-splitter>
+        <oda-splitter :sign="pos==='left'?-1:1" :max="allowPersistent && persistent?max:0" ~if="!hideResize" ::width></oda-splitter>
     </div>
     `,
     buttons: [],
