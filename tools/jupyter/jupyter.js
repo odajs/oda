@@ -17,8 +17,8 @@ ODA({ is: 'oda-jupyter',
                 100% {opacity: 1;}
             }
         </style>
-        <oda-jupyter-cell-addbutton ~if="isReady && !notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
-        <oda-jupyter-cell ~if="isReady" ~for="cell in notebook?.cells" :cell></oda-jupyter-cell>
+        <oda-jupyter-cell-addbutton ~show="isReady && !notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
+        <oda-jupyter-cell ~show="isReady" ~for="cell in notebook?.cells" :cell></oda-jupyter-cell>
     `,
     props: {
         url: {
@@ -64,6 +64,9 @@ ODA({ is: 'oda-jupyter',
             fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
         }
         (this.notebook?.cells || []).map((i, idx) => i.order ||= idx);
+
+    },
+    ready() { 
         this.async(() => {
             this.isReady = true;
         }, 300)
