@@ -97,7 +97,7 @@ CLASS({is: 'PropertyGridDataSet',
                         if (editor?.includes('/')) {
                             ODA.import(editor).then(async imp => {
                                 node.editor = (await imp?.default)?.is || getTypeEditor(p.type || typeof d.value || typeof p.default)
-                                this.render()
+                                this.render?.()
                             })
                         }
                         else {
