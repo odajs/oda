@@ -258,7 +258,7 @@ ODA({ is: 'oda-pg-string',
 })
 ODA({ is: 'oda-pg-number',
     template: /*html*/`
-        <input class="flex"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent>
+        <input class="flex"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent @keydown.stop>
     `,
 })
 

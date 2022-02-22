@@ -700,7 +700,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             const rows = this.rows;
             const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
             let idx = rows.findIndex(r => this.compareRows(r, row));
-            idx = idx > 0 ? idx : 0;
+            if (!~idx) return;
             if (rows[idx] && ('$expanded' in rows[idx] ||rows[idx].$hasChildren)) {
                 rows[idx].$expanded = true;
                 this.setScreenExpanded?.(rows[idx])
@@ -712,7 +712,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             const rows = this.rows;
             const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
             let idx = rows.findIndex(r => this.compareRows(r, row));
-            idx = idx > 0 ? idx : 0;
+            if (!~idx) return;
             if (rows[idx]?.$expanded === true) {
                 rows[idx].$expanded = false;
                 this.setScreenExpanded?.(rows[idx])
