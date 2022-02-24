@@ -10,7 +10,7 @@ ODA({ is: 'oda-jupyter',
                 position: relative;
                 min-height: 28px;
                 opacity: 0;
-                animation: ani 4.0s forwards;
+                animation: ani .5s .5s forwards;
             }
             @keyframes ani {
                 0% {opacity: 0;}
