@@ -1,6 +1,6 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative">
-        <!--<oda-button style="position: absolute; right: 5px; top: 5px; width: 34px; height: 34px;" icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
+        <!--<oda-button ~if="showRemoveLinesButton" ~style="{position: 'absolute', left: selection[selection.length - 1].rect.center.x + 'px', top: selection[selection.length - 1].rect.center.y + 'px', width: '34px', height: '34px'}" icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
         <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
         </svg>
@@ -9,7 +9,10 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         <oda-scheme-link ~for="link in filteredLinks" :link ~style="{left: link?.rect.x + (link?.pos === 'left'?-(16 + link.pin.size):link?.pos === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.pos === 'top'?-(16 + link.pin.size):link?.pos === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
     </div>
     `,
-    get filteredLinks(){
+    // get showRemoveLinesButton () {
+    //     return this.selection.length && this.selection[this.selection.length - 1].d;
+    // },
+    get filteredLinks() {
         return this.links?.filter(i=>(i && !i.link)) || [];
     },
     get srcPins() {
@@ -206,7 +209,10 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     },
     async removeSelection() {
         await ODA.showConfirm('oda-dialog-message', { message: `Remove (${this.selection?.length})?` });
-        this.selection.forEach(i => this.items.remove(i));
+        this.selection.forEach(i => {
+            this.items.remove(i);
+            this.links.remove(i);
+        });
         this.selection.clear();
     }
 });
@@ -267,7 +273,8 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         <div class="flex horizontal">
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" :pos="'left'" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
                 <div class="flex shadow vertical content">
-                    <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
+                   <!-- <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>-->
+                   <div class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
                 </div>
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" :pos="'right'" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
