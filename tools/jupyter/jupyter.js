@@ -393,12 +393,16 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             }
             .editor {
                 overflow: hidden; 
-                height: {{this.cell?.cell_h || '200px'}};
+                height: {{cell?.cell_h || '200px'}};
+            }
+            .left {
+                overflow: auto;
+                width: {{cell?.cell_w >= 0 ? cell?.cell_w + '%' : '50%'}};
             }
         </style>
         <div class="vertical flex editor">
             <div class="horizontal flex" style="overflow: hidden; height: 20em;">
-                <div class="vertical" style="width: 50%; overflow: auto;">
+                <div class="vertical left">
                     <div class="horizontal header" style="padding: 4px;">
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
                         <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
@@ -409,12 +413,12 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                     </div>
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':'dawn'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
-                <oda-splitter2 size="3px" color="dodgerblue" style="opacity: .3"></oda-splitter2>
+                <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '3px'" color="dodgerblue" style="opacity: .3"></oda-splitter2>
                 <div class="flex" style="overflow: auto; flex: 1">
                     <iframe :srcdoc style="border: none; width: 100%; height: 100%"></iframe>
                 </div>
             </div>
-            <oda-splitter2 direction="horizontal" size="3px" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
+            <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '3px'" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
     `,
@@ -450,10 +454,19 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         },
         endSplitterMove(e) {
-            if (!this.readOnly && e?.detail?.value?.direction === 'horizontal' && e?.detail?.value?.resize) {
-                // console.log(e.detail);
-                this.cell.cell_h = e.detail.value.h;
+            if (!this.readOnly) {
+                if (e.detail.value.direction === 'horizontal') {
+                    this.cell.cell_h = e.detail.value.h;
+                    this.cell.cell_h = this.cell.cell_h < 26 ? 26 : this.cell.cell_h;
+                    // console.log('h = ', this.cell.cell_h);
+                }
+                if (e.detail.value.direction === 'vertical') {
+                    this.cell.cell_w = e.detail.value.w;
+                    this.cell.cell_w = this.cell.cell_w < 1 ? 0 : this.cell.cell_w;
+                    // console.log('w = ', this.cell.cell_w);
+                }
             }
+            this._srcdoc = this._srcdoc ? '' : ' ';
         }
     },
     get isReadOnly() {
