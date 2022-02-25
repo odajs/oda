@@ -505,6 +505,11 @@
         "status": "ok"
     },
     {
+        "name": "lesson-101.md",
+        "label": "Урок №101. Дополнительные сведения о Smart-кэшировании",
+        "status": "ok"
+    },
+    {
         "name": "lesson-102.md",
         "label": "Урок №102. Основные принципы Smart-рендеринга",
         "status": "ok"

@@ -8,6 +8,7 @@ ODA({ is: 'oda-splitter2', template: `
                 z-index: 11;
             }
         </style>
+        <div style="width: 100%; height: 100%;"></div>
     `,
     props: {
         direction: 'vertical', // 'horizontal'
