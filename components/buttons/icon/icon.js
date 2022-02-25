@@ -25,6 +25,7 @@ ODA({is: 'oda-icon', template: `
             border-radius: 50%;
             padding: 1px;
             font-size: .7em;
+            z-index: 1;
         }
         :host > div {
             position: relative;
