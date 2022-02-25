@@ -411,7 +411,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             }
         </style>
         <div class="vertical flex editor">
-            <div class="horizontal flex" style="overflow: hidden; height: 20em;">
+            <div class="horizontal flex" style="overflow: hidden;">
                 <div class="vertical left">
                     <div class="horizontal header" style="padding: 4px;">
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
@@ -424,8 +424,8 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':'dawn'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
                 <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '3px'" color="dodgerblue" style="opacity: .3"></oda-splitter2>
-                <div class="flex" style="overflow: auto; flex: 1">
-                    <iframe :srcdoc style="border: none; width: 100%; height: 100%"></iframe>
+                <div class="flex" style="overflow: hidden; flex: 1">
+                    <iframe :srcdoc style="border: none; width: 100%; height: 100%; overflow: hidden"></iframe>
                 </div>
             </div>
             <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '3px'" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
