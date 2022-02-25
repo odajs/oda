@@ -48,7 +48,7 @@ ODA({ is: 'oda-jupyter',
     attached() {
         this.loadURL();
     },
-    loadURL() {
+    async loadURL() {
         this.focusedCell = undefined;
         this._location = window.location.href;
         let _lzs = this._location.split('?lzs=')[1];
@@ -57,22 +57,28 @@ ODA({ is: 'oda-jupyter',
             try {
                 _lzs = LZString.decompressFromEncodedURIComponent(_lzs)
                 this.notebook = JSON.parse(_lzs);
-                return;
             } catch (err) { }
-        }
-        if (this.url) {
-            fetch(this.url).then(response => response.json()).then(json => this.notebook = json);
+        } else if (this.url) {
+            const response = await fetch(this.url);
+            const json = await response.json();
+            this.notebook = json;
         }
         (this.notebook?.cells || []).map((i, idx) => i.order ||= idx);
-
+        if (this.notebook) {
+            this.readOnly = this.notebook.readOnly;
+            this.showBorder = this.notebook.showBorder;
+        }
     },
     ready() { 
         this.async(() => {
             this.isReady = true;
         }, 300)
     },
-    share() {
-        const str = JSON.stringify(this.notebook);
+    share(e) {
+        const hideTopPanel = e?.altKey || e?.ctrlKey ? true : false;
+        const readOnly = this.readOnly;
+        const showBorder = this.showBorder;
+        const str = JSON.stringify({...this.notebook, ...{hideTopPanel, readOnly, showBorder}});
         if (str) {
             let url = this.$url.replace('jupyter.js', 'index.html#?lzs=') + LZString.compressToEncodedURIComponent(str);
             window.open(url, '_blank').focus();
@@ -83,6 +89,10 @@ ODA({ is: 'oda-jupyter',
         const reader = new FileReader();
         reader.onload = async e => this.notebook = JSON.parse(e.target.result);
         reader.readAsText(file, 'UTF-8');
+        if (this.notebook) {
+            this.readOnly = this.notebook.readOnly;
+            this.showBorder = this.notebook.showBorder;
+        }
     },
     async saveFile(e) {
         let str = JSON.stringify(this.notebook);

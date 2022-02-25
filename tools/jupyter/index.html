@@ -1,32 +1,32 @@
 <meta charset="utf-8">
-<title>oda-jupyter test</title>
+<title>oda-jupyter-app</title>
 
-<style>
-    oda-button {
-        font-size: 12px;
-    }
-</style>
-
-<div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
-    <oda-button onclick="jupyter.share()" style="margin: 4px;">share</oda-button>
-    <oda-button id="save" style="margin: 4px;">save json</oda-button>
-    <oda-button for="load" style="margin: 4px;" onclick="document.querySelector('#load').click()">load json</oda-button>
-    <input id="load" type="file" style="display: none" />
-    <oda-button onclick="jupyter.readOnly = !jupyter.readOnly" style="margin: 4px;" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
-    <oda-button onclick="jupyter.loadURL()" style="margin: 4px;">Restore view</oda-button>
-    <oda-button onclick="jupyter.notebook.cells = []" style="margin: 4px;">Clear all data</oda-button>
-    <oda-button onclick="document.location.reload()" style="margin: 4px;">Reload page</oda-button>
-</div>
-
-<oda-jupyter id="jupyter" url="./jupyter_demo.json" show-border></oda-jupyter>
-
-</oda-jupyter>
+<oda-jupyter-app></oda-jupyter-app>
 
 <script type="module">
     import '../../oda.js';
-    import './jupyter.js';
-    import '../../components/buttons/button/button.js';
+    ODA({
+        is: 'oda-jupyter-app', imports: '@oda/button, ./jupyter.js',
+        template: `
+            <style>
+                oda-button {
+                    font-size: 12px;
+                }
+            </style>
 
-    load.onchange = e => jupyter.loadFile(e);
-    save.onclick = e => jupyter.saveFile(e);
+            <div ~if="!hideTopPanel" style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
+                <oda-button @pointerdown="jupyter.share($event)" style="margin: 4px;">share</oda-button>
+                <oda-button @tap="jupyter.saveFile()" style="margin: 4px;">save json</oda-button>
+                <oda-button for="load" style="margin: 4px;" @tap="this.$('#load').click()">load json</oda-button>
+                <input id="load" type="file" style="display: none" @change="jupyter.loadFile($event)"/>
+                <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" style="margin: 4px;" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
+                <oda-button @tap="jupyter.loadURL()" style="margin: 4px;">Restore view</oda-button>
+                <oda-button @tap="jupyter.notebook.cells = []" style="margin: 4px;">Clear all data</oda-button>
+                <oda-button @tap="document.location.reload()" style="margin: 4px;">Reload page</oda-button>
+            </div>
+            <oda-jupyter id="jupyter" url="./jupyter_demo.json" show-border></oda-jupyter>
+        `,
+        get jupyter() { return this.$('#jupyter') },
+        get hideTopPanel() { return this.jupyter?.notebook?.hideTopPanel }
+    })
 </script>
