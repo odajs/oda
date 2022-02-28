@@ -332,7 +332,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pin?.$$pin?.reserved || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pin?.reserved || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     pos: '',
     attached() {
@@ -414,7 +414,6 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         iconSize: 12
     },
     index: undefined,
-    reserved: false,
     get _grid() {
         return this.container?.parentElement;
     },
@@ -462,7 +461,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         }
         if (link) {
             const outputRect = link.src.$$pin.getClientRect(this._grid);
-            link.src.$$pin.reserved = true;
+            link.src.reserved = true;
             switch (link.src.$$pin.pos) {
                 case 'top': {
                     d += ` ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
