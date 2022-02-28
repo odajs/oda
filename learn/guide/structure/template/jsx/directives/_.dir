@@ -5,6 +5,11 @@
         "status": "check"
     },
     {
+        "name": "~for-base.md",
+        "label": "<b style='color: brown'>~for</b>: Репликация элементов",
+        "status": "check"
+    },
+    {
         "name": "~for2.md",
         "label": "<b style='color: brown'>~for</b>: Преимущества",
         "status": "check"
