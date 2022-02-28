@@ -332,7 +332,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~if="editMode || reserved || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pin?.$$pin?.reserved || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
     `,
     pos: '',
     attached() {
@@ -343,7 +343,6 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             return i.item.id === link.pin;
         })
     },
-    reserved: false,
     get links() {
         return this.$$('oda-scheme-pin').map(i => i.link).filter(i => i);
     },
@@ -415,6 +414,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         iconSize: 12
     },
     index: undefined,
+    reserved: false,
     get _grid() {
         return this.container?.parentElement;
     },
