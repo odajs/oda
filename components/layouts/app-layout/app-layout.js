@@ -47,7 +47,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
 
         <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
             <slot name="left-header" slot="panel-header">
-                <oda-pin-button ~if="window === top && offsetWidth > offsetHeight" ::lock="pin"></oda-pin-button>
+                <oda-pin-button ~if="allowPin && window === top && offsetWidth > offsetHeight" ::lock="pin"></oda-pin-button>
             </slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
@@ -66,6 +66,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         return this.$$('app-layout-drawer')[1] || undefined
     },
     props: {
+        allowPin: false, // Очень мешает, надо как-то по-другому
         leftHidden: false,
         rightHidden: false,
         max: 300,
