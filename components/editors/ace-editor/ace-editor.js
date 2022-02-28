@@ -83,7 +83,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                         } catch (e) { 
                             console.error(e)
                         }
-                        this.editor.session.setMode('ace/mode/' + n);
+                        this.editor?.session?.setMode('ace/mode/' + n);
                     }
                 }
         },

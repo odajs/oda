@@ -41,7 +41,8 @@ ODA({ is: 'oda-jupyter',
                 this.editedCell = undefined
             }
         },
-        showBorder: false
+        showBorder: false,
+        collapsedAll: false
     },
     notebook: {},
     editedCell: undefined,
@@ -113,14 +114,15 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin: 6px 12px;
                 order: {{cell?.order || 0}};
-                box-shadow: {{focusedCell!==cell && !readOnly && showBorder ? '0px 0px 0px 1px lightgray' : ''}};
+                box-shadow: {{focusedCell!==cell && showBorder ? '0px 0px 0px 1px lightgray' : ''}};
             }
             .focused {
                 box-shadow: 0 0 0 1px dodgerblue;
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=cell" :cell></div>
+        <div ~show="collapsedAll && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: dodgerblue; cursor: pointer" @tap="focusedCell=readOnly?undefined:cell">{{cell.label || cell.cell_type}}</div>
+        <div ~show="!collapsedAll || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=readOnly?undefined:cell" :cell></div>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
@@ -341,14 +343,16 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
 ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
     template: /*html*/`
         <style>
+            :host::-webkit-scrollbar { width: 4px; height: 4px; } :host::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } :host::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
             :host {
                 @apply --horizontal;
                 @apply --flex;
                 min-height: 28px;
+                overflow: auto;
             }
 
         </style>
-        <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell></oda-pell-editor>
+        <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell style="height: 80vh"></oda-pell-editor>
         <div  ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
@@ -524,10 +528,11 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
     observers: [
         function setEditedCell(editedCell) {
             if (editedCell && editedCell === this.cell) {
-                const iframe = this.$('iframe');
-                iframe.srcdoc = this.srcdoc;
-                this.async(() => (iframe.contentDocument || iframe.contentWindow)
-                    .addEventListener("change", (e) => this.cell.source = e.detail));
+                this.async(() => {
+                    const iframe = this.$('iframe');
+                    iframe.srcdoc = this.srcdoc;
+                    (iframe.contentDocument || iframe.contentWindow).addEventListener("change", (e) => this.cell.source = e.detail);
+                }, 100);
             }
         }
     ]

@@ -11,20 +11,21 @@
             <style>
                 oda-button {
                     font-size: 12px;
-                    margin-right: 4px;
+                    margin: 2px;
                 }
             </style>
 
             <div ~if="!hideTopPanel" style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
-                <oda-button @pointerdown="jupyter.share($event)" >share</oda-button>
-                <oda-button @tap="jupyter.saveFile()" >save json</oda-button>
-                <oda-button for="load"  @tap="this.$('#load').click()">load json</oda-button>
+                <oda-button @pointerdown="jupyter.share($event)">share</oda-button>
+                <oda-button @tap="jupyter.saveFile()">save </oda-button>
+                <oda-button for="load"  @tap="this.$('#load').click()">load</oda-button>
                 <input id="load" type="file" style="display: none" @change="jupyter.loadFile($event)"/>
-                <oda-button @tap="jupyter.readOnly = !jupyter.readOnly"  allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
-                <oda-button @tap="jupyter.loadURL()" >restore view</oda-button>
-                <oda-button @tap="jupyter.showBorder = !jupyter.showBorder" >showborder</oda-button>
-                <oda-button @tap="jupyter.notebook.cells = []" >clear all data</oda-button>
-                <oda-button @tap="document.location.reload()" >reload page</oda-button>
+                <oda-button @tap="jupyter.showBorder = !jupyter.showBorder" allow-toggle ::toggled="jupyter.showBorder">border</oda-button>
+                <oda-button @tap="jupyter.collapsedAll = !jupyter.collapsedAll" allow-toggle ::toggled="jupyter.collapsedAll">collapsed</oda-button>
+                <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
+                <oda-button @tap="jupyter.loadURL()">restore</oda-button>
+                <oda-button @tap="jupyter.notebook.cells = []">clear</oda-button>
+                <oda-button @tap="document.location.reload()">reload</oda-button>
             </div>
             <oda-jupyter id="jupyter" url="./jupyter_demo.json" show-border></oda-jupyter>
         `,
