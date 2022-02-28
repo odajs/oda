@@ -46,9 +46,15 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         </div>
 
         <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
-            <slot name="left-header" slot="panel-header">
-                <oda-pin-button ~if="allowPin && window === top && offsetWidth > offsetHeight" ::lock="pin"></oda-pin-button>
-            </slot>
+            <div ~if="leftTitle" class="horizontal dark">
+               <div class="flex">
+                  <label>{{leftTitle}}</label>
+<!--                    <oda-pin-button ~if="allowPin && window === top && offsetWidth > offsetHeight" ::lock="pin"></oda-pin-button>-->
+                  
+               </div>
+               <oda-button icon="icons:close" :icon-size="iconSize/2"></oda-button>
+            </div>
+            <slot name="left-header" class="flex" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
         <app-layout-drawer pos="right" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened">
@@ -67,6 +73,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     props: {
         allowPin: false, // Очень мешает, надо как-то по-другому
+        leftTitle: false, // Так лучше
         leftHidden: false,
         rightHidden: false,
         max: 300,
