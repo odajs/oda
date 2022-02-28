@@ -1,16 +1,16 @@
 import '../base/base.js'
-import '../../../components/grids/tree/tree.js'
-ODA({
-    is: 'oda-hierarchy', extends: 'oda-tree', template: `
-        <slot hidden @slotchange="onSlot"></slot>
+ODA({is: 'oda-hierarchy', extends: 'oda-tree', imports: '@oda/tree',
+    template: `
+    <slot hidden @slotchange="onSlot"></slot>
     `,
     props: {
+        expandAll: true,
         component: {
             set(n) {
                 this.dataSet = [{ name: n.localName, items: [{ name: n.$url }] }];
                 this._source = [];
                 this._getSource();
-                this.expandAll();
+                //this.expandAll();
             },
             _source: []
         }

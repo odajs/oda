@@ -1,4 +1,4 @@
-ODA({ is: "oda-property-grid2", imports: '@oda/button, @oda/list, @tools/containers', 
+ODA({ is: "oda-property-grid2", imports: '@oda/button, @tools/containers', 
     template: `
         <style>
             :host {
@@ -184,7 +184,7 @@ ODA({ is: "oda-property-grid2", imports: '@oda/button, @oda/list, @tools/contain
 })
 
 ODA({
-    is: "oda-property-tree", template: `
+    is: "oda-property-tree", imports: '@oda/list', template: `
         <style>
             .complex {
                 margin-left: 6px;

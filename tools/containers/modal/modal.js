@@ -34,7 +34,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             from {transform:scale(0)}
             to {transform:scale(1)}
         }
-        slot{
+        slot {
             overflow: hidden;
         }
     </style>

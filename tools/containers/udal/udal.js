@@ -1,6 +1,4 @@
-import '../../../components/buttons/button/button.js';
-ODA({
-    is: 'oda-udal',
+ODA({is: 'oda-udal',
     template: /*html*/`
         <style>
             :host{
@@ -38,22 +36,21 @@ ODA({
             </div>
         </div>
     `,
-    props:{
+    props: {
         _zoom: 0,
         title: '',
-        titleMode:{
+        titleMode: {
             default: 'none',
             list: ['none', 'auto', 'full']
         },
         fullSize: false,
         animation: 0,
-        iconSize:{
+        iconSize: {
             default: 24,
         }
     }
 })
-ODA({
-    is: 'oda-modal-title',
+ODA({is: 'oda-modal-title', imports: '@oda/button',
     template: /*html*/`
         <style>
             :host{
@@ -65,7 +62,7 @@ ODA({
         <span class="flex">{{title}}</span>
         <oda-button @tap="domHost.fire('cancel')" class="no-flex" icon="icons:close"></oda-button>
     `,
-    props:{
+    props: {
         title: ''
     }
 })

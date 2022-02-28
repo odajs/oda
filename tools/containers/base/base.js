@@ -1,9 +1,7 @@
-import '../../../components/buttons/button/button.js';
-ODA({
-    is: 'oda-base-container',
+ODA({is: 'oda-base-container',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 /*visibility: {{opened?'visible':'hidden'}};*/
                 /*position: fixed;*/
                 /*z-index: 100;*/
@@ -16,13 +14,13 @@ ODA({
                 pointer-events: auto;
                 @apply --vertical;
             }
-            :host .container{
+            :host .container {
                 transform: scale({{_zoom}});
                 transition: transform {{animation}}ms;
                 max-width: 100%;
                 max-height: 100%;
             }
-            ::slotted(*){
+            ::slotted(*) {
                 @apply --flex;
             }
         </style>
@@ -36,21 +34,21 @@ ODA({
             </div>
         </div>
     `,
-    props:{
+    props: {
         _zoom: 0,
         title: '',
-        titleMode:{
+        titleMode: {
             default: 'none',
             list: ['none', 'auto', 'full']
         },
         fullSize: false,
         opened: false,
         animation: 0,
-        iconSize:{
+        iconSize: {
             default: 24,
         },
-        control:{
-            set(n,o){
+        control: {
+            set(n, o) {
                 if (o)
                     this.removeChild(o);
                 if (n)
@@ -58,10 +56,10 @@ ODA({
             }
         }
     },
-    listeners:{
+    listeners: {
         tap: 'close'
     },
-    show(ctrl, props={}){
+    show(ctrl, props = {}) {
         for (let p in props) {
             this[p] = props[p];
         }
@@ -71,28 +69,27 @@ ODA({
         if (!this.parentElement)
             document.body.appendChild(this);
     },
-    close(){
+    close() {
         this._zoom = 0;
-        this.async(()=>{
+        this.async(() => {
             this.opened = false;
             this._control = null;
             this.remove();
         }, this.animation)
     },
-    onSlot(e){
+    onSlot(e) {
         if (this.component) return;
         const els = e.target.assignedElements();
         if (!els.length) return;
         this.component = els[0];
     }
 })
-ODA({
-    is: 'oda-modal-title',
+ODA({is: 'oda-modal-title', imports: '@oda/button',
     template: /*html*/`
         <div class="flex">{{title}}</div>
         <oda-button @tap="domHost.close()" class="no-flex content" icon="icons:close"></oda-button>
     `,
-    props:{
+    props: {
         title: ''
     }
 })

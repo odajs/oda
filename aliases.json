@@ -26,6 +26,7 @@
     "@oda/pell-editor": "components/editors/pell-editor/pell-editor.js",
     "@oda/color-input": "components/colors/color-input/color-input.js",
     "@oda/label-to-name": "components/inputs/label-to-name/label-to-name.js",
+    "@oda/list": "components/grids/list/list.js",
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 

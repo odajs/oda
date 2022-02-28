@@ -1,5 +1,5 @@
-import '../../buttons/icon/icon.js';
-ODA({is: 'oda-accordion', template: /*html*/`
+ODA({is: 'oda-accordion',
+    template: /*html*/`
     <style>
         :host{
             @apply --flex;
@@ -24,7 +24,9 @@ ODA({is: 'oda-accordion', template: /*html*/`
         }
     }
 });
-ODA({is: 'oda-accordion-item', template: /*html*/`
+
+ODA({is: 'oda-accordion-item', imports: '@oda/icon',
+    template: /*html*/`
     <style>
         :host {
             @apply --vertical;
