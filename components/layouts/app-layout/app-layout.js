@@ -73,7 +73,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     props: {
         allowPin: false, // Очень мешает, надо как-то по-другому
-        leftTitle: false, // Так лучше
+        leftTitle: '', // Так лучше...
         leftHidden: false,
         rightHidden: false,
         max: 300,
