@@ -146,8 +146,9 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 top: -18px;
                 z-index: 41;
                 box-shadow: 0 0 0 1px dodgerblue;
+                border-radius: 2px;
                 background: white;
-                /* width: 200px; */
+                width: 140px;
                 height: 24px;
             }
             oda-button {
@@ -155,14 +156,12 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 margin: 2px 0px;
             }
         </style>
-        <oda-button icon="icons:close" :icon-size @tap="focusedCell=undefined"></oda-button>
+        <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
         <oda-button icon="icons:arrow-back:90" :icon-size @tap="tapOrder($event, -1.1)" :disabled="cell.order<=0" title="move up"></oda-button>
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
-        <oda-button icon="icons:select-all" :icon-size title="show cells border" @tap="showBorder=!showBorder" allow-tooglle ::toggled="showBorder"></oda-button>
-        <oda-button icon="editor:mode-edit" :icon-size @tap="editedCell=editedCell===cell?undefined:cell" ~style="{fill: editedCell===cell ? 'red' : ''}" title="edit mode"></oda-button>
-        <oda-button ~if="editedCell===cell" icon="icons:settings" :icon-size></oda-button>
         <div class="flex"></div>
         <oda-button ~if="!cell.noDelete" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
+        <oda-button icon="icons:close" :icon-size @tap="focusedCell=undefined"></oda-button>
     `,
     iconSize: 14,
     cell: {},
@@ -186,31 +185,42 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
             .btn {
                 display: flex;
                 position: absolute;
-                left: -8px;
                 z-index: 21;
                 border: 1px solid dodgerblue;
                 border-radius: 50%;
                 background: white;
-                top: {{ position==='top' ? '-18px' : 'unset' }};
-                bottom: {{ position!=='top' ? '-18px' : 'unset' }};
+                top: {{ position==='top' ? '-16px' : 'unset' }};
+                bottom: {{ position!=='top' ? '-16px' : 'unset' }};
+            }
+            .btn2 {
+                top: -16px;
+                bottom: unset;
+                left: 22px;
+            }
+            .btn3 {
+                top: -16px;
+                bottom: unset;
+                left: 44px;
             }
             .cell {
                 position: absolute;
                 top: -12px;
-                left: 20px;
+                left: 68px;
                 z-index: 21;
                 font-size: 10px;
                 cursor: pointer;
                 color: dodgerblue;
             }
         </style>
-        <oda-button class="btn" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
+        <oda-button :icon-size class="btn" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
+        <oda-button class="btn btn2" icon="icons:close" :icon-size title="close cell" @tap="focusedCell=undefined"></oda-button>
+        <oda-button class="btn btn3" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"  ~style="{fill: editedCell===cell ? 'red' : ''}"></oda-button>
         <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type">{{cell.label || cell.cell_type}}</div>
     `,
     props: {
         position: 'top'
     },
-    iconSize: 14,
+    iconSize: 10,
     cell: {},
     async showCellViews(view) {
         const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, { parent: this.$('oda-button') });
@@ -291,10 +301,6 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
         change(e) {
             if (this.readOnly || this.editedCell !== this.cell) return;
             this.cell.source = this.$('oda-ace-editor').value;
-        },
-        dblclick(e) {
-            if (this.readOnly) return;
-            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         }
     },
     observers: [
@@ -325,10 +331,6 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
         change(e) {
             if (!this.isReadOnly || this.editedCell === this.cell)
                 this.cell.source = this.$('oda-ace-editor').value;
-        },
-        dblclick(e) {
-            if (this.readOnly) return;
-            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         }
     },
     get isReadOnly() {
@@ -354,10 +356,6 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
         change(e) {
             if (this.readOnly || this.editedCell !== this.cell) return;
             this.cell.source = e.detail.value;
-        },
-        dblclick(e) {
-            if (this.readOnly) return;
-            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
         }
     },
     observers: [
@@ -459,10 +457,6 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
             if (this.mode === 'css')
                 this.cell.sourceCSS = v;
         },
-        dblclick(e) {
-            if (this.readOnly) return;
-            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
-        },
         endSplitterMove(e) {
             if (!this.readOnly) {
                 if (e.detail.value.direction === 'horizontal') {
@@ -527,12 +521,6 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
     })    
 </script>
     `},
-    listeners: {
-        dblclick(e) {
-            if (this.readOnly) return;
-            this.editedCell = this.editedCell === this.cell ? undefined : this.cell;
-        }
-    },
     observers: [
         function setEditedCell(editedCell) {
             if (editedCell && editedCell === this.cell) {
