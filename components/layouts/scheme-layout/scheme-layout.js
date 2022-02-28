@@ -210,6 +210,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     async removeSelection() {
         await ODA.showConfirm('oda-dialog-message', { message: `Remove (${this.selection?.length})?` });
         this.selection.forEach(i => {
+            console.log(i);
             this.items.remove(i);
             this.links.remove(i);
         });
