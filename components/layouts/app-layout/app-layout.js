@@ -47,12 +47,10 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
 
         <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
             <div ~if="leftTitle" class="horizontal dark">
-               <div class="flex">
-                  <label>{{leftTitle}}</label>
-<!--                    <oda-pin-button ~if="allowPin && window === top && offsetWidth > offsetHeight" ::lock="pin"></oda-pin-button>-->
-                  
+               <div class="horizontal flex" ~style="{height: iconSize + 'px', 'align-items': 'center'}">
+                  <div style="padding: 0 4px;">{{leftTitle}}</div>
                </div>
-               <oda-button icon="icons:close" :icon-size="iconSize/2"></oda-button>
+               <oda-button ~if="allowPin && window === top && offsetWidth > offsetHeight" :icon="pin ? 'icons:pin' : 'icons:pin-fill'" @tap="pin = !pin" :icon-size="iconSize/2"></oda-button>
             </div>
             <slot name="left-header" class="flex" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
@@ -72,8 +70,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         return this.$$('app-layout-drawer')[1] || undefined
     },
     props: {
-        allowPin: false, // Очень мешает, надо как-то по-другому
-        leftTitle: '', // Так лучше...
+        allowPin: false,
+        leftTitle: '',
         leftHidden: false,
         rightHidden: false,
         max: 300,
@@ -362,41 +360,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     }
 });
 
-ODA({is: 'oda-pin-button',
-    template: /*html*/`
-    <style>
-        :host{
-            z-index: 10;
-            width: {{iconSize / 2}}px;
-            height: {{iconSize * 2}}px;
-            transition: height, width 0.3s;
-            cursor: pointer;
-            background-color: white;
-            overflow: hidden;
-            @apply --raised;
-            @apply --vertical;
-            @apply --center;
-        }
-        :host(:hover){
-            width: {{iconSize * 2}}px;
-        }
-        :host(:hover) oda-icon{
-            transition: translate 0.3s;
-            transform: scale3d(1, 1, 1);
-        }
-        :host(:not(:hover)) oda-icon{
-            transform: scale3d(0.5, 0.5, 0.5);
-        }
-    </style>
-    <oda-icon :icon="lock ? 'icons:lock-open' : 'icons:lock'"></oda-icon>
-    `,
-    lock: false,
-    listeners: {
-        tap() {
-            this.lock = !this.lock;
-        },
-    }
-})
 ODA({
     is: 'app-layout-toolbar', template: /*html*/`
     <style>
