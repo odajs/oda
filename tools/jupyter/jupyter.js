@@ -519,15 +519,10 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
     get srcdoc() {
         return `
 <style>
-    ::-webkit-scrollbar { width: 4px; height: 4px; };
-    ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
-    ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); }
-    .main { opacity: 0; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
 </style>
-<div class="main">
-    <div id="editor">${this.cell?.source || ''}</div>
-</div>
-<script src="https://cdn.ckeditor.com/4.13.0/full/ckeditor.js"></script>
+<div id="editor">${this.cell?.source || ''}</div>
+<script src="https://cdn.ckeditor.com/4.17.2/full/ckeditor.js"></script>
 <script>
     let editor = CKEDITOR.replace('editor');
     editor.on('change', (e) => {
@@ -535,17 +530,15 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
     })
     editor.on('instanceReady', (e) => {
         if(e.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF) e.editor.execCommand('maximize');
-    })    
+    }) 
 </script>
     `},
     observers: [
         function setEditedCell(editedCell) {
-            if (editedCell && editedCell === this.cell) {
-                this.async(() => {
-                    const iframe = this.$('iframe');
-                    iframe.srcdoc = this.srcdoc;
-                    (iframe.contentDocument || iframe.contentWindow).addEventListener("change", (e) => this.cell.source = e.detail);
-                }, 100);
+            if (this.editedCell && this.editedCell === this.cell) {
+                const iframe = this.$('iframe');
+                iframe.srcdoc = this.srcdoc;
+                requestAnimationFrame(() => (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => this.cell.source = e.detail));
             }
         }
     ]
