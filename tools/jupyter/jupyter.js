@@ -130,6 +130,7 @@ ODA({ is: 'oda-jupyter-cell',
     get cellType() {
         if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
+        if (this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
         if (this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
         if (this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
@@ -261,9 +262,10 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     notebook: {},
     get cellViews() {
         let views = [
-            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
-            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-pell-editor' },
+            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-Pell' },
+            { cell_type: 'html-jodit', cell_extType: 'html-jodit', source: '', label: 'html-Jodit' },
             { cell_type: 'html-cde', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
+            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
             { cell_type: 'code', cell_extType: 'code', source: '', label: 'code' },
             { cell_type: 'html-executable', cell_extType: 'html-executable', source: '', label: 'code-html-executable' },
         ]
@@ -539,6 +541,48 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
                 const iframe = this.$('iframe');
                 iframe.srcdoc = this.srcdoc;
                 requestAnimationFrame(() => (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => this.cell.source = e.detail));
+            }
+        }
+    ]
+})
+
+ODA({ is: 'oda-jupyter-cell-html-jodit',
+    template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --flex;
+                min-height: 28px;
+            }
+        </style>
+        <iframe ~show="editedCell===cell" style="border: none; width: 100%; height: 80vh"></iframe>
+        <div :html="cell.source" style="width: 100%; padding: 8px;"></div>
+    `,
+    cell: {},
+    get srcdoc() {
+        return `
+<textarea id="editor" name="editor">${this.cell?.source || ''}</textarea>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.13.4/jodit.es2018.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.13.4/jodit.es2018.min.js"></script>
+<script type="module">
+    const editor = Jodit.make('#editor', {
+        toolbarButtonSize: "small",
+        // fullsize: true
+    });
+    editor.events.on('change.textLength', (e) => {
+        document.dispatchEvent(new CustomEvent('change', { detail: e }));
+    })
+</script>
+    `},
+    observers: [
+        function setEditedCell(editedCell) {
+            if (this.editedCell && this.editedCell === this.cell) {
+                const iframe = this.$('iframe');
+                iframe.srcdoc = this.srcdoc;
+                requestAnimationFrame(() => (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => {
+                    if (e.detail !== undefined)
+                    this.cell.source = e.detail;
+                }));
             }
         }
     ]
