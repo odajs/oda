@@ -533,5 +533,15 @@
         "name": "lesson-107.md",
         "label": "Урок №107. Элементы оповещения",
         "status": "ok"
+    },
+    {
+        "name": "lesson-108.md",
+        "label": "Урок №108. Модификаторы редактора кода",
+        "status": "ok"
+    },
+    {
+        "name": "lesson-110.md",
+        "label": "Урок №110. Справочник по формату Markdown",
+        "status": "ok"
     }
 ]

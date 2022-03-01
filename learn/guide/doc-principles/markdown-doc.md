@@ -496,3 +496,8 @@ alt="ALT-ТЕКСТ ИЗОБРАЖЕНИЯ" width="240" height="180" border="10"
 ```
 
 [![ALT-ТЕКСТ ИЗОБРАЖЕНИЯ](https://img.youtube.com/vi/bi2xKlZfYos/0.jpg)](http://www.youtube.com/watch?v=bi2xKlZfYos)
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/bk1grNAdgVE?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>
