@@ -21,7 +21,6 @@
                 <oda-button for="load"  @tap="this.$('#load').click()">load</oda-button>
                 <input id="load" type="file" style="display: none" @change="jupyter.loadFile($event)"/>
                 <oda-button @tap="jupyter.showBorder = !jupyter.showBorder" allow-toggle ::toggled="jupyter.showBorder">border</oda-button>
-                <oda-button @tap="jupyter.collapsedAll = !jupyter.collapsedAll" allow-toggle ::toggled="jupyter.collapsedAll">collapsed</oda-button>
                 <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
                 <oda-button @tap="jupyter.loadURL()">restore</oda-button>
                 <oda-button @tap="jupyter.notebook.cells = []">clear</oda-button>

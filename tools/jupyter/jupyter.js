@@ -42,7 +42,7 @@ ODA({ is: 'oda-jupyter',
             }
         },
         showBorder: false,
-        collapsedAll: false
+        collapsed: false
     },
     notebook: {},
     editedCell: undefined,
@@ -121,8 +121,8 @@ ODA({ is: 'oda-jupyter-cell',
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~show="collapsedAll && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: dodgerblue; cursor: pointer" @tap="focusedCell=readOnly?undefined:cell">{{cell.label || cell.cell_type}}</div>
-        <div ~show="!collapsedAll || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=readOnly?undefined:cell" :cell></div>
+        <div ~show="collapsed && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="focusedCell=readOnly?undefined:cell">{{cell.label || cell.cell_type}}</div>
+        <div ~show="!collapsed || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=readOnly?undefined:cell" :cell></div>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
@@ -194,6 +194,9 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
                 top: {{ position==='top' ? '-16px' : 'unset' }};
                 bottom: {{ position!=='top' ? '-16px' : 'unset' }};
             }
+            .btn1 {
+                fill: dodgerblue;
+            }
             .btn2 {
                 top: -16px;
                 bottom: unset;
@@ -203,20 +206,28 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
                 top: -16px;
                 bottom: unset;
                 left: 44px;
+                fill: {{collapsed ? 'dodgerblue' : 'gray'}};
+            }
+            .btn4 {
+                top: -16px;
+                bottom: unset;
+                left: 66px;
+                fill: {{editedCell === cell ? 'red' : ''}};
             }
             .cell {
                 position: absolute;
                 top: -12px;
-                left: 68px;
+                left: 90px;
                 z-index: 21;
                 font-size: 10px;
                 cursor: pointer;
                 color: dodgerblue;
             }
         </style>
-        <oda-button :icon-size class="btn" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
+        <oda-button :icon-size class="btn btn1" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
         <oda-button class="btn btn2" icon="icons:close" :icon-size title="close cell" @tap="focusedCell=undefined"></oda-button>
-        <oda-button class="btn btn3" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"  ~style="{fill: editedCell===cell ? 'red' : ''}"></oda-button>
+        <oda-button class="btn btn3" icon="icons:reorder" :icon-size title="collapsed" @tap="collapsed=!collapsed"></oda-button>
+        <oda-button class="btn btn4" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"></oda-button>
         <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type">{{cell.label || cell.cell_type}}</div>
     `,
     props: {
@@ -321,6 +332,7 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
                 @apply --horizontal;
                 @apply -- flex;
                 border: 1px solid #eee;
+                min-height: 22px;
             }
             .ace {
                 height: unset;
@@ -510,9 +522,10 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
     ::-webkit-scrollbar { width: 4px; height: 4px; };
     ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
     ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); }
+    .main { opacity: 0; }
 </style>
-<div id="editor">
-    <p>${this.cell?.source || ''}</p>
+<div class="main">
+    <div id="editor">${this.cell?.source || ''}</div>
 </div>
 <script src="https://cdn.ckeditor.com/4.13.0/full/ckeditor.js"></script>
 <script>
