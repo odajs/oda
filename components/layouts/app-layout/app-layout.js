@@ -45,17 +45,11 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
         </div>
 
-        <app-layout-drawer pos="left" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
-            <div ~if="leftTitle" class="horizontal dark">
-               <div class="horizontal flex" ~style="{height: iconSize + 'px', 'align-items': 'center'}">
-                  <div style="padding: 0 4px;">{{leftTitle}}</div>
-               </div>
-               <oda-button ~if="allowPin && window === top && offsetWidth > offsetHeight" :icon="pin ? 'icons:pin' : 'icons:pin-fill'" @tap="pin = !pin" :icon-size="iconSize/2"></oda-button>
-            </div>
+        <app-layout-drawer pos="left" :show-title="leftTitle" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
             <slot name="left-header" class="flex" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
-        <app-layout-drawer pos="right" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened">
+        <app-layout-drawer pos="right" :show-title="rightTitle" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened">
             <slot name="right-header" slot="panel-header"></slot>
             <slot name="right-panel"></slot>
         </app-layout-drawer>
@@ -71,7 +65,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     props: {
         allowPin: false,
-        leftTitle: '',
+        leftTitle: false,
+        rightTitle: false,
         leftHidden: false,
         rightHidden: false,
         max: 300,
@@ -482,9 +477,10 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
 
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
-            <div class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" ~if="focused?.title" style="background-color: black; color: white; fill: white">
-                <div style="padding: 4px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
-                <oda-button :size="iconSize" icon="icons:close" @tap="focused = null" style="background-color: red;"></oda-button>
+            <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%">
+                <div ~if="focused?.title" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
+                <oda-button ~if="allowPin && window === top && domHost.offsetWidth > domHost.offsetHeight" :icon="pin ? 'icons:pin' : 'icons:pin-fill:315'" @tap="pin = !pin" :icon-size="iconSize*0.66"></oda-button>
+                <oda-button :icon-size="iconSize*0.66" icon="icons:chevron-right:180" @tap="focused = null"></oda-button>
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
@@ -503,6 +499,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             default: 'left',
             enum: ['left', 'right']
         },
+        showTitle: false,
         hideResize: false,
         width: 300,
         hidden: {

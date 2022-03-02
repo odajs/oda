@@ -600,6 +600,21 @@ if (!globalThis.KERNEL) {
                 }
             });
         }
+
+        const capitalGlossary = Object.create(null);
+        function toCapital(str) {
+            return (capitalGlossary[str] = str[0].toUpperCase() + str.slice(1));
+        }
+
+        if (!String.toCapitalCase) {
+            Object.defineProperty(String.prototype, 'toCapitalCase', {
+                enumerable: false, value: function () {
+                    const s = this.toString();
+                    const str = capitalGlossary[s];
+                    return str ? str : toCapital(s);
+                }
+            });
+        }
     }
     Object:{
         Object.equal = Object.equal || function (a, b, recurse) {
