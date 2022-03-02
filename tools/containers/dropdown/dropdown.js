@@ -22,7 +22,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         </style>
         <div class="vertical shadow content" ~style="_style">
             <div @resize="setSize" class="vertical flex">
-                <oda-title ~if="title" allow-close :icon :title></oda-title>
+                <oda-title ~if="title" allow-close :icon :title>
+                    <div slot="title-left">
+                        <slot class="no-flex" name="dropdown-title"></slot>
+                    </div>
+                </oda-title>
                 <div class="flex vertical">
                     <slot @slotchange="onSlot"></slot>
                 </div>
