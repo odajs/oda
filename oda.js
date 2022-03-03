@@ -2399,11 +2399,12 @@ if (!window.ODA) {
             const input = document.createElement("input");
             input.type = "file";
             input.multiple = options.multiple;
-            input.accept = options.types
-                .map((type) => type.accept)
-                .flatMap((inst) => Object.keys(inst).flatMap((key) => inst[key]))
-                .join(",");
-    
+            if(options.types) {
+                input.accept = options.types
+                    .map((type) => type.accept)
+                    .flatMap((inst) => Object.keys(inst).flatMap((key) => inst[key]))
+                    .join(",");
+            }
             input.addEventListener("change", () => {
                 resolve(
                     [...input.files].map((file) => {

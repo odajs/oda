@@ -1,5 +1,4 @@
-ODA({
-    is: "oda-ruler-grid", template: /*html*/`
+ODA({ is: "oda-ruler-grid", template: /*html*/`
     <style>
         ::-webkit-scrollbar {
             width: 6px;
@@ -159,15 +158,14 @@ ODA({
         // return step;
     }
 })
-ODA({
-    is: 'oda-ruler', template: /*html*/`
+ODA({ is: 'oda-ruler', template: /*html*/`
     <style>
         :host {
             @apply --horizontal;
             @apply --shadow;
-            width: {{vertical ? iconSize + 'px' : 'auto'}};
-            height: {{!vertical ? iconSize + 'px' : 'auto'}};
-            {{vertical ? 'width: \${iconSize}px;' : 'height: \${iconSize}px;'}}
+            width: {{vertical?iconSize+'px':'auto'}};
+            height: {{!vertical?iconSize+'px':'auto'}};
+            {{vertical?'width: \${iconSize}px;':'height: \${iconSize}px;'}}
             @apply --header;
             z-index: 2;
         }
@@ -187,10 +185,10 @@ ODA({
         </g> -->
     </svg>
     `,
-    get transform() {
-        const size = this.iconSize / 2;
-        const x = this.vertical ? size : -this.left;
-        const y = this.vertical ? -this.top : size;
+    get transform(){
+        const size = this.iconSize/2;
+        const x = this.vertical?size:-this.left;
+        const y = this.vertical?-this.top:size;
         return `translate(${x} ${y})`;
     },
     props: {
@@ -205,28 +203,28 @@ ODA({
     getBigLine(index) {
         if (!this.vertical) {
             const x = index * this.sizeBig - this.domHost.scrollLeft + 0.5;
-            return {x1: x, x2: x, y1: 4, y2: 24};
+            return { x1: x, x2: x, y1: 4, y2: 24 };
         } else {
             const y = index * this.sizeBig - this.domHost.scrollTop + 0.5;
-            return {x1: 4, x2: 24, y1: y, y2: y};
+            return { x1: 4, x2: 24, y1: y, y2: y };
         }
     },
     getSmallLine(index) {
         if (!this.vertical) {
             const x = index * this.sizeBig - this.domHost.scrollLeft + this.sizeBig / 2 + 0.5;
-            return {x1: x, x2: x, y1: 14, y2: 30};
+            return { x1: x, x2: x, y1: 14, y2: 30 };
         } else {
             const y = index * this.sizeBig - this.domHost.scrollTop + this.sizeBig / 2 + 0.5;
-            return {x1: 14, x2: 30, y1: y, y2: y};
+            return { x1: 14, x2: 30, y1: y, y2: y };
         }
     },
     getTextLine(index) {
         if (!this.vertical) {
             const x = index * this.sizeBig + 4 - this.domHost.scrollLeft;
-            return {x: x, y: 12};
+            return { x: x, y: 12 };
         } else {
             const y = index * this.sizeBig + 14 - this.domHost.scrollTop;
-            return {x: 5, y: y};
+            return { x: 5, y: y };
         }
     },
 });
