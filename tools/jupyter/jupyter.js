@@ -128,12 +128,13 @@ ODA({ is: 'oda-jupyter-cell',
     `,
     cell: {},
     get cellType() {
-        if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
-        if (this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
-        if (this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
+        if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
         if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
         if (this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
+        if (this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
+        if (this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
+        if (this.cell?.cell_type === 'html-tiny') return 'oda-jupyter-cell-html-tiny';
         if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
         return 'div';
     }
@@ -262,12 +263,13 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
     notebook: {},
     get cellViews() {
         let views = [
-            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-Pell' },
-            { cell_type: 'html-jodit', cell_extType: 'html-jodit', source: '', label: 'html-Jodit' },
-            { cell_type: 'html-cde', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
-            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-showdown' },
+            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-Pell-editor' },
+            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-Showdown' },
             { cell_type: 'code', cell_extType: 'code', source: '', label: 'code' },
             { cell_type: 'html-executable', cell_extType: 'html-executable', source: '', label: 'code-html-executable' },
+            { cell_type: 'html-cde', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
+            { cell_type: 'html-jodit', cell_extType: 'html-jodit', source: '', label: 'html-Jodit-editor' },
+            { cell_type: 'html-tiny', cell_extType: 'html-tiny', source: '', label: 'html-TinyMCE-editor' },
         ]
         return views;
     },
@@ -433,8 +435,9 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
                         <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
                         <span @tap="mode='css'" :class="{mode: mode==='css'}">css</span>
-                        <span @tap="mode='json'" :class="{mode: mode==='json'}">json</span>
+                        <span ~if="cell?.useJson" @tap="mode='json'" :class="{mode: mode==='json'}">json</span>
                         <div class="flex"></div>
+                        <span @tap="cell.useJson=!cell.useJson">useJson</span>
                         <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=''; setValue()">clear</span>
                         <span @tap="_srcdoc = _srcdoc ? '' : ' '">refresh</span>
                     </div>
@@ -442,7 +445,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 </div>
                 <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '3px'" color="dodgerblue" style="opacity: .3"></oda-splitter2>
                 <div class="flex" style="overflow: hidden; flex: 1">
-                    <iframe :srcdoc style="border: none; width: 100%; height: 100%; overflow: hidden"></iframe>
+                    <iframe style="border: none; width: 100%; height: 100%; overflow: hidden"></iframe>
                 </div>
             </div>
             <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '3px'" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
@@ -453,6 +456,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         mode: {
             default: 'html',
             set(v) {
+                this._setMode = true;
                 this.setValue();
             }
         }
@@ -466,18 +470,24 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
 </style>
 ${this.cell?.sourceHTML || this.cell?.source  || ''}
 <script type="module">
-    import { Observable } from 'https://libs.gullerya.com/object-observer/5.0.0/object-observer.min.js';
-    const json = Observable.from(${this.cell?._sourceJSON} || '{}');
-    // console.log('.....471..... Observable: ', json)
-    Observable.observe(json, e => {
-        const detail = JSON.stringify(json, null, 4);
-        document.dispatchEvent(new CustomEvent('changeJSON', { detail }));
-        // console.log('.....475..... ', e)
-    })
+    ${this.sourceJSON}
     ${this.cell?.sourceJS || ''}
 </script>
 ${this._srcdoc || ''}
     `},
+    get sourceJSON() {
+        if (this.cell?.useJson) return `
+import { Observable } from 'https://libs.gullerya.com/object-observer/5.0.0/object-observer.min.js';
+const json = Observable.from(${this.cell.sourceJSON} || '{}');
+// console.log('.....480..... Observable: ', json)
+Observable.observe(json, e => {
+    const detail = JSON.stringify(json, null, 4);
+    document.dispatchEvent(new CustomEvent('changeJSON', { detail }));
+    // console.log('.....484..... ', e)
+})
+        `;
+        return '';
+    },
     attached() {
         this.setValue();
     },
@@ -492,8 +502,12 @@ ${this._srcdoc || ''}
             if (this.mode === 'css')
                 this.cell.sourceCSS = v;
             if (this.mode === 'json')
-                this.cell._sourceJSON = this.cell.sourceJSON = v || '{}';
-            this.setValue();
+                this.cell.sourceJSON = v || '{}';
+            if (!this._setMode) {
+                const iframe = this.$('iframe');
+                iframe.srcdoc = this.srcdoc;
+            }
+            //this.setValue();
         },
         endSplitterMove(e) {
             if (!this.readOnly) {
@@ -515,7 +529,6 @@ ${this._srcdoc || ''}
         return this.cell?.cell_props?.readOnly;
     },
     setValue(mode = this.mode) {
-        this.cell._sourceJSON ||= this.cell.sourceJSON || '{}';
         let ace = this.$('oda-ace-editor');
         if (mode === 'javascript')
             ace.value = this.cell.sourceJS || '';
@@ -524,21 +537,28 @@ ${this._srcdoc || ''}
         if (mode === 'css')
             ace.value = this.cell.sourceCSS || '';
         if (mode === 'json')
-            ace.value = this.cell._sourceJSON;
+            ace.value = this._sourceJSON || this.cell.sourceJSON || '{}';
         this.listenIframe();
+        this._setMode = false;
     },
     listenIframe() {
         setTimeout(() => {
             const iframe = this.$('iframe');
+            iframe.srcdoc ||= this.srcdoc;
             (iframe.contentDocument || iframe.contentWindow).addEventListener("changeJSON", (e) => {
-                this.cell._sourceJSON = this.cell.sourceJSON = e.detail;
-            // console.log('.....534..... changeJSON from iFrame: ', e.detail)
+                this._sourceJSON = this.cell.sourceJSON = e.detail;
+                if (this.mode === 'json') {
+                    this._setMode = true;
+                    this.$('oda-ace-editor').value = this._sourceJSON ;
+                }
+                this._setMode = false;
+                // console.log('.....550..... changeJSON from iFrame: ', e.detail)
             })
         }, 500)
     }
 })
 
-ODA({ is: 'oda-jupyter-cell-html-cde',
+ODA({ is: 'oda-jupyter-cell-html-temp',
     template: /*html*/`
         <style>
             :host {
@@ -551,6 +571,25 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
         <div ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
+    observers: [
+        function setEditedCell(editedCell) {
+            if (editedCell && editedCell === this.cell) {
+                this.async((e) => {
+                    const iframe = this.$('iframe');
+                    iframe.srcdoc = this.srcdoc;
+                    this.async((e) => {
+                        (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => {
+                            if (e.detail !== undefined)
+                                this.cell.source = e.detail;
+                        })
+                    }, 300)
+                })
+            }
+        }
+    ]
+})
+
+ODA({ is: 'oda-jupyter-cell-html-cde', extends: 'oda-jupyter-cell-html-temp',
     get srcdoc() {
         return `
 <style>
@@ -567,56 +606,75 @@ ODA({ is: 'oda-jupyter-cell-html-cde',
         if(e.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF) e.editor.execCommand('maximize');
     }) 
 </script>
-    `},
-    observers: [
-        function setEditedCell(editedCell) {
-            if (this.editedCell && this.editedCell === this.cell) {
-                const iframe = this.$('iframe');
-                iframe.srcdoc = this.srcdoc;
-                requestAnimationFrame(() => (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => this.cell.source = e.detail));
-            }
-        }
-    ]
+    `}
 })
 
-ODA({ is: 'oda-jupyter-cell-html-jodit',
-    template: /*html*/`
-        <style>
-            :host {
-                @apply --horizontal;
-                @apply --flex;
-                min-height: 28px;
-            }
-        </style>
-        <iframe ~show="editedCell===cell" style="border: none; width: 100%; height: 80vh"></iframe>
-        <div :html="cell.source" style="width: 100%; padding: 8px;"></div>
-    `,
-    cell: {},
+ODA({ is: 'oda-jupyter-cell-html-jodit', extends: 'oda-jupyter-cell-html-temp',
     get srcdoc() {
         return `
+<style>
+    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
+    body, html { 
+        margin: 0;
+        min-width: 100%;
+        min-height: 100%;
+    }
+</style>
 <textarea id="editor" name="editor">${this.cell?.source || ''}</textarea>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.13.4/jodit.es2018.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.13.4/jodit.es2018.min.js"></script>
 <script type="module">
     const editor = Jodit.make('#editor', {
         toolbarButtonSize: "small",
-        // fullsize: true
+        fullsize: true
     });
     editor.events.on('change.textLength', (e) => {
         document.dispatchEvent(new CustomEvent('change', { detail: e }));
     })
 </script>
-    `},
-    observers: [
-        function setEditedCell(editedCell) {
-            if (this.editedCell && this.editedCell === this.cell) {
-                const iframe = this.$('iframe');
-                iframe.srcdoc = this.srcdoc;
-                requestAnimationFrame(() => (iframe.contentDocument || iframe.contentWindow) .addEventListener("change", (e) => {
-                    if (e.detail !== undefined)
-                    this.cell.source = e.detail;
-                }));
-            }
-        }
-    ]
+    `}
+})
+
+ODA({ is: 'oda-jupyter-cell-html-tiny', extends: 'oda-jupyter-cell-html-temp',
+    get srcdoc() {
+        return `
+<style> 
+    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
+    body, html { 
+        margin: 0; 
+    }
+</style>
+<textarea name="content" id="mytextarea">${this.cell?.source || ''}</textarea>
+<script src="https://cdn.tiny.cloud/1/0dmt0rtivjr59ocff6ei6iqaicibk0ej2jwub5siiycmlk84/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script type="module">
+    tinymce.init({
+        selector: 'textarea#mytextarea',
+        height: '100vh',
+        menubar: true,
+        plugins: [
+            'advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
+            'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media table powerpaste paste mediaembed nonbreaking',
+            'table emoticons template help pageembed permanentpen advtable',
+        ],
+        toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | link | ' +
+            'bullist numlist outdent indent | image | print preview media fullpage | ' +
+            'forecolor backcolor emoticons | help' +
+            'casechange checklist code formatpainter pageembed permanentpen paste powerpaste table | vanna',
+
+        menubar: 'favs file edit view insert format tools table help',
+        menu: {
+            favs: {
+                title: 'My Favorites',
+                items: 'paste | powerpaste | code visualaid | searchreplace | spellchecker | emoticons',
+            },
+        },
+        paste_webkit_styles: 'color font-size',
+        extended_valid_elements: 'script[language|src|async|defer|type|charset]',
+        setup: (editor) => {
+            editor.on('change', () => { document.dispatchEvent(new CustomEvent('change', { detail: editor.getContent() })) });
+            editor.on('keyup', () => { document.dispatchEvent(new CustomEvent('change', { detail: editor.getContent() })) });
+        },
+    });
+</script>
+    `}
 })
