@@ -2,6 +2,7 @@ ODA({ is: 'oda-splitter2', template: `
         <style>
             :host {
                 height: {{direction === 'vertical' ? '100%' : size || '2px'}};
+                min-height: {{direction === 'vertical' ? '100%' : size || '2px'}};
                 width: {{direction === 'vertical' ? size || '2px' : '100%'}};
                 cursor: {{direction === 'vertical' ? 'ew-resize' : 'ns-resize'}};
                 background-color: {{color || 'lightgray'}};

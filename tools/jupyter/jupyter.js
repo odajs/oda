@@ -433,11 +433,12 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
                         <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
                         <span @tap="mode='css'" :class="{mode: mode==='css'}">css</span>
+                        <span @tap="mode='json'" :class="{mode: mode==='json'}">json</span>
                         <div class="flex"></div>
                         <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=''; setValue()">clear</span>
                         <span @tap="_srcdoc = _srcdoc ? '' : ' '">refresh</span>
                     </div>
-                    <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':'dawn'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+                    <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':mode==='css' ? 'dawn':'chrome'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
                 <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '3px'" color="dodgerblue" style="opacity: .3"></oda-splitter2>
                 <div class="flex" style="overflow: hidden; flex: 1">
@@ -459,8 +460,24 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
     cell: {},
     _srcdoc: '',
     get srcdoc() {
-        return `<style>${this.cell?.sourceCSS || ''}</style>${this.cell?.source || ''}<script type="module">${this.cell?.sourceJS || ''}</script>${this._srcdoc || ''}`
-    },
+        return `
+<style>
+    ${this.cell?.sourceCSS || ''}
+</style>
+${this.cell?.sourceHTML || this.cell?.source  || ''}
+<script type="module">
+    import { Observable } from 'https://libs.gullerya.com/object-observer/5.0.0/object-observer.min.js';
+    const json = Observable.from(${this.cell?._sourceJSON} || '{}');
+    // console.log('.....471..... Observable: ', json)
+    Observable.observe(json, e => {
+        const detail = JSON.stringify(json, null, 4);
+        document.dispatchEvent(new CustomEvent('changeJSON', { detail }));
+        // console.log('.....475..... ', e)
+    })
+    ${this.cell?.sourceJS || ''}
+</script>
+${this._srcdoc || ''}
+    `},
     attached() {
         this.setValue();
     },
@@ -474,6 +491,9 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 this.cell.source = v;
             if (this.mode === 'css')
                 this.cell.sourceCSS = v;
+            if (this.mode === 'json')
+                this.cell._sourceJSON = this.cell.sourceJSON = v || '{}';
+            this.setValue();
         },
         endSplitterMove(e) {
             if (!this.readOnly) {
@@ -484,7 +504,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 }
                 if (e.detail.value.direction === 'vertical') {
                     this.cell.cell_w = e.detail.value.w;
-                    this.cell.cell_w = this.cell.cell_w < 1 ? 0 : this.cell.cell_w;
+                    this.cell.cell_w = this.cell.cell_w <= 3 ? 0 : this.cell.cell_w;
                     // console.log('w = ', this.cell.cell_w);
                 }
             }
@@ -495,13 +515,26 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         return this.cell?.cell_props?.readOnly;
     },
     setValue(mode = this.mode) {
-        let ed = this.$('oda-ace-editor');
+        this.cell._sourceJSON ||= this.cell.sourceJSON || '{}';
+        let ace = this.$('oda-ace-editor');
         if (mode === 'javascript')
-            ed.value = this.cell.sourceJS || '';
+            ace.value = this.cell.sourceJS || '';
         if (mode === 'html')
-            ed.value = this.cell.source || '';
+            ace.value = this.cell.source || '';
         if (mode === 'css')
-            ed.value = this.cell.sourceCSS || '';
+            ace.value = this.cell.sourceCSS || '';
+        if (mode === 'json')
+            ace.value = this.cell._sourceJSON;
+        this.listenIframe();
+    },
+    listenIframe() {
+        setTimeout(() => {
+            const iframe = this.$('iframe');
+            (iframe.contentDocument || iframe.contentWindow).addEventListener("changeJSON", (e) => {
+                this.cell._sourceJSON = this.cell.sourceJSON = e.detail;
+            // console.log('.....534..... changeJSON from iFrame: ', e.detail)
+            })
+        }, 500)
     }
 })
 
