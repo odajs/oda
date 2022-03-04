@@ -76,7 +76,7 @@ ODA({ is: 'oda-jupyter',
         }, 300)
     },
     share(e, notebook) {
-        const hideTopPanel = e?.altKey || e?.ctrlKey || e?.metaKey ? true : false;
+        const hideTopPanel = e?.altKey || e?.ctrlKey || e?.metaKey || this.notebook.hideTopPanel ? true : false;
         const readOnly = this.readOnly;
         const showBorder = this.showBorder;
         const str = JSON.stringify({...(notebook || this.notebook), ...{hideTopPanel, readOnly, showBorder}});
@@ -165,7 +165,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
         <div class="flex"></div>
         <oda-button ~if="!cell.noDelete" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
-        <oda-button icon="social:share" :icon-size @tap="share($event, { cells: [cell] })" title="share"></oda-button>
+        <oda-button icon="social:share" :icon-size @click="share($event, { cells: [cell] })" title="share"></oda-button>
         <oda-button icon="icons:close" :icon-size @tap="focusedCell=undefined"></oda-button>
     `,
     iconSize: 14,
