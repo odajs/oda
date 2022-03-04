@@ -6,26 +6,23 @@
 import '../oda.js';
 import '../tools/containers/containers.js';
 import '../tools/router/router.js';
-// import '../tools/containers/dropdown/dropdown.js';
-// import '../tools/containers/modal/modal.js';
 import '../components/viewers/md-viewer/md-viewer.js';
 import '../components/buttons/button/button.js';
-// import '../tools/documentation/documentation.js';
 
 const statuses = [
     { id: 'no', icon: '', color: 'lightgray' },
     { id: 'temp', icon: 'image:edit', color: 'lightblue' },
     { id: 'check', icon: 'image:remove-red-eye', color: 'green' },
     { id: 'edit', icon: 'editor:border-color', color: 'red' },
-    { id: 'ok', icon: 'icons:check', color: 'lightgreen' },
+    { id: 'ok', icon: 'icons:check', color: 'lightgreen' }
 ];
 
 function clone(obj) {
     const res = Object.assign({}, obj);
-    
+
     res.hideExpander = true;
-    res.$expanded=true
-    
+    res.$expanded = true
+
     res.items = Object.assign([], res.items).map(i => clone(i));
     return res;
 }
@@ -79,23 +76,26 @@ async function loadDir(root, path = '') {
     }
     return root;
 }
-
 site: {
-    ODA({
-        is: 'oda-site', extends: 'oda-app-layout', imports: '@oda/app-layout, @oda/tree',
+    ODA({ is: 'oda-site', extends: 'oda-app-layout', imports: '@oda/app-layout, @oda/tree',
         hostAttributes: {
             'right.icon': 'icons:warning',
             'left.splitter.hidden': true
         },
         template: /*html */ `
-            <div class="flex horizontal header" slot="header" style="align-items: center;">
-                <img width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="site/icon.png" style="cursor: pointer; margin: 8px;"/>
-                <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
-                <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
-                    <img src="site/youtube.png" height="20" style="margin: 6px 0 0 16px"/>
-                </a>
-                <a class="no-flex" href="https://github.com/odajs/oda" target="_blank" style="margin: 0 0 0 16px"/>
-                    <oda-icon icon="social-media:github" :icon-size="32" ></oda-icon></a>
+            <div class="horizontal header" slot="header" style="align-items: center;">
+                <img ~if="showLogoImage" width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="site/icon.png" style="cursor: pointer; margin: 8px;"/>
+                <div class="vertical" style="padding: 10px;">
+                    <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
+                    <div class="horizontal" style="align-items:center">
+                        <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
+                            <img src="site/youtube.png" height="18" style="padding: 6px 6px 0 0;"/>
+                        </a>
+                        <a class="no-flex" href="https://github.com/odajs/oda" target="_blank">
+                            <oda-icon icon="social-media:github" :icon-size="28" ></oda-icon>
+                        </a>
+                    </div>
+                </div>
                 <oda-site-header :items ::part ></oda-site-header>
             </div>
             <oda-site-nav-tree ~show="focusedItem && !focusedItem.hideLeft" :slot="focusedItem && !focusedItem.hideLeft && part?'left-panel':'?'" :part ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
@@ -184,13 +184,14 @@ site: {
             },
             _showTester() {
                 return (this.focusedItem && (!this.focusedItem.items || this.focusedItem.items.length === 0)) && this.src;
-            }
+            },
+            showLogoImage: true
         },
         isEditMode: false,
         bubbleIframeMouseWheel(iframe) {
             if (!this.hideOnScroll) return;
             var existingOnMouseWheel = iframe.contentWindow.onwheel;
-            iframe.contentWindow.onwheel = function (e) {
+            iframe.contentWindow.onwheel = function(e) {
                 if (existingOnMouseWheel) existingOnMouseWheel(e);
                 iframe.dispatchEvent(new MouseEvent('wheel', {
                     'view': window,
@@ -244,10 +245,6 @@ site: {
                 }
             }, 100);
         },
-        // _changed(e) {
-        //     this._editMode = e.currentTarget.value === '~~~' || e.currentTarget.value === '###';
-        //     this.$refs.iframe.contentDocument._editMode = this._editMode;
-        // },
         _setStatus(root) {
             if (root._statusReady) {
                 this._setCount(root, root);
@@ -272,10 +269,8 @@ site: {
         }
     });
 }
-
 content: {
-    ODA({
-        is: 'oda-site-content-tree', extends: 'oda-tree', imports: ['@oda/tree'],
+    ODA({ is: 'oda-site-content-tree', extends: 'oda-tree', imports: '@oda/tree',
         props: {
             defaultTemplate: 'oda-site-content-cell',
             iconExpanded: 'icons:remove',
@@ -298,8 +293,7 @@ content: {
         },
         _tap(i) { route(i); }
     });
-    ODA({
-        is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: '@oda/table, @tools/jupyter',
+    ODA({ is: 'oda-site-content-cell', extends: 'oda-table-cell-base', imports: '@oda/table, @tools/jupyter',
         template: /*html*/ `
             <style>
                 :host * {
@@ -319,16 +313,13 @@ content: {
             </style>
             <div class="vertical flex" style="padding: 2px 2px;">
                 <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
-                <!-- <oda-documentation :item></oda-documentation> -->
                 <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode"></oda-jupyter>
             </div>
         `,
         props: {
             h() {
-                //return 'h3'// + ((this.item.$level || 0) + 2);
                 let l = this.item.$level || 0;
                 let style = `
-
                     font-size: ${24 - l}px;
                     font-weight: ${550 - l * 50};
                     color: ${this.item && ((this.item.name && this.item.name.includes('.md')) || (this.item.content && this.item.content.link)) ? '#6699cc' : '#336699'};
@@ -343,11 +334,11 @@ content: {
             item: Object
         },
         get notebook() {
-            return { 
+            return {
                 cells: [
                     {
                         cell_type: 'markdown',
-                        src: this.item?.content?.abstract ? this.item.content.abstract 
+                        src: this.item?.content?.abstract ? this.item.content.abstract
                             : (this.item?.name?.includes('.md') && this.item?.$level === 0) ?
                                 this.item?.$id || this.item?.content?.link || this.item?.content?.src || '' : ''
                     }
@@ -361,9 +352,7 @@ content: {
             route(this.item)
         }
     });
-
-    ODA({
-        is: 'oda-nav', template: /*html*/ `
+    ODA({ is: 'oda-nav', template: /*html*/ `
             <oda-nav-btn ~if="focusedItem?.prev?.label" :goal=focusedItem.prev @tap="_tap(focusedItem.prev)" :isnext=0></oda-nav-btn>
             <oda-nav-btn ~if="focusedItem?.next?.label" :goal=focusedItem.next @tap="_tap(focusedItem.next)" :isnext=1 style="right:0px;"></oda-nav-btn>
         `,
@@ -372,11 +361,7 @@ content: {
         },
         _tap(i) { route(i); },
     });
-
-
-
-    ODA({
-        is: 'oda-nav-btn', extends: 'oda-button', imports: ['@oda/button'],
+    ODA({ is: 'oda-nav-btn', extends: 'oda-button', imports: '@oda/button',
         template: /*html*/ `
             <style>
                 :host {
@@ -419,14 +404,12 @@ content: {
     });
 }
 navigator: {
-    ODA({
-        is: 'oda-site-nav-tree', extends: 'oda-tree', imports: ['@oda/tree'],
+    ODA({ is: 'oda-site-nav-tree', extends: 'oda-tree', imports: '@oda/tree',
         template: `
             <style>
                 :host, :host *{
                     @apply --layout;
                 }
-
             </style>
         `,
         props: {
@@ -456,28 +439,22 @@ navigator: {
         },
 
         observers: [
-            // function _byFocusedNode(focusedNode) {
-            //     // this._refresh(() => {
-            //         this.selectItem(focusedNode);
-            //         this.scrollToItem(focusedNode);
-            //     // });
-            // }
             function _byFocusedRow(focusedRow) {
                 this.selectItem(focusedRow);
                 this.scrollToItem(focusedRow);
             }
         ]
     });
-    ODA({
-        is: 'oda-status-cell', extends: 'oda-table-cell', imports: '@oda/table',
+    ODA({ is: 'oda-status-cell', extends: 'oda-table-cell', imports: '@oda/table',
         template: /*html*/ `
-        <style>
-            :host { min-width: 22px; max-width: 22px; }
-            :hover { cursor: pointer; }
-            div {  width: 14px; height: 14px; border: 2px solid lightgreen; border-radius: 50%; cursor: pointer;  }
-        </style>
-        <div ~if="item && item._statusReady" :title @tap="_tap(item)" ~style="_style"></div>
-        <oda-icon ~if="item && !item._statusReady" :icon-size="20" :icon="item.status && item.status.icon" ~style="{fill:item.status?item.status.color:''}" :title="item && item.$id" @tap="_tap(item)"></oda-icon>`,
+            <style>
+                :host { min-width: 22px; max-width: 22px; }
+                :hover { cursor: pointer; }
+                div {  width: 14px; height: 14px; border: 2px solid lightgreen; border-radius: 50%; cursor: pointer;  }
+            </style>
+            <div ~if="item && item._statusReady" :title @tap="_tap(item)" ~style="_style"></div>
+            <oda-icon ~if="item && !item._statusReady" :icon-size="20" :icon="item.status && item.status.icon" ~style="{fill:item.status?item.status.color:''}" :title="item && item.$id" @tap="_tap(item)"></oda-icon>
+        `,
         props: {
             title: {
                 get() {
@@ -500,15 +477,15 @@ navigator: {
             });
         }
     });
-    ODA({
-        is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: ['@oda/table'],
+    ODA({ is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: '@oda/table',
         template: /*html*/ `
-        <style>
-            :host{ @apply --header; cursor: pointer; }
-            :host(:hover){ @apply --selected; }
-        </style>
-        <oda-icon ~if="icon" :icon="icon" :icon-size="iconSize * .7" style="margin-right: 8px;"></oda-icon>
-        <span ~html="value" ~style="{color: item && ((item.name && item.name.includes('.md')) || (item.content && item.content.link)) ? '#6699cc' : '#336699'}" style="overflow: hidden;" :title="value"></span>`,
+            <style>
+                :host{ @apply --header; cursor: pointer; }
+                :host(:hover){ @apply --selected; }
+            </style>
+            <oda-icon ~if="icon" :icon="icon" :icon-size="iconSize * .7" style="margin-right: 8px;"></oda-icon>
+            <span ~html="value" ~style="{color: item && ((item.name && item.name.includes('.md')) || (item.content && item.content.link)) ? '#6699cc' : '#336699'}" style="overflow: hidden;" :title="value"></span>
+        `,
         props: {
             icon() {
                 return this.item.icon;
@@ -520,7 +497,7 @@ navigator: {
             }
         },
         listeners: {
-            tap: function (e) {
+            tap: function(e) {
                 this.fire('wheel', 'clearScroll')
                 route(this.item);
             }
@@ -528,38 +505,34 @@ navigator: {
     })
 }
 header: {
-    ODA({
-        is: 'oda-site-header',
+    ODA({ is: 'oda-site-header',
         template: /*html*/  `
-        <style>
-            :host{
-                width: 100%;
-                cursor: pointer;
-                padding: 8px;
-                justify-content: flex-end;
-                @apply --flex;
-                @apply --horizontal;
-                overflow: hidden;
-            }
-            div{
-                align-items: center;
-            }
-            .vertical:{
-                @apply --vertical;
-            }
-            .mob:hover {
-                filter: invert(100%);
-            }
-        </style>
-        <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
-        <div ref="menu" ~show="!mobile" :parent="this" class="no-flex horizontal">
-            <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item="item" style="color: #336699;">{{item.label}}</oda-site-header-item>
-        </div>
-        <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
-            <div class="mob" ~for="items" :item="item" @tap="_tap(item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;">{{item.label}}
-                <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
+            <style>
+                :host{
+                    cursor: pointer;
+                    justify-content: flex-end;
+                    @apply --flex;
+                    @apply --horizontal;
+                }
+                div{
+                    align-items: center;
+                }
+                .vertical:{
+                    @apply --vertical;
+                }
+                .mob:hover {
+                    filter: invert(100%);
+                }
+            </style>
+            <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
+            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: end;">
+                <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item="item" style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
-        </div>
+            <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
+                <div class="mob" ~for="items" :item="item" @tap="_tap(item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;">{{item.label}}
+                    <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
+                </div>
+            </div>
         `,
         props: {
             toggled: false,
@@ -577,22 +550,15 @@ header: {
             }
         },
         _resize() {
-            //this.toggled = false;
-            if (this._width && this._width < window.innerWidth) {
-                this._width = 0;
-                this.mobile = false;
-            } else if (this.$refs.menu && window.innerWidth < this.$refs.menu.offsetWidth + 500) {
-                this.mobile = true;
-                this._width = window.innerWidth;
-            }
+            this.mobile = this.rootHost.offsetWidth < 540;
+            this.showLogoImage = this.rootHost.offsetWidth > 320;
         },
         _tap(i) {
             this.toggled = false;
             route(i);
         }
     });
-    ODA({
-        is: 'oda-site-header-item',
+    ODA({ is: 'oda-site-header-item',
         template: `
             <style>
                 :host{
@@ -623,7 +589,6 @@ header: {
                     const elm = dd[i];
                     elm.fire('cancel');
                 }
-            //window.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 27 }));
             let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none' });
             this.value = res?.value;
         },
@@ -631,13 +596,22 @@ header: {
             route(this.item);
         }
     });
-
-    ODA({
-        is: 'oda-site-search',
-        template: `<div  style="display:flex"> <input :show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
+    ODA({ is: 'oda-site-search',
+        template: `
+            <style>
+                input {
+                    width: 140px;
+                    height: 24px;
+                    border: none;
+                    outline: none;
+                }
+            </style>
+            <div style="display:flex; alignitems: center">
+                <input :show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
                 <input class="flex" :if="chaosMode"  placeholder=" бездна наблюдает" type="search" @change="chaossee">
-                <oda-icon icon="icons:search" icon-size=32 class="noflex" :stroke="chaosMode?'#ff0000':'#0000'" @tap="chaosModeOff" ><oda-icon ></div>
-    `,
+                <oda-icon icon="icons:search" icon-size=28 class="noflex" :stroke="chaosMode?'#ff0000':'#0000'" @tap="chaosModeOff" ><oda-icon >
+            </div>
+        `,
         props: {
             _editMode: Boolean,
             chaosMode: false,
@@ -708,7 +682,7 @@ header: {
                 async function getContent(e) {
                     if (e.isLeaf) {
                         let uUrl = e.cont_url ? e.cont_url : e.url;
-                        let rowText = await fetch(e.url).then(function (response) { return response.text(); });
+                        let rowText = await fetch(e.url).then(function(response) { return response.text(); });
                         //console.log(rowText);
                         e.content = rowText.replace(/['`.*+?^${}()|[\]]/g, " ").replace(/\r?\n/g, " ").replace(/ {1,}/g, " ");;
                         if (e.cont_url) e.url = e.url + '#' + e.url + e.cont_url.substr(1);
@@ -737,8 +711,7 @@ header: {
 
 
     ODA({ is: 'oda-seach-result', extends: 'oda-tree', props: { defaultTemplate: 'oda-site-search-cell' } });
-    ODA({
-        is: 'oda-site-search-cell', extends: 'oda-site-nav-cell', template: `
+    ODA({ is: 'oda-site-search-cell', extends: 'oda-site-nav-cell', template: `
             <div class="flex" style="padding: 0 10px; text-align: right; color: green;font-size: 0.7em;">{{this.item.score}}</div>
         `,
         // props: {
@@ -746,20 +719,16 @@ header: {
         //                 return rez;} }
         // }
     });
-
 }
 menu: {
-    ODA({
-        is: 'oda-site-menu', template: `
+    ODA({ is: 'oda-site-menu', template: `
             <style>
                 :host{
                     @apply --vertical;
                     overflow-y: auto;
                 }
             </style>
-<!--            <div @mouseleave="_leave">-->
-                <oda-site-menu-item ~for="i in items" :item="i" :parent :path="item.name" ~style="(i.items && i.items.length > 0)?'padding: 8px; font-weight: bold; font-size: large;':''" @up="close"></oda-site-menu-item>
-<!--            </div>-->
+            <oda-site-menu-item ~for="i in items" :item="i" :parent :path="item.name" ~style="(i.items && i.items.length > 0)?'padding: 8px; font-weight: bold; font-size: large;':''" @up="close"></oda-site-menu-item>
         `,
         close() {
             this.parentElement.fire('ok');
@@ -791,31 +760,30 @@ menu: {
             // }
         }
     });
+    ODA({ is: 'oda-site-menu-item', template: `
+            <style>
+                :host{
 
-    ODA({
-        is: 'oda-site-menu-item', template: `
-        <style>
-            :host{
-
-                cursor: pointer;
-                @apply --vertical;
-                font-weight: normal;
-                color: #336699;
-            }
-            div:hover{
-                @apply --focused;
-            }
-            span{
-                padding: 8px;
-                white-space: nowrap;
-            }
-        </style>
-        <div class="horizontal" style="align-items: center" @tap.stop="_tap">
-            <oda-icon ~if="item.icon" style="padding-left: 8px;" :icon-size="16" :icon="item.icon"></oda-icon>
-            <span ~html="item.label || item.name" ~style="(item.items && item.items.length === 0)?'margin-left:16px':''"></span>
-        </div>
-        <oda-site-menu-item ~show="!stop" stop ~for="i in items" :path="path+'/'+item.name" :item="i" :parent="parent" style="font-weight: normal; font-size: initial;"></oda-site-menu-item>
-        <!-- hr ~if="!stop && items.length>0" style="width: 100%; max-height: 2px;"-->`,
+                    cursor: pointer;
+                    @apply --vertical;
+                    font-weight: normal;
+                    color: #336699;
+                }
+                div:hover{
+                    @apply --focused;
+                }
+                span{
+                    padding: 8px;
+                    white-space: nowrap;
+                }
+            </style>
+            <div class="horizontal" style="align-items: center" @tap.stop="_tap">
+                <oda-icon ~if="item.icon" style="padding-left: 8px;" :icon-size="16" :icon="item.icon"></oda-icon>
+                <span ~html="item.label || item.name" ~style="(item.items && item.items.length === 0)?'margin-left:16px':''"></span>
+            </div>
+            <oda-site-menu-item ~show="!stop" stop ~for="i in items" :path="path+'/'+item.name" :item="i" :parent="parent" style="font-weight: normal; font-size: initial;"></oda-site-menu-item>
+            <!-- hr ~if="!stop && items.length>0" style="width: 100%; max-height: 2px;"-->
+        `,
         props: {
             path: String,
             stop: false,
