@@ -14,16 +14,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             :host([modal]) {
                 position: absolute;
             }
-            :host>form-title{
-                cursor: grab;
-                cursor: -webkit-grab;
-                cursor: -moz-grab;
-            }
-            :host>form-title:active{
-                cursor: grabbing;
-                cursor: -webkit-grabbing;
-                cursor: -moz-grabbing;
-            }
             form-status-bar{
                 position: absolute;
                 width: 100%;
@@ -35,6 +25,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             }
             :host .title-bar{
                 @apply --heading;
+                align-items: center;
             }
 
             :host([modal]) .title-bar, :host([show-close-btn]) .title-bar{
@@ -80,7 +71,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             }
         </style>
         <div class="title-bar horizontal" @mouseenter="_onHeader = true" @mouseleave="_onHeader = false">
+            <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
             <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
+            <div ~if="title" ~text="title" style="margin-left: 8px;"></div>
             <div class="flex"></div>
             <slot class="horizontal no-flex" name="title-buttons"></slot>
             <div ~if="modal && !hideMinMax" class="horizontal no-flex">
@@ -93,6 +86,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
     props: {
         unique: String,
         // animated: false,
+        icon: '',
         iconSize: {
             default: 24,
             shared: true
@@ -133,13 +127,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             },
             save: true
         },
-        title: {
-            default: {
-                show: true,
-                icon: 'av:web',
-                title: ''
-            },
-        },
+        title: '',
         statusBar: {
             default: {
                 show: false,
@@ -341,75 +329,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
     _toggleSize([state1, state2]) {
         this.size = this.size === state1 ? state2 : state1;
     },
-});
-ODA({is: 'form-title', template: /*html*/`
-        <style>
-            :host{
-                @apply --header;
-                @apply --dark;
-                @apply --horizontal;
-                @apply --no-flex;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                align-items: center;
-            }
-            oda-button{
-                fill: white;
-                cursor: pointer;
-            }
-            .close-btn:hover{
-                background-color: red;
-            }
-            label{
-                margin-left: 4px;
-                margin-right: 4px;
-                cursor: inherit;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                text-align: center;
-                line-height: 24px;
-                white-space: nowrap;
-            }
-        </style>
-        <style>
-            :host{
-                display: {{!show ? 'none' : ''}};
-            }
-            :host{
-                min-height: {{iconSize / 2 + iconSize / 4}}px;
-            }
-            label{
-                line-height: {{iconSize / 2 + iconSize / 4}}px;
-            }
-            oda-button{
-                 padding: {{iconSize / 8}}px {{iconSize / 4}}px;
-            }
-        </style>
-        <oda-icon :icon :size="iconSize * .7" @dblclick="close"></oda-icon>
-        <div class="flex label" @dblclick="!isMinimized && _toggleSize(['normal', 'max'])">{{title}}</div>
-        <div class="horizontal">
-            <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
-            <oda-button class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="close"></oda-button>
-        </div>`,
-    props: {
-        icon: String,
-        title: '',
-        modal: false,
-        size: {
-            list: ['normal', 'max'],
-            default: 'normal'
-        },
-        isMinimized: false,
-        show: false
-    },
-    _toggleSize([state1, state2]) {
-        this.size = this.size === state1 ? state2 : state1;
-    },
-    close() {
-        this.fire('close');
-        this.domHost.remove();
-    }
 });
 ODA({is: 'form-status-bar', template: `
         <style ~if="show">
