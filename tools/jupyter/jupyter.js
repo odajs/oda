@@ -75,11 +75,11 @@ ODA({ is: 'oda-jupyter',
             this.isReady = true;
         }, 300)
     },
-    share(e) {
-        const hideTopPanel = e?.altKey || e?.ctrlKey ? true : false;
+    share(e, notebook) {
+        const hideTopPanel = e?.altKey || e?.ctrlKey || e?.metaKey ? true : false;
         const readOnly = this.readOnly;
         const showBorder = this.showBorder;
-        const str = JSON.stringify({...this.notebook, ...{hideTopPanel, readOnly, showBorder}});
+        const str = JSON.stringify({...(notebook || this.notebook), ...{hideTopPanel, readOnly, showBorder}});
         if (str) {
             let url = this.$url.replace('jupyter.js', 'index.html#?lzs=') + LZString.compressToEncodedURIComponent(str);
             window.open(url, '_blank').focus();
@@ -152,7 +152,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
                 box-shadow: 0 0 0 1px dodgerblue;
                 border-radius: 2px;
                 background: white;
-                width: 140px;
+                width: 160px;
                 height: 24px;
             }
             oda-button {
@@ -165,6 +165,7 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
         <oda-button icon="icons:arrow-forward:90" :icon-size @tap="tapOrder($event, 1.1)" :disabled="cell.order>=notebook?.cells?.length-1" title="move down"></oda-button>
         <div class="flex"></div>
         <oda-button ~if="!cell.noDelete" icon="icons:delete" :icon-size @tap="tapDelete" title="delete"></oda-button>
+        <oda-button icon="social:share" :icon-size @tap="share($event, { cells: [cell] })" title="share"></oda-button>
         <oda-button icon="icons:close" :icon-size @tap="focusedCell=undefined"></oda-button>
     `,
     iconSize: 14,
@@ -438,7 +439,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                         <span ~if="cell?.useJson" @tap="mode='json'" :class="{mode: mode==='json'}">json</span>
                         <div class="flex"></div>
                         <span @tap="cell.useJson=!cell.useJson">useJson</span>
-                        <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=cell.sourceJSON=''; setAceValue()">clear</span>
+                        <span @tap="cell.source=cell.sourceJS=cell.sourceCSS='';cell.sourceJSON='{}'; setAceValue()">clear</span>
                         <span @tap="listenIframe(true)">refresh</span>
                     </div>
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':mode==='css' ? 'dawn':'chrome'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
@@ -476,11 +477,9 @@ ${this.cell?.sourceHTML || this.cell?.source  || ''}
         if (this.cell?.useJson || this.cell?.sourceJSON) return `
 import { Observable } from 'https://libs.gullerya.com/object-observer/5.0.0/object-observer.min.js';
 const json = Observable.from(${this.cell.sourceJSON} || '{}');
-// console.log('.....480..... Observable: ', json)
 Observable.observe(json, e => {
     const detail = JSON.stringify(json, null, 4);
     document.dispatchEvent(new CustomEvent('changeJSON', { detail }));
-    // console.log('.....484..... ', e)
 })
         `;
         return '';
