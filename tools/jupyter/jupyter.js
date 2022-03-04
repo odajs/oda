@@ -438,8 +438,8 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                         <span ~if="cell?.useJson" @tap="mode='json'" :class="{mode: mode==='json'}">json</span>
                         <div class="flex"></div>
                         <span @tap="cell.useJson=!cell.useJson">useJson</span>
-                        <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=''; setValue()">clear</span>
-                        <span @tap="_srcdoc = _srcdoc ? '' : ' '">refresh</span>
+                        <span @tap="cell.source=cell.sourceJS=cell.sourceCSS=cell.sourceJSON=''; setAceValue()">clear</span>
+                        <span @tap="listenIframe(true)">refresh</span>
                     </div>
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':mode==='css' ? 'dawn':'chrome'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
@@ -456,13 +456,11 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         mode: {
             default: 'html',
             set(v) {
-                this._setMode = true;
-                this.setValue();
+                this.setAceValue();
             }
         }
     },
     cell: {},
-    _srcdoc: '',
     get srcdoc() {
         return `
 <style>
@@ -473,10 +471,9 @@ ${this.cell?.sourceHTML || this.cell?.source  || ''}
     ${this.sourceJSON}
     ${this.cell?.sourceJS || ''}
 </script>
-${this._srcdoc || ''}
     `},
     get sourceJSON() {
-        if (this.cell?.useJson) return `
+        if (this.cell?.useJson || this.cell?.sourceJSON) return `
 import { Observable } from 'https://libs.gullerya.com/object-observer/5.0.0/object-observer.min.js';
 const json = Observable.from(${this.cell.sourceJSON} || '{}');
 // console.log('.....480..... Observable: ', json)
@@ -489,11 +486,12 @@ Observable.observe(json, e => {
         return '';
     },
     attached() {
-        this.setValue();
+        this.setAceValue();
+        this.listenIframe(true);
     },
     listeners: {
         change(e) {
-            if (this.focusedCell !== this.cell) return;
+            if (this.focusedCell !== this.cell || this._setAceValue) return;
             const v = this.$('oda-ace-editor').value;
             if (this.mode === 'javascript')
                 this.cell.sourceJS = v;
@@ -503,32 +501,27 @@ Observable.observe(json, e => {
                 this.cell.sourceCSS = v;
             if (this.mode === 'json')
                 this.cell.sourceJSON = v || '{}';
-            if (!this._setMode) {
-                const iframe = this.$('iframe');
-                iframe.srcdoc = this.srcdoc;
-            }
-            //this.setValue();
+            this.listenIframe(true);
         },
         endSplitterMove(e) {
             if (!this.readOnly) {
                 if (e.detail.value.direction === 'horizontal') {
                     this.cell.cell_h = e.detail.value.h;
                     this.cell.cell_h = this.cell.cell_h < 26 ? 26 : this.cell.cell_h;
-                    // console.log('h = ', this.cell.cell_h);
                 }
                 if (e.detail.value.direction === 'vertical') {
                     this.cell.cell_w = e.detail.value.w;
                     this.cell.cell_w = this.cell.cell_w <= 3 ? 0 : this.cell.cell_w;
-                    // console.log('w = ', this.cell.cell_w);
                 }
             }
-            this._srcdoc = this._srcdoc ? '' : ' ';
+            this.listenIframe(true);
         }
     },
     get isReadOnly() {
         return this.cell?.cell_props?.readOnly;
     },
-    setValue(mode = this.mode) {
+    setAceValue(mode = this.mode) {
+        this._setAceValue = true;
         let ace = this.$('oda-ace-editor');
         if (mode === 'javascript')
             ace.value = this.cell.sourceJS || '';
@@ -538,21 +531,15 @@ Observable.observe(json, e => {
             ace.value = this.cell.sourceCSS || '';
         if (mode === 'json')
             ace.value = this._sourceJSON || this.cell.sourceJSON || '{}';
-        this.listenIframe();
-        this._setMode = false;
+        setTimeout(() => this._setAceValue = false, 100);
     },
-    listenIframe() {
+    listenIframe(update) {
+        const iframe = this.$('iframe');
+        iframe.srcdoc = update ? this.srcdoc : iframe.srcdoc || this.srcdoc;
         setTimeout(() => {
-            const iframe = this.$('iframe');
-            iframe.srcdoc ||= this.srcdoc;
             (iframe.contentDocument || iframe.contentWindow).addEventListener("changeJSON", (e) => {
                 this._sourceJSON = this.cell.sourceJSON = e.detail;
-                if (this.mode === 'json') {
-                    this._setMode = true;
-                    this.$('oda-ace-editor').value = this._sourceJSON ;
-                }
-                this._setMode = false;
-                // console.log('.....550..... changeJSON from iFrame: ', e.detail)
+                if (this.mode === 'json') this.setAceValue();
             })
         }, 500)
     }
