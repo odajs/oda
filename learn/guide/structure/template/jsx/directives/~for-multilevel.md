@@ -36,7 +36,7 @@ ODA({
     is: 'my-component',
     template: `
         <div ~for="array_1">
-            <div ~for="item, index, items in array_2">Элемент[{{index}}]: {{item}} -- Источник: {{items}}</div>
+            <div ~for="item, index, items in array_2">Элемент[{{index}}]: {{item}} -- Источник: [{{items}}]</div>
         </div>
     `,
     props: {
@@ -57,7 +57,7 @@ ODA({
     is: 'my-component',
     template: `
         <div ~for="array_1">
-            <div ~for="item, index, items in array_2">Элемент[{{index1}}]: {{item1}} -- Источник: {{items1}}</div>
+            <div ~for="item, index, items in array_2">Элемент[{{index1}}]: {{item1}} -- Источник: [{{items1}}]</div>
         </div>
     `,
     props: {
@@ -77,8 +77,8 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <div ~for="item, index, items in array_1">Элемент[{{index}}]: {{item}} -- Источник: {{items}}</div>
-        <div ~for="item, index, items in array_2">Элемент[{{index}}]: {{item}} -- Источник: {{items}}</div>
+        <div ~for="item, index, items in array_1">Элемент[{{index}}]: {{item}} -- Источник: [{{items}}]</div>
+        <div ~for="item, index, items in array_2">Элемент[{{index}}]: {{item}} -- Источник: [{{items}}]</div>
     `,
     props: {
         array_1: ['A', 'B', 'C'],
