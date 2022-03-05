@@ -353,6 +353,16 @@ content: {
         }
     });
     ODA({ is: 'oda-nav', template: /*html*/ `
+            <style>
+                oda-nav-btn {
+                    position: absolute;
+                    bottom: 0;
+                    opacity: 0.3;
+                }
+                oda-nav-btn:hover {
+                    opacity: 1;
+                }
+            </style>
             <oda-nav-btn ~if="focusedItem?.prev?.label" :goal=focusedItem.prev @tap="_tap(focusedItem.prev)" :isnext=0></oda-nav-btn>
             <oda-nav-btn ~if="focusedItem?.next?.label" :goal=focusedItem.next @tap="_tap(focusedItem.next)" :isnext=1 style="right:0px;"></oda-nav-btn>
         `,
@@ -366,14 +376,11 @@ content: {
             <style>
                 :host {
                     height: {{iconSize}}px;
-                    position: absolute;
-                    bottom: 0px;
                     z-index: 99;
                     transition: width 3s;
                     paddind: 0px;
-                    background: #fff;
+                    background: lightgray;
                     border-radius: {{iconSize}}px;
-                    border: .5px solid darkgray;
                 }
                 .label {
                     display: none;
@@ -382,6 +389,7 @@ content: {
                 }
                 :host(:hover) {
                     outline: none;
+                    border: 1px solid gray;
                 }
                 :host(:hover) .label {
                     display: block;

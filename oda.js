@@ -546,7 +546,7 @@ if (!window.ODA) {
             saveSettings(){
                 if (!this.$core.saveProps) return;
                 const saves = {};//JSON.parse(globalThis.localStorage.getItem(this.$$savePath) || '{}');
-                for (name in this.$core.saveProps){
+                for (const name in this.$core.saveProps){
                     const value = this[name];
                     saves[name] = value
                 }
