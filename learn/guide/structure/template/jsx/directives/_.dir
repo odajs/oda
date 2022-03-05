@@ -10,7 +10,12 @@
         "status": "check"
     },
     {
-        "name": "~for2.md",
+        "name": "~for-multilevel.md",
+        "label": "<b style='color: brown'>~for</b>: Многоуровневая репликация элементов",
+        "status": "check"
+    },
+    {
+        "name": "~for-advantage.md",
         "label": "<b style='color: brown'>~for</b>: Преимущества",
         "status": "check"
     },
