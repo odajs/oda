@@ -720,6 +720,28 @@ if (!globalThis.KERNEL) {
                     }
                 }
             });
+            if (!Array.prototype.findLast) {
+                function findLastPolyfill (cb) {
+                    if (this === null) {
+                      throw new TypeError('Array.prototype.findLast called on null or undefined');
+                    } else if (typeof cb !== 'function') {
+                      throw new TypeError('callback must be a function');
+                    }
+                    var list = Object(this);
+                    var length = list.length >>> 0;
+                    if (length === 0) return;
+                    var thisArg = arguments[1];
+                    for (var i = length-1; i >=0; i--) {
+                      var element = list[i];
+                      if ( cb.call(thisArg, element, i, list) ) {
+                        return element;
+                      }
+                    }
+                  };
+                Object.defineProperty(Array.prototype, 'findLast', {
+                    enumerable: false, configurable: true, value: findLastPolyfill
+                });
+            }
         }
     }
 

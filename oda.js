@@ -869,19 +869,6 @@ if (!window.ODA) {
         prototype.props = prototype.props || {};
         prototype.observers = prototype.observers || [];
         prototype.$system.observers = prototype.$system.observers || [];
-        Object.defineProperty(prototype, 'saveKey', {
-            set(val){
-                this.debounce('loadSettings', () => {
-                    this.loadSettings(true);
-                });
-            }
-        })
-        Object.defineProperty(prototype, '$$savePath', {
-            get() {
-                let key = (this.$core.saveKey || this.saveKey || '');
-                return `${this.localName}${key && '/'+key}`;
-            }
-        })
 
         for (let key in prototype.props) {
             let prop = prototype.props[key];
@@ -961,6 +948,21 @@ if (!window.ODA) {
                 }
             }
             prototype.props[key] = prop;
+        }
+        Object.defineProperty(prototype, 'saveKey', {
+            set(val){
+                this.debounce('loadSettings', () => {
+                    this.loadSettings(true);
+                });
+            }
+        })
+        if (!('$$savePath' in prototype) && !('$$savePath' in prototype.props)) {
+            Object.defineProperty(prototype, '$$savePath', {
+                get() {
+                    let key = (this.$core.saveKey || this.saveKey || '');
+                    return `${this.localName}${key && '/'+key}`;
+                }
+            })
         }
 
         prototype.listeners = prototype.listeners || {};
