@@ -69,7 +69,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         rightTitle: false,
         leftHidden: false,
         rightHidden: false,
-        max: 300,
+        max: {
+            type: Number,
+            get() {
+                return ~~(window.innerWidth * 0.938);
+            }
+        },
         hideToolbar: true,
         hideOnScroll: {
             default: false,
@@ -501,7 +506,14 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         },
         showTitle: false,
         hideResize: false,
-        width: 300,
+        width: {
+            type: Number,
+            set(n) {
+                if (this.max && n > this.max) {
+                    this.width = this.max;
+                }
+            },
+        },
         hidden: {
             get() {
                 return !this.controls?.length
