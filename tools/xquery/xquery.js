@@ -1,4 +1,4 @@
-ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor',
+ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/property-grid2',
     template: /*html*/`
         <style>
             :host {
@@ -23,7 +23,9 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor',
                 <div class="vertical flex" style="overflow: hidden; flex: 1">
                     <oda-xquery-accordion-panel :item="panels.history"></oda-xquery-accordion-panel>
                     <oda-xquery-accordion-panel :item="panels.examples"></oda-xquery-accordion-panel>
-                    <oda-xquery-accordion-panel :item="panels.settings"></oda-xquery-accordion-panel>
+                    <oda-xquery-accordion-panel :item="panels.settings">
+                        <oda-property-grid2 id="pg" :io="settings" label="oda-xquery settings" show-buttons="false" group="false" style="overflow: auto; height: 100%; padding: 0;"></oda-property-grid2>
+                    </oda-xquery-accordion-panel>
                 </div>
             </div>
             <oda-splitter2 direction="horizontal" size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
@@ -42,9 +44,14 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor',
             query: { label: 'XPath/XQuery', opened: true, content: 'XPath/XQuery ...', icon: 'icons:content-paste' },
             history: { label: 'History', opened: true, content: 'History ...', icon: 'enterprise:contract' },
             examples: { label: 'Examples', opened: false, content: 'Examples ...', icon: 'icons:attachment' },
-            settings: { label: 'Settings', opened: false, content: 'Settings ...', icon: 'icons:settings' },
+            settings: { label: 'Settings', opened: true, content: 'Settings ...', icon: 'icons:settings' },
             results: { label: 'Query results', open: true, content: 'Query results ...', icon: 'icons:done-all' },
             table: { label: 'Table', open: true, content: 'Table ...', icon: 'odant:grid' }
+        }
+    },
+    get settings() {
+        return {
+            'server address': 'https://current.odant.org/'
         }
     }
 })
