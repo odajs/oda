@@ -5,13 +5,18 @@
         "status": "check"
     },
     {
-        "name": "~for-base.md",
-        "label": "<b style='color: brown'>~for</b>: Репликация HTML-элементов",
+        "name": "~for-syntax.md",
+        "label": "<b style='color: brown'>~for</b>: Синтаксис директивы",
+        "status": "check"
+    },
+    {
+        "name": "~for-features.md",
+        "label": "<b style='color: brown'>~for</b>: Особенности директивы",
         "status": "check"
     },
     {
         "name": "~for-multilevel.md",
-        "label": "<b style='color: brown'>~for</b>: Многоуровневая репликация HTML-элементов",
+        "label": "<b style='color: brown'>~for</b>: Вложенные директивы",
         "status": "check"
     },
     {
