@@ -1,4 +1,4 @@
-ODA({ is: 'oda-xquery', imports: '@oda/splitter2',
+ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor',
     template: /*html*/`
         <style>
             :host {
@@ -11,19 +11,26 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2',
         </style>
         <main class="vertical flex">
             <div class="horizontal" style="overflow: hidden; height: 50%;">
-                <div class="vertical" style="width: 70%;">
-                    <oda-xquery-accordion-panel :item="panels.input"></oda-xquery-accordion-panel>
-                    <oda-xquery-accordion-panel :item="panels.query"></oda-xquery-accordion-panel>
+                <div class="vertical no-flex" style="width: 70%;">
+                    <oda-xquery-accordion-panel :item="panels.input">
+                        <oda-ace-editor mode="xml" ::value="panels.input.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                    </oda-xquery-accordion-panel>
+                    <oda-xquery-accordion-panel :item="panels.query">
+                        <oda-ace-editor mode="xquery" ::value="panels.query.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                    </oda-xquery-accordion-panel>
                 </div>
                 <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
                 <div class="vertical flex" style="overflow: hidden; flex: 1">
+                    <oda-xquery-accordion-panel :item="panels.history"></oda-xquery-accordion-panel>
                     <oda-xquery-accordion-panel :item="panels.examples"></oda-xquery-accordion-panel>
                     <oda-xquery-accordion-panel :item="panels.settings"></oda-xquery-accordion-panel>
                 </div>
             </div>
             <oda-splitter2 direction="horizontal" size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
             <div class="horizontal flex">
-                <oda-xquery-accordion-panel class="no-flex" :item="panels.results" style="width: 50%;"></oda-xquery-accordion-panel>
+                <oda-xquery-accordion-panel class="no-flex" :item="panels.results" style="width: 50%;">
+                    <oda-ace-editor mode="xml" ::value="panels.results.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                </oda-xquery-accordion-panel>
                 <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
                 <oda-xquery-accordion-panel class="flex" :item="panels.table"></oda-xquery-accordion-panel>
             </div>
@@ -31,12 +38,13 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2',
     `,
     get panels() {
         return {
-            input: { label: 'XML Input', opened: false, content: 'XML Input ...' },
-            query: { label: 'XPath/XQuery', opened: true, content: 'XPath/XQuery ...' },
-            examples: { label: 'Examples', opened: true, content: 'Examples ...' },
+            input: { label: 'XML Input', opened: false, content: 'XML Input ...', icon: 'icons:create' },
+            query: { label: 'XPath/XQuery', opened: true, content: 'XPath/XQuery ...', icon: 'icons:content-paste' },
+            history: { label: 'History', opened: true, content: 'History ...', icon: 'enterprise:contract' },
+            examples: { label: 'Examples', opened: false, content: 'Examples ...', icon: 'icons:attachment' },
             settings: { label: 'Settings', opened: false, content: 'Settings ...', icon: 'icons:settings' },
-            results: { label: 'Query results', open: true, content: 'Query results ...' },
-            table: { label: 'Table', open: true, content: 'Table ...' }
+            results: { label: 'Query results', open: true, content: 'Query results ...', icon: 'icons:done-all' },
+            table: { label: 'Table', open: true, content: 'Table ...', icon: 'odant:grid' }
         }
     }
 })
@@ -54,7 +62,9 @@ ODA({ is: 'oda-xquery-accordion-panel', imports: '@oda/icon',
             <oda-icon :icon="item?.icon || 'icons:check'" icon-size="16"></oda-icon>    
             <span style="padding-left: 8px">{{item.label}}</span>
         </div>
-        <div ~if="item?.open || item?.opened" class="content panel" style="flex: 1; border: 1px solid darkgrey; margin: 1px;">{{item.content}}</div>
+        <div ~if="item?.open || item?.opened" class="content panel" style="flex: 1; border: 1px solid darkgrey; margin: 1px;">
+            <slot>{{item.content}}</slot>
+        </div>
     `,
     item: {}
 })
