@@ -6,12 +6,12 @@
     },
     {
         "name": "~for-base.md",
-        "label": "<b style='color: brown'>~for</b>: Репликация элементов",
+        "label": "<b style='color: brown'>~for</b>: Репликация HTML-элементов",
         "status": "check"
     },
     {
         "name": "~for-multilevel.md",
-        "label": "<b style='color: brown'>~for</b>: Многоуровневая репликация элементов",
+        "label": "<b style='color: brown'>~for</b>: Многоуровневая репликация HTML-элементов",
         "status": "check"
     },
     {
