@@ -9,14 +9,14 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
                 box-sizing: border-box;
             }
         </style>
-        <main class="vertical flex">
+        <div class="vertical flex">
             <div class="horizontal" style="overflow: hidden; height: 50%;">
                 <div class="vertical no-flex" style="width: 70%; overflow: hidden;  max-width: calc(100% - 3px);">
                     <oda-xquery-accordion-panel :item="panels.input">
-                        <oda-ace-editor mode="xml" ::value="panels.input.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                        <oda-ace-editor mode="xml" ::value="panels.input.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
                     </oda-xquery-accordion-panel>
                     <oda-xquery-accordion-panel :item="panels.query">
-                        <oda-ace-editor mode="xquery" ::value="panels.query.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                        <oda-ace-editor mode="xquery" ::value="panels.query.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
                     </oda-xquery-accordion-panel>
                 </div>
                 <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
@@ -31,12 +31,12 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
             <oda-splitter2 direction="horizontal" size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
             <div class="horizontal flex">
                 <oda-xquery-accordion-panel class="no-flex" :item="panels.results" style="width: 50%; overflow: hidden; max-width: calc(100% - 3px);">
-                    <oda-ace-editor mode="xml" ::value="panels.results.content" highlight-active-line="false" show-print-margin="false" min-lines=1></oda-ace-editor>
+                    <oda-ace-editor mode="xml" ::value="panels.results.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
                 </oda-xquery-accordion-panel>
                 <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
                 <oda-xquery-accordion-panel class="flex" :item="panels.table" style="overflow: hidden;"></oda-xquery-accordion-panel>
             </div>
-        </main>
+        </div>
     `,
     uuid: '',
     get panels() {
@@ -67,6 +67,8 @@ ODA({ is: 'oda-xquery-accordion-panel', imports: '@oda/icon',
                 @apply --vertical;
                 flex: {{item?.open || item?.opened ? 1 : 0}};
                 position: relative;
+                min-height: 32px;
+                overflow: hidden;
             }
         </style>
         <div class="header" style="height: 28px; border: 1px solid gray; cursor: pointer; margin: 1px; display: flex; align-items: center;" @tap="onopened">
