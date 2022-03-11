@@ -11,7 +11,7 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
         </style>
         <div class="vertical flex">
             <div class="horizontal" style="overflow: hidden; height: 50%;">
-                <div class="vertical no-flex" style="width: 70%; overflow: hidden;  max-width: calc(100% - 3px);">
+                <div class="vertical no-flex" style="width: 100%; overflow: hidden;">
                     <oda-xquery-accordion-panel :item="panels.input">
                         <oda-ace-editor mode="xml" ::value="panels.input.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
                     </oda-xquery-accordion-panel>
@@ -19,14 +19,14 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
                         <oda-ace-editor mode="xquery" ::value="panels.query.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
                     </oda-xquery-accordion-panel>
                 </div>
-                <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
-                <div class="vertical flex" style="overflow: hidden; flex: 1">
-                    <oda-xquery-accordion-panel :item="panels.history"></oda-xquery-accordion-panel>
-                    <oda-xquery-accordion-panel :item="panels.examples"></oda-xquery-accordion-panel>
-                    <oda-xquery-accordion-panel :item="panels.settings">
+                <!-- <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
+                <div class="vertical flex" style="overflow: hidden; flex: 1"> -->
+                    <oda-xquery-accordion-panel :item="panels.history" bar-icon="enterprise:contract" hide-top slot="right-panel"></oda-xquery-accordion-panel>
+                    <oda-xquery-accordion-panel :item="panels.examples" bar-icon="icons:attachment" hide-top slot="right-panel"></oda-xquery-accordion-panel>
+                    <oda-xquery-accordion-panel :item="panels.settings" bar-icon="icons:settings" hide-top slot="right-panel">
                         <oda-property-grid2 id="pg" :io="settings" label="oda-xquery settings" show-buttons="false" group="false" style="overflow: auto; height: 100%; padding: 0;"></oda-property-grid2>
                     </oda-xquery-accordion-panel>
-                </div>
+                <!-- </div> -->
             </div>
             <oda-splitter2 direction="horizontal" size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
             <div class="horizontal flex">
@@ -43,9 +43,9 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
         return {
             input: { label: 'XML Input', opened: false, icon: 'icons:create' },
             query: { label: 'XPath/XQuery', opened: true, icon: 'icons:content-paste' },
-            history: { label: 'History', opened: false, icon: 'enterprise:contract', oneShow: 'top-right' },
-            examples: { label: 'Examples', opened: false, icon: 'icons:attachment', oneShow: 'top-right' },
-            settings: { label: 'Settings', opened: true, icon: 'icons:settings', oneShow: 'top-right' },
+            history: { label: 'History', open: true, icon: 'enterprise:contract', oneShow: 'top-right' },
+            examples: { label: 'Examples', open: true, icon: 'icons:attachment', oneShow: 'top-right' },
+            settings: { label: 'Settings', open: true, icon: 'icons:settings', oneShow: 'top-right' },
             results: { label: 'Query results', open: true, icon: 'icons:done-all' },
             table: { label: 'Table', open: true, icon: 'odant:grid' }
         }
