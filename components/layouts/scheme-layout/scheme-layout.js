@@ -411,7 +411,22 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     </style>
     `,
     props: {
-        iconSize: 12
+        iconSize: 12,
+        pin: {
+            type: Object,
+            set(n) {
+                if (n && typeof n === 'object') {
+                    Object.defineProperty(n, '$$pin', {
+                        writable: true,
+                        configurable: true,
+                        enumerable: false,
+                        value: this
+                    });
+                }
+        
+                this.link = undefined;
+            }
+        }
     },
     index: undefined,
     get _grid() {
@@ -556,18 +571,6 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                 return true;
         }
         return false
-    },
-    set pin(n) {
-        if (n && typeof n === 'object') {
-            Object.defineProperty(n, '$$pin', {
-                writable: true,
-                configurable: true,
-                enumerable: false,
-                value: this
-            });
-        }
-
-        this.link = undefined;
     },
     get color() {
         if (!this.focusedPin)

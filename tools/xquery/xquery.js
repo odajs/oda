@@ -6,7 +6,7 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
                 @apply --flex;
                 width: 100%;
                 height: 100vh;
-                box-sizing: border-box;
+                /* box-sizing: border-box; */
             }
         </style>
         <div class="vertical flex">
@@ -65,18 +65,33 @@ ODA({ is: 'oda-xquery-accordion-panel', imports: '@oda/icon',
         <style>
             :host {
                 @apply --vertical;
-                flex: {{item?.open || item?.opened ? 1 : 0}};
                 position: relative;
-                min-height: 32px;
                 overflow: hidden;
+                min-height: 32px;
+                flex: {{item?.open || item?.opened ? 1 : 0}};
+            }
+            .panel_header {
+                display: flex; 
+                align-items: center;
+                overflow: hidden;
+                height: 28px; 
+                margin: 1px;
+                border: 1px solid darkgrey;
+                cursor: pointer; 
+            }
+            .panel_content {
+                flex: 1; 
+                overflow: hidden;
+                margin: 1px;
+                border: 1px solid darkgrey; 
             }
         </style>
-        <div class="header" style="height: 28px; border: 1px solid gray; cursor: pointer; margin: 1px; display: flex; align-items: center;" @tap="onopened">
+        <div class="header panel_header" @tap="onopened">
             <oda-icon ~if="!item?.open" :icon="item?.open || item?.opened ? 'icons:arrow-drop-down' : 'icons:arrow-drop-down:270'" icon-size="18"></oda-icon>    
-            <oda-icon :icon="item?.icon || 'icons:check'" icon-size="16"></oda-icon>    
+            <oda-icon :icon="item?.icon || 'icons:check'" icon-size="16" style="padding-left: 4px;"></oda-icon>    
             <span style="padding-left: 8px">{{item.label}}</span>
         </div>
-        <div ~if="item?.open || item?.opened" class="content panel" style="flex: 1; border: 1px solid darkgrey; margin: 1px; overflow: hidden;">
+        <div ~if="item?.open || item?.opened" class="panel_content">
             <slot>{{item.content}}</slot>
         </div>
     `,
