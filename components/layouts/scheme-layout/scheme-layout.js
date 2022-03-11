@@ -332,7 +332,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pin in interface" ~props="pin?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pin?.reserved || pin?.link" :pin @down.stop :index :focused="pin === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pinObj in interface" ~props="pinObj?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pinObj?.reserved || pinObj?.link" :pin="pinObj" @down.stop :index :focused="pinObj === focusedPin?.pin"></oda-scheme-pin>
     `,
     pos: '',
     attached() {
@@ -411,22 +411,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     </style>
     `,
     props: {
-        iconSize: 12,
-        pin: {
-            type: Object,
-            set(n) {
-                if (n && typeof n === 'object') {
-                    Object.defineProperty(n, '$$pin', {
-                        writable: true,
-                        configurable: true,
-                        enumerable: false,
-                        value: this
-                    });
-                }
-        
-                this.link = undefined;
-            }
-        }
+        iconSize: 12
     },
     index: undefined,
     get _grid() {
@@ -571,6 +556,18 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                 return true;
         }
         return false
+    },
+    set pin(n) {
+        if (n && typeof n === 'object') {
+            Object.defineProperty(n, '$$pin', {
+                writable: true,
+                configurable: true,
+                enumerable: false,
+                value: this
+            });
+        }
+
+        this.link = undefined;
     },
     get color() {
         if (!this.focusedPin)
