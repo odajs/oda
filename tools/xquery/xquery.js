@@ -41,13 +41,13 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
     uuid: '',
     get panels() {
         return {
-            input: { label: 'XML Input', opened: false, content: 'XML Input ...', icon: 'icons:create' },
-            query: { label: 'XPath/XQuery', opened: true, content: 'XPath/XQuery ...', icon: 'icons:content-paste' },
-            history: { label: 'History', opened: false, content: 'History ...', icon: 'enterprise:contract', oneShow: 'top-right' },
-            examples: { label: 'Examples', opened: false, content: 'Examples ...', icon: 'icons:attachment', oneShow: 'top-right' },
-            settings: { label: 'Settings', opened: true, content: 'Settings ...', icon: 'icons:settings', oneShow: 'top-right' },
-            results: { label: 'Query results', open: true, content: 'Query results ...', icon: 'icons:done-all' },
-            table: { label: 'Table', open: true, content: 'Table ...', icon: 'odant:grid' }
+            input: { label: 'XML Input', opened: false, icon: 'icons:create' },
+            query: { label: 'XPath/XQuery', opened: true, icon: 'icons:content-paste' },
+            history: { label: 'History', opened: false, icon: 'enterprise:contract', oneShow: 'top-right' },
+            examples: { label: 'Examples', opened: false, icon: 'icons:attachment', oneShow: 'top-right' },
+            settings: { label: 'Settings', opened: true, icon: 'icons:settings', oneShow: 'top-right' },
+            results: { label: 'Query results', open: true, icon: 'icons:done-all' },
+            table: { label: 'Table', open: true, icon: 'odant:grid' }
         }
     },
     get settings() {
