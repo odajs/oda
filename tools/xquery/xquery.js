@@ -19,14 +19,14 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
             <div class="horizontal">
                 <label class="tab" ~for="tabs" @tap="currentTab = key" ~style="{color: currentTab === key ? 'blue' : ''}">{{key}}</label>
             </div>
-            <div ~is="tabs[currentTab]?.template" :item="tabs[currentTab]?.item">
-                <oda-ace-editor ~if="tabs[currentTab]?.aceMode" mode="tabs[currentTab]?.aceMode" ::value="tabs[currentTab].item.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
+            <div ~is="tabs[currentTab]?.template" :src="tabs[currentTab]?.src">
+                <oda-ace-editor ~if="tabs[currentTab]?.aceMode" mode="tabs[currentTab]?.aceMode" ::value="tabs[currentTab].src.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
             </div>
 
-            <oda-xquery-panel :item="panels.history" bar-icon="enterprise:contract" hide-top slot="right-panel"></oda-xquery-panel>
-            <oda-xquery-panel :item="panels.examples" bar-icon="icons:attachment" hide-top slot="right-panel"></oda-xquery-panel>
-            <oda-xquery-panel :item="panels.settings" bar-icon="icons:settings" hide-top slot="right-panel">
-                <oda-property-grid2 id="pg" :io="settings" label="oda-xquery settings" show-buttons="false" group="false" style="overflow: auto; height: 100%; padding: 0;"></oda-property-grid2>
+            <oda-xquery-panel :src="panels.history" bar-icon="enterprise:contract" hide-top slot="right-panel"></oda-xquery-panel>
+            <oda-xquery-panel :src="panels.examples" bar-icon="icons:attachment" hide-top slot="right-panel"></oda-xquery-panel>
+            <oda-xquery-panel :src="panels.settings" bar-icon="icons:settings" hide-top slot="right-panel">
+                <oda-property-grid2 id="pg" :io="settings" label="oda-xquery settings" show-btns="false" group="false" style="overflow: auto; height: 100%; padding: 0;"></oda-property-grid2>
             </oda-xquery-panel>
         </div>
     `,
@@ -34,10 +34,16 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
     currentTab: 'query',
     get tabs() {
         return {
-            query: { template: 'oda-xquery-panel', item: { label: 'XPath/XQuery', open: true, icon: 'icons:content-paste' }, aceMode: 'xquery' },
-            results: { template: 'oda-xquery-panel', item: { label: 'Query results', open: true, icon: 'icons:done-all' }, aceMode: 'xml' },
-            table: { template: 'oda-xquery-panel', item: { label: 'Table', open: true, icon: 'odant:grid' } },
-            source: { template: 'oda-xquery-panel', item: { label: 'Source', open: true, icon: 'icons:create' }, aceMode: 'xml' },
+            query: {
+                template: 'oda-xquery-panel', aceMode: 'xquery',
+                src: {
+                    label: 'XPath/XQuery', open: true, icon: 'icons:content-paste',
+                    btns: { open: 'enterprise:folder', save: 'icons:save', src: 'odant:base' }
+                },
+            },
+            results: { template: 'oda-xquery-panel', src: { label: 'Query results', open: true, icon: 'icons:done-all' }, aceMode: 'xml' },
+            table: { template: 'oda-xquery-panel', src: { label: 'Table', open: true, icon: 'odant:grid' } },
+            src: { template: 'oda-xquery-panel', src: { label: 'src', open: true, icon: 'icons:create' }, aceMode: 'xml' },
         }
     },
     get panels() {
@@ -57,7 +63,7 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
     }
 })
 
-ODA({ is: 'oda-xquery-panel', imports: '@oda/icon',
+ODA({ is: 'oda-xquery-panel', imports: '@oda/icon, @oda/button',
     template: /*html*/`
         <style>
             :host {
@@ -65,7 +71,7 @@ ODA({ is: 'oda-xquery-panel', imports: '@oda/icon',
                 position: relative;
                 overflow: hidden;
                 min-height: 32px;
-                flex: {{item?.open || item?.opened ? 1 : 0}};
+                flex: {{src?.open || src?.opened ? 1 : 0}};
             }
             .panel_header {
                 display: flex; 
@@ -83,30 +89,32 @@ ODA({ is: 'oda-xquery-panel', imports: '@oda/icon',
                 border: 1px solid darkgrey; 
             }
         </style>
-        <div class="header panel_header" @tap="onopened">
-            <oda-icon ~if="!item?.open" :icon="item?.open || item?.opened ? 'icons:arrow-drop-down' : 'icons:arrow-drop-down:270'" icon-size="18"></oda-icon>    
-            <oda-icon :icon="item?.icon || 'icons:check'" icon-size="16" style="padding-left: 4px;"></oda-icon>    
-            <span style="padding-left: 8px">{{item.label}}</span>
+        <div class="header panel_header horizontal" @tap="onopened">
+            <oda-icon ~if="!src?.open" :icon="src?.open || src?.opened ? 'icons:arrow-drop-down' : 'icons:arrow-drop-down:270'" icon-size="18"></oda-icon>    
+            <oda-icon :icon="src?.icon || 'icons:check'" icon-size="16" style="padding-left: 4px;"></oda-icon>    
+            <span style="padding-left: 8px">{{src.label}}</span>
+            <div class="flex"></div>
+            <oda-button class="btn" ~for="src.btns" :icon="src.btns[key]" icon-size="16" :title="key"></oda-button>
         </div>
-        <div ~if="item?.open || item?.opened" class="panel_content">
-            <slot>{{item.content}}</slot>
+        <div ~if="src?.open || src?.opened" class="panel_content">
+            <slot>{{src.content}}</slot>
         </div>
     `,
-    item: {},
+    src: {},
     onopened() {
-        if (this.item.oneShow) {
+        if (this.src.oneShow) {
             document.dispatchEvent(new CustomEvent("xquery-accordion-panel-tap", {
-                detail: { item: this.item, uuid: this.uuid }
+                detail: { src: this.src, uuid: this.uuid }
             }))
         } else {
-            this.item.opened = !this.item.opened;
+            this.src.opened = !this.src.opened;
         }
     },
     attached() {
         document.addEventListener("xquery-accordion-panel-tap", (e) => {
-            const item = e?.detail?.item;
-            if (e?.detail?.uuid === this.uuid && item?.oneShow && item.oneShow === this.item.oneShow) {
-                this.item.opened = this.item === item;
+            const src = e?.detail?.src;
+            if (e?.detail?.uuid === this.uuid && src?.oneShow && src.oneShow === this.src.oneShow) {
+                this.src.opened = this.src === src;
             }
         });
     },
