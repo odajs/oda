@@ -4,9 +4,9 @@ ODA({ is: 'oda-xquery', imports: '@oda/splitter2, @oda/ace-editor, @tools/proper
             :host {
                 @apply --vertical;
                 @apply --flex;
-                width: 100%;
+                /* width: 100%;
                 height: 100vh;
-                /* box-sizing: border-box; */
+                box-sizing: border-box; */
             }
         </style>
         <div class="vertical flex">
