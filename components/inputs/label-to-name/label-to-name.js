@@ -12,6 +12,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
             padding: 2px 4px;
             min-height: 24px;
             max-height: 24px;
+            border: 1px inset gray;
         }
     </style>
     <input autofocus class="flex " ::value="label" :placeholder>

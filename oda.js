@@ -2047,7 +2047,7 @@ if (!window.ODA) {
                 if (!this.started) {
                     window.addEventListener('mouseup', upHandler);
                     this.started = true;
-                    document.body.appendChild(back);
+                    setTimeout(() => document.body.appendChild(back), 100);
                 }
                 this.detail.x = e.clientX;
                 this.detail.y = e.clientY;
@@ -2071,7 +2071,7 @@ if (!window.ODA) {
                 this.detail.state = 'end';
                 const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
                 this.handler(ce, ce.detail);
-                back.remove();
+                setTimeout(() => back.remove(), 200);
             };
         }
         get event() {
