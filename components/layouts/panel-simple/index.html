@@ -1,0 +1,164 @@
+<meta charset="utf-8">
+
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    html * {
+        font-family: Arial;
+    }
+</style>
+
+<oda-panel-simple-demo id="panel-simple-demo"></oda-panel-simple-demo>
+
+<script type="module">
+    import '../../../oda.js';
+    import './panel-simple.js';
+
+    ODA({ is: 'oda-panel-simple-demo', imports: '@oda/splitter2, @oda/ace-editor',
+        template: `
+            <style>
+                :host {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    height: 100%;
+                    box-sizing: border-box;
+                }
+            </style>
+            <main class="vertical flex">
+                <div class="horizontal" style="overflow: hidden; height: 50%;">
+                    <div class="vertical" style="width: 60%; overflow: hidden;  max-width: calc(100% - 3px);">
+                        <oda-panel-simple :src="panels.p_001">
+                            <oda-ace-editor ::value="panels.p_001.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
+                        </oda-panel-simple>
+                        <oda-panel-simple :src="panels.tabs1"></oda-panel-simple>
+                        <oda-panel-simple :src="panels.p_002">
+                            <oda-ace-editor ::value="panels.p_002.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
+                        </oda-panel-simple>
+                    </div>
+                    <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
+                    <div class="vertical flex" style="overflow: hidden; flex: 1">
+                        <oda-panel-simple :src="panels.p_003"></oda-panel-simple>
+                        <oda-panel-simple :src="panels.p_004"></oda-panel-simple>
+                        <oda-panel-simple :src="panels.p_005"></oda-panel-simple>
+                    </div>
+                </div>
+                <oda-splitter2 direction="horizontal" size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
+                <div class="horizontal flex" style="overflow: hidden">
+                    <div class="vertical" style="width:50%; overflow: hidden;  max-width: calc(100% - 3px);">
+                        <oda-panel-simple :src="panels.p_006">
+                            <oda-ace-editor ::value="panels.p_006.content" highlight-active-line="false" show-print-margin="false" max-lines="infinity"></oda-ace-editor>
+                        </oda-panel-simple>
+                    </div>
+                    <oda-splitter2 size="3px" color="darkgray" style="opacity: .3"></oda-splitter2>
+                    <div class="vertical flex" style="overflow: hidden; flex: 1">
+                        <oda-panel-simple :src="panels.tabs3"></oda-panel-simple>
+                    </div>
+                </div>
+            </main>
+        `,
+        attached() {
+            this.uuid = this.id;
+            this.listen('oda-panel-simple-click', e => {
+                console.log(e.detail.value);
+            })
+        },
+        get panels() {
+            return {
+                p_001: {
+                    label: 'oda-panel-simple-001 (muliti open)', opened: false, content: 'Panel-001 ...', icon: 'icons:create',
+                    btns: [
+                        { icon: 'icons:add' },
+                        { icon: 'icons:remove' },
+                        { icon: 'icons:refresh' }
+                    ]
+                },
+                p_002: {
+                    label: 'oda-panel-simple-002 (multi open)', opened: true, content: 'Panel-002 ...', icon: 'icons:content-paste',
+                    btns: [
+                        { label: 'button', width: '50px' },
+                        { icon: 'icons:settings', label: 'settings', width: '72px' }
+                    ]
+                },
+                p_003: { label: 'oda-panel-simple-003 (single open)', opened: false, content: 'Panel-003 ...', icon: 'icons:android', single: 'top-right' },
+                p_004: { label: 'oda-panel-simple-004 (single open)', opened: false, content: 'Panel-004 ...', icon: 'icons:attachment', single: 'top-right' },
+                p_005: { label: 'oda-panel-simple-005 (single open)', opened: true, content: 'Panel-005 ...', icon: 'icons:settings', single: 'top-right' },
+                p_006: { label: 'oda-panel-simple-006 (open)', open: true, content: 'Panel-006 ...', icon: 'icons:done-all' },
+                tabs1: {
+                    tabs: [
+                        {
+                            label: 'tab1', content: 'Tab-001...',
+                            btns: [
+                                { icon: 'icons:autorenew' }
+                            ],
+                        },
+                        {
+                            label: 'tab2', content: 'Tab-002...',
+                            btns: [
+                                { icon: 'icons:arrow-back' },
+                                { icon: 'icons:arrow-forward' }
+                            ],
+                        },
+                        {
+                            label: 'tab3', content: 'Tab-003...', icon: 'icons:alarm',
+                            btns: [
+                                { icon: 'icons:alarm' },
+                                { icon: 'icons:alarm-add' },
+                                { icon: 'icons:alarm-on' }
+                            ],
+                        }
+                    ]
+                },
+                tabs3: {
+                    open: true,
+                    tabs: [
+                        {
+                            label: 'tab1', content: 'Tab-001...',
+                            icon: 'icons:done',
+                            btns: [
+                                { icon: 'icons:autorenew' }
+                            ],
+                        },
+                        {
+                            label: 'tab2', content: 'Tab-002...',
+                            icon: 'icons:done-all',
+                            btns: [
+                                { icon: 'icons:arrow-back' },
+                                { icon: 'icons:arrow-forward' }
+                            ],
+                        },
+                        {
+                            label: 'tab3', content: 'Tab-003...',
+                            icon: 'icons:settings',
+                            btns: [
+                                { icon: 'icons:alarm' },
+                                { icon: 'icons:alarm-add' },
+                                { icon: 'icons:alarm-on' }
+                            ],
+                        },
+                        {
+                            content: 'Tab-004...',
+                            icon: 'icons:settings',
+                            btns: [
+                                { icon: 'icons:close' }
+                            ],
+                        },
+                        {
+                            label: 'tab5', content: 'Tab-005...',
+                            btns: [
+                                { icon: 'icons:android' }
+                            ],
+                        }
+                    ]
+                },
+            }
+        },
+        uuid: ''
+    })
+</script>
