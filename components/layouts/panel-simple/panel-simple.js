@@ -73,6 +73,7 @@ ODA({ is: 'oda-panel-simple', imports: '@oda/icon, @oda/button',
     },
     btnclick(e) {
         e.stopPropagation();
+        console.log(e.target.title)
         this.fire('oda-panel-simple-button-click', { uuid: this.uuid, act: e.target.title, src: this.src });
     },
     tabclick(e, idx) {
