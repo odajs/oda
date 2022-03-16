@@ -3,55 +3,21 @@
   import '../../../tools/containers/containers.js';
   import './progress-panel.js';
 </script>
-<div class="horizontal">
-  <div class="vertical">
-    <oda-progress-panel id="panel" expanded icon-size="256"></oda-progress-panel>
-  </div>
-  <div id="ranges" class="vertical">
-
-  </div>
-</div>
-<button id="start">Запустить</button>
+<oda-progress-panel id="panel" icon-size="256" class="raised"></oda-progress-panel>
 <script defer>
-  panel.items = [
-    { value: 0.25, label: 'Четвертушка', fill: 'red' },
-    { value: 0.5, label: 'Невообразимо длиннющее наименование, такое вряд ли где-то поместится' },
-    { value: 0.75, label: 'Половина' },
-    { value: 0.38 },
-    { label: 'Неизвестно' }
-  ]
+  const items = panel.items = [];
   let id = 0;
   let run = false;
-  start.addEventListener('click', ()=>{
-    if(id){
-      clearInterval(id);
-      id = 0;
-      start.textContent = 'Запустить';
-    }else{
-      id = setInterval(()=>{
-        panel.items.forEach(i=> i.value < 1 && (i.value += 0.01));
-      }, 300);
-      start.textContent = 'Остановить';
-    }
-  })
-  for (const idx in panel.items) {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'range');
-    input.setAttribute('max', '1');
-    input.setAttribute('step', '0.01');
-    input.value = panel.items[idx].value || 0;
-    input.addEventListener('input', () => {
-      panel.items[idx].value = parseFloat(input.value);
-    })
-    ranges.appendChild(input);
+
+  const update = () => {
+    items.splice(0, items.length, ...globalThis.$requests.map(r => ({label: r.request.url})));
   }
-</script>
-<oda-progress-panel id="panel2" icon-size="256"></oda-progress-panel>
-<script defer>
-  panel2.items = [
-    { value: 0.25, label: 'Четвертушка', fill: 'red' },
-    { value: 0.5, label: 'Невообразимо длиннющее наименование, такое вряд ли где-то поместится' },
-    { value: 0.75, label: 'Половина' },
-    { value: 0.38 },
-  ]
+
+  globalThis.addEventListener('fetch-start', (evt) => update());
+  globalThis.addEventListener('fetch-end', (evt) => update());
+  setInterval(()=>{
+    for(const i of new Array(~~(Math.random() * 5))){
+      fetch(`https://current.odant.org/api?config&prefix=true&deep=${~~(Math.random() * 100)}`)
+    }
+  }, 1000);
 </script>

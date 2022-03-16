@@ -1,18 +1,37 @@
 ODA({
     is: 'oda-progress-panel',
-    template: /*html*/`
+    template: `
     <style>
         :host{
             @apply --vertical;
+            min-height: {{iconSize + 8}}px;
+            cursor: pointer;
         }
     </style>
-        <oda-progress-bar ~if="!expanded" ~props="item" @tap="open"></oda-progress-bar>
-        <oda-progress-bar ~if="expanded" ~for="i in items" ~props="i" @tap="open"></oda-progress-bar>
+    <div ~if="items.length && !expanded" class="horizontal" style="align-items: center;">
+        <oda-progress-bar ~props="item" :hide-label="hideLabels"></oda-progress-bar>
+        <div ~if="!hideLabels && items.length > 1" >{{items.length}} requests</div>
+    </div>
+    <div ~if="items.length && expanded">
+        <oda-progress-bar ~for="i in items" ~props="i" :hide-label="hideLabels"></oda-progress-bar>
+    </div>
     `,
     items: [],
     iconSize: 32,
     expanded: false,
-    item() {
+    props: {
+        hideLabels: false,
+    },
+    attached() {
+        this.listen('message', 'messageHandler', { target: top });
+    },
+    detached() {
+        this.unlisten('message', 'messageHandler', { target: top });
+    },
+    messageHandler(e) {
+        console.log(e);
+    },
+    get item() {
         if (this.items.length > 0) {
             if (this.items.length === 1) return this.items[0];
             else {
@@ -22,11 +41,13 @@ ODA({
             }
         }
     },
-    open(e) {
+    listeners: {
+        tap: 'tap'
+    },
+    tap(e) {
         if (this.expanded) return;
-        ODA.showDropdown('oda-progress-panel', { items: this.items, expanded: true }, {parent: this});
-    }
-
+        ODA.showDropdown('oda-progress-panel', { items: this.items, expanded: true }, { parent: this });
+    },
 });
 ODA({
     is: 'oda-progress-bar',
@@ -38,6 +59,7 @@ ODA({
             align-items: center;
             padding: 2px;
             position: relative;
+            {{error ? 'color: red; fill: red;' : ''}}
         }
         :host svg{
             padding: 2px;
@@ -51,7 +73,7 @@ ODA({
             stroke-dasharray: 1000;
             stroke-dashoffset: 1000;
         }
-        :host .value-block{
+        :host .progress-block{
             position: absolute;
             line-height: {{iconSize+2}}px;
             width: {{iconSize+2}}px;
@@ -88,21 +110,23 @@ ODA({
     <svg :viewBox="\`0 0 \${iconSize} \${iconSize}\`" class="progress-ring">
         <circle ref="ring" stroke="#0075ff" fill="transparent" stroke-width="2" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
     </svg>
-    <div ~if="value" class="value-block" ~style="{color: value === 1 ? '#00bb00' : 'gray' }">{{~~(100*value)}}</div>
-    <slot name="label"><div>{{label}}</div></slot>
+    <div ~if="progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">{{~~(100*progress)}}</div>
+    <div ~if="!hideLabel" style="overflow: hidden; text-overflow: ellipsis;">{{label}}</div>
     `,
-    value: 0,
+    progress: 0,
     background: 'silver',
     fill: '#4c4c4c',
     label: '',
     iconSize: 32,
+    error: null,
+    hideLabel: false,
     observers: [
-        function calcRing(value) {
+        function calcRing(progress) {
             const ring = this.$refs.ring;
             const circumference = ring.r.baseVal.value * 2 * Math.PI;
-            if (value) {
+            if (progress) {
                 ring.style.removeProperty('animation');
-                ring.style.setProperty('stroke-dasharray', `${circumference * value} ${circumference * (1 - value)}`);
+                ring.style.setProperty('stroke-dasharray', `${circumference * progress} ${circumference * (1 - progress)}`);
                 ring.style.setProperty('stroke-dashoffset', `${circumference / 4}`);
             } else {
                 ring.style.setProperty('animation', 'dash 3s linear infinite');

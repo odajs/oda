@@ -2433,5 +2433,36 @@ if (!window.ODA) {
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
     }
+
+    ODA.$tasks = [];
+    ODA.addTask = function (label = 'task', init = {}) {
+        const task = {
+            progress: 0,
+            label,
+            id: Date.now(),
+            remove() {
+                ODA.removeTask(task.id);
+            }
+        };
+        Object.assign(task, init);
+        ODA.$tasks.push(task);
+        return  task;
+    }
+    ODA.removeTask = function (id){
+        const idx = ODA.$tasks.findIndex(o => o.id === id);
+        if(~idx) ODA.$tasks.splice(idx, 1);
+    }
+
+    const _fetch = fetch;
+    globalThis.fetch = async function (input, init) {
+        const req = new Request(input, init);
+        const request = req.clone();
+        const task = ODA.addTask(request.url, {request});
+        const res = await _fetch(req);
+        task.response = res.clone();
+        task.progress = 1;
+        ODA.removeTask(task.id);
+        return res;
+    }
 }
 export default ODA;
