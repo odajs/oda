@@ -80,7 +80,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
                 <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
             </div>
-            <oda-button ~if="showCloseBtn || modal" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
+            <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
         </div>
         <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
     props: {
@@ -106,8 +106,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             },
             reflectToAttribute: true
         },
-        showCloseBtn: {
-            default: false,
+        allowClose: {
+            type:Boolean,
+            default: null,
             reflectToAttribute: true
         },
         size: {

@@ -38,7 +38,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             overflow: hidden;
         }
     </style>
-    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'" :autosize :title :icon>
+    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'" :autosize :title :allow-close :icon>
         <slot class="no-flex" name="modal-title" slot="title-bar"></slot>
         <slot @slotchange="_slot" @tap.stop class="content flex vertical" @dblclick.stop></slot>
     </oda-dialog-content>
@@ -52,6 +52,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         animation: 200,
         iconSize: 24,
         borderWidth: 4,
+        allowClose: true,
     },
     control: null,
     _slot(e) {
