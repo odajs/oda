@@ -468,7 +468,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
             <oda-button  style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
-        <oda-icon class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ></oda-icon>
+        <oda-icon class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
     </div>
     <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal content drawer no-flex"
         ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
