@@ -35,7 +35,6 @@ window.addEventListener('keydown', async e => {
                 if (ok.focusedButton.label == 'Dowload') { ok.dlDict() }
             })
             .catch(err => { });
-
     }
 })
 
@@ -66,7 +65,6 @@ ODA({
         <oda-localization-grid ::content="phrazeDop" ~if="tDict && eyeAll"></oda-localization-grid>
         <oda-localization-grid ::content="wordsBase" ~if="!tDict" :header-names="['words','translate']" ></oda-localization-grid>
         <oda-localization-grid ::content="wordsDop" ~if="!tDict && eyeAll"></oda-localization-grid>
-
     `,
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
@@ -80,7 +78,6 @@ ODA({
             },
             get () {return  Localization.lidx}
         },
-
     },
     currentDict() {
         let toObj = (arr, rez = {}) => { for (let n of arr) { rez[n.key] = n.val }; return rez }
@@ -110,10 +107,7 @@ ODA({
         this.phrazeDop = toData(subObAB(dP, sP))
         this.phrazeBase = toData(sumObAB(supObAB(dP, sP), sP))
 
-        //console.log(Localization.localesAvailable)
         this.localesAvailable=Localization.localesAvailable
-        //if (Localization.lidx!=-1) this.lidx = Localization.lidx
-
     },
     _lselect () {//<oda-selectbox :items="localesAvailable" ><oda-selectbox></oda-selectbox>
         const dropdown = document.createElement('oda-list-box');
