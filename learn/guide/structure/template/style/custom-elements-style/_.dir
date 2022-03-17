@@ -28,5 +28,10 @@
         "name": "pseudo-element-theme.md",
         "label": "Глобальная переадресация ::theme",
         "status": "check"
+    },
+    {
+        "name": "global-style-path.md",
+        "label": "path: Глобальная стилизация",
+        "status": "check"
     }
 ]
