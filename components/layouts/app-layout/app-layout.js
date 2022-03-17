@@ -451,6 +451,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         }
         .pin:hover{
             @apply --content;
+            @apply --invert;
         }
         .hider>*{
             opacity: 0;
