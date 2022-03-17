@@ -5,15 +5,15 @@ ODA({
         :host{
             @apply --vertical;
             min-height: {{iconSize + 8}}px;
-            cursor: pointer;
+            overflow: hidden;
         }
     </style>
-    <div ~if="items.length && !expanded" class="horizontal" style="align-items: center;">
-        <oda-progress-bar ~props="item" :hide-label="hideLabels"></oda-progress-bar>
-        <div ~if="!hideLabels && items.length > 1" >{{items.length}} requests</div>
+    <div ~if="items?.length && !expanded" class="horizontal" style="align-items: center;">
+        <oda-progress-bar ~props="item" :task="item" :hide-label="hideLabels" hide-buttons style="cursor: pointer;"></oda-progress-bar>
+        <div ~if="!hideLabels && (items?.length || 0) > 1" >{{items?.length || ''}} requests</div>
     </div>
-    <div ~if="items.length && expanded">
-        <oda-progress-bar ~for="i in items" ~props="i" :hide-label="hideLabels"></oda-progress-bar>
+    <div ~if="items?.length && expanded" style="overflow: auto;">
+        <oda-progress-bar ~for="i in items" ~props="i" :task="i" :hide-label="hideLabels"></oda-progress-bar>
     </div>
     `,
     items: [],
@@ -22,21 +22,13 @@ ODA({
     props: {
         hideLabels: false,
     },
-    attached() {
-        this.listen('message', 'messageHandler', { target: top });
-    },
-    detached() {
-        this.unlisten('message', 'messageHandler', { target: top });
-    },
-    messageHandler(e) {
-        console.log(e);
-    },
     get item() {
         if (this.items.length > 0) {
             if (this.items.length === 1) return this.items[0];
             else {
                 return {
-                    value: this.items.reduce((res, i) => res + i.value, 0) / this.items.length
+                    progress: this.items.reduce((res, i) => res + i.progress, 0) / this.items.length,
+                    error: this.items.some(i => i.error)
                 }
             }
         }
@@ -46,7 +38,7 @@ ODA({
     },
     tap(e) {
         if (this.expanded) return;
-        ODA.showDropdown('oda-progress-panel', { items: this.items, expanded: true }, { parent: this });
+        ODA.showDialog('oda-progress-panel', { items: this.items, expanded: true }, { title: 'Task monitor', autosize: false, hideOkButton: true,});
     },
 });
 ODA({
@@ -59,7 +51,9 @@ ODA({
             align-items: center;
             padding: 2px;
             position: relative;
-            {{error ? 'color: red; fill: red;' : ''}}
+            {{Boolean(error) ? 'color: red; fill: red;' : ''}}
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         :host svg{
             padding: 2px;
@@ -81,6 +75,18 @@ ODA({
             top: 3px;
             text-align: center;
             font-size: 70%;
+        }
+        :host oda-icon{
+            transform: translate3d(-50%, 20%, 0);
+            left: 50%;
+            position: absolute;
+        }
+        :host .text{
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            max-height: 100%;
         }
 
         @keyframes dash {
@@ -106,20 +112,30 @@ ODA({
             }
         }
     </style>
-    <style>{{}}</style>
-    <svg :viewBox="\`0 0 \${iconSize} \${iconSize}\`" class="progress-ring">
-        <circle ref="ring" stroke="#0075ff" fill="transparent" stroke-width="2" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
+    <svg :viewBox="\`0 0 \${iconSize} \${iconSize}\`" class="progress-ring no-flex">
+        <circle ref="ring" :stroke="error ? 'red' : stroke" fill="transparent" stroke-width="2" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
     </svg>
-    <div ~if="progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">{{~~(100*progress)}}</div>
-    <div ~if="!hideLabel" style="overflow: hidden; text-overflow: ellipsis;">{{label}}</div>
+    <div ~if="progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">
+        <div ~if="!error || progress < 1" class="text">{{~~(100*progress)}}</div>
+        <oda-icon ~if="error && (progress === 0 || progress === 1)" icon="icons:error"></oda-icon>
+    </div>
+    <div ~if="!hideLabel" class="text" style="overflow: hidden; text-overflow: ellipsis;">{{label}}</div>
+    <div class="flex"></div>
+    <div ~if="!hideButtons" class="no-flex horizontal">
+        <!-- <oda-button icon="icons:info-outline" @tap="showInfo"></oda-button> -->
+        <oda-button icon="icons:close" @tap="closeTask"></oda-button>
+    </div>
     `,
     progress: 0,
-    background: 'silver',
-    fill: '#4c4c4c',
+    stroke: '#0075ff',
     label: '',
     iconSize: 32,
     error: null,
+    task: null,
     hideLabel: false,
+    props: {
+        hideButtons: false,
+    },
     observers: [
         function calcRing(progress) {
             const ring = this.$refs.ring;
@@ -132,5 +148,11 @@ ODA({
                 ring.style.setProperty('animation', 'dash 3s linear infinite');
             }
         }
-    ]
+    ],
+    showInfo() {
+        
+    },
+    closeTask() {
+        this.task.remove?.();
+    }
 });
