@@ -1964,7 +1964,7 @@ if (!window.ODA) {
             if (source) {
                 const props = {
                     path: {
-                        value: source.path
+                        value: source.composedPath()
                     },
                     currentTarget: {
                         value: source.currentTarget
