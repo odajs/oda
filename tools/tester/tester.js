@@ -1,14 +1,14 @@
-ODA({ is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/containers',
-    extends: 'oda-app-layout', template: `
-        <app-layout-toolbar slot="header">
-            <div class="horizontal" slot="header-left" style="align-items:center; width: 100%">
-                <oda-button class="no-flex" ~for="views.filter(i=>i.slot === 'left')" :icon="item.icon" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
-            </div>
-            <span class="flex" slot="header-center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
-            <slot name="buttons" slot="header-right" style="display:flex;"></slot>
-            <oda-button slot="header-right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
-        </app-layout-toolbar>
-        <slot @slotchange="onSlot" class="flex"></slot>           
+ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/containers', extends: 'oda-app-layout',
+    template: /*html*/`
+    <app-layout-toolbar slot="header">
+        <div class="horizontal" slot="header-left" style="align-items:center; width: 100%">
+            <oda-button class="no-flex" ~for="views.filter(i=>i.slot === 'left')" :icon="item.icon" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
+        </div>
+        <span class="flex" slot="header-center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
+        <slot name="buttons" slot="header-right" style="display:flex;"></slot>
+        <oda-button slot="header-right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
+    </app-layout-toolbar>
+    <slot @slotchange="onSlot" class="flex"></slot>           
     `,
     props: {
         saveKey: 'tester',
@@ -21,9 +21,9 @@ ODA({ is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/
             }
         },
         views: [
-            { icon: 'enterprise:computer-screen', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-tester-container' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
-            { icon: 'device:devices', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-mobile', src: '../containers/mobile/mobile.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
-            { icon: 'icons:settings-overscan', view: 'tester', slot: "left", slots: [{ slot: 'main', id: 'oda-containers', src: '../containers/containers/containers.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
+            { icon: 'enterprise:computer-screen', view: 'tester', slot: 'left', slots: [{ slot: 'main', id: 'oda-tester-container' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
+            { icon: 'device:devices', view: 'tester', slot: 'left', slots: [{ slot: 'main', id: 'oda-mobile', src: '../containers/mobile/mobile.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
+            { icon: 'icons:settings-overscan', view: 'tester', slot: 'left', slots: [{ slot: 'main', id: 'oda-containers', src: '../containers/containers/containers.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
 
             { label: 'API', view: 'api', slot: "right", slots: [{ slot: 'main', id: 'oda-auto-doc', src: '../auto-doc/auto-doc.js' }] },// { slot: 'right-panel', id: 'oda-property-grid' }] },
             { icon: 'icons:code', view: 'source', slot: "right", slots: [{ slot: 'main', id: 'oda-code-viewer', src: '../../components/viewers/code-viewer/code-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }] },
@@ -115,24 +115,23 @@ ODA({ is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/
     }
 });
 
-ODA({
-    is: 'oda-tester-info', template: `
+ODA({is: 'oda-tester-info', template: /*html*/`
+    <div style="display:flex">
+        <div style="font-weight: 500; margin-top:10px;flex:1">{{focused && focused.view}} content:</div>
+        <oda-button ~if="_editMode" icon="office-set:contact" @tap="_editInfo()" title="Edit _info.js"></oda-button>
+    </div>
+    <hr style="opacity: 0.3">
+    <div ~for="_arrSrc" @tap="_focusedSrc=index" style="cursor: pointer">   
         <div style="display:flex">
-            <div style="font-weight: 500; margin-top:10px;flex:1">{{focused && focused.view}} content:</div>
-            <oda-button ~if="_editMode" icon="office-set:contact" @tap="_editInfo()" title="Edit _info.js"></oda-button>
+            <div>
+                <div style="margin-left:6px"  ~style="_focusedSrc===index?'font-weight:700':''">{{item.label || item}}</div>
+                <div style="font-size: 80%; font-style: italic;word-wrap: break-word;color:#6699cc;margin-left:18px">{{item.title || item}}</div>
+            </div>
+            <div style="flex:1"></div>
+            <oda-button ~if="_editMode && focused && !item.src.endsWith('.js')" icon="office-set:contact" @tap="_editSource(item)" title="Edit Source"></oda-button>
         </div>
         <hr style="opacity: 0.3">
-        <div ~for="_arrSrc" @tap="_focusedSrc=index" style="cursor: pointer">   
-            <div style="display:flex">
-                <div>
-                    <div style="margin-left:6px"  ~style="_focusedSrc===index?'font-weight:700':''">{{item.label || item}}</div>
-                    <div style="font-size: 80%; font-style: italic;word-wrap: break-word;color:#6699cc;margin-left:18px">{{item.title || item}}</div>
-                </div>
-                <div style="flex:1"></div>
-                <oda-button ~if="_editMode && focused && !item.src.endsWith('.js')" icon="office-set:contact" @tap="_editSource(item)" title="Edit Source"></oda-button>
-            </div>
-            <hr style="opacity: 0.3">
-        </div>
+    </div>
     `,
     props: {
         component: {},
@@ -159,16 +158,18 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-tester-container',
-    template: `
-        <style>
-            :host {
-                overflow: hidden;
-                @apply --vertical;
-            }
-        </style>
-        <slot style="display: flex; flex: auto;/* justify-content: center; align-items: center;*/overflow: hidden;"></slot>
+ODA({is: 'oda-tester-container',
+    template: /*html*/`
+    <style>
+        :host {
+            overflow: hidden;
+            @apply --vertical;
+        }
+        ::slotted(*) {
+            @apply --flex;
+        }
+    </style>
+    <slot style="display: flex; flex: auto;/* justify-content: center; align-items: center;*/overflow: hidden;"></slot>
     `,
     props: {
         component: {

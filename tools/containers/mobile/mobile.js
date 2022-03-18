@@ -2,45 +2,43 @@ import '../base/base.js';
 import '../../../components/grids/list/list.js';
 import '../containers.js';
 const url = import.meta.url;
-ODA({
-    is: 'oda-mobile',
-    template: `
-        <style>
-            :host{
-                top: 0px;
-                left: 0px;
-                @apply --vertical;
-                overflow: hidden;
-                @apply --header;
-            }
-            .mobile{
-                box-sizing: border-box;
-                align-self: center; 
-            }
-            ::slotted(*){
-                @apply --flex;
-            }
-             .container{
-                overflow: hidden;
-                background-color: rgba(0, 0, 0, 0.1);
-                justify-content: center;
-            }
-        </style>
-        <slot name="menu">
-            <div class="no-flex horizontal header" style="justify-content: center;">
-                <oda-button ref="btn" :icon="_focused?.icon" @tap="showList">
-                    <span> {{size?.width}}x{{size?.height}} - {{currentDevice}} </span>
-                </oda-button>
-                <oda-button icon="device:screen-rotation" allow-toggle :toggled="rotate" @tap="rotate=!rotate"></oda-button>
-            </div>
-        </slot>
-        <div class="container flex horizontal">
-            <div class="mobile vertical shadow" style="overflow-y: auto;" ~style="_style">
-                <div class="content flex vertical" style="padding: 2px">
-                    <slot></slot>
-                </div> 
-            </div>
-        </div>  
+ODA({is: 'oda-mobile', template: /*html*/`
+    <style>
+        :host {
+            top: 0px;
+            left: 0px;
+            @apply --vertical;
+            overflow: hidden;
+            @apply --header;
+        }
+        .mobile {
+            box-sizing: border-box;
+            align-self: center; 
+        }
+        ::slotted(*) {
+            @apply --flex;
+        }
+        .container {
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.1);
+            justify-content: center;
+        }
+    </style>
+    <slot name="menu">
+        <div class="no-flex horizontal header" style="justify-content: center;">
+            <oda-button ref="btn" :icon="_focused?.icon" @tap="showList">
+                <span> {{size?.width}}x{{size?.height}} - {{currentDevice}} </span>
+            </oda-button>
+            <oda-button icon="device:screen-rotation" allow-toggle :toggled="rotate" @tap="rotate=!rotate"></oda-button>
+        </div>
+    </slot>
+    <div class="container flex horizontal">
+        <div class="mobile vertical shadow" style="overflow-y: auto;" ~style="_style">
+            <div class="content flex vertical" style="padding: 2px">
+                <slot></slot>
+            </div> 
+        </div>
+    </div>
     `,
     props: {
         devices: [],
@@ -123,16 +121,16 @@ ODA({
     }
 })
 
-ODA({ is: 'oda-mobile-template', template: /*html*/`
-        <style>
-            :host {
-                cursor: pointer;
-            }
-        </style>
-        <div class="horizontal row">
-            <oda-icon :icon="item.icon"></oda-icon> 
-            <div>{{item.label}}</div>
-        </div>
+ODA({is: 'oda-mobile-template', template: /*html*/`
+    <style>
+        :host {
+            cursor: pointer;
+        }
+    </style>
+    <div class="horizontal row">
+        <oda-icon :icon="item.icon"></oda-icon> 
+        <div>{{item.label}}</div>
+    </div>
     `,
     item: {}
 })
