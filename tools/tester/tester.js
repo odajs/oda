@@ -166,6 +166,7 @@ ODA({is: 'oda-tester-container',
             @apply --vertical;
         }
         ::slotted(*) {
+            align-self: center;
             @apply --flex;
         }
     </style>
