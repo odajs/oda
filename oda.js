@@ -265,6 +265,12 @@ if (!window.ODA) {
                 }
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
+                    const styles = document.head.querySelector('[scope=oda-styles]')
+                    if (styles) {
+                        let _styleSheet = new CSSStyleSheet();
+                        _styleSheet.replaceSync(styles.textContent);
+                        this.$core.root.adoptedStyleSheets = [_styleSheet];
+                    }
                 }
                 catch (e) {
                     this.$core.root = this.$core.shadowRoot = new DocumentFragment()

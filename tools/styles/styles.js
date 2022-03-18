@@ -45,6 +45,11 @@ style.textContent = `
     --font-150:{
         font-size: 150%;
     };
+    --boxed: { 
+        border: 1px solid darkgray;
+        margin: 4px; 
+        padding: 4px;
+    };
     --horizontal: {
         display: flex;
         flex-direction: row;
@@ -428,6 +433,7 @@ document.head.appendChild(style);
 console.log('styles is loaded.');
 
 const style2 = document.createElement('style');
+style2.setAttribute('scope', 'oda-styles');
 
 for(const key in ODA.cssRules){
     const rule = ODA.cssRules[key];

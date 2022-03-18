@@ -38,7 +38,7 @@ ODA({
     },
     tap(e) {
         if (this.expanded) return;
-        ODA.showDialog('oda-progress-panel', { items: this.items, expanded: true }, { title: 'Task monitor', autosize: false, hideOkButton: true,});
+        ODA.showDialog('oda-progress-panel', { items: this.items, expanded: true }, { title: 'Task monitor', autosize: false, hideOkButton: true, buttons: [{label: 'Clear', execute: ()=>{this.items.forEach(i => i.remove())}}]});
     },
 });
 ODA({
