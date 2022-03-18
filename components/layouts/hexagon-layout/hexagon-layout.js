@@ -186,7 +186,8 @@ ODA({is: 'oda-hexagon',
             height: {{h/2}}px;
             margin: {{h/4}}px 0px;
             @apply --horizontal;
-            overflow: visible;
+            overflow: visible !important;
+            padding: 0 !important;
         }
 
         :host:before,

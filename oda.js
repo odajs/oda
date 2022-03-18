@@ -137,38 +137,6 @@ if (!window.ODA) {
                 else
                     template.content.insertBefore(style, template.content.firstElementChild);
             }
-            let classes = [];
-            for (let el of template.content.querySelectorAll('[class]')) {
-                for (let cls of el.getAttribute('class').split(' ')) {
-                    cls && classes.add(cls);
-                }
-            }
-            for (let i of classes) {
-                let map = ODA.cssRules?.['--' + i];
-                if (!map) continue;
-                let selector = `.${i}, ::slotted(.${i})`;
-                let r = rules[selector] = rules[selector] || [];
-                decode(map, r);
-            }
-
-            let attributes = [];
-            for (let el of template.content.querySelectorAll('*')) {
-                for (let attr of el.attributes) {
-                    attributes.add(attr.name.replace(/^\.?:+/g, ''));
-                }
-            }
-            for (let i of attributes) {
-                let map = ODA.cssRules?.['--' + i];
-                if (!map) continue;
-                let selector = `[${i}], ::slotted([${i}])`;
-                let r = rules[selector] = rules[selector] || [];
-                decode(map, r);
-                map = ODA.cssRules?.['--' + i + '-before'];
-                if (!map) continue;
-                selector = `*[${i}]:before, ::slotted([${i}]):before`;
-                r = rules[selector] = rules[selector] || [];
-                decode(map, r);
-            }
             const keys = Object.keys(rules);
             if (keys.length) {
                 const el = document.createElement('style');
@@ -267,9 +235,7 @@ if (!window.ODA) {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
                     const styles = document.head.querySelector('[scope=oda-styles]')
                     if (styles) {
-                        let _styleSheet = new CSSStyleSheet();
-                        _styleSheet.replaceSync(styles.textContent);
-                        this.$core.root.adoptedStyleSheets = [_styleSheet];
+                        this.$core.root.adoptedStyleSheets = [styles.adopted];
                     }
                 }
                 catch (e) {

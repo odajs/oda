@@ -434,14 +434,22 @@ console.log('styles is loaded.');
 
 const style2 = document.createElement('style');
 style2.setAttribute('scope', 'oda-styles');
-
-for(const key in ODA.cssRules){
-    const rule = ODA.cssRules[key];
-    if (rule.includes(';')){
-        style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-        style2.textContent += `${key.replace(/^--/, '[')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
+style2.updateAdopted = function () {
+    style2.textContent = '';
+    for (const key in ODA.cssRules) {
+        const rule = ODA.cssRules[key];
+        if (rule.includes(';')) {
+            style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
+        }
     }
+    let _styleSheet = new CSSStyleSheet();
+    if (!style2.adopted) {
+        style2.adopted = _styleSheet;
+    }
+    _styleSheet.replaceSync(style2.textContent);
 }
+style2.updateAdopted();
+
 
 document.head.appendChild(style2);
 
