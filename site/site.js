@@ -533,7 +533,7 @@ header: {
                 }
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
-            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: end;">
+            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: flex-end;">
                 <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item="item" style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">

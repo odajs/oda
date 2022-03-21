@@ -63,7 +63,15 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     },
 })
 ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
-    template: /*html*/`<style> :host{ border-radius: 4px; } </style><slot></slot> `,
+    template: /*html*/`
+    <style>
+        :host{
+            border-radius: 4px;
+            max-height: calc(100% - 8px);
+            max-width: calc(100% - 8px);
+        }
+    </style>
+    <slot></slot> `,
     modal: true,
     size: 'normal',
     hideMinMax: true,
