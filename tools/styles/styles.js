@@ -445,7 +445,7 @@ import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct
 if ('adoptedStyleSheets' in Document.prototype) {
     let _styleSheet = new CSSStyleSheet();
     _styleSheet.replaceSync(style2.textContent);
-    ODA.adopted = _styleSheet;
+    ODA.adopted = [_styleSheet];
 }
 
 document.head.appendChild(style2);

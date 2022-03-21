@@ -233,9 +233,9 @@ if (!window.ODA) {
                 }
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    const styles = document.head.querySelector('[scope=oda-styles]')
-                    if (styles && ODA.adopted) {
-                        this.$core.root.adoptedStyleSheets = [ODA.adopted];
+                    // const styles = document.head.querySelector('[scope=oda-styles]')
+                    if (/*styles && */ODA.adopted) {
+                        this.$core.root.adoptedStyleSheets = ODA.adopted;
                     }
                 }
                 catch (e) {
@@ -270,8 +270,8 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                if (!this.domHost)
-                        this.style.setProperty?.('visibility', 'hidden');
+                // if (!this.domHost)
+                //         this.style.setProperty?.('visibility', 'hidden');
                 // if(!this.domHost){
                 //     let parent = this.parentNode;
                 //     let dh = parent.$core ? parent : null;
