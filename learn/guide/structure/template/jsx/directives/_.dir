@@ -6,22 +6,22 @@
     },
     {
         "name": "~for-syntax.md",
-        "label": "<b style='color: brown'>~for</b>: Синтаксис директивы",
+        "label": "<b style='color: brown'>~for</b>: Синтаксис директивы цикла",
         "status": "check"
     },
     {
         "name": "~for-features.md",
-        "label": "<b style='color: brown'>~for</b>: Особенности директивы",
+        "label": "<b style='color: brown'>~for</b>: Особенности директивы цикла",
         "status": "check"
     },
     {
         "name": "~for-multilevel.md",
-        "label": "<b style='color: brown'>~for</b>: Вложенные директивы",
+        "label": "<b style='color: brown'>~for</b>: Вложенные директивы цикла",
         "status": "check"
     },
     {
         "name": "~for-advantage.md",
-        "label": "<b style='color: brown'>~for</b>: Преимущества",
+        "label": "<b style='color: brown'>~for</b>: Преимущества директивы цикла",
         "status": "check"
     },
     {

@@ -167,12 +167,6 @@
         </style>
         <div class="horizontal" style="justify-content: space-between">
             <a href="https://businessintersoft.github.io/js-framework-repaint-tests/" target="_blank">DBMON All</a>
-            <div>
-                <button :focused="mode === 0" @tap="mode=0">Real</button>
-                <button :focused="mode === 1" @tap="mode=1">Fast</button>
-                <button :focused="mode === 2" @tap="mode=2">Boost</button>
-            </div>
-
         </div>
 
         <table class="table table-striped lastest-data">
@@ -195,8 +189,10 @@
 
             `,
             databases:[],
-            attached(){
+            ready(){
                 this.databases = ENV.generateData(true).toArray();
+            },
+            attached(){
                 this.monitor();
             },
             mode: 0,
@@ -204,12 +200,12 @@
                 // this.render();
                 switch (this.mode){
                     case 0:{
-                        requestAnimationFrame(()=>{
-                            this.run()
-                        })
-                        // this.async(()=>{
+                        // requestAnimationFrame(()=>{
                         //     this.run()
-                        // }, ENV.timeout);
+                        // })
+                        this.async(()=>{
+                            this.run()
+                        }, ENV.timeout);
                     } break;
                     case 1:{
                         setTimeout(()=>{

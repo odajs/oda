@@ -234,8 +234,8 @@ if (!window.ODA) {
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
                     const styles = document.head.querySelector('[scope=oda-styles]')
-                    if (styles) {
-                        this.$core.root.adoptedStyleSheets = [styles.adopted];
+                    if (styles && ODA.adopted) {
+                        this.$core.root.adoptedStyleSheets = [ODA.adopted];
                     }
                 }
                 catch (e) {
@@ -429,14 +429,16 @@ if (!window.ODA) {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 this.onRender?.();
-                if (!this.domHost && this.style.getPropertyValue?.('visibility')){
-                    this.async(()=>{
-                        this.style.removeProperty?.('visibility');
-                    }, 1000)
-                    this.debounce('check-visible', ()=> {
-                        this.style.removeProperty?.('visibility')
-                    }, 300)
-                }
+                if (!this.domHost && this.style.getPropertyValue?.('visibility'))
+                    this.style.removeProperty?.('visibility');
+                //     this.async(()=>{
+                //         this.style.removeProperty?.('visibility');
+                //     }, 1000)
+                //     this.debounce('check-visible', ()=> {
+                //         this.style.removeProperty?.('visibility')
+                //     }, 300)
+                // }
+
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1186,7 +1188,7 @@ if (!window.ODA) {
                         //console.log('!!')
                         val = translateVal(val)
                     }
-                    if ($el.textContent === val) return
+                    if ($el.textContent == val) return
                     $el.textContent = val;
                 });
             }

@@ -430,28 +430,23 @@ body[context-menu-show] *:not(oda-context-menu){
 `;
 document.head.appendChild(style);
 
-console.log('styles is loaded.');
+//console.log('styles is loaded.');
 
 const style2 = document.createElement('style');
 style2.setAttribute('scope', 'oda-styles');
-style2.updateAdopted = function () {
-    style2.textContent = '';
-    for (const key in ODA.cssRules) {
-        const rule = ODA.cssRules[key];
-        if (rule.includes(';')) {
-            style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-        }
+style2.textContent = '';
+for (const key in ODA.cssRules) {
+    const rule = ODA.cssRules[key];
+    if (rule.includes(';')) {
+        style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
     }
-    let _styleSheet = new CSSStyleSheet();
-    if (!style2.adopted) {
-        style2.adopted = _styleSheet;
-    }
-    _styleSheet.replaceSync(style2.textContent);
 }
-style2.updateAdopted();
-
+if ('adoptedStyleSheets' in Document.prototype) {
+    let _styleSheet = new CSSStyleSheet();
+    _styleSheet.replaceSync(style2.textContent);
+    ODA.adopted = _styleSheet;
+}
 
 document.head.appendChild(style2);
-
 
 export default STYLES;
