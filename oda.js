@@ -233,8 +233,7 @@ if (!window.ODA) {
                 }
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    // const styles = document.head.querySelector('[scope=oda-styles]')
-                    if (/*styles && */ODA.adopted) {
+                    if (ODA.adopted) {
                         this.$core.root.adoptedStyleSheets = ODA.adopted;
                     }
                 }
