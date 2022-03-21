@@ -441,6 +441,7 @@ for (const key in ODA.cssRules) {
         style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
     }
 }
+import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {
     let _styleSheet = new CSSStyleSheet();
     _styleSheet.replaceSync(style2.textContent);
