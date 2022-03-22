@@ -377,11 +377,12 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
                 @apply --flex;
                 min-height: 28px;
                 overflow: auto;
+                white-space: initial;
             }
 
         </style>
         <oda-pell-editor class="flex pell" ~show="!readOnly&&editedCell===cell" :pell style="height: 80vh"></oda-pell-editor>
-        <div  ~show="editedCell!==cell" :html="cell.source" style="width: 100%; padding: 8px;"></div>
+        <div ~show="editedCell!==cell" ~html="cell.source" style="width: 100%; padding: 8px;"></div>
     `,
     cell: {},
     listeners: {

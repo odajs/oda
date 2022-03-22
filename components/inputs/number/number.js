@@ -1,7 +1,7 @@
 import '../../buttons/button/button.js';
 // import '/web/lib/utils/number/number.js';
 // import '/web/lib/utils/number/moneytostring.js';
-ODA({ is: 'oda-number-input', template: /*html*/`
+ODA({is: 'oda-number-input', template: /*html*/`
     <style>
         :host {
             @apply --horizontal;
@@ -128,7 +128,7 @@ ODA({ is: 'oda-number-input', template: /*html*/`
     },
     _keydown(e) {
         const key = e.key.toLowerCase();
-        if(!(e.ctrlKey || e.shiftKey) && !/[0-9\-\,\.]|backspace|delete|arrowleft|arrowright|home|tab/.test(key)) {
+        if (!(e.ctrlKey || e.shiftKey) && !/[0-9\-\,\.]|backspace|delete|arrowleft|arrowright|home|tab/.test(key)) {
             e.preventDefault();
             this.$refs.input.value = this.valueEdit;
         }
