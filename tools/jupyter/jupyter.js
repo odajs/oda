@@ -116,8 +116,9 @@ ODA({ is: 'oda-jupyter-cell',
                 display: block;
                 position: relative;
                 margin: 6px 12px;
+                white-space: normal !important;
                 order: {{cell?.order || 0}};
-                box-shadow: {{focusedCell!==cell && showBorder ? '0px 0px 0px 1px lightgray' : ''}};
+                box-shadow: {{showBorder && focusedCell !== cell ? '0px 0px 0px 1px lightgray' : 'unset'}};
             }
             ._focused {
                 box-shadow: 0 0 0 1px dodgerblue;
@@ -334,8 +335,11 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
     },
     observers: [
         function setEditedCell(editedCell) {
-            if (editedCell && editedCell === this.cell)
-                this.$('oda-ace-editor').value = this.$('oda-md-viewer').source;
+            if (editedCell && editedCell === this.cell) {
+                this.async((e) => {
+                    this.$('oda-ace-editor').value = this.$('oda-md-viewer').source;
+                }, 100)
+            }
         }
     ]
 })
@@ -359,8 +363,11 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
     cell: {},
     listeners: {
         change(e) {
-            if (!this.isReadOnly || this.editedCell === this.cell)
-                this.cell.source = this.$('oda-ace-editor').value;
+            if (!this.isReadOnly || this.editedCell === this.cell) {
+                this.async((e) => {
+                    this.cell.source = this.$('oda-ace-editor').value;
+                }, 100)
+            }
         }
     },
     get isReadOnly() {

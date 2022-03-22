@@ -44,12 +44,10 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
     _x: 0,
     _y: 0,
     _showAce: false,
-    get _editor() { 
-        this._editor = this.$('#editor');
-        return this._editor;
-    },
     attached() {
-        this._update();;
+        this.async(() => {
+            this._update();
+        }, 300);
     },
     listeners: {
         pointerdown: function(e) {
@@ -59,90 +57,89 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
         }
     },
     _update() {
-        if (this._editor)
-            this.editor = pell.init({
-                element: this.$('#editor'),
-                onChange: () => this.fire('change', this.editor.content.innerHTML),
-                actions: [
-                    'bold',
-                    'italic',
-                    'underline',
-                    'strikethrough',
-                    'heading1',
-                    'heading2',
-                    'heading3',
-                    'heading4',
-                    'heading5',
-                    'heading6',
-                    {
-                        name: 'foreColor',
-                        icon: '&#9734;',
-                        title: 'foreColor',
-                        result: () => this._inputColor = 'foreColor'
-                    },
-                    {
-                        name: 'backColor',
-                        icon: '&#9733',
-                        title: 'backColor',
-                        result: () => this._inputColor = 'backColor'
-                    },
-                    'olist',
-                    'ulist',
-                    'paragraph',
-                    'quote',
-                    'code',
-                    'line',
-                    'link',
-                    'image',
-                    'video',
-                    'html',
-                    {
-                        name: 'Commands',
-                        icon: '✓',
-                        title: 'Commands',
-                        result: () => {
-                            let url = window.prompt('c-center, f-full, l-left, r-right, i-indent, o-outdent, 1-7 fontSize, s-subScript, u-superScript, z-unLink, <-undo, >-redo, x-removeFormat');
-                            if (!url) return;
-                            url = url[0].toLowerCase();
-                            const comm = {
-                                'c': () => pell.exec('justifyCenter'),
-                                'f': () => pell.exec('justifyFull'),
-                                'l': () => pell.exec('justifyLeft'),
-                                'r': () => pell.exec('justifyRight'),
-                                'x': () => pell.exec('removeFormat'),
-                                'i': () => pell.exec('inDent'),
-                                'o': () => pell.exec('outDent'),
-                                's': () => pell.exec('subScript'),
-                                'u': () => pell.exec('superScript'),
-                                'z': () => pell.exec('unLink'),
-                                '<': () => pell.exec('undo'),
-                                '>': () => pell.exec('redo'),
-                                '1': () => pell.exec('fontSize', url),
-                                '2': () => pell.exec('fontSize', url),
-                                '3': () => pell.exec('fontSize', url),
-                                '4': () => pell.exec('fontSize', url),
-                                '5': () => pell.exec('fontSize', url),
-                                '6': () => pell.exec('fontSize', url),
-                                '7': () => pell.exec('fontSize', url),
-                            }
-                            comm[url] && comm[url]();
+        this.editor = pell.init({
+            element: this.$('#editor'),
+            onChange: () => this.fire('change', this.editor.content.innerHTML),
+            actions: [
+                'bold',
+                'italic',
+                'underline',
+                'strikethrough',
+                'heading1',
+                'heading2',
+                'heading3',
+                'heading4',
+                'heading5',
+                'heading6',
+                {
+                    name: 'foreColor',
+                    icon: '&#9734;',
+                    title: 'foreColor',
+                    result: () => this._inputColor = 'foreColor'
+                },
+                {
+                    name: 'backColor',
+                    icon: '&#9733',
+                    title: 'backColor',
+                    result: () => this._inputColor = 'backColor'
+                },
+                'olist',
+                'ulist',
+                'paragraph',
+                'quote',
+                'code',
+                'line',
+                'link',
+                'image',
+                'video',
+                'html',
+                {
+                    name: 'Commands',
+                    icon: '✓',
+                    title: 'Commands',
+                    result: () => {
+                        let url = window.prompt('c-center, f-full, l-left, r-right, i-indent, o-outdent, 1-7 fontSize, s-subScript, u-superScript, z-unLink, <-undo, >-redo, x-removeFormat');
+                        if (!url) return;
+                        url = url[0].toLowerCase();
+                        const comm = {
+                            'c': () => pell.exec('justifyCenter'),
+                            'f': () => pell.exec('justifyFull'),
+                            'l': () => pell.exec('justifyLeft'),
+                            'r': () => pell.exec('justifyRight'),
+                            'x': () => pell.exec('removeFormat'),
+                            'i': () => pell.exec('inDent'),
+                            'o': () => pell.exec('outDent'),
+                            's': () => pell.exec('subScript'),
+                            'u': () => pell.exec('superScript'),
+                            'z': () => pell.exec('unLink'),
+                            '<': () => pell.exec('undo'),
+                            '>': () => pell.exec('redo'),
+                            '1': () => pell.exec('fontSize', url),
+                            '2': () => pell.exec('fontSize', url),
+                            '3': () => pell.exec('fontSize', url),
+                            '4': () => pell.exec('fontSize', url),
+                            '5': () => pell.exec('fontSize', url),
+                            '6': () => pell.exec('fontSize', url),
+                            '7': () => pell.exec('fontSize', url),
                         }
-                    },
-                    {
-                        name: 'viewSource',
-                        icon: '&lt;/&gt;',
-                        title: 'View source code',
-                        result: () => {
-                            const value = this.editor.content.innerHTML;
-                            this._showAce = true;
-                            this.async(() => {
-                                const ace = this.$('#ace');
-                                ace.value = value;
-                            }, 100)
-                        }
-                    },
-                ],
-            });
+                        comm[url] && comm[url]();
+                    }
+                },
+                {
+                    name: 'viewSource',
+                    icon: '&lt;/&gt;',
+                    title: 'View source code',
+                    result: () => {
+                        const value = this.editor.content.innerHTML;
+                        this._showAce = true;
+                        this.async(() => {
+                            const ace = this.$('#ace');
+                            ace.value = value;
+                        }, 100)
+                    }
+                },
+            ],
+        });
         this.editor.content.contentEditable = !this.readOnly;
         this.value = this.src || '';
     },
