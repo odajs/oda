@@ -119,13 +119,13 @@ ODA({ is: 'oda-jupyter-cell',
                 order: {{cell?.order || 0}};
                 box-shadow: {{focusedCell!==cell && showBorder ? '0px 0px 0px 1px lightgray' : ''}};
             }
-            .focused {
+            ._focused {
                 box-shadow: 0 0 0 1px dodgerblue;
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~show="collapsed && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="ontapcell">{{cell.label || cell.cell_type}}</div>
-        <div ~show="!collapsed || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="ontapcell" :cell></div>
+        <div ~show="collapsed && editedCell!==cell" ~class="{_focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="ontapcell">{{cell.label || cell.cell_type}}</div>
+        <div ~show="!collapsed || editedCell===cell" ~class="{_focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="ontapcell" :cell></div>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
@@ -142,7 +142,9 @@ ODA({ is: 'oda-jupyter-cell',
         return 'div';
     },
     ontapcell(e) {
-        document.dispatchEvent(new CustomEvent('jupyterTapCell', { bubbles: true }));
+        if (!this.editedCell) {
+            document.dispatchEvent(new CustomEvent('jupyterTapCell', { bubbles: true }));
+        }
         this.async(() => {
             this.focusedCell = this.readOnly ? undefined : this.cell;
         })
