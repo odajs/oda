@@ -1,10 +1,5 @@
 [
     {
-        "name": "~for.md",
-        "label": "<b style='color: brown'>~for</b>: Управление циклом",
-        "status": "check"
-    },
-    {
         "name": "~for-syntax.md",
         "label": "<b style='color: brown'>~for</b>: Синтаксис директивы цикла",
         "status": "check"
