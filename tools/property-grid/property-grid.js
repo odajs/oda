@@ -103,12 +103,13 @@ CLASS({is: 'PropertyGridDataSet',
                         else {
                             node.editor = editor || getTypeEditor(p?.type || typeof d.value || typeof p.default)
                         }
+                        node.default = p.default;
                     }
                     Object.defineProperty(node, 'value', {
                         get() {
                             const value = obj[name]
-                            node.ro = node.ro || typeof value === 'object'
-                            return value
+                            node.ro = node.ro || typeof value === 'object';
+                            return value;
                         },
                         set(n) {
                             node.ro = node.ro || typeof n === 'object'
@@ -137,11 +138,15 @@ ODA({ is: 'oda-pg-cell-value',
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
+        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="icons:autorenew"></oda-button>
     `,
     item: null,
     async showDD(e){
         const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
         this.item.value = res.focusedItem.value;
+    },
+    resetValue() {
+        this.item.value = this.item.default;
     }
 })
 function parseInspectedObject(io, expertMode, onlySave) {
