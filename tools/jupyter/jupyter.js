@@ -377,7 +377,6 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
                 @apply --flex;
                 min-height: 28px;
                 overflow: auto;
-                white-space: initial;
             }
 
         </style>
@@ -393,8 +392,11 @@ ODA({ is: 'oda-jupyter-cell-html', imports: '@oda/pell-editor',
     },
     observers: [
         function setEditedCell(editedCell) {
-            if (editedCell && editedCell === this.cell)
-                this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
+            if (editedCell && editedCell === this.cell) {
+                this.async((e) => {
+                    this.$('oda-pell-editor').editor.content.innerHTML = this.cell.source;
+                }, 100)
+            }
         }
     ]
 })

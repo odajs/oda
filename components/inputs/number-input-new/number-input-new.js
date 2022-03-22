@@ -17,12 +17,8 @@ ODA({is: 'oda-number',
             outline: none;
             border: none;
             height: 100%;
-            /*width: 200px;*/
-            /*margin: 16px;*/
-            cursor: text;
-            font-family: monospace;
-            /*todo сделать хорошо*/
-            font-size: larger;
+            font-family: inherit;
+            font-size: inherit;
         }
         input[read-only] {
             pointer-events: none;
@@ -37,7 +33,7 @@ ODA({is: 'oda-number',
         useMinMax: false,
         min: Number,
         max: Number,
-        locale: 'ru-RU',        
+        locale: 'ru-RU',
         precision: 3,
         thousandSeparator: ' ',
         decimalSeparator: '.',

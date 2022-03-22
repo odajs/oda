@@ -65,6 +65,7 @@ ODA({is: 'oda-hexagon-layout',
             default: [],
             save: true,
             readOnly: true,
+            private: true,
         },
         tracking:{
             type: Boolean,
