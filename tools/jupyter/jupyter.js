@@ -74,6 +74,9 @@ ODA({ is: 'oda-jupyter',
         this.async(() => {
             this.isReady = true;
         }, 300)
+        document.addEventListener('jupyterTapCell', () => {
+            this.focusedCell = undefined;
+        })
     },
     share(e, notebook) {
         const hideTopPanel = e?.altKey || e?.ctrlKey || e?.metaKey || this.notebook.hideTopPanel ? true : false;
@@ -121,8 +124,8 @@ ODA({ is: 'oda-jupyter-cell',
             }
         </style>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
-        <div ~show="collapsed && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="focusedCell=readOnly?undefined:cell">{{cell.label || cell.cell_type}}</div>
-        <div ~show="!collapsed || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="focusedCell=readOnly?undefined:cell" :cell></div>
+        <div ~show="collapsed && editedCell!==cell" ~class="{focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="ontapcell">{{cell.label || cell.cell_type}}</div>
+        <div ~show="!collapsed || editedCell===cell" ~class="{focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="ontapcell" :cell></div>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell></oda-jupyter-cell-addbutton>
         <oda-jupyter-cell-addbutton ~if="!readOnly && cell && focusedCell===cell" :cell position="bottom"></oda-jupyter-cell-addbutton>
     `,
@@ -137,6 +140,12 @@ ODA({ is: 'oda-jupyter-cell',
         if (this.cell?.cell_type === 'html-tiny') return 'oda-jupyter-cell-html-tiny';
         if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
         return 'div';
+    },
+    ontapcell(e) {
+        document.dispatchEvent(new CustomEvent('jupyterTapCell', { bubbles: true }));
+        this.async(() => {
+            this.focusedCell = this.readOnly ? undefined : this.cell;
+        })
     }
 })
 
