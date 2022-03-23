@@ -25,7 +25,7 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
             <input id="inp" type="color" @change="setColor" @blur="setColor">
             <oda-button @click="setColor">ok</oda-button>
         </div>
-        <div ~show="!_showAce" id="editor"></div>
+        <div ~show="!_showAce" id="editor" @keydown.stop></div>
         <oda-button ~if="_showAce" icon="icons:close" icon-size="10" @click="closeAce" style="position: absolute; z-index: 31; fill: red"></oda-button>
         <oda-ace-editor ~if="_showAce" id="ace" mode="html" wrap="true" font-size="16"></oda-ace-editor>
     `,
