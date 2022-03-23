@@ -96,25 +96,10 @@ site: {
                         </a>
                     </div>
                 </div>
-                <oda-site-header :items ::part ></oda-site-header>
+                <oda-site-header :items ::part @down="close"></oda-site-header>
             </div>
-            <div slot="left-panel" icon="enterprise:graduation-cap" title="Обучение">
-                <oda-site-nav-tree :part="items[0]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            </div>
-            <div slot="left-panel" icon="icons:apps" title="Компоненты">
-                <oda-site-nav-tree :part="items[1]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            </div>
-            <div slot="left-panel" icon="icons:language" title="Языки">
-                <oda-site-nav-tree :part="items[2]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            </div>
-            <div slot="left-panel" icon="image:palette" title="Темы">
-                <oda-site-nav-tree :part="items[3]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            </div>
-            <div slot="left-panel" icon="device:devices" title="Тесты">
-                <oda-site-nav-tree :part="items[4]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            </div>
-            <div slot="left-panel" icon="av:play-circle-filled" title="Примеры">
-                <oda-site-nav-tree :part="items[5]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown">
+                <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
             <oda-nav ~show="!_showTester" :slot="part?'main':'?'" :focused-item=focusedItem></oda-nav>
@@ -129,8 +114,25 @@ site: {
                 </oda-modal>
             </div>
         `,
+        get leftButtons() {
+            return [
+                { _icon: 'enterprise:graduation-cap', _title: 'Обучение' },
+                { _icon: 'icons:apps', _title: 'Компоненты' },
+                { _icon: 'icons:language', _title: 'Языки' },
+                { _icon: 'image:palette', _title: 'Темы' },
+                { _icon: 'device:devices', _title: 'Тесты' },
+                { _icon: 'av:play-circle-filled', _title: 'Примеры' }
+            ]
+        },
+        _ondown(e){
+            if (this.allowCompact && this.compact && this.opened){
+                this.async(() => this.close(), 500);
+            }
+        },
         props: {
             allowPin: true,
+            allowCompact: true,
+            autoCompact: true,
             modalwin: {
                 is: false,
                 url: ""
