@@ -99,6 +99,7 @@ site: {
                 <oda-site-header :items ::part ></oda-site-header>
             </div>
             <oda-site-nav-tree ~show="focusedItem && !focusedItem.hideLeft" :slot="focusedItem && !focusedItem.hideLeft && part?'left-panel':'?'" :part ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            <div slot="left-panel" icon="icons:error" title="Компоненты" allow-focus></div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
             <oda-nav ~show="!_showTester" :slot="part?'main':'?'" :focused-item=focusedItem></oda-nav>
             <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" width="100%" height="100%" style="background-color: black;" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>

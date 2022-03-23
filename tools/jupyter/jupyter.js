@@ -240,9 +240,9 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
             }
         </style>
         <oda-button :icon-size class="btn btn1" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
-        <oda-button class="btn btn2" icon="icons:close" :icon-size title="close cell" @tap="focusedCell=undefined"></oda-button>
-        <oda-button class="btn btn3" icon="icons:reorder" :icon-size title="collapsed" @tap="collapsed=!collapsed"></oda-button>
-        <oda-button class="btn btn4" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"></oda-button>
+        <oda-button ~if="notebook?.cells?.length" class="btn btn2" icon="icons:close" :icon-size title="close cell" @tap="focusedCell=undefined"></oda-button>
+        <oda-button ~if="notebook?.cells?.length" class="btn btn3" icon="icons:reorder" :icon-size title="collapsed" @tap="collapsed=!collapsed"></oda-button>
+        <oda-button ~if="notebook?.cells?.length" class="btn btn4" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"></oda-button>
         <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type">{{cell.label || cell.cell_type}}</div>
     `,
     props: {
