@@ -98,8 +98,24 @@ site: {
                 </div>
                 <oda-site-header :items ::part ></oda-site-header>
             </div>
-            <oda-site-nav-tree ~show="focusedItem && !focusedItem.hideLeft" :slot="focusedItem && !focusedItem.hideLeft && part?'left-panel':'?'" :part ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
-            <div slot="left-panel" icon="icons:error" title="Компоненты" allow-focus></div>
+            <div slot="left-panel" icon="enterprise:graduation-cap" title="Обучение">
+                <oda-site-nav-tree :part="items[0]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
+            <div slot="left-panel" icon="icons:apps" title="Компоненты">
+                <oda-site-nav-tree :part="items[1]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
+            <div slot="left-panel" icon="icons:language" title="Языки">
+                <oda-site-nav-tree :part="items[2]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
+            <div slot="left-panel" icon="image:palette" title="Темы">
+                <oda-site-nav-tree :part="items[3]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
+            <div slot="left-panel" icon="device:devices" title="Тесты">
+                <oda-site-nav-tree :part="items[4]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
+            <div slot="left-panel" icon="av:play-circle-filled" title="Примеры">
+                <oda-site-nav-tree :part="items[5]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
             <oda-nav ~show="!_showTester" :slot="part?'main':'?'" :focused-item=focusedItem></oda-nav>
             <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" width="100%" height="100%" style="background-color: black;" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
@@ -114,6 +130,7 @@ site: {
             </div>
         `,
         props: {
+            allowPin: true,
             modalwin: {
                 is: false,
                 url: ""
