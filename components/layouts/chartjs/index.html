@@ -2,34 +2,38 @@
 <!--<oda-tester>-->
     <!-- <oda-scheme-layout edit-mode id="layout" show-scale="false" inputs.top inputs.bottom inputs.right inputs.left="false"></oda-scheme-layout> -->
 <!--    <oda-scheme-layout edit-mode id="layout"></oda-scheme-layout>-->
-    <oda-chartjs id="chartjs" x-axis-key="date"></oda-chartjs>
+    <oda-chartjs id="chartjs" x-axis-type="other" x-axis-key="animal"></oda-chartjs>
 <!--</oda-tester>-->
 
 <script type="module">
     import '/web/oda/oda.js'
     import './chartjs.js'
-    chartjs.fields = ['moscow'];
-    chartjs.chartGroupBy = 'quarter';
+    chartjs.fields = [];
+    chartjs.groupBy = 'xAxisKey';
     chartjs.orderBy = '';
     chartjs.items = [
-        {date: '2001-03-01', ryazan: 45, moscow: 67, nike: 31},
-        {date: '2001-05-10', ryazan: 105, moscow: 65},
-        {date: '2003-07-15', ryazan: 15, moscow: 48, nike: 44},
-        {date: '2003-07-16', ryazan: 20, moscow: 42, nike: 56},
-        {date: '2003-07-15', ryazan: 35, moscow: 58, nike: 50},
-        {date: '2018-02-15', ryazan: 15, moscow: 45, nike: 33},
-        // {date: '2015-01-13', ryazan: 45, moscow: 77},
-        // {date: '2015-05-11', ryazan: 75, moscow: 13},
-        {date: '2003-03-05', ryazan: 55, moscow: 78},
-        {date: '2001-04-05', ryazan: 75, moscow: 65},
-        {date: '2001-04-05', ryazan: 7, moscow: 47},
-        {date: '2002-04-10', ryazan: 95, moscow: 89},
+        // {ddd: '2001-03-01', ryazan: 45, moscow: 67, nike: 31},
+        // {ddd: '2001-05-10', ryazan: 105, moscow: 65},
+        // {ddd: '2003-07-15', ryazan: 15, moscow: 48, nike: 44},
+        // {ddd: '2003-07-16', ryazan: 20, moscow: 42, nike: 56},
+        // {ddd: '2003-07-15', ryazan: 35, moscow: 58, nike: 50},
+
+        // {date: '2001-04-05', ryazan: 7, moscow: 47},
+        // {date: '2001-04-05', ryazan: 85, moscow: 67},
+        // {date: '2002-04-10', ryazan: 95, moscow: 89},
         // {date: '2001-05-17', ryazan: 25, moscow: 59},
         // {date: '2001-02-17', ryazan: 35, moscow: 45},
         // {date: '2002-03-15', ryazan: 65, moscow: 45},
-        // {date: '2001-04-05', ryazan: 85, moscow: 67},
         // {date: '2003-02-16', ryazan: 25, moscow: 67},
         // {date: '2001-07-20', ryazan: 55, moscow: 60},
         // {date: '2001-07-29', ryazan: 75, moscow: 60}
+
+        {animal: 'Rabbit', speed: 10, weight: 5},
+        {animal: 'Wolf', speed: 25, weight: 30},
+        {animal: 'Wolf', speed: 17, weight: 35},
+        {animal: 'Human', speed: 7, weight: 88},
+        {animal: 'Rabbit', speed: 11, weight: 7},
+        {animal: 'Rabbit', speed: 25, weight: 16},
+        {animal: 'Elephant', speed: 12, weight: 120},
     ]
 </script>

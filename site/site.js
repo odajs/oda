@@ -518,7 +518,6 @@ header: {
         template: /*html*/  `
             <style>
                 :host{
-                    cursor: pointer;
                     justify-content: flex-end;
                     @apply --flex;
                     @apply --horizontal;
@@ -534,7 +533,7 @@ header: {
                 }
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
-            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: flex-end;">
+            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: flex-end;"  @pointermove="closeDropdown">
                 <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item="item" style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
@@ -565,20 +564,27 @@ header: {
         _tap(i) {
             this.toggled = false;
             route(i);
+        },
+        closeDropdown() {
+            const dd = document.body.getElementsByTagName('oda-dropdown')
+            if (dd.length)
+                for (let i = 0; i < dd.length; i++) {
+                    const elm = dd[i];
+                    elm.fire('cancel');
+                }
         }
     });
     ODA({ is: 'oda-site-header-item',
         template: `
             <style>
                 :host{
-                    padding: 8px 4px;
                     cursor: pointer;
                     font-size: large;
                     @apply --vertical;
                     z-index: 1;
                 }
             </style>
-            <div class="horizontal" style="align-items: center">
+            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop>
                 <oda-icon ~if="mobile" icon="icons:chevron-left"></oda-icon>
                 {{item.label || item.name}}
             </div>
@@ -598,7 +604,7 @@ header: {
                     const elm = dd[i];
                     elm.fire('cancel');
                 }
-            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none' });
+            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none', cancelAfterLeave: true });
             this.value = res?.value;
         },
         _tap() {

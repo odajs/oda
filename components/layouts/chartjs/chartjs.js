@@ -6,35 +6,48 @@ ODA({
     <canvas></canvas>
 `,
     props: {
-        xAxisKey: String,
-        chartGroupBy: String,
+        xAxisKey: {
+            default: 'date',
+            type: String,
+        },
+        groupBy: String,
         orderBy: {
             default: 'ascending',
             list: ['ascending', 'descending']
         },
+        xAxisType: {
+            default: 'date',
+            list: ['date', 'other']
+        },
     },
     fields: [],
     items: [],
+    KeyType: {
+        Date: 'date',
+        Other: 'other'
+    },
+    GroupOptions: {
+        Year: 'year',
+        Month: 'month',
+        Quarter: 'quarter',
+        AxisKey: 'xAxisKey'
+    },
+    SortType: {
+        Ascending: 'ascending',
+        Descending: 'descending'
+    },
     quarter: {
         1: [1, 2, 3],
         2: [4, 5, 6],
         3: [7, 8, 9],
         4: [10, 11, 12]
     },
-    GroupOptions: {
-        Year: 'year',
-        Month: 'month',
-        Quarter: 'quarter'
-    },
-    SortType: {
-        Ascending: 'ascending',
-        Descending: 'descending'
-    },
+
     get canvas() {
         return this.$('canvas');
     },
     attached() {
-        const sortedItemsByDate = this.sortByDate(this.items, this.orderBy);
+        const sortedItemsByDate = this.getSortedItems(this.items);
         const preparedItems = this.getPreparedItems(sortedItemsByDate);
 
         const chartLabels = this.getLabels(sortedItemsByDate);
@@ -42,29 +55,41 @@ ODA({
 
         this.createChart(chartLabels, chartDatasets);
     },
-    sortByDate(items, orderBy) {
-        switch (orderBy) {
+    getSortedItems(items) {
+        switch (this.xAxisType) {
+            case this.KeyType.Other:
+                return items;
+            case this.KeyType.Date:
+            default:
+                return this.sortByDate(items);
+        }
+    },
+    sortByDate(items) {
+        switch (this.orderBy) {
             case this.SortType.Descending:
-                return items.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+                return items.slice().sort((a, b) => new Date(b[this.xAxisKey]) - new Date(a[this.xAxisKey]));
             case this.SortType.Ascending:
             default:
-                return items.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+                return items.slice().sort((a, b) => new Date(a[this.xAxisKey]) - new Date(b[this.xAxisKey]));
         }
     },
     getPreparedItems(items) {
         return this.getGroupedItems(items);
     },
     getLabels(items) {
-        const labels = callback => Array.from(new Set(items.map(callback.bind(this))));
-        switch (this.chartGroupBy) {
+        const labels = callback => Array.from(new Set(items.map(callback.bind(this))))
+
+        switch (this.groupBy) {
             case this.GroupOptions.Year:
                 return labels(this.getYear);
             case this.GroupOptions.Month:
                 return labels(this.getMonthYearString);
             case this.GroupOptions.Quarter:
                 return labels(this.getQuarterString);
+            case this.GroupOptions.AxisKey:
+                return labels(this.getAxisKey);
             default:
-                return items.map(i => i.date);
+                return items.map(i => i[this.xAxisKey]);
         }
     },
     getDatasetsChartSettings(preparedItems) {
@@ -93,16 +118,21 @@ ODA({
         ));
     },
     getGroupedItems(items) {
-        switch (this.chartGroupBy) {
+        switch (this.groupBy) {
             case this.GroupOptions.Year:
                 return this.group(items, this.getYear.bind(this));
             case this.GroupOptions.Month:
                 return this.group(items, this.getMonthYearString.bind(this));
             case this.GroupOptions.Quarter:
                 return this.group(items, this.getQuarterString.bind(this));
+            case this.GroupOptions.AxisKey:
+                return this.group(items, this.getAxisKey.bind(this));
             default:
                 return this.getDefaultItemList(items);
         }
+    },
+    getAxisKey(item) {
+        return item[this.xAxisKey];
     },
     group(items, keyCallback) {
         const map = new Map();
@@ -129,7 +159,7 @@ ODA({
     sumObjectProperties(year, items) {
         const result = {};
         let fields = !!this.fields.length ? this.fields.slice() : this.getFields(this.items, this.xAxisKey);
-        result.date = year;
+        result[this.xAxisKey] = year;
 
         if (!fields.length) {
             items = this.filterArrayByField(items, this.xAxisKey);
@@ -156,10 +186,10 @@ ODA({
     },
 
     getYear(item) {
-        return new Date(item.date).getFullYear();
+        return new Date(item[this.xAxisKey]).getFullYear();
     },
     getMonthYearString(item) {
-        const date = new Date(item.date);
+        const date = new Date(item[this.xAxisKey]);
         const year = date.getFullYear();
         const month = date.toLocaleString('default', {month: 'long'});
         return month[0].toUpperCase() + month.slice(1) + ' ' + year;
@@ -170,7 +200,7 @@ ODA({
             .filter(i => !!i)[0];
     },
     getQuarterString(item) {
-        const date = new Date(item.date);
+        const date = new Date(item[this.xAxisKey]);
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
         const quarter = this.getQuarterByMonthNumber(month);

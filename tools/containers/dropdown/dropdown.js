@@ -82,6 +82,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             }
         }
     ],
+    listeners: {
+        pointerleave: function cancel() {
+             if (this.cancelAfterLeave) this.fire('cancel');
+        },
+    },
     props: {
         parent: { type: [HTMLElement, Object] },
         intersect: false,
@@ -97,7 +102,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         minHeight: 0,
         isReady: {
             default: false,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            cancelAfterLeave: false
         },
         pointerEvents: 'unset'
     },
