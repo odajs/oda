@@ -267,8 +267,9 @@ body[context-menu-show] *:not(oda-context-menu){
         min-height: 10px;     
     };
     --error-invert: {
-        @apply --invert;
-        background: var(--error-color) !important;
+        background-color: var(--error-color) !important;
+        fill: white !important;
+        color: white !important;
     };
 
     --accent: {
@@ -277,8 +278,9 @@ body[context-menu-show] *:not(oda-context-menu){
         border-color: var(--accent-color) !important;
     };
     --accent-invert: {
-        @apply --invert;
-        background: var(--accent-color) !important;
+        background-color: var(--accent-color) !important;
+        fill: white !important;
+        color: white !important;
     };
 
     --success: {
@@ -287,8 +289,9 @@ body[context-menu-show] *:not(oda-context-menu){
         border-color: var(--success-color) !important;
     };
     --success-invert: {
-        @apply --invert;
-        background: var(--success-color) !important;
+        background-color: var(--success-color) !important;
+        fill: white !important;
+        color: white !important;
     };
 
     --info: {
@@ -297,8 +300,9 @@ body[context-menu-show] *:not(oda-context-menu){
         border-color: var(--info-color) !important;
     };
     --info-invert: {
-        @apply --invert;
-        background: var(--info-color) !important;
+        background-color: var(--info-color) !important;
+        fill: white !important;
+        color: white !important;
     };
 
     --warning: {
@@ -308,8 +312,9 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 
     --warning-invert: {
-        @apply --invert;
-        background: var(--warning-color) !important;
+        background-color: var(--warning-color) !important;
+        fill: white !important;
+        color: white !important;
     };
     --help: {
     };
