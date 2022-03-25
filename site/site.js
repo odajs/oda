@@ -98,12 +98,12 @@ site: {
                 </div>
                 <oda-site-header :items ::part @down="close"></oda-site-header>
             </div>
-            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown">
-                <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex"></oda-site-nav-tree>
+            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown" class="layout" :fill="selectedMenu===item._title?'red':'black'" @tap="selectedMenu=item._title">
+                <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
             <oda-nav ~show="!_showTester" :slot="part?'main':'?'" :focused-item=focusedItem></oda-nav>
-            <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" width="100%" height="100%" style="background-color: black;" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
+            <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" style="background-color: black; height: 100vh" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
             <iframe ~if="_srcIframe!=='video'" :slot="!focusedItem || part === null?'main':'?'" :src="_srcIframe" style="width:100%;height:100vh;border:none;"></iframe>
             <div ~show="_showTester" slot="main" class="flex" style='position:relative'>
                 <iframe ~show="_showTester"  ref="iframe" :src="src" style="width:100%; height:100%; border: none;"></iframe>
@@ -116,12 +116,12 @@ site: {
         `,
         get leftButtons() {
             return [
-                { _icon: 'enterprise:graduation-cap', _title: 'Обучение' },
-                { _icon: 'icons:apps', _title: 'Компоненты' },
-                { _icon: 'icons:language', _title: 'Языки' },
-                { _icon: 'image:palette', _title: 'Темы' },
-                { _icon: 'device:devices', _title: 'Тесты' },
-                { _icon: 'av:play-circle-filled', _title: 'Примеры' }
+                { _icon: 'enterprise:graduation-cap', _title: 'ОБУЧЕНИЕ' },
+                { _icon: 'icons:apps', _title: 'КОМПОНЕНТЫ' },
+                // { _icon: 'icons:language', _title: 'Языки' },
+                { _icon: 'image:palette', _title: 'ТЕМЫ' },
+                { _icon: 'device:devices', _title: 'ТЕСТЫ' },
+                { _icon: 'av:play-circle-filled', _title: 'ПРИМЕРЫ' }
             ]
         },
         _ondown(e){
@@ -129,6 +129,7 @@ site: {
                 this.async(() => this.close(), 500);
             }
         },
+        selectedMenu: '',
         props: {
             allowPin: true,
             allowCompact: true,
@@ -177,7 +178,6 @@ site: {
                         p = p.$parent;
                     return p;
                 }
-
             },
             items: Array,
             focusedItem: {
@@ -205,7 +205,7 @@ site: {
             _showTester() {
                 return (this.focusedItem && (!this.focusedItem.items || this.focusedItem.items.length === 0)) && this.src;
             },
-            showLogoImage: true
+            showLogoImage: true,
         },
         isEditMode: false,
         bubbleIframeMouseWheel(iframe) {
@@ -552,12 +552,16 @@ header: {
                 }
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
-            <div ~show="!mobile" :parent="this" class="flex horizontal" style="flex-wrap: wrap; justify-content: flex-end;"  @pointermove="closeDropdown">
-                <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item="item" style="color: #336699;">{{item.label}}</oda-site-header-item>
+            <div ~show="!mobile" :parent="this" class="flex horizontal" style="justify-content: flex-end;"  @pointermove="closeDropdown">
+                <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
-                <div class="mob" ~for="items" :item="item" @tap="_tap(item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;">{{item.label}}
-                    <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
+                <div ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
+                    <div class="horizontal" style="align-items: center" ~style="{color: selectedMenu === (item.label || item.name) ? 'red' : ''}">
+                        <oda-icon :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7" :fill="selectedMenu === (item.label || item.name) ? 'red' : 'black' "></oda-icon>    
+                        {{item.label}}
+                    </div>
+                    <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i, item)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
                 </div>
             </div>
         `,
@@ -577,10 +581,12 @@ header: {
             }
         },
         _resize() {
-            this.mobile = this.rootHost.offsetWidth < 540;
+            // console.log(this.rootHost.offsetWidth)
+            this.mobile = this.rootHost.offsetWidth < 900;
             this.showLogoImage = this.rootHost.offsetWidth > 320;
         },
-        _tap(i) {
+        _tap(i, item) {
+            this.selectedMenu = item.label || item.name;
             this.toggled = false;
             route(i);
         },
@@ -603,14 +609,16 @@ header: {
                     z-index: 1;
                 }
             </style>
-            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop>
+            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop  ~style="{color: selectedMenu === (item.label || item.name) ? 'red' : ''}">
                 <oda-icon ~if="mobile" icon="icons:chevron-left"></oda-icon>
+                <oda-icon ~if="!mobile" :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7" :fill="selectedMenu === (item.label || item.name) ? 'red' : 'black' "></oda-icon>
                 {{item.label || item.name}}
             </div>
         `,
         props: {
             mobile: false,
-            item: {}
+            item: {},
+            index: 0
         },
         listeners: {
             pointerenter: '_showDropdown',
@@ -624,9 +632,13 @@ header: {
                     elm.fire('cancel');
                 }
             let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none', cancelAfterLeave: true });
-            this.value = res?.value;
+            if (res) {
+                this.value = res.value;
+                this.selectedMenu = this.item.label || this.item.name;
+            }
         },
         _tap() {
+            this.selectedMenu = this.item.label || this.item.name;
             route(this.item);
         }
     });

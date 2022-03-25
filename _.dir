@@ -1,27 +1,23 @@
 [
     {
         "name": "learn",
-        "label": "Обучение"
+        "label": "ОБУЧЕНИЕ"
     },
     {
         "name": "components",
-        "label": "Компоненты"
-    },
-    {
-        "name": "locales",
-        "label": "Языки"
+        "label": "КОМПОНЕНТЫ"
     },
     {
         "name": "themes",
         "path": "/tools/styles/themes/",
-        "label": "Темы"
+        "label": "ТЕМЫ"
     },
     {
         "name": "benchmarks",
-        "label": "Тесты"
+        "label": "ТЕСТЫ"
     },
     {
         "name": "apps",
-        "label": "Примеры"
+        "label": "ПРИМЕРЫ"
     }
 ]

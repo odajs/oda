@@ -9,12 +9,6 @@ ODA({ is: 'oda-jupyter',
                 padding: 16px 0;
                 position: relative;
                 min-height: 28px;
-                opacity: 0;
-                animation: ani .5s .5s forwards;
-            }
-            @keyframes ani {
-                0% {opacity: 0;}
-                100% {opacity: 1;}
             }
         </style>
         <oda-jupyter-cell-addbutton ~show="isReady && !notebook?.cells?.length" style="position: absolute; top: 18px; left: 12px; z-index: 31;"></oda-jupyter-cell-addbutton>
