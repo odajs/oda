@@ -132,8 +132,10 @@ site: {
         },
         selectedMenu: '',
         _activate(item) {
-            this.selectedMenu = item.label;
-            route(item);
+            if (this.selectedMenu !== item.label) {
+                route(item);
+                this.selectedMenu = item.label;
+            }
         },
         props: {
             allowPin: true,

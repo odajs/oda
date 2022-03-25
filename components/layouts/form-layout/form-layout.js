@@ -51,17 +51,17 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 flex: {{size === 'normal' ? '0 0 auto' : '1 0 auto'}};
                 left: {{_getPosition('left')}};
                 top: {{_getPosition('top')}};
-                {{isMinimized ? \`max-height: \${iconSize}px;\` : ''}}
             }
             :host(:not([autosize])[modal][is-minimized]){
                 box-sizing: border-box;
                 box-shadow: var(--box-shadow);
-                max-width: 300px;
+                max-width: 400px;
                 height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
                 max-height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
                 border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
                 left: {{_getPosition('left')}};
                 top: {{_getPosition('top')}};
+                {{hideMinMode ? 'visibility: hidden;' : ''}}
             }
             :host([autosize]){
                 height: unset;
@@ -77,7 +77,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             <div class="flex"></div>
             <slot class="horizontal no-flex" name="title-buttons"></slot>
             <div ~if="modal && !hideMinMax" class="horizontal no-flex">
-                <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" :active="size === 'min'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+                <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
                 <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
             </div>
             <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
@@ -106,6 +106,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             },
             reflectToAttribute: true
         },
+        hideMinMode: false,
         allowClose: {
             type:Boolean,
             default: null,
@@ -121,7 +122,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         },
         pos: {
             default: {
-                x: Math.max(0, Math.round(document.body.offsetWidth  / 2 - 250)),
+                x: Math.max(0, Math.round(document.body.offsetWidth  / 2 - 200)),
                 y: Math.max(0, Math.round(document.body.offsetHeight / 2 - 150)),
                 width: 500,
                 height: 300,
@@ -134,8 +135,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 show: false,
             },
         },
-        minWidth: 325,
-        minHeight: 325,
+        minWidth: 400,
+        minHeight: 300,
         _resizeDir: String,
         _curPos: String,
         _onBorder: false,
@@ -316,9 +317,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         }
     },
     _getModals() {
-        const parent = this.parentElement;
-        if (parent) return Array.from(parent.children).filter(el => el !== this && el.localName === this.localName);
-        return [];
+        return Array.from(document.body.querySelectorAll('odant-form')).filter(e => e.modal);
     },
     // _transition(dur = 150) {
     //     if (!this.animated) return;

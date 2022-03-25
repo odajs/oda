@@ -666,6 +666,24 @@ if (!globalThis.KERNEL) {
                 }
             });
 
+            const unshift = Array.prototype.unshift;
+            Object.defineProperty(Array.prototype, 'unshift', {enumerable: false, configurable: true,
+                value: function (...args) {
+                    const old_length = this.length;
+                    const res = unshift.call(this, ...args);
+                    if (this.__op__){
+                        for (let i = old_length; i<this.length; i++){
+                            this[i] = makeReactive.call(this, this[i]);
+                        }
+
+                        // this[]
+                        this.__op__.proxy.length = this.length;
+                    }
+
+                    return res;
+                }
+            });
+
             const splice = Array.prototype.splice;
             Object.defineProperty(Array.prototype, 'splice', {enumerable: false, configurable: true,
                 value: function (...args) {

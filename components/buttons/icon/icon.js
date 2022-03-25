@@ -103,10 +103,11 @@ ODA({is: 'oda-icon', template: `
         stroke: '',
         fill: '',
         blink: 0,
-        subIcon: ''
+        subIcon: '',
+        alwaysBubble: false
     },
     get _bubble() {
-        if (this.bubble > 1) {
+        if (this.bubble > 1 || (this.alwaysBubble && this.bubble > 0)) {
             if (this.bubble > 9)
                 return '9+';
             else return String(this.bubble);
