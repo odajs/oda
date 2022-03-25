@@ -98,7 +98,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part @down="close"></oda-site-header>
             </div>
-            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown" class="layout" :fill="selectedMenu===item._title?'red':'black'" @tap="selectedMenu=item._title">
+            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown" class="layout" @tap="selectedMenu=item._title" :outline="selectedMenu===item._title?'true':undefined">
                 <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
@@ -550,15 +550,19 @@ header: {
                 .mob:hover {
                     filter: invert(100%);
                 }
+                .outline {
+                    outline: gray dashed 1px;
+                    outline-offset: -2px;
+                }
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
             <div ~show="!mobile" :parent="this" class="flex horizontal" style="justify-content: flex-end;"  @pointermove="closeDropdown">
-                <oda-site-header-item :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
+                <oda-site-header-item ~class="{outline: selectedMenu === (item.label || item.name)}" :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
-                <div ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
-                    <div class="horizontal" style="align-items: center" ~style="{color: selectedMenu === (item.label || item.name) ? 'red' : ''}">
-                        <oda-icon :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7" :fill="selectedMenu === (item.label || item.name) ? 'red' : 'black' "></oda-icon>    
+                <div ~class="{outline: selectedMenu === (item.label || item.name)}" ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
+                    <div class="horizontal" style="align-items: center" ~class="{highlighted: selectedMenu === (item.label || item.name)}">
+                        <oda-icon :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>    
                         {{item.label}}
                     </div>
                     <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i, item)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
@@ -609,9 +613,9 @@ header: {
                     z-index: 1;
                 }
             </style>
-            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop  ~style="{color: selectedMenu === (item.label || item.name) ? 'red' : ''}">
+            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop>
                 <oda-icon ~if="mobile" icon="icons:chevron-left"></oda-icon>
-                <oda-icon ~if="!mobile" :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7" :fill="selectedMenu === (item.label || item.name) ? 'red' : 'black' "></oda-icon>
+                <oda-icon ~if="!mobile" :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>
                 {{item.label || item.name}}
             </div>
         `,
