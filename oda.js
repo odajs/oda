@@ -2002,6 +2002,7 @@ if (!window.ODA) {
             back.style.setProperty('width', '100%');
             back.style.setProperty('height', '100%');
             back.style.setProperty('position', 'fixed');
+            back.classList.add('odaTrackBack');
             // back.style.setProperty('z-index', '1');
 
             this.addSubEvent('mousedown', (e) => {
@@ -2020,7 +2021,9 @@ if (!window.ODA) {
                 if (!this.started) {
                     window.addEventListener('mouseup', upHandler);
                     this.started = true;
-                    setTimeout(() => document.body.appendChild(back), 500);
+                    setTimeout(() => {
+                        if(this.detail.state !== 'end' && !back.notPlace) document.body.appendChild(back);
+                    }, 500);
                 }
                 this.detail.x = e.clientX;
                 this.detail.y = e.clientY;
@@ -2044,7 +2047,8 @@ if (!window.ODA) {
                 this.detail.state = 'end';
                 const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
                 this.handler(ce, ce.detail);
-                setTimeout(() => back.remove(), 200);
+                back.notPlace = true;
+                setTimeout(() => Array.from(document.body.querySelectorAll('odaTrackBack')).forEach(e => e.remove()), 200);
             };
         }
         get event() {

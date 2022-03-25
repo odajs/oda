@@ -490,7 +490,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%">
                 <div ~if="focused?.title" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
                 <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pin ? 'icons:pin' : 'icons:pin-fill:315'" @tap="pin = !pin" :icon-size="iconSize*0.66"></oda-button>
-                <oda-button :icon-size="iconSize*0.66" icon="icons:chevron-right:180" @tap="focused = null"></oda-button>
+                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap="focused = null"></oda-button>
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
