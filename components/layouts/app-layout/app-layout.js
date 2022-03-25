@@ -463,13 +463,13 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         }
         .outline {
             outline: gray dashed 1px;
-            outline-offset: -4px;
+            outline-offset: -2px;
         }
     </style>
 
     <div @touchmove="hideTabs=false"  @down.stop="hideTabs=!hideTabs" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
-            <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" @down.stop="setFocus(item)" :title="item?.getAttribute('bar-title') || item?.title || item?.getAttribute('title')" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'"  :sub-icon="item?.getAttribute('sub-icon')" :toggled="focused === item" :bubble="item.bubble" ~class="{outline: item?.outline || item?.getAttribute('outline') || ''}"></oda-button>
+            <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" @down.stop="setFocus(item)" :title="item?.getAttribute('bar-title') || item?.title || item?.getAttribute('title')" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'"  :sub-icon="item?.getAttribute('sub-icon')" :toggled="focused === item" :bubble="item.bubble" ~class="{outline: lastFocused === item}"></oda-button>
             <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
             <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
@@ -531,8 +531,11 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             default: null,
             set(n, o) {
                 if (n) {
-                    this.last = n;
+                    // this.last = n; // swipeX
                     // this.reduceSomeDrawers();
+                    this.lastFocused = null;
+                } else {
+                    this.lastFocused = o;
                 }
                 for (let i of (this.controls || [])) {
                     i.$sleep = i.hidden = i !== n;
@@ -541,7 +544,8 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
                     n?.dispatchEvent(new CustomEvent('activate'));
                 })
             }
-        }
+        },
+        lastFocused: null
     },
     get sign(){
         return this.pos === "left"?1:-1;
@@ -556,7 +560,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             default: item?.contextMenu?.(e); break;
         }
     },
-    close(){
+    close() {
         this.focused = null;
     },
     setFocus(item) {

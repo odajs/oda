@@ -98,7 +98,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part @down="close"></oda-site-header>
             </div>
-            <div @activate="_activate(items[index])" slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" class="layout" @tap="_ontap(item)" :outline="selectedMenu===item._title?'true':undefined">
+            <div @activate="_activate(items[index])" slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" class="layout" @tap="_ontap(item)">
                 <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>

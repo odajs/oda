@@ -2003,6 +2003,7 @@ if (!window.ODA) {
             back.style.setProperty('height', '100%');
             back.style.setProperty('position', 'fixed');
             back.classList.add('odaTrackBack');
+            back.addEventListener('mousedown', ()=>back.remove());
             // back.style.setProperty('z-index', '1');
 
             this.addSubEvent('mousedown', (e) => {
