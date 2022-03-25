@@ -98,7 +98,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part @down="close"></oda-site-header>
             </div>
-            <div slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" @down="_ondown" class="layout" @tap="selectedMenu=item._title" :outline="selectedMenu===item._title?'true':undefined">
+            <div @activate="_activate(items[index])" slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" class="layout" @tap="_ontap(item)" :outline="selectedMenu===item._title?'true':undefined">
                 <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
@@ -124,12 +124,17 @@ site: {
                 { _icon: 'av:play-circle-filled', _title: 'ПРИМЕРЫ' }
             ]
         },
-        _ondown(e){
-            if (this.allowCompact && this.compact && this.opened){
-                this.async(() => this.close(), 500);
+        _ontap(item){
+            this.selectedMenu = item._title;
+            if (this.allowCompact && this.compact && this.opened) {
+                this.close();
             }
         },
         selectedMenu: '',
+        _activate(item) {
+            this.selectedMenu = item.label;
+            route(item);
+        },
         props: {
             allowPin: true,
             allowCompact: true,
