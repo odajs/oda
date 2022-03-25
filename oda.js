@@ -2020,7 +2020,7 @@ if (!window.ODA) {
                 if (!this.started) {
                     window.addEventListener('mouseup', upHandler);
                     this.started = true;
-                    setTimeout(() => document.body.appendChild(back), 100);
+                    setTimeout(() => document.body.appendChild(back), 500);
                 }
                 this.detail.x = e.clientX;
                 this.detail.y = e.clientY;
