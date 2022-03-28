@@ -1,7 +1,7 @@
 const STYLES = ODA.regTool('styles');
 STYLES.path = import.meta.url.split('/').slice(0,-1).join('/');
 const style = document.createElement('style');
-style.textContent = `
+style.textContent = /*css*/`
 ::-webkit-scrollbar {
     width: 4px;
     height: 4px;

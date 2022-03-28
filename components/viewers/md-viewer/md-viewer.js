@@ -173,7 +173,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                         ~style="md?'font-family:var(--font-family);font-size:.95em':'font-size:1.25em;line-height: 1.3em;'"></code>
                 <oda-ace-editor ref="code" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" ~if="!md" ::value="_code" style="flex: 1; background-color: white" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0', 'padding-top': hideGutter ? '16px' : 0 }" highlight-active-line="false" min-lines="1"></oda-ace-editor>
             </pre>
-            <iframe ref="iframe" ~if="showRun" :src="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
+            <iframe ref="iframe" ~if="showRun" :srcdoc="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
                     onload="setTimeout(()=>{this.style.height=this.contentDocument.body.scrollHeight+'px'},500)" ~style="{'min-height': (_h||28)+'px','max-height': _h ? _h+'px':'unset'}"></iframe>
             <div ~if="showRun && _showConsole" style="display:flex;margin-top:-14px">
                 <div style="font-size:.8em;">console:</div>
@@ -393,14 +393,15 @@ ${this._scriptODA()}` + code;
         this._iframe = this._iframe.replace(/alert\(/g, 'console.log("from alert  > " + ');
         this._iframe = `<meta charset="UTF-8">` + this._iframe;
         this._setConsole();
-        this._src = URL.createObjectURL(new Blob([this._iframe], { type: 'text/html' }));
-        this._revokeObjectURL(this._src);
+        this._src = this._iframe;
+        // this._src = URL.createObjectURL(new Blob([this._iframe], { type: 'text/html' }));
+        // this._revokeObjectURL(this._src);
     },
-    _revokeObjectURL(src) {
-        setTimeout(() => {
-            URL.revokeObjectURL(src);
-        }, 5000);
-    },
+    // _revokeObjectURL(src) {
+    //     setTimeout(() => {
+    //         URL.revokeObjectURL(src);
+    //     }, 5000);
+    // },
     _getInfoIcon() {
         return {
             'error': 'icons:add-circle-outline:45', 'success': 'enterprise:check-box', 'info': 'icons:info-outline',

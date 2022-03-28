@@ -295,15 +295,15 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 outline: 1px dashed red;
             }
         </div>
-        <div class="horizontal flex" style="align-items: end; overflow: hidden" @pointerdown="onpointerdown" :draggable
-                ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
-            <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
-                    ~class="{group:layout.isGroup}" 
-                    ~style="{alignItems: (width && !layout?.type)?'center':''}">
-<!--            <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" ~class="{group:layout.isGroup}" ~style="{flexDirection: labelPos==='top'?'column':'row', textAlign:  labelPos ==='top'?'start':'end'}">-->
-                <label ~if="showLabel" class="no-flex">{{layout?.label}}</label>
-                <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
+        <div class="vertical flex" style="overflow: hidden" @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
+            <label ~if="showLabel" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
+            <div class="horizontal flex" style="align-items: center;">
+                <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
+                        ~class="{group:layout.isGroup}" 
+                        ~style="{alignItems: (width && !layout?.type)?'center':''}">
+                    <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
+                </div>
             </div>
         </div>
         <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px; margin-right: 1px; border-left: 1px dashed white;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>

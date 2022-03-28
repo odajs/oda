@@ -1,7 +1,5 @@
-import '../../buttons/button/button.js';
-// import '/web/lib/utils/number/number.js';
-// import '/web/lib/utils/number/moneytostring.js';
-ODA({is: 'oda-number-input', template: /*html*/`
+ODA({is: 'oda-number-input', imports: '@oda/button',
+    template: /*html*/`
     <style>
         :host {
             @apply --horizontal;
@@ -115,11 +113,6 @@ ODA({is: 'oda-number-input', template: /*html*/`
             }
         }
     },
-    // observers: [
-    //     function _doNumberArgs(dataRoot, $field) {
-    //         if ($field) Object.assign(this.args, $field.getArgs());
-    //     }
-    // ],
     listeners: {
         focus(e) {
             e.stopPropagation(); // This prevents the crazy fields focusing
@@ -162,10 +155,24 @@ ODA({is: 'oda-number-input', template: /*html*/`
         this.value = isNaN(this.valueEdit) ? undefined : this.valueEdit;
     },
     async _showCalculator() {
-        try {
-            let val = await ODA.showCalculator(this.valueEdit);
-            this.valueEdit = val;
+        if (!this._list) {
+            this._list = document.createElement('oda-calculator');
+            this._list.value = this.valueEdit;
+            this.async(() => {
+                this.$('input')?.focus();
+            })
+            const item = (await ODA.showDropdown(this._list, {}, { parent: this, useParentWidth: true })).focusedItem;
+            this.valueEdit = item?.value;
+            this._list = undefined;
         }
-        catch (e) { }
+        else {
+            this._list.value = this.valueEdit;
+            return;
+        }
+        // try {
+        //     let val = await ODA.showCalculator(this.valueEdit);
+        //     this.valueEdit = val;
+        // }
+        // catch (e) { }
     }
 })
