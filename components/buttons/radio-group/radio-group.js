@@ -39,7 +39,7 @@ ODA({ is: 'oda-radio-group', imports:'@oda/icon', template: /*html*/`
             set(items) {
                 if (items.length) {
                     if (!this.multiSelect && items.every(i => !i.checked)) {
-                        this.set(items[0], 'checked', true);
+                        items[0].checked = true;
                     }
                 }
             }
@@ -75,10 +75,10 @@ ODA({ is: 'oda-radio-group', imports:'@oda/icon', template: /*html*/`
         const item = e.currentTarget.item;
         if (!this.multiSelect) {
             this.items.forEach(i => {
-                this.set(i, 'checked', i === item);
+                i.checked = i === item;
             });
         } else {
-            this.set(item, 'checked', !item.checked);
+            item.checked = !item.checked;
         }
     },
     updated() {
