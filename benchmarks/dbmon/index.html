@@ -188,7 +188,7 @@
         </table>
 
             `,
-            databases:[],
+            // databases:[],
             ready(){
                 this.databases = ENV.generateData(true).toArray();
             },
@@ -203,8 +203,9 @@
                         // requestAnimationFrame(()=>{
                         //     this.run()
                         // })
-                        this.async(()=>{
+                        setTimeout(()=>{
                             this.run()
+                            this.render();
                         }, ENV.timeout);
                     } break;
                     case 1:{
