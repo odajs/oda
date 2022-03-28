@@ -243,7 +243,6 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
                     this.showConsole = n.includes('console');
                     this.warn = n.includes('warn');
                     this.error = n.includes('error');
-                    this._revokeBlob = !n.includes('blob');
                     if (this.md) {
                         this.html = mdShowdown.makeHtml(this._code).replace(/<p>|<\/p>/g, '');
                     } else {
@@ -275,7 +274,6 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor', template: `
         _console: '',
         warn: false,
         error: false,
-        _revokeBlob: true,
         _mode: ''
     },
     attached() {
@@ -396,14 +394,12 @@ ${this._scriptODA()}` + code;
         this._iframe = `<meta charset="UTF-8">` + this._iframe;
         this._setConsole();
         this._src = URL.createObjectURL(new Blob([this._iframe], { type: 'text/html' }));
-        //this._revokeObjectURL(this._src);
+        this._revokeObjectURL(this._src);
     },
     _revokeObjectURL(src) {
-        if (this._revokeBlob) {
-            setTimeout(() => {
-                URL.revokeObjectURL(src);
-            }, 10000);
-        }
+        setTimeout(() => {
+            URL.revokeObjectURL(src);
+        }, 5000);
     },
     _getInfoIcon() {
         return {

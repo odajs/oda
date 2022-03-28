@@ -137,6 +137,21 @@ site: {
                 this.selectedMenu = item.label;
             }
         },
+        menuIndex: -1,
+        listeners: {
+            pointermove() { 
+                this.debounce('_pointermove', () => this.closeDropdown(), 50);
+            }
+        },
+        closeDropdown() {
+            const dd = document.body.getElementsByTagName('oda-dropdown')
+            this.menuIndex = -1;
+            if (dd.length)
+                for (let i = 0; i < dd.length; i++) {
+                    const elm = dd[i];
+                    elm.fire('cancel');
+                }
+        },
         props: {
             allowPin: true,
             allowCompact: true,
@@ -563,7 +578,7 @@ header: {
                 }
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
-            <div ~show="!mobile" :parent="this" class="flex horizontal" style="justify-content: flex-end;"  @pointermove="closeDropdown">
+            <div ~show="!mobile" :parent="this" class="flex horizontal" style="justify-content: flex-end;">
                 <oda-site-header-item ~class="{outline: selectedMenu === (item.label || item.name)}" :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
@@ -600,14 +615,6 @@ header: {
             this.selectedMenu = item.label || item.name;
             this.toggled = false;
             route(i);
-        },
-        closeDropdown() {
-            const dd = document.body.getElementsByTagName('oda-dropdown')
-            if (dd.length)
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    elm.fire('cancel');
-                }
         }
     });
     ODA({ is: 'oda-site-header-item',
@@ -620,7 +627,7 @@ header: {
                     z-index: 1;
                 }
             </style>
-            <div class="horizontal" style="align-items: center; padding: 0 4px 8px 4px; margin-top: 8px;" @pointermove.stop>
+            <div class="horizontal" style="align-items: center; padding: 4px 8px;" @pointermove.stop="_showDropdown">
                 <oda-icon ~if="mobile" icon="icons:chevron-left"></oda-icon>
                 <oda-icon ~if="!mobile" :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>
                 {{item.label || item.name}}
@@ -632,11 +639,13 @@ header: {
             index: 0
         },
         listeners: {
-            pointerenter: '_showDropdown',
-            tap: '_tap'
+            pointerleave: '_showDropdown',
+            tap: '_tap',
         },
         async _showDropdown() {
             const dd = document.body.getElementsByTagName('oda-dropdown')
+            if (dd.length && this.menuIndex === this.index) return;
+            this.menuIndex = this.index;
             if (dd.length)
                 for (let i = 0; i < dd.length; i++) {
                     const elm = dd[i];
@@ -646,10 +655,12 @@ header: {
             if (res) {
                 this.value = res.value;
                 this.selectedMenu = this.item.label || this.item.name;
+                this.menuIndex = -1;
             }
         },
         _tap() {
             this.selectedMenu = this.item.label || this.item.name;
+            this.menuIndex = -1;
             route(this.item);
         }
     });
