@@ -2,9 +2,10 @@ import './dist/chart.js';
 import './adapters/dist/chartjs-adapter-date-fns.js';
 
 ODA({
-    is: 'oda-chartjs', template: `
-    <canvas></canvas>
-`,
+    is: 'oda-chartjs',
+    template: `
+        <canvas></canvas>
+    `,
     props: {
         xAxisKey: {
             default: 'date',
@@ -19,6 +20,10 @@ ODA({
             default: 'date',
             list: ['date', 'other']
         },
+        aggregate: {
+            default: 'sum',
+            list: ['sum', 'count', 'average', 'min', 'max']
+        }
     },
     fields: [],
     items: [],
@@ -36,13 +41,24 @@ ODA({
         Ascending: 'ascending',
         Descending: 'descending'
     },
+    AggregateType: {
+        Sum: 'sum',
+        Average: 'average',
+        Count: 'count',
+        Min: 'min',
+        Max: 'max'
+    },
     quarter: {
         1: [1, 2, 3],
         2: [4, 5, 6],
         3: [7, 8, 9],
         4: [10, 11, 12]
     },
-
+    observers: [
+        function itemsChanged(items) {
+            console.log(items);
+        }
+    ],
     get canvas() {
         return this.$('canvas');
     },
@@ -145,7 +161,29 @@ ODA({
                 map.set(key, [item]);
             }
         }
-        return Array.from(map).map(([year, data]) => this.sumObjectProperties(year, data));
+
+        let fields = !!this.fields.length ? this.fields.slice() : this.getFields(this.items, this.xAxisKey);
+
+        switch (this.aggregate) {
+            case this.AggregateType.Average:
+            case this.AggregateType.Count:
+                return this.aggregateByAverageOrCount(map, fields);
+            case this.AggregateType.Max:
+            case this.AggregateType.Min:
+                return this.aggregateByMaxMinValues(map, fields);
+            case this.AggregateType.Sum:
+            default:
+                return this.aggregateBySum(map, fields);
+        }
+    },
+    aggregateBySum(itemsMap, fields) {
+        return Array.from(itemsMap).map(([key, data]) => this.sumObjectProperties(key, data, fields));
+    },
+    aggregateByAverageOrCount(itemsMap, fields) {
+        return Array.from(itemsMap).map(([key, data]) => this.averageOrCountObjectPropertiesValues(key, data, fields));
+    },
+    aggregateByMaxMinValues(itemsMap, fields) {
+        return Array.from(itemsMap).map(([key, data]) => this.getMaxMinValues(key, data, fields));
     },
     getDefaultItemList(items) {
         return items.map(i =>
@@ -156,15 +194,9 @@ ODA({
             )
         );
     },
-    sumObjectProperties(year, items) {
+    sumObjectProperties(key, items, fields) {
         const result = {};
-        let fields = !!this.fields.length ? this.fields.slice() : this.getFields(this.items, this.xAxisKey);
-        result[this.xAxisKey] = year;
-
-        if (!fields.length) {
-            items = this.filterArrayByField(items, this.xAxisKey);
-            fields = this.getFields(items, this.xAxisKey);
-        }
+        result[this.xAxisKey] = key;
 
         for (const item of items) {
             for (const field of fields) {
@@ -172,6 +204,86 @@ ODA({
                     result[field] = 0;
                 }
                 result[field] += !!item[field] ? item[field] : 0;
+            }
+        }
+
+        return result;
+    },
+    averageOrCountObjectPropertiesValues(key, items, fields) {
+        const result = {};
+        let elementCount = new Map();
+        result[this.xAxisKey] = key;
+
+        for (const item of items) {
+            for (const field of fields) {
+                if (!result[field]) {
+                    result[field] = 0;
+                }
+                result[field] += !!item[field] ? item[field] : 0;
+            }
+        }
+
+        for (const item of items) {
+            Object.entries(item)
+                .filter(([k]) => k !== this.xAxisKey)
+                .forEach(([k, v]) => {
+                    if (!elementCount.has(k) && !!v) {
+                        elementCount.set(k, 1);
+                        return;
+                    }
+                    let value = elementCount.get(k);
+                    elementCount.set(k, ++value);
+                });
+        }
+
+        elementCount = Object.fromEntries(elementCount);
+        for (const item in result) {
+            if (item !== this.xAxisKey) {
+                if (this.aggregate === this.AggregateType.Average) {
+                    result[item] = +(result[item] / elementCount[item]).toFixed(1);
+                } else if (this.aggregate === this.AggregateType.Count) {
+                    result[item] = elementCount[item];
+                }
+            }
+        }
+
+        return result;
+    },
+    getMaxMinValues(key, items, fields) {
+        const result = {};
+        let elementCount = new Map();
+        result[this.xAxisKey] = key;
+
+        for (const item of items) {
+            for (const field of fields) {
+                if (!result[field]) {
+                    result[field] = 0;
+                }
+                result[field] += !!item[field] ? item[field] : 0;
+            }
+        }
+
+        for (const item of items) {
+            Object.entries(item)
+                .filter(([k]) => k !== this.xAxisKey)
+                .forEach(([k, v]) => {
+                    if (!elementCount.has(k) && !!v) {
+                        elementCount.set(k, v);
+                        return;
+                    }
+                    let value = elementCount.get(k);
+                    if (this.aggregate === this.AggregateType.Max && v > value) {
+                        elementCount.set(k, v);
+                    } else if (this.aggregate === this.AggregateType.Min && v < value) {
+                        elementCount.set(k, v);
+                    }
+                });
+        }
+
+        elementCount = Object.fromEntries(elementCount);
+        for (const item in result) {
+            if (item !== this.xAxisKey) {
+                result[item] = elementCount[item];
             }
         }
 
