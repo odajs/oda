@@ -1,4 +1,4 @@
-ODA({ is: 'oda-radio-group', imports:'@oda/icon', template: /*html*/`
+ODA({ is: 'oda-radio-group', imports: '@oda/icon', template: /*html*/`
     <style>
         :host {
             @apply --vertical;
@@ -71,6 +71,19 @@ ODA({ is: 'oda-radio-group', imports:'@oda/icon', template: /*html*/`
             }
         }
     },
+    observers: [
+        function itemsChanged(items) {
+            if (items.length) {
+                const res = items.filter(i => i.checked);
+                if (res.length) {
+                    const newVal = (this.multiSelect ? res.map(i => i.label) : [res[0].label]).join(';');
+                    if (newVal !== this.value) {
+                        this.value = newVal;
+                    }
+                }
+            }
+        }
+    ],
     _tap(e) {
         const item = e.currentTarget.item;
         if (!this.multiSelect) {
@@ -79,17 +92,6 @@ ODA({ is: 'oda-radio-group', imports:'@oda/icon', template: /*html*/`
             });
         } else {
             item.checked = !item.checked;
-        }
-    },
-    updated() {
-        if (this.items.length) {
-            const res = this.items.filter(i => i.checked);
-            if (res.length) {
-                const newVal = (this.multiSelect ? res.map(i => i.label) : [res[0].label]).join(';');
-                if (newVal !== this.value) {
-                    this.value = newVal;
-                }
-            }
         }
     }
 })
