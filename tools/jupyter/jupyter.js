@@ -341,6 +341,9 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
 ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
     template: /*html*/`
         <style>
+            ::-webkit-scrollbar { width: 4px; height: 4px; }
+            ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+            ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
             :host {
                 position: relative;
                 @apply --horizontal;
@@ -351,16 +354,35 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
             .ace {
                 height: unset;
             }
+            .editor {
+                overflow: hidden; 
+                height: {{cell?.cell_h || 'unset'}};
+            }
         </style>
-        <oda-ace-editor class="flex ace" :value="cell?.source" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+        <div class="vertical flex editor" style="padding-top: 2px; min-height: 22px;">
+            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+            <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '2px'" color="transparent" style="opacity: .3" resize></oda-splitter2>
+            <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
+        </div>
     `,
     cell: {},
+    attached() {
+        this.$('oda-ace-editor').value = this.cell?.source;
+    },
     listeners: {
         change(e) {
             if (!this.isReadOnly || this.editedCell === this.cell) {
                 this.async((e) => {
                     this.cell.source = this.$('oda-ace-editor').value;
                 }, 100)
+            }
+        },
+        endSplitterMove(e) {
+            if (!this.readOnly) {
+                if (e.detail.value.direction === 'horizontal') {
+                    this.cell.cell_h = e.detail.value.h;
+                    this.cell.cell_h = this.cell.cell_h < 22 ? 22 : this.cell.cell_h;
+                }
             }
         }
     },
@@ -412,6 +434,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 @apply --vertical;
                 @apply --flex;
                 min-height: 24px;
+                padding: 2px 2px 0;
                 height: 100%;
             }
             .box {
@@ -435,7 +458,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                 color: red;
                 background: white;
             }
-            .editor {
+            .editor {              
                 overflow: hidden; 
                 height: {{cell?.cell_h || '200px'}};
             }
@@ -446,7 +469,7 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
         </style>
         <div class="vertical flex editor">
             <div class="horizontal flex" style="overflow: hidden;">
-                <div class="vertical left">
+                <div ~if="!cell?.cell_w || cell?.cell_w > 2" class="vertical left">
                     <div class="horizontal header" style="padding: 4px;">
                         <span @tap="mode='html'" :class="{mode: mode==='html'}">html</span>
                         <span @tap="mode='javascript'" :class="{mode: mode==='javascript'}">javascript</span>
@@ -459,12 +482,12 @@ ODA({ is: 'oda-jupyter-cell-html-executable', imports: '@oda/ace-editor, @oda/sp
                     </div>
                     <oda-ace-editor class="flex ace" :mode :theme="mode==='html'?'cobalt':mode==='javascript'?'solarized_light':mode==='css' ? 'dawn':'chrome'" highlight-active-line="false" show-print-margin="false" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
                 </div>
-                <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '3px'" color="dodgerblue" style="opacity: .3"></oda-splitter2>
+                <oda-splitter2 :size="cell?.splitterV >= 0 ? cell.splitterV + 'px' : '1px'" color="transparent" style="opacity: .3"></oda-splitter2>
                 <div class="flex" style="overflow: hidden; flex: 1">
                     <iframe style="border: none; width: 100%; height: 100%; overflow: hidden"></iframe>
                 </div>
             </div>
-            <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '3px'" color="dodgerblue" style="opacity: .3" resize></oda-splitter2>
+            <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '2px'" color="transparent" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
     `,
