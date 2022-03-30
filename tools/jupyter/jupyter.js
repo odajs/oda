@@ -112,7 +112,7 @@ ODA({ is: 'oda-jupyter-cell',
                 margin: 6px 12px;
                 white-space: normal !important;
                 order: {{cell?.order || 0}};
-                box-shadow: {{showBorder && focusedCell !== cell ? '0px 0px 0px 1px lightgray' : 'unset'}};
+                box-shadow: {{showBorder && (readOnly || focusedCell !== cell) ? '0px 0px 0px 1px lightgray' : 'unset'}};
             }
             ._focused {
                 box-shadow: 0 0 0 1px dodgerblue;
