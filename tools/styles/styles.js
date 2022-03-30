@@ -41,6 +41,7 @@ style.textContent = /*css*/`
     --content:{
         background-color: var(--content-background, white);
         color: var(--content-color, black);
+        fill: var(--content-color, black);
     };
     --font-150:{
         font-size: 150%;
