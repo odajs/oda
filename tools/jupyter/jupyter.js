@@ -234,6 +234,7 @@ ODA({
             }
             .column {
                 overflow: auto;
+                width: 220px;
             }
             .cell {
                 padding: 4px;
@@ -254,15 +255,24 @@ ODA({
         </style>
         <div class="horizontal flex" style="max-width: 80vw; max-height: 80vh">
             <div class="vertical flex column">
-                <div class="header">mode...<b>{{cell?.mode || 'javascript'}}</b></div>
+                <div class="header vertical">
+                    <div>mode:</div>
+                    <b>{{cell?.mode || 'javascript'}}</b>
+                </div>
                 <div class="cell" ~for="mode" @tap="cell.mode=item" ~style="{color: cell.mode===item?'dodgerblue':''}">{{item}}</div>
             </div>
             <div class="vertical flex column">
-                <div class="header">view theme...<b>{{cell?.viewTheme || 'solarized_light'}}</b></div>
+                <div class="header vertical">
+                    <div>view theme:</div>
+                    <b>{{cell?.viewTheme || 'solarized_light'}}</b>
+                </div>
                 <div class="cell" ~for="theme" @tap="cell.viewTheme=item" ~style="{color: cell.viewTheme===item?'dodgerblue':''}">{{item}}</div>
             </div>
             <div class="vertical flex column">
-                <div class="header">edit theme...<b>{{cell?.editTheme || 'dawn'}}</b></div>
+                <div class="header vertical">
+                    <div>edit theme:</div>
+                    <b>{{cell?.editTheme || 'dawn'}}</b>
+                </div>
                 <div class="cell" ~for="theme" @tap="cell.editTheme=item" ~style="{color: cell.editTheme===item?'dodgerblue':''}">{{item}}</div>
             </div>
         </div>
