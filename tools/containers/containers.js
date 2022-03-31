@@ -35,7 +35,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     ctrl[i] = props[i];
                 }
             }
-            host.style.position = 'absolute';
+            host.style.position = 'fixed';
             host.style.width = '100%';
             host.style.height = '100%';
             ctrl.domHost = host;
