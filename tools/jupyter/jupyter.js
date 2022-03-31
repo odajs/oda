@@ -212,9 +212,85 @@ ODA({ is: 'oda-jupyter-cell-toolbar-ace',
                 color: dodgerblue;
             }
         </style>
-        <div>{{cell?.mode || 'javascript'}}</div>
+        <div @tap="ontap">{{cell?.mode || 'javascript'}}</div>
     `,
     cell: {},
+    async ontap(e) {
+        const res = await ODA.showDialog('oda-jupyter-cell-toolbar-ace-select-mode', { cell: this.cell });
+    }
+})
+
+ODA({
+    is: 'oda-jupyter-cell-toolbar-ace-select-mode',
+    template: /*html*/`
+        <style>
+            ::-webkit-scrollbar { width: 4px; height: 4px; }
+            ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+            ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
+            :host {
+                @apply --vertical;
+                @apply --flex;
+                position: relative;
+            }
+            .column {
+                overflow: auto;
+            }
+            .cell {
+                padding: 4px;
+                cursor: pointer;
+            }
+            .cell:hover {
+                background: lightgray;
+            }
+            .header {
+                position: sticky;
+                top: 0;
+                padding: 4px;
+                border-bottom: 1px solid gray;
+            }
+            b {
+                color: dodgerblue;
+            }
+        </style>
+        <div class="horizontal flex" style="max-width: 80vw; max-height: 80vh">
+            <div class="vertical flex column">
+                <div class="header">mode...<b>{{cell?.mode || 'javascript'}}</b></div>
+                <div class="cell" ~for="mode" @tap="cell.mode=item" ~style="{color: cell.mode===item?'dodgerblue':''}">{{item}}</div>
+            </div>
+            <div class="vertical flex column">
+                <div class="header">view theme...<b>{{cell?.viewTheme || 'solarized_light'}}</b></div>
+                <div class="cell" ~for="theme" @tap="cell.viewTheme=item" ~style="{color: cell.viewTheme===item?'dodgerblue':''}">{{item}}</div>
+            </div>
+            <div class="vertical flex column">
+                <div class="header">edit theme...<b>{{cell?.editTheme || 'dawn'}}</b></div>
+                <div class="cell" ~for="theme" @tap="cell.editTheme=item" ~style="{color: cell.editTheme===item?'dodgerblue':''}">{{item}}</div>
+            </div>
+        </div>
+    `,
+    cell: {},
+    theme: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula',
+        'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir',
+        'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark',
+        'solarized_light', 'sqlserver', 'terminal', 'textmate', 'tomorrow', 'tomorrow_night', 'tomorrow_night_blue',
+        'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'
+    ],
+    mode: [
+        'abap', 'abc', 'actionscript', 'ada', 'apache_conf', 'apex', 'applescript', 'aql', 'asciidoc', 'asl', 'assembly_x86',
+        'autohotkey', 'batchfile', 'bro', 'c9search', 'cirru', 'clojure', 'cobol', 'coffee', 'coldfusion',
+        'crystal', 'csharp', 'csound_document', 'csound_orchestra', 'csound_scope', 'csp', 'css', 'curly',
+        'c_cpp', 'd', 'dart', 'diff', 'django', 'dockerfile', 'dot', 'drools', 'edifact',
+        'eiffel', 'ejs', 'elixir', 'elm', 'erlang', 'forth', 'fortran', 'fsl', 'ftl', 'gcode', 'gherkin', 'gitignore',
+        'glsl', 'gobstones', 'golang', 'graphqlschema', 'groovy', 'haml', 'handlebars', 'haskell', 'haskell_cabal', 'haxe',
+        'hjson', 'html', 'html_elixir', 'html_ruby', 'ini', 'io', 'jack', 'jade', 'java', 'javascript', 'json', 'json5',
+        'jsoniq', 'jsp', 'jssm', 'jsx', 'julia', 'kotlin', 'latex', 'less', 'liquid', 'lisp', 'livescript', 'logtalk',
+        'live_script', 'logiql', 'lsl', 'lua', 'luapage', 'lucene', 'makefile', 'markdown', 'mask', 'matlab',
+        'maze', 'mel', 'mixal', 'mushcode', 'mysql', 'nix', 'nsis', 'objectivec', 'ocaml', 'pascal',
+        'perl', 'perl6', 'pgsql', 'php', 'php_laravel_blade', 'pig', 'plain_text', 'powershell', 'praat', 'prolog', 'properties',
+        'protobuf', 'puppet', 'python', 'r', 'razor', 'rdoc', 'red', 'redshift', 'rhtml', 'rst', 'ruby', 'rust', 'sass', 'scad', 'scala',
+        'scheme', 'scss', 'sh', 'sjs', 'slim', 'smarty', 'snippets', 'soy_template', 'space', 'sparql', 'sql', 'sqlserver',
+        'stylus', 'svg', 'swift', 'swig', 'tcl', 'tex', 'text', 'textile', 'toml', 'tsx', 'turtle', 'twig', 'typescript',
+        'vala', 'vbscript', 'velocity', 'verilog', 'vhdl', 'visualforce', 'wollok', 'xml', 'xquery', 'yaml', 'zeek'
+    ]
 })
 
 ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers',
@@ -387,7 +463,7 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
             }
         </style>
         <div class="vertical flex editor" style="padding-top: 2px; min-height: 22px;">
-            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" :mode="cell?.mode || 'javascript'" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" :mode="cell?.mode || 'javascript'" :theme="!readOnly&&editedCell===cell?cell.editTheme||'solarized_light':cell.viewTheme||'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
             <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '2px'" color="transparent" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>

@@ -1,73 +1,88 @@
 import '/web/oda/tools/containers/containers.js';
 ODA({is: 'oda-combo-box', imports: '@oda/button',
-    template:`
-        <style>
-            :host{
-                @apply --horizontal;
-            }
-        </style>
-        <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || value || ''">
-        <oda-button :icon="value?'icons:close':'icons:chevron-right:90'" @tap="dropdown"></oda-button>
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --horizontal;
+            min-height: {{iconSize + 2}}px;
+            background-color: var(--content-background);
+            border: 1px solid gray;
+            box-sizing: border-box;
+        }
+        :host input{
+            border: none;
+            background-color: transparent;
+        }
+    </style>
+    <input class="flex" type="text" @input="input" :readonly="value" :value="filter || value?.label || value?.name || value || ''">
+    <oda-button ~if="!hideButton" :icon="value?'icons:close':'icons:chevron-right:90'" @tap="dropdown"></oda-button>
     `,
-    items: [],
-    props:{
+    get _items() {
+        return typeof this.items === 'function'
+            ? this.items()
+            : this.items;
+    },
+    props: {
         value: null,
+        hideButton:{
+            default: false,
+            reflectToAttribute: true
+        }
     },
     filter: '',
-    async dropdown(e){
-        try{
+    async dropdown(e) {
+        try {
             if (this.value) {
                 this.value = null;
             }
             else {
-                // ODA.closeDropdown();
-                // this._combo.items = this.filtered;
-                // this._combo.focusedItem = this.value;
-                if (!this._combo){
+                if (!this._combo) {
                     this._combo = document.createElement('oda-combo-list');
-                    this._combo.items = this.filtered;
+                    this._combo.items = await this.filtered;
                     this._combo.focusedItem = this.value;
-                    this.value = (await ODA.showDropdown(this._combo, {}, {parent: this, focused: !!e})).focusedItem;
+                    this.value = (await ODA.showDropdown(this._combo, {}, { parent: this, focused: !!e })).focusedItem;
                 }
-                else{
-                    this._combo.items = this.filtered;
+                else {
+                    this._combo.items = await this.filtered;
                     this._combo.focusedItem = this.value;
                     return;
                 }
-
             }
             this.filter = '';
         }
         finally {
             this._combo = undefined;
-            this.async(()=>{
+            this.async(() => {
                 this.$('input').focus();
             })
         }
-
     },
-    async input(e){
+    async input(e) {
         if (this.value) return;
         this.filter = e.target.value.toLowerCase();
         // if (!this.filter) return;
         this.dropdown();
     },
-    get filtered(){
-        return this.filter?this.items.filter(i=>i.label.toLowerCase().includes(this.filter)):this.items;
+    get filtered() {
+        return Promise.resolve(this._items).then(items => {
+            return this.filter
+                ? items.filter(i => i.label.toLowerCase().includes(this.filter))
+                : items
+        });
     },
-    keyBindings:{
-        ArrowDown(e){
+    keyBindings: {
+        ArrowDown(e) {
             if (this.value) return;
             this.dropdown(true);
         },
-        async space(e){
-            if (this.value){
-                await ODA.showConfirm('oda-dialog-message', {message: 'Clear value?', icon: 'icons:close', fill: 'red'});
+        async space(e) {
+            if (this.value) {
+                await ODA.showConfirm('oda-dialog-message', { message: 'Clear value?', icon: 'icons:close', fill: 'red' });
                 this.value = null;
             }
 
         },
-        ArrowUp(e){
+        ArrowUp(e) {
             ODA.closeDropdown();
         },
         enter(e) {
@@ -75,36 +90,35 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         }
     },
 })
-ODA({is:'oda-combo-list',
-    template:`
-        <style>
-            :host{
-                @apply --vertical;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-
-        </style>
-        <label style="min-height: 24px; align-content: center;" ~for="items" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label || item}}</label>
+ODA({is: 'oda-combo-list',
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --vertical;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    </style>
+    <label style="min-height: 24px; align-content: center;" ~for="items" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label || item}}</label>
     `,
-    attached(){
+    attached() {
         if (!this.focusedItem)
             this.focusedItem = this.items?.[0];
     },
-    keyBindings:{
-        ArrowDown(e){
+    keyBindings: {
+        ArrowDown(e) {
             const idx = this.items.indexOf(this.focusedItem);
-            if (idx<this.items.length-1)
-                this.focusedItem = this.items[idx+1];
+            if (idx < this.items.length - 1)
+                this.focusedItem = this.items[idx + 1];
         },
-        ArrowUp(e){
+        ArrowUp(e) {
             const idx = this.items.indexOf(this.focusedItem);
-            if (idx>0)
-                this.focusedItem = this.items[idx-1];
+            if (idx > 0)
+                this.focusedItem = this.items[idx - 1];
             else
                 this.domHost.fire('cancel');
         },
-        enter(e){
+        enter(e) {
             this.fire('ok');
         }
     },
