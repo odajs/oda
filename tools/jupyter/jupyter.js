@@ -118,6 +118,7 @@ ODA({ is: 'oda-jupyter-cell',
                 box-shadow: 0 0 0 1px dodgerblue;
             }
         </style>
+        <oda-jupyter-cell-toolbar-ace ~if="cell?.cell_type === 'code' && !readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar-ace>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
         <div ~show="collapsed && editedCell!==cell" ~class="{_focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="ontapcell">{{cell.label || cell.cell_type}}</div>
         <div ~show="!collapsed || editedCell===cell" ~class="{_focused: !readOnly && focusedCell===cell}" ~is="cellType" :id="'cell-'+cell?.order" @tap="ontapcell" :cell></div>
@@ -188,6 +189,32 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
             this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
         }
     }
+})
+ODA({ is: 'oda-jupyter-cell-toolbar-ace',
+    template: /*html*/`
+        <style>
+            :host {
+                display: flex;
+                flex: 1;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                right: 178px;
+                top: -18px;
+                z-index: 41;
+                box-shadow: 0 0 0 1px dodgerblue;
+                border-radius: 2px;
+                background: white;
+                height: 24px;
+                font-size: 12px;
+                padding: 0 4px;
+                cursor: pointer;
+                color: dodgerblue;
+            }
+        </style>
+        <div>{{cell?.mode || 'javascript'}}</div>
+    `,
+    cell: {},
 })
 
 ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers',
@@ -360,7 +387,7 @@ ODA({ is: 'oda-jupyter-cell-code', imports: '@oda/ace-editor',
             }
         </style>
         <div class="vertical flex editor" style="padding-top: 2px; min-height: 22px;">
-            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
+            <oda-ace-editor class="flex ace" highlight-active-line="false" show-print-margin="false" :mode="cell?.mode || 'javascript'" :theme="!readOnly&&editedCell===cell?'solarized_light':'dawn'" min-lines=1 :read-only="isReadOnly && editedCell!==cell"></oda-ace-editor>
             <oda-splitter2 direction="horizontal" :size="cell?.splitterH >= 0 ? cell.splitterH + 'px' : '2px'" color="transparent" style="opacity: .3" resize></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
