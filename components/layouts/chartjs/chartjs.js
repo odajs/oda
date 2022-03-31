@@ -23,10 +23,17 @@ ODA({
         aggregate: {
             default: 'sum',
             list: ['sum', 'count', 'average', 'min', 'max']
+        },
+        items: {
+            type: Array,
+            set(n, o) {
+            }
         }
     },
     fields: [],
     items: [],
+    chart: undefined,
+    colorList: [],
     KeyType: {
         Date: 'date',
         Other: 'other'
@@ -56,20 +63,34 @@ ODA({
     },
     observers: [
         function itemsChanged(items) {
-            console.log(items);
+            this.changeChartData();
         }
     ],
     get canvas() {
         return this.$('canvas');
     },
     attached() {
+        const {chartLabels, chartDatasets} = this.getChartSettings();
+        this.chart = this.createChart(chartLabels, chartDatasets);
+    },
+    getChartSettings() {
         const sortedItemsByDate = this.getSortedItems(this.items);
         const preparedItems = this.getPreparedItems(sortedItemsByDate);
 
         const chartLabels = this.getLabels(sortedItemsByDate);
         const chartDatasets = this.getDatasetsChartSettings(preparedItems);
 
-        this.createChart(chartLabels, chartDatasets);
+        return {chartLabels, chartDatasets};
+    },
+    changeChartData() {
+        if (!this.chart) {
+            return;
+        }
+        const {chartLabels, chartDatasets} = this.getChartSettings();
+
+        this.chart.data.labels = chartLabels;
+        this.chart.data.datasets = chartDatasets;
+        this.chart.update();
     },
     getSortedItems(items) {
         switch (this.xAxisType) {
@@ -324,16 +345,29 @@ ODA({
         return `${getRgbaNumber()}, ${getRgbaNumber()}, ${getRgbaNumber()}`;
     },
     getColorList(listLength) {
+        let count = listLength;
+        if (this.colorList.length) {
+            if (listLength > this.colorList.length) {
+                count = listLength - this.colorList.length;
+                for (let i = 0; i < count; i++) {
+                    this.colorList.push(this.getRandomRgbaColorCode());
+                }
+            }
+            return this.colorList;
+        }
+
         const colorList = [];
         for (let i = 0; i < listLength; i++) {
             colorList.push(this.getRandomRgbaColorCode());
         }
+
+        this.colorList = colorList;
         return colorList;
     },
 
     createChart(labels, datasets) {
         return new Chart(this.canvas, {
-            type: 'bar',
+            type: 'line',
             data: {labels, datasets},
         });
     },
