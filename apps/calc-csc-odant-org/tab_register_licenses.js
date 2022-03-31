@@ -1,61 +1,56 @@
 import '../../oda.js';
 
 ODA({
-    is: 'oda-register_licenses', imports: ['@oda/button'], template: /*html*/ `
+    is: 'oda-register_licenses', imports: ['@oda/icon'], template: /*html*/ `
     <style>
         table {max-width:900px; width:100%; margin:auto;border-collapse: collapse;border: 2px solid #25a0db;}
         th,td {border: 1px solid #25a0db; padding:2px 3px;}
         tr:nth-child(even) {background: #25a0db22}
         tr:nth-child(odd) {background: #25a0db33}
-        .dat {min-width:85px}
+        th:nth-child(n+4),th:nth-child(n+5) {min-width:85px}
+        #search {max-width:900px; width:100%; margin:0.5em auto; position: relative;}
+        #search input {border: 2px solid #25a0db; padding:4px 5px 4px 30px; width:100%; border-radius:5px;}
+        #search oda-icon {position: absolute; top:4px; left:5px}
     </style>
-    <oda-button :label='tTab' @tap='tTab=(tTab+1)%3' ~show="0"></oda-button>
+    <div id='search'> 
+        <oda-icon icon="icons:search" icon-size="20"  ></oda-icon>
+        <input placeholder="быстрый поиск..." type="search" ::value='search'>
+        
+    </div>
     <table>
-        <tr><th>ID</th><th>{{_ownerName()}}</th><th ~show="!(tTab==2)" >Тип</th>
-            <th class='dat'>Дата начала</th><th class='dat'>Дата конца</th></tr>
-        <tr ~for="finrows">
-            <td>{{item.id}}</td><td>{{item.name}}</td><td ~show="!(tTab==2)">{{item.type}}</td>
-            <td>{{_hData(item.dateon)}}</td><td>{{_hData(item.dateof)}}</td> 
-        </tr>
+        <tr><th ~for="names">{{item}}</th></tr>
+        <tr ~if='showRows[i]' ~for="row,i in raws"> <td ~for="row">{{item}}</td> </tr>
     </table>
     `,
     async attached() {
+        this.names = this.tTab  ? ['№','ФИО','Партнер','Дата начала', 'Дата окончания']
+                                : ['№','Партнер','Тип','Дата начала', 'Дата окончания']
         let row = await this._dlRaw()
-        let rows = row.$rows.map(o => {
-            return { id: o.ID, name: o.OwnerLicense, type: o.Type, dateon: o.DateOn, dateof: o.DateOf }
-        })
+        let rows = row.$rows.map(o => this.tTab  
+            ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn? this._hData(o.DateOn):'' , o.DateOf? this._hData(o.DateOf):'']
+            : [o.ID, o.OwnerLicense, o.Type, o.DateOn? this._hData(o.DateOn):'' , o.DateOf? this._hData(o.DateOf):'']
+        )
         this.raws = rows
-        if (window.location.hash=='#1') this.tTab = 1
-        if (window.location.hash=='#2') this.tTab = 2
+        this.search = ''
     },
-    observers: ['_obrRows(raws,tTab)'],
-
+    // observers: ['_obrRows(raws,tTab,search)'],
     props: {
-        raws: {},
-        tTab: 0, // 0 -- все, 1 -- организации, 2 -- люди
+        raws: [],
+        tTab: 0, // 0 -- организации, 1 -- люди
         finrows: {},
+        names:[],        
+        showRows:[],
+        search: { default:'sssssssssssssssssssыыыыыыыыыыыыыыыыыыыыыыы',
+            set (s) { this.showRows = this.raws.map( r=> r.join(' ').toLowerCase().includes(s.toLowerCase()) )  }
+        },
 
     },
-    async _dlRaw() {
-        const url = 'https://business.odant.org/api/' +
-            'H:1CC832F557A4600/P:WORK/B:1D7472723D6F2CD/C:1D839FD8765DEDB/' +
-            'I:table?dataset&loadmask=*&mask=*&from=0&length=500'
-        const response = await fetch(url);
-        const raw = await response.json();
+    async _dlRaw() { // 1D839FFCCA3D6FF -- организации, 1D839FFD97FF621 -- люди
+        const url = 'https://business.odant.org/api/H:1CC832F557A4600/P:WORK/B:1D7472723D6F2CD/C:' +
+                    (this.tTab?'1D839FFD97FF621': '1D839FFCCA3D6FF') + '/I:table?dataset'
+        const raw = await ( await fetch(url) ).json();
         return raw
     },
     _hData(s) { return ('' + s).slice(0, 10) },
-    _obrRows(raws, t) {
-        let isP = (o) => o.type == 'FREE' || o.type == undefined
-        if (t == 1) { raws = raws.filter(o => !isP(o)) }
-        if (t == 2) { raws = raws.filter(isP) }
-        this.finrows = raws
-    },
-    _ownerName() {
-        let names = ['Владелец', 'Партнер', 'ФИО']
-        return names[this.tTab]
-    }
-
-
 
 });
