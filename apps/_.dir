@@ -82,5 +82,12 @@
     "content": {
       "link": "index.html"
     }
+  },
+  {
+    "name": "flips",
+    "label": "ODA Flips Game",
+    "content": {
+      "link": "index.html"
+    }
   }
 ]
