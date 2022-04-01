@@ -157,3 +157,8 @@ ODA({
 ```
 
 Результат выполнения этого примера будет точно таким же, как и предыдущего примера, так как замена служебного слова **in** на **of** не влияет на работу директивы.
+
+<div style="position:relative;padding-bottom:48%; margin:10px">
+    <iframe src="https://www.youtube.com/embed/uCHBEqfvaGg?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    	style="position:absolute;width:100%;height:100%;"></iframe>
+</div>

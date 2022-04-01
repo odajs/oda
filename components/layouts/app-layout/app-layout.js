@@ -39,24 +39,25 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         <slot name="header" class="horizontal no-flex"></slot>
     </div>
     <div class="main-container content" ~class="{'stop-pointer-events': size === 'min'}" ~style="{'zoom': size === 'min' ? '50%' : ''}">
-        <div class="main vertical flex shadow"   @wheel="_scroll"  style="order:1" ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}">
+        <div class="main vertical flex shadow" @wheel="_scroll"  style="order:1" ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}">
             <slot name="top" class="vertical no-flex"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
             <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
         </div>
 
-        <app-layout-drawer pos="left" :show-title="leftTitle" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened">
+        <app-layout-drawer pos="left" :show-title="leftTitle" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened" ::pinned="l_pinned">
             <slot name="left-header" class="flex" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
-        <app-layout-drawer pos="right" :show-title="rightTitle" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened">
+        <app-layout-drawer pos="right" :show-title="rightTitle" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened" ::pinned="r_pinned">
             <slot name="right-header" slot="panel-header"></slot>
             <slot name="right-panel"></slot>
         </app-layout-drawer>
     </div>
-    <slot name="footer" class="horizontal no-flex"></slot>`,
+    <slot name="footer" class="horizontal no-flex"></slot>
+    `,
     leftButtons: [],
-    rightButtons:[],
+    rightButtons: [],
     get left(){
         return this.$$('app-layout-drawer')[0] || undefined
     },
@@ -113,15 +114,13 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         compact: false,
         allowCompact: true,
         autoCompact: true,
-        pin: {
+        l_pinned: {
+            type: Boolean,
             save: true,
-            set (v) {
-                this.autoCompact = !v;
-                this.compact = v;
-            },
-            get () {
-                return !this.autoCompact && this.compact;
-            },
+        },
+        r_pinned:{
+            type: Boolean,
+            save: true,
         }
     },
     // ready(){
@@ -192,11 +191,15 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     listeners:{
         'resize': 'updateCompact',
-        down(e){
-            if (this.allowCompact && this.compact && this.opened){
-                this.close();
-            }
-        },
+        'down': 'smartClose'
+    },
+    smartClose() {
+        if (this.allowCompact && this.compact && this.opened){
+            this.close();
+        } else {
+            if (!this.l_pinned) this.left?.close();
+            if (!this.r_pinned) this.right?.close();
+        }
     },
     close(){
         this.$$('app-layout-drawer').forEach(i=>i.close());
@@ -489,7 +492,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             <slot name="panel-header" class="no-flex"></slot>
             <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%">
                 <div ~if="focused?.title" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
-                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pin ? 'icons:pin' : 'icons:pin-fill:315'" @tap="pin = !pin" :icon-size="iconSize*0.66"></oda-button>
+                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @tap="pinned = !pinned" :icon-size="iconSize*0.66"></oda-button>
                 <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap="focused = null"></oda-button>
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
@@ -501,6 +504,9 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     delta: 0,
     swipe: 0,
     props: {
+        pinned: {
+            default: false,
+        },
         hideTabs:{
             default: false,
             reflectToAttribute: true,
@@ -566,7 +572,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     setFocus(item) {
         this.hideTabs = false;
         if (item.isButton) {
-            item.fire('click');
+            item.click();
         }
         else {
             this.focused = ((this.focused === item) ? null : item)
@@ -617,4 +623,14 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             this.focused = null;
         this.swipe = 0;
     },
+    observers: [
+        'opening(pinned, controls, controls?.length)'
+    ],
+    opening(pinned, controls, length) {
+        this.debounce('opening', () => {
+            if (pinned && !this.opened && !this.focused && length) {
+                this.setFocus(controls[0]);
+            }
+        }, 500);
+    }
 });

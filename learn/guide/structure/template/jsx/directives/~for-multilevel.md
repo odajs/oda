@@ -158,6 +158,6 @@ ODA({
 Автоматическое назначение имен параметрам цикла и автоматическое их переименование позволяет избежать краха компонента в процессе использования вложенных директив **~for**, однако это делает код компонента сложным для понимания и усложняет процесс поиска функциональных ошибок в нем.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
-    <iframe src="https://www.youtube.com/embed/5grvyQc4-bI?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+    <iframe src="https://www.youtube.com/embed/OG6gJ5yLikM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
