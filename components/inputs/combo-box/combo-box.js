@@ -31,31 +31,34 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     },
     filter: '',
     async dropdown(e) {
-        try {
-            if (this.value) {
-                this.value = null;
-            }
-            else {
-                if (!this._combo) {
+        
+        if (this.value) {
+            this.value = null;
+        }
+        else {
+            if (!this._combo) {
+                try {
                     this._combo = document.createElement('oda-combo-list');
-                    this._combo.items = await this.filtered;
+                    this._combo.items = await this.getFiltered();
                     this._combo.focusedItem = this.value;
                     this.value = (await ODA.showDropdown(this._combo, {}, { parent: this, focused: !!e })).focusedItem;
                 }
-                else {
-                    this._combo.items = await this.filtered;
-                    this._combo.focusedItem = this.value;
-                    return;
+                finally {
+                    this._combo = undefined;
+                    this['#_items'] = undefined;
+                    this.async(() => {
+                        this.$('input').focus();
+                    })
                 }
             }
-            this.filter = '';
+            else {
+                this._combo.items = await this.getFiltered();
+                this._combo.focusedItem = this.value;
+                return;
+            }
         }
-        finally {
-            this._combo = undefined;
-            this.async(() => {
-                this.$('input').focus();
-            })
-        }
+        this.filter = '';
+        
     },
     async input(e) {
         if (this.value) return;
@@ -63,7 +66,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         // if (!this.filter) return;
         this.dropdown();
     },
-    get filtered() {
+    getFiltered() {
         return Promise.resolve(this._items).then(items => {
             return this.filter
                 ? items.filter(i => i.label.toLowerCase().includes(this.filter))

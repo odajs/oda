@@ -2179,10 +2179,11 @@ if (!window.ODA) {
                         return;
                 }
             }
-            if (typeof v === 'object' || this.nodeType !== 1 || this.$node?.vars.has(name)) {
+            // понаблюдать 👀
+            if (typeof v === 'object' || (typeof v === 'function') || this.nodeType !== 1 || this.$node?.vars.has(name)) {
                 this[name] = v;
             }
-            else if (typeof v !== 'function'){
+            else {
                 const d = !this.$core && Object.getOwnPropertyDescriptor(this.__proto__, name);
                 if (!d)
                     name = name.toKebabCase();
