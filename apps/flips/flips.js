@@ -2,7 +2,7 @@ import confetti from "https://cdn.skypack.dev/canvas-confetti";
 ODA({ is: 'oda-flips', imports: '@oda/icon, @oda/button',
     template: `
         <style>
-        :host {
+            :host {
                 position: relative;
                 display: flex;
                 flex-direction: column;
@@ -181,7 +181,7 @@ ODA({ is: 'oda-flips', imports: '@oda/icon, @oda/button',
         for (let i = 1; i <= 140; i++) { images.push(url + (i < 10 ? '00' + i : i < 100 ? '0' + i : i) + '.jpg') }
         const colors = [];
         url = this.$url.replace('flips.js', 'colors/colors-');
-        for (let i = 1; i <= 8; i++) { colors.push(url + (i < 10 ? '00' + i : i < 100 ? '0' + i : i) + '.jpg') }
+        for (let i = 1; i <= 12; i++) { colors.push(url + (i < 10 ? '00' + i : i < 100 ? '0' + i : i) + '.jpg') }
         let length = (this.row * this.column) - (this.odd ? 1 : 0);
         this.step = 360 / (length / 2);
         const mode = { images, '1...9': digital1_9, 'ABC...': alphabet, 'АБВ...': rusAlphabet, colors };
