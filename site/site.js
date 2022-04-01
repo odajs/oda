@@ -87,7 +87,7 @@ site: {
                 <img ~if="showLogoImage" width="64" class="no-flex" @tap="window.location.hash = ''; focusedItem = null" src="site/icon.png" style="cursor: pointer; margin: 8px;"/>
                 <div class="vertical" style="padding: 10px;">
                     <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
-                    <div class="horizontal" style="align-items:center">
+                    <div class="horizontal" style="align-items:center; justify-content: flex-end;">
                         <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
                             <img src="site/youtube.png" height="18" style="padding: 6px 6px 0 0;"/>
                         </a>
@@ -608,7 +608,7 @@ header: {
         },
         _resize() {
             // console.log(this.rootHost.offsetWidth)
-            this.mobile = this.rootHost.offsetWidth < 900;
+            this.mobile = this.rootHost.offsetWidth < 920;
             this.showLogoImage = this.rootHost.offsetWidth > 320;
         },
         _tap(i, item) {
