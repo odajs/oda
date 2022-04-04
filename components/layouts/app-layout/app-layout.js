@@ -45,11 +45,11 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
         </div>
 
-        <app-layout-drawer pos="left" :show-title="leftTitle" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened" ::pinned="l_pinned">
+        <app-layout-drawer ref="l_panel" pos="left" :show-title="leftTitle" :buttons="leftButtons" ::width="leftWidth" style="order:0" ::hide-tabs="leftHidden" ~show="!allowCompact || !compact || !r_opened" ::pinned="l_pinned">
             <slot name="left-header" class="flex" slot="panel-header"></slot>
             <slot name="left-panel"></slot>
         </app-layout-drawer>
-        <app-layout-drawer pos="right" :show-title="rightTitle" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened" ::pinned="r_pinned">
+        <app-layout-drawer ref="r_panel" pos="right" :show-title="rightTitle" :buttons="rightButtons" ::width="rightWidth"  style="order:2" ::hide-tabs="rightHidden" ~show="!allowCompact || !compact || !l_opened" ::pinned="r_pinned">
             <slot name="right-header" slot="panel-header"></slot>
             <slot name="right-panel"></slot>
         </app-layout-drawer>
@@ -59,10 +59,10 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     leftButtons: [],
     rightButtons: [],
     get left(){
-        return this.$$('app-layout-drawer')[0] || undefined
+        return this.$refs.l_panel;
     },
     get right(){
-        return this.$$('app-layout-drawer')[1] || undefined
+        return this.$refs.r_panel;
     },
     props: {
         allowPin: false,
@@ -127,18 +127,13 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     //     this.listen('app-layout-swipe', 'swipeX', {target: window});
     // },
     get l_opened(){
-        return this.$$('app-layout-drawer')[0].opened || undefined;
+        return this.left?.opened;
     },
     get r_opened(){
-        return this.$$('app-layout-drawer')[1].opened || undefined;
+        return this.right?.opened;
     },
     get opened(){
-        return this.$$('app-layout-drawer').some(i=>i.opened) || undefined;
-    },
-    attached() {
-        this.async(() => { //todo: найти решение без async, выполнять после загрузки настроек
-
-        }, 300);
+        return this.l_opened || this.r_opened;
     },
     updateCompact() {
         if(!this.autoCompact) return;
@@ -191,7 +186,17 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     listeners:{
         'resize': 'updateCompact',
-        'down': 'smartClose'
+        // 'down': 'smartClose'
+    },
+    attached() {
+        Array.from(window).forEach(w => {
+            this.listen('mousedown', 'smartClose', {target: w});
+        })
+    },
+    detached() {
+        Array.from(window).forEach(w => {
+            this.unlisten('mousedown', 'smartClose', {target: w});
+        })
     },
     smartClose() {
         if (this.allowCompact && this.compact && this.opened){
@@ -202,7 +207,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         }
     },
     close(){
-        this.$$('app-layout-drawer').forEach(i=>i.close());
+        [this.left, this.right].forEach(i => i?.close?.());
     },
             // swipeX(e){
     //     e = e.detail?.sourceEvent || e;
