@@ -302,7 +302,7 @@ site: {
                     url = url && this.leftControls.filter(i => i._path === url)[0]?._title;
                     url ||= 'ОБУЧЕНИЕ';
                     this.setLeftDrawerFocus(url);
-                }, 300)
+                }, 500)
             }, 100);
         },
         _setStatus(root) {

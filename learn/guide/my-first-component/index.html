@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First Component</title>
+    <script type="module" src="./../../../oda.js"></script>
+     <script type="module" src="./oda-dino.js"/>
+</head>
+<body>
+<oda-dino></oda-dino>
+</body>
+
+    <script type="module">
+        ODA({ is: 'oda-dino',
+    template: `
+        <style>
+        </style>
+        <div>
+            Привет
+        </div>
+    `,
+    props: {
+        name: "Привет динозавр",
+    },
+})
+    </script>
+
+</html>
