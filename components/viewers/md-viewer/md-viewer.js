@@ -27,7 +27,7 @@ const defaultOptions = {
     openLinksInNewWindow: true,//'Open all links in new windows',
     backslashEscapesHTMLTags: true, //'Support for HTML Tag escaping. ex: \<div>foo\</div>',
     emoji: true, //'Enable emoji support. Ex: `this is a :smile: emoji`'
-    underline: false, //'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
+    underline: true, //'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
     completeHTMLDocument: false, //Outputs a complete html document, including `<html>`, `<head>` and `<body>` tags',
     metadata: false, //'Enable support for document metadata (defined at the top of the document between `«««` and `»»»` or between `---` and `---`).',
     splitAdjacentBlockquotes: false, //'Split adjacent blockquote blocks',
@@ -66,10 +66,9 @@ ODA({ is: 'oda-md-viewer', template: `
         }
     },
     async _import() {
-        //if (mdShowdown.makeHtml) return;
         if (!this._hasImports)
             for (let s of ['./dist/showdown.min.js', './dist/decodeHTML.min.js', './dist/highlight.min.js', './dist/showdown-youtube.min.js']) { await import(s); }
-       this._hasImports = true;
+        this._hasImports = true;
         mdShowdown = new showdown.Converter({
             ...defaultOptions, ...this.options,
             extensions: ['youtube', (editMode = this.editMode) => {
@@ -134,7 +133,7 @@ ODA({ is: 'oda-md-viewer', template: `
             this.html = mdShowdown.makeHtml(src);
         }
     }
-});
+})
 
 let files = new Map();
 let fileCount = 0;
@@ -394,14 +393,7 @@ ${this._scriptODA()}` + code;
         this._iframe = `<meta charset="UTF-8">` + this._iframe;
         this._setConsole();
         this._src = this._iframe;
-        // this._src = URL.createObjectURL(new Blob([this._iframe], { type: 'text/html' }));
-        // this._revokeObjectURL(this._src);
     },
-    // _revokeObjectURL(src) {
-    //     setTimeout(() => {
-    //         URL.revokeObjectURL(src);
-    //     }, 5000);
-    // },
     _getInfoIcon() {
         return {
             'error': 'icons:add-circle-outline:45', 'success': 'enterprise:check-box', 'info': 'icons:info-outline',
@@ -422,4 +414,4 @@ ${this._scriptODA()}` + code;
         if (this._loadODA) return `<script type="module" src="${ODA.rootPath + '/oda.js'}"></script>`;
         return `<script type="module" src="${ODA.rootPath + '/oda.js'}"></script>`;
     }
-});
+})
