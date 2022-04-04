@@ -27,7 +27,7 @@ ODA({ is: 'oda-flips', imports: '@oda/icon, @oda/button',
                 padding: 2px;
                 z-index: 9;
                 max-height: 44px;
-                overflow: hidden;  
+                overflow: hidden;
                 box-sizing: border-box;
             }
             .txt {
@@ -54,7 +54,7 @@ ODA({ is: 'oda-flips', imports: '@oda/icon, @oda/button',
             .row {
                 display: flex;
                 flex: 1;
-            
+
             }
             .cell {
                 display: flex;
@@ -186,15 +186,32 @@ ODA({ is: 'oda-flips', imports: '@oda/icon, @oda/button',
         this.step = 360 / (length / 2);
         const mode = { images, '1...9': digital1_9, 'ABC...': alphabet, 'АБВ...': rusAlphabet, colors };
         const arr = mode[this.mode] || images;
+        let unique = [];
+        const uniqueCards = [];
         for (let i = 0; i < length / 2; i++) {
             const color = i * this.step;
-            if (this.mode === 'digital') this.cards.push({ v: i, c: color }, { v: i, c: color })
+            if (this.mode === 'digital') {
+                uniqueCards.push({ v: i, c: color }, { v: i, c: color })
+            }
             else {
-                const random = arr[Math.floor(Math.random() * arr.length)];
-                this.cards.push({ v: random, c: color }, { v: random, c: color });
+                if (unique.length === 0) {
+                    unique = [...Array(arr.length).keys()];
+                }
+                const randomNumber = Math.floor(Math.random() * unique.length);
+                const random = arr[unique[randomNumber]];
+                uniqueCards.push({ v: random, c: color }, { v: random, c: color })
+                unique[randomNumber] = unique[unique.length - 1];
+                unique.pop();
             }
         }
-        this.cards = this.cards.sort(() => Math.random() - 0.5);
+        this.cards = [];
+        while(uniqueCards.length !== 0) {
+            const randomNumber = Math.floor(Math.random() * uniqueCards.length);
+            this.cards.push(uniqueCards[randomNumber]);
+            uniqueCards[randomNumber] = uniqueCards[uniqueCards.length - 1];
+            uniqueCards.pop();
+        }
+        //this.cards = this.cards.sort(() => Math.random() - 0.5);
         if (this.odd) this.cards.splice(this.odd, 0, -1);
     },
     setMode() {
