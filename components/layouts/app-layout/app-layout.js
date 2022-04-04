@@ -186,22 +186,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     listeners:{
         'resize': 'updateCompact',
-        // 'down': 'smartClose'
-    },
-    attached() {
-        Array.from(window).forEach(w => {
-            this.listen('mousedown', 'smartClose', {target: w});
-        })
-    },
-    detached() {
-        Array.from(window).forEach(w => {
-            this.unlisten('mousedown', 'smartClose', {target: w});
-        })
+        'down': 'smartClose'
     },
     smartClose() {
         if (this.allowCompact && this.compact && this.opened){
             this.close();
-        } else {
+        } else if (this.allowPin) {
             if (!this.l_pinned) this.left?.close();
             if (!this.r_pinned) this.right?.close();
         }
