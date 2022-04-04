@@ -188,6 +188,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         'resize': 'updateCompact',
         'down': 'smartClose'
     },
+    attached() {
+        this.listen('tap', 'smartClose', { target: top });
+    },
+    detached() {
+        this.unlisten('tap', 'smartClose', { target: top });
+    },
     smartClose() {
         if (this.allowCompact && this.compact && this.opened){
             this.close();
@@ -501,6 +507,11 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     props: {
         pinned: {
             default: false,
+            set(n) {
+                if (!n) {
+                    this.close();
+                }
+            }
         },
         hideTabs:{
             default: false,

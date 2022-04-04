@@ -98,7 +98,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part></oda-site-header>
             </div>
-            <div @activate="_activate(items[index])" slot="left-panel" ~for="leftButtons" :icon="item._icon" :title="item._title" class="layout" @tap="_ontap(item)">
+            <div slot="left-panel" ~for="ctrl in leftControls" :icon="ctrl._icon" :title="ctrl._title" class="layout" @tap="_ontap(ctrl)">
                 <oda-site-nav-tree :part="items[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
@@ -114,43 +114,52 @@ site: {
                 </oda-modal>
             </div>
         `,
-        get leftButtons() {
+        get leftControls() {
             return [
-                { _icon: 'enterprise:graduation-cap', _title: 'ОБУЧЕНИЕ' },
-                { _icon: 'icons:apps', _title: 'КОМПОНЕНТЫ' },
-                // { _icon: 'icons:language', _title: 'Языки' },
-                { _icon: 'image:palette', _title: 'ТЕМЫ' },
-                { _icon: 'device:devices', _title: 'ТЕСТЫ' },
-                { _icon: 'av:play-circle-filled', _title: 'ПРИМЕРЫ' }
+                { _icon: 'enterprise:graduation-cap', _title: 'ОБУЧЕНИЕ', _path: 'learn' },
+                { _icon: 'icons:apps', _title: 'КОМПОНЕНТЫ', _path: 'components' },
+                // { _icon: 'icons:language', _title: 'Языки', _path: 'learn' },
+                { _icon: 'image:palette', _title: 'ТЕМЫ', _path: 'themes' },
+                { _icon: 'device:devices', _title: 'ТЕСТЫ', _path: 'benchmarks' },
+                { _icon: 'av:play-circle-filled', _title: 'ПРИМЕРЫ', _path: 'apps' }
             ]
         },
-        _ontap(item){
-            this.selectedMenu = item._title;
-            if (this.allowCompact && this.compact && this.opened) {
-                this.close();
-            }
+        _ontap(item) {
+            this.selectedSiteHeaderMenu = item._title;
+            this.smartClose();
         },
-        selectedMenu: '',
-        _activate(item) {
-            if (this.selectedMenu !== item.label) {
-                route(item);
-                this.selectedMenu = item.label;
-            }
-        },
-        menuIndex: -1,
+        selectedSiteHeaderMenu: '',
+        ddMenuIndex: -1,
         listeners: {
-            pointermove() { 
-                this.debounce('_pointermove', () => this.closeDropdown(), 50);
+            pointermove() {
+                // this.debounce('_pointermove', () => this.closeDropdown(), 50);
+                this.closeDropdown();
             }
         },
         closeDropdown() {
             const dd = document.body.getElementsByTagName('oda-dropdown')
-            this.menuIndex = -1;
+            this.ddMenuIndex = -1;
             if (dd.length)
                 for (let i = 0; i < dd.length; i++) {
                     const elm = dd[i];
                     elm.fire('cancel');
                 }
+        },
+        setLeftDrawerFocus(item) {
+            const title = item?.label || item;
+            this.selectedSiteHeaderMenu = title;
+            for (const ctrl of this.left.controls) {
+                if (ctrl.title === title) {
+                    if (this.left.focused) {
+                        if (this.left.focused !== ctrl) {
+                            this.left.setFocus(ctrl);
+                        }
+                    } else 
+                    {
+                        this.left.lastFocused = ctrl;
+                    }
+                }
+            }
         },
         props: {
             allowPin: true,
@@ -160,7 +169,6 @@ site: {
                 is: false,
                 url: ""
             },
-            left: { splitter: 'hidden' },
             src: '',
             _editMode: {
                 default: false,
@@ -210,9 +218,11 @@ site: {
                     if (url && !url.endsWith('.md')) {
                         this.src = url;
                         setTimeout(() => {
-                            this.$refs.iframe.contentDocument._editMode = this._editMode;
-                            this.isEditMode = this._editMode;
-                            this.bubbleIframeMouseWheel(this.$refs.iframe);
+                            if (this.$refs.iframe?.contentDocument) {
+                                this.$refs.iframe.contentDocument._editMode = this._editMode;
+                                this.isEditMode = this._editMode;
+                                this.bubbleIframeMouseWheel(this.$refs.iframe);
+                            }
                         }, 300);
                         return;
                     }
@@ -285,6 +295,14 @@ site: {
                 if (!this.hash && this._srcIframe === 'video') {
                     this.play();
                 }
+                this.async(() => {
+                    let url = window.location.href;
+                    url = url.split('#')[1];
+                    url = url && url.split('/')[0];
+                    url = url && this.leftControls.filter(i => i._path === url)[0]?._title;
+                    url ||= 'ОБУЧЕНИЕ';
+                    this.setLeftDrawerFocus(url);
+                }, 300)
             }, 100);
         },
         _setStatus(root) {
@@ -579,12 +597,12 @@ header: {
             </style>
             <oda-button class="no-flex" :icon-size ~show="mobile" icon="icons:menu" allow-toggle ::toggled="toggled"></oda-button>
             <div ~show="!mobile" :parent="this" class="flex horizontal" style="justify-content: flex-end;">
-                <oda-site-header-item ~class="{outline: selectedMenu === (item.label || item.name)}" :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
+                <oda-site-header-item ~class="getHeaderItemClass(item)" :mobile="mobile" ~for="items" :focused="item?.name === part?.name" :item :index style="color: #336699;">{{item.label}}</oda-site-header-item>
             </div>
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
-                <div ~class="{outline: selectedMenu === (item.label || item.name)}" ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
-                    <div class="horizontal" style="align-items: center" ~class="{highlighted: selectedMenu === (item.label || item.name)}">
-                        <oda-icon :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>    
+                <div ~class="{outline: selectedSiteHeaderMenu === (item.label || item.name)}" ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
+                    <div class="horizontal" style="align-items: center" ~class="{highlighted: selectedSiteHeaderMenu === (item.label || item.name)}">
+                        <oda-icon :icon="leftControls[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>    
                         {{item.label}}
                     </div>
                     <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i, item)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
@@ -598,6 +616,9 @@ header: {
             part: Object,
             iconSize: 24
         },
+        getHeaderItemClass(item) {
+            return { outline: this.left.focused?.title === item.label || this.left.lastFocused?.title === item.label }
+        },
         attached() {
             this._resize();
         },
@@ -607,12 +628,11 @@ header: {
             }
         },
         _resize() {
-            // console.log(this.rootHost.offsetWidth)
             this.mobile = this.rootHost.offsetWidth < 920;
             this.showLogoImage = this.rootHost.offsetWidth > 320;
         },
         _tap(i, item) {
-            this.selectedMenu = item.label || item.name;
+            this.selectedSiteHeaderMenu = item.label || item.name;
             this.toggled = false;
             route(i);
         }
@@ -629,7 +649,7 @@ header: {
             </style>
             <div class="horizontal" style="align-items: center; padding: 4px 8px;" @pointermove.stop="_showDropdown">
                 <oda-icon ~if="mobile" icon="icons:chevron-left"></oda-icon>
-                <oda-icon ~if="!mobile" :icon="leftButtons[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>
+                <oda-icon ~if="!mobile" :icon="leftControls[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>
                 {{item.label || item.name}}
             </div>
         `,
@@ -644,8 +664,8 @@ header: {
         },
         async _showDropdown() {
             const dd = document.body.getElementsByTagName('oda-dropdown')
-            if (dd.length && this.menuIndex === this.index) return;
-            this.menuIndex = this.index;
+            if (dd.length && this.ddMenuIndex === this.index) return;
+            this.ddMenuIndex = this.index;
             if (dd.length)
                 for (let i = 0; i < dd.length; i++) {
                     const elm = dd[i];
@@ -653,15 +673,14 @@ header: {
                 }
             let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none', cancelAfterLeave: true });
             if (res) {
-                this.value = res.value;
-                this.selectedMenu = this.item.label || this.item.name;
-                this.menuIndex = -1;
+                this.ddMenuIndex = -1;
+                this.setLeftDrawerFocus(res.item);
             }
         },
         _tap() {
-            this.selectedMenu = this.item.label || this.item.name;
-            this.menuIndex = -1;
+            this.ddMenuIndex = -1;
             route(this.item);
+            this.setLeftDrawerFocus(this.item);
         }
     });
     ODA({ is: 'oda-site-search',
