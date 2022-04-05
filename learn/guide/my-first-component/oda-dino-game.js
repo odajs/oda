@@ -1,3 +1,5 @@
+import "./oda-stars.js";
+
 function createCloud(){
     const gameSpace = document.getElementById('game-space');
     gameSpace.append(document.createElement('oda-cloud'));
@@ -11,7 +13,6 @@ function createCloud(){
         };
     });
 }
-
 
 function createCactus(){
     const gameSpace = document.getElementById('game-space');
@@ -37,6 +38,54 @@ function createPterodactyl(){
         };
     });
 }
+
+function createMoon(){
+    const gameSpace = document.getElementById('game-space');
+    gameSpace.append(document.createElement('oda-moon'));
+    const newMoon = gameSpace.lastChild;
+    const min = 10;
+    const max = 100;
+    newMoon.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    newMoon.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            newMoon.remove();
+        };
+    });
+}
+
+function createStar(starName) {
+    const gameSpace = document.getElementById('game-space');
+    gameSpace.append(document.createElement(starName));
+    const newStar = gameSpace.lastChild;
+    const min = 10;
+    const max = 100;
+    newStar.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    newStar.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            newStar.remove();
+        };
+    });
+    return newStar;
+}
+
+function nightBegin() {
+    createMoon();
+    createStar('oda-star1');
+    createStar('oda-star2');
+}
+
+function nightEnd() {
+    let moons = document.querySelectorAll('oda-moon');
+    moons.forEach(moon => moon.remove());
+
+    let stars1 = document.querySelectorAll('oda-star1');
+    star1.forEach(star => star.remove());
+
+    stars2 = document.querySelectorAll('oda-star2');
+    stars2.forEach(star => star.remove());
+}
+
+nightBegin();
 
 createPterodactyl();
 

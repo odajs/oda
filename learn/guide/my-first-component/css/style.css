@@ -178,3 +178,60 @@ oda-pterodactyl {
         left: -136px;
     }
 }
+
+oda-moon {
+    position: absolute;
+    left: 100%;
+    top: 70px;
+    animation-name: moon-move;
+    animation-duration: 5s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 100;
+}
+
+@keyframes moon-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -64px;
+    }
+}
+
+oda-star1 {
+    position: absolute;
+    animation-name: star1-move;
+    animation-duration: 6s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 100;
+}
+
+oda-star2 {
+    position: absolute;
+    left: 50%;
+    animation-name: star2-move;
+    animation-duration: 6s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 100;
+}
+
+@keyframes star1-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -25px;
+    }
+}
+
+@keyframes star2-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -25px;
+    }
+}
