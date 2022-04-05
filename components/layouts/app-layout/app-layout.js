@@ -65,7 +65,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         return this.$refs.r_panel;
     },
     props: {
-        allowPin: false,
         leftTitle: false,
         rightTitle: false,
         leftHidden: false,
@@ -123,9 +122,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             save: true,
         }
     },
-    // ready(){
-    //     this.listen('app-layout-swipe', 'swipeX', {target: window});
-    // },
     get l_opened(){
         return this.left?.opened;
     },
@@ -140,9 +136,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         this.compact = this.offsetWidth < this.offsetHeight;
     },
     afterLoadSettings(){
-                // window.top.odaAppLayoutDrawers = window.top.odaAppLayoutDrawers || {left: new Set(), right: new Set()};
-        // window.top.odaAppLayoutDrawers.left.add(this.left);
-        // window.top.odaAppLayoutDrawers.right.add(this.right);
         this.updateCompact();
         const me = this.unique && this._getModals().find(i => i.unique === this.unique);
         if (me) {
@@ -158,15 +151,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         }
         this._top();
     },
-        // detached() {
-    //     const drawers = window.top.odaAppLayoutDrawers;
-    //     if (!drawers)
-    //         return;
-    //     drawers.left.delete(this.left);
-    //     drawers.right.delete(this.right);
-    //     if (!drawers.left.size)
-    //         delete  window.top.odaAppLayoutDrawers;
-    // },
     _scroll(e) {
         if (e.ctrlKey || e.shiftKey || e.altKey) return
         this.interval('hide-header', () => {
@@ -186,20 +170,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     listeners:{
         'resize': 'updateCompact',
-        'down': 'smartClose'
-    },
-    attached() {
-        this.listen('mousedown', 'asyncSmartClose', { target: top });
-    },
-    detached() {
-        this.unlisten('mousedown', 'asyncSmartClose', { target: top });
-    },
-    asyncSmartClose() {
-        if (this.opened) {
-            this.async(() => {
-                this.smartClose();
-            }, 100);
-        }
     },
     smartClose() {
         if (this.allowCompact && this.compact && this.opened){
@@ -212,31 +182,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     close(){
         [this.left, this.right].forEach(i => i?.close?.());
     },
-            // swipeX(e){
-    //     e = e.detail?.sourceEvent || e;
-    //     if (e.changedTouches[0].clientX<150){
-    //         if (this.leftHidden){
-    //             this.leftHidden = false;
-    //             return;
-    //         }
-    //         else if (!this.l_opened){
-    //             this.left.focused = this.left.last;
-    //         }
-    //     }
-    //     if (e.changedTouches[0].screenX+150>this.offsetWidth){
-    //         if (this.rightHidden){
-    //             this.rightHidden = false;
-    //             return;
-    //         }
-    //         else if (!this.r_opened){
-    //             this.right.focused = this.right.last;
-    //         }
-    //     }
-
-    //     if (window.parent === window)
-    //         return;
-    //     window.parent.dispatchEvent(new CustomEvent('app-layout-swipe', {detail:{sourceEvent: e}}))
-    // },
     onTouchMove(e) { //  swipeX
         const EDGE_INDENT = 20;
         const MOVING_THRESHOLD = 60;
@@ -499,7 +444,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
             <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%" @tap.stop>
-                <div ~if="focused?.title" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
+                <div ~if="focused?.title || allowPin" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
                 <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size="iconSize*0.66"></oda-button>
                 <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>
             </div>
@@ -511,6 +456,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
     buttons: [],
     delta: 0,
     swipe: 0,
+    allowPin: false,
     props: {
         pinned: {
             default: false,
@@ -595,6 +541,15 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         if (e.target.domHost === this) return;
         // this.domHost.style.setProperty('opacity', 0);
         this.controls = e.target.assignedNodes();
+        this.controls.forEach(c => {
+            if (c.hasAttribute('close-event')) {
+                this.allowPin = true;
+                const type = c.getAttribute('close-event');
+                this.listen(type, () => {
+                    if (this.focused === c && !this.pinned) this.close();
+                }, { target: c });
+            }
+        });
         this.hidden = this.controls.length === 0;
         if (this.focused && !this.controls.some(c => c === this.focused))
             this.focused = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы

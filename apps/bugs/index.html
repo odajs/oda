@@ -34,7 +34,13 @@
             bugCount: 10,
             step: -1,
             epoch: 0,
-            stop: false
+            stop: {
+                default: false,
+                set(n){
+                    if (!n)
+                        this.step++;
+                }
+            }
         }
     })
     ODA({is: 'oda-space',
@@ -85,6 +91,7 @@
                 shared: true,
                 default: -1,
                 set(n){
+                    if (this.stop) return;
                     if (n<0) return;
                     this.async(()=>{
                         if (this.step>this.timeLimit || (this.targetCount>1 && this.targets.filter(i=>!i.hidden).length <1) || (this.bugCount>2 && this.bugs.filter(i=>!i.hidden).length < 2)){
@@ -290,10 +297,9 @@
               <div class="vertical" style="justify-content: center;">
                   <oda-sensor ::val="inputs[2]" title="2"></oda-sensor>
                   <div class="horizontal">
-                     <oda-neuron :val="outputs[3]" title="3"></oda-neuron>
-                     <oda-neuron :val="outputs[0]" title="0"></oda-neuron>
+                     <oda-neuron :val="outputs[3]" title="3 back"></oda-neuron>
+                     <oda-neuron :val="outputs[0]" title="0 forward"></oda-neuron>
                   </div>
-
                   <oda-sensor ::val="inputs[3]" title="3"></oda-sensor>
               </div>
               <div class="vertical">
@@ -305,8 +311,8 @@
                         <oda-energy ::val="inputs[0]" title="0"></oda-energy>
                     </div>
                     <div class="vertical">
-                        <oda-neuron :val="outputs[1]" title="2"></oda-neuron>
-                        <oda-neuron :val="outputs[2]" title="3"></oda-neuron>
+                        <oda-neuron :val="outputs[1]" title="1 - left"></oda-neuron>
+                        <oda-neuron :val="outputs[2]" title="2 - right"></oda-neuron>
                     </div>
                 </div>
                 <div class="horizontal">

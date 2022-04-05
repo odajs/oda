@@ -162,7 +162,6 @@ site: {
             }
         },
         props: {
-            allowPin: true,
             allowCompact: true,
             autoCompact: true,
             modalwin: {
