@@ -123,3 +123,58 @@ oda-dino {
     top: 314px;
     z-index: 300;
 }
+
+oda-cloud {
+    position: absolute;
+    animation-name: cloud-move;
+    animation-duration: 6s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 100;
+}
+
+@keyframes cloud-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -150px;
+    }
+}
+
+oda-cactus {
+    position: absolute;
+    top: 301px;
+    animation-name: cactus-move;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 200;
+}
+
+@keyframes cactus-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -136px;
+    }
+}
+
+oda-pterodactyl {
+    position: absolute;
+    animation-name: pterodactyl-move;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    z-index: 200;
+}
+
+@keyframes pterodactyl-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -136px;
+    }
+}
