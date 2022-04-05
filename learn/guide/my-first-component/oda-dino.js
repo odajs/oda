@@ -7,7 +7,6 @@ ODA({ is: 'oda-dino',
             svg.dinos path {
                 fill: var(--dino-color);
             }
-
         </style>
 
             <svg version="1.1" baseProfile="full" width="186" height="137"
