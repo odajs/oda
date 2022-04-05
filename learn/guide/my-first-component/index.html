@@ -4,26 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My First Component</title>
-    <script type="module" src="./../../../oda.js"></script>
-     <script type="module" src="./oda-dino.js"/>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="../../../oda.js"></script>
+    <script type="module" src="./oda-dino.js"></script>
 </head>
 <body>
-<oda-dino></oda-dino>
-</body>
-
-    <script type="module">
-        ODA({ is: 'oda-dino',
-    template: `
-        <style>
-        </style>
-        <div>
-            Привет
+    <div id="wrapper">
+        <h1 id ="title">Счет игры</h1>
+        <h1 id ="score">0.0</h1>
+        <div id="game-space">
+            <oda-dino></oda-dino>
         </div>
-    `,
-    props: {
-        name: "Привет динозавр",
-    },
-})
-    </script>
+    </div>
+</body>
 
 </html>
