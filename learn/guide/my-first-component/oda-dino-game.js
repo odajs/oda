@@ -90,6 +90,23 @@ function nightEnd() {
     stars2.forEach(star => star.remove());
 }
 
+
+function createGround(){
+    const gameSpace = document.getElementById('game-space');
+
+    gameSpace.append(document.createElement('oda-ground'));
+    newGround = gameSpace.lastChild;
+    newGround.select(Math.floor(Math.random() * 7));
+    const min = 442;
+    const max = 451;
+    newGround.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    newGround.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            newGround.remove();
+        };
+    });
+}
+
 nightBegin();
 
 createPterodactyl();
