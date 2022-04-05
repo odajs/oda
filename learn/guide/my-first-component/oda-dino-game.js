@@ -1,3 +1,8 @@
+import "./oda-dino.js";
+import "./oda-cactus.js";
+import "./oda-cloud.js";
+import "./oda-pterodactyl.js";
+import "./oda-moon.js";
 import "./oda-stars.js";
 
 function createCloud(){

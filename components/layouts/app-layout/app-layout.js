@@ -189,10 +189,17 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         'down': 'smartClose'
     },
     attached() {
-        this.listen('tap', 'smartClose', { target: top });
+        this.listen('mousedown', 'asyncSmartClose', { target: top });
     },
     detached() {
-        this.unlisten('tap', 'smartClose', { target: top });
+        this.unlisten('mousedown', 'asyncSmartClose', { target: top });
+    },
+    asyncSmartClose() {
+        if (this.opened) {
+            this.async(() => {
+                this.smartClose();
+            }, 100);
+        }
     },
     smartClose() {
         if (this.allowCompact && this.compact && this.opened){
@@ -491,10 +498,10 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
 
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
-            <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%">
+            <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%" @tap.stop>
                 <div ~if="focused?.title" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
-                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @tap="pinned = !pinned" :icon-size="iconSize*0.66"></oda-button>
-                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap="focused = null"></oda-button>
+                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size="iconSize*0.66"></oda-button>
+                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
