@@ -436,6 +436,10 @@ if (!window.ODA) {
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
                     }, 200)
+                    this.interval('force-show', ()=>{
+                        this.$wake = false;
+                        this.style.removeProperty?.('visibility');
+                    }, 1000)
                 }
             }
             resolveUrl(path) {
