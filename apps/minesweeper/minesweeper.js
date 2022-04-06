@@ -27,9 +27,6 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     attached() {
         this.init();
     },
-    get iconSize() {
-        return 44;
-    },
     props: {
         colors: ['', 'blue', 'green', 'red', 'magenta'],
         cols: {
@@ -47,13 +44,24 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         babyMode: {
             default: false,
             save: true
-        }
+        },
+        iconSize: 44
+    },
+    _iconSize() {
+        let h = this.offsetParent?.offsetHeight - 140;
+        h = (h / this.rows > 44) ? 44 : h / this.rows;
+        let w = this.offsetParent?.offsetWidth - 20;
+        w = (w / this.cols > 44) ? 44 : w / this.cols;
+        return Math.min(h, w);
     },
     end: 0, 
     today: 0, 
     toUpdate: false,
     handleInterval: undefined,
     model: [],
+    listeners: {
+        resize(e) { this.iconSize = this._iconSize() }
+    },
     init() {
         this.end = this.today = 1;
         this.handleInterval && clearInterval(this.handleInterval);
@@ -63,6 +71,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.cols = this.cols < 3 ? 3 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
+        this.iconSize = this._iconSize();
         const model = [];
         for (let x = 0; x < this.cols; x++) {
             for (let y = 0; y < this.rows; y++) {
