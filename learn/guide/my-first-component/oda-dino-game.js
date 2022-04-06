@@ -107,6 +107,15 @@ function createGround(){
     });
 }
 
+function createHorizon() {
+    const gameSpace = document.getElementById('game-space');
+    const newHorizon = document.createElement('div');
+    newHorizon.classList.add('horizon');
+    gameSpace.append(newHorizon);
+}
+
+createHorizon();
+
 nightBegin();
 
 createPterodactyl();

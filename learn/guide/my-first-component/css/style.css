@@ -235,3 +235,11 @@ oda-star2 {
         left: -25px;
     }
 }
+
+.horizon {
+    position: absolute;
+    top: 435px;
+    width: 100%;
+    height: 3px;
+    background-color: var(--horizon-color);
+}
