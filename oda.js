@@ -269,8 +269,8 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                // if (!this.domHost)
-                //         this.style.setProperty?.('visibility', 'hidden');
+                if (!this.domHost)
+                        this.style.setProperty?.('visibility', 'hidden');
                 // if(!this.domHost){
                 //     let parent = this.parentNode;
                 //     let dh = parent.$core ? parent : null;
@@ -428,8 +428,12 @@ if (!window.ODA) {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 this.onRender?.();
-                if (!this.domHost && this.style.getPropertyValue?.('visibility'))
-                    this.style.removeProperty?.('visibility');
+                if (!this.domHost && this.style.getPropertyValue?.('visibility')){
+                    this.async(()=>{
+                        this.style.removeProperty?.('visibility');
+                    }, 50)
+                }
+
                 //     this.async(()=>{
                 //         this.style.removeProperty?.('visibility');
                 //     }, 1000)
