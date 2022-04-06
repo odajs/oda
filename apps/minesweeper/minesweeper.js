@@ -27,11 +27,10 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     attached() {
         this.init();
     },
+    get iconSize() {
+        return 44;
+    },
     props: {
-        iconSize: {
-            default: 48,
-            save: true
-        },
         colors: ['', 'blue', 'green', 'red', 'magenta'],
         cols: {
             default: 10,
@@ -48,8 +47,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         babyMode: {
             default: false,
             save: true
-        },
-        borderWidth: 1
+        }
     },
     end: 0, 
     today: 0, 
@@ -138,7 +136,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             :host{
                 position: relative;
                 align-items: center;
-                outline: 1px dotted white;
+                outline: 1px solid lightgray;
                 @apply --horizontal;
             }
             .btn{
@@ -147,8 +145,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 align-items: center;
                 z-index: 1;
                 opacity: {{babyMode ? .8 : 1}};
-                outline: lightgray solid {{borderWidth}}px;
-                @apply --border;
+
             }
             .floor{
                 position: absolute;
@@ -166,8 +163,8 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         <div ~if="count !== 0" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
-        <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size>
-            <oda-icon class="flex" :icon :icon-size="iconSize*.5"></oda-icon>
+        <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size fill="red">
+            <oda-icon class="flex" :icon :icon-size="iconSize*.5"  fill="red"></oda-icon>
         </button>
     `,
     set mine(n) {
@@ -197,7 +194,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             case 'bang':
                 return 'icons:error';
         }
-        return ' ';
+        return '';
     },
     onDown(e) {
         if (e.detail.sourceEvent.button > 0) {
