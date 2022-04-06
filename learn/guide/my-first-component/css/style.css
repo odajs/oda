@@ -243,3 +243,25 @@ oda-star2 {
     height: 3px;
     background-color: var(--horizon-color);
 }
+
+.dino-jump {
+    animation-name: dino-jump;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+
+@keyframes dino-jump{
+    from {
+      top: var(--dino-top);
+      animation-timing-function: ease-out;
+    }
+    50% {
+       top: var(--dino-max-top);
+       animation-timing-function: ease-in;
+    }
+    to {
+        top: var(--dino-top);
+        animation-timing-function: ease-in;
+    }
+}

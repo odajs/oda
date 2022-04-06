@@ -9,8 +9,8 @@ function createCloud(){
     const gameSpace = document.getElementById('game-space');
     gameSpace.append(document.createElement('oda-cloud'));
     const newCloud = gameSpace.lastChild;
-    const min = 10;
-    const max = 100;
+    const min = 20;
+    const max = 150;
     newCloud.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
     newCloud.getAnimations().forEach((anim, i, arr) => {
         anim.onfinish = () => {
@@ -128,12 +128,7 @@ function startGame() {
 }
 
 function dinoKeyDown(e){
-    // function dinoKeyDown(e){
-    //     if (e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
-    //     // if (e.code === 'Space') {
-    //         dinoJump();
-    //     }
-    // }
+    //e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
     if (e.code === 'Space') {
         dino.jump();
     }
@@ -141,6 +136,48 @@ function dinoKeyDown(e){
 
 startGame();
 
+let cloudDistance = 0;
+let nextCloudDistance = 0;
+
+let cactusDistance = 0;
+let nextCactusDistance = 0;
+
+let pterodactylDistance = 0;
+let nextPterodactylDistance = 0;
+
 function checkDino() {
+    cloudDistance++;
+    if (cloudDistance > nextCloudDistance) {
+        cloudDistance = 0;
+        createCloud();
+        nextCloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
+    }
+
+    cactusDistance++;
+    if (cactusDistance > nextCactusDistance) {
+        cactusDistance = 0;
+        createCactus();
+        nextCactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
+    }
+
+    pterodactylDistance++;
+    if (pterodactylDistance > nextPterodactylDistance) {
+        pterodactylDistance = 0;
+        createPterodactyl();
+        nextPterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
+    }
+
+    let cactuses = document.querySelectorAll('oda-cactus');
+
+    for (var i = 0; i < cactuses.length; ++i) {
+        if (dino.intersection(cactuses[i])) {
+            gameOver();
+        }
+    }
+
     requestAnimationFrame(checkDino);
+}
+
+function gameOver() {
+    alert("Game Over. Для продолжения нажмите пробел");
 }

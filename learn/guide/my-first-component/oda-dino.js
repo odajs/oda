@@ -75,6 +75,7 @@ ODA({ is: 'oda-dino',
     jump() {
         this.classList.add("dino-jump");
         const svg = this.$core.root.querySelector("svg");
+        svg.pauseAnimations();
         this.getAnimations().forEach((anim, i, arr) => {
             anim.onfinish = () => {
                 this.classList.remove("dino-jump");
@@ -82,6 +83,8 @@ ODA({ is: 'oda-dino',
                 svg.unpauseAnimations();
             }
         });
-        alert("111");
+    },
+    intersection(cactus) {
+        return true;
     }
 })

@@ -58,9 +58,14 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     today: 0, 
     toUpdate: false,
     handleInterval: undefined,
+    hideLabel: false,
     model: [],
     listeners: {
-        resize(e) { this.iconSize = this._iconSize() }
+        resize: '_resize'
+    },
+    _resize() {
+        this.iconSize = this._iconSize() 
+        this.hideLabel = this.offsetParent?.offsetWidth < 600;
     },
     init() {
         this.end = this.today = 1;
@@ -71,7 +76,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
-        this.iconSize = this._iconSize();
+        this._resize();
         const model = [];
         for (let x = 0; x < this.cols; x++) {
             for (let y = 0; y < this.rows; y++) {
@@ -108,14 +113,15 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
                 max-height: 44px;
                 overflow: hidden;
                 box-sizing: border-box;
+                text-align: center;
             }
         </style>
         <oda-button icon="icons:remove" icon-size=24 @tap="--rows;_init()"></oda-button><div class="txt" title="rows">{{rows}}</div><oda-button icon="icons:add" icon-size=24  @tap="++rows;_init()"></oda-button>
-        <oda-button icon="icons:remove" icon-size=24 @tap="--cols;_init()" style="margin-left: 8px"></oda-button><div class="txt" title="columns">{{cols}}</div><oda-button icon="icons:add" icon-size=24  @tap="++cols;_init()"></oda-button>
-        <div class="txt horizontal center" style="width: 100%; ">oda-minesweeper</div>
+        <oda-button icon="icons:remove" icon-size=24 @tap="--cols;_init()"></oda-button><div class="txt" title="columns">{{cols}}</div><oda-button icon="icons:add" icon-size=24  @tap="++cols;_init()"></oda-button>
+        <div class="txt horizontal center" style="width: 100%;">{{hideLabel?'':'oda-minesweeper'}}</div>
         <oda-button icon="icons:face" icon-size=24 @tap="babyMode = !babyMode" title="baby mode" allow-toggled :toggled="babyMode"></oda-button>
         <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;_init()"></oda-button><div class="txt" title="level">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;_init()"></oda-button>
-        <oda-button icon="icons:refresh" icon-size=24 @tap="document.location.reload()" title="refresh" style="margin-right: 8px"></oda-button>
+        <oda-button icon="icons:refresh" icon-size=24 @tap="document.location.reload()" title="refresh"></oda-button>
     `,
     _init() {
         this.domHost.init();
@@ -161,16 +167,16 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 left: 0px;
                 top: 0px;
                 text-align: center;
-                font-size: {{iconSize - 12}}px;
+                font-size: {{12 + ((iconSize - 32) > 0 ? iconSize - 32 : 0)}}px;
                 align-items: center;
-                font-weight: bolder;
+
             }
         </style>
         <div ~if="count !== 0" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
         <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size fill="red">
-            <oda-icon class="flex" :icon :icon-size="iconSize*.6"  fill="red"></oda-icon>
+            <oda-icon class="flex" :icon :icon-size="iconSize*.5"  fill="red"></oda-icon>
         </button>
     `,
     set mine(n) {
