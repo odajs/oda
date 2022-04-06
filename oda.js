@@ -435,7 +435,7 @@ if (!window.ODA) {
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 32)
+                    }, 200)
                 }
             }
             resolveUrl(path) {

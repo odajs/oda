@@ -118,12 +118,25 @@ let scoreID;
 
 function startGame() {
     createHorizon();
+    document.addEventListener('keydown', dinoKeyDown);
     scoreID = setInterval(() => {
         let score = document.getElementById('score').textContent;
         score =+score + 1;
         document.getElementById('score').textContent = score;
     }, 100);
     requestAnimationFrame(checkDino);
+}
+
+function dinoKeyDown(e){
+    // function dinoKeyDown(e){
+    //     if (e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
+    //     // if (e.code === 'Space') {
+    //         dinoJump();
+    //     }
+    // }
+    if (e.code === 'Space') {
+        dino.jump();
+    }
 }
 
 startGame();
