@@ -1,13 +1,25 @@
-ODA({ is: 'oda-minesweeper',
+ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     template: /*html*/`
         <style>
             :host{
                 @apply --vertical;
                 position: relative;
             }
+            .clock {
+                opacity: .7;
+            }
+            .field {
+                box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
-        <oda-minesweeper-field class="flex center" style="margin-top: 64px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);"></oda-minesweeper-field>
+        <div class="horizontal center clock">
+            <oda-date-timer-circle type="hour"></oda-date-timer-circle>
+            <oda-date-timer-circle type="min"></oda-date-timer-circle>
+            <oda-date-timer-circle type="sec"></oda-date-timer-circle>
+            <oda-date-timer-circle></oda-date-timer-circle>
+        </div>
+        <oda-minesweeper-field class="flex center field"></oda-minesweeper-field>
     `,
     get game() {
         return this;
@@ -15,7 +27,6 @@ ODA({ is: 'oda-minesweeper',
     attached() {
         this.init();
     },
-
     props: {
         iconSize: {
             default: 48,
@@ -40,8 +51,16 @@ ODA({ is: 'oda-minesweeper',
         },
         borderWidth: 1
     },
+    end: 0, 
+    today: 0, 
+    toUpdate: false,
+    handleInterval: undefined,
     model: [],
     init() {
+        this.end = this.today = 1;
+        this.handleInterval && clearInterval(this.handleInterval);
+        this.handleInterval = undefined;
+
         this.rows = this.rows < 3 ? 3 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
@@ -73,8 +92,7 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
         <style>
             :host {
                 display: flex;
-                position: absolute;
-                top: 0;
+
                 max-width: 100%;
                 min-width: 100%;
                 align-items: center;
@@ -190,6 +208,13 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         }
     },
     onTap(e) {
+        if (!this.handleInterval ) {
+            this.end = (new Date()).getTime();
+            this.handleInterval = setInterval(() => {
+                this.toUpdate = !this.toUpdate;
+                this.today = (new Date()).getTime();
+            }, 16);
+        }
         if (this.mine.status === 'locked')
             return;
         if (this.mine.mine) {
