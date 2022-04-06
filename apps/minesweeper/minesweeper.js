@@ -69,9 +69,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     },
     init() {
         this.end = this.today = 1;
-        this.handleInterval && clearInterval(this.handleInterval);
-        this.handleInterval = undefined;
-
+        this.clearHandleInterval();
         this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
@@ -92,7 +90,12 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         }
         this.model = model;
     },
+    clearHandleInterval() {
+        this.handleInterval && clearInterval(this.handleInterval);
+        this.handleInterval = undefined;
+    },
     bang() {
+        this.clearHandleInterval();
         this.model.forEach(i => {
             i.status = (i.mine ? 'bang' : 'opened');
         })

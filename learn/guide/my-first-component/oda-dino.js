@@ -84,7 +84,31 @@ ODA({ is: 'oda-dino',
             }
         });
     },
-    intersection(cactus) {
+    isIntersection(cactus) {
+        let dinoCoords = this.getBoundingClientRect();
+        let cactusCoords = cactus.getBoundingClientRect();
+
+
+        if ((cactusCoords.left+cactusCoords.width < dinoCoords.left ||
+            dinoCoords.left+dinoCoords.width < cactusCoords.left ||
+            dinoCoords.top + dinoCoords.height < cactusCoords.top ||
+            cactusCoords.top + cactusCoords.height < dinoCoords.top))
+        {
+            return false;
+        }
         return true;
+
+        // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
+
+        // const svgPolygon = polygons.get(polygonName);
+
+        // return intersectPolygonPolygon(polygons.get('dino-body' + bow), svgPolygon)
+        // ||
+        //     (getComputedStyle(dino.getElementById('first-leg' + bow)).visibility === 'visible' ?
+        //         intersectPolygonPolygon(polygons.get('dino-first-leg' + bow), svgPolygon) :
+        //         intersectPolygonPolygon(polygons.get('dino-fourth-leg'  + bow), svgPolygon)) ||
+        //     (getComputedStyle(dino.getElementById('second-leg'  + bow)).visibility === 'visible' ?
+        //         intersectPolygonPolygon(polygons.get('dino-second-leg' + bow), svgPolygon) :
+        //         intersectPolygonPolygon(polygons.get('dino-third-leg'  + bow), svgPolygon));
     }
 })

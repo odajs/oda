@@ -170,8 +170,9 @@ function checkDino() {
     let cactuses = document.querySelectorAll('oda-cactus');
 
     for (var i = 0; i < cactuses.length; ++i) {
-        if (dino.intersection(cactuses[i])) {
+        if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
             gameOver();
+            return;
         }
     }
 
