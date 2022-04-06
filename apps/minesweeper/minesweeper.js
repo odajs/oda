@@ -67,8 +67,8 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.handleInterval && clearInterval(this.handleInterval);
         this.handleInterval = undefined;
 
-        this.rows = this.rows < 3 ? 3 : this.rows;
-        this.cols = this.cols < 3 ? 3 : this.cols;
+        this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
+        this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
         this.iconSize = this._iconSize();
@@ -99,7 +99,6 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
         <style>
             :host {
                 display: flex;
-
                 max-width: 100%;
                 min-width: 100%;
                 align-items: center;
@@ -154,7 +153,6 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 align-items: center;
                 z-index: 1;
                 opacity: {{babyMode ? .8 : 1}};
-
             }
             .floor{
                 position: absolute;
@@ -163,17 +161,16 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 left: 0px;
                 top: 0px;
                 text-align: center;
-                font-size: x-large;
+                font-size: {{iconSize - 12}}px;
                 align-items: center;
                 font-weight: bolder;
-                
             }
         </style>
         <div ~if="count !== 0" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
         <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size fill="red">
-            <oda-icon class="flex" :icon :icon-size="iconSize*.5"  fill="red"></oda-icon>
+            <oda-icon class="flex" :icon :icon-size="iconSize*.6"  fill="red"></oda-icon>
         </button>
     `,
     set mine(n) {
