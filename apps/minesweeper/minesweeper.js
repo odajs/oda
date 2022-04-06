@@ -5,10 +5,11 @@ ODA({is:'oda-minesweeper',
                 /*align-self: center;*/
                 @apply --vertical;
                 /*@apply --border;*/
+                position: relative;
             }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
-        <oda-minesweeper-field></oda-minesweeper-field>
+        <oda-minesweeper-field class="flex center" style="margin-top: 64px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);"></oda-minesweeper-field>
     `,
     get game(){
         return this;
@@ -25,19 +26,23 @@ ODA({is:'oda-minesweeper',
 
         cols:{
             default: 10,
-            // save: true
+            save: true
         },
         rows:{
             default: 10,
-            // save: true
+            save: true
         },
         mineCount:{
             default: 20,
-            // save: true
+            save: true
+        },
+        babyMode: {
+            default: false,
+            save: true
         },
         borderWidth:{
-            default: 4,
-            save: true
+            default: 1,
+            //save: true
         }
     },
     model: [],
@@ -65,27 +70,34 @@ ODA({is:'oda-minesweeper',
     }
 })
 ODA({is:'oda-minesweeper-title', imports: '@oda/button',
-    template:`
+    template:/*html*/`
         <style>
-            :host{
-                @apply --horizontal;
-                @apply --header;
+            :host {
+                display: flex;
+                position: absolute;
+                top: 0;
+                max-width: 100%;
+                min-width: 100%;
                 align-items: center;
-                justify-content: space-between;
-                @apply --border;
-                border-width: {{borderWidth}}px;
+                border-bottom: 1px solid lightgray;
+                padding: 2px;
+                z-index: 9;
+                max-height: 44px;
+                overflow: hidden;
                 box-sizing: border-box;
-                border-left-color: var(--content-background);
-                border-top-color: var(--content-background);
-                border-right-color: var(--header-background);
-                border-bottom-color: var(--header-background);
             }
         </style>
-        <oda-minesweeper-display></oda-minesweeper-display>
-        <oda-button @tap="domHost.init()" icon="icons:face"></oda-button>
-<!--        <input type="number" ::value="rows">-->
-        <oda-minesweeper-display></oda-minesweeper-display>
+        <oda-button icon="icons:remove" icon-size=24 @tap="--rows;init()"></oda-button><div class="txt">{{rows}}</div><oda-button icon="icons:add" icon-size=24  @tap="++rows;init()"></oda-button>
+        <oda-button icon="icons:remove" icon-size=24 @tap="--cols;init()" style="margin-left: 8px"></oda-button><div class="txt">{{cols}}</div><oda-button icon="icons:add" icon-size=24  @tap="++cols;init()"></oda-button>
+        <div class="txt horizontal center" style="width: 100%; ">oda-minesweeper</div>
+        <oda-button icon="icons:face" icon-size=24 @tap="babyMode = !babyMode" title="baby mode" allow-toggled :toggled="babyMode"></oda-button>
+        <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;init()"></oda-button><div class="txt">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;init()"></oda-button>
+        <oda-button icon="icons:refresh" icon-size=24 @tap="document.location.reload()" title="refresh" style="margin-right: 8px"></oda-button>
+        <!--<oda-button @tap="domHost.init()" icon="icons:face"></oda-button>-->
     `,
+    _init() {
+        domHost.init();
+    }
 })
 ODA({is:'oda-minesweeper-field',
     template:`
@@ -114,12 +126,7 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
             }
             .btn{
                 @apply --border;
-                border-width: {{borderWidth}}px;
-                box-sizing: border-box;
-                border-left-color: var(--content-background);
-                border-top-color: var(--content-background);
-                border-right-color: var(--header-background);
-                border-bottom-color: var(--header-background);
+                outline: lightgray solid {{borderWidth}}px;
                 width: 100%;
                 height: 100%;
                 align-items: center;
@@ -208,23 +215,4 @@ ODA({is:'oda-minesweeper-mine', imports: '@oda/icon',
             }
         }
     }
-})
-ODA({is:'oda-minesweeper-display',
-    template:`
-        <style>
-            :host{
-                @apply --border;
-                border-width: {{borderWidth}}px;
-                box-sizing: border-box;
-                border-left-color: var(--content-background);
-                border-top-color: var(--content-background);
-                border-right-color: var(--header-background);
-                border-bottom-color: var(--header-background);
-            }
-        </style
-        <div>
-            дисплей
-        </div>
-        
-    `
 })
