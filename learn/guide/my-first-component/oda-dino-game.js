@@ -114,12 +114,20 @@ function createHorizon() {
     gameSpace.append(newHorizon);
 }
 
-createHorizon();
+let scoreID;
 
-nightBegin();
+function startGame() {
+    createHorizon();
+    scoreID = setInterval(() => {
+        let score = document.getElementById('score').textContent;
+        score =+score + 1;
+        document.getElementById('score').textContent = score;
+    }, 100);
+    requestAnimationFrame(checkDino);
+}
 
-createPterodactyl();
+startGame();
 
-createCloud();
-
-createCactus();
+function checkDino() {
+    requestAnimationFrame(checkDino);
+}
