@@ -117,8 +117,12 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     },
     checkStatus() {
         let mine = this.mineCount;
-        this.model.forEach(i => mine -= (i.status === 'locked' && i.mine) ? 1 : 0);
-        mine === 0 && this.bang(true);
+        let error = 0;
+        this.model.forEach(i => {
+            mine -= (i.status === 'locked' && i.mine) ? 1 : 0;
+            error += (i.status === 'locked' && !i.mine) ? 1 : 0;
+        });
+        error === 0 && mine === 0 && this.bang(true);
     }
 })
 
@@ -278,6 +282,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         if (this._touchstart) return;
         if (this.mine.status === 'locked') {
             this.mine.status = '';
+            this.checkStatus();
             return;
         }
         if (this.mine.mine) {
