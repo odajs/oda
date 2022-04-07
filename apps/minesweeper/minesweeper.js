@@ -44,7 +44,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             save: true
         },
         mineCount: {
-            default: 20,
+            default: 15,
             save: true
         },
         babyMode: {
@@ -64,7 +64,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     end: 0, 
     today: 0, 
     toUpdate: false,
-    handleTimerinterval: undefined,
+    handleTimerInterval: undefined,
     hideLabel: false,
     model: [],
     listeners: {
@@ -75,8 +75,9 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.hideLabel = this.offsetParent?.offsetWidth < 600;
     },
     init() {
-        this.end = this.today = 1;
-        this.clearhandleTimerinterval();
+        this.end = this.today = 0;
+        this.toUpdate = !this.toUpdate
+        this.clearHandleTimerInterval();
         this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
@@ -99,16 +100,25 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             this.model = model;
         }, 500)
     },
-    clearhandleTimerinterval() {
-        this.handleTimerinterval && clearInterval(this.handleTimerinterval);
-        this.handleTimerinterval = undefined;
+    clearHandleTimerInterval() {
+        this.handleTimerInterval && clearInterval(this.handleTimerInterval);
+        this.handleTimerInterval = undefined;
     },
-    bang() {
-        this.clearhandleTimerinterval();
+    bang(isVictory) {
+        this.clearHandleTimerInterval();
         this.model.forEach(i => {
-            if (i.status !== 'locked')
-                i.status = (i.mine ? 'bang' : 'opened');
+            i.status = (i.status === 'locked' && i.mine) ? 'locked' : (i.mine ? 'bang' : 'opened');
         })
+        if (isVictory) {
+            console.log('Это Победа !!!')
+        } else {
+            console.log('Повезет в следующий раз ...')
+        }
+    },
+    checkStatus() {
+        let mine = this.mineCount;
+        this.model.forEach(i => mine -= (i.status === 'locked' && i.mine) ? 1 : 0);
+        mine === 0 && this.bang(true);
     }
 })
 
@@ -175,7 +185,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 align-items: center;
                 z-index: 1;
                 border: 1px solid lightgray;
-                opacity: {{babyMode ? .8 : 1}};
+                opacity: {{babyMode ? .75 : 1}};
                 cursor: {{mine?.status === 'opened' ? 'default' : 'pointer'}}
             }
             .floor{
@@ -231,14 +241,13 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             e.stopPropagation();
             this.timerStart();
             this.touchstartTimeout = setTimeout(() => {
-                if (!this._touchstart && this.mine.status !== 'opened') {
-                    if (this.mine.status !== 'locked')
+                if (!this._touchstart && this.mine.status !== 'opened')
+                    if (this.mine.status !== 'locked') {
                         this.mine.status = 'locked';
-                    // else
-                    //     this.mine.status = '';
-                }
+                        this.checkStatus();
+                    }
                 this._touchstart = true;
-            }, 200);
+            }, 300);
         },
         touchend(e) {
             this.async(() => {
@@ -248,9 +257,9 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         }
     },
     timerStart() {
-        if (!this.handleTimerinterval ) {
+        if (!this.handleTimerInterval ) {
             this.end = (new Date()).getTime();
-            this.handleTimerinterval = setInterval(() => {
+            this.handleTimerInterval = setInterval(() => {
                 this.today = (new Date()).getTime();
                 this.toUpdate = !this.toUpdate;
             }, 16);
@@ -259,11 +268,10 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
     onDown(e) {
         this.timerStart();
         if (this._touchstart) return;
-        if (e.detail.sourceEvent.button > 0) {
-            if (this.mine.status !== 'locked')
-                this.mine.status = 'locked';
-            // else
-            //     this.mine.status = '';
+        if (e.detail.sourceEvent.button > 0)
+        if (this.mine.status !== 'locked') {
+            this.mine.status = 'locked';
+            this.checkStatus();
         }
     },
     onTap(e) {
