@@ -1,3 +1,4 @@
+import confetti from "https://cdn.skypack.dev/canvas-confetti";
 ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     template: /*html*/`
         <style>
@@ -17,6 +18,16 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             .field {
                 box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
             }
+            .container {
+                position: absolute;
+                margin: auto;
+                width: 200px;
+                left: 50%;
+                margin-left: -100px;
+                margin-top: 92px;
+                z-index: 99;
+                opacity: .5;
+            }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
         <div class="horizontal center clock">
@@ -26,6 +37,18 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             <oda-date-timer-circle></oda-date-timer-circle>
         </div>
         <oda-minesweeper-field class="flex center field"></oda-minesweeper-field>
+        <div class="container" ~if="endGame">
+            <svg id="svg" viewbox="0 0 120 120">
+                <g id="face" transform='translate(60 60)'>
+                    <circle id="facecircle" cx="0" cy="0" r="50" stroke="#000000" stroke-width="2" fill="#fc6b2c"/>
+                    <circle cx="-20" cy="-10" r="5" fill="#000000"/>
+                    <circle cx="20" cy="-10" r="5" fill="#000000"/>
+                    <g id="smile" transform="translate(0, 25)">
+                        <path id="smilepath" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" d="M-20,0.40000000000000036 C-20,-0.40000000000000036 20,-0.40000000000000036 20,0.40000000000000036"/>
+                    </g>
+                </g>
+            </svg>
+        </div>
     `,
     get game() {
         return this;
@@ -61,23 +84,26 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         w = (w / this.cols > this.iconSizeDefault) ? this.iconSizeDefault : w / this.cols;
         return Math.min(h, w);
     },
-    end: 0, 
-    today: 0, 
+    end: 0,
+    today: 0,
     toUpdate: false,
-    handleTimerInterval: undefined,
+    timerStartInterval: undefined,
     hideLabel: false,
     model: [],
+    endGame: false,
     listeners: {
         resize: '_resize'
     },
     _resize() {
-        this.iconSize = this._iconSize() 
+        this.iconSize = this._iconSize();
         this.hideLabel = this.offsetParent?.offsetWidth < 600;
     },
     init() {
+        this._confetti && clearInterval(this._confetti);
         this.end = this.today = 0;
+        this.endGame = false;
         this.toUpdate = !this.toUpdate
-        this.clearHandleTimerInterval();
+        this.clearTimerStartInterval();
         this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
@@ -100,20 +126,46 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             this.model = model;
         }, 500)
     },
-    clearHandleTimerInterval() {
-        this.handleTimerInterval && clearInterval(this.handleTimerInterval);
-        this.handleTimerInterval = undefined;
+    clearTimerStartInterval() {
+        this.timerStartInterval && clearInterval(this.timerStartInterval);
+        this.timerStartInterval = undefined;
+    },
+    get self() { return this },
+    ready() {
+        this._winAudio = new Audio('./win.mp3');
+        this._winAudio.volume = 0.2;
+        this._errAudio ||= new Audio('./err.mp3');
+        this._errAudio.volume = 0.2;
     },
     bang(isVictory) {
-        this.clearHandleTimerInterval();
+        this.clearTimerStartInterval();
         this.model.forEach(i => {
             i.status = (i.status === 'locked' && i.mine) ? 'locked' : (i.mine ? 'bang' : 'opened');
         })
+        this.endGame = true;
+        let count = 50;
+        let i = 1;
         if (isVictory) {
-            console.log('Это Победа !!!')
+            console.log('Это Победа !!!');
+            this.self._winAudio.play();
+            const randomInRange = (min, max) => { return Math.random() * (max - min) + min }
+            this._confetti = setInterval(() =>
+                confetti({
+                    angle: randomInRange(30, 150), spread: randomInRange(50, 70),
+                    particleCount: randomInRange(50, 100), origin: { y: .25 }
+                }), 300);
+            setTimeout(() => this._confetti && clearInterval(this._confetti), 3000);
         } else {
-            console.log('Повезет в следующий раз ...')
+            i = -1;
+            console.log('Повезет в следующий раз ...');
+            this._errAudio.play();
         }
+        const sInt = setInterval(() => {
+            this.animateSmile.call(this.self, count);
+            count += i;
+            if (count >= 100 || count <= 0)
+                clearInterval(sInt);
+        }, 50);
     },
     checkStatus() {
         let mine = this.mineCount;
@@ -122,7 +174,57 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             mine -= (i.status === 'locked' && i.mine) ? 1 : 0;
             error += (i.status === 'locked' && !i.mine) ? 1 : 0;
         });
-        error === 0 && mine === 0 && this.bang(true);
+        if (error === 0 && mine === 0) this.bang(true);
+    },
+    animateSmile(val) {
+        const interpolateColor = (color1, color2, scale) => {
+            const r1 = parseInt(color1.substr(1, 2), 16);
+            const g1 = parseInt(color1.substr(3, 2), 16);
+            const b1 = parseInt(color1.substr(5, 2), 16);
+            const r2 = parseInt(color2.substr(1, 2), 16);
+            const g2 = parseInt(color2.substr(3, 2), 16);
+            const b2 = parseInt(color2.substr(5, 2), 16);
+            const r = Math.round(r1 + scale * (r2 - r1));
+            const g = Math.round(g1 + scale * (g2 - g1));
+            const b = Math.round(b1 + scale * (b2 - b1));
+            const hex = val => val.toString(16).padStart(2, '0');
+            return `#${hex(r)}${hex(g)}${hex(b)}`;
+        }
+        const smilePoints = (scale) => {
+            const factor = scale * 2 - 1;
+            const p1 = { x: -20, y: -10 * factor };
+            const c1 = { x: -20, y: 10 * factor };
+            const p2 = { x: 20, y: -10 * factor };
+            const c2 = { x: 20, y: 10 * factor };
+            return [p1, c1, c2, p2];
+        }
+        const writeSmilePoints = (points) => {
+            const p = p => `${p.x},${p.y}`;
+            return `M${p(points[0])} C${p(points[1])} ${p(points[2])} ${p(points[3])}`;
+        }
+        const scale = parseInt(val, 10) / 100;
+        const points = writeSmilePoints(smilePoints(scale));
+        const svg = this.$('#svg');
+        if (!svg) return;
+        const smilePath = this.$('#smilepath');
+        const animate = document.createElementNS(svg.namespaceURI, 'animate');
+        animate.setAttribute('attributeName', 'd');
+        animate.setAttribute('attributeType', 'XML');
+        animate.setAttribute('to', points);
+        animate.setAttribute('dur', '0.3s');
+        animate.setAttribute('repeatCount', '1');
+        animate.setAttribute('fill', 'freeze');
+        smilePath.appendChild(animate);
+        animate.beginElement();
+        const faceCircle = this.$('#facecircle');
+        const a = document.createElementNS(svg.namespaceURI, 'animate');
+        a.setAttribute('attributeName', 'fill');
+        a.setAttribute('attributeType', 'CSS');
+        a.setAttribute('dur', '0.3s');
+        a.setAttribute('to', interpolateColor('#FF0000', '#FAD257', scale));
+        a.setAttribute('fill', 'freeze');
+        faceCircle.appendChild(a);
+        a.beginElement();
     }
 })
 
@@ -148,7 +250,7 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
         <div class="txt horizontal center" style="width: 100%;">{{hideLabel?'':'oda-minesweeper'}}</div>
         <oda-button icon="icons:face" icon-size=24 @tap="babyMode = !babyMode" title="baby mode" allow-toggled :toggled="babyMode"></oda-button>
         <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;_init('mineCount')"></oda-button><div class="txt" title="level">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;_init('mineCount')"></oda-button>
-        <oda-button icon="icons:refresh" icon-size=24 @tap="document.location.reload()" title="refresh"></oda-button>
+        <oda-button icon="icons:refresh" icon-size=24 @tap="domHost.init()" title="refresh"></oda-button>
     `,
     _init(e) {
         if (e !== 'mineCount') {
@@ -255,15 +357,15 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         },
         touchend(e) {
             this.async(() => {
-                clearTimeout(this.touchstartTimeout );
+                clearTimeout(this.touchstartTimeout);
                 this._touchstart = false;
             }, 100)
         }
     },
     timerStart() {
-        if (!this.handleTimerInterval ) {
+        if (!this.timerStartInterval) {
             this.end = (new Date()).getTime();
-            this.handleTimerInterval = setInterval(() => {
+            this.timerStartInterval = setInterval(() => {
                 this.today = (new Date()).getTime();
                 this.toUpdate = !this.toUpdate;
             }, 16);
@@ -273,10 +375,10 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         this.timerStart();
         if (this._touchstart) return;
         if (e.detail.sourceEvent.button > 0)
-        if (this.mine.status !== 'locked') {
-            this.mine.status = 'locked';
-            this.checkStatus();
-        }
+            if (this.mine.status !== 'locked') {
+                this.mine.status = 'locked';
+                this.checkStatus();
+            }
     },
     onTap(e) {
         if (this._touchstart) return;
