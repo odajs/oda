@@ -238,8 +238,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
             label{
                 font-size: small;
-                font-weight: bold;
-                padding: 8px 4px 4px 4px;
+                /*font-weight: bold;*/
+                padding: 14px 2px 2px 2px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
@@ -298,7 +298,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         <div class="vertical flex" style="overflow: hidden" @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <label ~if="showLabel" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
             <div class="horizontal flex" style="align-items: center;">
-                <oda-icon style="cursor: pointer;" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <oda-icon style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
                         ~class="{group:layout.isGroup}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
@@ -306,7 +306,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px; margin-right: 1px; border-left: 1px dashed white;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
     `,
     width: undefined,
     get hasChildren() {
