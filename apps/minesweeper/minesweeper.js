@@ -104,11 +104,24 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.endGame = false;
         this.toUpdate = !this.toUpdate
         this.clearTimerStartInterval();
+
+        if (!this.firstInit) {
+            const url = new URL(document.location.href);
+            this.rows = url.searchParams.get('rows') || this.rows;
+            this.cols = url.searchParams.get('cols') || this.cols;
+            this.mineCount = url.searchParams.get('mine') || this.mineCount;
+            const babyMode = url.searchParams.get('baby');
+            if (babyMode)
+                this.babyMode = babyMode !== 'false' ? true : false;
+            this.firstInit = true;
+        }
+
         this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
         this._resize();
+
         this.debounce('_init', () => {
             const model = [];
             for (let x = 0; x < this.cols; x++) {
