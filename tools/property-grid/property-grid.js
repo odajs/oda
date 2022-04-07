@@ -11,7 +11,7 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <slot ~show="false"  @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', width: 200, label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'name', width: 200, template: 'oda-pg-cell-name', label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
             { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell', width: 'auto' },
             { name: 'category', hidden: true, $sortGroups: 0 },
         ]
@@ -138,13 +138,22 @@ ODA({ is: 'oda-pg-cell-value',
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
-        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="icons:autorenew"></oda-button>
+<!--        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="icons:autorenew"></oda-button>-->
     `,
     item: null,
     async showDD(e){
         const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
         this.item.value = res.focusedItem.value;
     },
+    resetValue() {
+        this.item.value = this.item.default;
+    }
+})
+ODA({ is: 'oda-pg-cell-name', extends: 'oda-table-cell',
+    template: /* html */`
+
+        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
+    `,
     resetValue() {
         this.item.value = this.item.default;
     }
