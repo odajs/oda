@@ -75,7 +75,7 @@ ODA({ is: 'oda-layout-designer-structure',
         layout: null,
         rootSavekey: ''
     },
-    iconSize: 32,
+    // iconSize: 32,
     observers: [
         async function execute(layout, settings) {
             if (layout) {
