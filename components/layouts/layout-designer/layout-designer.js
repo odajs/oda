@@ -62,7 +62,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --no-flex;
                 overflow: visible;
                 flex-wrap: wrap;
-                justify-content: space-around;
+                /*justify-content: space-around;*/
                 align-content: flex-start;
             }
             [selected] {
