@@ -4,6 +4,12 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             :host{
                 @apply --vertical;
                 position: relative;
+                box-sizing: border-box;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
             }
             .clock {
                 opacity: .7;
@@ -45,19 +51,20 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             default: false,
             save: true
         },
-        iconSize: 44
+        iconSize: 48,
+        iconSizeDefault: 48
     },
     _iconSize() {
         let h = this.offsetParent?.offsetHeight - 140;
-        h = (h / this.rows > 44) ? 44 : h / this.rows;
+        h = (h / this.rows > this.iconSizeDefault) ? this.iconSizeDefault : h / this.rows;
         let w = this.offsetParent?.offsetWidth - 20;
-        w = (w / this.cols > 44) ? 44 : w / this.cols;
+        w = (w / this.cols > this.iconSizeDefault) ? this.iconSizeDefault : w / this.cols;
         return Math.min(h, w);
     },
     end: 0, 
     today: 0, 
     toUpdate: false,
-    handleInterval: undefined,
+    handleTimerinterval: undefined,
     hideLabel: false,
     model: [],
     listeners: {
@@ -69,35 +76,38 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     },
     init() {
         this.end = this.today = 1;
-        this.clearHandleInterval();
+        this.clearhandleTimerinterval();
         this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
         this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
         this._resize();
-        const model = [];
-        for (let x = 0; x < this.cols; x++) {
-            for (let y = 0; y < this.rows; y++) {
-                model.push({ x, y })
+        this.debounce('_init', () => {
+            const model = [];
+            for (let x = 0; x < this.cols; x++) {
+                for (let y = 0; y < this.rows; y++) {
+                    model.push({ x, y })
+                }
             }
-        }
-        for (let i = 0; i < this.mineCount; i++) {
-            let pos;
-            do {
-                pos = Math.floor(Math.random() * model.length);
-            } while (model[pos].mine);
-            model[pos].mine = true;
-        }
-        this.model = model;
+            for (let i = 0; i < this.mineCount; i++) {
+                let pos;
+                do {
+                    pos = Math.floor(Math.random() * model.length);
+                } while (model[pos].mine);
+                model[pos].mine = true;
+            }
+            this.model = model;
+        }, 500)
     },
-    clearHandleInterval() {
-        this.handleInterval && clearInterval(this.handleInterval);
-        this.handleInterval = undefined;
+    clearhandleTimerinterval() {
+        this.handleTimerinterval && clearInterval(this.handleTimerinterval);
+        this.handleTimerinterval = undefined;
     },
     bang() {
-        this.clearHandleInterval();
+        this.clearhandleTimerinterval();
         this.model.forEach(i => {
-            i.status = (i.mine ? 'bang' : 'opened');
+            if (i.status !== 'locked')
+                i.status = (i.mine ? 'bang' : 'opened');
         })
     }
 })
@@ -123,10 +133,13 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
         <oda-button icon="icons:remove" icon-size=24 @tap="--cols;_init()"></oda-button><div class="txt" title="columns">{{cols}}</div><oda-button icon="icons:add" icon-size=24  @tap="++cols;_init()"></oda-button>
         <div class="txt horizontal center" style="width: 100%;">{{hideLabel?'':'oda-minesweeper'}}</div>
         <oda-button icon="icons:face" icon-size=24 @tap="babyMode = !babyMode" title="baby mode" allow-toggled :toggled="babyMode"></oda-button>
-        <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;_init()"></oda-button><div class="txt" title="level">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;_init()"></oda-button>
+        <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;_init('mineCount')"></oda-button><div class="txt" title="level">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;_init('mineCount')"></oda-button>
         <oda-button icon="icons:refresh" icon-size=24 @tap="document.location.reload()" title="refresh"></oda-button>
     `,
-    _init() {
+    _init(e) {
+        if (e !== 'mineCount') {
+            this.mineCount = (this.rows * this.cols) / 5 - (this.rows * this.cols) / 20;
+        }
         this.domHost.init();
     }
 })
@@ -161,7 +174,9 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 height: 100%;
                 align-items: center;
                 z-index: 1;
+                border: 1px solid lightgray;
                 opacity: {{babyMode ? .8 : 1}};
+                cursor: {{mine?.status === 'opened' ? 'default' : 'pointer'}}
             }
             .floor{
                 position: absolute;
@@ -172,7 +187,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 text-align: center;
                 font-size: {{12 + ((iconSize - 32) > 0 ? iconSize - 32 : 0)}}px;
                 align-items: center;
-
+                .tmp {}
             }
         </style>
         <div ~if="count !== 0" class="horizontal floor">
@@ -187,7 +202,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             n.el = this;
     },
     get count() {
-        if (this.mine.mine) return ''
+        if (!this.mine || this.mine.mine) return ''
         let count = 0;
         for (let x = (this.mine.x - 1); x <= (this.mine.x + 1); x++) {
             for (let y = (this.mine.y - 1); y <= (this.mine.y + 1); y++) {
@@ -211,24 +226,52 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         }
         return '';
     },
+    listeners: {
+        touchstart(e) {
+            e.stopPropagation();
+            this.timerStart();
+            this.touchstartTimeout = setTimeout(() => {
+                if (!this._touchstart && this.mine.status !== 'opened') {
+                    if (this.mine.status !== 'locked')
+                        this.mine.status = 'locked';
+                    // else
+                    //     this.mine.status = '';
+                }
+                this._touchstart = true;
+            }, 200);
+        },
+        touchend(e) {
+            this.async(() => {
+                clearTimeout(this.touchstartTimeout );
+                this._touchstart = false;
+            }, 100)
+        }
+    },
+    timerStart() {
+        if (!this.handleTimerinterval ) {
+            this.end = (new Date()).getTime();
+            this.handleTimerinterval = setInterval(() => {
+                this.today = (new Date()).getTime();
+                this.toUpdate = !this.toUpdate;
+            }, 16);
+        }
+    },
     onDown(e) {
+        this.timerStart();
+        if (this._touchstart) return;
         if (e.detail.sourceEvent.button > 0) {
             if (this.mine.status !== 'locked')
                 this.mine.status = 'locked';
-            else
-                this.mine.status = '';
+            // else
+            //     this.mine.status = '';
         }
     },
     onTap(e) {
-        if (!this.handleInterval ) {
-            this.end = (new Date()).getTime();
-            this.handleInterval = setInterval(() => {
-                this.toUpdate = !this.toUpdate;
-                this.today = (new Date()).getTime();
-            }, 16);
-        }
-        if (this.mine.status === 'locked')
+        if (this._touchstart) return;
+        if (this.mine.status === 'locked') {
+            this.mine.status = '';
             return;
+        }
         if (this.mine.mine) {
             this.mine.error = true;
             this.game.bang();
