@@ -180,14 +180,24 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 clearInterval(sInt);
         }, 50);
     },
-    checkStatus() {
-        let mine = this.mineCount;
+    checkStatus(opened) {
         let error = 0;
-        this.model.forEach(i => {
-            mine -= (i.status === 'locked' && i.mine) ? 1 : 0;
-            error += (i.status === 'locked' && !i.mine) ? 1 : 0;
-        });
-        if (error === 0 && mine === 0) this.bang(true);
+        let mine = this.mineCount;
+        if (opened) {
+            let error = 0;
+            for (const i of this.model) {
+                error += (i.status !== 'opened' && i.el.count) ? 1 : 0;
+                if (error) return;
+            }
+            if (error === 0) this.bang(true); 
+        } else {
+            for (const i of this.model) {
+                mine -= (i.status === 'locked' && i.mine) ? 1 : 0;
+                error += (i.status === 'locked' && !i.mine) ? 1 : 0;
+                if (error) return;
+            }
+            if (error === 0 && mine === 0) this.bang(true);
+        }
     },
     animateSmile(val) {
         const interpolateColor = (color1, color2, scale) => {
@@ -421,5 +431,6 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 }
             }
         }
+        this.checkStatus(true);
     }
 })
