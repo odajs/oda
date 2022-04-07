@@ -13,8 +13,8 @@ ODA({
                 height: 30px;
                 width: 90px;
                 position: absolute;
-                left: {{($refs.svg.getBoundingClientRect().width-90)/2}}px;
-                top: {{($refs.svg.getBoundingClientRect().height-30)/2}}px;
+                left: {{($refs.svg?.getBoundingClientRect().width-90)/2}}px;
+                top: {{($refs.svg?.getBoundingClientRect().height-30)/2}}px;
             }
             .outerDiv {
                 min-width: 200px;
@@ -57,7 +57,7 @@ ODA({
         setInterval(this.measurement.bind(this), 1000);
     },
     fontSize() {
-        return 16 * (this.$refs.svg.viewBox.baseVal.width / this.$refs.svg.getBoundingClientRect().width);
+        return 16 * (this.$refs.svg?.viewBox.baseVal.width / this.$refs.svg?.getBoundingClientRect().width);
     },
     measurement() { //Расчет текущей скорости построения
         if( this.previousQuantityOfDots.length == 10 ) 
@@ -88,8 +88,8 @@ ODA({
         this.dots.push(point);
     },
     drawTriangleVertices() { 
-        const maxX = this.$refs.svg.viewBox.baseVal.width;
-        const maxY = this.$refs.svg.viewBox.baseVal.height;
+        const maxX = this.$refs.svg?.viewBox.baseVal.width;
+        const maxY = this.$refs.svg?.viewBox.baseVal.height;
         this.triangleVertices[0] = { x: maxX / 2,    y: maxY * 0.05, color:"rgb(255,0,0)" };
         this.triangleVertices[1] = { x: maxX * 0.05, y: maxY * 0.95, color:"rgb(0,255,0)" };
         this.triangleVertices[2] = { x: maxX * 0.95, y: maxY * 0.95, color:"rgb(0,0,255)" };
@@ -112,8 +112,8 @@ ODA({
     move(e,d) {
         //Расчет коэффициента отношения размера пикселя экрана размеров к пикселю SVG
         const svg = this.$refs.svg;
-        const rect = svg.getBoundingClientRect();
-        const k = svg.viewBox.baseVal.width / rect.width;
+        const rect = svg?.getBoundingClientRect();
+        const k = svg?.viewBox.baseVal.width / rect.width;
 
         const mouse = {};
         mouse.x = (d.x - rect.left) * k;
@@ -123,15 +123,15 @@ ODA({
         if( mouse.x <= 0 )
             this.triangleVertices[vertex].x = 0;
         else
-            if( mouse.x >= svg.viewBox.baseVal.width )
-                this.triangleVertices[vertex].x = svg.viewBox.baseVal.width;
+            if( mouse.x >= svg?.viewBox.baseVal.width )
+                this.triangleVertices[vertex].x = svg?.viewBox.baseVal.width;
             else
                 this.triangleVertices[vertex].x = mouse.x;
         if( mouse.y <= 0 )
             this.triangleVertices[vertex].y = 0;
         else
-            if( mouse.y >= svg.viewBox.baseVal.height )
-                this.triangleVertices[vertex].y = svg.viewBox.baseVal.height;
+            if( mouse.y >= svg?.viewBox.baseVal.height )
+                this.triangleVertices[vertex].y = svg?.viewBox.baseVal.height;
             else
                 this.triangleVertices[vertex].y = mouse.y;
         this.interval( "key", this.recalculateDots.bind(this), 33);
