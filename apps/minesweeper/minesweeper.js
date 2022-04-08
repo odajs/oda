@@ -2,7 +2,7 @@ import confetti from "https://cdn.skypack.dev/canvas-confetti";
 ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 @apply --vertical;
                 position: relative;
                 box-sizing: border-box;
@@ -16,7 +16,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 opacity: .7;
             }
             .field {
-                box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .3);
             }
             .smile {
                 position: absolute;
@@ -202,7 +202,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 error += (i.status !== 'opened' && i.el.count) ? 1 : 0;
                 if (error) return;
             }
-            if (error === 0) this.bang(true); 
+            if (error === 0) this.bang(true);
         } else {
             for (const i of this.model) {
                 mine -= (i.status === 'locked' && i.mine) ? 1 : 0;
@@ -251,7 +251,8 @@ ODA({ is: 'oda-minesweeper-field',
         <style>
             :host {
                 flex-wrap: wrap;
-                width: {{iconSize * cols}}px;
+                box-sizing: border-box;
+                width: {{iconSize * cols + 1}}px;
                 @apply --horizontal;
                 @apply --header;
             }
@@ -265,31 +266,33 @@ ODA({ is: 'oda-minesweeper-field',
 ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 position: relative;
                 align-items: center;
                 outline: 1px solid lightgray;
                 @apply --horizontal;
+                box-sizing: border-box;
             }
-            .btn{
+            .btn {
                 width: 100%;
                 height: 100%;
                 align-items: center;
                 z-index: 1;
-                border: 1px solid lightgray;
-                opacity: {{babyMode ? .75 : 1}};
+                border: 1mm ridge lightgray;
+                opacity: {{babyMode ? .5 : 1}};
                 cursor: {{mine?.status === 'opened' ? 'default' : 'pointer'}}
             }
-            .floor{
+            .floor {
+                font-size: {{12 + ((iconSize - 32) > 0 ? iconSize - 32 : 0)}}px;
+            }
+            .floor {
                 position: absolute;
                 width: 100%;
                 height: 100%;
                 left: 0px;
                 top: 0px;
                 text-align: center;
-                font-size: {{12 + ((iconSize - 32) > 0 ? iconSize - 32 : 0)}}px;
                 align-items: center;
-                .tmp {}
             }
         </style>
         <div ~if="count !== 0" class="horizontal floor">
