@@ -253,9 +253,10 @@ site: {
             };
         },
         async ready() {
-            ODA.router.create('#*,', (hash) => {
-                this.hash = hash;
-            });
+            ODA.router.create(hash => this.hash = hash);
+            // ODA.router.create('#*,', (hash) => {
+            //     this.hash = hash;
+            // });
             document.addEventListener("setTheme", e => {
                 let iframeContent = this.$refs.iframe.contentDocument;
                 iframeContent.querySelector('style[group=theme]').textContent = e.detail.value;
