@@ -91,6 +91,7 @@ ODA({is: 'oda-progress-bar',
             position: absolute;
         }
         :host .text{
+            font-size: {{iconSize/3}}px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -122,11 +123,11 @@ ODA({is: 'oda-progress-bar',
         }
     </style>
     <svg :viewBox="\`0 0 \${iconSize} \${iconSize}\`" class="progress-ring no-flex">
-        <circle ref="ring" :stroke="error ? 'red' : stroke" fill="transparent" stroke-width="2" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
+        <circle ref="ring" :stroke="error ? 'red' : stroke" fill="transparent" stroke-width="3" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
     </svg>
     <div ~if="progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">
         <div ~if="!error || progress < 1" class="text">{{~~(100*progress)}}</div>
-        <oda-icon ~if="error && (progress === 0 || progress === 1)" icon="icons:error"></oda-icon>
+        <oda-icon :icon-size="iconSize*0.75" ~if="error && (progress === 0 || progress === 1)" icon="icons:error"></oda-icon>
     </div>
     <div ~if="!hideLabel" class="text" style="overflow: hidden; text-overflow: ellipsis;">{{label}}</div>
     <div class="flex"></div>

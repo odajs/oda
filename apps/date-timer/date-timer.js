@@ -102,11 +102,12 @@ ODA({ is: 'oda-date-timer',
 
 ODA({ is: 'oda-date-timer-circle',
     template: /*html*/`
-        <canvas id="circle" :width="size" :height="size"></canvas>
+        <canvas id="circle" :width="size" :height="height || size"></canvas>
     `,
     props: {
         type: 'ms',
         size: 80,
+        height: 0,
         padding: 8,
         lineWidth: 2,
         lineColor: '#4285f4',
@@ -172,7 +173,8 @@ ODA({ is: 'oda-date-timer-circle',
             this.ctx.font = `${this.labelSize || this.fontSize - 4 || 14}px monospace`;
             this.ctx.fillText(this.label || this.type, this.cw * .52, this.ch * .45 + 5 + this.fontSize, this.cw + 12);
             this.ctx.beginPath();
-            this.ctx.arc(this.size / 2, this.size / 2, this.size / 2 - this.padding, this.start, diff / 10 + this.start, false);
+            if (this.height === 0)
+                    this.ctx.arc(this.size / 2, this.size / 2, this.size / 2 - this.padding, this.start, diff / 10 + this.start, false);
             this.ctx.stroke();
         }
     ]

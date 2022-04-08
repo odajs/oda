@@ -24,7 +24,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 width: 200px;
                 left: 50%;
                 margin-left: -100px;
-                margin-top: 92px;
+                margin-top: 74px;
                 z-index: 99;
                 visibility: hidden;
                 opacity: 0;
@@ -44,10 +44,10 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
         <div class="horizontal center clock">
-            <oda-date-timer-circle type="hour"></oda-date-timer-circle>
-            <oda-date-timer-circle type="min"></oda-date-timer-circle>
-            <oda-date-timer-circle type="sec"></oda-date-timer-circle>
-            <oda-date-timer-circle></oda-date-timer-circle>
+            <oda-date-timer-circle type="hour" size=40 height=60></oda-date-timer-circle>
+            <oda-date-timer-circle type="min" size=40 height=60></oda-date-timer-circle>
+            <oda-date-timer-circle type="sec" size=40 height=60></oda-date-timer-circle>
+            <oda-date-timer-circle size=40 height=60></oda-date-timer-circle>
         </div>
         <oda-minesweeper-field class="flex center field"></oda-minesweeper-field>
         <div class="smile" ~class="{show:endGame}" @tap="init">
@@ -357,7 +357,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             this.timerStartInterval = setInterval(() => {
                 this.today = (new Date()).getTime();
                 this.toUpdate = !this.toUpdate;
-            }, 16);
+            }, 100);
         }
     },
     onDown(e) {
