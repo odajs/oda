@@ -18,7 +18,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             .field {
                 box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
             }
-            .container {
+            .smile {
                 position: absolute;
                 margin: auto;
                 width: 200px;
@@ -26,7 +26,20 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 margin-left: -100px;
                 margin-top: 92px;
                 z-index: 99;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 3s linear, visibility .5s linear;
+                cursor: pointer;
+            }
+            .smile.show {
                 opacity: .5;
+                visibility: visible;
+            }
+            .smile-win {
+                fill: yellow;
+            }
+            .smile-lose {
+                fill: red;
             }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
@@ -37,14 +50,14 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             <oda-date-timer-circle></oda-date-timer-circle>
         </div>
         <oda-minesweeper-field class="flex center field"></oda-minesweeper-field>
-        <div class="container" ~if="endGame">
-            <svg id="svg" viewbox="0 0 120 120">
-                <g id="face" transform='translate(60 60)'>
-                    <circle id="facecircle" cx="0" cy="0" r="50" stroke="#000000" stroke-width="2" fill="#fc6b2c"/>
+        <div class="smile" ~class="{show:endGame}" @tap="init">
+            <svg viewbox="0 0 120 120">
+                <g transform='translate(60 60)'>
+                    <circle cx="0" cy="0" r="50" stroke="#000000" stroke-width="2" fill="transparent" ~class="{'smile-lose':endGame==='lose', 'smile-win':endGame==='win'}"/>
                     <circle cx="-20" cy="-10" r="5" fill="#000000"/>
                     <circle cx="20" cy="-10" r="5" fill="#000000"/>
-                    <g id="smile" transform="translate(0, 25)">
-                        <path id="smilepath" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" d="M-20,0.40000000000000036 C-20,-0.40000000000000036 20,-0.40000000000000036 20,0.40000000000000036"/>
+                    <g>
+                        <path fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" :d="'M-25,20 Q0,'+ smileQY + ' 25,20'"/>
                     </g>
                 </g>
             </svg>
@@ -90,7 +103,8 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     timerStartInterval: undefined,
     hideLabel: false,
     model: [],
-    endGame: false,
+    endGame: '',
+    smileQY: 25,
     listeners: {
         resize: '_resize'
     },
@@ -99,9 +113,9 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.hideLabel = this.offsetParent?.offsetWidth < 600;
     },
     init() {
+        this.endGame = '';
         this._confetti && clearInterval(this._confetti);
         this.end = this.today = 0;
-        this.endGame = false;
         this.toUpdate = !this.toUpdate
         this.clearTimerStartInterval();
 
@@ -143,24 +157,23 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.timerStartInterval && clearInterval(this.timerStartInterval);
         this.timerStartInterval = undefined;
     },
-    get self() { return this },
     ready() {
         this._winAudio = new Audio('./win.mp3');
         this._winAudio.volume = 0.2;
         this._errAudio ||= new Audio('./err.mp3');
         this._errAudio.volume = 0.2;
     },
-    bang(isVictory) {
+    bang(isWin) {
         this.clearTimerStartInterval();
         this.model.forEach(i => {
             i.status = (i.status === 'locked' && i.mine) ? 'locked' : (i.mine ? 'bang' : 'opened');
         })
-        this.endGame = true;
-        let count = 50;
+        this.smileQY = 25;
         let i = 1;
-        if (isVictory) {
+        if (isWin) {
             console.log('Это Победа !!!');
-            this.self._winAudio.play();
+            this.game._winAudio.play();
+            this.endGame = 'win';
             const randomInRange = (min, max) => { return Math.random() * (max - min) + min }
             this._confetti = setInterval(() =>
                 confetti({
@@ -172,13 +185,13 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             i = -1;
             console.log('Повезет в следующий раз ...');
             this._errAudio.play();
+            this.endGame = 'lose';
         }
         const sInt = setInterval(() => {
-            this.animateSmile.call(this.self, count);
-            count += i;
-            if (count >= 100 || count <= 0)
+            this.smileQY += i;
+            if (this.smileQY > 45 || this.smileQY < -5)
                 clearInterval(sInt);
-        }, 50);
+        }, 100);
     },
     checkStatus(opened) {
         let error = 0;
@@ -198,56 +211,6 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             }
             if (error === 0 && mine === 0) this.bang(true);
         }
-    },
-    animateSmile(val) {
-        const interpolateColor = (color1, color2, scale) => {
-            const r1 = parseInt(color1.substr(1, 2), 16);
-            const g1 = parseInt(color1.substr(3, 2), 16);
-            const b1 = parseInt(color1.substr(5, 2), 16);
-            const r2 = parseInt(color2.substr(1, 2), 16);
-            const g2 = parseInt(color2.substr(3, 2), 16);
-            const b2 = parseInt(color2.substr(5, 2), 16);
-            const r = Math.round(r1 + scale * (r2 - r1));
-            const g = Math.round(g1 + scale * (g2 - g1));
-            const b = Math.round(b1 + scale * (b2 - b1));
-            const hex = val => val.toString(16).padStart(2, '0');
-            return `#${hex(r)}${hex(g)}${hex(b)}`;
-        }
-        const smilePoints = (scale) => {
-            const factor = scale * 2 - 1;
-            const p1 = { x: -20, y: -10 * factor };
-            const c1 = { x: -20, y: 10 * factor };
-            const p2 = { x: 20, y: -10 * factor };
-            const c2 = { x: 20, y: 10 * factor };
-            return [p1, c1, c2, p2];
-        }
-        const writeSmilePoints = (points) => {
-            const p = p => `${p.x},${p.y}`;
-            return `M${p(points[0])} C${p(points[1])} ${p(points[2])} ${p(points[3])}`;
-        }
-        const scale = parseInt(val, 10) / 100;
-        const points = writeSmilePoints(smilePoints(scale));
-        const svg = this.$('#svg');
-        if (!svg) return;
-        const smilePath = this.$('#smilepath');
-        const animate = document.createElementNS(svg.namespaceURI, 'animate');
-        animate.setAttribute('attributeName', 'd');
-        animate.setAttribute('attributeType', 'XML');
-        animate.setAttribute('to', points);
-        animate.setAttribute('dur', '0.3s');
-        animate.setAttribute('repeatCount', '1');
-        animate.setAttribute('fill', 'freeze');
-        smilePath.appendChild(animate);
-        animate.beginElement();
-        const faceCircle = this.$('#facecircle');
-        const a = document.createElementNS(svg.namespaceURI, 'animate');
-        a.setAttribute('attributeName', 'fill');
-        a.setAttribute('attributeType', 'CSS');
-        a.setAttribute('dur', '0.3s');
-        a.setAttribute('to', interpolateColor('#FF0000', '#FAD257', scale));
-        a.setAttribute('fill', 'freeze');
-        faceCircle.appendChild(a);
-        a.beginElement();
     }
 })
 

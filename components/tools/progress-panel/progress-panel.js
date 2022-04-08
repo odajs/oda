@@ -1,5 +1,4 @@
-ODA({
-    is: 'oda-progress-panel',
+ODA({is: 'oda-progress-panel',
     template: `
     <style>
         :host{
@@ -17,7 +16,7 @@ ODA({
     </div>
     `,
     items: [],
-    iconSize: 32,
+    iconSize: 64,
     expanded: false,
     props: {
         hideLabels: false,
@@ -52,8 +51,7 @@ ODA({
         );
     },
 });
-ODA({
-    is: 'oda-progress-bar',
+ODA({is: 'oda-progress-bar',
     extends: [],
     template: /*html*/`
     <style>
@@ -140,7 +138,6 @@ ODA({
     progress: 0,
     stroke: '#0075ff',
     label: '',
-    iconSize: 32,
     error: null,
     task: null,
     hideLabel: false,
