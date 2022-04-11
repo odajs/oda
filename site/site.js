@@ -31,7 +31,7 @@ function route(item, idx) {
         actions[item.execute](item);
     }
     else {
-        ODA.router.go("#" + item.$id, idx);
+        ODA.router.go("#" + (item.$id || item));
     }
 }
 const actions = {
@@ -98,7 +98,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part></oda-site-header>
             </div>
-            <div slot="left-panel" ~for="ctrl in leftControls" :icon="ctrl._icon" :title="ctrl._title" class="layout" @tap="_ontap(ctrl)">
+            <div @activate="_activate(ctrl)" slot="left-panel" ~for="ctrl in leftControls" :icon="ctrl._icon" :title="ctrl._title" class="layout" @tap="_ontap(ctrl)">
                 <oda-site-nav-tree :part="items?.[index]" ::focused-node="focusedItem" class="flex" hide-top></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
@@ -126,7 +126,10 @@ site: {
         },
         _ontap(item) {
             this.selectedSiteHeaderMenu = item._title;
-            this.smartClose();
+            this.left.smartClose();
+        },
+        _activate(ctrl) {
+            route(ctrl._path);
         },
         selectedSiteHeaderMenu: '',
         ddMenuIndex: -1,
@@ -295,14 +298,7 @@ site: {
                 if (!this.hash && this._srcIframe === 'video') {
                     this.play();
                 }
-                this.async(() => {
-                    let url = window.location.href;
-                    url = url.split('#')[1];
-                    url = url && url.split('/')[0];
-                    url = url && this.leftControls.filter(i => i._path === url)[0]?._title;
-                    url ||= 'ОБУЧЕНИЕ';
-                    this.setLeftDrawerFocus(url);
-                }, 500)
+                this.left.allowPin = true;
             }, 100);
         },
         _setStatus(root) {

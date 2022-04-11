@@ -399,7 +399,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             @apply --content;
             opacity: .5;
             height: 194px;
-            border-radius: 8px;
+            border-radius: 8px !important;
             margin-left: {{(pos === 'left')?(8 * (hideTabs?-1:1)):0}}px;
             margin-right: {{(pos === 'right')?(8 * (hideTabs?-1:1)):0}}px;
             padding: 0px !important;
@@ -423,13 +423,13 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         }
     </style>
 
-    <div @touchmove="hideTabs=false"  @down.stop="hideTabs=!hideTabs" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
+    <div @touchmove="hideTabs=false"  ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
             <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" @down.stop="setFocus(item)" :title="item?.getAttribute('bar-title') || item?.title || item?.getAttribute('title')" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'"  :sub-icon="item?.getAttribute('sub-icon')" :toggled="focused === item" :bubble="item.bubble" ~class="{outline: lastFocused === item}"></oda-button>
-            <div @down.stop="hideTabs = true" class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
+            <div  class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
             <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
-        <oda-icon class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
+        <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="pos ==='left'?'icons:chevron-right':'icons:chevron-left'" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
     </div>
     <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal content drawer no-flex"
         ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
