@@ -41,15 +41,27 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             .smile-lose {
                 fill: red;
             }
+            oda-button {
+                border: 1px solid gray;
+                border-radius: 50%;
+                font-size: 12px;
+                width: 14px;
+                height: 14px;
+                margin: 0 8px;
+            }
         </style>
         <oda-minesweeper-title></oda-minesweeper-title>
         <div class="horizontal center clock">
+            <oda-button allow-toggled :toggled="level === 1" @tap="setLevel(1)">1</oda-button>
+            <oda-button allow-toggled :toggled="level === 2" @tap="setLevel(2)">2</oda-button>
             <oda-date-timer-circle type="hour" size=40 height=60></oda-date-timer-circle>
             <oda-date-timer-circle type="min" size=40 height=60></oda-date-timer-circle>
             <oda-date-timer-circle type="sec" size=40 height=60></oda-date-timer-circle>
             <oda-date-timer-circle size=40 height=60></oda-date-timer-circle>
+            <oda-button allow-toggled :toggled="level === 3" @tap="setLevel(3)">3</oda-button>
+            <oda-button allow-toggled :toggled="level === 4" @tap="setLevel(4)">4</oda-button>
         </div>
-        <oda-minesweeper-field class="flex center field"></oda-minesweeper-field>
+        <oda-minesweeper-field ~if="isReady" class="flex center field"></oda-minesweeper-field>
         <div class="smile" ~class="{show:endGame}" @tap="init">
             <svg viewbox="0 0 120 120">
                 <g transform='translate(60 60)'>
@@ -63,14 +75,8 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             </svg>
         </div>
     `,
-    get game() {
-        return this;
-    },
-    attached() {
-        this.init();
-    },
     props: {
-        colors: ['', 'blue', 'green', 'red', 'magenta'],
+        colors: ['', 'blue', 'green', 'red', 'magenta', 'orange'],
         cols: {
             default: 10,
             save: true
@@ -87,15 +93,13 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             default: false,
             save: true
         },
-        iconSize: 48,
-        iconSizeDefault: 48
-    },
-    _iconSize() {
-        let h = this.offsetParent?.offsetHeight - 140;
-        h = (h / this.rows > this.iconSizeDefault) ? this.iconSizeDefault : h / this.rows;
-        let w = this.offsetParent?.offsetWidth - 20;
-        w = (w / this.cols > this.iconSizeDefault) ? this.iconSizeDefault : w / this.cols;
-        return Math.min(h, w);
+        level: {
+            default: '1',
+            save: true
+        },
+        cellSize: 48,
+        cellSizeDefault: 48,
+        maxCells: 50
     },
     end: 0,
     today: 0,
@@ -105,20 +109,91 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     model: [],
     endGame: '',
     smileQY: 25,
-    listeners: {
-        resize: '_resize'
+    isReady: false,
+    get game() { return this },
+    listeners: { 
+        resize: '_resize' 
+    },
+    ready() {
+        this._winAudio = new Audio('./win.mp3');
+        this._winAudio.volume = .2;
+        this._errAudio ||= new Audio('./err.mp3');
+        this._errAudio.volume = 0.2;
+    },
+    attached() {
+        this.init();
+    },
+    setLevel(level) {
+        this.level = level;
+        switch (level) {
+            case 1:
+                this.rows = this.cols = 9;
+                this.mineCount = 10;
+                break;
+            case 2:
+                this.rows = this.cols = 16;
+                this.mineCount = 40;
+                break;
+            case 3:
+                this.cols = 30;
+                this.rows = 16;
+                this.mineCount = 99;
+                break;
+            case 4:
+                let h = this.offsetParent.offsetHeight - 110;
+                this.rows = Math.floor(h / this.cellSizeDefault);
+                let w = this.offsetParent.offsetWidth - 30;
+                this.cols = Math.floor(w / this.cellSizeDefault);
+                this.mineCount = (this.rows * this.cols) / 5 - (this.game.rows * this.game.cols) / 20;
+                break;
+        }
+        this.init();
+    },
+    _cellSize() {
+        let h = this.offsetParent?.offsetHeight - 110;
+        h = (h / this.rows) > this.cellSizeDefault ? this.cellSizeDefault : h / this.rows;
+        let w = this.offsetParent?.offsetWidth - 30;
+        w = (w / this.cols) > this.cellSizeDefault ? this.cellSizeDefault : w / this.cols;
+        return Math.min(h, w);
     },
     _resize() {
-        this.iconSize = this._iconSize();
+        this.cellSize = this._cellSize();
         this.hideLabel = this.offsetParent?.offsetWidth < 600;
     },
+    generateModel(mine) {
+        const model = [];
+        let idx = 0;
+        for (let x = 0; x < this.rows; x++) {
+            for (let y = 0; y < this.cols; y++) {
+                model.push({ x, y, idx });
+                idx++;
+            }
+        }
+        if (mine) {
+            const idx = mine.idx;
+            let cells = [idx];
+            if (this.rows >= 5 || this.cols >= 5) {
+                const cols = this.cols;
+                cells = [ idx, idx + 1, idx - 1, idx - cols, idx - cols - 1, idx - cols + 1, idx + cols, idx + cols - 1, idx + cols + 1];
+            }
+            for (let i = 0; i < this.mineCount; i++) {
+                let pos;
+                do {
+                    pos = Math.floor(Math.random() * model.length);
+                } while (model[pos].mine || cells.includes(pos));
+                model[pos].mine = true;
+            }
+            this._start = true;
+        }
+        this.model = model;
+        this.isReady = true;
+    },
     init() {
+        this._start = false;
         this.endGame = '';
         this._confetti && clearInterval(this._confetti);
         this.end = this.today = 0;
-        this.toUpdate = !this.toUpdate
-        this.clearTimerStartInterval();
-
+        this.clearGameStartInterval();
         if (!this.firstInit) {
             const url = new URL(document.location.href);
             this.rows = url.searchParams.get('rows') || this.rows;
@@ -129,44 +204,22 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 this.babyMode = babyMode !== 'false' ? true : false;
             this.firstInit = true;
         }
-
-        this.rows = this.rows < 3 ? 3 : this.rows > 20 ? 20 : this.rows;
-        this.cols = this.cols < 3 ? 3 : this.cols > 20 ? 20 : this.cols;
-        this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 5 ? (this.rows * this.cols) / 5 : this.mineCount;
+        this.rows = this.rows < 3 ? 3 : this.rows > this.maxCells ? this.maxCells : this.rows;
+        this.cols = this.cols < 3 ? 3 : this.cols > this.maxCells ? this.maxCells : this.cols;
+        this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 4 ? (this.rows * this.cols) / 4 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
         this._resize();
-
-        this.debounce('_init', () => {
-            const model = [];
-            for (let x = 0; x < this.cols; x++) {
-                for (let y = 0; y < this.rows; y++) {
-                    model.push({ x, y })
-                }
-            }
-            for (let i = 0; i < this.mineCount; i++) {
-                let pos;
-                do {
-                    pos = Math.floor(Math.random() * model.length);
-                } while (model[pos].mine);
-                model[pos].mine = true;
-            }
-            this.model = model;
-        }, 500)
+        this.generateModel();  
     },
-    clearTimerStartInterval() {
-        this.timerStartInterval && clearInterval(this.timerStartInterval);
-        this.timerStartInterval = undefined;
-    },
-    ready() {
-        this._winAudio = new Audio('./win.mp3');
-        this._winAudio.volume = 0.2;
-        this._errAudio ||= new Audio('./err.mp3');
-        this._errAudio.volume = 0.2;
+    clearGameStartInterval() {
+        this.game.gameStartInterval && clearInterval(this.game.gameStartInterval);
+        this.game.gameStartInterval = undefined;
     },
     bang(isWin) {
-        this.clearTimerStartInterval();
+        if (this.endGame) return;
+        this.clearGameStartInterval();
         this.model.forEach(i => {
-            i.status = (i.status === 'locked' && i.mine) ? 'locked' : (i.mine ? 'bang' : 'opened');
+            i.status = (i.status === 'locked' && i.mine) ? 'locked' : (i.status === 'locked' && !i.mine) ? 'error' : (i.mine ? 'bang' : 'opened');
         })
         this.smileQY = 25;
         let i = 1;
@@ -236,13 +289,19 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
         <div class="txt horizontal center" style="width: 100%;">{{hideLabel?'':'oda-minesweeper'}}</div>
         <oda-button icon="icons:face" icon-size=24 @tap="babyMode = !babyMode" title="baby mode" allow-toggled :toggled="babyMode"></oda-button>
         <oda-button icon="icons:remove" icon-size=24 @tap="--mineCount;_init('mineCount')"></oda-button><div class="txt" title="level">{{mineCount}}</div><oda-button icon="icons:add" icon-size=24  @tap="++mineCount;_init('mineCount')"></oda-button>
-        <oda-button icon="icons:refresh" icon-size=24 @tap="domHost.init()" title="refresh"></oda-button>
+        <oda-button icon="icons:launch" icon-size=24 @tap="_share" title="share"></oda-button>
     `,
     _init(e) {
         if (e !== 'mineCount') {
             this.mineCount = (this.rows * this.cols) / 5 - (this.rows * this.cols) / 20;
         }
-        this.domHost.init();
+        this.game.level = 0;
+        this.game.init();
+    },
+    _share() {
+        let url = this.game.$url.replace('minesweeper.js', 'index.html');
+        url += `?rows=${this.rows}&cols=${this.cols}&mine=${this.mineCount}&baby=${this.babyMode}`;
+        window.open(url, '_blank').focus();
     }
 })
 
@@ -250,15 +309,14 @@ ODA({ is: 'oda-minesweeper-field',
     template: /*html*/`
         <style>
             :host {
-                flex-wrap: wrap;
                 box-sizing: border-box;
-                width: {{iconSize * cols + 1}}px;
-                @apply --horizontal;
+                width: {{cellSize * cols}}px;
+                @apply --vertical;
                 @apply --header;
             }
         </style>
         <div ~for="(row, rowIdx) in rows" class="horizontal flex">
-            <oda-minesweeper-mine class="no-flex" :icon-size ~for="(col, colIdx) in cols" :mine="model.find(i=>(i.y === rowIdx && i.x === colIdx))" ~style="{width: iconSize+'px', height: iconSize+'px'}"></oda-minesweeper-mine>
+                <oda-minesweeper-mine ~for="(col, colIdx) in cols" :mine="model[cols * rowIdx + colIdx]" ~style="{width: cellSize+'px', height: cellSize+'px'}"></oda-minesweeper-mine>
         </div>
     `
 })
@@ -268,24 +326,30 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         <style>
             :host {
                 position: relative;
-                align-items: center;
-                outline: 1px solid lightgray;
-                @apply --horizontal;
                 box-sizing: border-box;
+                width: {{cellSize}}px;
+                height: {{cellSize}}px;
+                outline: 1px solid gray;
             }
             .btn {
-                width: 100%;
-                height: 100%;
-                align-items: center;
+                display: flex;
+                justify-content: center;
                 z-index: 1;
-                border: 1mm ridge lightgray;
-                opacity: {{babyMode ? .5 : 1}};
-                cursor: {{mine?.status === 'opened' ? 'default' : 'pointer'}}
+                width: {{cellSize}}px;
+                height: {{cellSize}}px;
+                background-color: {{mine?.status === 'error' ? 'transparent' : 'darkgray'}}; 
+                opacity: {{babyMode ? .75 : 1}};
+                cursor: {{mine?.status === 'opened' ? 'default' : 'pointer'}};
+                box-sizing: border-box;
+                outline: 1px solid gray;
+            }
+            .btn:hover {
+                background-color: gray;
             }
             .floor {
-                font-size: {{12 + ((iconSize - 32) > 0 ? iconSize - 32 : 0)}}px;
-            }
-            .floor {
+                box-sizing: border-box;
+                outline: 1px solid gray;
+                background-color: white;
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -293,21 +357,28 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 top: 0px;
                 text-align: center;
                 align-items: center;
+                font-size: {{8 + Math.floor(cellSize / 4)}}px;
             }
+            .tmp {}
         </style>
-        <div ~if="count !== 0" class="horizontal floor">
+        <div ~if="(babyMode || mine?.status === 'opened') && this.game._start" class="horizontal floor">
             <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
         </div>
-        <button :error="mine?.error && 'bang!!!'" class="flex vertical btn" style="padding: 0px;" ~if="mine?.status !== 'opened'" @tap="onTap" @down="onDown" :icon :icon-size fill="red">
-            <oda-icon class="flex" :icon :icon-size="iconSize*.5"  fill="red"></oda-icon>
-        </button>
+        <oda-icon ~if="mine?.status !== 'opened'" fill="red" :icon class="btn" @tap="onTap" @pointerdown="pointerdown" @pointerup="pointerup" :icon-size="cellSize*.6"></oda-icon >
     `,
+    count: 0,
     set mine(n) {
-        if (n)
+        if (n) {
             n.el = this;
+            this.setCount();
+        }
     },
-    get count() {
-        if (!this.mine || this.mine.mine) return ''
+    get icon() { return this.mine?.status === 'error' ? 'icons:close' : this.mine?.status === 'locked' ? 'icons:check' : this.mine?.status === 'bang' ? 'image:flare' : '' },
+    setCount() {
+        if (this.mine?.mine) {
+            this.count = 0;
+            return;
+        }
         let count = 0;
         for (let x = (this.mine.x - 1); x <= (this.mine.x + 1); x++) {
             for (let y = (this.mine.y - 1); y <= (this.mine.y + 1); y++) {
@@ -318,64 +389,39 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
                 count++;
             }
         }
-        return count;
+        this.count = count;
     },
-    get icon() {
-        switch (this.mine?.status) {
-            case 'opened':
-                return 'odant:spin';
-            case 'locked':
-                return 'icons:block';
-            case 'bang':
-                return 'icons:error';
-        }
-        return '';
-    },
-    listeners: {
-        touchstart(e) {
-            e.stopPropagation();
-            this.timerStart();
-            this.touchstartTimeout = setTimeout(() => {
-                if (!this._touchstart && this.mine.status !== 'opened')
-                    if (this.mine.status !== 'locked') {
-                        this.mine.status = 'locked';
-                        this.checkStatus();
-                    }
-                this._touchstart = true;
-            }, 300);
-        },
-        touchend(e) {
-            this.async(() => {
-                clearTimeout(this.touchstartTimeout);
-                this._touchstart = false;
-            }, 100)
+    gameStart() {
+        if (!this.game.gameStartInterval && !this.game.endGame) {
+            this.game.generateModel(this.mine);
+            this.game.end = (new Date()).getTime();
+            this.game.gameStartInterval = setInterval(() => {
+                this.game.today = (new Date()).getTime();
+            }, 48);
         }
     },
-    timerStart() {
-        if (!this.timerStartInterval) {
-            this.end = (new Date()).getTime();
-            this.timerStartInterval = setInterval(() => {
-                this.today = (new Date()).getTime();
-                this.toUpdate = !this.toUpdate;
-            }, 100);
-        }
+    pointerdown(e) {
+        this._firstStart = !this.game.gameStartInterval;
+        this._pointerdownTime = new Date().getTime();
+        if (e.button > 0) this.setLocked();
+        this.gameStart();
     },
-    onDown(e) {
-        this.timerStart();
-        if (this._touchstart) return;
-        if (e.detail.sourceEvent.button > 0)
-            if (this.mine.status !== 'locked') {
-                this.mine.status = 'locked';
-                this.checkStatus();
-            }
+    pointerup(e) {
+        if (new Date().getTime() - this._pointerdownTime > 250) this.setLocked();
+    },
+    setLocked() {
+        if (this._firstStart || !this.game._start || this.endGame) return;
+        if (this.mine.status === 'locked') {
+            this.mine.status = ''
+            this._locked = true;
+            setTimeout(() => this._locked = false, 0);
+        } else {
+            this.mine.status = 'locked';
+        }
+        this.checkStatus();
     },
     onTap(e) {
-        if (this._touchstart) return;
-        if (this.mine.status === 'locked') {
-            this.mine.status = '';
-            this.checkStatus();
-            return;
-        }
+        if (this._locked || this.mine.status === 'locked') return;
         if (this.mine.mine) {
             this.mine.error = true;
             this.game.bang();

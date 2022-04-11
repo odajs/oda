@@ -152,7 +152,7 @@ ODA({ is: 'oda-date-timer-circle',
         }
     },
     observers: [
-        function _toUpdate(toUpdate) {
+        function _toUpdate(toUpdate, today) {
             if (!this.ctx) return;
             let t = Math.abs(this.end - this.today);
             let al = t % 1000;

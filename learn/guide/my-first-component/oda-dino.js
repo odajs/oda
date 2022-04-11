@@ -9,7 +9,7 @@ ODA({ is: 'oda-dino',
             }
         </style>
 
-        <svg ~ref='mySVG' version="1.1" baseProfile="full" width="186" height="137" xmlns="http://www.w3.org/2000/svg" class="dinos">
+        <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg" class="dinos">
 
             <!-- Тело -->
             <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
@@ -71,7 +71,13 @@ ODA({ is: 'oda-dino',
     `,
     props: {
         name: "Привет динозавр",
-        polygons: {},
+        polygons: {
+            type: Set,
+            default: new Set(),
+        },
+    },
+    ready() {
+
     },
     jump() {
         this.classList.add("dino-jump");
@@ -85,10 +91,10 @@ ODA({ is: 'oda-dino',
             }
         });
     },
+
     isIntersection(cactus) {
         let dinoCoords = this.getBoundingClientRect();
         let cactusCoords = cactus.getBoundingClientRect();
-
 
         if ((cactusCoords.left+cactusCoords.width < dinoCoords.left ||
             dinoCoords.left+dinoCoords.width < cactusCoords.left ||
@@ -97,11 +103,23 @@ ODA({ is: 'oda-dino',
         {
             return false;
         }
+        
+        this.polygons = new Set();
+
+        if (this.polygons === null) {
+            const svg = this.$core.root.querySelector("svg");
+            this.createPolygon(svg, '', 'body', 'dino-body');
+            this.createPolygon(svg, '', 'first-leg', 'dino-first-leg');
+            this.createPolygon(svg, '', 'second-leg', 'dino-second-leg');
+            this.createPolygon(svg, '', 'third-leg', 'dino-third-leg');
+            this.createPolygon(svg, '', 'fourth-leg', 'dino-fourth-leg');
+        }
 
         return true;
         // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
 
-        const svgPolygon = this.polygons.get('cactus');
+
+        const svgPolygon = this.polygons?.get('cactus');
 
         // return intersectPolygonPolygon(polygons.get('dino-body' + bow), svgPolygon)
         // ||
@@ -114,8 +132,8 @@ ODA({ is: 'oda-dino',
     },
 
     createPolygon(svg, name, id, kind) {
-        return id ? this.polygons.set(kind, pathToPolygon(svg.querySelector('#' + id))) :
-            this.polygons.set(kind, pathToPolygon(svg.querySelector(name)));
+        return id ? this.polygons.set(kind, this.pathToPolygon(svg.querySelector('#' + id))) :
+            this.polygons.set(kind, this.pathToPolygon(svg.querySelector(name)));
     },
 
     // Intersection of a Polygon and a Polygon
@@ -208,3 +226,17 @@ ODA({ is: 'oda-dino',
         return polygon;
     }
 })
+
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    clone() {
+        return new Point(this.x,this.y);
+    }
+    moveTo(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+}
