@@ -28,12 +28,12 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
                 z-index: 99;
                 visibility: hidden;
                 opacity: 0;
-                transition: opacity 3s linear, visibility .5s linear;
                 cursor: pointer;
             }
             .smile.show {
                 opacity: .5;
                 visibility: visible;
+                transition: opacity 3s linear, visibility .5s linear;
             }
             .smile-win {
                 fill: yellow;
@@ -414,14 +414,16 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
         if (this.mine.status === 'locked') {
             this.mine.status = ''
             this._locked = true;
-            setTimeout(() => this._locked = false, 0);
         } else {
             this.mine.status = 'locked';
         }
         this.checkStatus();
     },
     onTap(e) {
-        if (this._locked || this.mine.status === 'locked') return;
+        if (this._locked || this.mine.status === 'locked') {
+            this._locked = false;
+            return;
+        }
         if (this.mine.mine) {
             this.mine.error = true;
             this.game.bang();
