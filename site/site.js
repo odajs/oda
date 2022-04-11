@@ -181,8 +181,13 @@ site: {
                 type: String,
                 set(v) {
                     // this.part = null;
-                    if (!v)
+                    if (!v){
+                        window.location.hash = ''; 
+                        this.focusedItem = null;
+                        this.selectedSiteHeaderMenu = '';
+                        // this.left.smartClose();
                         return;
+                    }
                     const params = v.split('#');
                     const steps = params[1].split('/');
                     let item = this;
@@ -191,6 +196,7 @@ site: {
                         item = item.items.find(i => i.name === step)
                     }
                     this.focusedItem = item;
+                    this.setLeftDrawerFocus(item);
 
                     //console.log((params && params[2] && params[2].length)===1);
                     if (params[2] && params[2].length) {
