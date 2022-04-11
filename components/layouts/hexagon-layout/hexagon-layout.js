@@ -241,13 +241,12 @@ ODA({is: 'oda-hexagon',
             content: "{{label}}";
             top: {{size/2 * 1.3}}px;
             font-size: x-small;
-            z-index: 1;
             width: {{size*1.5}}px;
             @apply --text-shadow;
             background-color: transparent;
           }
         </style>
-        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props"></div>
+        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
       `,
     get allowDrop(){
         return (this.x && this.y && (!this.active || this?.item?.allowDrop));
