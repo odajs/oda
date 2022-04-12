@@ -106,8 +106,8 @@ site: {
             <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" style="background-color: black; height: 100vh" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
             <iframe ~if="_srcIframe!=='video'" :slot="!focusedItem || part === null?'main':'?'" :src="_srcIframe" style="width:100%;height:100vh;border:none;"></iframe>
             <div ~show="_showTester" slot="main" class="flex" style='position:relative'>
-                <iframe ~show="_showTester"  ref="iframe" :src="src" style="width:100%; height:100%; border: none;"></iframe>
-                <oda-nav ~show="_showTester"  :focused-item=focusedItem></oda-nav>
+                <oda-site-iframe ~if="_showTester" :src="src" style="width:100%; height:100%"></oda-site-iframe>
+                <oda-nav :focused-item=focusedItem></oda-nav>
                 <oda-modal ~if='modalwin.is' >
                     <oda-button icon='icons:close' style='justify-content: right;' icon-pos="right" @tap="{this.modalwin.is=false}"></oda-button>
                     <oda-md-viewer :src="modalwin.url"></oda-md-viewer>
@@ -221,24 +221,13 @@ site: {
             focusedItem: {
                 type: Object,
                 set(n) {
+                    this.src = '';
                     let url;
                     if (n && n.content) url = ODA.rootPath + '/' + (n.path || n.$id) + '/' + (n.content.link || n.content.src);
-                    if (url && !url.endsWith('.md')) {
-                        this.src = url;
-                        setTimeout(() => {
-                            if (this.$refs.iframe?.contentDocument) {
-                                this.$refs.iframe.contentDocument._editMode = this._editMode;
-                                this.isEditMode = this._editMode;
-                                this.bubbleIframeMouseWheel(this.$refs.iframe);
-                            }
-                        }, 300);
-                        return;
-                    }
-                    this.src = '';
+                    if (url && !url.endsWith('.md')) this.src = url;
                 }
             },
             _srcIframe: 'video',
-            hideOnScroll: true,
             sets: {
                 hrefYoutube: 'https://www.youtube.com/channel/UC37BC2N95knlYcDRK4cQoug'
             },
@@ -248,19 +237,6 @@ site: {
             showLogoImage: true,
         },
         isEditMode: false,
-        bubbleIframeMouseWheel(iframe) {
-            if (!this.hideOnScroll) return;
-            var existingOnMouseWheel = iframe.contentWindow.onwheel;
-            iframe.contentWindow.onwheel = function(e) {
-                if (existingOnMouseWheel) existingOnMouseWheel(e);
-                iframe.dispatchEvent(new MouseEvent('wheel', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': false,
-                    'detail': e.wheelDelta
-                }));
-            };
-        },
         async ready() {
             ODA.router.create(hash => this.hash = hash);
             // ODA.router.create('#*,', (hash) => {
@@ -331,6 +307,38 @@ site: {
         }
     });
 }
+
+customElements.define('oda-site-iframe', class OdaSiteIframe extends HTMLElement {
+    constructor() {
+        super();
+        this.shadow = this.attachShadow({ mode: 'open' });
+    }
+    static get observedAttributes() {return ['src']; }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === 'src') {
+            if (this.iframe) this.shadow.removeChild(this.iframe);
+            this.iframe = document.createElement("iframe");
+            this.iframe.src = newValue;
+            this.iframe.style.border = 'none';
+            this.iframe.style.width = '100%';
+            this.iframe.style.height = '100%';
+            console.log(newValue)
+            this.shadow.appendChild(this.iframe);
+
+            let existingOnMouseWheel = this.iframe.contentWindow.onwheel;
+            this.iframe.contentWindow.onwheel = (e) => {
+                if (existingOnMouseWheel) existingOnMouseWheel(e);
+                this.iframe.dispatchEvent(new MouseEvent('wheel', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': false,
+                    'detail': e.wheelDelta
+                }));
+            };
+        }
+    }
+})
+
 content: {
     ODA({ is: 'oda-site-content-tree', extends: 'oda-tree', imports: '@oda/tree',
         props: {
@@ -635,6 +643,7 @@ header: {
         },
         _tap(i, item) {
             this.selectedSiteHeaderMenu = item.label || item.name;
+            this.setLeftDrawerFocus(item);
             this.toggled = false;
             route(i);
         }
