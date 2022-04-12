@@ -23,7 +23,7 @@ ODA({is:'oda-tools-styles-var-tree', imports: '@tools/property-grid', extends: '
                 Object.defineProperty(data, obj[0], {
                     configurable: true,
                     set(n){
-                        // data[obj[0]] = n;
+                        obj[1] = n;
                         ODA.updateStyle({[obj[0]]: n});
                     },
                     get(){

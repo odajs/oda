@@ -311,7 +311,7 @@ site: {
 customElements.define('oda-site-iframe', class OdaSiteIframe extends HTMLElement {
     constructor() {
         super();
-        this.shadow = this.attachShadow({ mode: 'open' });
+        this.shadow = this.attachShadow({ mode: 'closed' });
     }
     static get observedAttributes() {return ['src']; }
     attributeChangedCallback(name, oldValue, newValue) {
@@ -322,7 +322,6 @@ customElements.define('oda-site-iframe', class OdaSiteIframe extends HTMLElement
             this.iframe.style.border = 'none';
             this.iframe.style.width = '100%';
             this.iframe.style.height = '100%';
-            console.log(newValue)
             this.shadow.appendChild(this.iframe);
 
             let existingOnMouseWheel = this.iframe.contentWindow.onwheel;
