@@ -150,15 +150,18 @@ site: {
         },
         setLeftDrawerFocus(item) {
             const title = item?.label || item;
-            this.selectedSiteHeaderMenu = title;
+            let hash = location.hash;
+            hash = hash.replace('#', '').split('/')[0];
+            for (const ctrl of this.leftControls)
+                if (ctrl._path === hash)
+                    this.selectedSiteHeaderMenu = ctrl._title;
             for (const ctrl of this.left.controls) {
-                if (ctrl.title === title) {
+                if (ctrl.title === title || ctrl.title === this.selectedSiteHeaderMenu) {
                     if (this.left.focused) {
                         if (this.left.focused !== ctrl) {
                             this.left.setFocus(ctrl);
                         }
-                    } else 
-                    {
+                    } else {
                         this.left.lastFocused = ctrl;
                     }
                 }
