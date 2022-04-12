@@ -23,12 +23,14 @@ ODA({
     </table>
     `,
     async attached() {
-        this.names = this.tTab  ? ['№','ФИО','Партнер','Дата начала', 'Дата окончания']
-                                : ['№','Партнер','Тип','Дата начала', 'Дата окончания']
+        this.names = this.tTab  ? ['№ сертификата', 'ФИО Слушателя', 'Компания Партнер',
+                                    'Дата начала сертификата', 'Дата окончания сертификата']
+                                : ['№ лицензии', 'Владелец Лицензии', 'Модель расчетаип', 'Тип лицензии',
+                                    'Дата выдачи лицензии', 'Дата окончания лицензии']
         let row = await this._dlRaw()
-        let rows = row.$rows.map(o => this.tTab  
-            ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn? this._hData(o.DateOn):'' , o.DateOf? this._hData(o.DateOf):'']
-            : [o.ID, o.OwnerLicense, o.Type, o.DateOn? this._hData(o.DateOn):'' , o.DateOf? this._hData(o.DateOf):'']
+        let rows = row.$rows.map(o => this.tTab
+            ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
+            : [o.ID, o.OwnerLicense, o.Calc, o.Type, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
         )
         this.raws = rows
         this.search = ''
@@ -38,17 +40,18 @@ ODA({
         raws: [],
         tTab: 0, // 0 -- организации, 1 -- люди
         finrows: {},
-        names:[],        
-        showRows:[],
-        search: { default:'sssssssssssssssssssыыыыыыыыыыыыыыыыыыыыыыы',
-            set (s) { this.showRows = this.raws.map( r=> r.join(' ').toLowerCase().includes(s.toLowerCase()) )  }
+        names: [],
+        showRows: [],
+        search: {
+            default: 'sssssssssssssssssssыыыыыыыыыыыыыыыыыыыыыыы',
+            set(s) { this.showRows = this.raws.map(r => r.join(' ').toLowerCase().includes(s.toLowerCase())) }
         },
 
     },
     async _dlRaw() { // 1D839FFCCA3D6FF -- организации, 1D839FFD97FF621 -- люди
         const url = 'https://business.odant.org/api/H:1CC832F557A4600/P:WORK/B:1D7472723D6F2CD/C:' +
-                    (this.tTab?'1D839FFD97FF621': '1D839FFCCA3D6FF') + '/I:table?dataset'
-        const raw = await ( await fetch(url) ).json();
+            (this.tTab ? '1D839FFD97FF621' : '1D839FFCCA3D6FF') + '/I:table?dataset'
+        const raw = await (await fetch(url)).json();
         return raw
     },
     _hData(s) { return ('' + s).slice(0, 10) },
