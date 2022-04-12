@@ -267,12 +267,12 @@ ODA({ is: 'oda-pg-string',
                 text-overflow: ellipsis;
             }
         </style>
-        <input class="flex" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" @tap.stop.prevent @keydown.stop>
+        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" @tap.stop.prevent @keydown.stop>
     `,
 })
 ODA({ is: 'oda-pg-number',
     template: /*html*/`
-        <input class="flex"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent @keydown.stop>
+        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent @keydown.stop>
     `,
 })
 
