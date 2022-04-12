@@ -240,9 +240,9 @@ function getTypeEditor(type) {
             return 'oda-pg-bool';
         case String:
         case 'string':
+        default:
             return 'oda-pg-string';
     }
-    return 'span';
 }
 
 ODA({ is: 'oda-pg-object',

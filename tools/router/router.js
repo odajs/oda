@@ -1,6 +1,8 @@
 class odaRouter {
     constructor() {
-        window.addEventListener('popstate', e => this.callback?.(e.state?.path || location.hash));
+        window.addEventListener('popstate', e => {
+            this.callback?.(e.state?.path || location.hash)
+        });
     }
     create(callback) {
         this.callback = callback;

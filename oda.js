@@ -435,11 +435,11 @@ if (!window.ODA) {
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 200)
+                    }, 100)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 1000)
+                    }, 500)
                 }
             }
             resolveUrl(path) {
@@ -1622,9 +1622,9 @@ if (!window.ODA) {
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
                     const children = $el.childNodes;
-                    items.map((node, i) => {
+                    items.map(async (node, i) => {
                         const elem = children[idx + i];
-                        return updateDom.call(this, node.child,elem , $el, node.params);
+                        await updateDom.call(this, node.child, elem , $el, node.params);
                     })
                     // let items = await h.call(this, pars);
                     // items = items.map((node, i) => {
@@ -1644,7 +1644,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    updateDom.call(this, h, el, $el, pars);
+                    await updateDom.call(this, h, el, $el, pars);
                     idx++;
                 }
             }

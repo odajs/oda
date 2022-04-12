@@ -1,7 +1,7 @@
 ODA({is:'oda-tools-styles-var-tree', imports: '@tools/property-grid', extends: 'oda-property-grid',
     ready(){
         const  result = Array.from(document.styleSheets).map(e=>{
-            const rules = Array.from(e.rules).filter(r=>r.selectorText === ':root')
+            const rules = Array.from(e.cssRules).filter(r=>r.selectorText === ':root')
             return rules.map(s=>{
                 return Array.from(s.style).map(n=>{
                         const v = s.styleMap.get(n);
