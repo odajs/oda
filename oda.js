@@ -1165,7 +1165,7 @@ if (!window.ODA) {
                 //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
                 const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
                 const words = val.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-                // 
+                //
                 phraze.forEach(v => ODA.localization.phraze[v]='')
                 words.forEach(v => ODA.localization.words[v]='')
 
@@ -1671,7 +1671,7 @@ if (!window.ODA) {
                     const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
                     const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
                     const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-                    
+
                     if (bottUpdates > topUpdates && $el.fire) {
                         this.setProperty(listener.expr, obj[propName]);
                         // requestAnimationFrame(() => {
@@ -1762,8 +1762,8 @@ if (!window.ODA) {
         })
     }
     function applySlotByOrder($el, host) {
-        const prev = $el.slotProxy.previousSibling;
-        const target = prev instanceof Comment && prev.slotTarget?.nextSibling || null;
+        const prev = $el.slotProxy?.previousSibling;
+        const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
         host.insertBefore($el, target);
     }
 
