@@ -1,7 +1,7 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
-    <div id="svgslot" slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative" @resize="_onResize">
+    <div slot="content" class="flex vertical" ~style="{zoom: zoom, cursor: _cursor}" style="position: relative">
         <!--<oda-button ~if="showRemoveLinesButton" ~style="{position: 'absolute', left: selection[selection.length - 1].rect.center.x + 'px', top: selection[selection.length - 1].rect.center.y + 'px', width: '34px', height: '34px'}" icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
-        <svg class="flex" :width="svgWidth - 25" :height="svgHeight - 1">
+        <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
@@ -12,19 +12,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     // get showRemoveLinesButton () {
     //     return this.selection.length && this.selection[this.selection.length - 1].d;
     // },
-    _onResize(e) {
-        this.svgWidth = undefined;
-        this.svgHeight = undefined;
-    },
-    get svgWidth() {
-        return this.svgSlotDiv?.scrollWidth || 0;
-    },
-    get svgHeight() {
-        return this.svgSlotDiv?.scrollHeight || 0;
-    },
-    get svgSlotDiv() {
-        return this.$('#svgslot') || undefined;
-    },
     get filteredLinks() {
         return this.links?.filter(i=>(i && !i.link)) || [];
     },
