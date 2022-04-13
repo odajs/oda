@@ -374,7 +374,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     }, 0);
                 } break;
                 default: {
-                    if (c.treeMode) {
+                    if (c.treeMode || c.showScreenInfo) {
                         let d = size.toLocaleString();
                         if (this.screen && this.screen.from !== undefined && this.screen.length !== undefined) {
                             let to = this.screen.from + this.screen.length;
