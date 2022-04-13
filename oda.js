@@ -1624,7 +1624,7 @@ if (!window.ODA) {
                     const children = $el.childNodes;
                     items.map(async (node, i) => {
                         const elem = children[idx + i];
-                        await updateDom.call(this, node.child, elem , $el, node.params);
+                        updateDom.call(this, node.child, elem , $el, node.params);
                     })
                     // let items = await h.call(this, pars);
                     // items = items.map((node, i) => {
@@ -1644,7 +1644,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars);
+                    updateDom.call(this, h, el, $el, pars);
                     idx++;
                 }
             }
