@@ -13,7 +13,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     //     return this.selection.length && this.selection[this.selection.length - 1].d;
     // },
     _onResize(e) {
-        console.log(e.target.offsetWidth, e.target.offsetHeight);
         this.svgWidth = undefined;
         this.svgHeight = undefined;
     },
