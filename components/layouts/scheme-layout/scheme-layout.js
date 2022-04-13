@@ -169,15 +169,15 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                         if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) {
                             this.inTrack = true;
                         }
-                        this.links = undefined;
                     })
+                    this.links = undefined;
                 } break;
                 case 'end': {
                     this.lastdown = null;
                     this.async(() => {
                         this.inTrack = false;
+                        this.changed();
                     });
-                    this.changed();
                 } break;
             }
         },
