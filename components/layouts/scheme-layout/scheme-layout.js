@@ -332,7 +332,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pinObj in interface" ~props="pinObj?.props" :draggable="editMode?'true':'false'"  ~show="editMode || pinObj?.reserved || pinObj?.link" :pin="pinObj" @down.stop :index :focused="pinObj === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pinObj in interface" ~props="pinObj?.props" :draggable="editMode?'true':'false'"   :pin="pinObj"  ~style="{visibility: (editMode || pinObj?.reserved || pinObj?.link)?'visible':'hidden'}"   @down.stop :index :focused="pinObj === focusedPin?.pin"></oda-scheme-pin>
     `,
     pos: '',
     attached() {
