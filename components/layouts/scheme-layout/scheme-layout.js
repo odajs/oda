@@ -604,4 +604,5 @@ ODA({ is: 'oda-scheme-link', template: /*html*/`
         }
     </style>
     `,
+    iconSize: 12
 });
