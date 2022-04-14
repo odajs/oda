@@ -319,6 +319,7 @@ if (!window.ODA) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
+                this.fire('attached');
                 this.render();
                 this.async(()=>{
                     callHook.call(this, 'attached');
@@ -431,7 +432,7 @@ if (!window.ODA) {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 this.onRender?.();
-                if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility')){
+                if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
