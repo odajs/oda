@@ -4,7 +4,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         <svg class="flex" :width :height>
             <path ~for="links" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
         </svg>
-        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
+        <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0, visibility: (itm?.is ? 'visible' : 'hidden')}" :selected="selection.has(itm)"></oda-scheme-container>
         <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.pos === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.pos === 'top'?-linkMargin:link?.pos === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
         <oda-scheme-link ~for="link in filteredLinks" :link ~style="{left: link?.rect.x + (link?.pos === 'left'?-(16 + link.pin.size):link?.pos === 'right'?+(16 + link.pin.size):0) + 'px', top: link?.rect.y + (link?.pos === 'top'?-(16 + link.pin.size):link?.pos === 'bottom'?(16 + link.pin.size):0) + 'px'}"></oda-scheme-link>
     </div>
