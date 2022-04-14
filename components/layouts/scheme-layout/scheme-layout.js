@@ -286,12 +286,11 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         this.style.visibility = 'hidden';
     },
     blockReady() {
-        this.layout.links = undefined;
+        this.style.visibility = 'visible';
         this.async(() => {
+            this.layout.links = undefined;
             this.hasBlock = true;
-            this.style.visibility = 'visible';
-            this.render();
-        })
+        }); // todo: delay for lines
     },
     hasBlock: false,
     // onResize(e) {
