@@ -258,8 +258,9 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             left: {{-left}}px;
             top: {{-top}}px;
         }
-        :host([selected]).block {
+        :host([selected]) .block {
             outline: 1px dotted gray !important;
+            @apply --selected;
         }
         .block {
             border: 1px solid gray;
