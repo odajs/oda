@@ -16,4 +16,48 @@ ODA({ is: 'oda-cactus',
     props: {
         name: "Привет кактус",
     },
+    attached() {
+        const path = this.$core.root.querySelector("path");
+        this.polygons = new Map();
+        this.polygons.set('cactus', this.pathToPolygon(path));
+    },
+    pathToPolygon(path) {
+        const points = path.getAttribute('d').split(',');
+        let polygon = [];
+        let lastPoint = new Point(0,0);
+        points.forEach(point => {
+            point = point.trim();
+            switch (point[0]) {
+                case 'M':
+                    point = point.slice(1).split(' ');
+                    lastPoint.x += +point[0];
+                    lastPoint.y += +point[1];
+                    polygon.push(lastPoint.clone());
+                    break;
+                case 'h':
+                    lastPoint.x += +point.slice(1);
+                    polygon.push(lastPoint.clone());
+                    break;
+                case 'v':
+                    lastPoint.y += +point.slice(1);
+                    polygon.push(lastPoint.clone());
+                    break;
+            }
+        })
+        return polygon;
+    }
 })
+
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    clone() {
+        return new Point(this.x,this.y);
+    }
+    moveTo(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+}
