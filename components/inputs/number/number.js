@@ -5,6 +5,7 @@ ODA({is: 'oda-number-input', imports: '@oda/button',
             @apply --horizontal;
         }
         :host([read-only]) {
+            opacity: .7;
             pointer-events: none;
         }
         input {

@@ -15,11 +15,12 @@ ODA({ is: 'oda-string-input', template: /*html*/`
             margin-right: 2px;
         }
 
-        :host([read-only])>input:focus {
+        :host([read-only]) > input:focus {
             outline: none;
         }
 
         :host([read-only]) {
+            opacity: .7;
             pointer-events: none;
         }
 
