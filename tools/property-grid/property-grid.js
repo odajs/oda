@@ -87,7 +87,7 @@ CLASS({is: 'PropertyGridDataSet',
 
                     let d = descriptors[name]
                     const p = props[name]
-                    const node = {name, category: proto.constructor.name, ro: typeof d.value === 'object', list: p?.list}
+                    const node = {name: (p?.label || name), category: proto.constructor.name, ro: typeof d.value === 'object', list: p?.list}
                     if (p) {
                         // исключение свойств помеченных как приватные
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
@@ -151,7 +151,6 @@ ODA({ is: 'oda-pg-cell-value',
 })
 ODA({ is: 'oda-pg-cell-name', extends: 'oda-table-cell',
     template: /* html */`
-
         <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
     `,
     resetValue() {
