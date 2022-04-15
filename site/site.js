@@ -26,7 +26,9 @@ function clone(obj) {
     res.items = Object.assign([], res.items).map(i => clone(i));
     return res;
 }
+let enableRoute = false;
 function route(item, idx) {
+    if( !enableRoute) return;
     if (item && item.execute) {
         actions[item.execute](item);
     }
@@ -129,7 +131,8 @@ site: {
             this.left.smartClose();
         },
         _activate(ctrl) {
-            route(ctrl._path);
+            if (!this.hash.includes(ctrl._path))
+                route(ctrl._path);
         },
         selectedSiteHeaderMenu: '',
         ddMenuIndex: -1,
@@ -284,6 +287,7 @@ site: {
                     this.play();
                 }
                 this.left.allowPin = true;
+                this.async(() => enableRoute = true, 1000)
             }, 100);
         },
         _setStatus(root) {

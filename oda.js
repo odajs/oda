@@ -1566,17 +1566,17 @@ if (!window.ODA) {
         $el.domHost = this;
         return $el;
     }
+    let inRender = false;
     async function render() {
-        if (!this.$rendering) {
-            this.$rendering = true;
-            // console.log('render');
+        if (!inRender) {
+            inRender = true;
             await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-            this.$rendering = false;
+            inRender = false;
         }
     }
     async function updateDom(src, $el, $parent, pars) {
-  /*      if (this.$sleep && !this.$wake)
-            return;*/
+        // if (this.$sleep && !this.$wake)
+        //     return;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1588,31 +1588,27 @@ if (!window.ODA) {
                 $parent.appendChild($el);
             }
             else if ($el.$node && $el.$node.id !== src.id) {
-                    const el = createElement.call(this, src, tag);
-                    if ($parent.contains($el)){
-                        $parent.insertBefore(el, $el);
+                const el = createElement.call(this, src, tag);
+                if ($parent.contains($el)){
+                    $parent.insertBefore(el, $el);
 
-                    }else{
-                        $parent.replaceChild(el, $el);
-                    }
-                    $el = el;
-                }
-                else if ($el.slotTarget) {
-                    $el = $el.slotTarget;
-                }
-                else if ($el.nodeName !== tag) {
-                    const el = createElement.call(this, src, tag, $el);
+                }else{
                     $parent.replaceChild(el, $el);
-                    el.$ref = $el.$ref;
-                    $el = el;
                 }
-
+                $el = el;
+            }
+            else if ($el.slotTarget) {
+                $el = $el.slotTarget;
+            }
+            else if ($el.nodeName !== tag) {
+                const el = createElement.call(this, src, tag, $el);
+                $parent.replaceChild(el, $el);
+                el.$ref = $el.$ref;
+                $el = el;
+            }
         }
-
-
         if ($el.localName in ODA.deferred)
             return;
-
         $el.$wake = $el.$wake || this.$wake;
         $el.$for = pars;
         const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
@@ -1623,15 +1619,10 @@ if (!window.ODA) {
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
                     const children = $el.childNodes;
-                    items.map(async (node, i) => {
+                    items.forEach((node, i) => {
                         const elem = children[idx + i];
                         updateDom.call(this, node.child, elem , $el, node.params);
                     })
-                    // let items = await h.call(this, pars);
-                    // items = items.map((node, i) => {
-                    //     return updateDom.call(this, node.child, $el.childNodes[idx + i], $el, node.params);
-                    // })
-                    // await Promise.all(items);
                     idx += items.length;
                     let el = $el.childNodes[idx];
                     while (el && el.$node === h.src) {
