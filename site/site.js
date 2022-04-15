@@ -105,7 +105,7 @@ site: {
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
             <oda-nav ~show="!_showTester" :slot="part?'main':'?'" :focused-item=focusedItem></oda-nav>
-            <video ~if="_srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" style="background-color: black; height: 100vh" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
+            <video ~if="!hash && _srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" style="background-color: black; height: 100vh" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
             <iframe ~if="_srcIframe!=='video'" :slot="!focusedItem || part === null?'main':'?'" :src="_srcIframe" style="width:100%;height:100vh;border:none;"></iframe>
             <div ~show="_showTester" slot="main" class="flex" style='position:relative'>
                 <oda-site-iframe ~if="_showTester" :src="src" style="width:100%; height:100%"></oda-site-iframe>
