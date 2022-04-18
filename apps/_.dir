@@ -1,12 +1,5 @@
 [
   {
-    "name": "valuta",
-    "label": "Курсы валют",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
     "name": "credit-calculator",
     "label": "Кредитный калькулятор",
     "content": {
