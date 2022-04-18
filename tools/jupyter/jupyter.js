@@ -118,6 +118,7 @@ ODA({ is: 'oda-jupyter-cell',
                 box-shadow: 0 0 0 1px dodgerblue;
             }
         </style>
+        <oda-jupyter-cell-toolbar-html ~if="cell?.cell_type.includes('html') && !readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar-html>
         <oda-jupyter-cell-toolbar-ace ~if="cell?.cell_type === 'code' && !readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar-ace>
         <oda-jupyter-cell-toolbar ~if="!readOnly && focusedCell===cell" :cell></oda-jupyter-cell-toolbar>
         <div ~show="collapsed && editedCell!==cell" ~class="{_focused: !readOnly && focusedCell===cell}" style="font-size: 14px; padding: 4px; color: lightgray; cursor: pointer" @tap="ontapcell">{{cell.label || cell.cell_type}}</div>
@@ -127,15 +128,14 @@ ODA({ is: 'oda-jupyter-cell',
     `,
     cell: {},
     get cellType() {
-        if (this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
-        if (this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
-        if (this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
-        if (this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
-        if (this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
-        if (this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
-        if (this.cell?.cell_type === 'html-tiny') return 'oda-jupyter-cell-html-tiny';
-        if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
-        return 'div';
+        if (this.cell?.cell_extType === 'markdown' || this.cell?.cell_type === 'markdown') return 'oda-jupyter-cell-markdown';
+        if (this.cell?.cell_extType === 'code' || this.cell?.cell_type === 'code') return 'oda-jupyter-cell-code';
+        if (this.cell?.cell_extType === 'executable' || this.cell?.cell_type === 'html-executable') return 'oda-jupyter-cell-html-executable';
+        if (this.cell?.cell_extType === 'html-cde' || this.cell?.cell_type === 'html-cde') return 'oda-jupyter-cell-html-cde';
+        if (this.cell?.cell_extType === 'html-jodit' || this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
+        if (this.cell?.cell_extType === 'html-tiny' || this.cell?.cell_type === 'html-tiny') return 'oda-jupyter-cell-html-tiny';
+        if (this.cell?.cell_extType === 'html-pell' || this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
+        return 'oda-jupyter-cell-html';
     },
     ontapcell(e) {
         if (!this.editedCell) {
@@ -188,6 +188,35 @@ ODA({ is: 'oda-jupyter-cell-toolbar', imports: '@oda/button',
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx);
             this.focusedCell = this.notebook.cells[(this.cell.order > this.notebook.cells.length - 1) ? this.notebook.cells.length - 1 : this.cell.order];
         }
+    }
+})
+ODA({ is: 'oda-jupyter-cell-toolbar-html',
+    template: /*html*/`
+        <style>
+            :host {
+                display: flex;
+                flex: 1;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                right: 178px;
+                top: -18px;
+                z-index: 41;
+                box-shadow: 0 0 0 1px dodgerblue;
+                border-radius: 2px;
+                background: white;
+                height: 24px;
+                font-size: 12px;
+                padding: 0 4px;
+                cursor: pointer;
+                color: dodgerblue;
+            }
+        </style>
+        <div @tap="showHtmlViews">{{cell?.label || 'html-pell'}}</div>
+    `,
+    cell: {},
+    async showHtmlViews(view) {
+        const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, view: 'html-editor', idx: 1 }, { parent: this });
     }
 })
 ODA({ is: 'oda-jupyter-cell-toolbar-ace',
@@ -346,11 +375,11 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
                 color: dodgerblue;
             }
         </style>
-        <oda-button :icon-size class="btn btn1" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add')"></oda-button>
+        <oda-button :icon-size class="btn btn1" icon="icons:add" :icon-size title="add cell" @tap="showCellViews('add cell')"></oda-button>
         <oda-button ~if="notebook?.cells?.length" class="btn btn2" icon="icons:close" :icon-size title="close cell" @tap="focusedCell=undefined"></oda-button>
         <oda-button ~if="notebook?.cells?.length" class="btn btn3" icon="icons:reorder" :icon-size title="collapsed" @tap="collapsed=!collapsed"></oda-button>
         <oda-button ~if="notebook?.cells?.length" class="btn btn4" icon="editor:mode-edit" :icon-size title="edit mode" @tap="editedCell=editedCell===cell?undefined:cell"></oda-button>
-        <div ~if="position==='top'" class="cell" @tap="showCellViews('select type')" title="select cell type">{{cell.label || cell.cell_type}}</div>
+        <div ~if="position==='top'" class="cell" @tap="showCellViews('select cell type')" title="select cell type">{{cell.cell_type}}</div>
     `,
     props: {
         position: 'top'
@@ -359,7 +388,7 @@ ODA({ is: 'oda-jupyter-cell-addbutton', imports: '@oda/button, @tools/containers
     cell: {},
     async showCellViews(view) {
         const res = await ODA.showDropdown('oda-jupyter-list-views', { cell: this.cell, notebook: this.notebook, position: this.position, view }, { parent: this.$('oda-button') });
-        if (res && view === 'add') this.editedCell = undefined;
+        if (res && view === 'add cell') this.editedCell = undefined;
     }
 })
 
@@ -371,37 +400,46 @@ ODA({ is: 'oda-jupyter-list-views', imports: '@oda/button',
                 min-width: 140px;
             }
         </style>
-        <div class="header flex" style="text-align: center; padding: 1px; width: 100%">{{view}} cell</div>
-        <oda-button class="horizontal flex" ~for="cellViews" @tap="addCell(item)" style="justify-content: start;">{{index + '. ' + item.label}}</oda-button>
+        <div class="horizontal header flex" style="text-align: center; padding: 1px; width: 100%;  align-items: center">
+            <div class="flex">{{view}}</div>
+            <oda-button icon="icons:close" icon-size=16 @tap="fire('ok')"></oda-button>
+        </div>
+        <oda-button class="horizontal flex" ~for="views[idx]" @tap="addCell(item)" style="justify-content: start;">{{index + '. ' + (item._label || item.label)}}</oda-button>
     `,
     props: {
         position: 'top',
-        view: 'add'
+        view: 'add cell',
+        idx: 0
     },
     iconSize: 14,
     cell: {},
     notebook: {},
-    get cellViews() {
-        let views = [
-            { cell_type: 'html', cell_extType: 'html', source: '', label: 'html-Pell-editor' },
-            { cell_type: 'markdown', cell_extType: 'md', source: '', label: 'md-Showdown' },
+    get views() {
+        return [[
+            { cell_type: 'html', cell_extType: 'html-pell', source: '', _label: 'html', label: 'html-pell-editor' },
+            { cell_type: 'markdown', cell_extType: 'markdown', source: '', label: 'markdown' },
             { cell_type: 'code', cell_extType: 'code', source: '', label: 'code' },
-            { cell_type: 'html-executable', cell_extType: 'html-executable', source: '', label: 'code-html-executable' },
-            { cell_type: 'html-cde', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
-            { cell_type: 'html-jodit', cell_extType: 'html-jodit', source: '', label: 'html-Jodit-editor' },
-            { cell_type: 'html-tiny', cell_extType: 'html-tiny', source: '', label: 'html-TinyMCE-editor' },
-        ]
-        return views;
+            { cell_type: 'executable', cell_extType: 'executable', source: '', label: 'executable' },
+        ],
+        [
+            { cell_type: 'html', cell_extType: 'html-pell', source: '', label: 'html-Pell-editor' },
+            { cell_type: 'html', cell_extType: 'html-cde', source: '', label: 'html-CDEditor' },
+            { cell_type: 'html', cell_extType: 'html-jodit', source: '', label: 'html-Jodit-editor' },
+            { cell_type: 'html', cell_extType: 'html-tiny', source: '', label: 'html-TinyMCE-editor' },
+        ]]
     },
     addCell(item) {
         const idx = this.cell?.order || 0;
-        if (this.view === 'add') {
+        if (this.view === 'add cell') {
             const ord = this.position === 'top' ? idx - .1 : idx + .1;
             const cell = { order: ord, cell_type: item.cell_type, cell_extType: item.cell_extType, source: item.source, color: item.color, label: item.label };
             this.notebook.cells ||= [];
             this.notebook.cells.splice(idx, 0, cell);
             this.notebook.cells.sort((a, b) => a.order - b.order).map((i, idx) => i.order = idx - .1 <= ord ? idx : idx + 1);
-        } else if (this.view === 'select type') {
+        } else if (this.view === 'select cell type') {
+            const cell = { ...this.cell, ...{ cell_type: item.cell_type, cell_extType: item.cell_extType, color: item.color, label: item.label } };
+            this.notebook.cells.splice(idx, 1, cell);
+        } else if (this.view === 'html-editor') {
             const cell = { ...this.cell, ...{ cell_type: item.cell_type, cell_extType: item.cell_extType, color: item.color, label: item.label } };
             this.notebook.cells.splice(idx, 1, cell);
         }
@@ -782,31 +820,25 @@ ODA({ is: 'oda-jupyter-cell-html-tiny', extends: 'oda-jupyter-cell-html-temp',
     }
 </style>
 <textarea name="content" id="mytextarea">${this.cell?.source || ''}</textarea>
-<script src="https://cdn.tiny.cloud/1/0dmt0rtivjr59ocff6ei6iqaicibk0ej2jwub5siiycmlk84/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
 <script type="module">
+    const useDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     tinymce.init({
         selector: 'textarea#mytextarea',
+        plugins: 'preview importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons',
+        editimage_cors_hosts: ['picsum.photos'],
+        menubar: 'file edit view insert format tools table help',
+        toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media template link anchor codesample | ltr rtl',
         height: '100vh',
-        menubar: true,
-        plugins: [
-            'advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
-            'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media table powerpaste paste mediaembed nonbreaking',
-            'table emoticons template help pageembed permanentpen advtable',
-        ],
-        toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | link | ' +
-            'bullist numlist outdent indent | image | print preview media fullpage | ' +
-            'forecolor backcolor emoticons | help' +
-            'casechange checklist code formatpainter pageembed permanentpen paste powerpaste table | vanna',
-
-        menubar: 'favs file edit view insert format tools table help',
-        menu: {
-            favs: {
-                title: 'My Favorites',
-                items: 'paste | powerpaste | code visualaid | searchreplace | spellchecker | emoticons',
-            },
-        },
-        paste_webkit_styles: 'color font-size',
-        extended_valid_elements: 'script[language|src|async|defer|type|charset]',
+        image_caption: true,
+        quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
+        noneditable_class: 'mceNonEditable',
+        toolbar_mode: 'sliding',
+        contextmenu: 'link image table',
+        skin: useDarkMode ? 'oxide-dark' : 'oxide',
+        content_css: useDarkMode ? 'dark' : 'default',
+        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }',
         setup: (editor) => {
             editor.on('change', () => { document.dispatchEvent(new CustomEvent('change', { detail: editor.getContent() })) });
             editor.on('keyup', () => { document.dispatchEvent(new CustomEvent('change', { detail: editor.getContent() })) });

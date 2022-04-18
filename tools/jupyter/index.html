@@ -15,7 +15,7 @@
                 }
             </style>
 
-            <div ~if="!hideTopPanel" style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray; position: sticky; top: 0; background: white; z-index: 31;">
+            <div ~if="!hideTopPanel" style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border: 1px solid gray; position: sticky; top: 0; background: white; z-index: 99; background: lightgray; margin: 1px">
                 <oda-button @pointerdown="jupyter.share($event)">share</oda-button>
                 <oda-button @tap="jupyter.saveFile()">save </oda-button>
                 <oda-button for="load"  @tap="this.$('#load').click()">load</oda-button>
