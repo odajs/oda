@@ -95,9 +95,7 @@ ODA({ is: 'oda-jupyter-cell',
                 padding: 4px;
             }
         </style>
-        <div class="editor" ~is="editor" ~class="{shadow: !readOnly && focused}">
-            {{cell?.label || '??'}}
-        </div>
+        <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source"></div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
     set cell(n) {
@@ -108,16 +106,16 @@ ODA({ is: 'oda-jupyter-cell',
     set src(n) {
         if (n) {
             ODA.import('@oda/' + n).then(res => {
-                this.editor = 'oda-' + n;
+                this.cellType = 'oda-' + n;
             })
         }
     },
     get control() {
-        return this.$(this.editor);
+        return this.$(this.cellType);
     },
     focused: false,
     editMode: false,
-    editor: 'div'
+    cellType: 'div'
 })
 
 ODA({ is: 'oda-jupyter-toolbar',
@@ -140,7 +138,7 @@ ODA({ is: 'oda-jupyter-toolbar',
         <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings(control)" @tap="showSettings"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
         <span style="width: 8px"></span>
-        <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
+        <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
     _getShowSettings(control) {
         return Object.keys(control?.$core?.saveProps || {}).length > 0;
