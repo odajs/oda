@@ -15,6 +15,14 @@ ODA({ is: 'oda-star1',
     props: {
         name: "Привет звезда1",
     },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    },
 })
 
 ODA({ is: 'oda-star2',
@@ -37,6 +45,14 @@ ODA({ is: 'oda-star2',
     `,
     props: {
         name: "Привет звезда2",
+    },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
     },
 })
 

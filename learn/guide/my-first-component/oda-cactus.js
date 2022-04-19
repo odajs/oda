@@ -21,6 +21,14 @@ ODA({ is: 'oda-cactus',
         this.polygons = new Map();
         this.polygons.set('cactus', this.pathToPolygon(path));
     },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    },
     pathToPolygon(path) {
         const points = path.getAttribute('d').split(',');
         let polygon = [];

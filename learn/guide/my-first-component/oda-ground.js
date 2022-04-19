@@ -23,4 +23,12 @@ ODA({ is: 'oda-ground',
     ready() {
         const num = Math.floor(Math.random() * 7);
     },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    },
 })

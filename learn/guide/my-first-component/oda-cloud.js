@@ -19,4 +19,13 @@ ODA({ is: 'oda-cloud',
     props: {
         name: "Привет облако",
     },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    }
+    
 })

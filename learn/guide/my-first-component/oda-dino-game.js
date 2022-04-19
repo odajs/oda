@@ -179,6 +179,53 @@ function checkDino() {
     requestAnimationFrame(checkDino);
 }
 
+let isGameOver;
+
 function gameOver() {
-    alert("Game Over. Для продолжения нажмите пробел");
+    isGameOver = true;
+    clearInterval(scoreID);
+
+    const clouds = document.querySelectorAll('oda-cloud');
+    clouds.forEach(cloud => {
+        cloud.gameOver();
+    });
+
+    const cactuses = document.querySelectorAll('oda-cactus');
+    cactuses.forEach(cactus => {
+        cactus.gameOver();
+    });
+
+    // const grounds = document.querySelectorAll('.grounds');
+    // grounds.forEach(ground => {
+    //     ground.style.animationPlayState="paused";
+    // });
+
+    // const bumps = document.querySelectorAll('.bumps');
+    // bumps.forEach(bump => {
+    //     bump.style.animationPlayState="paused";
+    // });
+
+    const pterodactyls = document.querySelectorAll('oda-pterodactyl');
+    pterodactyls.forEach(pterodactyl => {
+        pterodactyl.gameOver();
+    });
+
+    // const moon = document.querySelectorAll('.moon');
+    // moon.forEach(moon => {
+    //     moon.style.animationPlayState="paused";
+    // });
+
+    // let star = document.querySelectorAll('.star1');
+    // star.forEach(star => {
+    //     star.style.animationPlayState="paused";
+    // });
+
+    // star = document.querySelectorAll('.star2');
+    // star.forEach(star => {
+    //     star.style.animationPlayState="paused";
+    // });
+
+    // dino.style.animationPlayState="paused";
+    // dino.pauseAnimations();
+    //alert("Game Over. Для продолжения нажмите пробел");
 }

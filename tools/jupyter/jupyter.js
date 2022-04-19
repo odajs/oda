@@ -135,7 +135,8 @@ ODA({ is: 'oda-jupyter-cell',
         if (this.cell?.cell_extType === 'html-jodit' || this.cell?.cell_type === 'html-jodit') return 'oda-jupyter-cell-html-jodit';
         if (this.cell?.cell_extType === 'html-tiny' || this.cell?.cell_type === 'html-tiny') return 'oda-jupyter-cell-html-tiny';
         if (this.cell?.cell_extType === 'html-pell' || this.cell?.cell_type === 'html') return 'oda-jupyter-cell-html';
-        return 'oda-jupyter-cell-html';
+        if (this.cell?.cell_type === 'ext') return this.cell?.cell_extType || 'div';
+        return 'div';
     },
     ontapcell(e) {
         if (!this.editedCell) {

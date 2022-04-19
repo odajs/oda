@@ -95,7 +95,14 @@ ODA({ is: 'oda-dino',
             }
         });
     },
-
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    },
     isIntersection(cactus) {
         let dinoCoords = this.getBoundingClientRect();
         let cactusCoords = cactus.getBoundingClientRect();
@@ -112,7 +119,7 @@ ODA({ is: 'oda-dino',
         // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
 
 
-        return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'));
+        return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords);
         // ||
         //     (getComputedStyle(dino.getElementById('first-leg' + bow)).visibility === 'visible' ?
         //         intersectPolygonPolygon(polygons.get('dino-first-leg' + bow), svgPolygon) :

@@ -5,27 +5,26 @@ export function createPolygon(svg, selector) {
 
 // Intersection of a Polygon and a Polygon
 
-export function intersectPolygonPolygon(polygon1, polygon2) {
+export function intersectPolygonPolygon(polygon1, polygon2, dinoCoords, svgCoords) {
 
     var length = polygon1.length;
 
     for ( let i = 0; i < length; i++ ) {
-        const result = intersectionLinePolygon(polygon1[i], polygon1[(i+1) % length], polygon2);
+        const result = intersectionLinePolygon(polygon1[i], polygon1[(i+1) % length], polygon2, dinoCoords, svgCoords);
         if (result)
             return true;
     }
 
     return false;
-
 }
 
 // Intersection of a Line and a Polygon
 
-function intersectionLinePolygon(point1, point2, polygon) {
+function intersectionLinePolygon(point1, point2, polygon, dinoCoords , svgCoords) {
     const length = polygon.length;
 
     for ( let i = 0; i < length; i++ ) {
-        if ( intersectionLineLine(point1.clone(), point2.clone(), polygon[i].clone(), polygon[(i+1) % length].clone()) )
+        if ( intersectionLineLine(point1.clone(), point2.clone(), polygon[i].clone(), polygon[(i+1) % length].clone(), dinoCoords, svgCoords) )
             return true;
     }
 
@@ -34,7 +33,7 @@ function intersectionLinePolygon(point1, point2, polygon) {
 
 // Intersection of a Line and a Line
 
-function intersectionLineLine(a1, b1, a2, b2) {
+function intersectionLineLine(a1, b1, a2, b2, dinoCoords, svgCoords) {
 
     a1.moveTo(dinoCoords.x, dinoCoords.y);
     b1.moveTo(dinoCoords.x, dinoCoords.y);

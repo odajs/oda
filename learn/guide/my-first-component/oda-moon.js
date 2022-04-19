@@ -15,4 +15,12 @@ ODA({ is: 'oda-moon',
     props: {
         name: "Привет луна",
     },
+    gameOver(){
+        this.style.animationPlayState="paused";
+    },
+    gameStart(){
+        if (this.style.animationPlayState === "paused") {
+            svg.style.animationPlayState="running";
+        }
+    },
 })
