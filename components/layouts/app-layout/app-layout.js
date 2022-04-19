@@ -54,7 +54,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             <slot name="right-panel"></slot>
         </app-layout-drawer>
     </div>
-    <slot name="footer" class="horizontal no-flex"></slot>
+    <slot name="footer" class="horizontal no-flex" style="overflow: visible;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],
@@ -334,7 +334,7 @@ ODA({
     </style>
     <slot :name="pref+'-left'" class="horizontal no-flex" style="justify-content: flex-start;"></slot>
     <slot :name="pref+'-center'" class="horizontal flex" style="justify-content: center;"></slot>
-    <slot :name="pref+'-right'" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
+    <slot name="right" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
     props: {
         iconSize: {
             default: 24,
