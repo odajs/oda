@@ -1619,10 +1619,11 @@ if (!window.ODA) {
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
                     const children = $el.childNodes;
-                    items.forEach(async (node, i) => {
+                    const list = items.map((node, i) => {
                         const elem = children[idx + i];
-                        await updateDom.call(this, node.child, elem , $el, node.params);
+                        /*await*/return updateDom.call(this, node.child, elem , $el, node.params);
                     })
+                    await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];
                     while (el && el.$node === h.src) {
@@ -2188,9 +2189,16 @@ if (!window.ODA) {
 
                 if (d){
                     if (d === true || (d.set && v !== undefined)) {
-                        if (this[name] != v)
-                            this[name] = v;
-                        return;
+                        try{
+                            if (this[name] != v)
+                                this[name] = v;
+                            return;
+                        }
+                        catch (e){
+
+                        }
+
+
                     }
                 }
                 else
