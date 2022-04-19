@@ -1,5 +1,5 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
-ODA({is:'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
     template: `
         <style>
             :host{
@@ -7,43 +7,43 @@ ODA({is:'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/conta
                 @apply --flex;
             }
         </style>
-        <oda-jupyter-divider index="-1"></oda-jupyter-divider>
+        <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
             <oda-jupyter-cell  :cell="item" :focused="focusedItem === item"  @tap.stop="focusedItem = item"></oda-jupyter-cell>
-            <oda-jupyter-divider :index></oda-jupyter-divider>
+            <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
         </div>
     `,
     listeners: {
-        tap(e){
+        tap(e) {
             this.focusedItem = null;
         }
     },
-    props:{
+    props: {
         iconSize: {
             default: 16,
             save: true
         },
         readOnly: {
             default: false,
-            get (){
+            get() {
                 return this.notebook?.readOnly;
             }
         },
-        editors:{
+        editors: {
             default: ['html', 'code', 'markdown']
         }
     },
     focusedItem: null,
-    set src(n){
+    set src(n) {
         if (!n.startsWith('http'))
             n = path + '/' + n;
-        ODA.loadJSON(n).then(res=>{
+        ODA.loadJSON(n).then(res => {
             this.notebook = res;
         })
     },
     notebook: {}
 })
-ODA({is: 'oda-jupyter-divider',
+ODA({ is: 'oda-jupyter-divider',
     template: `
         <style>
             :host{
@@ -78,8 +78,8 @@ ODA({is: 'oda-jupyter-divider',
     `
 })
 
-ODA({is:'oda-jupyter-cell',
-    template:`
+ODA({ is: 'oda-jupyter-cell',
+    template: `
         <style>
             :host{
                 position: relative;
@@ -90,23 +90,22 @@ ODA({is:'oda-jupyter-cell',
                 padding: 4px;
             }
         </style>
-        <div class="editor" ~is="editor" ~class="{shadow: focused}">
+        <div class="editor" ~is="editor" ~class="{shadow: !readOnly && focused}">
             {{cell?.label || '??'}}
         </div>
-        <oda-jupyter-toolbar ~if="focused"></oda-jupyter-toolbar>
+        <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
-    set cell(n){
-        if (n){
+    set cell(n) {
+        if (n) {
             this.src = n.cell_type;
         }
     },
-    set src(n){
-        ODA.import('@oda/'+n).then(res=>{
-            console.log(res);
-            this.editor = 'oda-'+n;
+    set src(n) {
+        ODA.import('@oda/' + n).then(res => {
+            this.editor = 'oda-' + n;
         })
     },
-    get control(){
+    get control() {
         return this.$(this.editor);
     },
     focused: false,
@@ -114,8 +113,8 @@ ODA({is:'oda-jupyter-cell',
     editor: 'div'
 })
 
-ODA({is:'oda-jupyter-toolbar',
-    template:`
+ODA({ is: 'oda-jupyter-toolbar',
+    template: `
         <style>
             :host{
                 position: absolute;
@@ -140,7 +139,7 @@ ODA({is:'oda-jupyter-toolbar',
         return Object.keys(control?.$core?.saveProps || {}).length > 0;
     },
     cell: null,
-    showSettings: noDragWrap(async function (e) {
+    showSettings: noDragWrap(async function(e) {
         await ODA.showDropdown(
             'oda-property-grid',
             { inspectedObject: this.control, onlySave: true, style: 'max-width: 500px' },
@@ -150,7 +149,7 @@ ODA({is:'oda-jupyter-toolbar',
 })
 
 function noDragWrap(f) {
-    return function (e, ...args) {
+    return function(e, ...args) {
         const se = e.detail.sourceEvent;
         if (this.size === 'max' || !this.modal || (!this._downEvent || se.x === this._downEvent.x && se.y === this._downEvent.y)) {
             return f.call(this, e, ...args);

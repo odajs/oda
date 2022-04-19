@@ -1619,9 +1619,9 @@ if (!window.ODA) {
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
                     const children = $el.childNodes;
-                    items.forEach((node, i) => {
+                    items.forEach(async (node, i) => {
                         const elem = children[idx + i];
-                        updateDom.call(this, node.child, elem , $el, node.params);
+                        await updateDom.call(this, node.child, elem , $el, node.params);
                     })
                     idx += items.length;
                     let el = $el.childNodes[idx];
@@ -1636,7 +1636,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    updateDom.call(this, h, el, $el, pars);
+                    await updateDom.call(this, h, el, $el, pars);
                     idx++;
                 }
             }

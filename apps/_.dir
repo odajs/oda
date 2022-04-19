@@ -61,33 +61,5 @@
     "content": {
       "link": "index.html"
     }
-  },
-  {
-    "name": "html-live",
-    "label": "HTML editor with live preview",
-    "content": {
-      "link": "demo.html"
-    }
-  },
-  {
-    "name": "jupyter",
-    "label": "ODA Jupyter Notebook",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "flips",
-    "label": "ODA Flips Game",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "date-timer",
-    "label": "ODA date-timer",
-    "content": {
-      "link": "index-tester.html"
-    }
   }
 ]
