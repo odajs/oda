@@ -2184,14 +2184,17 @@ if (!window.ODA) {
                 this[name] = v;
             }
             else {
-                const d = !this.$core && Object.getOwnPropertyDescriptor(this.__proto__, name);
-                if (!d)
-                    name = name.toKebabCase();
-                else if (d.set && v !== undefined) {
-                    if (this[name] !== v)
-                        this[name] = v;
-                    return;
+                const d = !this.$core && (Object.getOwnPropertyDescriptor(this.__proto__, name) || name in this);
+
+                if (d){
+                    if (d === true || (d.set && v !== undefined)) {
+                        if (this[name] != v)
+                            this[name] = v;
+                        return;
+                    }
                 }
+                else
+                    name = name.toKebabCase();
                 if (!v && v !== 0)
                     this.removeAttribute(name);
                 else if (this.getAttribute(name) != v)
