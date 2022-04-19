@@ -24,6 +24,7 @@ ODA({ is: 'oda-pterodactyl',
     props: {
         name: "Привет птеродактиль",
     },
+    attached(){},
     gameOver(){
         this.style.animationPlayState="paused";
         const svg = this.$core.root.querySelector("svg");
@@ -31,7 +32,9 @@ ODA({ is: 'oda-pterodactyl',
     },
     gameStart(){
         if (this.style.animationPlayState === "paused") {
-            svg.style.animationPlayState="running";
+            this.style.animationPlayState="running";
+            const svg = this.$core.root.querySelector("svg");
+            svg.unpauseAnimations();
         }
     },
 })

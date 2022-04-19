@@ -9,6 +9,12 @@ ODA({ is: 'oda-dino',
             svg.dinos path {
                 fill: var(--dino-color);
             }
+            #small-eye {
+                fill: var(--dino-eyes-color);
+            }
+            #big-eye {
+                stroke: var(--dino-eyes-color);
+            }
         </style>
 
         <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg" class="dinos">
@@ -73,38 +79,43 @@ ODA({ is: 'oda-dino',
     `,
     props: {
         name: "Привет динозавр",
+        svg: {}
     },
     attached() {
         this.polygons = new Map();
-        const svg = this.$core.root.querySelector("svg");
-        this.polygons.set('dino-body', createPolygon(svg,'#body'));
-        this.polygons.set('dino-first-leg', createPolygon(svg,'#first-leg'));
-        this.polygons.set('dino-second-leg', createPolygon(svg,'#second-leg'));
-        this.polygons.set('dino-third-leg', createPolygon(svg,'#third-leg'));
-        this.polygons.set('dino-fourth-leg', createPolygon(svg,'#fourth-leg'));
+        this.svg = this.$core.root.querySelector("svg");
+        this.polygons.set('dino-body', createPolygon(this.svg,'#body'));
+        this.polygons.set('dino-first-leg', createPolygon(this.svg,'#first-leg'));
+        this.polygons.set('dino-second-leg', createPolygon(this.svg,'#second-leg'));
+        this.polygons.set('dino-third-leg', createPolygon(this.svg,'#third-leg'));
+        this.polygons.set('dino-fourth-leg', createPolygon(this.svg,'#fourth-leg'));
     },
     jump() {
         this.classList.add("dino-jump");
-        const svg = this.$core.root.querySelector("svg");
-        svg.pauseAnimations();
+        this.svg.pauseAnimations();
         this.getAnimations().forEach((anim, i, arr) => {
             anim.onfinish = () => {
                 this.classList.remove("dino-jump");
                 this.offsetHeight; // reflow
-                svg.unpauseAnimations();
+                this.svg.unpauseAnimations();
             }
         });
     },
     gameOver(){
         this.style.animationPlayState="paused";
-        const svg = this.$core.root.querySelector("svg");
-        svg.pauseAnimations();
+        this.svg.pauseAnimations();
+        this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
+        this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
+        this.svg.getElementById('month').setAttribute('visibility', 'visible');
     },
     gameStart(){
         if (this.style.animationPlayState === "paused") {
-            const svg = this.$core.root.querySelector("svg");
-            svg.unpauseAnimations();
-            svg.style.animationPlayState="running";
+            this.classList.remove("dino-jump");
+            this.svg.unpauseAnimations();
+            this.style.animationPlayState=null;
+            this.svg.getElementById('big-eye').setAttribute('visibility', 'hidden');
+            this.svg.getElementById('small-eye').setAttribute('visibility', 'visible');
+            this.svg.getElementById('month').setAttribute('visibility', 'hidden');
         }
     },
     isIntersection(cactus) {
@@ -121,13 +132,12 @@ ODA({ is: 'oda-dino',
 
         // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
 
-        return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords);
-        // ||
-        //     (getComputedStyle(dino.getElementById('first-leg' + bow)).visibility === 'visible' ?
-        //         intersectPolygonPolygon(polygons.get('dino-first-leg' + bow), svgPolygon) :
-        //         intersectPolygonPolygon(polygons.get('dino-fourth-leg'  + bow), svgPolygon)) ||
-        //     (getComputedStyle(dino.getElementById('second-leg'  + bow)).visibility === 'visible' ?
-        //         intersectPolygonPolygon(polygons.get('dino-second-leg' + bow), svgPolygon) :
-        //         intersectPolygonPolygon(polygons.get('dino-third-leg'  + bow), svgPolygon));
+        return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)
+         || (getComputedStyle(this.svg.getElementById('first-leg')).visibility === 'visible' ?
+                 intersectPolygonPolygon(this.polygons.get('dino-first-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                 intersectPolygonPolygon(this.polygons.get('dino-fourth-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)) ||
+             (getComputedStyle(this.svg.getElementById('second-leg')).visibility === 'visible' ?
+                 intersectPolygonPolygon(this.polygons.get('dino-second-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                 intersectPolygonPolygon(this.polygons.get('dino-third-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
     }
 })

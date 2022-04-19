@@ -117,24 +117,70 @@ function createHorizon() {
 let scoreID;
 
 function startGame() {
-    createHorizon();
+    const gameOver = document.querySelector('#game-over');
+    gameOver.style.display = "none";
+    gameOver.innerText = "Game Over";
+
+    const cactuses = document.querySelectorAll('oda-cactus');
+    cactuses.forEach(cactus => {
+        cactus.remove();
+    });
+
+    cactusDistance = 0;
+    nextCactusDistance = 0;
+
+    const dino = document.querySelector('oda-dino');
+    dino.gameStart();
+
+    const clouds = document.querySelectorAll('oda-cloud');
+    clouds.forEach(cloud => {
+        cloud.gameStart();
+    });
+
+    const pterodactyls = document.querySelectorAll('oda-pterodactyl');
+    pterodactyls.forEach(pterodactyl => {
+        pterodactyl.gameStart();
+    });
+
+    let score = document.getElementById('score');//.textContent;
+    score.textContent = 0;
+    //document.getElementById('score').textContent = score;
+
     document.addEventListener('keydown', dinoKeyDown);
     scoreID = setInterval(() => {
-        let score = document.getElementById('score').textContent;
-        score =+score + 1;
-        document.getElementById('score').textContent = score;
+        //let score = document.getElementById('score').textContent;
+        //score =+score + 1;
+        //document.getElementById('score').textContent = score;
+        score.textContent = +score.textContent + 1;
     }, 100);
     requestAnimationFrame(checkDino);
 }
 
 function dinoKeyDown(e){
     //e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
+
     if (e.code === 'Space') {
-        dino.jump();
+        if (!isGameOver) {
+            dino.jump();
+        }
     }
 }
 
-startGame();
+function dinoKeyUp(e){
+    //e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
+
+    if (e.code === 'Space') {
+        if (isGameOver) {
+            isGameOver = false;
+            startGame();
+        }
+    }
+}
+
+createHorizon();
+
+document.addEventListener('keydown', dinoKeyDown);
+document.addEventListener('keyup', dinoKeyUp);
 
 let cloudDistance = 0;
 let nextCloudDistance = 0;
@@ -179,10 +225,13 @@ function checkDino() {
     requestAnimationFrame(checkDino);
 }
 
-let isGameOver;
+let isGameOver = true;
 
 function gameOver() {
     isGameOver = true;
+    document.querySelector('#game-over').style.display = "";
+
+
     clearInterval(scoreID);
 
     const dino = document.querySelector('oda-dino');
