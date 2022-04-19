@@ -1842,7 +1842,12 @@ if (!window.ODA) {
         file: {}
     };
     ODA.loadURL = async function (url) {
-        url = (new URL(url)).href;
+        try{
+            url = (new URL(url)).href;
+        }
+        catch (e){
+            console.log(e)
+        }
         if (!cache.fetch[url])
             cache.fetch[url] = fetch(url);
         return cache.fetch[url];

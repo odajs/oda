@@ -97,9 +97,13 @@ ODA({ is: 'oda-dino',
     },
     gameOver(){
         this.style.animationPlayState="paused";
+        const svg = this.$core.root.querySelector("svg");
+        svg.pauseAnimations();
     },
     gameStart(){
         if (this.style.animationPlayState === "paused") {
+            const svg = this.$core.root.querySelector("svg");
+            svg.unpauseAnimations();
             svg.style.animationPlayState="running";
         }
     },
@@ -115,9 +119,7 @@ ODA({ is: 'oda-dino',
             return false;
         }
 
-
         // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
-
 
         return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords);
         // ||

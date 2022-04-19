@@ -26,6 +26,8 @@ ODA({ is: 'oda-pterodactyl',
     },
     gameOver(){
         this.style.animationPlayState="paused";
+        const svg = this.$core.root.querySelector("svg");
+        svg.pauseAnimations();
     },
     gameStart(){
         if (this.style.animationPlayState === "paused") {

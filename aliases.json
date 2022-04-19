@@ -24,6 +24,7 @@
     "@oda/leaflet": "components/viewers/leaflet/leaflet.js",
     "@oda/calculator": "components/tools/calculator/calculator.js",
     "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
+    "@oda/html": "components/editors/html/html.js",
     "@oda/pell-editor": "components/editors/pell-editor/pell-editor.js",
     "@oda/color-input": "components/colors/color-input/color-input.js",
     "@oda/label-to-name": "components/inputs/label-to-name/label-to-name.js",

@@ -185,6 +185,9 @@ function gameOver() {
     isGameOver = true;
     clearInterval(scoreID);
 
+    const dino = document.querySelector('oda-dino');
+    dino.gameOver();
+
     const clouds = document.querySelectorAll('oda-cloud');
     clouds.forEach(cloud => {
         cloud.gameOver();
