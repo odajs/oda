@@ -2,15 +2,12 @@
     "readOnly": false,
     "cells": [
         {
-            "order": 2,
             "cell_type": "html"
         },
         {
-            "order": 2,
             "cell_type": "code"
         },
         {
-            "order": 2,
             "cell_type": "markdown"
         }
     ]

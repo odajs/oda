@@ -9,20 +9,17 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
         </style>
         <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell  :cell="item" :focused="focusedItem === item"  @tap.stop="focusedItem = item"></oda-jupyter-cell>
+            <oda-jupyter-cell  :cell="item" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
             <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
         </div>
     `,
     listeners: {
         tap(e) {
-            this.focusedItem = null;
+            this.focusedIndex = -1;
         }
     },
     props: {
-        iconSize: {
-            default: 16,
-            save: true
-        },
+        iconSize: 16,
         readOnly: {
             default: false,
             get() {
@@ -33,7 +30,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
             default: ['html', 'code', 'markdown']
         }
     },
-    focusedItem: null,
+    focusedIndex: -1,
+    get focusedItem() { return this.notebook?.cells?.[this.focusedIndex] || undefined },
     set src(n) {
         if (!n.startsWith('http'))
             n = path + '/' + n;
@@ -73,9 +71,16 @@ ODA({ is: 'oda-jupyter-divider',
             }
         </style>
         <div class="horizontal header">
-            <oda-button :icon-size icon="icons:add" ~for="editors" >{{item}}</oda-button>
+            <oda-button :icon-size icon="icons:add" ~for="editors" @tap.stop="addCell(item)">{{item}}</oda-button>
         </div>
-    `
+    `,
+    index: -1,
+    addCell(cell_type) {
+        this.focusedIndex = -1;
+        this.notebook ||= {};
+        this.notebook.cells ||= [];
+        this.notebook.cells.splice(1 + this.index, 0, { cell_type });
+    }
 })
 
 ODA({ is: 'oda-jupyter-cell',
@@ -101,9 +106,11 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     set src(n) {
-        ODA.import('@oda/' + n).then(res => {
-            this.editor = 'oda-' + n;
-        })
+        if (n) {
+            ODA.import('@oda/' + n).then(res => {
+                this.editor = 'oda-' + n;
+            })
+        }
     },
     get control() {
         return this.$(this.editor);
@@ -127,11 +134,11 @@ ODA({ is: 'oda-jupyter-toolbar',
                 @apply --shadow;
             }
         </style>
-        <oda-button :icon-size icon="icons:arrow-back:90"></oda-button>
-        <oda-button :icon-size icon="icons:arrow-back:270"></oda-button>
+        <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
+        <oda-button :disabled="focusedIndex >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
         <span style="width: 8px"></span>
         <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings(control)" @tap="showSettings"></oda-button>
-        <oda-button :icon-size icon="icons:delete"></oda-button>
+        <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
         <span style="width: 8px"></span>
         <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
     `,
@@ -139,21 +146,24 @@ ODA({ is: 'oda-jupyter-toolbar',
         return Object.keys(control?.$core?.saveProps || {}).length > 0;
     },
     cell: null,
-    showSettings: noDragWrap(async function(e) {
+    async showSettings(e) {
         await ODA.showDropdown(
             'oda-property-grid',
-            { inspectedObject: this.control, onlySave: true, style: 'max-width: 500px' },
-            { parent: e.target, intersect: true, align: 'right', title: 'Settings', hideCancelButton: true }
-        );
-    }),
-})
-
-function noDragWrap(f) {
-    return function(e, ...args) {
-        const se = e.detail.sourceEvent;
-        if (this.size === 'max' || !this.modal || (!this._downEvent || se.x === this._downEvent.x && se.y === this._downEvent.y)) {
-            return f.call(this, e, ...args);
-        }
-        this._downEvent = undefined;
+            { inspectedObject: this.control, onlySave: true, style: 'min-width: 300px' },
+            { parent: e.target, align: 'left', title: 'Settings' }
+        )
+    },
+    moveCell(v) {
+        let idx = this.focusedIndex;
+        const cells = this.notebook.cells.splice(idx, 1);
+        idx = idx + v;
+        idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
+        this.notebook.cells.splice(idx, 0, cells[0])
+        this.async(() => {
+            this.focusedIndex = idx;
+        })
+    },
+    deleteCell() {
+        this.notebook.cells.splice(this.focusedIndex, 1);
     }
-}
+})
