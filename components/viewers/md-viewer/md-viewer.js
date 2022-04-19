@@ -44,7 +44,7 @@ ODA({ is: 'oda-md-viewer', template: `
             blockquote { border-left: 2px solid lightgray; padding-left: 16px; }
             code { background-color: #f8f8f8; border: 1px solid #dfdfdf; color: #333; font-family: Consolas,"Liberation Mono",Courier,monospace; font-weight: normal; padding: 0.125rem 0.3125rem 0.0625rem;}
         </style>
-        <div ~html="html" style="padding: 2px 10px;"></div>
+        <div ~html="html" ~style="{padding}"></div>
         <oda-md-code style="display: none"></oda-md-code>
     `,
     props: {
@@ -63,7 +63,8 @@ ODA({ is: 'oda-md-viewer', template: `
             set(v) {
                 this._setHTML(this.srcmd || this.src);
             }
-        }
+        },
+        padding: '2px 10px;'
     },
     async _import() {
         if (!this._hasImports)

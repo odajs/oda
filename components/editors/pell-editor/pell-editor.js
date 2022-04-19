@@ -13,7 +13,7 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
             }
             .inp-box {
                 @apply --horizontal
-                position: fixed;
+                position: absolute;
                 z-index: 31;
                 border: 1px solid lightgray;
                 background-color: white;

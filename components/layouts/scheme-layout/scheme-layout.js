@@ -3,6 +3,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         <!--<oda-button ~if="showRemoveLinesButton" ~style="{position: 'absolute', left: selection[selection.length - 1].rect.center.x + 'px', top: selection[selection.length - 1].rect.center.y + 'px', width: '34px', height: '34px'}" icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
         <svg class="flex" :width :height>
             <path ~for="links" ~style="{visibility: item?.pin?.hasBlock ? 'visible' : hidden}" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
+            <path ~if="dashedLine" :stroke="'gray'" stroke-width="2" stroke-dasharray="5,5" fill="transparent" :d="dashedLine" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.pos === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.pos === 'top'?-linkMargin:link?.pos === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
@@ -15,6 +16,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     get filteredLinks() {
         return this.links?.filter(i=>(i && !i.link)) || [];
     },
+    dashedLine: null,
     get srcPins() {
         return this.items.map(b => {
             let outputs = [];
@@ -107,8 +109,13 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     _cursor: 'auto',
     listeners: {
         dragover(e) {
-            if (!this.editMode)
-                return;
+            if( !this.editMode ) return;
+            if( this.focusedPin ) {
+                const focusedRect = this.focusedPin.getClientRect(this.$('div > div'));
+                this.dashedLine = `M ${focusedRect.center.x} ${focusedRect.center.y}
+                                    L ${e.x / this.zoom} ${e.y / this.zoom}`;
+            }
+            
             e.preventDefault();
         },
         contextmenu(e) {
@@ -119,21 +126,21 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.links = undefined;
         },
         track(e) {
-            if (e.sourceEvent.which === 2) {
-                switch (e.detail.state) {
-                    case 'start': {
-                        this._cursor = 'move';
-                    } break;
-                    case 'track': {
-                        this.$('#slot').scrollLeft -= e.detail.ddx;
-                        this.$('#slot').scrollTop -= e.detail.ddy;
-                    } break;
-                    case 'end': {
-                        this._cursor = 'auto';
-                    } break;
-                }
-                return;
-            }
+            // if (e.sourceEvent.which === 2) {
+            //     switch (e.detail.state) {
+            //         case 'start': {
+            //             this._cursor = 'move';
+            //         } break;
+            //         case 'track': {
+            //             this.$('#slot').scrollLeft -= e.detail.ddx;
+            //             this.$('#slot').scrollTop -= e.detail.ddy;
+            //         } break;
+            //         case 'end': {
+            //             this._cursor = 'auto';
+            //         } break;
+            //     }
+            //     return;
+            // }
             if (!this.lastdown) return;
             if (e.sourceEvent.ctrlKey) return;
             if (!this.editMode) return;
@@ -507,6 +514,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         },
         dragend(e) {
             this.focusedPin = null;
+            this.layout.dashedLine = '';
         },
         drop(e) {
             this.prepareLink();
