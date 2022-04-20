@@ -2084,7 +2084,7 @@ if (!window.ODA) {
                 if (timer){
                     clearTimeout(timer);
                 }
-                else{
+                if (this.detail.state){
                     this.detail.ddx = 0;
                     this.detail.ddy = 0;
                     this.detail.state = 'end';

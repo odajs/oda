@@ -1,4 +1,4 @@
-ODA({is: 'oda-label-to-name', imports: '@oda/button',
+ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
     template: /*html*/`
     <style>
         :host {
@@ -12,13 +12,24 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
             padding: 2px 4px;
             min-height: 24px;
             max-height: 24px;
+            border: none;
+        }
+        div {
+            align-items: center;
             border: 1px inset gray;
         }
+        oda-button {
+            padding: 0;
+        }
     </style>
-    <input autofocus class="flex " ::value="label" :placeholder>
-    <input ~if="!hideName" style="border: none" ::value="name">
+    <div class="horizontal">
+        <input autofocus class="flex" ::value="label" :placeholder>
+        <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
+    </div>
+    <input ~if="!hideName" ::value="name">
     `,
     placeholder: 'Input label',
+    defaultList: Array,
     props: {
         label: {
             type: String,
@@ -55,10 +66,16 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
     get transliteration() {
         ODA.import("@ext/transliteration").then(i => this.transliteration = i)
     },
+    set _list(n) {
+        ODA.closeDropdown();
+    },
     listeners: {
         dblclick(e) {
             e.stopPropagation();
         }
+    },
+    attached() {
+        this.focus();
     },
     focus() {
         this.async(() => {
@@ -68,7 +85,57 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button',
             element.select();
         })
     },
-    attached() {
-        this.focus();
-    }
+    dropdown(e) {
+        if (this._list) this._list = undefined;
+        else this.showDropdown(e);
+    },
+    async showDropdown(e) {
+        try {
+            const list = this.defaultList;
+            if (!list.length) {
+                this._list = undefined;
+                return;
+            }
+            if (!this._list) {
+                this._list = document.createElement('oda-list');
+                this._list.itemTemplate = 'odant-field-item';
+                this._list.items = list;
+                this._list.focusedItem = list?.[0];
+                this.async(() => this.$('input')?.focus());
+                const item = (await ODA.showDropdown(this._list, {}, { parent: this.$('div'), useParentWidth: true })).focusedItem;
+                if (item) {
+                    this.label = item.label;
+                    this.name = item.name;
+                }
+                this._list = undefined;
+                this.blur?.();
+            }
+            else {
+                this._list.items = list;
+                this._list.focusedItem = list?.[0];
+                this._list?.domHost?.setSize();
+                return;
+            }
+            // Для показа всего списка при нажатии на dropDown
+            this.text = undefined;
+        }
+        catch {
+            this.interval('dd', () => {
+                this._list = undefined;
+            }, 100)
+        }
+    },
+})
+
+ODANT({is: 'odant-field-item',
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --horizontal;
+        }
+    </style>
+    <label class="flex">{{item?.label}}</label>
+    <span>[{{item?.name}}]</span>
+    `,
+    item: {}
 })

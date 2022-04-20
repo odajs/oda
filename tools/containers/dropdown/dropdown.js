@@ -112,7 +112,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         const rect = new ODARect(this.parent);
         let top = rect.top;
         let left = rect.left;
-        this.contentRect = this.control?.getBoundingClientRect()
+        // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
