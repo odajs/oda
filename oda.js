@@ -2037,9 +2037,13 @@ if (!window.ODA) {
                         back.style.setProperty('height', '100%');
                         back.style.setProperty('position', 'fixed');
                         back.classList.add('odaTrackBack');
-                        back.addEventListener('mousedown', () => back.remove(), {once: true});
-                        back.addEventListener('mouseup',   () => back.remove(), {once: true});
-                        back.style.setProperty('z-index', '1000');
+                        back.addEventListener('mousedown', () => {
+                            back.remove()
+                        }, {once: true});
+                        back.addEventListener('mouseup',   () => {
+                            back.remove()
+                        }, {once: true});
+                        back.style.setProperty('z-index', '1000000');
                         document.body.appendChild(back);
                     }
                     this.detail.x = e.clientX;
