@@ -79,7 +79,10 @@ ODA({ is: 'oda-jupyter-divider',
         this.focusedIndex = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(1 + this.index, 0, { cell_type });
+        this.notebook.cells.splice(1 + (+this.index), 0, { cell_type, source: cell_type + '...' });
+        this.async(() => {
+            this.focusedIndex = 1 + (+this.index);
+        })
     }
 })
 
@@ -124,12 +127,13 @@ ODA({ is: 'oda-jupyter-toolbar',
             :host{
                 position: absolute;
                 top: -{{iconSize}}px;
-                right: 0px;
+                right: 8px;
                 @apply --horizontal;
                 @apply --no-flex;
                 padding: 1px;
                 @apply --content;
                 @apply --shadow;
+                border-radius: 2px;
             }
         </style>
         <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
