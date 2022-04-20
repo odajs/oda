@@ -166,6 +166,9 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             }
         },
     },
+    set src(v) {
+        this.value = v;
+    },
     attached() {
         ['basePath', 'modePath', 'themePath', 'workerPath'].map(o => ace.config.set(o, ODA.rootPath + '/components/editors/ace-editor/src/'));
         this.editor = ace.edit(this.$('div'));
@@ -193,6 +196,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         editor.setOptions(this.options);
         editor.setValue(this.value);
         editor.session.selection.clearSelection();
+        editor.getSession().on('change', (e) => this.fire('change', this.value));
         editor.commands.addCommand({
             name: 'format',
             bindKey: {win: "Ctrl-Q", mac: "Cmd-Q"},

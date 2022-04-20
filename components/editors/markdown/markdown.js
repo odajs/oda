@@ -11,8 +11,9 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
             }
         </style>
         <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%' }">
-            <div ~if="editMode && type === 'simplemde'" style="width: 50%; overflow: hidden; position: relative">
-                <oda-simplemde :value="src" @change="onchange" max-h="calc(80vh - 106px)"></oda-simplemde>
+            <div ~if="editMode" style="width: 50%; overflow: hidden; position: relative">
+                <oda-simplemde ~if="type==='simplemde'" :value="src" @change="onchange" max-h="calc(80vh - 106px)"></oda-simplemde>
+                <oda-ace-editor ~if="type==='ace'" :src="src" @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode="markdown" min-lines=1></oda-ace-editor></oda-ace-editor>
             </div>
             <oda-splitter2 ~if="editMode" size="3px"></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1">
@@ -23,8 +24,11 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
     props:{
         type:{
             default: 'simplemde',
-            list: ['simplemde', 'Второй'],
-            save: true
+            list: ['simplemde', 'ace'],
+            save: true,
+            set(n) {
+                this.src = this.source;
+            }
         }
     },
     src: '',

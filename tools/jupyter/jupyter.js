@@ -464,7 +464,7 @@ ODA({ is: 'oda-jupyter-cell-markdown', imports: '@oda/md-viewer, @oda/ace-editor
         </style>
         <div class="horizontal flex" style="overflow: hidden">
             <div ~show="!readOnly&&editedCell===cell" style="width: 50%; overflow: auto;">
-                <oda-ace-editor class="flex" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode:markdown show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
+                <oda-ace-editor class="flex" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode="markdown" show-gutter="false" min-lines=1></oda-ace-editor></oda-ace-editor>
             </div>
             <oda-splitter2 ~show="!readOnly&&editedCell===cell" size="3px" color="dodgerblue" style="opacity: .3"></oda-splitter2>
             <div class="flex" style="overflow: auto; flex: 1">

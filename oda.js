@@ -2009,7 +2009,7 @@ if (!window.ODA) {
             let timer;
             this.addSubEvent('mousedown', (e) => {
                 this.detail = {
-                    state: 'start',
+                    // state: 'start',
                     start: {
                         x: e.clientX,
                         y: e.clientY
@@ -2025,13 +2025,9 @@ if (!window.ODA) {
                 }, 2000)
             });
             const moveHandler = (e) => {
-                if (Math.max(Math.abs(e.movementX), Math.abs(e.movementY))>2){
-                    if (timer){
-                        const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
-                        this.handler(ce, ce.detail);
-                        this.detail.state = 'track';
+                if (!this.detail.state) {
+                    if (Math.max(Math.abs(e.movementX), Math.abs(e.movementY))>2) {
                         clearTimeout(timer);
-                        timer = 0;
                         const back = document.createElement('div');
                         back.style.setProperty('width', '100%');
                         back.style.setProperty('height', '100%');
@@ -2040,12 +2036,19 @@ if (!window.ODA) {
                         back.addEventListener('mousedown', () => {
                             back.remove()
                         }, {once: true});
-                        back.addEventListener('mouseup',   () => {
+                        back.addEventListener('mouseup', () => {
                             back.remove()
                         }, {once: true});
                         back.style.setProperty('z-index', '1000000');
                         document.body.appendChild(back);
+                        this.detail.state = 'start'
+                        let ce = new odaCustomEvent("track", {detail: Object.assign({}, this.detail)}, e);
+                        this.handler(ce, ce.detail);
+                        this.detail.state = 'track';
+
                     }
+                }
+                else {
                     this.detail.x = e.clientX;
                     this.detail.y = e.clientY;
                     this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
@@ -2055,6 +2058,25 @@ if (!window.ODA) {
                     const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
                     this.handler(ce, ce.detail);
                 }
+                // if (timer){
+                //     if (Math.max(Math.abs(e.movementX), Math.abs(e.movementY))>2) {
+                //         let ce = new odaCustomEvent("track", {detail: Object.assign({}, this.detail)}, e);
+                //         this.handler(ce, ce.detail);
+                //         this.detail.state = 'track';
+                //         clearTimeout(timer);
+                //         timer = 0;
+                //
+                //     }
+                // }
+                //
+                // this.detail.x = e.clientX;
+                // this.detail.y = e.clientY;
+                // this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
+                // this.detail.ddy = -(this.detail.dy - (e.clientY - this.detail.start.y));
+                // this.detail.dx = e.clientX - this.detail.start.x;
+                // this.detail.dy = e.clientY - this.detail.start.y;
+                // e = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
+                // this.handler(ce, ce.detail);
             };
             const upHandler = (e) => {
                 window.removeEventListener('mousemove', moveHandler);

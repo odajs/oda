@@ -152,7 +152,7 @@ ODA({ is: 'oda-jupyter-toolbar',
         await ODA.showDropdown(
             'oda-property-grid',
             { inspectedObject: this.control, onlySave: true, style: 'min-width: 300px' },
-            { parent: e.target, align: 'left', title: 'Settings' }
+            { parent: e.target, align: 'bottom', title: 'Settings' }
         )
     },
     moveCell(v) {

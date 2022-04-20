@@ -112,6 +112,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         const rect = new ODARect(this.parent);
         let top = rect.top;
         let left = rect.left;
+        this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
@@ -160,7 +161,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
             case 'top': {
                 bottom = this.intersect ? rect.bottom : rect.top;
-                top = bottom - height;
+                top = bottom - height - (this.title ? 36 : 0);
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = bottom - top;
