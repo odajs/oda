@@ -4,7 +4,7 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <style>
         :host {
             max-height: 100%;
-            height: 100vh;
+            /*height: 100vh;*/
             border: 1px solid gray;
         }
     </style>
