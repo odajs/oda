@@ -22,7 +22,8 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button',
             save: true
         }
     },
-    colsScrollLeft: 0
+    colsScrollLeft: 0,
+
 })
 ODA({is:'oda-grid-header',
     template: `
@@ -35,7 +36,7 @@ ODA({is:'oda-grid-header',
         </style>
         <oda-grid-groups></oda-grid-groups>
         <div class="flex horizontal">
-             <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft">
+             <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="onTrack">
                 <div class="no-flex horizontal">
                     <oda-grid-header-cell ~for="columns" :column="item"></oda-grid-header-cell>
                 </div>
@@ -44,6 +45,18 @@ ODA({is:'oda-grid-header',
             <oda-button :icon-size icon="icons:settings"></oda-button>
         </div>
     `,
+    onTrack(e){
+        switch (e.detail.state){
+            case 'track':{
+                const w = e.detail.target.scrollWidth - e.detail.target.offsetWidth
+                this.colsScrollLeft -= e.detail.ddx;
+                if (this.colsScrollLeft<0)
+                    this.colsScrollLeft = 0
+                else if (this.colsScrollLeft > w)
+                    this.colsScrollLeft = w;
+            } break;
+        }
+    }
 
 })
 ODA({is: 'oda-grid-cell',

@@ -1999,14 +1999,14 @@ if (!window.ODA) {
     class odaEventTrack extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            const back = document.createElement('div');
-            back.style.setProperty('width', '100%');
-            back.style.setProperty('height', '100%');
-            back.style.setProperty('position', 'fixed');
-            back.classList.add('odaTrackBack');
-            back.addEventListener('mousedown', ()=>back.remove());
+            // const back = document.createElement('div');
+            // back.style.setProperty('width', '100%');
+            // back.style.setProperty('height', '100%');
+            // back.style.setProperty('position', 'fixed');
+            // back.classList.add('odaTrackBack');
+            // back.addEventListener('mousedown', ()=>back.remove());
             // back.style.setProperty('z-index', '1');
-
+            let timer;
             this.addSubEvent('mousedown', (e) => {
                 this.detail = {
                     state: 'start',
@@ -2014,43 +2014,57 @@ if (!window.ODA) {
                         x: e.clientX,
                         y: e.clientY
                     }, ddx: 0, ddy: 0, dx: 0, dy: 0,
-                    target: e.target
+                    target: target
                 };
                 window.addEventListener('mousemove', moveHandler);
                 window.addEventListener('mouseup', upHandler);
+                timer = setTimeout(()=>{
+                    window.removeEventListener('mousemove', moveHandler);
+                    window.removeEventListener('mouseup', upHandler);
+                    timer = 0;
+                }, 2000)
             });
             const moveHandler = (e) => {
-                if (!this.started) {
-                    window.addEventListener('mouseup', upHandler);
-                    this.started = true;
-                    setTimeout(() => {
-                        if(this.detail.state !== 'end' && !back.notPlace) document.body.appendChild(back);
-                    }, 500);
-                }
-                this.detail.x = e.clientX;
-                this.detail.y = e.clientY;
-                this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
-                this.detail.ddy = -(this.detail.dy - (e.clientY - this.detail.start.y));
-                this.detail.dx = e.clientX - this.detail.start.x;
-                this.detail.dy = e.clientY - this.detail.start.y;
-                if (this.detail.dx || this.detail.dy) {
+                if (Math.max(Math.abs(e.movementX), Math.abs(e.movementY))>2){
+                    if (timer){
+                        const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
+                        this.handler(ce, ce.detail);
+                        this.detail.state = 'track';
+                        clearTimeout(timer);
+                        timer = 0;
+                        const back = document.createElement('div');
+                        back.style.setProperty('width', '100%');
+                        back.style.setProperty('height', '100%');
+                        back.style.setProperty('position', 'fixed');
+                        back.classList.add('odaTrackBack');
+                        back.addEventListener('mousedown', () => back.remove(), {once: true});
+                        back.addEventListener('mouseup',   () => back.remove(), {once: true});
+                        back.style.setProperty('z-index', '1000');
+                        document.body.appendChild(back);
+                    }
+                    this.detail.x = e.clientX;
+                    this.detail.y = e.clientY;
+                    this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
+                    this.detail.ddy = -(this.detail.dy - (e.clientY - this.detail.start.y));
+                    this.detail.dx = e.clientX - this.detail.start.x;
+                    this.detail.dy = e.clientY - this.detail.start.y;
                     const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
                     this.handler(ce, ce.detail);
-                    this.detail.state = 'track';
                 }
             };
             const upHandler = (e) => {
                 window.removeEventListener('mousemove', moveHandler);
                 window.removeEventListener('mouseup', upHandler);
-                if (!this.started) return;
-                this.started = false;
-                this.detail.ddx = 0;
-                this.detail.ddy = 0;
-                this.detail.state = 'end';
-                const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
-                this.handler(ce, ce.detail);
-                back.notPlace = true;
-                setTimeout(() => Array.from(document.body.querySelectorAll('odaTrackBack')).forEach(e => e.remove()), 200);
+                if (timer){
+                    clearTimeout(timer);
+                }
+                else{
+                    this.detail.ddx = 0;
+                    this.detail.ddy = 0;
+                    this.detail.state = 'end';
+                    const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
+                    this.handler(ce, ce.detail);
+                }
             };
         }
         get event() {

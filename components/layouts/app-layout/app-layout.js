@@ -1,7 +1,8 @@
 import '../form-layout/form-layout.js';
 import '../splitter/splitter.js';
-const DEFAULT_DRAWER_WIDTH = 300;
-ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/touch-router', extends: 'oda-form-layout, oda-touch-router', template: /*html*/`
+// const DEFAULT_DRAWER_WIDTH = 300;
+ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/touch-router', extends: 'oda-form-layout, oda-touch-router',
+    template: /*html*/`
     <style>
         .main {
             transition: margin, filter 0.2s;
@@ -16,19 +17,19 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         .stop-pointer-events * {
             pointer-events: none;
         }
-        ::slotted(*){
+        ::slotted(*) {
             @apply --flex;
         }
-        .title{
+        .title {
             transition: margin-top 0.3s ease-in-out;
             align-items: center;
         }
-        .main-container{
+        .main-container {
             @apply --flex;
             @apply --horizontal;
             overflow: hidden;
         }
-        :host oda-pin-button{
+        :host oda-pin-button {
             position: absolute;
             right: 0;
             top: 0;
@@ -58,10 +59,10 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     `,
     leftButtons: [],
     rightButtons: [],
-    get left(){
+    get left() {
         return this.$refs.l_panel;
     },
-    get right(){
+    get right() {
         return this.$refs.r_panel;
     },
     props: {
@@ -90,24 +91,24 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             type: Number,
             default: 300,
             save: true,
-            set(n){
-                if (this.offsetWidth && n > this.offsetWidth *.8){
-                    this.leftWidth =  this.offsetWidth *.8;
+            set(n) {
+                if (this.offsetWidth && n > this.offsetWidth * .8) {
+                    this.leftWidth = this.offsetWidth * .8;
                 }
-                else if (n<100)
-                    this.leftWidth =  100;
+                else if (n < 100)
+                    this.leftWidth = 100;
             }
         },
         rightWidth: {
             type: Number,
             default: 300,
             save: true,
-            set(n){
-                if (this.offsetWidth && n > this.offsetWidth *.8){
-                    this.rightWidth =  this.offsetWidth *.8;
+            set(n) {
+                if (this.offsetWidth && n > this.offsetWidth * .8) {
+                    this.rightWidth = this.offsetWidth * .8;
                 }
-                else if (n<100)
-                    this.rightWidth =  100;
+                else if (n < 100)
+                    this.rightWidth = 100;
             }
         },
         compact: false,
@@ -117,25 +118,25 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             type: Boolean,
             save: true,
         },
-        r_pinned:{
+        r_pinned: {
             type: Boolean,
             save: true,
         }
     },
-    get l_opened(){
+    get l_opened() {
         return this.left?.opened;
     },
-    get r_opened(){
+    get r_opened() {
         return this.right?.opened;
     },
-    get opened(){
+    get opened() {
         return this.l_opened || this.r_opened;
     },
     updateCompact() {
-        if(!this.autoCompact) return;
+        if (!this.autoCompact) return;
         this.compact = this.offsetWidth < this.offsetHeight;
     },
-    afterLoadSettings(){
+    afterLoadSettings() {
         this.updateCompact();
         const me = this.unique && this._getModals().find(i => i.unique === this.unique);
         if (me) {
@@ -168,18 +169,18 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             }
         });
     },
-    listeners:{
+    listeners: {
         'resize': 'updateCompact',
     },
     smartClose() {
-        if (this.allowCompact && this.compact && this.opened){
+        if (this.allowCompact && this.compact && this.opened) {
             this.close();
         } else if (this.allowPin) {
             if (!this.l_pinned) this.left?.close();
             if (!this.r_pinned) this.right?.close();
         }
     },
-    close(){
+    close() {
         [this.left, this.right].forEach(i => i?.close?.());
     },
     onTouchMove(e) { //  swipeX
@@ -205,7 +206,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         if (!router.$startSide) {
             let startSide;
             if (this.allowCompact && this.compact)
-                startSide = this.l_opened ? 'left' : this.r_opened ? 'right': '';
+                startSide = this.l_opened ? 'left' : this.r_opened ? 'right' : '';
             if (!startSide)
                 startSide = startX <= Math.round(window.top.screen.width / 2) ? 'left' : 'right';
             router.$startSide = startSide;
@@ -316,19 +317,19 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     }
 });
 
-ODA({
-    is: 'app-layout-toolbar', template: /*html*/`
+ODA({is: 'app-layout-toolbar',
+    template: /*html*/`
     <style>
-        :host{
+        :host {
             @apply --no-flex;
             @apply --horizontal;
             border-bottom: 1px solid silver;
             align-items: center;
         }
-        ::slotted(.raised){
+        ::slotted(.raised) {
              @apply --raised;
         }
-        .raised{
+        .raised {
             @apply --raised;
         }
     </style>
@@ -346,7 +347,8 @@ ODA({
     }
 });
 
-ODA({is: 'app-layout-drawer', template: /*html*/`
+ODA({is: 'app-layout-drawer',
+    template: /*html*/`
     <style>
         :host {
             @apply --no-flex;
@@ -357,42 +359,42 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             transition: opacity 0.3s;
             flex-direction: row{{pos === 'right'?'-reverse':''}};
         }
-        .drawer{
+        .drawer {
             height: 100%;
             position: relative;
             overflow: hidden;
         }
-        .buttons{
+        .buttons {
             /*@apply --header; */
             z-index: 1;
             @apply --vertical;
             justify-content: space-around;
             background: linear-gradient({{pos === 'left'?90:270}}deg, var(--header-background), var(--content-background), var(--content-background));
         }
-        slotted(:not([focused])){
+        slotted(:not([focused])) {
             display: none;
         }
-        :host([hidden]){ /* todo: должно работать от глобального стиля */
+        :host([hidden]) { /* todo: должно работать от глобального стиля */
             display: none !important;
         }
-        .bt{
+        .bt {
             transition: margin ease-in-out .1s;
         }
-        :host([hide-tabs]) .bt{
+        :host([hide-tabs]) .bt {
             transition: margin ease-in-out .5s !important;
             margin-left: {{(pos === 'left')?-delta:1}}px !important;
             margin-right: {{(pos === 'left')?1:-delta}}px !important;
         }
-        :host([hide-tabs]){
+        :host([hide-tabs]) {
             transition: opacity ease-in-out .5s !important;
         }
-        :host([hide-tabs]):hover{
+        :host([hide-tabs]):hover {
             opacity: 1 !important;
         }
-        .bt>oda-button{
+        .bt > oda-button {
             border-radius: 15%;
         }
-        .pin{
+        .pin {
             transform: scale(.5);
             border: 1px solid transparent;
             position: absolute;
@@ -405,16 +407,16 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             padding: 0px !important;
             cursor: pointer;
         }
-        .pin:hover{
+        .pin:hover {
             @apply --content;
             @apply --invert;
         }
-        .hider>*{
+        .hider > * {
             opacity: 0;
             cursor: pointer;
             transition: opacity ease-in-out .3s;
         }
-        .hider:hover>*{
+        .hider:hover > * {
             opacity: .5;
         }
         .outline {
@@ -422,7 +424,6 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             outline-offset: -2px;
         }
     </style>
-
     <div @touchmove="hideTabs=false"  ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
             <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" @down.stop="setFocus(item)" :title="item?.getAttribute('bar-title') || item?.title || item?.getAttribute('title')" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'"  :sub-icon="item?.getAttribute('sub-icon')" :toggled="focused === item" :bubble="item.bubble" ~class="{outline: lastFocused === item}"></oda-button>
@@ -466,7 +467,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
                 }
             }
         },
-        hideTabs:{
+        hideTabs: {
             default: false,
             reflectToAttribute: true,
         },
@@ -505,18 +506,18 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
                 for (let i of (this.controls || [])) {
                     i.$sleep = i.hidden = i !== n;
                 }
-                this.async(()=>{
+                this.async(() => {
                     n?.dispatchEvent(new CustomEvent('activate'));
                 })
             }
         },
         lastFocused: null
     },
-    get sign(){
-        return this.pos === "left"?1:-1;
+    get sign() {
+        return this.pos === "left" ? 1 : -1;
     },
-    get opened(){
-        return (!this.hideTabs && this.$$('oda-button.tab').some(i=>i.toggled)) || undefined;
+    get opened() {
+        return (!this.hideTabs && this.$$('oda-button.tab').some(i => i.toggled)) || undefined;
     },
     execTap(e, item) {
         switch (e.detail.sourceEvent.button) {
@@ -555,7 +556,7 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
             this.focused = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы
         this.controls.forEach(el => {
             el.$sleep = el.hidden = true;
-            if(el.hasAttribute?.('bar-autofocus')  || el.hasAttribute?.('bar-opened')|| el.hasAttribute?.('opened')){
+            if (el.hasAttribute?.('bar-autofocus') || el.hasAttribute?.('bar-opened') || el.hasAttribute?.('opened')) {
                 this.focused = this.focused || el;
                 if (el === this.focused)
                     el.$sleep = el.hidden = false;
@@ -567,27 +568,27 @@ ODA({is: 'app-layout-drawer', template: /*html*/`
         // })
 
     },
-    listeners:{
+    listeners: {
         resize(e) {
             this.delta = this.$refs.panel?.firstElementChild?.offsetWidth || 0;
         },
-        down(e){
+        down(e) {
             e.stopPropagation();
         }
     },
-    swipePanel(e){
-        if(this.__sw){
-            this.swipe += this.sign>0?(this.__sw.touches[0].screenX - e.touches[0].screenX):(e.touches[0].screenX - this.__sw.touches[0].screenX);
-            if (this.swipe<0)
+    swipePanel(e) {
+        if (this.__sw) {
+            this.swipe += this.sign > 0 ? (this.__sw.touches[0].screenX - e.touches[0].screenX) : (e.touches[0].screenX - this.__sw.touches[0].screenX);
+            if (this.swipe < 0)
                 this.swipe = 0;
             else
                 e.$executed = true;
         }
         this.__sw = e;
     },
-    swipeEnd(e){
+    swipeEnd(e) {
         delete this.__sw;
-        if (Math.abs(this.swipe)>e.target.offsetWidth/2)
+        if (Math.abs(this.swipe) > e.target.offsetWidth / 2)
             this.focused = null;
         this.swipe = 0;
     },

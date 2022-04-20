@@ -111,9 +111,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         dragover(e) {
             if( !this.editMode ) return;
             if( this.focusedPin ) {
-                const focusedRect = this.focusedPin.getClientRect(this.$('div > div'));
-                this.dashedLine = `M ${focusedRect.center.x} ${focusedRect.center.y}
-                                    L ${e.x / this.zoom} ${e.y / this.zoom}`;
+                // const focusedRect = this.focusedPin.getClientRect(this.$('div > div'));
+                // this.dashedLine = `M ${focusedRect.center.x} ${focusedRect.center.y}
+                //                     L ${e.x / this.zoom} ${e.y / this.zoom}`;
             }
             
             e.preventDefault();
