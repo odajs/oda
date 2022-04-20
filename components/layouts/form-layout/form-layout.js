@@ -1,6 +1,7 @@
 ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         <style>
             :host{
+                
                 @apply --vertical;
                 @apply --flex;
                 @apply --content;
@@ -70,7 +71,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 transform: translate3d(-50%, 0, 0);
             }
         </style>
-        <div class="title-bar horizontal" @mouseenter="_onHeader = true" @mouseleave="_onHeader = false">
+        <div class="title-bar horizontal">
             <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
             <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
             <div ~if="title" ~text="title" style="margin-left: 8px;"></div>
@@ -138,11 +139,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         minWidth: 400,
         minHeight: 300,
         _resizeDir: String,
-        _curPos: String,
-        _onBorder: false,
-        _moving: false,
-        _sizing: false,
-        _onHeader: false,
+        // _curPos: String,
         _bw: 4, //border-width,
         _parentWidth: {
             type: Number,
@@ -156,10 +153,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
     },
     listeners: {
         mousemove(e) {
-            if (this.autosize) return;
-            if (!this.modal || this.size !== 'normal' || this.isMinimized) {
-                return this.style.cursor = '';
-            }
+            if (this.autosize || e.buttons || !this.modal || this.size !== 'normal' || this.isMinimized)
+                return;
             const bw = this._bw;
             const bw2 = bw * 2;
             const h = this.pos.height;
@@ -171,19 +166,63 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             str += e.offsetX <= 0 ? 'w' : '';
             str += e.offsetX >= w - bw2 ? 'e' : '';
 
-            this._curPos = str;
-            if (str) {
-                this._onBorder = true;
-                this.style.cursor = `${str}-resize`;
-            } else {
-                this._onBorder = false;
-                return this.style.cursor = '';
-            }
+            this.async(()=>{
+                if (str) {
+                    this.style.cursor = `${str}-resize`;
+                } else {
+                    return this.style.cursor = '';
+                }
+            })
+
         },
         track(e, d) {
             if (this.autosize) return;
             if (!this.modal || e.sourceEvent.button !== 0) return;
-            console.log(e)
+            // console.log(e)
+            switch (d.state){
+                case 'start':{
+                    console.log(d.start)
+
+                    // const bw = this._bw;
+                    // const bw2 = bw * 2;
+                    // const h = this.pos.height;
+                    // const w = this.pos.width;
+                    //
+                    // let str = '';
+                    // str += d.start.y <= 0 ? 'n' : '';
+                    // str += d.start.y >= h - bw2 ? 's' : '';
+                    // str += d.start.x <= 0 ? 'w' : '';
+                    // str += d.start.x >= w - bw2 ? 'e' : '';
+                    // if (str)
+                    //     this.style.cursor = `${str}-resize`;
+                    // else
+                    //     this.style.cursor = `move`;
+                    if (!this.style.cursor)
+                        this.style.cursor = `move`;
+
+                } break;
+                case 'track':{
+                    let _pos = Object.assign({}, this.pos);
+                    const x = d.ddx || 0;
+                    const y = d.ddy || 0;
+                    switch (this.style.cursor){
+                        case 'move':{
+                            _pos = { ..._pos, ...{ x: _pos.x += x, y: _pos.y += y } }
+                        } break;
+                        case 'e-resize':{
+                            _pos.width += x;
+                        } break;
+                    }
+                    this._fixPos(_pos);
+                    this.pos = { ...this.pos, ..._pos };
+                    console.log(this.style.cursor)
+                } break;
+                case 'end':{
+                    this.style.cursor = '';
+                } break;
+            }
+
+/*
             const state = d.state;
             const x = d.ddx || 0;
             const y = d.ddy || 0;
@@ -198,8 +237,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                         //this.pos.y += y;
                         this.pos = { ...this.pos, ...{ x: this.pos.x += x, y: this.pos.y += y } }
                         break;
-                    case 'end':
-                        if (!this._moving) return;
+                    case 'end':                        if (!this._moving) return;
                         this._moving = false;
                         break;
                 }
@@ -241,7 +279,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                         this._sizing = false;
                         break;
                 }
-            }
+            }*/
         },
         resize: '_resize',
         mousedown() {
