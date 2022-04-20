@@ -2051,7 +2051,7 @@ if (!window.ODA) {
                 else {
                     // console.log(target, this.detail.state, e.clientX, e.clientY)
                     odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor;
-                    console.log('back', target.style.cursor)
+                    // console.log('back', target.style.cursor)
                     this.detail.x = e.clientX;
                     this.detail.y = e.clientY;
                     this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));

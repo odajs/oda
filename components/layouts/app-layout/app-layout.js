@@ -95,8 +95,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
                 if (this.offsetWidth && n > this.offsetWidth * .8) {
                     this.leftWidth = this.offsetWidth * .8;
                 }
-                else if (n < 100)
-                    this.leftWidth = 100;
+                else if (n < 270)
+                    this.leftWidth = 270;
             }
         },
         rightWidth: {
@@ -107,8 +107,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
                 if (this.offsetWidth && n > this.offsetWidth * .8) {
                     this.rightWidth = this.offsetWidth * .8;
                 }
-                else if (n < 100)
-                    this.rightWidth = 100;
+                else if (n < 270)
+                    this.rightWidth = 270;
             }
         },
         compact: false,

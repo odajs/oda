@@ -1,7 +1,7 @@
 ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         <style>
             :host{
-                
+
                 @apply --vertical;
                 @apply --flex;
                 @apply --content;
@@ -234,7 +234,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                     }
                     this._fixPos(_pos);
                     this.pos = { ...this.pos, ..._pos };
-                    console.log(this.style.cursor)
+                    // console.log(this.style.cursor)
                 } break;
                 case 'end':{
                     this.style.cursor = '';
