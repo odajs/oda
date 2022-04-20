@@ -183,6 +183,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         track(e, d) {
             if (this.autosize) return;
             if (!this.modal || e.sourceEvent.button !== 0) return;
+            console.log(e)
             const state = d.state;
             const x = d.ddx || 0;
             const y = d.ddy || 0;
