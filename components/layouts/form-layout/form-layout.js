@@ -71,7 +71,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                 transform: translate3d(-50%, 0, 0);
             }
         </style>
-        <div class="title-bar horizontal">
+        <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
             <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
             <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
             <div ~if="title" ~text="title" style="margin-left: 8px;"></div>
@@ -84,6 +84,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
         </div>
         <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
+    _flags:{
+        allowMove: false
+    },
     props: {
         unique: String,
         // animated: false,
@@ -182,24 +185,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             switch (d.state){
                 case 'start':{
                     console.log(d.start)
-
-                    // const bw = this._bw;
-                    // const bw2 = bw * 2;
-                    // const h = this.pos.height;
-                    // const w = this.pos.width;
-                    //
-                    // let str = '';
-                    // str += d.start.y <= 0 ? 'n' : '';
-                    // str += d.start.y >= h - bw2 ? 's' : '';
-                    // str += d.start.x <= 0 ? 'w' : '';
-                    // str += d.start.x >= w - bw2 ? 'e' : '';
-                    // if (str)
-                    //     this.style.cursor = `${str}-resize`;
-                    // else
-                    //     this.style.cursor = `move`;
-                    if (!this.style.cursor)
+                    if (!this.style.cursor && this._flags.allowMove)
                         this.style.cursor = `move`;
-
                 } break;
                 case 'track':{
                     let _pos = Object.assign({}, this.pos);
@@ -211,6 +198,38 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                         } break;
                         case 'e-resize':{
                             _pos.width += x;
+                        } break;
+                        case 'w-resize':{
+                            _pos.width -= x;
+                            _pos.x += this.pos.width - _pos.width;
+                        } break;
+                        case 's-resize':{
+                            _pos.height += y;
+                        } break;
+                        case 'n-resize':{
+                            _pos.height -= y;
+                            _pos.y += this.pos.height - _pos.height;
+                        } break;
+
+                        case 'ne-resize':{
+                            _pos.width += x;
+                            _pos.height -= y;
+                            _pos.y += this.pos.height - _pos.height;
+                        } break;
+                        case 'nw-resize':{
+                            _pos.width -= x;
+                            _pos.x += this.pos.width - _pos.width;
+                            _pos.height -= y;
+                            _pos.y += this.pos.height - _pos.height;
+                        } break;
+                        case 'se-resize':{
+                            _pos.width += x;
+                            _pos.height += y;
+                        } break;
+                        case 'sw-resize':{
+                            _pos.height += y;
+                            _pos.width -= x;
+                            _pos.x += this.pos.width - _pos.width;
                         } break;
                     }
                     this._fixPos(_pos);
