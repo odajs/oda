@@ -1999,14 +1999,6 @@ if (!window.ODA) {
     class odaEventTrack extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            // const back = document.createElement('div');
-            // back.style.setProperty('width', '100%');
-            // back.style.setProperty('height', '100%');
-            // back.style.setProperty('position', 'fixed');
-            // back.classList.add('odaTrackBack');
-            // back.addEventListener('mousedown', ()=>back.remove());
-            // back.style.setProperty('z-index', '1');
-            let timer;
             this.addSubEvent('mousedown', (e) => {
                 this.detail = {
                     // state: 'start',
@@ -2018,16 +2010,14 @@ if (!window.ODA) {
                 };
                 window.addEventListener('mousemove', moveHandler);
                 window.addEventListener('mouseup', upHandler);
-                // timer = setTimeout(()=>{
-                //     window.removeEventListener('mousemove', moveHandler);
-                //     window.removeEventListener('mouseup', upHandler);
-                //     timer = 0;
-                // }, 500)
+                target.addEventListener('mouseleave', moveHandler, {once: true});
             });
             const moveHandler = (e) => {
                 if (!this.detail.state) {
-                    if (Math.max(Math.abs(this.detail.start.x - e.clientX), Math.abs(this.detail.start.y - e.clientY))>2) {
-                        // clearTimeout(timer);
+                    const x = Math.abs(this.detail.start.x - e.clientX);
+                    const y = Math.abs(this.detail.start.y - e.clientY)
+                    if (Math.max(x,y)>2) {
+                        console.log(this.detail.state, x, y)
                         const back = document.createElement('div');
                         back.style.setProperty('width', '100%');
                         back.style.setProperty('height', '100%');
@@ -2045,10 +2035,10 @@ if (!window.ODA) {
                         let ce = new odaCustomEvent("track", {detail: Object.assign({}, this.detail)}, e);
                         this.handler(ce, ce.detail);
                         this.detail.state = 'track';
-
                     }
                 }
                 else {
+                    console.log(this.detail.state, e.clientX, e.clientY)
                     this.detail.x = e.clientX;
                     this.detail.y = e.clientY;
                     this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
@@ -2058,32 +2048,10 @@ if (!window.ODA) {
                     const ce = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
                     this.handler(ce, ce.detail);
                 }
-                // if (timer){
-                //     if (Math.max(Math.abs(e.movementX), Math.abs(e.movementY))>2) {
-                //         let ce = new odaCustomEvent("track", {detail: Object.assign({}, this.detail)}, e);
-                //         this.handler(ce, ce.detail);
-                //         this.detail.state = 'track';
-                //         clearTimeout(timer);
-                //         timer = 0;
-                //
-                //     }
-                // }
-                //
-                // this.detail.x = e.clientX;
-                // this.detail.y = e.clientY;
-                // this.detail.ddx = -(this.detail.dx - (e.clientX - this.detail.start.x));
-                // this.detail.ddy = -(this.detail.dy - (e.clientY - this.detail.start.y));
-                // this.detail.dx = e.clientX - this.detail.start.x;
-                // this.detail.dy = e.clientY - this.detail.start.y;
-                // e = new odaCustomEvent("track", { detail: Object.assign({}, this.detail) }, e);
-                // this.handler(ce, ce.detail);
             };
             const upHandler = (e) => {
                 window.removeEventListener('mousemove', moveHandler);
                 window.removeEventListener('mouseup', upHandler);
-                // if (timer){
-                //     clearTimeout(timer);
-                // }
                 if (this.detail.state){
                     this.detail.ddx = 0;
                     this.detail.ddy = 0;
