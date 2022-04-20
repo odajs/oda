@@ -2022,11 +2022,11 @@ if (!window.ODA) {
                 //     window.removeEventListener('mousemove', moveHandler);
                 //     window.removeEventListener('mouseup', upHandler);
                 //     timer = 0;
-                // }, 2000)
+                // }, 500)
             });
             const moveHandler = (e) => {
                 if (!this.detail.state) {
-                    console.log(e.movementX, e.movementY);
+
                     if (Math.max(Math.abs(this.detail.start.x - e.clientX), Math.abs(this.detail.start.y - e.clientY))>2) {
                         // clearTimeout(timer);
                         const back = document.createElement('div');
