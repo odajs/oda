@@ -2026,7 +2026,6 @@ if (!window.ODA) {
             });
             const moveHandler = (e) => {
                 if (!this.detail.state) {
-
                     if (Math.max(Math.abs(this.detail.start.x - e.clientX), Math.abs(this.detail.start.y - e.clientY))>2) {
                         // clearTimeout(timer);
                         const back = document.createElement('div');
