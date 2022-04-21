@@ -89,19 +89,34 @@ ODA({
 })
 
 ODA({
-    is: 'oda-jupyter-cell',
+    is: 'oda-jupyter-cell', imports: '@oda/splitter2',
     template: `
         <style>
-            :host{
+            :host {
                 position: relative;
                 @apply --no-flex;
                 padding: 1px;
+                height: {{editMode ? '80vh' : 'unset'}};
+            }
+            .main {
+                min-height: 22px;
             }
             .editor{
                 padding: 4px;
+                height: {{editMode ? '80vh' : ((cell?.enableResize || control?.enableResize) && cell?.cell_h) ? cell.cell_h : '100%'}}
+            }
+            oda-splitter2 {
+                opacity: 0;
+            }
+            oda-splitter2:hover {
+                opacity: .7;
             }
         </style>
-        <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args"></div>
+        <div class="vertical flex main">
+            <div class="editor" ~is="cellType" ~class="{shadow: !editMode && !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::control_h="cell.cell_h" ::enable-resize="cell.enableResize"></div>
+            <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
+            <div class="flex" ~if="control?.enableResize && !editMode" style="overflow: auto; flex: 1; max-height: 0"></div>
+        </div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
     set cell(n) {
@@ -121,7 +136,17 @@ ODA({
     },
     focused: false,
     editMode: false,
-    cellType: 'div'
+    cellType: 'div',
+    listeners: {
+        endSplitterMove(e) {
+            if (!this.readOnly) {
+                if (e.detail.value.direction === 'horizontal') {
+                    this.cell.cell_h = e.detail.value.h;
+                    this.cell.cell_h = this.cell.cell_h < 20 ? 20 : this.cell.cell_h;
+                }
+            }
+        }
+    },
 })
 
 import './icaro.js';
@@ -170,7 +195,7 @@ ODA({
         props.listen((e) => {
             for (const [key, value] of e.entries()) {
                 control[key] = value;
-                this.control.controlSetArgs && this.control.controlSetArgs({ key, value, setArgs });
+                control.controlSetArgs?.({ key, value, setArgs });
             }
         })
         await ODA.showDropdown(

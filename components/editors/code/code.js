@@ -10,7 +10,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
                 min-height: 20px;
             }
         </style>
-        <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%' }">
+        <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%', padding: editMode? '4px' : 0 }"  ~class="{shadow: editMode}">
             <div ~if="preview==='none' || showCode || editMode" style="overflow: hidden; position: relative" ~style="{width: preview!=='none' ? '50%' : '100%'}">
                 <oda-ace-editor ~if="type==='ace'" :src @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="cobalt" mode="html" min-lines=1></oda-ace-editor></oda-ace-editor>
                 <oda-monaco ~if="type==='monaco'" :src @change="onchange" class="flex" theme="vs-dark" mode="html"></oda-monaco>
@@ -27,7 +27,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
             list: ['ace', 'monaco'],
             set(n) {
                 this.src = this.source;
-                this.async(() => this.setArgs());
+                this.async(() => this.setArgs(), 100);
             }
         },
         preview: {
@@ -36,7 +36,9 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
         },
         showCode: {
             default: false,
-        }
+        },
+        enableResize: true,
+        control_h: 0
     },
     src: '',
     set source(v) {
