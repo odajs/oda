@@ -51,11 +51,12 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
         this.async(() => this.setArgs());
     },
     args: '',
+    get argsType() { return 'args-' + this.type },
     setArgs(v = this.args) {
         if (v) {
             const args = JSON.parse(v);
             for (let [key, value] of Object.entries(args)) {
-                if (this.usedControl && key === ('args-' + this.type)) {
+                if (this.usedControl && key === (this.argsType)) {
                     // console.log(this.usedControl);
                     for (let [k, v] of Object.entries(args[key]))
                         this.usedControl[k] = v;
@@ -66,12 +67,11 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
         }
     },
     controlSetArgs(v) {
-        if (v && this.args) {
-            const args = JSON.parse(this.args);
+        if (v) {
+            const args = this.args ? JSON.parse(this.args) : Object.create(null);;
             if (v.setArgs) {
-                this['args-' + this.type] ||= {}
-                this['args-' + this.type][v.key] = v.value;
-                args['args-' + this.type] = this['args-' + this.type];
+                args[this.argsType] ||= Object.create(null);
+                args[this.argsType][v.key] = v.value;
             } else {
                 args[v.key] = v.value;
             }
