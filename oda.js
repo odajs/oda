@@ -1453,7 +1453,8 @@ if (!window.ODA) {
                 if (Array.isArray(s)){
                     s = s.reduce((res, a)=>{
                         a = a.split(':');
-                        res[a[0].trim()] = a[1].trim();
+                        if (a.length > 1)
+                            res[a[0].trim()] = a[1].trim();
                         return res;
                     }, {})
                 }

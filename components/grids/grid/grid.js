@@ -87,7 +87,7 @@ ODA({is: 'oda-grid-header-cell',
         </div>
     `,
     get _style(){
-        return {minWidth: (this.column?.width || (this.iconSize * ((this.column?.items)?3:2)))+'px'};
+        return {minWidth: (this.column?.minWidth || (this.iconSize * ((this.column?.items)?3:2)))+'px', width: this.column?.width || ''};
     },
     last: false,
     onTrack(e){
@@ -95,16 +95,11 @@ ODA({is: 'oda-grid-header-cell',
         switch(e.detail.state){
             case 'start':{
                 target.style.width = target.offsetWidth + 'px';
-                this.column.width = 0;
+                this.column.minWidth = 0;
             } break;
             case 'track':{
-                if (this.last){
-                    this.domHost.resetWidth();
-                }
-                this.column.items?.forEach(col=>{
-                    col.width = 0;
-                })
-
+                this.resetUp();
+                this.resetDown();
                 const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
@@ -114,21 +109,35 @@ ODA({is: 'oda-grid-header-cell',
                     else
                         target.style.width = target.offsetWidth + e.detail.ddx + 'px';
                 }
+                this.column.width = target.offsetWidth;
             } break;
             case 'end':{
-                this.column.width = target.offsetWidth;
-                this.$next(()=>{
-                    target.style.width = '';
-                },1)
-
-
+                this.column.minWidth = target.offsetWidth;
+                if (this.column.items?.length){
+                    this.$next(()=>{
+                        target.style.width = '';
+                    },1)
+                }
             } break;
         }
     },
-    resetWidth(){
-        this.column.width = 0;
-        if (this.last)
-            this.domHost.resetWidth();
+    resetUp(){
+        if (!this.last || !this.domHost?.column) return;
+        this.domHost.column.minWidth = 0;
+        this.domHost.column.width = 0;
+        this.domHost.resetUp?.();
+    },
+    resetDown(col){
+        if (col){
+            col.minWidth = 0;
+            col.width = 0
+        }
+        else{
+            col = this.column;
+        }
+        col = col?.items?.[this.column.items.length-1];
+        if (col)
+            this.resetDown(col)
     },
     column: null,
 })
