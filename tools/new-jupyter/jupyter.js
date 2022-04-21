@@ -137,6 +137,11 @@ ODA({
     focused: false,
     editMode: false,
     cellType: 'div',
+    observers: [
+        function _focused(focused) {
+            if (!focused) this.editMode = false; 
+        }
+    ],
     listeners: {
         endSplitterMove(e) {
             if (!this.readOnly) {
@@ -202,16 +207,17 @@ ODA({
                 io.props[key + '...'] = {
                     default: control2[key],
                     type: typeof control2[key],
-                    list: control2[key]?.list || [],
+                    list: control2.props?.[key]?.list || [],
                     category: 'editor - ' + control2.localName
                 }
             })
         }
         io.listen((e) => {
-            for (const [key, value] of e.entries()) {
+            for (let [key, value] of e.entries()) {
                 const setArgs = key.endsWith('...');
+                key = key.replace('...', '');
                 if (setArgs) {
-                    control2[key.replace('...', '')] = value;
+                    control2[key] = value;
                 } else {
                     control[key] = value;
                     if (key === 'type') {
@@ -235,6 +241,7 @@ ODA({
         )
     },
     moveCell(v) {
+        this.editMode = false;
         let idx = this.focusedIndex;
         const cells = this.notebook.cells.splice(idx, 1);
         idx = idx + v;
@@ -245,6 +252,7 @@ ODA({
         })
     },
     deleteCell() {
+        this.editMode = false;
         this.notebook.cells.splice(this.focusedIndex, 1);
     }
 })
