@@ -40,7 +40,6 @@ ODA({is:'oda-grid-header',
                 <div class="no-flex horizontal">
                     <oda-grid-header-cell ~for="columns" :column="item"></oda-grid-header-cell>
                 </div>
-                
             </div>
             <oda-button :icon-size icon="icons:settings"></oda-button>
         </div>
@@ -82,11 +81,14 @@ ODA({is: 'oda-grid-header-cell',
             <oda-icon ~if="column?.items" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; margin: 8px;">{{column?.label || column?.name}}</span>
             <oda-button disabled :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):''" :icon-size>{{column.$sort}}</oda-button>
-            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid black;"></span>
+            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid black;" @track="onTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex">
             <oda-grid-header-cell ~for="column?.items" :column="item"></oda-grid-header-cell>
         </div>
     `,
+    onTrack(e){
+
+    },
     column: null,
 })

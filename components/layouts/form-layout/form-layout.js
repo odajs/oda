@@ -184,7 +184,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             // console.log(e)
             switch (d.state){
                 case 'start':{
-                    console.log(d.start)
                     if (!this.style.cursor && this._flags.allowMove)
                         this.style.cursor = `move`;
                 } break;

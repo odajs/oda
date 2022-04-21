@@ -14,7 +14,6 @@ ODA({ is: 'oda-monaco',
             default: 'vs-dark',
             list: ['vs', 'vs-dark', 'vs-light']
         },
-        props: {},
         fontSize: 16,
         wordWrap: true,
         readOnly: false,

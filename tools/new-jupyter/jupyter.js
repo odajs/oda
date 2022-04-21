@@ -1,5 +1,6 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
+ODA({
+    is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
     template: `
         <style>
             :host{
@@ -41,7 +42,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
     },
     notebook: {}
 })
-ODA({ is: 'oda-jupyter-divider',
+ODA({
+    is: 'oda-jupyter-divider',
     template: `
         <style>
             :host{
@@ -86,7 +88,8 @@ ODA({ is: 'oda-jupyter-divider',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell',
+ODA({
+    is: 'oda-jupyter-cell',
     template: `
         <style>
             :host{
@@ -98,7 +101,7 @@ ODA({ is: 'oda-jupyter-cell',
                 padding: 4px;
             }
         </style>
-        <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source"></div>
+        <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args"></div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
     set cell(n) {
@@ -121,7 +124,9 @@ ODA({ is: 'oda-jupyter-cell',
     cellType: 'div'
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+import './icaro.js';
+ODA({
+    is: 'oda-jupyter-toolbar',
     template: `
         <style>
             :host{
@@ -139,20 +144,39 @@ ODA({ is: 'oda-jupyter-toolbar',
         <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="focusedIndex >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
         <span style="width: 8px"></span>
-        <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings(control)" @tap="showSettings"></oda-button>
+        <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings(control)" @tap="showSettings($event, control)"></oda-button>
+        <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings2(control)" @tap="showSettings($event, control?.usedControl, true)"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
         <span style="width: 8px"></span>
         <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
     _getShowSettings(control) {
-        return Object.keys(control?.$core?.saveProps || {}).length > 0;
+        return Object.keys(control?.props || {}).length > 0;
+    },
+    _getShowSettings2(control) {
+        return Object.keys(control?.usedControl?.props || {}).length > 0;
     },
     cell: null,
-    async showSettings(e) {
+    async showSettings(e, control, setArgs) {
+        const props = icaro({ props: {} });
+        Object.keys(control.props).forEach(key => {
+            props[key] = control[key];
+            props.props[key] = {
+                default: control[key],
+                type: typeof control[key],
+                list: control.props[key].list || []
+            }
+        })
+        props.listen((e) => {
+            for (const [key, value] of e.entries()) {
+                control[key] = value;
+                this.control.controlSetArgs && this.control.controlSetArgs({ key, value, setArgs });
+            }
+        })
         await ODA.showDropdown(
             'oda-property-grid',
-            { inspectedObject: this.control, onlySave: true, style: 'min-width: 300px' },
-            { parent: e.target, align: 'bottom', title: 'Settings' }
+            { inspectedObject: props, style: 'min-width: 360px', showHeader: false },
+            { parent: e.target, align: 'bottom', title: control.localName }
         )
     },
     moveCell(v) {

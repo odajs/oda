@@ -760,7 +760,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : 'false';
     },
     _getRowStyle(row) {
-        const style = row?.$group ? { width: this.$refs.body.offsetWidth - this._scrollbarWidth + 'px', position: 'sticky', left: '0px' } : { width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px') };
+        const style = row?.$group ? { width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px', position: 'sticky', left: '0px' } : { width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px') };
         if (this.autoRowHeight) style.minHeight = this._rowHeight + 'px';
         else style.height = this._rowHeight + 'px';
         return style;
