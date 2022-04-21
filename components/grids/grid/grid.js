@@ -98,6 +98,13 @@ ODA({is: 'oda-grid-header-cell',
                 this.column.width = 0;
             } break;
             case 'track':{
+                if (this.last){
+                    this.domHost.resetWidth();
+                }
+                this.column.items?.forEach(col=>{
+                    col.width = 0;
+                })
+
                 const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
@@ -110,14 +117,18 @@ ODA({is: 'oda-grid-header-cell',
             } break;
             case 'end':{
                 this.column.width = target.offsetWidth;
-                this.async(()=>{
-                    if (this.column.items?.length || this.last)
-                        target.style.width = '';
-                },50)
+                this.$next(()=>{
+                    target.style.width = '';
+                },1)
 
 
             } break;
         }
+    },
+    resetWidth(){
+        this.column.width = 0;
+        if (this.last)
+            this.domHost.resetWidth();
     },
     column: null,
 })

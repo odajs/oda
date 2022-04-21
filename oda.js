@@ -603,6 +603,14 @@ if (!window.ODA) {
             async(handler, delay = 0) {
                 delay ? setTimeout(handler, delay) : requestAnimationFrame(handler)
             }
+            $next(handler, takts = 0){
+                if (takts>0)
+                    requestAnimationFrame(()=>{
+                        this.$next(handler, takts - 1)
+                    })
+                else
+                    requestAnimationFrame(handler);
+            }
             $super(parentName, name, ...args) {
                 const components = ODA.telemetry.components;
 
