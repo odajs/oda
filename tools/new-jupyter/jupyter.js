@@ -113,7 +113,7 @@ ODA({
             }
         </style>
         <div class="vertical flex main">
-            <div class="editor" ~is="cellType" ~class="{shadow: !editMode && !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::control_h="cell.cell_h" ::enable-resize="cell.enableResize"></div>
+            <div class="editor" ~is="cellType" ~class="{shadow: !editMode && !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
             <div class="flex" ~if="control?.enableResize && !editMode" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
@@ -169,39 +169,69 @@ ODA({
         <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="focusedIndex >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
         <span style="width: 8px"></span>
-        <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings(control)" @tap="showSettings($event, control)"></oda-button>
-        <oda-button :icon-size icon="icons:settings" ~show="_getShowSettings2(control)" @tap="showSettings($event, control?.usedControl, true)"></oda-button>
+        <oda-button :icon-size icon="icons:settings" ~show="enableSettings" @tap="showSettings"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
         <span style="width: 8px"></span>
         <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
-    _getShowSettings(control) {
-        return Object.keys(control?.props || {}).length > 0;
+    get enableSettings() {
+        return Object.keys(this.control?.props || {}).length > 0;
     },
-    _getShowSettings2(control) {
-        return Object.keys(control?.usedControl?.props || {}).length > 0;
+    get enableSettings2() {
+        return Object.keys(this.control?.usedControl?.props || {}).length > 0;
     },
     cell: null,
-    async showSettings(e, control, setArgs) {
-        const props = icaro({ props: {} });
+    async showSettings(e) {
+        if (!this.enableSettings) return;
+        let control = this.control;
+        const io = icaro({ props: {} });
         Object.keys(control.props).forEach(key => {
-            props[key] = control[key];
-            props.props[key] = {
+            io[key] = control[key];
+            io.props[key] = {
                 default: control[key],
                 type: typeof control[key],
-                list: control.props[key].list || []
+                list: control.props[key].list || [],
+                category: 'cell - ' + control.localName
             }
         })
-        props.listen((e) => {
+        let control2;
+        if (this.enableSettings2) {
+            control2 = control.usedControl;
+            Object.keys(control2.props).forEach(key => {
+                io[key + '...'] = control2[key];
+                io.props[key + '...'] = {
+                    default: control2[key],
+                    type: typeof control2[key],
+                    list: control2[key]?.list || [],
+                    category: 'editor - ' + control2.localName
+                }
+            })
+        }
+        io.listen((e) => {
             for (const [key, value] of e.entries()) {
-                control[key] = value;
+                const setArgs = key.endsWith('...');
+                if (setArgs) {
+                    control2[key.replace('...', '')] = value;
+                } else {
+                    control[key] = value;
+                    if (key === 'type') {
+                        const dd = document.body.getElementsByTagName('oda-dropdown')
+                        this.ddMenuIndex = -1;
+                        if (dd.length) {
+                            for (let i = 0; i < dd.length; i++) {
+                                const elm = dd[i];
+                                elm.fire('cancel');
+                            }
+                        }
+                    }
+                }
                 control.controlSetArgs?.({ key, value, setArgs });
             }
         })
         await ODA.showDropdown(
             'oda-property-grid',
-            { inspectedObject: props, style: 'min-width: 360px', showHeader: false },
-            { parent: e.target, align: 'bottom', title: control.localName }
+            { inspectedObject: io, style: 'min-width: 360px', showHeader: false },
+            { parent: e.target, align: 'left', intersect: true, title: control.localName }
         )
     },
     moveCell(v) {

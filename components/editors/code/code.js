@@ -37,8 +37,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
         showCode: {
             default: false,
         },
-        enableResize: true,
-        control_h: 0
+        enableResize: true
     },
     src: '',
     set source(v) {

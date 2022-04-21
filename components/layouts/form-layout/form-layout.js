@@ -1,95 +1,93 @@
-ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
-        <style>
-            :host{
-
-                @apply --vertical;
-                @apply --flex;
-                @apply --content;
-                overflow: hidden;
-                height: 100%;
-                touch-action: manipulation;
-            }
-            :host(:not([modal])){
-                position: relative;
-            }
-            :host([modal]) {
-                position: absolute;
-            }
-            form-status-bar{
-                position: absolute;
-                width: 100%;
-                bottom: 0;
-                left: 0;
-            }
-            :host>.body{
-                @apply --flex;
-            }
-            :host .title-bar{
-                @apply --heading;
-                align-items: center;
-            }
-
-            :host([modal]) .title-bar, :host([show-close-btn]) .title-bar{
-                min-height: {{iconSize + iconSize / 8 + 5}}px;
-                max-height: {{iconSize + iconSize / 8 + 5}}px;
-            }
-            :host([modal]) .title-bar, :host([show-close-btn]) .title-bar{
-                line-height: {{iconSize + iconSize / 8}}px;
-            }
-            :host([modal]) .title-bar oda-button, :host([show-close-btn]) .title-bar oda-button{
-                 padding: {{iconSize / 8}}px;
-            }
-            :host(:not([autosize])[modal]:not([is-minimized])){
-                box-sizing: border-box;
-                box-shadow: var(--box-shadow);
-                filter: opacity(1);
-                min-width: {{minWidth}}px;
-                min-height: {{minHeight}}px;
-                border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
-                padding-bottom: {{statusBar.show ? iconSize : 0}}px;
-                width: {{_getSize('width')}};
-                height: {{_getSize('height')}};
-                flex: {{size === 'normal' ? '0 0 auto' : '1 0 auto'}};
-                left: {{_getPosition('left')}};
-                top: {{_getPosition('top')}};
-            }
-            :host(:not([autosize])[modal][is-minimized]){
-                box-sizing: border-box;
-                box-shadow: var(--box-shadow);
-                max-width: 400px;
-                height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
-                max-height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
-                border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
-                left: {{_getPosition('left')}};
-                top: {{_getPosition('top')}};
-                {{hideMinMode ? 'visibility: hidden;' : ''}}
-            }
-            :host([autosize]){
-                height: unset;
-                width: unset;
-                margin: 0 0 0 50%;
-                transform: translate3d(-50%, 0, 0);
-            }
-        </style>
-        <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
-            <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
-            <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
-            <div ~if="title" ~text="title" style="margin-left: 8px;"></div>
-            <div class="flex"></div>
-            <slot class="horizontal no-flex" name="title-buttons"></slot>
-            <div ~if="modal && !hideMinMax" class="horizontal no-flex">
-                <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-                <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
-            </div>
-            <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
+ODA({is: 'oda-form-layout', imports: '@oda/button',
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --vertical;
+            @apply --flex;
+            @apply --content;
+            overflow: hidden;
+            height: 100%;
+            touch-action: manipulation;
+        }
+        :host(:not([modal])) {
+            position: relative;
+        }
+        :host([modal]) {
+            position: absolute;
+        }
+        form-status-bar{
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
+        :host>.body {
+            @apply --flex;
+        }
+        :host .title-bar {
+            @apply --heading;
+            align-items: center;
+        }
+        :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
+            min-height: {{iconSize + iconSize / 8 + 5}}px;
+            max-height: {{iconSize + iconSize / 8 + 5}}px;
+        }
+        :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
+            line-height: {{iconSize + iconSize / 8}}px;
+        }
+        :host([modal]) .title-bar oda-button, :host([show-close-btn]) .title-bar oda-button {
+                padding: {{iconSize / 8}}px;
+        }
+        :host(:not([autosize])[modal]:not([is-minimized])) {
+            box-sizing: border-box;
+            box-shadow: var(--box-shadow);
+            filter: opacity(1);
+            min-width: {{minWidth}}px;
+            min-height: {{minHeight}}px;
+            border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
+            padding-bottom: {{statusBar.show ? iconSize : 0}}px;
+            width: {{_getSize('width')}};
+            height: {{_getSize('height')}};
+            flex: {{size === 'normal' ? '0 0 auto' : '1 0 auto'}};
+            left: {{_getPosition('left')}};
+            top: {{_getPosition('top')}};
+        }
+        :host(:not([autosize])[modal][is-minimized]) {
+            box-sizing: border-box;
+            box-shadow: var(--box-shadow);
+            max-width: 400px;
+            height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
+            max-height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
+            border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
+            left: {{_getPosition('left')}};
+            top: {{_getPosition('top')}};
+            {{hideMinMode ? 'visibility: hidden;' : ''}}
+        }
+        :host([autosize]) {
+            height: unset;
+            width: unset;
+            margin: 0 0 0 50%;
+            transform: translate3d(-50%, 0, 0);
+        }
+    </style>
+    <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
+        <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
+        <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
+        <div ~if="title" ~text="title" style="margin-left: 8px;"></div>
+        <div class="flex"></div>
+        <slot class="horizontal no-flex" name="title-buttons"></slot>
+        <div ~if="modal && !hideMinMax" class="horizontal no-flex">
+            <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
         </div>
-        <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
-    _flags:{
+        <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
+    </div>
+    <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
+    _flags: {
         allowMove: false
     },
     props: {
         unique: String,
-        // animated: false,
         icon: '',
         iconSize: {
             default: 24,
@@ -112,7 +110,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
         },
         hideMinMode: false,
         allowClose: {
-            type:Boolean,
+            type: Boolean,
             default: null,
             reflectToAttribute: true
         },
@@ -120,13 +118,10 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             list: ['normal', 'max'],
             default: 'normal',
             save: true,
-            // set(){
-            //     if(this.parentNode) this._transition();
-            // }
         },
         pos: {
             default: {
-                x: Math.max(0, Math.round(document.body.offsetWidth  / 2 - 200)),
+                x: Math.max(0, Math.round(document.body.offsetWidth / 2 - 200)),
                 y: Math.max(0, Math.round(document.body.offsetHeight / 2 - 150)),
                 width: 500,
                 height: 300,
@@ -169,7 +164,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             str += e.offsetX <= 0 ? 'w' : '';
             str += e.offsetX >= w - bw2 ? 'e' : '';
 
-            this.async(()=>{
+            this.async(() => {
                 if (str) {
                     this.style.cursor = `${str}-resize`;
                 } else {
@@ -182,50 +177,50 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
             if (this.autosize) return;
             if (!this.modal || e.sourceEvent.button !== 0) return;
             // console.log(e)
-            switch (d.state){
-                case 'start':{
+            switch (d.state) {
+                case 'start': {
                     if (!this.style.cursor && this._flags.allowMove)
                         this.style.cursor = `move`;
                 } break;
-                case 'track':{
+                case 'track': {
                     let _pos = Object.assign({}, this.pos);
                     const x = d.ddx || 0;
                     const y = d.ddy || 0;
-                    switch (this.style.cursor){
-                        case 'move':{
+                    switch (this.style.cursor) {
+                        case 'move': {
                             _pos = { ..._pos, ...{ x: _pos.x += x, y: _pos.y += y } }
                         } break;
-                        case 'e-resize':{
+                        case 'e-resize': {
                             _pos.width += x;
                         } break;
-                        case 'w-resize':{
+                        case 'w-resize': {
                             _pos.width -= x;
                             _pos.x += this.pos.width - _pos.width;
                         } break;
-                        case 's-resize':{
+                        case 's-resize': {
                             _pos.height += y;
                         } break;
-                        case 'n-resize':{
+                        case 'n-resize': {
                             _pos.height -= y;
                             _pos.y += this.pos.height - _pos.height;
                         } break;
 
-                        case 'ne-resize':{
+                        case 'ne-resize': {
                             _pos.width += x;
                             _pos.height -= y;
                             _pos.y += this.pos.height - _pos.height;
                         } break;
-                        case 'nw-resize':{
+                        case 'nw-resize': {
                             _pos.width -= x;
                             _pos.x += this.pos.width - _pos.width;
                             _pos.height -= y;
                             _pos.y += this.pos.height - _pos.height;
                         } break;
-                        case 'se-resize':{
+                        case 'se-resize': {
                             _pos.width += x;
                             _pos.height += y;
                         } break;
-                        case 'sw-resize':{
+                        case 'sw-resize': {
                             _pos.height += y;
                             _pos.width -= x;
                             _pos.x += this.pos.width - _pos.width;
@@ -235,69 +230,10 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
                     this.pos = { ...this.pos, ..._pos };
                     // console.log(this.style.cursor)
                 } break;
-                case 'end':{
+                case 'end': {
                     this.style.cursor = '';
                 } break;
             }
-
-/*
-            const state = d.state;
-            const x = d.ddx || 0;
-            const y = d.ddy || 0;
-            if (!this._sizing && (this._moving || this._onHeader)) {
-                switch (state) {
-                    case 'start':
-                        this._moving = true;
-                        break;
-                    case 'track':
-                        if (!this._moving) return;
-                        //this.pos.x += x;
-                        //this.pos.y += y;
-                        this.pos = { ...this.pos, ...{ x: this.pos.x += x, y: this.pos.y += y } }
-                        break;
-                    case 'end':                        if (!this._moving) return;
-                        this._moving = false;
-                        break;
-                }
-                this._fixPos();
-            }
-            if (this._sizing || !this._moving && this._onBorder) {
-                switch (state) {
-                    case 'start':
-                        this._sizing = true;
-                        this._resizeDir = this._curPos;
-                        break;
-                    case 'track':
-                        if (!this._resizeDir) return;
-                        const _pos = Object.assign({}, this.pos);
-                        if (this._resizeDir.includes('n')) {
-                            _pos.height -= y;
-                            this._fixPos(_pos);
-                            const dh = this.pos.height - _pos.height;
-                            _pos.y += dh;
-                        }
-                        if (this._resizeDir.includes('w')) {
-                            _pos.width -= x;
-                            this._fixPos(_pos);
-                            const dw = this.pos.width - _pos.width;
-                            _pos.x += dw;
-                        }
-                        if (this._resizeDir.includes('s')) {
-                            _pos.height += y;
-                        }
-                        if (this._resizeDir.includes('e')) {
-                            _pos.width += x;
-                        }
-                        this._fixPos(_pos);
-                        this.pos = { ...this.pos, ..._pos };
-                        //Object.assign(this.pos, _pos);
-                        break;
-                    case 'end':
-                        this._fixPos();
-                        this._sizing = false;
-                        break;
-                }
-            }*/
         },
         resize: '_resize',
         mousedown() {
@@ -376,31 +312,25 @@ ODA({is: 'oda-form-layout', imports: '@oda/button', template: /* html */`
     _getModals() {
         return Array.from(document.body.querySelectorAll('odant-form')).filter(e => e.modal);
     },
-    // _transition(dur = 150) {
-    //     if (!this.animated) return;
-    //     this.style.transition = `all ${dur}ms`;
-    //     this.async(() => {
-    //         this.style.transition = '';
-    //     }, dur);
-    // },
     _toggleSize([state1, state2]) {
         this.size = this.size === state1 ? state2 : state1;
     },
 });
-ODA({is: 'form-status-bar', template: `
-        <style ~if="show">
-            :host{
-                @apply --header;
-                @apply --horizontal;
-                @apply --no-flex;
-                min-height: {{iconSize}}px;
-            }
-        </style>
-        <style ~if="!show">
-            :host{
-                display: none;
-            }
-        </style>
+ODA({is: 'form-status-bar',
+    template: /*html*/`
+    <style ~if="show">
+        :host {
+            @apply --header;
+            @apply --horizontal;
+            @apply --no-flex;
+            min-height: {{iconSize}}px;
+        }
+    </style>
+    <style ~if="!show">
+        :host {
+            display: none;
+        }
+    </style>
     `,
     props: {
         show: false,

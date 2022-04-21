@@ -1,7 +1,8 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
 const libs = {};
 const icons = {};
-ODA({is: 'oda-icon', template: `
+ODA({is: 'oda-icon',
+    template: /*html*/`
     <style>
         :host {
             @apply --horizontal;
@@ -31,22 +32,23 @@ ODA({is: 'oda-icon', template: `
             position: relative;
         }
         .subicon {
-            @apply --content;
-            opacity: .9;
             position: absolute;
-            @apply --shadow;
-            left: {{iconSize/2}}px;
-            top: {{iconSize/2}}px;
+            top: {{2*iconSize/3}}px;
+            left: {{2*iconSize/3}}px;
             border-radius: {{iconSize/16}}px;
+            @apply --content;
+            @apply --shadow;
+            margin: {{computedStyleMap().get('padding')?.toString() || 'unset'}};
         }
-        svg{
+        svg {
             top: 0px;
             left: 0px;
             position: absolute;
+            fill: {{fill || 'unset'}};
         }
     </style>
     <div :bubble="_bubble" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
-        <svg ~show="_icon" ~style="_style" :stroke :fill :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
+        <svg part="svg" ~show="_icon" ~style="_style" :stroke :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
             <defs ~if="blink">
                 <g is="style" type="text/css">
                     @keyframes blinker { 100% { opacity: 0; } }
@@ -56,7 +58,7 @@ ODA({is: 'oda-icon', template: `
             <g ~html="_icon?.body"></g>
         </svg> 
     </div>
-    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/2.5"></oda-icon>
+    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/2"></oda-icon>
     `,
     get _icon() {
         return this._obj?.body || this._def?.body;
@@ -108,8 +110,7 @@ ODA({is: 'oda-icon', template: `
     },
     get _bubble() {
         if (this.bubble > 1 || (this.alwaysBubble && this.bubble > 0)) {
-            if (this.bubble > 9)
-                return '9+';
+            if (this.bubble > 9) return '9+';
             else return String(this.bubble);
         } else return '-';
     },
@@ -189,9 +190,6 @@ async function getIcon(n) {
                 console.warn(err);
                 if (this.default !== this.icon)
                     this.icon = this.default;
-                //     obj.body = (await getIcon.call(this, this.default)).body;
-                // else
-                //     obj.body = null;
             }
         }
         icons[key] = obj;
