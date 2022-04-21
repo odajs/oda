@@ -1,4 +1,4 @@
-ODA({is:'oda-grid', imports: '@oda/icon, @oda/button',
+ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers',
     template:`
         <style>
             :host{
@@ -13,12 +13,19 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button',
     `,
     metadata:[],
     dataSet: [],
+    get table(){
+        return this;
+    },
     get columns(){
         return this.metadata;
     },
     props:{
         iconSize:{
             default: 24,
+            save: true
+        },
+        showFilter:{
+            default: true,
             save: true
         }
     },
@@ -41,9 +48,20 @@ ODA({is:'oda-grid-header',
                     <oda-grid-header-cell ~for="columns" :column="item"></oda-grid-header-cell>
                 </div>
             </div>
-            <oda-button :icon-size icon="icons:settings"></oda-button>
+            <oda-button :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
         </div>
     `,
+    async showSettings(e){
+        await ODA.import('@tools/property-grid');
+        try{
+            await ODA.showDropdown(
+                'oda-property-grid',
+                { inspectedObject: this.table, onlySave: true, style: 'max-width: 500px; min-width: 300px;' },
+                { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
+            );
+        }
+        catch (e){}
+    },
     onTrack(e){
         switch (e.detail.state){
             case 'track':{
@@ -75,6 +93,13 @@ ODA({is: 'oda-grid-header-cell',
             oda-button{
                 font-size: xx-small;
             }
+            input{
+                width: auto;
+                max-height: {{iconSize * .7}}px;
+                margin: 4px;
+                width: 1px;
+                outline: none;
+            }
         </style>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid black;" ~style="_style">
             <oda-icon ~if="column?.items" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
@@ -82,10 +107,18 @@ ODA({is: 'oda-grid-header-cell',
             <oda-button disabled :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):''" :icon-size>{{column.$sort}}</oda-button>
             <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid black;" @track="onTrack"></span>
         </div>
+
+        
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex" >
             <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: index === items.length-1, 'no-flex': index < items.length-1}" :last="index  === items.length-1"></oda-grid-header-cell>
         </div>
+        <div class="horizontal" ~if="showFilter && !column?.$expanded"  ~style="_style">
+            <input  class="flex" ::value="filter">
+            <oda-button icon="icons:filter" :icon-size="iconSize/3"></oda-button>
+            <span class="no-flex" style="width: 4px; height: 100%; border-right: 1px solid gray;" ></span>
+        </div>
     `,
+    filter: '',
     get _style(){
         return {minWidth: (this.column?.minWidth || (this.iconSize * ((this.column?.items)?3:2)))+'px', width: this.column?.width || ''};
     },
