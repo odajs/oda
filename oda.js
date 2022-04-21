@@ -1318,7 +1318,20 @@ if (!window.ODA) {
                 for (const a of Object.keys(src.attrs)) {
                     if (src.dirs.find(f => f.name === a)) {
                         src.vals = src.vals || {};
-                        src.vals[a] = src.attrs[a];
+                        switch (a){
+                            case 'style':{
+                                src.vals[a] = src.attrs[a].split(';').reduce((res, a)=>{
+                                    a = a.split(':');
+                                    if(a.length === 2){
+                                        res[a[0].trim()] = a[1].trim();
+                                    }
+                                    return res
+                                }, {});
+                            } break;
+                            default:{
+                                src.vals[a] = src.attrs[a];
+                            }
+                        }
                         delete src.attrs[a];
                     }
                 }
@@ -1389,29 +1402,6 @@ if (!window.ODA) {
                     // список уникальных значений из старого и нового значения
                     if (oldVal) val = [...new Set([...oldVal.trim().replace(/ +/g, ' ').split(map[i]), ...val.trim().replace(/ +/g, ' ').split(map[i])])].join(map[i]);
                 }
-                // switch (i){
-                //     case 'class':{
-                //         if (!Object.equal($el.$class, s)) {
-                //             $el.$class = s;
-                //             if (typeof s === 'object')
-                //                 s = Object.keys(s).filter(i => s[i]).join(' ');
-                //             if ($el.$node?.vals?.class)
-                //                 s = (s ? (s + ' ') : '') + $el.$node.vals.class;
-                //             $el.setAttribute('class', s);
-                //         }
-                //     } break;
-                //     case 'style':{
-                //         if (!Object.equal($el.$style, s, true)) {
-                //             $el.$style = s;
-                //             if (Array.isArray(s))
-                //                 s = s.join('; ');
-                //             else if (isObject(s))
-                //                 s = Object.keys(s).filter(i => s[i]).map(i => i.toKebabCase() + ': ' + s[i]).join('; ');
-                //             if ($el.$node?.vals?.style)
-                //                 s = $el.$node.vals.style + (s ? ('; ' + s) : '');
-                //         }
-                //     } break;
-                // }
                 $el.setProperty(i, val);
             }
         },
@@ -1449,12 +1439,35 @@ if (!window.ODA) {
             let s = exec.call(this, fn, p) ?? '';
             if (!Object.equal($el.$style, s, true)) {
                 $el.$style = s;
-                if (Array.isArray(s))
-                    s = s.join('; ');
-                else if (isObject(s))
-                    s = Object.keys(s).filter(i => s[i]).map(i => i.toKebabCase() + ': ' + s[i]).join('; ');
-                if ($el.$node?.vals?.style)
-                    s = $el.$node.vals.style + (s ? ('; ' + s) : '');
+                if (typeof s === 'string'){
+                    s = s.split(';');
+                }
+                if (Array.isArray(s)){
+                    s = s.reduce((res, a)=>{
+                        a = a.split(':');
+                        res[a[0].trim()] = a[1].trim();
+                        return res;
+                    }, {})
+                }
+                s = Object.keys(s).reduce((res, a)=>{
+                    res[a.trim().toKebabCase()] = s[a];
+                    return res;
+                },{})
+                const def = $el.$node?.vals?.style || {}
+                let cur =  $el.getAttribute('style')?.split(';') || [];
+                cur = cur.reduce((res, a)=>{
+                    if (a){
+                        a = a.split(':');
+                        res[a[0].trim()] = a[1].trim();
+                    }
+                    return res;
+                }, {})
+
+                s = {...def, ...cur, ...s};
+                s = Object.keys(s).reduce((res, a)=>{
+                    res += a + ': ' + s[a] + ';'
+                    return res;
+                }, '')
                 $el.setAttribute('style', s);
             }
         }
@@ -2043,10 +2056,11 @@ if (!window.ODA) {
                         odaEventTrack.detail.state = 'start'
                         let ce = new odaCustomEvent("track", {detail: Object.assign({}, odaEventTrack.detail)}, e);
                         odaEventTrack.handler (ce, ce.detail);
-                        odaEventTrack.detail.state = 'track';
+
                     }
                 }
                 else if (odaEventTrack.detail) {
+                    odaEventTrack.detail.state = 'track';
                     // console.log(target, this.detail.state, e.clientX, e.clientY)
                     odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor;
                     // console.log('back', target.style.cursor)
