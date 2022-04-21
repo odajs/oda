@@ -13,5 +13,10 @@
         "name": "interval.md",
         "label": "<b style='color: brown'>interval</b>: Вызов функции с фиксированной частотой",
         "status": "check"
+    },
+    {
+        "name": "$next.md",
+        "label": "<b style='color: brown'>$next</b>: Вызов функции с рендерной задержкой",
+        "status": "check"
     }
 ]
