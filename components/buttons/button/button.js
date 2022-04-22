@@ -3,7 +3,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
     imports: '@oda/icon',
     template: /*html*/`
     <style>
-        :host{
+        :host {
             border: 1px solid transparent;
             @apply --horizontal;
             opacity: 0.8;
@@ -15,19 +15,19 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             overflow: hidden;
             @apply --no-flex;
         }
-        :host([icon-pos=right]){
+        :host([icon-pos=right]) {
             flex-direction: row-reverse !important;
         }
-        :host([icon-pos=top]){
+        :host([icon-pos=top]) {
             flex-direction: column !important;
         }
-        :host([icon-pos=bottom]){
+        :host([icon-pos=bottom]) {
             flex-direction: column-reverse !important;
         }
-        :host(:hover){
+        :host(:hover) {
             opacity: 1;
         }
-        span{
+        span {
             display: block;
             align-self: center;
             white-space: nowrap;
@@ -35,15 +35,15 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             text-overflow: ellipsis;
             margin: 0px 4px;
         }
-        :host(:active), :host([toggled]){
+        :host(:active), :host([toggled]) {
             @apply --content;
             opacity: 0.999;
             border: 1px solid rgba(0,0,0,0.5) !important;
         }
-        :host([disabled]){ /* todo: должно работать от глобального стиля */
+        :host([disabled]) { /* todo: должно работать от глобального стиля */
             @apply --disabled;
         }
-        .icon{
+        .icon {
             display: {{icon?'block':'none'}};
         }
     </style>
@@ -58,10 +58,10 @@ ODA({is: 'oda-button', extends: 'oda-icon',
         toggled: {
             default: false,
             reflectToAttribute: true,
-            set(n, o){
-                if (n && this.toggleGroup){
-                    for (let button of Groups[this.toggleGroup]){
-                        if(button !== this && (button.parentElement === this.parentElement || button.domHost === this.domHost))
+            set(n, o) {
+                if (n && this.toggleGroup) {
+                    for (let button of Groups[this.toggleGroup]) {
+                        if (button !== this && (button.parentElement === this.parentElement || button.domHost === this.domHost))
                             button.toggled = false;
                     }
                 }
@@ -70,12 +70,12 @@ ODA({is: 'oda-button', extends: 'oda-icon',
         allowToggle: false,
         toggleGroup: {
             type: String,
-            set(n, o){
-                if (o){
+            set(n, o) {
+                if (o) {
                     (Groups[o] || []).remove(this);
                 }
-                if (n){
-                    Groups[n] =  Groups[n] || [];
+                if (n) {
+                    Groups[n] = Groups[n] || [];
                     Groups[n].add(this);
                 }
             }

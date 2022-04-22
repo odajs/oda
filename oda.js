@@ -453,7 +453,7 @@ if (!window.ODA) {
             listen(event = '', callback, props = { target: this, once: false, useCapture: false }) {
                 props.target = props.target || this;
                 if (typeof callback === 'string') {
-                    callback = this.$core.events[callback] = this.$core.events[callback] || this[callback].bind(this);
+                    callback = this.$core.events[callback] ??= this[callback].bind(this);
                 }
                 event.split(',').forEach(i => {
                     props.target.addEventListener(i.trim(), callback, props.useCapture);
@@ -530,17 +530,21 @@ if (!window.ODA) {
                 globalThis.localStorage.setItem(this.$$savePath, JSON.stringify(saves));
             }
             debounce(key, handler, delay = 0) {
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
                 let db = this.$core.debounces.get(key);
                 if (db)
                     delay ? clearTimeout(db) : cancelAnimationFrame(db);
                 const fn = delay ? setTimeout : requestAnimationFrame;
                 const t = fn(() => {
                     this.$core.debounces.delete(key);
-                    handler.call(this);
+                    handler();
                 }, delay);
                 this.$core.debounces.set(key, t)
             }
             interval(key, handler, delay = 0) {
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
                 let task = this.$core.intervals[key];
                 if (task) {
                     task.handler = handler;
@@ -552,7 +556,7 @@ if (!window.ODA) {
                         id: fn(() => {
                             clearFn(task.id);
                             this.$core.intervals[key] = undefined;
-                            task.handler.call(this);
+                            task.handler();
                         }, delay)
                     };
                     this.$core.intervals[key] = task;
@@ -601,15 +605,24 @@ if (!window.ODA) {
                 return this.$core.refs;
             }
             async(handler, delay = 0) {
-                delay ? setTimeout(handler, delay) : requestAnimationFrame(handler)
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
+                return delay ? setTimeout(handler, delay) : requestAnimationFrame(handler)
             }
-            $next(handler, takts = 0){
-                if (takts>0)
+            /**
+             * @argument {string|Function} handler
+             * @argument {number} tacts
+             */
+            $next(handler, tacts = 0){
+                if (tacts>0)
                     requestAnimationFrame(()=>{
-                        this.$next(handler, takts - 1)
+                        this.$next(handler, tacts - 1)
                     })
-                else
+                else {
+                    if (typeof handler === 'string')
+                        handler = this[handler].bind(this);
                     requestAnimationFrame(handler);
+                }
             }
             $super(parentName, name, ...args) {
                 const components = ODA.telemetry.components;
