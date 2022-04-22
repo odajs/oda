@@ -500,6 +500,7 @@ ODA({is: 'app-layout-drawer',
                     // this.last = n; // swipeX
                     // this.reduceSomeDrawers();
                     this.lastFocused = null;
+                    n.hidden = false;
                 } else {
                     this.lastFocused = o;
                 }
@@ -507,8 +508,8 @@ ODA({is: 'app-layout-drawer',
                     i.$sleep = i.hidden = i !== n;
                 }
                 this.async(() => {
-                    n?.dispatchEvent(new CustomEvent('activate'));
-                })
+                    this.focused?.dispatchEvent(new CustomEvent('activate'));
+                });
             }
         },
         lastFocused: null
@@ -556,7 +557,7 @@ ODA({is: 'app-layout-drawer',
             this.focused = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы
         this.controls.forEach(el => {
             el.$sleep = el.hidden = true;
-            if (el.hasAttribute?.('bar-autofocus') || el.hasAttribute?.('bar-opened') || el.hasAttribute?.('opened')) {
+            if (this.focused === el || el.hasAttribute?.('bar-autofocus') || el.hasAttribute?.('bar-opened') || el.hasAttribute?.('opened')) {
                 this.focused = this.focused || el;
                 if (el === this.focused)
                     el.$sleep = el.hidden = false;
@@ -596,10 +597,8 @@ ODA({is: 'app-layout-drawer',
         'opening(pinned, controls, controls?.length)'
     ],
     opening(pinned, controls, length) {
-        this.debounce('opening', () => {
-            if (pinned && !this.opened && !this.focused && length) {
-                this.setFocus(controls[0]);
-            }
-        }, 500);
+        if (pinned && !this.opened && !this.focused && length) {
+            this.setFocus(controls[0]);
+        }
     }
 });

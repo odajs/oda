@@ -7,7 +7,7 @@ ODA({is: 'oda-progress-panel',
             overflow: hidden;
         }
     </style>
-    <div ~if="items?.length && !expanded" class="horizontal" style="align-items: center;">
+    <div ~if="items?.length && !expanded && show" class="horizontal" style="align-items: center;">
         <oda-progress-bar ~props="item" :task="item" :hide-label="hideLabels" hide-buttons style="cursor: pointer;"></oda-progress-bar>
         <div ~if="!hideLabels && (items?.length || 0) > 1" >{{items?.length || ''}} requests</div>
     </div>
@@ -18,6 +18,15 @@ ODA({is: 'oda-progress-panel',
     items: [],
     iconSize: 64,
     expanded: false,
+    _show: false,
+    get show() {
+        this.items?.length;
+        this.interval('show', () => {
+            this._show = this.items?.length !== 0;
+        }, this.delay);
+        return this._show;
+    },
+    delay: 5_000,
     props: {
         hideLabels: false,
     },

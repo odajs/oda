@@ -20,7 +20,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 overflow: hidden;
             }
         </style>
-        <div class="vertical shadow content" ~style="_style">
+        <div class="vertical shadow content" ~style="_size">
             <div @resize="setSize" class="vertical flex">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
@@ -161,7 +161,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
             case 'top': {
                 bottom = this.intersect ? rect.bottom : rect.top;
-                top = bottom - height - (this.title ? 36 : 0);
+                top = bottom - height - (this.title ? 34 : 0);
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = bottom - top;
@@ -176,7 +176,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
             case 'bottom': {
                 top = this.intersect ? rect.top : rect.bottom;
-                bottom = top + height;
+                bottom = top + height + (this.title ? 34 : 0);
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = winHeight - top;
@@ -227,12 +227,14 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             this._size = size;
         return this._size;
     },
+    _size: {},
     get control(){
         return this.controls?.[0];
     },
     setSize(e) {
         this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
+        this._size = this._style;
         this.interval('set-size', () => {
             this.isReady = true;
         })
