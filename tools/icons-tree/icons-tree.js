@@ -76,7 +76,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
         defaultTemplate: 'oda-icons-icon',
         rootPath: '/',
     },
-    columns: [{ name: 'label', treeMode: true, $sort: 1 }, {name: 'search', hidden: true, }],
+    columns: [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', hidden: true, }],
     async _onDragStart(e) {
         const el = e.path.find(p => p.row);
         if (el.row.subIcon) {
@@ -96,9 +96,9 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
             e.dataTransfer.setData('odant/icon', el.row.icon);
         }
     },
-    // async _beforeExpand(item) {
-    //     return item.items;
-    // },
+    detached() {
+        this.columns[1].$filter = '';
+    },
     async ready() {
         this.iconsList = await (await fetch(iconsPath + 'info.json')).json();
     },
@@ -110,26 +110,26 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
 ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
     template: /*html*/`
     <style>
-        :host{
+        :host {
             cursor: default;
         }
-        :host(:not(:hover)) > oda-button{
+        :host(:not(:hover)) > oda-button {
             display: none;
         }
-        oda-button{
+        oda-button {
             opacity: 0.25;
         }
-        oda-button:hover{
+        oda-button:hover {
             opacity: 1;
         }
-        oda-icon{
+        oda-icon {
             filter: invert(1);
         }
     </style>
     <oda-icon ~if="item?.subIcon" :icon="item.subIcon" :icon-size="iconSize*.4" style="position: absolute; transform: skew(340deg, 360deg); filter: invert(1)" ~style="{left: iconSize/3+'px'}"></oda-icon>
     <label class="label flex">{{item.label}}</label>
     <oda-button ~if="!item?.subIcon" icon="icons:content-copy" @tap.stop="_copyToClipboard"></oda-button>`,
-    set item(item){
+    set item(item) {
         this.icon = item?.icon;
         this.fill = item?.subIcon && 'orange';
     },
