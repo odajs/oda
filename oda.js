@@ -2461,9 +2461,7 @@ if (!window.ODA) {
         }, {});
     }
     function styleStringToObject(str) {
-        const res = styleArrayToObject(styleStringToArray(str));
-        if(str) console.log('###', str, res);
-        return res;
+        return styleArrayToObject(styleStringToArray(str));
     }
     function styleObjectToString(obj) {
         if (!obj) return '';
