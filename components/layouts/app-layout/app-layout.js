@@ -438,8 +438,8 @@ ODA({is: 'app-layout-drawer',
                 minWidth: width + 'px',
                 display: (hideTabs || !focused) ? 'none' : '',
                 position: allowCompact && compact?'absolute':'relative',
-                left: (allowCompact && compact && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':''),
-                right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':''),
+                left: (allowCompact && compact && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
+                right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
                 transform: \`translateX(\${-sign*swipe}px)\`}">
 
         <div class="flex vertical" style="overflow: hidden;">

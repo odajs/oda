@@ -1327,14 +1327,8 @@ if (!window.ODA) {
                     if (src.dirs.find(f => f.name === a)) {
                         src.vals = src.vals || {};
                         switch (a){
-                            case 'style':{
-                                src.vals[a] = src.attrs[a].split(';').reduce((res, a)=>{
-                                    a = a.split(':');
-                                    if(a.length === 2){
-                                        res[a[0].trim()] = a[1].trim();
-                                    }
-                                    return res
-                                }, {});
+                            case 'style': {
+                                src.vals[a] = styleStringToObject(src.attrs[a]);
                             } break;
                             default:{
                                 src.vals[a] = src.attrs[a];
@@ -1447,37 +1441,18 @@ if (!window.ODA) {
             let s = exec.call(this, fn, p) ?? '';
             if (!Object.equal($el.$style, s, true)) {
                 $el.$style = s;
-                if (typeof s === 'string'){
-                    s = s.split(';');
-                }
-                if (Array.isArray(s)){
-                    s = s.reduce((res, a)=>{
-                        a = a.split(':');
-                        if (a.length > 1)
-                            res[a[0].trim()] = a[1].trim();
-                        return res;
-                    }, {})
-                }
-                s = Object.keys(s).reduce((res, a)=>{
-                    res[a.trim().toKebabCase()] = s[a];
-                    return res;
-                },{})
-                const def = $el.$node?.vals?.style || {}
-                let cur =  $el.getAttribute('style')?.split(';') || [];
-                cur = cur.reduce((res, a)=>{
-                    if (a){
-                        a = a.split(':');
-                        if (a.length > 1)
-                            res[a[0].trim()] = a[1].trim();
-                    }
+                if (typeof s === 'string') s = styleStringToArray(s);
+                if (Array.isArray(s))      s = styleArrayToObject(s);
+
+                s = Object.keys(s).reduce((res, a) => {
+                    res[a.trim().toKebabCase()] = s[a]; // minHeight -> min-height
                     return res;
                 }, {})
 
-                s = {...def, ...cur, ...s};
-                s = Object.keys(s).reduce((res, a)=>{
-                    res += a + ': ' + s[a] + ';'
-                    return res;
-                }, '')
+                const def = $el.$node?.vals?.style || {};
+                const cur = styleStringToObject($el.getAttribute('style'));
+                s = { ...def, ...cur, ...s };
+                s = styleObjectToString(s);
                 $el.setAttribute('style', s);
             }
         }
@@ -2466,6 +2441,36 @@ if (!window.ODA) {
             });
             input.click();
         });
+    }
+    function styleStringToArray(str) {
+        // предотвращение ошибок при url("data:image/png;base64,
+        return (str?.match(/(?:(?:[\d\w\-]*\s*:)\s*(?:(?:url\s*\([^\)]*\))|(?:[\d\w\s\(\)\-\,\.\#\%]*)));?\s*/gm) || [])
+            .map(a => a.at(-1) === ';' ? a.slice(0, -1) : a);
+    }
+    function styleArrayToObject(arr) {
+        if (!arr) return {};
+        return arr.reduce((res, a) => {
+            if (a) {
+                // предотвращение ошибок при url("data:image/png;base64,
+                const idx = a.indexOf(':');
+                if (~idx) {
+                    res[a.slice(0, idx).trim()] = a.slice(idx + 1).trim();
+                }
+            }
+            return res;
+        }, {});
+    }
+    function styleStringToObject(str) {
+        const res = styleArrayToObject(styleStringToArray(str));
+        if(str) console.log('###', str, res);
+        return res;
+    }
+    function styleObjectToString(obj) {
+        if (!obj) return '';
+        return Object.keys(obj).reduce((res, a) => {
+            res += a + ': ' + obj[a] + ';'
+            return res;
+        }, '');
     }
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
