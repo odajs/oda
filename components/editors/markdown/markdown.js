@@ -17,7 +17,8 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
             </div>
             <oda-splitter2 ~if="editMode" size="3px"></oda-splitter2>
             <div style="overflow-x: hidden; flex: 1">
-                <oda-md-viewer class="flex" :srcmd="source" :edit-mode="editMode && !readOnly" padding="0 2px"></oda-md-viewer>
+                <oda-md-viewer ~if="fount" class="flex" :src="fount" :edit-mode="editMode && !readOnly" padding="0 2px"></oda-md-viewer>
+                <oda-md-viewer ~if="!fount" class="flex" :srcmd="source" :src="fount" :edit-mode="editMode && !readOnly" padding="0 2px"></oda-md-viewer>
             </div>
         </div>
     `,
@@ -37,6 +38,7 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
         }
     },
     src: '',
+    fount: '',
     set source(v) {
         if (v !== undefined && !this.src)
             this.src = v;

@@ -9,8 +9,8 @@ ODA({
             }
         </style>
         <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
-        <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell  :cell="item" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
+        <div ~for="(cell, index) in notebook?.cells" class="vertical no-flex">
+            <oda-jupyter-cell :cell :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
             <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
         </div>
     `,
@@ -113,7 +113,7 @@ ODA({
             }
         </style>
         <div class="vertical flex main">
-            <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize"></div>
+            <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
             <div class="flex" ~if="control?.enableResize && !editMode" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
