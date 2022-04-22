@@ -25,7 +25,12 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
         type:{
             default: 'simplemde',
             list: ['simplemde', 'ace'],
-            save: true,
+            set(n) {
+                this.src = this.source;
+            }
+        },
+        editMode: {
+            default: false,
             set(n) {
                 this.src = this.source;
             }
@@ -36,7 +41,6 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
         if (v !== undefined && !this.src)
             this.src = v;
     },
-    editMode: false,
     onchange(e) {
         this.source = e.detail.value;
     }

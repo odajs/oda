@@ -757,7 +757,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return (col[this.columnId] && !col.fix && !col.treeMode) ? ((r + 1) * 10000 + c + 1) : '';
     },
     _getDraggable(row) {
-        return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : 'false';
+        return (this.allowDrag && !row.$group && row.drag !== false) ? 'true' : 'false';
     },
     _getRowStyle(row) {
         const style = row?.$group ? { width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px', position: 'sticky', left: '0px' } : { width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px') };

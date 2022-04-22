@@ -10,7 +10,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
                 min-height: 20px;
             }
         </style>
-        <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%', padding: editMode? '4px' : 0 }"  ~class="{shadow: editMode}">
+        <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%', padding: editMode? '4px' : 0 }" >
             <div ~if="preview==='none' || showCode || editMode" style="overflow: hidden; position: relative" ~style="{width: preview!=='none' ? '50%' : '100%'}">
                 <oda-ace-editor ~if="type==='ace'" :src @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="cobalt" mode="html" min-lines=1></oda-ace-editor></oda-ace-editor>
                 <oda-monaco ~if="type==='monaco'" :src @change="onchange" class="flex" theme="vs-dark" mode="html"></oda-monaco>
@@ -58,7 +58,6 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco/monaco
             const args = JSON.parse(v);
             for (let [key, value] of Object.entries(args)) {
                 if (this.usedControl && key === (this.argsType)) {
-                    // console.log(this.usedControl);
                     for (let [k, v] of Object.entries(args[key]))
                         this.usedControl[k] = v;
                 } else {

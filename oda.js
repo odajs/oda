@@ -2238,7 +2238,8 @@ if (!window.ODA) {
                         try{
                             if (this[name] != v)
                                 this[name] = v;
-                            return;
+                            if (d !== true) //todo надо думать
+                                return;
                         }
                         catch (e){
 

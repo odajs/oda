@@ -38,7 +38,7 @@ ODA({is: 'oda-icon',
             border-radius: {{iconSize/16}}px;
             @apply --content;
             @apply --shadow;
-            margin: {{computedStyleMap().get('padding')?.toString() || 'unset'}};
+            margin: {{getComputedStyle(this)['padding']?.toString() || 'unset'}};
         }
         svg {
             top: 0px;
@@ -56,7 +56,7 @@ ODA({is: 'oda-icon',
                 </g>
             </defs>
             <g ~html="_icon?.body"></g>
-        </svg> 
+        </svg>
     </div>
     <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/2"></oda-icon>
     `,
@@ -118,8 +118,8 @@ ODA({is: 'oda-icon',
         const s = this.iconSize + 'px';
         const obj = { width: s, height: s, minHeight: s };
         const r = this.rotate + (this._rotate || 0);
-        if (r)
-            obj.transform = `rotate(${r}deg)`;
+        // if (r)
+            obj.transform = `rotate(${r || 0}deg)`;
         if (typeof this._icon === 'string') {
             obj.backgroundImage = `url("${this._icon}")`;
             obj.backgroundRepeat = 'no-repeat';

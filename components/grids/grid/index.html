@@ -9,11 +9,12 @@
 <!-- </oda-tester>-->
 <script type="module">
     grid.metadata = [
-        { fix: 'left', width: 32 },
+
         { name: 'right fixed column', fix: 'right'},
+        { fix: 'left', width: 32 },
         { name: 'col1', treeMode: true},
-        { name: 'number', summary: 'sum'},
-        { name: 'left', fix: 'left' , width: 100},
+        { name: 'number', summary: 'sum', order: 2},
+        { name: 'left fixed column', fix: 'left' , width: 140},
         {
             name: 'col2', items: [
                 {

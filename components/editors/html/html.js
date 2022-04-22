@@ -24,6 +24,12 @@ ODA({is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
             set(v) {
                 this.src = this.source;
             }
+        },
+        editMode: {
+            default: false,
+            set(n) {
+                this.src = this.source;
+            }
         }
     },
     src: '',
@@ -31,7 +37,6 @@ ODA({is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
         if (v !== undefined && !this.src)
             this.src = v;
     },
-    editMode: false,
     onchange(e) {
         this.source = e.detail.value;
     }

@@ -113,7 +113,7 @@ ODA({
             }
         </style>
         <div class="vertical flex main">
-            <div class="editor" ~is="cellType" ~class="{shadow: !editMode && !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize"></div>
+            <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
             <div class="flex" ~if="control?.enableResize && !editMode" style="overflow: auto; flex: 1; max-height: 0"></div>
         </div>
@@ -148,6 +148,7 @@ ODA({
                 if (e.detail.value.direction === 'horizontal') {
                     this.cell.cell_h = e.detail.value.h;
                     this.cell.cell_h = this.cell.cell_h < 20 ? 20 : this.cell.cell_h;
+                    this.async(() => this.$('.main').style.height = 'unset', 100);
                 }
             }
         }
