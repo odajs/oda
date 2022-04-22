@@ -118,9 +118,15 @@ ODA({is: 'oda-icon',
         const s = this.iconSize + 'px';
         const obj = { width: s, height: s, minHeight: s };
         const r = this.rotate + (this._rotate || 0);
-        // if (r)
-            obj.transform = `rotate(${r || 0}deg)`;
-        if (typeof this._icon === 'string') {
+
+        obj.transform = `rotate(${r || 0}deg)`;
+
+        obj.backgroundRepeat = 'unset';
+        obj.backgroundSize = 'unset';
+        obj.backgroundImage = 'unset';
+        obj.backgroundPosition = 'unset';
+
+        if (this._icon && typeof this._icon === 'string') {
             obj.backgroundImage = `url("${this._icon}")`;
             obj.backgroundRepeat = 'no-repeat';
             obj.backgroundSize = 'contain';
