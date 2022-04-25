@@ -1231,7 +1231,7 @@ if (!window.ODA) {
                 let expr = attr.value;
                 let modifiers;
                 if (typeof Object.getOwnPropertyDescriptor(prototype, expr)?.value === "function")
-                    expr += '($event, $detail)';
+                    expr += '()';
                 if (/^(:|bind:)/.test(attr.name)) {
                     name = name.replace(/^(::?|:|bind::?)/g, '');
                     if (tags[name])
@@ -1307,9 +1307,8 @@ if (!window.ODA) {
                     modifiers = parseModifiers(name);
                     if (modifiers)
                         name = name.replace(modifierRE, '');
-                    // if (prototype[attr.value])
-                    //     expr = attr.value + '($event, $detail)';
-                    // expr = attr.value
+                    if (expr === (attr.value +'()'))
+                        expr = attr.value + '($event, $detail)';
                     name = name.replace(/^@/g, '');
                     const params = ['$event', '$detail', ...(vars || [])];
                     const fn = new Function(params.join(','), `with (this) {${expr}}`);
@@ -2070,7 +2069,7 @@ if (!window.ODA) {
                 else if (odaEventTrack.detail) {
                     odaEventTrack.detail.state = 'track';
                     // console.log(target, this.detail.state, e.clientX, e.clientY)
-                    odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor;
+                    odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor || 'pointer';
                     // console.log('back', target.style.cursor)
                     odaEventTrack.detail.x = e.clientX;
                     odaEventTrack.detail.y = e.clientY;

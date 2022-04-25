@@ -1,7 +1,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="./splitter.js"></script>
 <oda-tester>
-    <oda-splitter></oda-splitter>
+    <oda-splitter-tester></oda-splitter-tester>
 </oda-tester>
+<script type="module">
+    import '../../../oda.js';
+    import './splitter.js';
+    ODA({is: 'oda-splitter-tester',
+        template: `
+            <style>
+                :host{
+                    @apply --flex;
+                    @apply --vertical;
+                }
+            </style>
+            <div class="flex">
+                <div class="horizontal flex">
+                    <div class="flex">СПЛИТТЕР СПРАВА</div>
+                    <oda-splitter></oda-splitter>
+                </div>
+                <div class="flex"></div>
+            </div>
+        `
+    })
+</script>
