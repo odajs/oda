@@ -9,7 +9,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         </style>   
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal">
-            <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header">
+            <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header no-flex">
                 <div class="vertical flex">
                     <oda-grid-header fix="left" ~if="showHeader"></oda-grid-header>
                     <oda-grid-body fix="left" class="flex"></oda-grid-body>
@@ -17,12 +17,12 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 </div>
                 <oda-splitter></oda-splitter>
             </div>
-            <div class="vertical flex">
+            <div class="vertical flex" style="overflow: hidden;">
                 <oda-grid-header ~if="showHeader"></oda-grid-header>
                 <oda-grid-body class="flex"></oda-grid-body>
                 <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
             </div>
-            <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header">
+            <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex">
                 <oda-splitter></oda-splitter>
                 <div class="vertical flex">
                     <oda-grid-header fix="right" ~if="showHeader"></oda-grid-header>
@@ -31,7 +31,19 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 </div>
             </div>      
         </div>
+        <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
     `,
+    async showSettings(e){
+        await ODA.import('@tools/property-grid');
+        try{
+            await ODA.showDropdown(
+                'oda-property-grid',
+                { inspectedObject: this.table, onlySave: true, style: 'max-width: 500px; min-width: 300px;' },
+                { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
+            );
+        }
+        catch (e){}
+    },
     metadata:[],
     dataSet: [],
     get table(){
@@ -40,31 +52,22 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     get tableWidth(){
         return this.clientWidth;
     },
+    headerResize(e){
+        this.interval('header-resize',()=>{
+            const headers = this.table.$$('oda-grid-header')
+            let height = 0;
+            headers.forEach(h=>{
+                h.style.height = '';
+                if (height<h.offsetHeight)
+                    height = h.offsetHeight;
+            })
+            headers.forEach(h=>{
+                h.style.height = height+'px';
+            })
+        })
+    },
     get columns(){
         return this.metadata;
-        // const convertMetadata = (items)=>{
-        //     return items?.map((col, idx)=>{
-        //         col.order = col.order || (idx + 1);
-        //         if (col.treeMode)
-        //             col.index = col.order - 500;
-        //         switch (col.fix) {
-        //             case 'left':
-        //                 col.index = col.order - 1000;
-        //                 break;
-        //             case 'right':
-        //                 col.index = col.order + 1000;
-        //                 break;
-        //             default:
-        //                 col.index = col.order;
-        //                 break;
-        //         }
-        //         convertMetadata(col.items)
-        //         return col;
-        //     }).sort((a,b)=>{
-        //         return a.index>b.index?1:-1
-        //     })
-        // }
-        // return convertMetadata(this.metadata);
     },
     get visibleColumns(){
         const convertColumns = (items)=>{
@@ -87,7 +90,12 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         },
         showFilter:{
             default: true,
-            save: true
+            save: true,
+            set(n){
+                this.async(()=>{
+                    this.headerResize();
+                })
+            }
         },
         showFooter:{
             default: false,
@@ -116,21 +124,23 @@ ODA({is:'oda-grid-header',
     template: `
         <style>
             :host{
+                border-top: 1px solid gray;
                 @apply --horizontal;
                 @apply --dark;
                 overflow: hidden;
+                @apply --raised;
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
-            <div class="horizontal" style="min-width: 100%;">
-                <oda-grid-header-cell ~for="headColumns" :column="item"></oda-grid-header-cell>
+            <div class="horizontal no-flex" style="min-width: 100%;" ~class="{flex: fix}">
+                <oda-grid-header-cell ~for="headColumns" :is-last="index === items.length-1" :column="item" ~class="{flex: fix && index === items.length-1}"></oda-grid-header-cell>
             </div>
         </div>
     `,
     get headColumns(){
-        return this.columns?.filter(col=>col.fix == this.fix);
+        return this.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
     },
-    fix: '',
+    fix: ''
 })
 ODA({
     is: 'oda-grid-header-cell',
@@ -158,10 +168,10 @@ ODA({
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; margin: 8px;">{{column?.label || column?.name}}</span>
             <oda-icon @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
-            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid gray;" @track="onTrack"></span>
+            <span ~if="!isLast || !fix" class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid gray;" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: index === items.length-1, 'no-flex': index < items.length-1}" :last="index  === items.length-1"></oda-grid-header-cell>
+            <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: fix && index === items.length-1, 'no-flex': index < items.length-1}" :is-last="index  === items.length-1"></oda-grid-header-cell>
         </div>
         <div class="horizontal" ~if="showFilter && !column?.$expanded"  ~style="_style">
             <input  class="flex" ::value="filter">
@@ -169,7 +179,76 @@ ODA({
             <span class="no-flex" style="width: 4px; height: 100%; border-right: 1px solid gray;"></span>
         </div>
     `,
+    listeners:{
+        resize(e){
+            this.headerResize();
+        }
+    },
     get _style(){
         return {minWidth: (this.column?.minWidth || (this.iconSize * ((this.column?.items)?3:2)))+'px', width: this.column?.width || ''};
+    },
+    isLast: false,
+    onColSizeTrack(e){
+        const target = e.detail.target.parentElement;
+        switch(e.detail.state){
+            case 'start':{
+                target.style.width = target.offsetWidth + 'px';
+                this.column.minWidth = 0;
+            } break;
+            case 'track':{
+                this.resetUp();
+                this.resetDown();
+                const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
+                if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
+                    if (this.column.items?.length){
+                        target.style.width = this.offsetWidth + e.detail.ddx + 'px';
+                        target.style.width = this.offsetWidth+'px';
+                    }
+                    else
+                        target.style.width = target.offsetWidth + e.detail.ddx + 'px';
+                }
+                this.column.width = target.offsetWidth;
+            } break;
+            case 'end':{
+                this.column.minWidth = target.offsetWidth;
+                if (this.column.items?.length){
+                    this.$next(()=>{
+                        target.style.width = '';
+                    },1)
+                }
+            } break;
+        }
+    },
+    resetUp(){
+        if (!this.isLast || !this.domHost?.column) return;
+        this.domHost.column.minWidth = 0;
+        this.domHost.column.width = 0;
+        this.domHost.resetUp?.();
+    },
+    resetDown(col){
+        if (col){
+            col.minWidth = 0;
+            col.width = 0
+        }
+        else{
+            col = this.column;
+        }
+        col = col?.items?.[this.column.items.length-1];
+        if (col)
+            this.resetDown(col);
+    },
+    onMove(e){
+        switch (e.detail.state){
+            case 'track':{
+                this.style.zIndex = 1;
+                this.style.transform = `translate(${e.detail.dx}px)`;
+                this.classList.add('shadow');
+            } break;
+            case 'end':{
+                this.style.zIndex = 0;
+                this.style.transform = '';
+                this.classList.remove('shadow');
+            } break;
+        }
     },
 })

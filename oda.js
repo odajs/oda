@@ -324,11 +324,11 @@ if (!window.ODA) {
                 this.render();
                 this.async(()=>{
                     callHook.call(this, 'attached');
-                    // Array.prototype.forEach.call(this.attributes, a=>{
-                    //     let val = a.value;
-                    //     val = (val === '') ? true : (val === undefined ? false : val);
-                    //     this.setProperty(a.name, val);
-                    // })
+                    Array.prototype.forEach.call(this.attributes, a=>{
+                        let val = a.value;
+                        val = (val === '') ? true : (val === undefined ? false : val);
+                        this.setProperty(a.name, val);
+                    })
                 })
             }
             disconnectedCallback() {
@@ -835,7 +835,7 @@ if (!window.ODA) {
                     else if (KERNEL.dpTarget) {
                         const block = this.__op__.blocks[key];
                         if (!block?.deps.includes(KERNEL.dpTarget)) {
-                            val = this.$proxy[key];
+                            val = this.$proxy[key];// || this.getAttribute(name);
                         }
                     }
                     // this.interval('updated', ()=>{

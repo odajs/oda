@@ -3,7 +3,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         <!--<oda-button ~if="showRemoveLinesButton" ~style="{position: 'absolute', left: selection[selection.length - 1].rect.center.x + 'px', top: selection[selection.length - 1].rect.center.y + 'px', width: '34px', height: '34px'}" icon="icons:close" class="error" @tap.stop="removeSelection"></oda-button>-->
         <svg class="flex" :width :height>
             <path ~for="links" ~style="{visibility: item?.pin?.hasBlock ? 'visible' : hidden}" :stroke="item?.link?'blue':'gray'" :stroke-width="selection.includes(item) ? 2 : 1" :item fill="transparent" :d="item?.d" @tap.stop="select" @push.stop/>
-            <path ~if="dashedLine" :stroke="'gray'" stroke-width="2" stroke-dasharray="5,5" fill="transparent" :d="dashedLine" />
+            <path ~if="dashedLine" stroke="gray" stroke-width="2" stroke-dasharray="5,5" fill="transparent" :d="dashedLine" />
         </svg>
         <oda-scheme-container ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{transform: \`translate3d(\${itm?.x}px, \${itm?.y}px, 0px)\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <!--<oda-scheme-link ~for="link in links?.filter(i=>(i && !i.link))" ~style="{transform: \`translate3d(\${link?.rect.x - iconSize / 4 + (link?.pos === 'left'?-linkMargin:0)}px, \${link?.rect.y - iconSize / 4 + (link?.pos === 'top'?-linkMargin:link?.pos === 'bottom'?linkMargin:0)}px, 0px)\`}"></oda-scheme-link>-->
@@ -111,9 +111,12 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         dragover(e) {
             if( !this.editMode ) return;
             if( this.focusedPin ) {
-                // const focusedRect = this.focusedPin.getClientRect(this.$('div > div'));
-                // this.dashedLine = `M ${focusedRect.center.x} ${focusedRect.center.y}
-                //                     L ${e.x / this.zoom} ${e.y / this.zoom}`;
+                // const pinRect = this.focusedPin.getClientRect(this.focusedPin.block);
+            	// const containerPos = { x: parseInt(this.focusedPin.container.item.x) , y: parseInt(this.focusedPin.container.item.y)  };
+        		// const start = {x: containerPos.x + pinRect.center.x, y: containerPos.y + pinRect.center.y };
+        		// const end = {x: (e.x) / this.zoom, y: (e.y) / this.zoom};
+
+				// this.dashedLine = `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
             }
             
             e.preventDefault();
@@ -277,16 +280,16 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" :pos="'top'" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal"  ::height="top"></oda-scheme-interface>
         <div class="flex horizontal">
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" :pos="'left'" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left"  ::width="left"></oda-scheme-interface>
             <div class="flex shadow vertical content">
                 <!-- <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>-->
                 <div @attached="blockReady" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
             </div>
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" :pos="'right'" :interface="item?.interfaces?.$right"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" pos="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>
-        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" :pos="'bottom'" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$bottom?.length" pos="bottom" :interface="item?.interfaces?.$bottom" class="horizontal"></oda-scheme-interface>
     </div>
     `,
     attached() {
@@ -448,34 +451,26 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         const inputRect = this.getClientRect(this._grid);
         const center = inputRect.center;
         let d = '';
-        switch (this.pos) {
+        switch (this.pos) { // 64961
             case 'top': {
                 d += !link ? `M ${center.x} ${inputRect.y}` :
                     `M ${center.x + 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y} L ${center.x - 5} ${inputRect.y - 5} L ${center.x} ${inputRect.y}`;
                 d += ` V ${inputRect.y - this.size}`;
-                if(link)
-                    d += ` C ${center.x},${inputRect.y - this.size * 2}`;
             } break;
             case 'right': {
                 d += !link ? `M ${inputRect.right} ${center.y}` :
                     `M ${inputRect.right + 5} ${center.y - 5} L ${inputRect.right} ${center.y} L ${inputRect.right + 5} ${center.y + 5} L ${inputRect.right} ${center.y}`;
                 d += ` H ${inputRect.right + this.size}`;
-                if(link)
-                    d += ` C ${inputRect.right + this.size * 2},${center.y}`;
             } break;
             case 'bottom': {
                 d += !link ? `M ${center.x} ${inputRect.bottom}` :
                     `M ${center.x + 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom} L ${center.x - 5} ${inputRect.bottom + 5} L ${center.x} ${inputRect.bottom}`;
                 d += ` V ${inputRect.bottom + this.size}`;
-                if(link)
-                    d += ` C ${center.x},${inputRect.bottom + this.size * 2}`;
             } break;
             case 'left': {
                 d += !link ? `M ${inputRect.x} ${center.y}` :
                     `M ${inputRect.x - 5} ${center.y - 5} L ${inputRect.x} ${center.y} L ${inputRect.x - 5} ${center.y + 5} L ${inputRect.x} ${center.y}`;
                 d += ` H ${inputRect.x - this.size}`;
-                if(link)
-                    d += ` C ${inputRect.x - this.size * 2},${center.y}`;
             } break;
         }
         if (link) {
@@ -483,16 +478,16 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             link.src.reserved = true;
             switch (link.src.$$pin.pos) {
                 case 'top': {
-                    d += ` ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
+                    d += ` L ${outputRect.center.x} ${outputRect.center.y - link.src.$$pin.size} V ${outputRect.top}`;
                 } break;
                 case 'right': {
-                    d += ` ${outputRect.right + link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.right + link.src.$$pin.size},${outputRect.center.y} H ${outputRect.right}`;
+                    d += ` L ${outputRect.right + link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.right}`;
                 } break;
                 case 'bottom': {
-                    d += ` ${outputRect.center.x},${outputRect.center.y + link.src.$$pin.size * 2} ${outputRect.center.x},${outputRect.center.y + link.src.$$pin.size} V ${outputRect.bottom}`;
+                    d += ` L ${outputRect.center.x} ${outputRect.center.y + link.src.$$pin.size} V ${outputRect.bottom}`;
                 } break;
                 case 'left': {
-                    d += ` ${outputRect.left - link.src.$$pin.size * 2},${outputRect.center.y} ${outputRect.left - link.src.$$pin.size},${outputRect.center.y} H ${outputRect.left}`;
+                    d += ` L ${outputRect.left - link.src.$$pin.size} ${outputRect.center.y} H ${outputRect.left}`;
                 } break;
             }
         }
