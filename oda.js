@@ -2044,7 +2044,7 @@ if (!window.ODA) {
                 if (odaEventTrack.detail && !odaEventTrack.detail.state) {
                     const x = Math.abs(odaEventTrack.detail.start.x - e.clientX);
                     const y = Math.abs(odaEventTrack.detail.start.y - e.clientY)
-                    if (Math.max(x,y)>2) {
+                    if (Math.max(x,y)>2 || e.type === 'mouseleave') {
                         target.removeEventListener('mouseleave', moveHandler);
                         if (!odaEventTrack.back){
                             odaEventTrack.back = document.createElement('div');
@@ -2082,7 +2082,6 @@ if (!window.ODA) {
                 }
             };
             const upHandler = (e) => {
-
                 window.removeEventListener('mousemove', moveHandler);
                 window.removeEventListener('mouseup', upHandler);
                 target.removeEventListener('mouseleave', moveHandler);
