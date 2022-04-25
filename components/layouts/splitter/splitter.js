@@ -54,6 +54,10 @@ ODA({is: 'oda-splitter', template: /*html*/`
     },
     listeners: {
         track: '_onTrack',
+        pointerdown(e){
+            this._mover = this.create('oda-splitter-mover', {align: this.align });
+            document.body.appendChild(this._mover);
+        }
     },
     attached(){
         if (this.parentElement){
@@ -63,52 +67,43 @@ ODA({is: 'oda-splitter', template: /*html*/`
     _onTrack(e, d) {
         switch (d.state) {
             case 'start': {
-                if (!this._mover) {
-                    this._mover = this.create('oda-splitter-mover', { pos: d, align: this.align });
-                    document.body.appendChild(this._mover);
-                    this._mover.render();
-                }
+                this._mover.pos = d;
             } break;
             case 'end': {
-                if (this._mover) {
-                    this._mover.remove();
-                    this._mover = null;
+                this._mover?.remove();
+                switch (this.align) {
+                    case 'horizontal': {
+                        this.parentElement.style.height = this.parentElement.offsetHeight - d.dy * this.sign + 'px';
 
-                    switch (this.align) {
-                        case 'horizontal': {
-                            this.parentElement.style.height = this.parentElement.offsetHeight - d.dy * this.sign + 'px';
-
-                        } break;
-                        default: {
-                            this.parentElement.style.width = this.parentElement.offsetWidth - d.dx * this.sign + 'px';
-                        } break;
-                    }
-                    this.width = Math.max(0, this.width - (d.dx * this.sign));
-                    this.height = Math.max(0, this.height - (d.dy * this.sign));
-                    this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
-                    this.async(()=>{
-                        const event = document.createEvent('Event');
-                        event.initEvent('resize', true, true);
-                        window.dispatchEvent(event);
-                    });
+                    } break;
+                    default: {
+                        this.parentElement.style.width = this.parentElement.offsetWidth - d.dx * this.sign + 'px';
+                    } break;
                 }
+                this.width = Math.max(0, this.width - (d.dx * this.sign));
+                this.height = Math.max(0, this.height - (d.dy * this.sign));
+                this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
+                this.async(()=>{
+                    const event = document.createEvent('Event');
+                    event.initEvent('resize', true, true);
+                    window.dispatchEvent(event);
+                });
+
             } break;
             case 'track': {
-                if (this._mover) {
-                    switch (this.align) {
-                        case 'horizontal': {
-                            if (d.y > 0 && d.y < window.innerHeight) {
-                                this._mover.pos = d;
-                                this._mover.tracked = true;
-                            }
-                        } break;
-                        default: {
-                            if (d.x > 0 && d.x < window.innerWidth) {
-                                this._mover.pos = d;
-                                this._mover.tracked = true;
-                            }
-                        } break;
-                    }
+                switch (this.align) {
+                    case 'horizontal': {
+                        if (d.y > 0 && d.y < window.innerHeight) {
+                            this._mover.pos = d;
+                            this._mover.tracked = true;
+                        }
+                    } break;
+                    default: {
+                        if (d.x > 0 && d.x < window.innerWidth) {
+                            this._mover.pos = d;
+                            this._mover.tracked = true;
+                        }
+                    } break;
                 }
             } break;
         }
@@ -130,12 +125,6 @@ ODA({ is: 'oda-splitter-mover', template: /*html*/`
             z-index: 1001;
             @apply --header;
         }
-        :host([align=vertical]){
-            cursor: col-resize;
-        }
-        :host([align=horizontal]){
-            cursor: row-resize;
-        }
         @keyframes fadin {
             from {background-color: rgba(0, 0, 0, 0)}
             to {background-color: rgba(0, 0, 0, 0.4)}
@@ -143,14 +132,8 @@ ODA({ is: 'oda-splitter-mover', template: /*html*/`
     </style>
     <div class="border" ~style="_getStyle(pos)"></div>
     `,
-    props: {
-        align: {
-            type: String,
-            value: 'vertical',
-            reflectToAttribute: true,
-        },
-        pos: Object
-    },
+    align: '',
+    pos: null,
     _getStyle(e) {
         if (e) {
             switch (this.align) {
