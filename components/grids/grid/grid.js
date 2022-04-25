@@ -17,29 +17,47 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers',
     get table(){
         return this;
     },
+    get tableWidth(){
+        return this.clientWidth;
+    },
     get columns(){
-        return this.metadata.map((col, idx)=>{
-            col.order = col.order || (idx + 1);
-            if (col.treeMode)
-                col.index = col.order - 500;
-            switch (col.fix) {
-                case 'left':
-                    col.index = col.order - 1000;
-                    break;
-                case 'right':
-                    col.index = col.order + 1000;
-                    break;
-                default:
-                    col.index = col.order;
-                    break;
-            }
-            return col;
-        }).sort((a,b)=>{
-            return a.index>b.index?1:-1
-        })
+        const convertMetadata = (items)=>{
+            return items?.map((col, idx)=>{
+                col.order = col.order || (idx + 1);
+                if (col.treeMode)
+                    col.index = col.order - 500;
+                switch (col.fix) {
+                    case 'left':
+                        col.index = col.order - 1000;
+                        break;
+                    case 'right':
+                        col.index = col.order + 1000;
+                        break;
+                    default:
+                        col.index = col.order;
+                        break;
+                }
+                convertMetadata(col.items)
+                return col;
+            }).sort((a,b)=>{
+                return a.index>b.index?1:-1
+            })
+        }
+        return convertMetadata(this.metadata);
     },
     get visibleColumns(){
-        return this.columns;
+        const convertColumns = (items)=>{
+            return items.reduce((res, col)=>{
+                if (!col.items?.length || !col.$expanded){
+                    res.push(col);
+                }
+                else{
+                    res.push(...convertColumns(col.items));
+                }
+                return res;
+            }, [])
+        }
+        return convertColumns(this.columns)
     },
     props:{
         iconSize:{
@@ -60,39 +78,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers',
         }
     },
     colsScrollLeft: 0,
-
-})
-ODA({is:'oda-grid-header',
-    template: `
-        <style>
-            :host{
-                @apply --vertical;
-                @apply --dark;
-                overflow: hidden;
-            }
-        </style>
-        <oda-grid-groups></oda-grid-groups>
-        <div class="flex horizontal">
-             <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="onTrack">
-                <div class="no-flex shadow horizontal">
-                    <oda-grid-header-cell ~for="columns" :column="item"></oda-grid-header-cell>
-                </div>
-            </div>
-            <oda-button :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
-        </div>
-    `,
-    async showSettings(e){
-        await ODA.import('@tools/property-grid');
-        try{
-            await ODA.showDropdown(
-                'oda-property-grid',
-                { inspectedObject: this.table, onlySave: true, style: 'max-width: 500px; min-width: 300px;' },
-                { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
-            );
-        }
-        catch (e){}
-    },
-    onTrack(e){
+    colsTrack(e){
         switch (e.detail.state){
             case 'track':{
                 const w = e.detail.target.scrollWidth - e.detail.target.offsetWidth
@@ -104,7 +90,35 @@ ODA({is:'oda-grid-header',
             } break;
         }
     }
-
+})
+ODA({is:'oda-grid-header',
+    template: `
+        <style>
+            :host{
+                @apply --vertical;
+                @apply --dark;
+                overflow: hidden;
+            }
+        </style>
+        <oda-grid-groups></oda-grid-groups>
+        <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
+            <div class="no-flex shadow horizontal" style="min-width: 100%;">
+                <oda-grid-header-cell ~for="columns" :column="item"></oda-grid-header-cell>
+            </div>
+        </div>
+        <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
+    `,
+    async showSettings(e){
+        await ODA.import('@tools/property-grid');
+        try{
+            await ODA.showDropdown(
+                'oda-property-grid',
+                { inspectedObject: this.table, onlySave: true, style: 'max-width: 500px; min-width: 300px;' },
+                { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
+            );
+        }
+        catch (e){}
+    }
 })
 
 
@@ -117,7 +131,8 @@ ODA({is: 'oda-grid-header-cell',
                 cursor: pointer;
                 @apply --header;
                 order: {{column?.index || 0}};
-
+                left: {{left}}px;
+                right: {{right}}px;
             }
             oda-button{
                 font-size: xx-small;
@@ -135,7 +150,6 @@ ODA({is: 'oda-grid-header-cell',
                 border-right: 1px solid gray;
                 z-index: 2;
                 position: sticky;
-                left: {{left}}px;
             }
         </div>
         <div is="style" ~if="column?.fix === 'right'">
@@ -143,7 +157,6 @@ ODA({is: 'oda-grid-header-cell',
                 border-left: 1px solid gray;
                 z-index: 1;
                 position: sticky;
-                right: {{right}}px;
             }
         </div>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="_style">
@@ -162,20 +175,37 @@ ODA({is: 'oda-grid-header-cell',
         </div>
     `,
     get left(){
-        const pr = this.previousElementSibling;
-
-        if (pr && this.colsScrollLeft){
-            pr.column.width;
-            return (pr.left + pr.offsetWidth);
+        switch (this.column?.fix){
+            case 'left':{
+                const pr = this.previousElementSibling;
+                if (pr && this.colsScrollLeft){
+                    pr.column?.width;
+                    return (pr.left + pr.offsetWidth);
+                }
+            } break;
+            case 'right':{
+                const nx = this.nextElementSibling;
+                let left = this.tableWidth;
+                if (nx/* && this.colsScrollLeft*/){
+                    nx.column?.width;
+                    left = nx.left;
+                }
+                left -= this.offsetWidth;
+                console.log(this.column.name, left)
+                return left;
+            } break;
         }
-
         return 0;
     },
     get right(){
-        const pr = this.nextElementSibling;
-        if (pr && this.colsScrollLeft){
-            pr.column.width;
-            return (pr.right + pr.offsetWidth);
+        switch (this.column?.fix){
+            case 'right': {
+                const pr = this.nextElementSibling;
+                if (pr/* && this.colsScrollLeft*/){
+                    pr.column?.width;
+                    return (pr.right + pr.offsetWidth);
+                }
+            } break;
         }
         return 0;
     },
@@ -187,9 +217,9 @@ ODA({is: 'oda-grid-header-cell',
                 this.classList.add('shadow');
             } break;
             case 'end':{
-                this.style.zIndex = ''
-                this.style.transform = ''
-                this.classList.remove('shadow')
+                this.style.zIndex = '';
+                this.style.transform = '';
+                this.classList.remove('shadow');
             } break;
         }
     },
@@ -245,7 +275,7 @@ ODA({is: 'oda-grid-header-cell',
         }
         col = col?.items?.[this.column.items.length-1];
         if (col)
-            this.resetDown(col)
+            this.resetDown(col);
     },
     column: null,
 })
@@ -254,15 +284,16 @@ ODA({is: 'oda-grid-footer',
     template: `
         <style>
             :host{
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --dark;
                 overflow: hidden;
             }
         </style>
-        <div class="horizontal" :scroll-Left="colsScrollLeft">
-            <oda-grid-footer-cell ~for="columns" :column="item"></oda-grid-footer-cell>
-        </div>
-        
+        <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
+            <div class="no-flex shadow horizontal" style="min-width: 100%;">
+                <oda-grid-footer-cell ~for="visibleColumns" :column="item"></oda-grid-footer-cell>
+            </div>
+        </div>        
     `
 })
 

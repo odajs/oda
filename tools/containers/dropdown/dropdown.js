@@ -62,7 +62,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             this.windows.forEach(w => {
                 this.listen('resize', '_close', { target: w, useCapture: true });
             });
-        }, 1000) 
+        }, 1000)
+        this.async(() => {
+            this._isAttached = true;
+            this.setSize();
+        }, 100)
     },
     detached() {
         this.windows.forEach(w => {
@@ -232,6 +236,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         return this.controls?.[0];
     },
     setSize(e) {
+        if (!this._isAttached) return;
         this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
         this._size = this._style;

@@ -231,6 +231,7 @@ if (!window.ODA) {
                     }
                     this['#' + i] =  makeReactive.call(this, core.defaults[i], (this.$core.saveProps?.[i] && i));
                 }
+
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
                     if (ODA.adopted) {
@@ -1230,7 +1231,7 @@ if (!window.ODA) {
                 let expr = attr.value;
                 let modifiers;
                 if (typeof Object.getOwnPropertyDescriptor(prototype, expr)?.value === "function")
-                    expr += '()';
+                    expr += '($event, $detail)';
                 if (/^(:|bind:)/.test(attr.name)) {
                     name = name.replace(/^(::?|:|bind::?)/g, '');
                     if (tags[name])
@@ -1244,6 +1245,7 @@ if (!window.ODA) {
                             expr = attr.name.replace(/:+/, '').toCamelCase();
                         let fn = createFunc(vars.join(','), expr, prototype);
                         if (/::/.test(attr.name)) {
+
                             const params = ['$value', ...(vars || [])];
                             src.listeners.input = function func2wayInput(e) {
                                 if (!e.target.parentNode || !(name === 'value' || name === 'checked')) return;
@@ -1305,22 +1307,29 @@ if (!window.ODA) {
                     modifiers = parseModifiers(name);
                     if (modifiers)
                         name = name.replace(modifierRE, '');
-                    if (prototype[attr.value])
-                        expr = attr.value + '($event, $detail)';
+                    // if (prototype[attr.value])
+                    //     expr = attr.value + '($event, $detail)';
+                    // expr = attr.value
                     name = name.replace(/^@/g, '');
                     const params = ['$event', '$detail', ...(vars || [])];
                     const fn = new Function(params.join(','), `with (this) {${expr}}`);
                     src.listeners = src.listeners || {};
-                    const handler = prototype[expr];
+                    // const handler = prototype[expr];
+                    const func = attr.value.trim();
                     src.listeners[name] = async function (e) {
                         modifiers && modifiers.stop && e.stopPropagation();
                         modifiers && modifiers.prevent && e.preventDefault();
                         modifiers && modifiers.immediate && e.stopImmediatePropagation();
+                        let result;
+                        const descriptor  = Object.getOwnPropertyDescriptor(this,  expr)
+                        const handler = this[func];
                         if (typeof handler === 'function')
-                            await handler.call(this, e, e.detail);
+                            result = handler.call(this, e, e.detail);
                         else
-                            await exec.call(this, fn, [e, e.detail, ...(e.target.$for || [])]);
-                        this.async(() => {
+                            result = exec.call(this, fn, [e, e.detail, ...(e.target.$for || [])]);
+                        if (result?.then)
+                            await result;
+                        this.debounce('event_debounce', () => {
                             this.render();
                         })
                     };
@@ -2025,7 +2034,8 @@ if (!window.ODA) {
                         x: e.clientX,
                         y: e.clientY
                     }, ddx: 0, ddy: 0, dx: 0, dy: 0,
-                    target: target
+                    target: target,
+                    startButton: e.button
                 };
                 window.addEventListener('mousemove', moveHandler);
                 window.addEventListener('mouseup', upHandler);

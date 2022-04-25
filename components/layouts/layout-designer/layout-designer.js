@@ -249,6 +249,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             [focused]{
                 @apply --content;
             }
+            [disabled]{
+                pointer-events: none;
+                opacity: .3;
+            }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);
             }
