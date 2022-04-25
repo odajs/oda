@@ -20,7 +20,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 overflow: hidden;
             }
         </style>
-        <div class="vertical shadow content" ~style="_size">
+        <div class="vertical shadow content" ~style="_size" id="main">
             <div @resize="setSize" class="vertical flex">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
@@ -63,10 +63,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 this.listen('resize', '_close', { target: w, useCapture: true });
             });
         }, 1000)
-        this.async(() => {
-            this._isAttached = true;
-            this.setSize();
-        }, 100)
+        this._isAttached = true;
+        this.setSize();
     },
     detached() {
         this.windows.forEach(w => {
@@ -229,6 +227,14 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         if (!this._size || this._size.maxHeight !== size.maxHeight || this._size.minHeight !== size.minHeight
                 || this._size.maxWidth !== size.maxWidth || this._size.minWidth !== size.minWidth)
             this._size = size;
+
+        this.async(() => {
+            const main = this.$('#main');
+            if (main.style.bottom === '0px') 
+                main.style.top = 'unset';
+            if (main.style.right === '0px') 
+                main.style.left = 'unset';
+        }, 10)
         return this._size;
     },
     _size: {},
@@ -237,7 +243,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     setSize(e) {
         if (!this._isAttached) return;
-        this['#_style'] = undefined;
+        // this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
         this._size = this._style;
         this.interval('set-size', () => {
