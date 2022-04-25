@@ -1,4 +1,12 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./tree-list.js"></script>
+<!-- <oda-tester> -->
+    <oda-tree-list-demo id="listbox"></oda-tree-list-demo>
+<!-- </oda-tester> -->
 <script type="module">
+    import '../../../oda.js';
     import './tree-list.js';
     ODA({
         is: 'oda-tree-list-demo',
@@ -25,15 +33,7 @@
         }
     });
 
-    ODA({
-        is: 'oda-tree-list-demo-header',
-        template: `<div style="border: 1px solid">Заголовок списка</div>`
-    });
+    ODA({ is: 'oda-tree-list-demo-header', template: `<div style="border: 1px solid">Заголовок списка</div>` });
 
-    ODA({
-        is: 'oda-tree-list-demo-footer',
-        template: `<div  style="border: 1px solid">Подвал списка</div>`
-    });
+    ODA({ is: 'oda-tree-list-demo-footer', template: `<div  style="border: 1px solid">Подвал списка</div>` });
 </script>
-
-<oda-tree-list-demo></oda-tree-list-demo>

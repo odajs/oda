@@ -39,7 +39,7 @@ ODA({is: 'oda-splitter', template: /*html*/`
         align: {
             default: 'vertical',
             reflectToAttribute: true,
-            list: ['horizontal', 'vertical']
+            list: ['horizontal', 'vertical'],
         },
         sign: 0,
         reverse: false,
@@ -61,7 +61,6 @@ ODA({is: 'oda-splitter', template: /*html*/`
         }
     },
     _onTrack(e, d) {
-        e.stopPropagation();
         switch (d.state) {
             case 'start': {
                 if (!this._mover) {
@@ -73,14 +72,24 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 if (this._mover) {
                     this._mover.remove();
                     this._mover = null;
+
+                    switch (this.align) {
+                        case 'horizontal': {
+                            this.parentElement.style.height = this.parentElement.offsetHeight - d.dy * this.sign + 'px';
+
+                        } break;
+                        default: {
+                            this.parentElement.style.width = this.parentElement.offsetWidth - d.dx * this.sign + 'px';
+                        } break;
+                    }
                     this.width = Math.max(0, this.width - (d.dx * this.sign));
                     this.height = Math.max(0, this.height - (d.dy * this.sign));
                     this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
-                    this.async(()=>{
-                        const event = document.createEvent('Event');
-                        event.initEvent('resize', true, true);
-                        window.dispatchEvent(event);
-                    });
+                    // this.async(()=>{
+                    //     const event = document.createEvent('Event');
+                    //     event.initEvent('resize', true, true);
+                    //     window.dispatchEvent(event);
+                    // });
                 }
             } break;
             case 'track': {
@@ -136,7 +145,7 @@ ODA({ is: 'oda-splitter-mover', template: /*html*/`
         align: {
             type: String,
             value: 'vertical',
-            reflectToAttribute: true
+            reflectToAttribute: true,
         },
         pos: Object
     },

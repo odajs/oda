@@ -1,44 +1,43 @@
-import '../../buttons/icon/icon.js';
-import '../../buttons/checkbox/checkbox.js';
-ODA({ is: 'oda-list-box', template: `
-        <style>
-            :host {
-                height: 100%;
-                @apply --vertical;
-                min-width: 150px;
-                max-width: 300px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                @apply --content;
-            }
-            :host > .listcontainer {
-                overflow: auto;
-                overflow-x: hidden;
-                text-overflow: ellipsis;
-                position: relative;
-            }
-            :host > .label {
-                opacity: 0.5;
-                padding: 4px 8px;
-            }
-            oda-list-box-item {
-                padding: {{_itemPadding}}px;
-            }
-        </style>
-        <div ref="listcontainer" class="listcontainer flex" @scroll="_onScroll" tabindex="0">
-            <div class="flex" :style="{height: \`\${ rows.length * rowSize }px\`}">
-                <div class="flex" style="position: sticky; top: 0px;" :style="{maxHeight: \`\${(rowCount + 1) * rowSize}px\`}">
-                    <div ~is="item.template || defaultTemplate || 'oda-list-box-item'" ~for="(item, i) in visibleRows" :key="i" :item="item" :icon-size="iconSize" :focused="focusedItem === item" :selected="_getSelected(multiple, selection, item)" :hide-icon="hideIcons" :combo-mode="comboMode" @tap="_tap($event, true)" @check="_check" :style="{paddingLeft: \`\${!comboMode && hasIcons && !item.icon ? \`\${_itemPadding + iconSize}px\` : ''}\`}"></div>
-                </div>
+ODA({is: 'oda-list-box', imports: '@oda/icon, @oda/checkbox',
+    template: /*html*/`
+    <style>
+        :host {
+            height: 100%;
+            min-width: 150px;
+            /*max-width: 300px;*/
+            overflow: hidden;
+            text-overflow: ellipsis;
+            @apply --vertical;
+            @apply --content;
+        }
+        :host > .listcontainer {
+            overflow: auto;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+        :host > .label {
+            opacity: 0.5;
+            padding: 4px 8px;
+        }
+        oda-list-box-item {
+            padding: {{_itemPadding}}px;
+        }{}
+    </style>
+    <div ref="listcontainer" class="listcontainer flex" @scroll="_onScroll" tabindex="0">
+        <div class="flex" :style="{height: \`\${ rows.length * rowSize }px\`}">
+            <div class="flex" style="position: sticky; top: 0px;" :style="{maxHeight: \`\${(rowCount + 1) * rowSize}px\`}">
+                <div ~is="item.template || defaultTemplate || 'oda-list-box-item'" ~for="(item, i) in visibleRows" :key="i" :item="item" :icon-size="iconSize" :focused="focusedItem === item" :selected="_getSelected(multiple, selection, item)" :hide-icon="hideIcons" :combo-mode="comboMode" @tap="_tap($event, true)" @check="_check" ~style="{paddingLeft: !comboMode && hasIcons && !item.icon ? ((_itemPadding + iconSize) + 'px') : ''}"></div>
             </div>
         </div>
-        <div ref="buttons" ~if="comboMode" class="horizontal" style="align-items: center;">
-            <oda-button class="near" icon="icons:check-box" @tap="selectAll"></oda-button>
-            <oda-button class="near" icon="icons:check-box-outline-blank" @tap="clearSelection"></oda-button>
-            <div class="flex"></div>
-            <oda-button style="width: 50%; justify-self: flex-end; margin-right: 2px;" class="raised" label="Apply" @tap="_result"></oda-button>
-        </div>
-        <span ref="counter" class="header label no-flex" :style="{height: counterHeight}" ~if="showCount" ~text="\`items count: \${ count }\`"></span>`,
+    </div>
+    <div ref="buttons" ~if="comboMode" class="horizontal" style="align-items: center;">
+        <oda-button class="near" icon="icons:check-box" @tap="selectAll"></oda-button>
+        <oda-button class="near" icon="icons:check-box-outline-blank" @tap="clearSelection"></oda-button>
+        <div class="flex"></div>
+        <oda-button style="width: 50%; justify-self: flex-end; margin-right: 2px;" class="raised" label="Apply" @tap="_result"></oda-button>
+    </div>
+    <span ref="counter" class="header label no-flex" :style="{height: counterHeight}" ~if="showCount" ~text="\`items count: \${ count }\`"></span>`,
     props: {
         iconSize: 24,
         _itemPadding: 8,
@@ -69,7 +68,7 @@ ODA({ is: 'oda-list-box', template: `
             type: Array,
             default: [],
             set(n) {
-                if (n && n.length) {
+                if (n?.length) {
                     this._calcSize();
                     this._setVisibleRows();
                 }
@@ -80,7 +79,7 @@ ODA({ is: 'oda-list-box', template: `
         count: {
             type: Number,
             get() {
-                return this.rows && this.rows.length ? this.rows.length : 0;
+                return this.rows?.length ? this.rows.length : 0;
             }
         },
         multiple: true,
@@ -112,7 +111,7 @@ ODA({ is: 'oda-list-box', template: `
         hideIcons: {
             type: Boolean,
             get() {
-                return this.items && this.items.every(i => !i.icon);
+                return this.items?.every(i => !i.icon);
             }
         },
         defaultTemplate: 'oda-list-box-item',
@@ -312,57 +311,56 @@ ODA({ is: 'oda-list-box', template: `
         this.selection.splice(0, this.selection.length, ...this.rows.filter(i => !this.selection.includes(i)));
     },
     confirmSelection() {
-        if (this.domHost) {
-            this.domHost.fire('confirm-selection', this.focusedItem);
-        }
+        this.domHost?.fire('confirm-selection', this.focusedItem);
     }
 });
-ODA({ is: 'oda-list-box-item', extends: 'oda-icon', template: `
-        <style>
-            :host{
-                @apply --horizontal;
-                @apply --flex;
-                align-items: center;
-                justify-content: left;
-                cursor: pointer;
-                position: relative;
-                background: white;
-                opacity: 0.8;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            :host(:hover){
-                outline: 1px dotted silver;
-                outline-offset: -1px;
-                opacity: 0.9;
-            }
-            :host([selected]){
-                filter: brightness(0.9);
-            }
-            :host([focused]){
-                opacity: 1;
-                color: blue;
-            }
-            :host([focused])::after{
-                content: '';
-                box-shadow: 0px 2px 0px blue;
-                position: absolute;
-                bottom: 1px;
-                left: 0px;
-                right: 0px;
-                height: 2px;
-                z-index: 1;
-            }
-            .label{
-                justify-self: flex-end;
-                @apply --flex;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        </style>
-        <oda-checkbox ~if="comboMode" :size="size" :value="selected" style="order: -1;" @tap.stop="fire('check')"></oda-checkbox>
-        <span class="label" ~text="label"></span>`,
+ODA({is: 'oda-list-box-item', extends: 'oda-icon', imports: '@oda/icon',
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --horizontal;
+            @apply --flex;
+            align-items: center;
+            justify-content: left;
+            cursor: pointer;
+            position: relative;
+            background: white;
+            opacity: 0.8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        :host(:hover) {
+            outline: 1px dotted silver;
+            outline-offset: -1px;
+            opacity: 0.9;
+        }
+        :host([selected]) {
+            filter: brightness(0.9);
+        }
+        :host([focused]) {
+            opacity: 1;
+            color: blue;
+        }
+        :host([focused])::after {
+            content: '';
+            box-shadow: 0px 2px 0px blue;
+            position: absolute;
+            bottom: 1px;
+            left: 0px;
+            right: 0px;
+            height: 2px;
+            z-index: 1;
+        }
+        .label {
+            @apply --flex;
+            justify-self: flex-end;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+    <oda-checkbox ~if="comboMode" :size="size" :value="selected" style="order: -1;" @tap.stop="fire('check')"></oda-checkbox>
+    <span class="label" ~text="label"></span>`,
     props: {
         item: {
             type: [Object, String],
@@ -391,11 +389,7 @@ ODA({ is: 'oda-list-box-item', extends: 'oda-icon', template: `
         },
         selected: {
             type: Boolean,
-            reflectToAttribute: true,
-            set(n) {
-                // console.log(`selection: ${n}`);
-            }
+            reflectToAttribute: true
         },
     },
-
 });

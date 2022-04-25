@@ -14,12 +14,18 @@
                     @apply --vertical;
                 }
             </style>
-            <div class="flex">
-                <div class="horizontal flex">
+            <div class="flex horizontal">
+                <div class="horizontal">
                     <div class="flex">СПЛИТТЕР СПРАВА</div>
                     <oda-splitter></oda-splitter>
                 </div>
-                <div class="flex"></div>
+                <div class="flex vertical">
+                    <div class="vertical">
+                        <div class="flex">СПЛИТТЕР СНИЗУ</div>
+                        <oda-splitter align="horizontal"></oda-splitter>
+                    </div>
+                    <div class="flex"></div>
+                </div>
             </div>
         `
     })
