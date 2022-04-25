@@ -22,7 +22,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         </style>
         <div class="vertical shadow content" ~style="_size" id="main">
             <div @resize="setSize" class="vertical flex">
-                <oda-title ~if="title" allow-close :icon :title>
+                <oda-title ~if="title" allow-close :icon :title @pointerdown="_pointerdown($event, this)">
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
@@ -88,6 +88,25 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         pointerleave: function cancel() {
              if (this.cancelAfterLeave) this.fire('cancel');
         },
+        'pointerdown': '_pointerdown' 
+    },
+    _pointerdown(e, d) {
+        e.stopPropagation();
+        e.preventDefault();
+        let parent = d || e.target.parentElement;
+        if (parent?.localName !== 'oda-dropdown') return;
+        let idx = 0;
+        const dd = document.body.getElementsByTagName('oda-dropdown')
+        if (dd.length) {
+            for (let i = 0; i < dd.length; i++) 
+                if (dd[i] === parent) 
+                    idx = i;
+            for (let i = 0; i < dd.length; i++) {
+                const elm = dd[i];
+                if (i > idx) 
+                    elm.fire('cancel');
+            }
+        }
     },
     props: {
         parent: { type: [HTMLElement, Object] },
@@ -105,8 +124,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         isReady: {
             default: false,
             reflectToAttribute: true,
-            cancelAfterLeave: false
         },
+        cancelAfterLeave: false,
         pointerEvents: 'unset'
     },
     contentRect: null,

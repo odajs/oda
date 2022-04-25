@@ -38,6 +38,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.style.position = 'fixed';
             host.style.width = '100%';
             host.style.height = '100%';
+            host.style.pointerEvents = 'none';    
             ctrl.domHost = host;
             host.appendChild(ctrl);
             host.style.opacity = 0;

@@ -45,9 +45,11 @@
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="useParentWidth"></oda-checkbox> - useParentWidth</div>
+                    <div class="horizontal" style="align-items:center"><oda-checkbox ::value="showTitle"></oda-checkbox> - showTitle</div>
                 </div>
             </div>
         `,
+        get title() { return this.showTitle ? 'Заголовок' : ''},
         props: {
             left: {
                 type: Number,
@@ -68,6 +70,10 @@
                 save: true
             },
             useParentWidth: {
+                type: Boolean,
+                save: true
+            },
+            showTitle: {
                 type: Boolean,
                 save: true
             },
@@ -96,7 +102,7 @@
             let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
             try {
                 const res = await ODA.showDropdown('oda-test', { icon: 'icons:warning', iconSize: 100 },
-                    { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, title: type + ` (${e.target.innerText})`, icon: 'icons:info' });
+                    { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count });
             }
             catch (e) {
                 console.log(e);
@@ -104,7 +110,7 @@
         }
     })
     ODA({
-        is: 'oda-test',
+        is: 'oda-test', imports: '@oda/button',
         template: `
             <style>
                 :host{
@@ -113,13 +119,28 @@
                     border: 4px solid red;
                     overflow: auto;
                 }
+                * {
+                    margin: 0 16px;
+                }
             </style>
             <oda-button :icon-size :icon></oda-button>
-            <div class="vertical">
-                <h4 ~for="5">Запись № {{item}}</h4>
-            </div>
+            <h4 ~for="5" class="horizontal center">
+                Запись № {{item}}
+                <oda-button :id="'Title № ' + item" @pointerdown.stop="ontap" icon="icons:add" icon-size="48"></oda-button>
+            </h4>
        `,
         iconSize: 24,
-        icon: ''
+        icon: '',
+        async ontap(e) {
+            let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
+            try {
+                count || 0;
+                count = +count + 1;
+                const res = await ODA.showDropdown('oda-test', {icon: 'icons:warning', iconSize: 100 },
+                    { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count,  });
+            }
+            catch (e) {}
+        }
     })
+    let count = 1;
 </script>
