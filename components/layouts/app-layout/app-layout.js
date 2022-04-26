@@ -132,6 +132,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     get opened() {
         return this.l_opened || this.r_opened;
     },
+    attached() {
+        this.listen('mousedown', 'smartClose', { target: window });
+    },
+    detached() {
+        this.unlisten('mousedown', 'smartClose', { target: window });
+    },
     updateCompact() {
         if (!this.autoCompact) return;
         this.compact = this.offsetWidth < this.offsetHeight;
@@ -442,10 +448,10 @@ ODA({is: 'app-layout-drawer',
                 right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
                 transform: \`translateX(\${-sign*swipe}px)\`}">
 
-        <div class="flex vertical" style="overflow: hidden; padding: 2px;" ~style="{minHeight: iconSize+'px'}">
+        <div class="flex vertical" style="overflow: hidden; padding: 2px;">
             <slot name="panel-header" class="no-flex"></slot>
             <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;" @tap.stop>
-                <div ~if="focused?.title || allowPin" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
+                <div ~if="focused?.title || allowPin" style="line-height: 2em; padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex">{{focused?.title}}</div>
                 <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size></oda-button>
 <!--                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>-->
             </div>
