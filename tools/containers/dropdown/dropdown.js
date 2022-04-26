@@ -1,3 +1,4 @@
+let _mapParents;
 ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
@@ -20,7 +21,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 overflow: hidden;
             }
         </style>
-        <div class="vertical shadow content" ~style="_size" id="main">
+        <div class="vertical shadow content" ~style="_style" id="main">
             <div @resize="setSize" class="vertical flex">
                 <oda-title ~if="title" allow-close :icon :title @pointerdown="_pointerdown($event, this)">
                     <div slot="title-left">
@@ -44,7 +45,27 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         }
     },
     controls: undefined,
-    ready() {
+    attached() {
+        if (this.parent) {
+            _mapParents ||= new Map();
+            const show = _mapParents.get(this.parent);
+            if (show) {
+                this.fire('cancel');
+            }
+            _mapParents = new Map();
+            this.async(() => {
+                const dd = document.body.getElementsByTagName('oda-dropdown');
+                if (dd.length) {
+                    for (let i = 0; i < dd.length; i++) {
+                        const elm = dd[i];
+                        _mapParents.set(elm.parent, true);
+                    }
+                }
+            }, 50)
+        }
+        this.setListen();
+    },
+    setListen() {
         let win = window;
         this.windows = [];
         while (win.window !== win) {
@@ -52,24 +73,18 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             win = win.window;
         }
         this.windows.push(win);
-        this.windows.forEach(w => {
-            this.listen('resize', 'setSize', { target: w, useCapture: true });
-            this.listen('scroll', '_close', { target: w, useCapture: true });
-        });
-    },
-    attached() {
         this.async(() => {
             this.windows.forEach(w => {
+                // this.listen('resize', 'setSize', { target: w, useCapture: true }); ???
+                this.listen('scroll', '_close', { target: w, useCapture: true });
                 this.listen('resize', '_close', { target: w, useCapture: true });
             });
-        }, 1000)
-        this._isAttached = true;
-        this.setSize();
+        }, 500)
     },
     detached() {
         this.windows.forEach(w => {
+            // this.unlisten('resize', 'setSize', { target: w, useCapture: true });
             this.unlisten('resize', '_close', { target: w, useCapture: true });
-            this.unlisten('resize', 'setSize', { target: w, useCapture: true });
             this.unlisten('scroll', '_close', { target: w, useCapture: true });
         });
     },
@@ -96,7 +111,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         let parent = d || e.target.parentElement;
         if (parent?.localName !== 'oda-dropdown') return;
         let idx = 0;
-        const dd = document.body.getElementsByTagName('oda-dropdown')
+        const dd = document.body.getElementsByTagName('oda-dropdown');
         if (dd.length) {
             for (let i = 0; i < dd.length; i++)
                 if (dd[i] === parent)
@@ -131,17 +146,16 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     contentRect: null,
     get _style() {
         const rect = new ODARect(this.parent);
-        let top = rect.top;
-        let left = rect.left;
         // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
-        if (!height || !width)
-            return { top: top + 'px', left: left + 'px' };
-
         let winWidth = window.innerWidth;
         let winHeight = window.innerHeight;
+        let top = this.align === 'modal' ? winHeight / 2 - height / 2 : rect.top;
+        let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
+        if (!height || !width)
+            return { top: top + 'px', left: left + 'px' };
         let maxHeight = winHeight;
         let maxWidth = winWidth;
         let minHeight = height || this.minHeight;
@@ -156,7 +170,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             parentWidth += rect.left;
         let size = {};
         this._steps = this._steps || [];
-        this.align = ['left', 'right', 'top', 'bottom'].includes(this.align) ? this.align : 'bottom';
+        this.align = ['left', 'right', 'top', 'bottom', 'modal'].includes(this.align) ? this.align : 'bottom';
         switch (this.align) {
             case 'left': {
                 right = this.intersect ? rect.right : rect.left;
@@ -243,9 +257,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         if (!size.hasOwnProperty('right')) size.left = left;
         Object.keys(size).forEach(k => size[k] += 'px');
         this._steps = [];
-        if (!this._size || this._size.maxHeight !== size.maxHeight || this._size.minHeight !== size.minHeight
-                || this._size.maxWidth !== size.maxWidth || this._size.minWidth !== size.minWidth)
-            this._size = size;
 
         this.async(() => {
             const main = this.$('#main');
@@ -254,17 +265,14 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             if (main.style.right === '0px')
                 main.style.left = 'unset';
         }, 10)
-        return this._size;
+        return size;
     },
-    _size: {},
     get control(){
         return this.controls?.[0];
     },
     setSize(e) {
-        if (!this._isAttached) return;
-        // this['#_style'] = undefined;
+        this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
-        this._size = this._style;
         this.interval('set-size', () => {
             this.isReady = true;
         })
