@@ -18,20 +18,12 @@ ODA({is: 'oda-menu', imports: '@oda/button',
             @apply --vertical;
             overflow: hidden;
         }
-        :host>div {
+        :host > div {
             overflow-y: auto;
         }
-        /*:host>div[not-group]:hover, div[not-group]>.row:hover{
-            outline: 1px dotted;
-            outline-offset: -1px;
-            @apply --active;
-        }*/
         .row {
             align-items: center;
         }
-        /*.item:hover {
-            @apply --active;
-        }*/
         .header {
             @apply --header;
         }
