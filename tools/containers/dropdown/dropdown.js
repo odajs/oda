@@ -107,7 +107,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     _pointerdown(e, d) {
         e.stopPropagation();
-        // e.preventDefault();
+        e.preventDefault();
         let parent = d || e.target.parentElement;
         if (parent?.localName !== 'oda-dropdown') return;
         let idx = 0;

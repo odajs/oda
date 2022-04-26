@@ -29,10 +29,10 @@ ODA({is: 'oda-menu', imports: '@oda/button',
         }
     </style>
     <div class="vertical flex">
-        <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
+        <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
             <div class="flex horizontal row" ~class="item.group?'header':'content'">
                 <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
-                <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop="showSubMenu"></oda-button>
+                <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
             </div>
         </div>
     </div>
