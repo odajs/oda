@@ -75,15 +75,15 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         this.windows.push(win);
         this.async(() => {
             this.windows.forEach(w => {
-                // this.listen('resize', 'setSize', { target: w, useCapture: true }); ???
                 this.listen('scroll', '_close', { target: w, useCapture: true });
                 this.listen('resize', '_close', { target: w, useCapture: true });
+                this.listen('pointerdown', '_close', { target: w, useCapture: true });
             });
         }, 500)
     },
     detached() {
         this.windows.forEach(w => {
-            // this.unlisten('resize', 'setSize', { target: w, useCapture: true });
+            this.unlisten('pointerdown', '_close', { target: w, useCapture: true });
             this.unlisten('resize', '_close', { target: w, useCapture: true });
             this.unlisten('scroll', '_close', { target: w, useCapture: true });
         });
@@ -286,6 +286,9 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 dd = dd.nextElementSibling;
             }
         }
-        this.fire('cancel');
+        this.windows.map(i => {
+            if (i === e.target)
+                this.fire('cancel');
+        }) 
     }
 });
