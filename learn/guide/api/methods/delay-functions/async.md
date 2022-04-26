@@ -87,7 +87,7 @@ async (handler, delay = 0)
 
 Например, строка **'up'** будет заменена на вызов **this.up.bind(this)**, а строка **'down'** — на вызов **this.down.bind(this)**.
 
-Аналогичная ситуация происходит при вызове анонимной функции, контекст которой зависит от способа её вызова. Метод **async** вызывает её с помощью метода **setTimeout**, внутри которого указатель **this** всегда по умолчанию ссылается на глобальный объект **window**.
+При не нулевой задержке метод **async** вызывает её с помощью метода **setTimeout**, внутри которого указатель **this** всегда ссылается на глобальный объект **window**. Если задержка не нулевая, то используется метод **requestAnimationFrame**. В этом случае указатель **this** будет иметь неопределенное значение **undefined**, т.к. используется строгий режим **'use strict'**. В результате этого при вызове анонимных функций контекст компонента придется к ним всегда привязывать явно с помощью метода **bind**.
 
 Например,
 
@@ -102,13 +102,34 @@ async (handler, delay = 0)
         count: 0
     },
     onTap() {
-        this.async(function() {this.label="Я выполняюсь только через секунду";}.bind(this), 1000);
-        this.async(function() {this.label="Нажми на меня";}.bind(this), 2000);
+        this.async(function() {this.label="Я выполняюсь только через секунду"}.bind(this), 1000);
+        this.async(function() {this.label="Нажми на меня"}.bind(this), 2000);
     }
 });
 ```
 
-Таким образом, при использовании метода **async**, к не стрелочным функциям необходимо явно привязывать контекст компонента с помощью метода **bind**, так как в противном случае указатель **this** внутри обработчиков будет ссылаться на глобальный объект **window**, а не на сам компонент.
+Если этого не сделать, то указатель **this** внутри анонимных функций не будет ссылаться на текущей компонент. В результате этого следующий пример будет работать неправильно.
+
+Например,
+
+```javascript error_run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="onTap">{{label}}</button>
+    `,
+    props: {
+        label: 'Нажмите меня',
+        count: 0
+    },
+    onTap() {
+        this.async(function() {this.label="Объект window"}, 1000);
+        this.async(function() {this.label=window.label}.bind(this), 2000);
+    }
+});
+```
+
+Здесь свойство **label** в первой функции будет изменяться у глобального объект **window**, а не у текущего компонента. Вторая функция будет работать правильно.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/aPL3cwOJOCs?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
