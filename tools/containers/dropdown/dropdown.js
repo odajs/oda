@@ -48,13 +48,20 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     attached() {
         if (this.parent) {
             _mapParents ||= new Map();
-            const show = _mapParents.get(this.parent);
-            if (show) {
+            const storedInMapParents = _mapParents.get(this.parent);
+            let isInDropdown = false;
+            const dd = document.body.getElementsByTagName('oda-dropdown');
+            if (dd.length) {
+                for (let i = 0; i < dd.length; i++) {
+                    const elm = dd[i];
+                    isInDropdown ||= elm.parent === this.parent;
+                }
+            }
+            if (storedInMapParents && isInDropdown) {
                 this.fire('cancel');
             }
             _mapParents = new Map();
             this.async(() => {
-                const dd = document.body.getElementsByTagName('oda-dropdown');
                 if (dd.length) {
                     for (let i = 0; i < dd.length; i++) {
                         const elm = dd[i];
@@ -102,8 +109,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     listeners: {
         pointerleave: function cancel() {
              if (this.cancelAfterLeave) this.fire('cancel');
-        },
-        'pointerdown': '_pointerdown'
+        }
     },
     _pointerdown(e, d) {
         e.stopPropagation();
