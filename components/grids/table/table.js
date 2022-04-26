@@ -666,7 +666,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         },
         'space'(e) {
-            e.preventDefault();
+            // e.preventDefault();
             this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         }
     },

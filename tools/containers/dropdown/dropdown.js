@@ -88,22 +88,22 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         pointerleave: function cancel() {
              if (this.cancelAfterLeave) this.fire('cancel');
         },
-        'pointerdown': '_pointerdown' 
+        'pointerdown': '_pointerdown'
     },
     _pointerdown(e, d) {
         e.stopPropagation();
-        e.preventDefault();
+        // e.preventDefault();
         let parent = d || e.target.parentElement;
         if (parent?.localName !== 'oda-dropdown') return;
         let idx = 0;
         const dd = document.body.getElementsByTagName('oda-dropdown')
         if (dd.length) {
-            for (let i = 0; i < dd.length; i++) 
-                if (dd[i] === parent) 
+            for (let i = 0; i < dd.length; i++)
+                if (dd[i] === parent)
                     idx = i;
             for (let i = 0; i < dd.length; i++) {
                 const elm = dd[i];
-                if (i > idx) 
+                if (i > idx)
                     elm.fire('cancel');
             }
         }
@@ -137,7 +137,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
-        if (!height || !width) 
+        if (!height || !width)
             return { top: top + 'px', left: left + 'px' };
 
         let winWidth = window.innerWidth;
@@ -249,9 +249,9 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
 
         this.async(() => {
             const main = this.$('#main');
-            if (main.style.bottom === '0px') 
+            if (main.style.bottom === '0px')
                 main.style.top = 'unset';
-            if (main.style.right === '0px') 
+            if (main.style.right === '0px')
                 main.style.left = 'unset';
         }, 10)
         return this._size;
