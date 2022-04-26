@@ -442,12 +442,12 @@ ODA({is: 'app-layout-drawer',
                 right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
                 transform: \`translateX(\${-sign*swipe}px)\`}">
 
-        <div class="flex vertical" style="overflow: hidden;">
+        <div class="flex vertical" style="overflow: hidden; padding: 2px;" ~style="{minHeight: iconSize+'px'}">
             <slot name="panel-header" class="no-flex"></slot>
-            <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;font-size: 80%" @tap.stop>
+            <div ~if="showTitle || focused?.title" class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="background-color: black; color: white; fill: white; align-items: center;" @tap.stop>
                 <div ~if="focused?.title || allowPin" style="padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex" >{{focused?.title}}</div>
-                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size="iconSize*0.66"></oda-button>
-                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>
+                <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size></oda-button>
+<!--                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>-->
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
