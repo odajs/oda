@@ -46,7 +46,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     controls: undefined,
     attached() {
-        if (this.parent) {
+        if (this.parent && !this.intersect) {
             _mapParents ||= new Map();
             const storedInMapParents = _mapParents.get(this.parent);
             let isInDropdown = false;
@@ -62,7 +62,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             }
             _mapParents = new Map();
             this.async(() => {
-                if (dd.length && !this.intersect) {
+                if (dd.length) {
                     for (let i = 0; i < dd.length; i++) {
                         const elm = dd[i];
                         _mapParents.set(elm.parent, true);

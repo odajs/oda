@@ -128,7 +128,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
 
                 windows.forEach(w => {
                     w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('mousedown', onMouseDown, true);
+                    w.addEventListener('pointerdown', onMouseDown, true);
                 });
             });
             result.finally(() => {
@@ -141,7 +141,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
 
                 windows.forEach(w => {
                     w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('mousedown', onMouseDown, true);
+                    w.removeEventListener('pointerdown', onMouseDown, true);
                 });
 
                 setTimeout(() => host.remove());
