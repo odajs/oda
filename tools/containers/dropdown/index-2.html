@@ -103,7 +103,7 @@
             let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
             try {
                 const res = await ODA.showDropdown('oda-test', { icon: 'icons:warning', iconSize: 100 },
-                    { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count });
+                    { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count, pointerEvents: 'none' });
             }
             catch (e) {
                 console.log(e);
@@ -138,7 +138,7 @@
                 count || 0;
                 count = +count + 1;
                 const res = await ODA.showDropdown('oda-test', {icon: 'icons:warning', iconSize: 100 },
-                    { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count,  });
+                    { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count, pointerEvents: 'none' });
             }
             catch (e) {}
         }

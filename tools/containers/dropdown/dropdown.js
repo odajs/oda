@@ -47,28 +47,30 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     controls: undefined,
     attached() {
         if (this.parent) {
-            _mapParents ||= new Map();
-            const storedInMapParents = _mapParents.get(this.parent);
-            let isInDropdown = false;
-            const dd = document.body.getElementsByTagName('oda-dropdown');
-            if (dd.length) {
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    isInDropdown ||= elm.parent === this.parent;
-                }
-            }
-            if (storedInMapParents && isInDropdown) {
-                this.fire('cancel');
-            }
-            _mapParents = new Map();
-            this.async(() => {
-                if (dd.length) {
-                    for (let i = 0; i < dd.length; i++) {
-                        const elm = dd[i];
-                        _mapParents.set(elm.parent, true);
-                    }
-                }
-            }, 50)
+            // this.async(() => {
+            //     _mapParents ||= new Map();
+            //     const storedInMapParents = _mapParents.get(this.parent);
+            //     let isInDropdown = false;
+            //     const dd = document.body.getElementsByTagName('oda-dropdown');
+            //     if (dd.length) {
+            //         for (let i = 0; i < dd.length; i++) {
+            //             const elm = dd[i];
+            //             isInDropdown ||= elm.parent === this.parent;
+            //         }
+            //     }
+            //     if (storedInMapParents && isInDropdown) {
+            //         this.fire('cancel');
+            //     }
+            //     _mapParents = new Map();
+            //     this.async(() => {
+            //         if (dd.length) {
+            //             for (let i = 0; i < dd.length; i++) {
+            //                 const elm = dd[i];
+            //                 _mapParents.set(elm.parent, true);
+            //             }
+            //         }
+            //     }, 10)
+            // })
         }
         this.setListen();
     },
@@ -292,9 +294,5 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 dd = dd.nextElementSibling;
             }
         }
-        this.windows.map(i => {
-            if (i === e.target)
-                this.fire('cancel');
-        }) 
     }
 });
