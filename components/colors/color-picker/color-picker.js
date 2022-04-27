@@ -13,15 +13,15 @@ export default ODA({ is: 'oda-color-picker',
                 background-image: {{gradientMode?value:''}};
                 background-color: {{gradientMode?'':value}};
                 font-size: small;
-                @apply --raised;
-                @apply --text-shadow;
-                color: white;
+                /*@apply --raised;*/
+                /*@apply --text-shadow;*/
+                color: {{value}};
             }
             :host([read-only]){
                 pointer-events: none;
             }
             :host(:hover) {
-                @apply --shadow;
+                @apply --raised;
             }
         </style>
     `,

@@ -46,7 +46,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     controls: undefined,
     attached() {
-        this.setListen();
         if (this.parent) {
             _mapParents ||= new Map();
             const storedInMapParents = _mapParents.get(this.parent);
@@ -63,14 +62,15 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             }
             _mapParents = new Map();
             this.async(() => {
-                if (dd.length > 1) {
+                if (dd.length && !this.intersect) {
                     for (let i = 0; i < dd.length; i++) {
                         const elm = dd[i];
                         _mapParents.set(elm.parent, true);
                     }
                 }
-            }, 10)
+            }, 100)
         }
+        this.setListen();
     },
     setListen() {
         let win = window;
@@ -85,13 +85,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 this.listen('scroll', '_close', { target: w, useCapture: true });
                 //this.listen('resize', '_close', { target: w, useCapture: true });
                 window.addEventListener('resize', this.__close ||= this._close.bind(this));
-                this.listen('pointerdown', '_close', { target: w, useCapture: true });
             });
         }, 500)
     },
     detached() {
         this.windows.forEach(w => {
-            this.unlisten('pointerdown', '_close', { target: w, useCapture: true });
             window.removeEventListener('resize', this.__close);
             //this.unlisten('resize', '_close', { target: w, useCapture: true });
             this.unlisten('scroll', '_close', { target: w, useCapture: true });

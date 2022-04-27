@@ -142,7 +142,7 @@ ODA({ is: 'oda-pg-cell-value',
     `,
     item: null,
     async showDD(e){
-        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
+        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
         this.item.value = res.focusedItem.value;
     },
     resetValue() {
@@ -304,7 +304,7 @@ ODA({ is: 'oda-property-grid-cell',
     `,
     item: null,
     async showDD(e){
-        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost});
+        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
         this.item.value = res.focusedItem.value;
     }
 })

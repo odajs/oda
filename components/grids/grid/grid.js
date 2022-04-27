@@ -10,7 +10,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal">
             <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header no-flex">
-                <div class="vertical flex">
+                <div class="vertical flex" @resize="correctPanelSize">
                     <oda-grid-header fix="left" ~if="showHeader"></oda-grid-header>
                     <oda-grid-body fix="left" class="flex"></oda-grid-body>
                     <oda-grid-footer fix="left" ~if="showFooter"></oda-grid-footer>
@@ -33,6 +33,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         </div>
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
     `,
+    correctPanelSize(e){
+        e.target.parentElement.style.minWidth =  e.target.offsetWidth+'px';
+    },
     async showSettings(e){
         await ODA.import('@tools/property-grid');
         try{
@@ -53,7 +56,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return this.clientWidth;
     },
     headerResize(e){
-        return;
+        // return;
         this.interval('header-resize',()=>{
             const headers = this.table.$$('oda-grid-header')
             let height = 0;
@@ -85,6 +88,11 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return convertColumns(this.columns)
     },
     props:{
+        sizerColor:{
+            default: 'gray',
+            save: true,
+            editor: '@oda/color-picker'
+        },
         autoWidth: {
             default: false,
             save: true
@@ -137,8 +145,8 @@ ODA({is:'oda-grid-header',
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
-            <div class="horizontal no-flex" style="min-width: 100%;" ~class="{flex: fix}">
-                <oda-grid-header-cell ~for="headColumns" :last="index === items.length-1" :column="item" ~class="{flex: item === items.last && (fix || autoWidth)}"></oda-grid-header-cell>
+            <div class="horizontal" style="min-width: 100%;" ~class="{flex: fix}">
+                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" ~class="{flex: item === items.last && (fix || autoWidth), 'no-flex': item !== items.last}"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -146,9 +154,6 @@ ODA({is:'oda-grid-header',
         return this.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
     },
     fix: ''
-})
-ODA({is: 'oda-grid-cell',
-    lastInBlock: false,
 })
 ODA({
     is: 'oda-grid-header-cell',
@@ -176,10 +181,10 @@ ODA({
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; margin: 8px;">{{column?.label || column?.name}}</span>
             <oda-icon @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
-            <span ~if="!last || !fix" class="no-flex" style="width: 4px; height: 100%; cursor: col-resize; border-right: 1px solid gray;" @track="onColSizeTrack"></span>
+            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '2px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: item === items.last}" :last-in-column="index  === items.length-1"></oda-grid-header-cell>
+            <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: item === items.last}" :last="item  === items.last"></oda-grid-header-cell>
         </div>
         <div class="horizontal" ~if="showFilter && !column?.$expanded"  ~style="_style">
             <input  class="flex" ::value="filter">
@@ -193,12 +198,13 @@ ODA({
         }
     },
     get _style(){
-        const s = {minWidth: (this.column?.minWidth || (this.iconSize * ((this.column?.items)?3:2)))+'px', width: this.column?.width?this.column?.width+'px':'auto'};
-        return s;
+        const min = Math.max((this.iconSize *  (this.column?.items?.length || 1) * 2), this.column?.minWidth || 0);
+        return {minWidth: min+'px', width: this.column?.width?this.column?.width+'px':'auto'};
     },
-
+    get hideSizer(){
+        return ((this.fix || this.autoWidth) && this.last && (this.domHost?.localName !== this.localName ||  (this.domHost?.last && this.domHost?.hideSizer)));
+    },
     last: false,
-    lastInColumn: false,
     onColSizeTrack(e){
         const target = e.detail.target.parentElement;
         switch(e.detail.state){
