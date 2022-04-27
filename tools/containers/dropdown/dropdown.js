@@ -23,7 +23,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         </style>
         <div class="vertical shadow content" ~style="_style" id="main">
             <div @resize="setSize" class="vertical flex">
-                <oda-title ~if="title" allow-close :icon :title @pointerdown="_pointerdown($event, this)">
+                <oda-title ~if="title" allow-close :icon :title @pointerdown.stop.perv="_tapClose">
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
@@ -46,7 +46,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     controls: undefined,
     attached() {
-        if (this.parent && !this.intersect) {
+        if (this.parent && this.useParentState && !this.intersect) {
             _mapParents ||= new Map();
             const storedInMapParents = _mapParents.get(this.parent);
             let isInDropdown = false;
@@ -60,17 +60,21 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             if (storedInMapParents && isInDropdown) {
                 this.fire('cancel');
             }
-            _mapParents = new Map();
-            this.async(() => {
-                if (dd.length) {
-                    for (let i = 0; i < dd.length; i++) {
-                        const elm = dd[i];
-                        _mapParents.set(elm.parent, true);
-                    }
-                }
-            }, 100)
+            this.setMapParents();
         }
         this.setListen();
+    },
+    setMapParents() {
+        _mapParents = new Map();
+        this.async(() => {
+            const dd = document.body.getElementsByTagName('oda-dropdown');
+            if (dd.length) {
+                for (let i = 0; i < dd.length; i++) {
+                    const elm = dd[i];
+                    _mapParents.set(elm.parent, true);
+                }
+            }
+        }, 100)
     },
     setListen() {
         let win = window;
@@ -111,22 +115,17 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
              if (this.cancelAfterLeave) this.fire('cancel');
         }
     },
-    _pointerdown(e, d) {
-        e.stopPropagation();
-        e.preventDefault();
-        let parent = d || e.target.parentElement;
-        if (parent?.localName !== 'oda-dropdown') return;
-        let idx = 0;
+    _tapClose(e) {
+        let idx = -1;
         const dd = document.body.getElementsByTagName('oda-dropdown');
         if (dd.length) {
-            for (let i = 0; i < dd.length; i++)
-                if (dd[i] === parent)
-                    idx = i;
             for (let i = 0; i < dd.length; i++) {
-                const elm = dd[i];
-                if (i > idx)
-                    elm.fire('cancel');
+                if (dd[i] === this)
+                    idx = i;
+                if (idx >= 0)
+                    dd[i].fire('cancel');
             }
+            this.setMapParents();
         }
     },
     props: {
