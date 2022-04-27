@@ -83,7 +83,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             element.focus();
             element.selectionStart = 0;
             element.select();
-        })
+        }, 300);
     },
     dropdown(e) {
         if (this._list) this._list = undefined;

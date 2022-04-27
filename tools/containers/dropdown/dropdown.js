@@ -83,7 +83,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         this.async(() => {
             this.windows.forEach(w => {
                 this.listen('scroll', '_close', { target: w, useCapture: true });
-                this.listen('resize', '_close', { target: w, useCapture: true });
+                //this.listen('resize', '_close', { target: w, useCapture: true });
+                window.addEventListener('resize', this.__close ||= this._close.bind(this));
                 this.listen('pointerdown', '_close', { target: w, useCapture: true });
             });
         }, 500)
@@ -91,7 +92,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     detached() {
         this.windows.forEach(w => {
             this.unlisten('pointerdown', '_close', { target: w, useCapture: true });
-            this.unlisten('resize', '_close', { target: w, useCapture: true });
+            window.removeEventListener('resize', this.__close);
+            //this.unlisten('resize', '_close', { target: w, useCapture: true });
             this.unlisten('scroll', '_close', { target: w, useCapture: true });
         });
     },
