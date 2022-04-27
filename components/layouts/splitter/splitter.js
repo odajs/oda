@@ -73,11 +73,14 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 this._mover?.remove();
                 switch (this.align) {
                     case 'horizontal': {
+                        this.parentElement.style.minHeight = '';
                         this.parentElement.style.height = this.parentElement.offsetHeight - d.dy * this.sign + 'px';
-
+                        this.parentElement.style.minHeight = this.parentElement.scrollHeight + 'px';
                     } break;
                     default: {
+                        this.parentElement.style.minWidth = '';
                         this.parentElement.style.width = this.parentElement.offsetWidth - d.dx * this.sign + 'px';
+                        this.parentElement.style.minWidth = this.parentElement.scrollWidth + 'px';
                     } break;
                 }
                 this.width = Math.max(0, this.width - (d.dx * this.sign));
@@ -119,6 +122,7 @@ ODA({ is: 'oda-splitter-mover', template: /*html*/`
             animation: fadin 5s ease-in-out;
             background-color: rgba(0, 0, 0, 0.4);
             z-index: 1000;
+            cursor: col-resize;
         }
         :host div{
             position: absolute;
