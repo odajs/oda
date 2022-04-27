@@ -294,5 +294,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 dd = dd.nextElementSibling;
             }
         }
+        this.fire('cancel');
     }
-});
+})
