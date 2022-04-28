@@ -56,17 +56,15 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return this.clientWidth;
     },
     headerResize(e){
-        // return;
         this.interval('header-resize',()=>{
             const headers = this.table.$$('oda-grid-header')
             let height = 0;
             headers.forEach(h=>{
-                h.style.height = '';
-                if (height<h.offsetHeight)
-                    height = h.offsetHeight;
+                if (height < h.scrollHeight)
+                    height = h.scrollHeight;
             })
             headers.forEach(h=>{
-                h.style.height = height+'px';
+                h.style.minHeight = height+'px';
             })
         })
     },
@@ -105,9 +103,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             default: true,
             save: true,
             set(n){
-                this.async(()=>{
-                    this.headerResize();
-                })
+                this.headerResize();
             }
         },
         showFooter:{
@@ -142,11 +138,12 @@ ODA({is:'oda-grid-header',
                 @apply --dark;
                 overflow: hidden;
                 @apply --raised;
+                overflow-y: visible;
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
             <div class="horizontal" style="min-width: 100%;" ~class="{flex: fix}">
-                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" ~class="{flex: item === items.last && (fix || autoWidth), 'no-flex': item !== items.last}"></oda-grid-header-cell>
+                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" :parent-items="items" ~class="{flex: item === items.last && (fix || autoWidth), 'no-flex': item !== items.last || (!fix && !autoWidth)}"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -165,6 +162,7 @@ ODA({
                 cursor: pointer;
                 @apply --header;
                 order: {{column?.index || 0}};
+                @apply --raised;
             }
             oda-button{
                 font-size: xx-small;
@@ -179,12 +177,12 @@ ODA({
         </style>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="_style">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
-            <span class="flex" style="text-overflow: ellipsis; overflow: hidden; margin: 8px;">{{column?.label || column?.name}}</span>
-            <oda-icon @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
-            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '2px solid ' + sizerColor}" @track="onColSizeTrack"></span>
+            <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
+            <oda-icon ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
+            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '1px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~for="column?.items" :column="item" ~class="{flex: item === items.last}" :last="item  === items.last"></oda-grid-header-cell>
+            <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="{flex: item === items.last || autoWidth, 'no-flex': item !== items.last && !autoWidth}" :last="item  === items.last"></oda-grid-header-cell>
         </div>
         <div class="horizontal" ~if="showFilter && !column?.$expanded"  ~style="_style">
             <input  class="flex" ::value="filter">
@@ -192,14 +190,32 @@ ODA({
             <span class="no-flex" style="width: 4px; height: 100%; border-right: 1px solid gray;"></span>
         </div>
     `,
+    parentItems: null,
+    props:{
+        title:{
+            get(){
+                return /*(this.column?.label ||  this.column?.name)+*/(this.column.minWidth||0)+':'+(this.column.width||0)
+            },
+            reflectToAttribute: true
+        }
+
+    },
+    column: null,
     listeners:{
         resize(e){
             this.headerResize();
         }
     },
     get _style(){
-        const min = Math.max((this.iconSize *  (this.column?.items?.length || 1) * 2), this.column?.minWidth || 0);
-        return {minWidth: min+'px', width: this.column?.width?this.column?.width+'px':'auto'};
+        if (!this.autoWidth){
+            const min = Math.max((this.iconSize / 2 *  (this.column?.items?.length || 1)), this.column?.minWidth || 0);
+            const res  = {minWidth: min + 'px'};
+            if(!this.column?.$expanded)
+                res.width = this.column?.width?this.column?.width+'px':'auto';
+            else
+                res.width =  'auto';
+            return res;
+        }
     },
     get hideSizer(){
         return ((this.fix || this.autoWidth) && this.last && (this.domHost?.localName !== this.localName ||  (this.domHost?.last && this.domHost?.hideSizer)));
@@ -213,8 +229,8 @@ ODA({
                 this.column.minWidth = 0;
             } break;
             case 'track':{
-                this.resetUp();
-                this.resetDown();
+                // this.resetUp();
+                // this.resetDown();
                 const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
@@ -227,7 +243,8 @@ ODA({
                 this.column.width = target.offsetWidth;
             } break;
             case 'end':{
-                this.column.minWidth = target.offsetWidth;
+                target.style.width = '';
+                // this.column.minWidth = target.offsetWidth;
                 if (this.column.items?.length){
                     this.$next(()=>{
                         target.style.width = '';
@@ -236,30 +253,42 @@ ODA({
             } break;
         }
     },
-    resetUp(){
-        if (!this.lastInColumn || !this.domHost?.column) return;
-        this.domHost.column.minWidth = 0;
-        this.domHost.column.width = 0;
-        this.domHost.resetUp?.();
-    },
-    resetDown(){
-        const col = this.$$('oda-grid-header-cell').last;
-        if (!col) return;
-        col.column.minWidth = 0;
-        col.column.width = 0;
-        col.resetDown();
-    },
+    // resetUp(){
+    //     if (!this.lastInColumn || !this.domHost?.column) return;
+    //     this.domHost.column.minWidth = 0;
+    //     this.domHost.column.width = 0;
+    //     this.domHost.resetUp?.();
+    // },
+    // resetDown(){
+    //     const col = this.$$('oda-grid-header-cell').last;
+    //     if (!col) return;
+    //     col.column.minWidth = 0;
+    //     col.column.width = 0;
+    //     col.resetDown();
+    // },
     onMove(e){
         switch (e.detail.state){
             case 'track':{
                 this.style.zIndex = 1;
                 this.style.transform = `translate(${e.detail.dx}px)`;
-                this.classList.add('shadow');
+                const delta = this.offsetWidth/2;
+                if (Math.abs(e.detail.dx) > delta){
+                    if (e.detail.dx < 0){
+                        const idx = this.parentItems.indexOf(this.column);
+                        this.parentItems.splice(idx, 1)
+                        this.parentItems.splice(idx-1, 0, this.column)
+                        // this.previousElementSibling.style.transform = `translate(${this.offsetWidth}px)`;
+                    }
+                    // console.log(e.detail.dx , this.offsetWidth)
+                }
+                //
             } break;
             case 'end':{
                 this.style.zIndex = 0;
                 this.style.transform = '';
-                this.classList.remove('shadow');
+                // const idx = this.parentItems.indexOf(this.column);
+                // this.parentItems.splice(idx, 1)
+                // this.parentItems.splice(idx-1, 0, this.column)
             } break;
         }
     },
