@@ -44,39 +44,24 @@ ODA({ is: 'oda-dino',
             <path d="M143 90,v9,h20,v-1,h7,v-8,z" fill="grey" id="month-bow" visibility="hidden"/>
 
             <!--Первая нога-->
-            <path d=" M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z " id="first-leg" visibility="hidden"/>
-
-            <!--Вторая нога-->
-            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden"/>
-
-            <!-- Третья нога -->
-            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg"/>
-
-            <!--Четвертая нога-->
-            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg"/>
-
-            <!--Первая нога наклон-->
-            <path d=" M35 111, v25, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, h-16, v1, z " id="first-leg-bow" visibility="hidden" class="hidden">
-                <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite" id="first-leg-anim"/>
+            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Вторая нога наклон-->
-            <path d="M54 110, v26, h13, v-6, h-6, v-7, h6, v-6, h7, v-7, z " id="second-leg-bow" visibility="hidden" class="hidden"/>
+            <!--Вторая нога-->
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
 
-            <!--Третья нога наклон-->
-            <path d=" M67 110, v7, h16, v-6, h-6, v-1, z " id="third-leg-bow" visibility="hidden" class="hidden"/>
+            <!-- Третья нога -->
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg">
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
 
-            <!-- Четвертая нога наклон -->
-            <path d=" M35 111, v12, h13, v-6, h-6, v-7, h-4, v1, z " visibility="hidden" id="fourth-leg-bow" class="hidden"/>
-
-            <!-- <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite" id="first-leg-anim"/> -->
-            <animate href="#fourth-leg" attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-            <animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite" id="second-leg-anim"/>
-            <animate href="#third-leg" attributeName = "visibility" values = "visible;hidden" dur="0.3s" repeatCount = "indefinite"/>
-            <animate href="#first-leg-bow" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite" id="first-leg-bow-anim"/>
-            <animate href="#fourth-leg-bow" attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-            <animate href="#second-leg-bow" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite" id="second-leg-bow-anim"/>
-            <animate href="#third-leg-bow" attributeName = "visibility" values = "visible;hidden" dur="0.3s" repeatCount = "indefinite"/>
+            <!--Четвертая нога-->
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
         </svg>
     `,
     props: {

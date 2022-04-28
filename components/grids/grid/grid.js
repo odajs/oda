@@ -154,17 +154,26 @@ ODA({is:'oda-grid-header',
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
             <div class="horizontal" style="min-width: 100%;" ~class="{flex: fix}">
-                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" :parent-items="items" ~class="{flex: item === items.last && (fix || autoWidth), 'no-flex': item !== items.last || (!fix && !autoWidth)}"></oda-grid-header-cell>
+                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" :parent-items="items" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
     get headColumns(){
         return this.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
     },
-    fix: ''
+    fix: '',
+    getColumnClass(items, item, top){
+        let flex;
+        if (top && !this.fix && item === items.last)
+            flex = this.autoWidth;
+        else if (item === items.last)
+            flex = true;
+        else
+            flex = !item.width && this.autoWidth;
+        return {flex: flex, "no-flex": !flex};
+    }
 })
-ODA({
-    is: 'oda-grid-header-cell',
+ODA({is: 'oda-grid-header-cell',
     template: `
         <style>
             :host{
@@ -185,14 +194,14 @@ ODA({
                 outline: none;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="_style">
+        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
             <oda-icon ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="{flex: item === items.last || autoWidth, 'no-flex': item !== items.last && !autoWidth}" :last="item  === items.last"></oda-grid-header-cell>
+            <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last"></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (offsetWidth > iconSize * 2)?'visible':'hidden'}">
@@ -204,7 +213,7 @@ ODA({
     props:{
         title:{
             get(){
-                return /*(this.column?.label ||  this.column?.name)+*/(this.column.minWidth||0)+':'+(this.column.width||0)
+                return /*(this.column?.label ||  this.column?.name)+*/(this.column.$width || '')+':'+(this.column.width || '')
             },
             reflectToAttribute: true
         }
@@ -213,19 +222,26 @@ ODA({
     column: null,
     listeners:{
         resize(e){
-            this.headerResize();
+            this.interval('column-resize', ()=>{
+                this.headerResize();
+                this.column.$width = this.offsetWidth;
+            })
+
         }
     },
-    get _style(){
-        // if (!this.autoWidth){
-            const min = this.iconSize / 2 *  (this.column?.items?.length || 1); //Math.max((this.iconSize / 2 *  (this.column?.items?.length || 1)), this.column?.minWidth || 0);
-            const res  = {minWidth: min + 'px'};
-            if (!this.autoWidth || !this.last)
-                res.width = (this.column?.width)?(this.column?.width+'px'):'auto';
+    getStyle(){
+        const min = this.iconSize / 2 *  (this.column?.items?.length || 1);
+        const res  = {minWidth: min + 'px'};
+        if (this.column.width){
+            if (!this.column?.$expanded || this.offsetWidth <= this.column.width)
+                res.width = this.column.width + 'px';
             else
                 res.width = 'auto';
-            return res;
-        // }
+        }
+        else{
+            res.width = 'auto';
+        }
+        return res;
     },
     get hideSizer(){
         return ((this.fix || this.autoWidth) && this.last && (this.domHost?.localName !== this.localName ||  (this.domHost?.last && this.domHost?.hideSizer)));
@@ -235,12 +251,31 @@ ODA({
         const target = e.detail.target.parentElement;
         switch(e.detail.state){
             case 'start':{
-                // target.style.width = target.offsetWidth + 'px';
-                // this.column.minWidth = 0;
+                this._track = this;
+                if (this.autoWidth){
+                    for (let col of this.domHost.$$(this.localName)){
+                        if (col === this) break;
+                        col.style.maxWidth = col.style.width = col.column.$width + 'px';
+                        col.column.width = col.offsetWidth;
+
+                    }
+                }
+
+                    let items = this.column.items;
+                    while (items){
+                        const last = items.last;
+                        if (last)
+                            last.width = 0;
+                        items = last?.items;
+                    }
+                    let host = this.domHost;
+                    while (host?.last){
+                        host.column.width = 0;
+                        host = host.domHost;
+                    }
+
             } break;
             case 'track':{
-                // this.resetUp();
-                // this.resetDown();
                 const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
@@ -251,31 +286,19 @@ ODA({
                         target.style.width = target.offsetWidth + e.detail.ddx + 'px';
                 }
                 this.column.width = target.offsetWidth;
+                target.style.width = undefined;
             } break;
-            case 'end':{
-                // target.style.width = '';
-                // // this.column.minWidth = target.offsetWidth;
-                // if (this.column.items?.length){
-                //     this.$next(()=>{
-                //         target.style.width = '';
-                //     },1)
-                // }
+            case 'end': {
+                if (this.autoWidth){
+                    for (let col of this.domHost.$$(this.localName)){
+                        col.style.width = col.style.maxWidth = col.style.minWidth = '';
+                    }
+                }
+                this._track = undefined;
+
             } break;
         }
     },
-    // resetUp(){
-    //     if (!this.lastInColumn || !this.domHost?.column) return;
-    //     this.domHost.column.minWidth = 0;
-    //     this.domHost.column.width = 0;
-    //     this.domHost.resetUp?.();
-    // },
-    // resetDown(){
-    //     const col = this.$$('oda-grid-header-cell').last;
-    //     if (!col) return;
-    //     col.column.minWidth = 0;
-    //     col.column.width = 0;
-    //     col.resetDown();
-    // },
     onMove(e){
         switch (e.detail.state){
             case 'track':{
@@ -287,18 +310,12 @@ ODA({
                         const idx = this.parentItems.indexOf(this.column);
                         this.parentItems.splice(idx, 1)
                         this.parentItems.splice(idx-1, 0, this.column)
-                        // this.previousElementSibling.style.transform = `translate(${this.offsetWidth}px)`;
                     }
-                    // console.log(e.detail.dx , this.offsetWidth)
                 }
-                //
             } break;
             case 'end':{
                 this.style.zIndex = 0;
                 this.style.transform = '';
-                // const idx = this.parentItems.indexOf(this.column);
-                // this.parentItems.splice(idx, 1)
-                // this.parentItems.splice(idx-1, 0, this.column)
             } break;
         }
     },

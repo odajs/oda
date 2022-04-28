@@ -6,6 +6,7 @@ ODA({is: 'oda-splitter', template: /*html*/`
             @apply --vertical;
             max-width: {{size}}px;
             min-width: {{size}}px;
+            z-index: 1;
         }
         :host([align=horizontal]){
             height: {{size}}px;
