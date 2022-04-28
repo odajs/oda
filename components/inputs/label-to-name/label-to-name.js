@@ -6,7 +6,9 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             min-width: 100px;
             padding: 8px;
         }
-        input {
+        .input-container > input {
+            font-family: inherit;
+            font-size: inherit;
             outline: none;
             margin: 1px;
             padding: 2px 4px;
@@ -14,21 +16,25 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             max-height: 24px;
             border: none;
         }
-        div {
+        .input-container {
             align-items: center;
             border: 1px inset gray;
+            margin: 2px;
         }
         oda-button {
             padding: 0;
         }
     </style>
-    <div class="horizontal">
-        <input autofocus class="flex" ::value="label" :placeholder>
+    <div class="horizontal input-container">
+        <input autofocus class="flex" ::value="label" :placeholder="placeholderLabel">
         <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
     </div>
-    <input ~if="!hideName" ::value="name">
+    <div class="input-container">
+        <input ~if="!hideName" ::value="name" :placeholder="placeholderName">
+    </div>
     `,
-    placeholder: 'Input label',
+    placeholderLabel: 'метка',
+    placeholderName: 'имя',
     defaultList: Array,
     props: {
         label: {

@@ -1,97 +1,94 @@
-ODA({
-    is: 'oda-basic-input',
+ODA({is: 'oda-basic-input',
     template: /*html*/`
     <style>
-    :host{
-        @apply --horizontal;
-        @apply --flex;
-        box-sizing: border-box;
-        font-family: inherit;
-        background-color: transparent;
-        text-align: start;
-        border-radius: 1px;
-        position: relative;
-        padding-top: {{hideLabel ? 'unset' : '8px'}};
-        pointer-events: {{readOnly ? 'none' : 'initial'}};
-    }
-    :host label{
-          display: {{hideLabel ? 'none !important' : 'initial'}};
-    }
-    :host>input {
-        border: none;
-        background-color: inherit;
-        /*color: inherit;*/
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
-        padding: 4px;
-        font-family: inherit;
-        font-size: inherit;
-        text-align: inherit;
-        font-weight: inherit;
-    }
-    :host>input:not([type=color])[readonly] {
-        opacity: 0.7;
-    }
-    :host>input[type="number"]{
-        text-align: end;
-    }
-    :host>input:focus {
-        outline: none;
-    }
-    :host(:focus-within) {
-    /* outline: 5px auto -webkit-focus-ring-color;
-        outline: 5px auto black;*/
-        box-shadow: 0px -1px 0px 0px inset var(--focus, blue);
-    }
-    ::-webkit-input-placeholder {
-        opacity: 0.5;
-        text-align: start;
-    }
-    ::-moz-placeholder {
-        opacity: 0.5;
-        text-align: start;
-    }
-    :-moz-placeholder {
-        opacity: 0.5;
-        text-align: start;
-    }
-    :-ms-input-placeholder {
-        opacity: 0.5;
-        text-align: start;
-    }
-    :host(:not([placeholder])) .placeholder{
-        display: none;
-    }
-    :host .placeholder{
-        position: absolute;
-        display: inline-block;
-        bottom: 2px;
-        transform: translate3d(0px, 0px, 0px);
-        transition: all 0.25s;
-        opacity: 0.25;
-        margin-left: 8px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: calc(100% - 8px);
-        font-size: normal;
-    }
-    
-    :host input:focus ~ .placeholder,
-    :host input.up ~ .placeholder{
-        bottom: unset;
-        font-size: 75%;
-        opacity: 0.5;
-        transform: translate3d(0px, -75%, 0px);
-    }
+        :host {
+            @apply --horizontal;
+            @apply --flex;
+            box-sizing: border-box;
+            font-family: inherit;
+            background-color: transparent;
+            text-align: start;
+            border-radius: 1px;
+            position: relative;
+            padding-top: {{hideLabel ? 'unset' : '8px'}};
+            pointer-events: {{readOnly ? 'none' : 'initial'}};
+        }
+        :host label {
+            display: {{hideLabel ? 'none !important' : 'initial'}};
+        }
+        :host > input {
+            border: none;
+            background-color: inherit;
+            /*color: inherit;*/
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            padding: 4px;
+            font-family: inherit;
+            font-size: inherit;
+            text-align: inherit;
+            font-weight: inherit;
+        }
+        :host > input:not([type=color])[readonly] {
+            opacity: 0.7;
+        }
+        :host > input[type="number"]{
+            text-align: end;
+        }
+        :host > input:focus {
+            outline: none;
+        }
+        :host(:focus-within) {
+            box-shadow: 0px -1px 0px 0px inset var(--focus, blue);
+        }
+        ::-webkit-input-placeholder {
+            opacity: 0.5;
+            text-align: start;
+        }
+        ::-moz-placeholder {
+            opacity: 0.5;
+            text-align: start;
+        }
+        :-moz-placeholder {
+            opacity: 0.5;
+            text-align: start;
+        }
+        :-ms-input-placeholder {
+            opacity: 0.5;
+            text-align: start;
+        }
+        :host(:not([placeholder])) .placeholder{
+            display: none;
+        }
+        :host .placeholder {
+            position: absolute;
+            display: inline-block;
+            bottom: 2px;
+            transform: translate3d(0px, 0px, 0px);
+            transition: all 0.25s;
+            opacity: 0.25;
+            margin-left: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: calc(100% - 8px);
+            font-size: normal;
+        }
+        
+        :host input:focus ~ .placeholder,
+        :host input.up ~ .placeholder {
+            bottom: unset;
+            font-size: 75%;
+            opacity: 0.5;
+            transform: translate3d(0px, -75%, 0px);
+        }
     </style>
     <input ref="input" id="input" :type="_type" :min :max :maxlength :minlength :step :accept :autocomplete autofocus :pattern
-    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : ''}" :read-only="disabled" :value="focused ? _value : value" :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''" ~class="{'up': String(value) || ['checkbox', 'date'].includes(type)}">
+    @focus.stop="_focus" @blur.stop="_blur" :list="list?.length?'datalist':''" @input.stop="_input" @change.stop="_input" ~style="{height: _type === 'checkbox' ? \`\${iconSize}px\` : 'unset'}" :read-only="disabled" :value="focused ? _value : value" :checked="_type === 'checkbox' ? value : false" :placeholder="hideLabel ? placeholder : ''" ~class="{'up': String(value) || ['checkbox', 'date'].includes(type)}">
     <label for="input" ~text="placeholder" class="placeholder"></label>
     <oda-button ~if="showClear" ~style="{opacity: $refs.input.value ? '0.8' : '0.25'}" icon="icons:clear" @tap.stop="$refs.input.value = '';$refs.input.dispatchEvent(new Event('change'))"></oda-button>
     <datalist ~if="list?.length" id="datalist">
-      <option ~for="i in list" :value="i">{{i}}</option>
+        <option ~for="i in list" :value="i">{{i}}</option>
     </datalist>
     `,
     props: {
@@ -102,7 +99,7 @@ ODA({
             set(value) {
                 if (this.readOnly) return;
                 this.value = value;
-                this.fire('value-changed', value, {bubbles: false});
+                this.fire('value-changed', value, { bubbles: false });
             }
         },
         type: 'text',
@@ -230,8 +227,6 @@ ODA({
                 this._value = this.$refs.input.checked;
                 break;
             case 'date':
-                // this._value = this.$refs.input.valueAsDate;
-                // break;
             default: this._value = v; break;
         }
     },
