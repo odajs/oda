@@ -1,15 +1,16 @@
 ODA({is: 'oda-splitter', template: /*html*/`
     <style>
         :host([align=vertical]){
-            width: 4px;
+            width: {{size}}px;
             cursor: col-resize;
             @apply --vertical;
-            max-width: 4px;
-            min-width: 4px;
+            max-width: {{size}}px;
+            min-width: {{size}}px;
         }
         :host([align=horizontal]){
-            height: 4px;
-            max-height: 4px;
+            height: {{size}}px;
+            max-height: {{size}}px;
+            min-height: {{size}}px;
             cursor: row-resize;
             @apply --horizontal;
         }
@@ -18,9 +19,10 @@ ODA({is: 'oda-splitter', template: /*html*/`
             pointer-events: none;
         }
         :host{
-            @apply --dark;
+            background-color: {{color}};
+            /*@apply --dark;*/
             overflow: visible;
-            opacity: .3;
+            /*opacity: .3;*/
             transition: background-color .4s;
             align-items: center;
             justify-content: center;
@@ -32,6 +34,8 @@ ODA({is: 'oda-splitter', template: /*html*/`
     </style>
     `,
     props: {
+        color: 'var(--dark-background)',
+        size: 4,
         max: {
             default: 0,
             reflectToAttribute: true

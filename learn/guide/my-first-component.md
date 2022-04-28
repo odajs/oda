@@ -81,54 +81,55 @@
 
 1. Компонент тиранозавра («oda-dino»).
 
-    ```text
-    ODA({ is: 'oda-dino',
-        template: `
-            <style>
-                /* Раздел стилей */
-            </style>
+```text
+ODA({ is: 'oda-dino',
+    template: `
+        <style>
+            /* Раздел стилей */
+        </style>
 
-            <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
+        <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
 
-                <!-- Тело -->
-                <path d="M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
+            <!-- Тело -->
+            <path d="M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
 
-                <!--Глаз маленький-->
-                <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye" class="eyes"/>
+            <!--Глаз маленький-->
+            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye" class="eyes"/>
 
-                <!--Глаз большой-->
-                <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
+            <!--Глаз большой-->
+            <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
 
-                <!--Рот-->
-                <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
+            <!--Рот-->
+            <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
-                <!--Первая нога-->
-                <path d=" M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z " id="first-leg" visibility="hidden"/>
+            <!--Первая нога-->
+            <path d=" M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z " id="first-leg" visibility="hidden"/>
 
-                <!--Вторая нога-->
-                <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden"/>
+            <!--Вторая нога-->
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden"/>
 
-                <!-- Третья нога -->
-                <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg"/>
+            <!-- Третья нога -->
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg"/>
 
-                <!--Четвертая нога-->
-                <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg"/>
+            <!--Четвертая нога-->
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg"/>
 
-                <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
-                <animate href="#fourth-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-                <animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-                <animate href="#third-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount = "indefinite"/>
-            </svg>
-        `,
-        props: {
-            svg: {}
-        },
-        attached() {
-            this.svg = this.$core.root.querySelector("svg");
-        }
-    })
-    ```
+            <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            <animate href="#fourth-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            <animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            <animate href="#third-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount = "indefinite"/>
+        </svg>
+    `,
+    props: {
+        svg: {}
+    },
+    attached() {
+        this.svg = this.$core.root.querySelector("svg");
+    }
+})
+```
 
     Для более быстрого доступа к svg части динозавра предусмотрено одноименное свойство, которое задается в разделе **props**. Значение этого свойства формируется в хуке **attached** во время добавления компонента в DOM документа.
 
 1. Компонент кактуса («oda-cactus»).
+

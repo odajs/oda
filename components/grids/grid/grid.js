@@ -15,7 +15,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                     <oda-grid-body fix="left" class="flex"></oda-grid-body>
                     <oda-grid-footer fix="left" ~if="showFooter"></oda-grid-footer>
                 </div>
-                <oda-splitter></oda-splitter>
+                <oda-splitter size="2" :color="sizerColor"></oda-splitter>
             </div>
             <div class="vertical flex" style="overflow: hidden;">
                 <oda-grid-header ~if="showHeader"></oda-grid-header>
@@ -23,7 +23,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
             </div>
             <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex">
-                <oda-splitter></oda-splitter>
+                <oda-splitter size="2" :color="sizerColor"></oda-splitter>
                 <div class="vertical flex">
                     <oda-grid-header fix="right" ~if="showHeader"></oda-grid-header>
                     <oda-grid-body fix="right" class="flex"></oda-grid-body>
@@ -86,10 +86,21 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return convertColumns(this.columns)
     },
     props:{
+        sizer:{
+            default:{
+                width: 1,
+                color: 'red'
+            },
+            save: true
+        },
         sizerColor:{
             default: 'gray',
             save: true,
             editor: '@oda/color-picker'
+        },
+        sizerWidth:{
+            default: 1,
+            save: true,
         },
         autoWidth: {
             default: false,
@@ -161,7 +172,6 @@ ODA({
                 overflow: hidden;   
                 cursor: pointer;
                 @apply --header;
-                order: {{column?.index || 0}};
                 @apply --raised;
             }
             oda-button{
@@ -170,7 +180,7 @@ ODA({
             input{
                 width: auto;
                 max-height: {{iconSize * .7}}px;
-                margin: 4px;
+                margin: 2px;
                 width: 1px;
                 outline: none;
             }
@@ -184,10 +194,10 @@ ODA({
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
             <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="{flex: item === items.last || autoWidth, 'no-flex': item !== items.last && !autoWidth}" :last="item  === items.last"></oda-grid-header-cell>
         </div>
-        <div class="horizontal" ~if="showFilter && !column?.$expanded"  ~style="_style">
-            <input  class="flex" ::value="filter">
-            <oda-icon icon="icons:filter" :icon-size="iconSize/3"></oda-icon>
-            <span class="no-flex" style="width: 4px; height: 100%; border-right: 1px solid gray;"></span>
+        <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
+            <input class="flex" ::value="filter" ~style="{visibility: (offsetWidth > iconSize * 2)?'visible':'hidden'}">
+            <oda-icon  icon="icons:filter" :icon-size="iconSize * .4" style="padding: 0px;"></oda-icon>
+            <span class="no-flex" style="width: 4px; height: 100%;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '1px solid ' + sizerColor}"></span>
         </div>
     `,
     parentItems: null,
@@ -207,15 +217,15 @@ ODA({
         }
     },
     get _style(){
-        if (!this.autoWidth){
-            const min = Math.max((this.iconSize / 2 *  (this.column?.items?.length || 1)), this.column?.minWidth || 0);
+        // if (!this.autoWidth){
+            const min = this.iconSize / 2 *  (this.column?.items?.length || 1); //Math.max((this.iconSize / 2 *  (this.column?.items?.length || 1)), this.column?.minWidth || 0);
             const res  = {minWidth: min + 'px'};
-            if(!this.column?.$expanded)
-                res.width = this.column?.width?this.column?.width+'px':'auto';
+            if (!this.autoWidth || !this.last)
+                res.width = (this.column?.width)?(this.column?.width+'px'):'auto';
             else
-                res.width =  'auto';
+                res.width = 'auto';
             return res;
-        }
+        // }
     },
     get hideSizer(){
         return ((this.fix || this.autoWidth) && this.last && (this.domHost?.localName !== this.localName ||  (this.domHost?.last && this.domHost?.hideSizer)));
@@ -225,8 +235,8 @@ ODA({
         const target = e.detail.target.parentElement;
         switch(e.detail.state){
             case 'start':{
-                target.style.width = target.offsetWidth + 'px';
-                this.column.minWidth = 0;
+                // target.style.width = target.offsetWidth + 'px';
+                // this.column.minWidth = 0;
             } break;
             case 'track':{
                 // this.resetUp();
@@ -243,13 +253,13 @@ ODA({
                 this.column.width = target.offsetWidth;
             } break;
             case 'end':{
-                target.style.width = '';
-                // this.column.minWidth = target.offsetWidth;
-                if (this.column.items?.length){
-                    this.$next(()=>{
-                        target.style.width = '';
-                    },1)
-                }
+                // target.style.width = '';
+                // // this.column.minWidth = target.offsetWidth;
+                // if (this.column.items?.length){
+                //     this.$next(()=>{
+                //         target.style.width = '';
+                //     },1)
+                // }
             } break;
         }
     },
