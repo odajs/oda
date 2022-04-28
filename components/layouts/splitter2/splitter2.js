@@ -14,7 +14,8 @@ ODA({ is: 'oda-splitter2', template: `
         direction: 'vertical', // 'horizontal'
         size: '2px',
         color: 'lightgray',
-        resize: false
+        resize: false,
+        use_px: false
     },
     attached() {
         const splitter = this,
@@ -36,15 +37,25 @@ ODA({ is: 'oda-splitter2', template: `
             const dy = e.clientY - y;
 
             if (this.direction === 'vertical') {
-                w = ((prevSiblingWidth + dx) * 100) / this.parentNode.getBoundingClientRect().width;
-                prevSibling.style.width = `${w}%`;
+                if (this.use_px) {
+                    w = prevSiblingWidth + dx;
+                    prevSibling.style.width = `${w}px`;
+                } else {
+                    w = ((prevSiblingWidth + dx) * 100) / this.parentNode.getBoundingClientRect().width;
+                    prevSibling.style.width = `${w}%`;
+                }
             } else {
                 if (this.resize) {
                     h = prevSiblingHeight + dy;
                     this.parentNode.style.height = `${h}px`;
                 } else {
-                    h = ((prevSiblingHeight + dy) * 100) / this.parentNode.getBoundingClientRect().height;
-                    prevSibling.style.height = `${h}%`;
+                    if (this.use_px) {
+                        h = prevSiblingHeight + dy;
+                        prevSibling.style.height = `${h}px`;
+                    } else {
+                        h = ((prevSiblingHeight + dy) * 100) / this.parentNode.getBoundingClientRect().height;
+                        prevSibling.style.height = `${h}%`;
+                    }
                 }
             }
 
@@ -54,8 +65,10 @@ ODA({ is: 'oda-splitter2', template: `
 
             prevSibling.style.userSelect = 'none';
             prevSibling.style.pointerEvents = 'none';
-            nextSibling.style.userSelect = 'none';
-            nextSibling.style.pointerEvents = 'none';
+            if (nextSibling) {
+                nextSibling.style.userSelect = 'none';
+                nextSibling.style.pointerEvents = 'none';
+            }
 
             window.dispatchEvent(new Event('resize'));
         }
@@ -65,8 +78,10 @@ ODA({ is: 'oda-splitter2', template: `
 
             prevSibling.style.removeProperty('user-select');
             prevSibling.style.removeProperty('pointer-events');
-            nextSibling.style.removeProperty('user-select');
-            nextSibling.style.removeProperty('pointer-events');
+            if (nextSibling) {
+                nextSibling.style.removeProperty('user-select');
+                nextSibling.style.removeProperty('pointer-events');
+            }
 
             document.removeEventListener('pointermove', this._moveHandler);
             document.removeEventListener('pointerup', this._upHandler);

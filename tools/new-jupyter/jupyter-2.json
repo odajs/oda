@@ -1,0 +1,20 @@
+{
+	"readOnly": false,
+	"cells": [
+		{
+			"cell_type": "html",
+			"source": "<b style=\"color:blue\">I'm an HTML cell...</b>",
+			"args": ""
+		},
+		{
+			"cell_type": "code",
+			"source": "<b style=\"color:green\">I'm an Code cell...</b>\r\n\r\n<b style=\"color:red\">0123456789</b>\r\n\r\n",
+            "args": "{\"args-ace\":{\"theme\":\"dracula\",\"showGutter\":true,\"showFoldWidgets\":true,\"showLineNumbers\":true}}",
+			"cell_h": 165
+		},
+		{
+			"cell_type": "markdown",
+			"source": "<b style=\"color:red\">I'm an Markdown cell:</b>\n\rДиректива **~style** используется для реактивной стилизации любого HTML-элемента, объявленного внутри компонента. \r\n\r\nЗначение директивы **~style** автоматически связывается со значение атрибута **style** любого HTML-элемента, задавая стиль его отображения.\r\n\r\n### Пример 1.\r\n\r\n```javascript _run_edit_[my-component.js]_h=40_\r\nODA({\r\n    is: 'my-component',\r\n    template: `\r\n        <div ~style=\"myStyle\" @tap=\"_changeStyle\">Щелкни по мне</div>\r\n    `,\r\n    props: {\r\n        myStyle: \"background: green; color: yellow; padding: 10px\"\r\n    },\r\n    _changeStyle() {\r\n        let myStyle1 = \"background: green; color: yellow; padding: 10px\";\r\n        let myStyle2 = \"background: yellow; color: green; padding: 10px\";\r\n        this.myStyle = this.myStyle === myStyle1 ? myStyle2 : myStyle1;\r\n    }\r\n});\r\n```\r\n\r\nЗдесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана эта директива **~style**.\r\n\r\nЗначение директивы **~style** можно задать не только в виде свойства компонента, но в виде обычной строки.\r\n\r\n"
+		}
+	]
+}

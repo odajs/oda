@@ -233,7 +233,11 @@ ODA({is: 'oda-grid-header-cell',
         const min = this.iconSize / 2 *  (this.column?.items?.length || 1);
         const res  = {minWidth: min + 'px'};
         if (this.column.width){
-            if (!this.column?.$expanded || this.offsetWidth <= this.column.width)
+            if (this.autoWidth && this.last){
+                res.width = 'auto';
+                res.minWidth = this.column.width +'px';
+            }
+            else if (!this.column?.$expanded || this.offsetWidth <= this.column.width)
                 res.width = this.column.width + 'px';
             else
                 res.width = 'auto';
@@ -251,7 +255,6 @@ ODA({is: 'oda-grid-header-cell',
         const target = e.detail.target.parentElement;
         switch(e.detail.state){
             case 'start':{
-                this._track = this;
                 if (this.autoWidth){
                     for (let col of this.domHost.$$(this.localName)){
                         if (col === this) break;
@@ -260,19 +263,20 @@ ODA({is: 'oda-grid-header-cell',
 
                     }
                 }
-
-                    let items = this.column.items;
-                    while (items){
-                        const last = items.last;
-                        if (last)
-                            last.width = 0;
-                        items = last?.items;
-                    }
+                let items = this.column.items;
+                while (items){
+                    const last = items.last;
+                    if (last)
+                        last.width = 0;
+                    items = last?.items;
+                }
+                if (this.last) {
                     let host = this.domHost;
-                    while (host?.last){
+                    while (host?.last) {
                         host.column.width = 0;
                         host = host.domHost;
                     }
+                }
 
             } break;
             case 'track':{
@@ -294,8 +298,6 @@ ODA({is: 'oda-grid-header-cell',
                         col.style.width = col.style.maxWidth = col.style.minWidth = '';
                     }
                 }
-                this._track = undefined;
-
             } break;
         }
     },
