@@ -15,7 +15,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                     <oda-grid-body fix="left" class="flex"></oda-grid-body>
                     <oda-grid-footer fix="left" ~if="showFooter"></oda-grid-footer>
                 </div>
-                <oda-splitter size="2" :color="sizerColor"></oda-splitter>
+                <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
             <div class="vertical flex" style="overflow: hidden;">
                 <oda-grid-header ~if="showHeader"></oda-grid-header>
@@ -23,7 +23,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
             </div>
             <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex">
-                <oda-splitter size="2" :color="sizerColor"></oda-splitter>
+                <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
                 <div class="vertical flex">
                     <oda-grid-header fix="right" ~if="showHeader"></oda-grid-header>
                     <oda-grid-body fix="right" class="flex"></oda-grid-body>
@@ -189,7 +189,7 @@ ODA({
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
             <oda-icon ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
-            <span class="no-flex" style="width: 4px; height: 100%; cursor: col-resize;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '1px solid ' + sizerColor}" @track="onColSizeTrack"></span>
+            <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
             <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="{flex: item === items.last || autoWidth, 'no-flex': item !== items.last && !autoWidth}" :last="item  === items.last"></oda-grid-header-cell>
@@ -197,7 +197,7 @@ ODA({
         <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (offsetWidth > iconSize * 2)?'visible':'hidden'}">
             <oda-icon  icon="icons:filter" :icon-size="iconSize * .4" style="padding: 0px;"></oda-icon>
-            <span class="no-flex" style="width: 4px; height: 100%;" ~style="{visibility: hideSizer?'hidden':'visible', 'border-right': '1px solid ' + sizerColor}"></span>
+            <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
     parentItems: null,

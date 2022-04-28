@@ -55,7 +55,7 @@ ODA({is: 'oda-hexagon-layout',
             editor: '@oda/color-picker'
         },
         background: {
-            default: 'white',
+            default: 'var(--header-background)',
             save: true,
             editor: '@oda/color-picker'
         },
@@ -82,15 +82,12 @@ ODA({is: 'oda-hexagon-layout',
     },
     listeners:{
         resize(e){
-            this.interval('resize', ()=>{
-                this.height = this.offsetHeight;
-                this.width = this.offsetWidth;
-                //     this.height = Math.ceil(this.offsetHeight / this.size ) * this.size  + 1;
-                // if (this.height<this.offsetHeight)
-                //     this.height = Math.ceil(this.offsetHeight / this.size ) * this.size  + 1;
-                // if (this.width<this.offsetWidth)
-                //     this.width = Math.ceil(this.offsetWidth / this.size ) * this.size ;
-            })
+            // this.interval('resize', ()=>{
+                if (this.height<this.offsetHeight)
+                    this.height = this.offsetHeight;
+                if (this.width < this.offsetWidth)
+                    this.width = this.offsetWidth;
+            // })
         },
         track(e){
             if(focusedHex) return;
@@ -232,7 +229,13 @@ ODA({is: 'oda-hexagon',
           :host(.drag-hover)>div {
               filter: brightness(.6) !important;
           }
+          :host(:hover)>.block:after{
+                transform: scale(2) !important;
+                top: {{size}}px !important;
+          }
           :host([label])>.block:after{
+            transform: scale(1);
+            transition: top .5s, transform  .5s;
             left: -{{size/4}}px;
             max-height: {{size}}px;
             /*color: white;*/
