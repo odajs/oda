@@ -1,4 +1,4 @@
-ODA({ is: 'oda-panel-simple', imports: '@oda/icon, @oda/button',
+ODA({is: 'oda-panel-simple', imports: '@oda/icon, @oda/button',
     template: /*html*/`
         <style>
             :host {
@@ -38,8 +38,8 @@ ODA({ is: 'oda-panel-simple', imports: '@oda/icon, @oda/button',
             </div>
             <div style="flex: 1"></div>
             <div ~if="src?.open || src?.opened" class="horizontal">
-                <oda-button ~for="btn in (tabs[indx]?.btns || [])" class="btn" icon-size=18 :icon="btn.icon" :title="btn.title || btn.label || btn.icon" @tap="btnclick"
-                        style="font-size: 14px">{{btn.label || ''}}</oda-button>
+                <oda-button ~for="btn in (tabs[indx]?.btns || [])" class="btn" icon-size=18 :icon="btn.icon" :title="btn.title || btn.label || btn.icon" :allow-toggle="btn.allowToggle" :toggled="btn.toggled"
+                style="font-size: 14px" @down="btnclick">{{btn.label || ''}}</oda-button>
                 <div style="width: 4px"></div>
             </div>
         </div>
@@ -74,7 +74,7 @@ ODA({ is: 'oda-panel-simple', imports: '@oda/icon, @oda/button',
     btnclick(e) {
         e.stopPropagation();
         console.log(e.target.title)
-        this.fire('oda-panel-simple-button-click', { uuid: this.uuid, act: e.target.title, src: this.src });
+        this.fire('oda-panel-simple-button-click', { uuid: this.uuid, act: e.target.title, src: this.src, sourceEvent: e });
     },
     tabclick(e, idx) {
         e.stopPropagation();
