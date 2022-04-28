@@ -6,7 +6,7 @@ ODA({ is: 'oda-dino',
             .hidden {
                 display: none;
             }
-            svg.dinos path {
+            svg path {
                 fill: var(--dino-color);
             }
             #small-eye {
@@ -17,7 +17,7 @@ ODA({ is: 'oda-dino',
             }
         </style>
 
-        <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg" class="dinos">
+        <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
 
             <!-- Тело -->
             <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
@@ -78,7 +78,6 @@ ODA({ is: 'oda-dino',
         </svg>
     `,
     props: {
-        name: "Привет динозавр",
         svg: {}
     },
     attached() {
