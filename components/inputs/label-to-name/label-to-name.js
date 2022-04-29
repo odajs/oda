@@ -5,19 +5,24 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             @apply --vertical;
             min-width: 100px;
             padding: 8px;
-        }
-        label {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
             align-items: center;
         }
-        label > div {
-            min-width: 55px;
+        :host > label {
+            grid-column-start: 1;
         }
-        label > .input-container {
+        :host > div {
+            grid-column-start: 2;
+            grid-column-end: 7;
+        }
+        .input-container {
             align-items: center;
             border: 1px inset gray;
             margin: 2px;
+            min-height: 34px;
         }
-        label > .input-container > input {
+        .input-container input {
             font-family: inherit;
             font-size: inherit;
             outline: none;
@@ -31,19 +36,15 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             padding: 0;
         }
     </style>
-    <label class="horizontal">
-        <div>Метка:</div>
-        <div class="horizontal flex input-container">
-            <input autofocus class="flex" ::value="label" :placeholder="placeholderLabel">
-            <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
-        </div>
-    </label>
-    <label class="horizontal">
-        <div>Имя:</div>
-        <div class="flex input-container">
-            <input ~if="!hideName" ::value="name" :placeholder="placeholderName">
-        </div>
-    </label>
+    <label for="label">Метка:</label>
+    <div class="horizontal input-container">
+        <input id="label" class="flex" ::value="label" :placeholder="placeholderLabel" autofocus>
+        <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
+    </div>
+    <label for="name" class="horizontal">Имя:</label>
+    <div class="horizontal input-container">
+        <input ~if="!hideName" id="name" class="flex" ::value="name" :placeholder="placeholderName">
+    </div>
     `,
     placeholderLabel: 'метка',
     placeholderName: 'имя',
