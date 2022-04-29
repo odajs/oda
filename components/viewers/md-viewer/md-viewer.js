@@ -403,7 +403,7 @@ ${this._scriptODA()}` + code;
     },
     _getColor(left = false) {
         let color = {
-            'error': 'red !important', 'success': 'green !important', 'info': 'cadetblue !important',
+            'error': 'red !important', 'success': 'green !important', 'info': 'blueviolet !important',
             'warning': 'orange !important', 'help': 'blue !important', 'faq': 'brown !important', 'like': 'limegreen !important'
         }[this.infpnl];
         if (!color || !this.infpnl) return '';

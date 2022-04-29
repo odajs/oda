@@ -183,11 +183,11 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
         snippetManager.register(snippets, this.mode);
     },
     focus(){ this.editor?.focus() },
-    // updated() {
+    // updated(e) {
     //     this.editor?.setOptions(this.options);
     // },
     observers: [
-        function _observer(fontSize, tabSize, wrap, showPrintMargin) {
+        function _observer(fontSize, tabSize, wrap, showPrintMargin, showLineNumbers, showGutter, minLines, maxLines, displayIndentGuides, printMarginColumn, firstLineNumber) {
             this.editor?.setOptions(this.options);
         },
     ],
