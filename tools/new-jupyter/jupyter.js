@@ -232,6 +232,7 @@ ODA({
                     control2[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: false });
                 }
+                target[key] = value;
                 return true;
             }
         })
