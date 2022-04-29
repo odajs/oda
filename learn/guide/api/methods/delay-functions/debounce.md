@@ -107,7 +107,75 @@ debounce (key, handler, delay = 0)
 });
 ```
 
-Если этого не сделать, то при вызове этого метода произойдет ошибка.
+Если этого не сделать, то при вызове метода **debounce** произойдет ошибка.
+
+```javascript error_run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Нажми любую клавишу <input @keydown="onKeyDown" ref="typewriter"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.typewriter.value = '';
+        this.$refs.typewriter.focus();
+    },
+    counter() {
+        this.count++;
+    },
+    onKeyDown() {
+        this.countEvent++;
+        this.debounce('my-keydown', this.counter, this.delay);
+    }
+});
+```
+
+В этом примере событие нажатия клавиш клавиатуры на первом элементе **input** будет работать, но счетчик вызова метода **counter** будет оставаться всегда нулевым. Это происходите из-за того, при его вызове никакой контекст не указывается. В результате этого указатель **this** будет в нем иметь всегда неопределенное значение **undefined** из-за использования строгого режима.
+
+Для того, чтобы явно не указывать контекст компонента при вызове метода можно указать просто имя вызываемого метода в виде строки.
+
+Например,
+
+```javascript error_run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Нажми любую клавишу <input @keydown="onKeyDown" ref="typewriter"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.typewriter.value = '';
+        this.$refs.typewriter.focus();
+    },
+    counter() {
+        this.count++;
+    },
+    onKeyDown() {
+        this.countEvent++;
+        this.debounce('my-keydown', 'counter', this.delay);
+    }
+});
+```
+
+В этом случае контекст компонента будет привязан к методу **counter** автоматически и никакой ошибки при его вызове происходить не будет. Фактически метод **debounce** автоматически привязывает контекст компонента, заменяя строку **'counter'** на вызов метода **this.counter.bind(this)**.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/RHud4EO_exo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
