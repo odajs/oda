@@ -145,7 +145,7 @@ debounce (key, handler, delay = 0)
 
 Например,
 
-```javascript error_run_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
  ODA({
     is: 'my-component',
     template: `
