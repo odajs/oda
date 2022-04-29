@@ -6,7 +6,18 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             min-width: 100px;
             padding: 8px;
         }
-        .input-container > input {
+        label {
+            align-items: center;
+        }
+        label > div {
+            min-width: 55px;
+        }
+        label > .input-container {
+            align-items: center;
+            border: 1px inset gray;
+            margin: 2px;
+        }
+        label > .input-container > input {
             font-family: inherit;
             font-size: inherit;
             outline: none;
@@ -16,22 +27,23 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             max-height: 24px;
             border: none;
         }
-        .input-container {
-            align-items: center;
-            border: 1px inset gray;
-            margin: 2px;
-        }
         oda-button {
             padding: 0;
         }
     </style>
-    <div class="horizontal input-container">
-        <input autofocus class="flex" ::value="label" :placeholder="placeholderLabel">
-        <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
-    </div>
-    <div class="input-container">
-        <input ~if="!hideName" ::value="name" :placeholder="placeholderName">
-    </div>
+    <label class="horizontal">
+        <div>Метка:</div>
+        <div class="horizontal flex input-container">
+            <input autofocus class="flex" ::value="label" :placeholder="placeholderLabel">
+            <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
+        </div>
+    </label>
+    <label class="horizontal">
+        <div>Имя:</div>
+        <div class="flex input-container">
+            <input ~if="!hideName" ::value="name" :placeholder="placeholderName">
+        </div>
+    </label>
     `,
     placeholderLabel: 'метка',
     placeholderName: 'имя',
@@ -108,7 +120,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 this._list.items = list;
                 this._list.focusedItem = list?.[0];
                 this.async(() => this.$('input')?.focus());
-                const item = (await ODA.showDropdown(this._list, {}, { parent: this.$('div'), useParentWidth: true })).focusedItem;
+                const item = (await ODA.showDropdown(this._list, {}, { parent: e.target.parentElement, useParentWidth: true })).focusedItem;
                 if (item) {
                     this.label = item.label;
                     this.name = item.name;
