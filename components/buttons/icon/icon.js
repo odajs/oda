@@ -11,7 +11,7 @@ ODA({is: 'oda-icon',
             align-items: center;
             position: relative;
         }
-        :host([bubble]) > div:not([bubble="-"])::before{
+        :host > div[bubble]::before{
             content: attr(bubble);
             position: absolute;
             top: -2px;
@@ -47,7 +47,7 @@ ODA({is: 'oda-icon',
             fill: {{fill || 'unset'}};
         }
     </style>
-    <div :bubble="_bubble" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
+    <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
         <svg part="svg" ~show="_icon" ~style="_style" :stroke :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
             <defs ~if="blink">
                 <g is="style" type="text/css">
@@ -106,14 +106,14 @@ ODA({is: 'oda-icon',
         fill: '',
         blink: 0,
         subIcon: '',
-        alwaysBubble: false
+        // alwaysBubble: false
     },
-    get _bubble() {
-        if (this.bubble > 1 || (this.alwaysBubble && this.bubble > 0)) {
-            if (this.bubble > 9) return '9+';
-            else return String(this.bubble);
-        } else return '-';
-    },
+    // get _bubble() {
+    //     if (this.bubble > 1 || (this.alwaysBubble && this.bubble > 0)) {
+    //         if (this.bubble > 9) return '9+';
+    //         else return String(this.bubble);
+    //     } else return '-';
+    // },
     get _style() {
         const s = this.iconSize + 'px';
         const obj = { width: s, height: s, minHeight: s };
