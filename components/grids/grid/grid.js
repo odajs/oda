@@ -138,7 +138,8 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                     this.colsScrollLeft = w;
             } break;
         }
-    }
+    },
+    sorts: []
 })
 ODA({is:'oda-grid-header',
     template: `
@@ -194,10 +195,10 @@ ODA({is: 'oda-grid-header-cell',
                 outline: none;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()">
+        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
-            <oda-icon ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort>0?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
+            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
@@ -209,6 +210,21 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
+    sort(){
+        switch (this.column.$sort){
+            case 1:{
+                this.column.$sort++;
+            } break;
+            case 2:{
+                delete this.column.$sort;
+                this.sorts.splice(this.sorts.indexOf(this.column),1);
+            } break;
+            default:{
+                this.column.$sort = 1;
+                this.sorts.push(this.column);
+            }
+        }
+    },
     parentItems: null,
     props:{
         title:{

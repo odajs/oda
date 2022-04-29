@@ -25,7 +25,7 @@ ODA({is: 'oda-icon',
             border: 1px solid purple;
             border-radius: 50%;
             padding: 1px;
-            font-size: .7em;
+            font-size: {{iconSize/3}}px;
             z-index: 1;
         }
         :host > div {
@@ -34,7 +34,7 @@ ODA({is: 'oda-icon',
         .subicon {
             position: absolute;
             top: {{2*iconSize/3}}px;
-            left: {{2*iconSize/3}}px;
+            left: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
             @apply --content;
             @apply --shadow;

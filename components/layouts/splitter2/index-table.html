@@ -1,0 +1,131 @@
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./splitter2.js"></script>
+<style>
+    html * {
+        color: gray;
+        font-family: Arial;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .wrapper {
+        display: flex;
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        border: 1px solid lightgray;
+
+    }
+
+    .aside {
+        position: sticky;
+        width: 300px;
+        height: 100%;
+        border: 1px solid gray;
+        background-color: #e7e7e7;
+    }
+
+    .panel-left,
+    .panel-right,
+    .panel-main {
+        display: flex;
+        border: 1px solid darkgray;
+        z-index: 1;
+        overflow: auto;
+    }
+
+    .panel-main {
+        width: 100%;
+        flex: 1;
+    }
+
+    .panel-left {
+        width: 300px;
+        background-color: #f0f0f0;
+        position: sticky;
+        left: 0;
+    }
+
+    .panel-right {
+        width: 300px;
+        background-color: #f0f0f0;
+        position: sticky;
+        right: 0;
+    }
+
+    header {
+        display: flex;
+        border-bottom: 1px solid gray;
+        align-items: center;
+        min-width: 100%;
+        height: 32px;
+        background-color: #d0d0d0;
+        z-index: 1;
+    }
+
+    .cell {
+        min-width: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100px;
+        text-align: center;
+        border-right: 1px solid gray;
+    }
+
+    oda-splitter2 {
+        max-width: 3px;
+        background: transparent;
+    }
+</style>
+
+<div class="wrapper">
+    <aside class="panel-left">
+        <header>
+            <div style="display: flex">
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+            </div>
+        </header>
+    </aside>
+    <oda-splitter2 use_px></oda-splitter2>
+    <main class="panel-main">
+        <header>
+            <div style="display: flex">
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+            </div>
+        </header>
+    </main>
+    <oda-splitter2 use_px reverse></oda-splitter2>
+    <aside class="panel-right">
+        <header>
+            <div style="display: flex">
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+                <div class="cell">Cell</div>
+                <oda-splitter2 use_px></oda-splitter2>
+            </div>
+        </header>
+    </aside>
+
+</div>

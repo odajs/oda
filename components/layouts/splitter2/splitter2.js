@@ -2,8 +2,9 @@ ODA({ is: 'oda-splitter2', template: `
         <style>
             :host {
                 height: {{direction === 'vertical' ? '100%' : size || '2px'}};
-                min-height: {{direction === 'vertical' ? '100%' : size || '2px'}};
+                min-height: {{size || '2px'}};
                 width: {{direction === 'vertical' ? size || '2px' : '100%'}};
+                min-width: {{size || '2px'}};
                 cursor: {{direction === 'vertical' ? 'ew-resize' : 'ns-resize'}};
                 background-color: {{color || 'lightgray'}};
                 z-index: 11;
@@ -15,12 +16,13 @@ ODA({ is: 'oda-splitter2', template: `
         size: '2px',
         color: 'lightgray',
         resize: false,
-        use_px: false
+        use_px: false,
+        reverse: false
     },
     attached() {
         const splitter = this,
-            prevSibling = this.previousElementSibling,
-            nextSibling = this.nextElementSibling;
+            prevSibling = this.reverse ?  this.nextElementSibling : this.previousElementSibling,
+            nextSibling = this.reverse ?  this.previousElementSibling : this.nextElementSibling;
         let x = 0, y = 0, prevSiblingHeight = 0, prevSiblingWidth = 0, h = 0, w = 0;
 
         const downHandler = (e) => {
@@ -33,8 +35,12 @@ ODA({ is: 'oda-splitter2', template: `
             document.addEventListener('pointerup', this._upHandler = this._upHandler || upHandler.bind(this));
         }
         const moveHandler = (e) => {
-            const dx = e.clientX - x;
-            const dy = e.clientY - y;
+            let dx = e.clientX - x;
+            let dy = e.clientY - y;
+            if (this.reverse) {
+                dx = dx * -1;
+                dy = dy * -1;
+            }
 
             if (this.direction === 'vertical') {
                 if (this.use_px) {
@@ -63,8 +69,10 @@ ODA({ is: 'oda-splitter2', template: `
             splitter.style.cursor = cursor;
             document.body.style.cursor = cursor;
 
-            prevSibling.style.userSelect = 'none';
-            prevSibling.style.pointerEvents = 'none';
+            if (prevSibling) {
+                prevSibling.style.userSelect = 'none';
+                prevSibling.style.pointerEvents = 'none';
+            }
             if (nextSibling) {
                 nextSibling.style.userSelect = 'none';
                 nextSibling.style.pointerEvents = 'none';
@@ -76,8 +84,10 @@ ODA({ is: 'oda-splitter2', template: `
             splitter.style.removeProperty('cursor');
             document.body.style.removeProperty('cursor');
 
-            prevSibling.style.removeProperty('user-select');
-            prevSibling.style.removeProperty('pointer-events');
+            if (prevSibling) {
+                prevSibling.style.removeProperty('user-select');
+                prevSibling.style.removeProperty('pointer-events');
+            }
             if (nextSibling) {
                 nextSibling.style.removeProperty('user-select');
                 nextSibling.style.removeProperty('pointer-events');

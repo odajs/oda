@@ -165,11 +165,11 @@ ODA({is: 'oda-tester-container',
             overflow: hidden;
             @apply --vertical;
         }
-        ::slotted(*) {
-            @apply --flex;
-        }
+        /*::slotted(*) {*/
+        /*    @apply --flex;*/
+        /*}*/
     </style>
-    <slot style="display: flex; flex: auto;/* justify-content: center; align-items: center;*/overflow: hidden;"></slot>
+    <slot class="vertical flex" style="overflow: hidden;"></slot>
     `,
     props: {
         component: {
