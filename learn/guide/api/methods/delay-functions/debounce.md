@@ -75,6 +75,40 @@ debounce (key, handler, delay = 0)
 });
 ```
 
+Если с задержкой необходимо вызвать какой-либо метод компонента, то к нему обязательно необходимо привязать контекст компонента с помощью метода **bind**.
+
+```javascript _run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Нажми любую клавишу <input @keydown="onKeyDown" ref="typewriter"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.typewriter.value = '';
+        this.$refs.typewriter.focus();
+    },
+    counter() {
+        this.count++;
+    },
+    onKeyDown() {
+        this.countEvent++;
+        this.debounce('my-keydown', this.counter.bind(this), this.delay);
+    }
+});
+```
+
+Если этого не сделать, то при вызове этого метода произойдет ошибка.
+
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/RHud4EO_exo?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
