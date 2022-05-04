@@ -113,7 +113,7 @@ ODA({
             }
         </style>
         <div class="vertical flex main">
-            <div class="editor" ~is="cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount"></div>
+            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
         </div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>

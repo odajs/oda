@@ -8,13 +8,13 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             }
         </style>   
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
-        <div class="flex horizontal">
-            <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header no-flex">
+        <div class="flex horizontal" style="overflow: hidden;">
+            <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header no-flex" style="overflow: hidden">
                 <oda-grid-part @resize="correctPanelSize" fix="left"></oda-grid-part>
                 <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
             <oda-grid-part style="overflow: hidden;"></oda-grid-part>
-            <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex">
+            <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex" style="overflow: hidden">
                 <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
                 <oda-grid-part fix="right"></oda-grid-part>
             </div>      
@@ -38,6 +38,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     metadata:[],
     dataSet: [],
     groups: [],
+    get rows(){
+        return this.dataSet;
+    },
     get table(){
         return this;
     },
@@ -46,16 +49,19 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     },
     headerResize(e){
         this.interval('header-resize',()=>{
-            const headers = this.table.$$('oda-grid-header')
+            const parts = this.table.$$('oda-grid-part');
+            const headers = parts.map(part=>{
+                return part.$$('oda-grid-header');
+            }).flat();
             let height = 0;
-            headers.forEach(h=>{
+            for (let h of headers){
                 h.style.minHeight = '';
                 if (height < h.scrollHeight)
                     height = h.scrollHeight;
-            })
-            headers.forEach(h=>{
+            }
+            for (let h of headers){
                 h.style.minHeight = height+'px';
-            })
+            }
         })
     },
     get columns(){
@@ -79,6 +85,10 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return convertColumns(this.columns)
     },
     props:{
+        showRowLines:{
+            default: false,
+            save: true
+        },
         sizer:{
             default:{
                 width: 1,
@@ -120,6 +130,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         }
     },
     colsScrollLeft: 0,
+    rowsScrollTop: 0,
     sorts: []
 })
 ODA({is: 'oda-grid-part',
@@ -128,21 +139,37 @@ ODA({is: 'oda-grid-part',
             :host{
                 @apply --vertical;
                 @apply --flex;
+                overflow: hidden;
+                max-height: 100%;
             }
         </style>        
         <oda-grid-header ~if="showHeader"></oda-grid-header>
-        <oda-grid-body class="flex"></oda-grid-body>
+        <oda-grid-body class="flex" :scroll-top="rowsScrollTop" @scroll="onScroll"  @wheel="onWheel"></oda-grid-body>
         <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
     `,
     fix: '',
     get columns(){
         return this.table.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
+    },
+    get showScroll(){
+        return !this.nextElementSibling;
+    },
+    onScroll(e){
+        this.rowsScrollTop = e.target.scrollTop;
+    },
+    onWheel(e){
+        this.rowsScrollTop += e.deltaY;
+        if (this.rowsScrollTop<0)
+            this.rowsScrollTop = 0;
+        else if (this.rowsScrollTop > e.target.scrollHeight)
+            this.rowsScrollTop = e.target.scrollHeight;
     }
 })
 ODA({is:'oda-grid-header',
     template: `
         <style>
             :host{
+                @apply --no-flex;
                 position: relative;
                 border-top: 1px solid gray;
                 @apply --horizontal;
@@ -404,15 +431,20 @@ ODA({is: 'oda-grid-body',
         <style>
             :host{
                 @apply --vertical;
+                @apply --flex;
+                overflow: {{showScroll?'auto':'hidden'}};
             }
         </style>
-            BODY
+        <div class="vertical no-flex" @scroll="setScroll">
+            <div ~for="rows" ~style="{'border-bottom': '1px solid gray'}">row</div>
+        </div>
     `
 })
 ODA({is: 'oda-grid-footer',
     template: `
         <style>
             :host{  
+                @apply --no-flex;
                 @apply --header;
                 @apply --raised;
             }

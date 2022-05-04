@@ -93,7 +93,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 if (idx >= 0)
                     dd[i].fire('cancel');
             }
-            this.setMapParents();
         }
     },
     props: {
