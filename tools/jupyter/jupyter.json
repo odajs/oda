@@ -1,0 +1,20 @@
+{
+	"readOnly": false,
+	"cells": [
+		{
+			"cell_type": "html",
+			"source": "<h1><font color=\"#0062ff\">HTML cell ...</font></h1>"
+		},
+		{
+			"cell_type": "code",
+			"source": "<!-- Code cell ... -->\r\n\r\n<hr>\r\n<b style=\"color:blue\">Code cell...</b>\r\n<hr>\r\n<b style=\"color:gray\">with preview</b>\r\n<hr> \r\n",
+			"args": "",
+			"cell_h": 156
+		},
+		{
+			"cell_type": "markdown",
+			"source": "<h1 style=\"color:blue\">Markdown cell ...</h1>\n\n# h1 Heading\n## h2 Heading\n### h3 Heading\n#### h4 Heading\n##### h5 Heading\n###### h6 Heading\n\n\n## Horizontal Rules\n\n___\n\n---\n",
+			"fount": ""
+		}
+	]
+}

@@ -10,25 +10,13 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal">
             <div ~if="columns?.some(i=>i.fix === 'left')" class="horizontal header no-flex">
-                <div class="vertical flex" @resize="correctPanelSize">
-                    <oda-grid-header fix="left" ~if="showHeader"></oda-grid-header>
-                    <oda-grid-body fix="left" class="flex"></oda-grid-body>
-                    <oda-grid-footer fix="left" ~if="showFooter"></oda-grid-footer>
-                </div>
+                <oda-grid-part @resize="correctPanelSize" fix="left"></oda-grid-part>
                 <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
-            <div class="vertical flex" style="overflow: hidden;">
-                <oda-grid-header ~if="showHeader"></oda-grid-header>
-                <oda-grid-body class="flex"></oda-grid-body>
-                <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
-            </div>
+            <oda-grid-part style="overflow: hidden;"></oda-grid-part>
             <div ~if="columns?.some(i=>i.fix === 'right')" class="horizontal header no-flex">
                 <oda-splitter :size="sizerWidth" :color="sizerColor"></oda-splitter>
-                <div class="vertical flex">
-                    <oda-grid-header fix="right" ~if="showHeader"></oda-grid-header>
-                    <oda-grid-body fix="right" class="flex"></oda-grid-body>
-                    <oda-grid-footer fix="right" ~if="showFooter"></oda-grid-footer>
-                </div>
+                <oda-grid-part fix="right"></oda-grid-part>
             </div>      
         </div>
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
@@ -49,6 +37,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     },
     metadata:[],
     dataSet: [],
+    groups: [],
     get table(){
         return this;
     },
@@ -70,7 +59,10 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         })
     },
     get columns(){
-        return this.metadata;
+        return this.metadata.map((col, idx)=>{
+            col.$order = col.$order || (idx+1);
+            return col
+        });
     },
     get visibleColumns(){
         const convertColumns = (items)=>{
@@ -128,19 +120,24 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         }
     },
     colsScrollLeft: 0,
-    colsTrack(e){
-        switch (e.detail.state){
-            case 'track':{
-                const w = e.detail.target.scrollWidth - e.detail.target.offsetWidth
-                this.colsScrollLeft -= e.detail.ddx;
-                if (this.colsScrollLeft<0)
-                    this.colsScrollLeft = 0
-                else if (this.colsScrollLeft > w)
-                    this.colsScrollLeft = w;
-            } break;
-        }
-    },
     sorts: []
+})
+ODA({is: 'oda-grid-part',
+    template:`
+        <style>
+            :host{
+                @apply --vertical;
+                @apply --flex;
+            }
+        </style>        
+        <oda-grid-header ~if="showHeader"></oda-grid-header>
+        <oda-grid-body class="flex"></oda-grid-body>
+        <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
+    `,
+    fix: '',
+    get columns(){
+        return this.table.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
+    }
 })
 ODA({is:'oda-grid-header',
     template: `
@@ -155,16 +152,12 @@ ODA({is:'oda-grid-header',
                 overflow-y: visible;
             }
         </style>
-        <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
+        <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" :parent-items="items" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
+                <oda-grid-header-cell ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
-    get headColumns(){
-        return this.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
-    },
-    fix: '',
     getColumnClass(items, item, top){
         let flex;
         if (top && !this.fix && item === items.last)
@@ -186,10 +179,10 @@ ODA({is: 'oda-grid-header-cell',
                 @apply --header;
                 @apply --raised;
                 position: relative;
-                transition: translate 1s;
+                font-weight: bold;
             }
             oda-button{
-                font-size: xx-small;
+                font-size: x-small;
             }
             input{
                 width: auto;
@@ -199,14 +192,14 @@ ODA({is: 'oda-grid-header-cell',
                 outline: none;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()">
+        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
-            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="offsetWidth > iconSize * 2" @track="onMove" :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
+            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="offsetWidth > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~for="column?.items" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last"></oda-grid-header-cell>
+            <oda-grid-header-cell ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (offsetWidth > iconSize * 2)?'visible':'hidden'}">
@@ -214,6 +207,12 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
+    get columns(){
+        return this.column?.items?.map((col, idx)=>{
+            col.$order = col.$order || (idx+1);
+            return col
+        })
+    },
     sort(){
         switch (this.column.$sort){
             case 1:{
@@ -234,7 +233,7 @@ ODA({is: 'oda-grid-header-cell',
     props:{
         title:{
             get(){
-                return /*(this.column?.label ||  this.column?.name)+*/(this.column.$width || '')+':'+(this.column.width || '')+':'+this.test;
+                return (this.column?.label ||  this.column?.name)/*+(this.column.$width || '')+':'+(this.column.width || '')+':'+this.test*/;
             },
             reflectToAttribute: true
         }
@@ -330,69 +329,94 @@ ODA({is: 'oda-grid-header-cell',
             } break;
         }
     },
-    onMove(e){
-        switch (e.detail.state){
-            case 'start':{
+    onMove(e) {
+        switch (e.detail.state) {
+            case 'start': {
+                this.style.opacity = .5;
                 this._elements = Array.from(this.parentElement.children);
-                this._parentPos = this.parentElement.getBoundingClientRect();
-                this.style.zIndex = 1;
-                this.style.minWidth = this.style.maxWidth = this.style.width = this.offsetWidth + 'px';
+                this._proxy = this.create('oda-table-drag-proxy', {label: this.title, ...e.detail.start});
+                document.body.appendChild(this._proxy);
             } break;
-            case 'track':{
-                let myPos = this.getBoundingClientRect();
-                // const lastPos = this._elements.last.getBoundingClientRect();
-                let pos = e.detail.dx;
-                if (myPos.left < this._parentPos.left){
-                    pos = e.detail.dx - (myPos.left - this._parentPos.left)
+            case 'track': {
+                this._proxy.x = e.detail.x;
+                this._proxy.y = e.detail.y;
+                if (this.parentElement.getBoundingClientRect().y > e.detail.y) return;
+                for (let el of this._elements){
+                    if (el === this) continue;
+                    const pos = el.getBoundingClientRect();
+                    if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x) continue;
+                    if (Math.sign(e.detail.ddx) !== Math.sign(el.column.$order - this.column.$order)) continue;
+                    const order = this.column.$order;
+                    this.column.$order = el.column.$order;
+                    el.column.$order = order;
                 }
-                else if(myPos.right>this._parentPos.right){
-                    pos = e.detail.dx - (myPos.right - this._parentPos.right);
-                }
-                this.style.transform = `translate(${pos}px)`;
-                myPos = this.getBoundingClientRect();
-                if (e.detail.ddx<0){
-                    let el = this._elements.find(el=>{
-                        if (el !== this){
-                            pos = el.getBoundingClientRect();
-                            return myPos.left>pos.left && (pos.left + pos.width / 2 - 5)  > myPos.left;
-                        }
-                    })
-                    if (el){
-                        if (el.style.transform)
-                            el.style.transform = '';
-                        else
-                            el.style.transform = `translate(${myPos.width}px)`;
-                    }
-                }
-                else if (e.detail.ddx>0) {
-                    let el = this._elements.find(el => {
-                        if (el !== this) {
-                            pos = el.getBoundingClientRect();
-                            return myPos.right < pos.right && myPos.right > (pos.left + pos.width / 2 + 5);
-                        }
-                    })
-                    if (el) {
-                        if (el.style.transform)
-                            el.style.transform = '';
-                        else
-                            el.style.transform = `translate(${-myPos.width}px)`;
-                    }
-                }
-
-                // console.log(this.getBoundingClientRect().x)
-                // let prev = this.previousElementSibling;
-                // if (prev && (this.offsetLeft + pos) < (prev.offsetLeft + prev.offsetWidth/2)){
-                //     const idx = this.parentItems.indexOf(this.column);
-                //     this.parentItems.splice(idx, 1)
-                //     this.parentItems.splice(idx-1, 0, this.column)
-                // }
             } break;
-            case 'end':{
-                this.style.zIndex = 0;
-                this.style.transform = '';
-                this.test = ''
-                this.style.minWidth = this.style.maxWidth = this.style.width = '';
+            case 'end': {
+                this._proxy.remove();
+                this.style.opacity = '';
             } break;
         }
-    },
+    }
+})
+ODA({is: 'oda-table-drag-proxy',
+    template:`
+        <style>
+            :host{
+                visibility: visible !important;
+                @apply --horizontal;
+                align-items: center;
+                @apply --raised;
+                @apply --no-flex;
+                @apply --content;
+                position: fixed;
+                opacity: 1 !important;
+                @apply --disabled;
+                max-width: 200px;
+                overflow: hidden;
+                white-space: nowrap;
+                top: 0px;
+                left: 0px;
+                transform: translate3d({{x}}px, {{y}}px, 0px);
+            }
+        </style>
+        <oda-icon icon-size="16" :icon style="margin: 4px;"></oda-icon>
+        <span style="margin-right: 4px; text-overflow: ellipsis; overflow: inherit;">{{label}}</span>
+    `,
+    icon: 'icons:open-with',
+    label: 'PROXY',
+    x: 0,
+    y: 0
+})
+ODA({is: 'oda-grid-groups',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                padding: 4px;
+            }
+        </style>
+        <label disabled if="groups.length">Drag here to set row groups</label>
+        <div ~for="groups">{{item}}</div>
+    `,
+})
+ODA({is: 'oda-grid-body',
+    template: `
+        <style>
+            :host{
+                @apply --vertical;
+            }
+        </style>
+            BODY
+    `
+})
+ODA({is: 'oda-grid-footer',
+    template: `
+        <style>
+            :host{  
+                @apply --header;
+                @apply --raised;
+            }
+        </style>
+            footer
+    `
 })

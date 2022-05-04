@@ -414,7 +414,7 @@ content: {
                 cells: [
                     {
                         cell_type: 'markdown',
-                        src: this.item?.content?.abstract ? this.item.content.abstract
+                        fount: this.item?.content?.abstract ? this.item.content.abstract
                             : (this.item?.name?.includes('.md') && this.item?.$level === 0) ?
                                 this.item?.$id || this.item?.content?.link || this.item?.content?.src || '' : ''
                     }
@@ -422,7 +422,7 @@ content: {
             }
         },
         get useJupyter() {
-            return this.notebook?.cells?.filter(i => i.src).length;
+            return this.notebook?.cells?.filter(i => i.fount).length;
         },
         _tap(e) {
             route(this.item)
