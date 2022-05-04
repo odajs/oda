@@ -121,6 +121,9 @@ function startGame() {
     gameOver.style.display = "none";
     gameOver.innerText = "Game Over";
 
+    const audio = document.querySelector('audio');
+    audio.play();
+
     const cactuses = document.querySelectorAll('oda-cactus');
     cactuses.forEach(cactus => {
         cactus.remove();
@@ -262,6 +265,9 @@ function gameOver() {
         pterodactyl.gameOver();
     });
 
+    const audio = document.querySelector('audio');
+    audio.currentTime = 0;
+    audio.pause();
     // const moon = document.querySelectorAll('.moon');
     // moon.forEach(moon => {
     //     moon.style.animationPlayState="paused";
