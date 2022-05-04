@@ -21,10 +21,6 @@ ODA({ is: 'oda-pterodactyl',
             </path>
         </svg>
     `,
-    props: {
-        name: "Привет птеродактиль",
-    },
-    attached(){},
     gameOver(){
         this.style.animationPlayState="paused";
         const svg = this.$core.root.querySelector("svg");

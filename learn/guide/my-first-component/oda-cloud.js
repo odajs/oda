@@ -16,9 +16,6 @@ ODA({ is: 'oda-cloud',
             <rect x="96" y="19" height="3" width="4" />
         </svg>
     `,
-    props: {
-        name: "Привет облако",
-    },
     gameOver(){
         this.style.animationPlayState="paused";
     },
