@@ -79,6 +79,107 @@ interval (key, handler, delay = 0)
 
 Использование метода **interval** позволяет ограничить частоту вызова заданной функции и повысить производительность работы браузера, предотвратив многократную обработку событий в течении указанной задержки. Однако, в отличие от метода **debounce**, метод **interval** не блокирует обработку предыдущих событий полностью. Он будет выполнять последнюю переданную ему функцию каждый раз по истечению указанной задержки.
 
+Если с задержкой необходимо вызвать какой-либо метод компонента, то к нему обязательно нужно привязать контекст компонента с помощью метода **bind**.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Подвигай мышью <input @mousemove="onMouseMove" ref="input"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.input.value = '';
+    },
+    counter() {
+        this.count++;
+    },
+    onMouseMove() {
+        this.countEvent++;
+        this.interval('my-mousemove', this.counter.bind(this), this.delay);
+    }
+});
+```
+
+Для того, чтобы этого не делать можно вместо указателя на метод записать его имя в виде строки.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Подвигай мышью <input @mousemove="onMouseMove" ref="input"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.input.value = '';
+    },
+    counter() {
+        this.count++;
+    },
+    onMouseMove() {
+        this.countEvent++;
+        this.interval('my-mousemove', 'counter', this.delay);
+    }
+});
+```
+
+В этом случае контекст компонента будет привязан к методу **counter** автоматически. Фактически метод **interval** заменит строку **'counter'** внутри себя на вызов одноименного метода **this.counter.bind(this)**.
+
+Если этого не сделать, то при вызове метода **counter** возникнет ошибка.
+
+```javascript error_run_edit_[my-component.js]
+ ODA({
+    is: 'my-component',
+    template: `
+        <label>Подвигай мышью <input @mousemove="onMouseMove" ref="input"> </label> <button @tap="onTap">Очистить</button><br>
+        <label>Временная задержка <input type="number" ::value="delay" step="10">, мс</label>
+        <div>Количество событий нажатия: {{countEvent}}</div>
+        <div>Количество обработок нажатия: {{count}}</div>
+    `,
+    props: {
+        count: 0,
+        countEvent: 0,
+        delay: 0
+    },
+    onTap() {
+        this.count=0;
+        this.countEvent=0;
+        this.$refs.input.value = '';
+    },
+    counter() {
+        this.count++;
+    },
+    onMouseMove() {
+        this.countEvent++;
+        this.interval('my-mousemove', this.counter, this.delay);
+    }
+});
+```
+
+В этом примере контекст компонента к методу **counter** привязан не будет и при его вызове возникнет ошибка, так как указатель **this** внутри него будет иметь неопределенное значение **undefined**.
+
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/tGBizM7TcOg?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
