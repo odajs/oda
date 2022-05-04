@@ -1,4 +1,3 @@
-let _mapParents;
 ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
@@ -46,37 +45,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     },
     controls: undefined,
     attached() {
-        if (this.parent && this.useParentState && !this.intersect) {
-            _mapParents ||= new Map();
-            const storedInMapParents = _mapParents.get(this.parent);
-            let isInDropdown = false;
-            const dd = document.body.getElementsByTagName('oda-dropdown');
-            if (dd.length) {
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    isInDropdown ||= elm.parent === this.parent;
-                }
-            }
-            if (storedInMapParents && isInDropdown) {
-                this.fire('cancel');
-            }
-            this.setMapParents();
-        }
-        this.setListen();
-    },
-    setMapParents() {
-        _mapParents = new Map();
-        this.async(() => {
-            const dd = document.body.getElementsByTagName('oda-dropdown');
-            if (dd.length) {
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    _mapParents.set(elm.parent, true);
-                }
-            }
-        }, 100)
-    },
-    setListen() {
         let win = window;
         this.windows = [];
         while (win.window !== win) {
@@ -231,29 +199,29 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
         }
 
-        if (!this.parent) {
+        //if (!this.parent) {
             top = top < 0 ? 0 : top;
             left = left < 0 ? 0 : left;
             if (bottom > winHeight) size.bottom = 0
             if (right > winWidth) size.right = 0;
-        } else {
-            if (this.align === 'left' || this.align === 'right') {
-                if (this.useParentWidth) minWidth = maxWidth = parentWidth;
-                if ((height && top) > winHeight - top) {
-                    top = rect.bottom - height;
-                    top = top < 0 ? 0 : top;
-                    maxHeight = winHeight - top;
-                } else if (bottom >= winHeight) size.bottom = 0;
-            } else if (this.align === 'top' || this.align === 'bottom') {
-                if (this.useParentWidth) minWidth = maxWidth = parentWidth;
-                else {
-                    if (width < parentWidth) minWidth = parentWidth;
-                    if (right > winWidth) size.right = 0;
-                }
-                left = left < 0 ? 0 : left;
-                if (bottom > winHeight) size.bottom = 0;
-            }
-        }
+        // } else {
+        //     if (this.align === 'left' || this.align === 'right') {
+            if (this.parent && this.useParentWidth) minWidth = maxWidth = parentWidth;
+        //         if ((height && top) > winHeight - top) {
+        //             top = rect.bottom - height;
+        //             top = top < 0 ? 0 : top;
+        //             maxHeight = winHeight - top;
+        //         } else if (bottom >= winHeight) size.bottom = 0;
+        //     } else if (this.align === 'top' || this.align === 'bottom') {
+        //         if (this.useParentWidth) minWidth = maxWidth = parentWidth;
+        //         else {
+        //             if (width < parentWidth) minWidth = parentWidth;
+        //             if (right > winWidth) size.right = 0;
+        //         }
+        //         left = left < 0 ? 0 : left;
+        //         if (bottom > winHeight) size.bottom = 0;
+        //     }
+        // }
         minWidth = minWidth > maxWidth ? maxWidth : minWidth;
         minHeight = minHeight > maxHeight ? maxHeight : minHeight;
 
