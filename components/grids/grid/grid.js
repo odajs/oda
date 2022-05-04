@@ -60,6 +60,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             const headers = this.table.$$('oda-grid-header')
             let height = 0;
             headers.forEach(h=>{
+                h.style.minHeight = '';
                 if (height < h.scrollHeight)
                     height = h.scrollHeight;
             })
@@ -145,6 +146,7 @@ ODA({is:'oda-grid-header',
     template: `
         <style>
             :host{
+                position: relative;
                 border-top: 1px solid gray;
                 @apply --horizontal;
                 @apply --dark;
@@ -154,7 +156,7 @@ ODA({is:'oda-grid-header',
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft" @track="colsTrack">
-            <div class="horizontal" style="min-width: 100%;" ~class="{flex: fix}">
+            <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
                 <oda-grid-header-cell ~for="headColumns" :last="item === items.last" :column="item" :parent-items="items" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
@@ -183,6 +185,8 @@ ODA({is: 'oda-grid-header-cell',
                 cursor: pointer;
                 @apply --header;
                 @apply --raised;
+                position: relative;
+                transition: translate 1s;
             }
             oda-button{
                 font-size: xx-small;
@@ -230,7 +234,7 @@ ODA({is: 'oda-grid-header-cell',
     props:{
         title:{
             get(){
-                return /*(this.column?.label ||  this.column?.name)+*/(this.column.$width || '')+':'+(this.column.width || '')
+                return /*(this.column?.label ||  this.column?.name)+*/(this.column.$width || '')+':'+(this.column.width || '')+':'+this.test;
             },
             reflectToAttribute: true
         }
@@ -252,7 +256,7 @@ ODA({is: 'oda-grid-header-cell',
         if (this.column.width){
             if (this.autoWidth && this.last){
                 res.width = 'auto';
-                res.minWidth = this.column.width +'px';
+                // res.minWidth = this.column.width +'px';
             }
             else if (!this.column?.$expanded || this.offsetWidth <= this.column.width)
                 res.width = this.column.width + 'px';
@@ -264,6 +268,7 @@ ODA({is: 'oda-grid-header-cell',
         }
         return res;
     },
+    test: '',
     get hideSizer(){
         return ((this.fix || this.autoWidth) && this.last && (this.domHost?.localName !== this.localName ||  (this.domHost?.last && this.domHost?.hideSizer)));
     },
@@ -273,11 +278,19 @@ ODA({is: 'oda-grid-header-cell',
         switch(e.detail.state){
             case 'start':{
                 if (this.autoWidth){
-                    for (let col of this.domHost.$$(this.localName)){
-                        if (col === this) break;
-                        col.style.maxWidth = col.style.width = col.column.$width + 'px';
-                        col.column.width = col.offsetWidth;
-
+                    let stopElement = this;
+                    let dom = this.domHost;
+                    while (dom){
+                        const columns = dom.$$(this.localName);
+                        if (!columns.length)
+                            break;
+                        for (let col of columns){
+                            if (col === stopElement) break;
+                            col.style.maxWidth = col.style.width = col.column.$width + 'px';
+                            col.column.width = col.offsetWidth;
+                        }
+                        stopElement = dom;
+                        dom = dom.domHost;
                     }
                 }
                 let items = this.column.items;
@@ -294,10 +307,9 @@ ODA({is: 'oda-grid-header-cell',
                         host = host.domHost;
                     }
                 }
-
             } break;
             case 'track':{
-                const pos = e.detail.target.offsetLeft + e.detail.target.offsetWidth;
+                const pos = e.detail.target.getBoundingClientRect().x + e.detail.target.offsetWidth;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
                         target.style.width = this.offsetWidth + e.detail.ddx + 'px';
@@ -320,21 +332,66 @@ ODA({is: 'oda-grid-header-cell',
     },
     onMove(e){
         switch (e.detail.state){
-            case 'track':{
+            case 'start':{
+                this._elements = Array.from(this.parentElement.children);
+                this._parentPos = this.parentElement.getBoundingClientRect();
                 this.style.zIndex = 1;
-                this.style.transform = `translate(${e.detail.dx}px)`;
-                const delta = this.offsetWidth/2;
-                if (Math.abs(e.detail.dx) > delta){
-                    if (e.detail.dx < 0){
-                        const idx = this.parentItems.indexOf(this.column);
-                        this.parentItems.splice(idx, 1)
-                        this.parentItems.splice(idx-1, 0, this.column)
+                this.style.minWidth = this.style.maxWidth = this.style.width = this.offsetWidth + 'px';
+            } break;
+            case 'track':{
+                let myPos = this.getBoundingClientRect();
+                // const lastPos = this._elements.last.getBoundingClientRect();
+                let pos = e.detail.dx;
+                if (myPos.left < this._parentPos.left){
+                    pos = e.detail.dx - (myPos.left - this._parentPos.left)
+                }
+                else if(myPos.right>this._parentPos.right){
+                    pos = e.detail.dx - (myPos.right - this._parentPos.right);
+                }
+                this.style.transform = `translate(${pos}px)`;
+                myPos = this.getBoundingClientRect();
+                if (e.detail.ddx<0){
+                    let el = this._elements.find(el=>{
+                        if (el !== this){
+                            pos = el.getBoundingClientRect();
+                            return myPos.left>pos.left && (pos.left + pos.width / 2 - 5)  > myPos.left;
+                        }
+                    })
+                    if (el){
+                        if (el.style.transform)
+                            el.style.transform = '';
+                        else
+                            el.style.transform = `translate(${myPos.width}px)`;
                     }
                 }
+                else if (e.detail.ddx>0) {
+                    let el = this._elements.find(el => {
+                        if (el !== this) {
+                            pos = el.getBoundingClientRect();
+                            return myPos.right < pos.right && myPos.right > (pos.left + pos.width / 2 + 5);
+                        }
+                    })
+                    if (el) {
+                        if (el.style.transform)
+                            el.style.transform = '';
+                        else
+                            el.style.transform = `translate(${-myPos.width}px)`;
+                    }
+                }
+
+                // console.log(this.getBoundingClientRect().x)
+                // let prev = this.previousElementSibling;
+                // if (prev && (this.offsetLeft + pos) < (prev.offsetLeft + prev.offsetWidth/2)){
+                //     const idx = this.parentItems.indexOf(this.column);
+                //     this.parentItems.splice(idx, 1)
+                //     this.parentItems.splice(idx-1, 0, this.column)
+                // }
             } break;
             case 'end':{
                 this.style.zIndex = 0;
                 this.style.transform = '';
+                this.test = ''
+                this.style.minWidth = this.style.maxWidth = this.style.width = '';
             } break;
         }
     },
