@@ -66,7 +66,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     },
     get columns(){
         return this.metadata.map((col, idx)=>{
-            col.$order = col.$order || ((idx + 1) * this.orderStep);
+            col.$order = /*col.$order || */((idx + 1) * this.orderStep);
             return col
         });
     },
@@ -90,6 +90,10 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return convertColumns(this.columns)
     },
     props:{
+        evenOdd: {
+            default: false,
+            save: true
+        },
         rowLines:{
             default: false,
             save: true
@@ -129,9 +133,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         showFilter:{
             default: true,
             save: true,
-            set(n){
-                this.headerResize();
-            }
+            // set(n){
+            //     this.headerResize();
+            // }
         },
         showFooter:{
             default: false,
@@ -144,7 +148,13 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     },
     colsScrollLeft: 0,
     rowsScrollTop: 0,
-    sorts: []
+    setTopScrolls(){
+        for (let part of this.$$('oda-grid-part')){
+            part.$('oda-grid-body').scrollTop = this.rowsScrollTop;
+        }
+    },
+    sorts: [],
+
 })
 ODA({is: 'oda-grid-part',
     template:`
@@ -157,9 +167,9 @@ ODA({is: 'oda-grid-part',
                 max-height: 100%;
             }
         </style>        
-        <oda-grid-header ~if="showHeader"></oda-grid-header>
-        <oda-grid-body class="flex" :scroll-top="rowsScrollTop" @scroll="onScroll"  @wheel="onWheel" ~style="{overflow: showScroll?'auto':'hidden'}"></oda-grid-body>
-        <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
+        <oda-grid-header ~if="showHeader" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-header>
+        <oda-grid-body :even-odd class="flex" ~style="{'overflow-y': showScroll?'scroll':'hidden'}" :scroll-top="rowsScrollTop"></oda-grid-body>
+        <oda-grid-footer  ~if="showFooter" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-footer>
     `,
     fix: '',
     get columns(){
@@ -171,16 +181,6 @@ ODA({is: 'oda-grid-part',
     get showScroll(){
         return !this.nextElementSibling;
     },
-    onScroll(e){
-        this.rowsScrollTop = e.target.scrollTop;
-    },
-    onWheel(e){
-        this.rowsScrollTop += e.deltaY;
-        if (this.rowsScrollTop<0)
-            this.rowsScrollTop = 0;
-        else if (this.rowsScrollTop > e.target.scrollHeight)
-            this.rowsScrollTop = e.target.scrollHeight;
-    }
 })
 ODA({is:'oda-grid-header',
     template: `
@@ -253,7 +253,7 @@ ODA({is: 'oda-grid-header-cell',
     `,
     get columns(){
         return this.column?.items?.map((col, idx)=>{
-            col.$order = col.$order || ((idx+1) * this.orderStep + this.column.$order);
+            col.$order = /*col.$order || */((idx+1) * this.orderStep + this.column.$order);
             return col
         })
     },
@@ -362,7 +362,7 @@ ODA({is: 'oda-grid-header-cell',
                     else
                         target.style.width = target.getBoundingClientRect().width + e.detail.ddx + 'px';
                 }
-                this.column.width = target.getBoundingClientRect().width;
+                this.column.$width = this.column.width = target.getBoundingClientRect().width;
                 target.style.width = undefined;
             } break;
             case 'end': {
@@ -377,7 +377,7 @@ ODA({is: 'oda-grid-header-cell',
     onMove(e) {
         switch (e.detail.state) {
             case 'start': {
-                this.style.opacity = .5;
+                this.style.backgroundColor = 'white';
                 this._elements = Array.from(this.parentElement.children);
                 this._proxy = this.create('oda-table-drag-proxy', {label: this.title, ...e.detail.start});
                 document.body.appendChild(this._proxy);
@@ -398,6 +398,7 @@ ODA({is: 'oda-grid-header-cell',
             } break;
             case 'end': {
                 this._proxy.remove();
+                this.style.backgroundColor = '';
                 this.style.opacity = '';
             } break;
         }
@@ -447,18 +448,28 @@ ODA({is: 'oda-grid-groups',
 ODA({is: 'oda-grid-body',
     template: `
         <style>
+            :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])>.cell:not([fix]) {
+                background-color: rgba(0,0,0,.05);
+            }
             :host{
+                overflow-x: auto !important;
                 @apply --vertical;
                 @apply --flex;
                 @apply --content;
             }
             .row{
+                @apply --horizontal;
+                @apply --content;
                 border-bottom: {{rowLines?'1px solid gray':'none'}};
                 min-height: {{rowHeight}}px;
                 max-height: {{rowHeight}}px;
                 height: {{rowHeight}}px;
+                flex: {{(autoWidth || fix)?1:0}};
             }
             .cell{
+                @apply --no-flex;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 border-right: {{colLines?'1px solid gray':'none'}};
             }
         </style>
@@ -466,8 +477,8 @@ ODA({is: 'oda-grid-body',
         {{getCellsClasses()}}
         </div>
         <div class="vertical no-flex">
-            <div class="row flex horizontal" ~for="row in rows">
-                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell content'">{{row[col.name]}}</div>
+            <div class="row" ~for="row in rows">
+                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
             </div>
         </div>
     `,
@@ -481,6 +492,20 @@ ODA({is: 'oda-grid-body',
             }`;
         }).join('\r\n');
     },
+    listeners:{
+        scroll(e){
+            this.rowsScrollTop = this.scrollTop;
+            this.table.setTopScrolls();
+        },
+        wheel(e){
+            this.rowsScrollTop += e.deltaY;
+            if (this.rowsScrollTop<0)
+                this.rowsScrollTop = 0;
+            else if (this.rowsScrollTop > this.scrollHeight)
+                this.rowsScrollTop = this.scrollHeight;
+            this.table.setTopScrolls();
+        }
+    }
 })
 ODA({is: 'oda-grid-footer',
     template: `
