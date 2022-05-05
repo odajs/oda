@@ -103,7 +103,7 @@ ODA({
             }
             .editor{
                 padding: 4px;
-                height: {{editMode ? '80vh' : ((cell?.enableResize || control?.enableResize) && cell?.cell_h) ? cell.cell_h : '100%'}}
+                height: {{editMode ? '80vh' : ((cell?.enableResize || control?.enableResize) && cell?.cell_h) ? cell.cell_h + 'px' : '100%'}}
             }
             oda-splitter2 {
                 opacity: 0;
@@ -114,7 +114,7 @@ ODA({
         </style>
         <div class="vertical flex main">
             <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount"></div>
-            <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" :size="3" color="gray" style="margin-top: -3px; x-index: 9" resize></oda-splitter2>
+            <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize></oda-splitter2>
         </div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
@@ -178,15 +178,15 @@ ODA({
         <span style="width: 8px"></span>
         <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
-    get enableSettings() {
+    enableSettings() {
         return Object.keys(this.control?.props || {}).length > 0;
     },
-    get enableSettings2() {
+    enableSettings2() {
         return Object.keys(this.control?.usedControl?.props || {}).length > 0;
     },
     cell: null,
     async showSettings(e) {
-        if (!this.enableSettings) return;
+        if (!this.enableSettings()) return;
         let control = this.control;
         let io = {};
         let props = {};
@@ -200,7 +200,7 @@ ODA({
             }
         })
         let control2;
-        if (this.enableSettings2) {
+        if (this.enableSettings2()) {
             control2 = control.usedControl;
             Object.keys(control2.props).forEach(key => {
                 io[key] = control2[key];
