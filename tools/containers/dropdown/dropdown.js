@@ -19,6 +19,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
                 visibility: visible;
                 overflow: hidden;
             }
+            oda-title {
+                min-height: 34px;
+                max-height: 34px;
+            }
         </style>
         <div class="vertical shadow content" ~style="_style" id="main">
             <div @resize="setSize" class="vertical flex">
@@ -128,6 +132,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
         if (!height || !width)
             return { top: top + 'px', left: left + 'px' };
+        height = height + (this.title ? 34 : 0)
         let maxHeight = winHeight;
         let maxWidth = winWidth;
         let minHeight = height || this.minHeight;
@@ -168,7 +173,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
             case 'top': {
                 bottom = this.intersect ? rect.bottom : rect.top;
-                top = bottom - height - (this.title ? 34 : 0);
+                top = bottom - height; // - (this.title ? 34 : 0);
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = bottom - top;
@@ -183,7 +188,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             } break;
             case 'bottom': {
                 top = this.intersect ? rect.top : rect.bottom;
-                bottom = top + height + (this.title ? 34 : 0);
+                bottom = top + height; // + (this.title ? 34 : 0);
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = winHeight - top;
