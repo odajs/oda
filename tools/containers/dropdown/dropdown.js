@@ -26,7 +26,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         </style>
         <div class="vertical shadow content" ~style="_style" id="main">
             <div @resize="setSize" class="vertical flex">
-                <oda-title ~if="title" allow-close :icon :title @pointerdown.stop.perv="_tapClose">
+                <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
@@ -85,18 +85,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     listeners: {
         pointerleave: function cancel() {
              if (this.cancelAfterLeave) this.fire('cancel');
-        }
-    },
-    _tapClose(e) {
-        let idx = -1;
-        const dd = document.body.getElementsByTagName('oda-dropdown');
-        if (dd.length) {
-            for (let i = 0; i < dd.length; i++) {
-                if (dd[i] === this)
-                    idx = i;
-                if (idx >= 0)
-                    dd[i].fire('cancel');
-            }
         }
     },
     props: {
