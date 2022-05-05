@@ -15,7 +15,7 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
                 <oda-simplemde ~if="type==='simplemde'" :value="src" @change="onchange" max-h="calc(80vh - 106px)"></oda-simplemde>
                 <oda-ace-editor ~if="type==='ace'" :src="src" @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="solarized_light" mode="markdown" min-lines=1></oda-ace-editor></oda-ace-editor>
             </div>
-            <oda-splitter2 ~if="editMode" size="3px"></oda-splitter2>
+            <oda-splitter2 ~if="editMode" size="3"></oda-splitter2>
             <div style="overflow-x: hidden; flex: 1">
                 <oda-md-viewer ~if="fount" class="flex" :src="fount" :edit-mode="editMode && !readOnly" padding="0 2px"></oda-md-viewer>
                 <oda-md-viewer ~if="!fount" class="flex" :srcmd="source" :edit-mode="editMode && !readOnly" padding="0 2px"></oda-md-viewer>

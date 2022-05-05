@@ -22,7 +22,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
     `,
     correctPanelSize(e){
-        e.target.parentElement.style.minWidth =  e.target.offsetWidth+'px';
+        e.target.parentElement.style.minWidth =  e.target.getBoundingClientRect().width+'px';
     },
     async showSettings(e){
         await ODA.import('@tools/property-grid');
@@ -78,7 +78,11 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                     res.push(col);
                 }
                 else{
-                    res.push(...convertColumns(col.items));
+                    const next = col.items.map(c=>{
+                        c.fix = col.fix;
+                        return c;
+                    })
+                    res.push(...convertColumns(next));
                 }
                 return res;
             }, [])
@@ -146,7 +150,7 @@ ODA({is: 'oda-grid-part',
     template:`
         <style>
             :host{
-                @apply --dark;
+                @apply --header;
                 @apply --vertical;
                 @apply --flex;
                 overflow: hidden;
@@ -235,14 +239,14 @@ ODA({is: 'oda-grid-header-cell',
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
-            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="offsetWidth > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
+            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>       
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
             <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
-            <input class="flex" ::value="filter" ~style="{visibility: (offsetWidth > iconSize * 2)?'visible':'hidden'}">
+            <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
             <oda-icon  icon="icons:filter" :icon-size="iconSize * .4" style="padding: 0px;"></oda-icon>
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
@@ -327,7 +331,7 @@ ODA({is: 'oda-grid-header-cell',
                         for (let col of columns){
                             if (col === stopElement) break;
                             col.style.maxWidth = col.style.width = col.column.$width + 'px';
-                            col.column.width = col.offsetWidth;
+                            col.column.$width = col.column.width = col.getBoundingClientRect().width;
                         }
                         stopElement = dom;
                         dom = dom.domHost;
@@ -349,16 +353,16 @@ ODA({is: 'oda-grid-header-cell',
                 }
             } break;
             case 'track':{
-                const pos = e.detail.target.getBoundingClientRect().x + e.detail.target.offsetWidth;
+                const pos = e.detail.target.getBoundingClientRect().x + e.detail.target.getBoundingClientRect().width;
                 if ((e.detail.ddx < 0 && e.detail.x < pos) || (e.detail.ddx > 0 && e.detail.x > pos)) {
                     if (this.column.items?.length){
-                        target.style.width = this.offsetWidth + e.detail.ddx + 'px';
-                        target.style.width = this.offsetWidth+'px';
+                        target.style.width = this.getBoundingClientRect().width + e.detail.ddx + 'px';
+                        target.style.width = this.getBoundingClientRect().width+'px';
                     }
                     else
-                        target.style.width = target.offsetWidth + e.detail.ddx + 'px';
+                        target.style.width = target.getBoundingClientRect().width + e.detail.ddx + 'px';
                 }
-                this.column.width = target.offsetWidth;
+                this.column.width = target.getBoundingClientRect().width;
                 target.style.width = undefined;
             } break;
             case 'end': {
@@ -446,14 +450,37 @@ ODA({is: 'oda-grid-body',
             :host{
                 @apply --vertical;
                 @apply --flex;
+                @apply --content;
+            }
+            .row{
+                border-bottom: {{rowLines?'1px solid gray':'none'}};
+                min-height: {{rowHeight}}px;
+                max-height: {{rowHeight}}px;
+                height: {{rowHeight}}px;
+            }
+            .cell{
+                border-right: {{colLines?'1px solid gray':'none'}};
             }
         </style>
+        <div is="style">
+        {{getCellsClasses()}}
+        </div>
         <div class="vertical no-flex">
-            <div class="row flex horizontal" ~for="row in rows"  ~style="{'border-bottom': rowLines?'1px solid gray':'none', minHeight: rowHeight+'px', maxHeight: rowHeight+'px'}">
-                <div style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" class="cell content" ~style="{order: col.$order, minWidth: col.$width, maxWidth: col.$width, 'border-right': colLines?'1px solid gray':'none',}">{{row[col.name]}}</div>
+            <div class="row flex horizontal" ~for="row in rows">
+                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell content'">{{row[col.name]}}</div>
             </div>
         </div>
-    `
+    `,
+    getCellsClasses(){
+        return this.cells.map(cell=>{
+            return `.C${cell.$order}{
+                order: ${cell.$order};
+                min-width: ${cell.$width}px;
+                max-width: ${cell.$width}px;
+                width: ${cell.$width}px;
+            }`;
+        }).join('\r\n');
+    },
 })
 ODA({is: 'oda-grid-footer',
     template: `

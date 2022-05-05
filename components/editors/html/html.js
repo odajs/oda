@@ -12,7 +12,7 @@ ODA({ is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
         </style>
         <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%' }">
             <div ~if="editMode" ~is="editors[type] || 'div'" style="width: 50%; overflow: auto;" :src @change="onchange"></div>
-            <oda-splitter2 ~if="isReady && editMode" size="3px"></oda-splitter2>
+            <oda-splitter2 ~if="isReady && editMode" size="3"></oda-splitter2>
             <div ~html="source || ''" style="flex: 1; overflow: auto"></div>
         </div>
     `,
