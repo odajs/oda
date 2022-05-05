@@ -73,7 +73,7 @@ ODA({
             }
         </style>
         <div class="horizontal header">
-            <oda-button :icon-size icon="icons:add" ~for="editors" @tap.stop="addCell(item)">{{item}}</oda-button>
+            <oda-button :icon-size icon="icons:add" ~for="editor in editors" @tap.stop="addCell(editor)">{{editor}}</oda-button>
         </div>
     `,
     index: -1,

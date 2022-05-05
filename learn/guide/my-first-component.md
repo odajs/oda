@@ -38,25 +38,35 @@
 
 ![Расположение ног] (learn\images\my-first-component\dino2.png "Второе расположение задних ног")
 
-Это позволяет создать анимационный эффект бега тиранозавра. Для этого достаточно к SVG-файлу добавить теги **animate**, которые будет поочередно менять расположение ног через определенный временной интервал, заданный равным 3 десятым секунды.
+Использование двух пар задних ног позволяет создать анимационный эффект бега тиранозавра. Для этого достаточно к тегу каждой ноги добавить специальный элемент **animate**, которые будет поочередно скрывать или отображать определенную ногу динозавра через заданный временной интервал.
 
-```text
-<animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+```javascript
+<!--Первая нога-->
+<path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
 
-<animate href="#fourth-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-
-<animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-
-<animate href="#third-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+<!--Вторая нога-->
+<path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+    <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+</path>
 ```
 
 Кроме этого, к файлу примитива динозавра можно добавить большой глаз и рот, которые будут появляться в момент его столкновения с каким-либо кактусом.
 
 ![Тиранозавр со большим глазом и закрытым ртом] (learn\images\my-first-component\dino3.png "Большой глаз и рот тиранозавра")
 
-Графический примитив кактуса содержит только его изображение, выполненного с помощью SVG-элемента «**path**».
+Графический примитив кактуса имеет следующий вид.
 
 ![Графический примитив кактуса] (learn\images\my-first-component\cactus.png "Кактус")
+
+Он задается SVG-элементов с одним тегом «**path**».
+
+```javascript
+<svg version="1.1" baseProfile="full" width="74" height="147" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 41, h3,v-3, h10, v3, h3, v42, h10, v-80, h3, v-3, h16, v3, h3, v80, h10, v-48, h3, v-3, h10, v3, h3, v48, h-3, v3, h-4, v3, h-3, v4, h-3, v3, h-13, v51, h-22, v-48, h-16, v-3, h-3, v-3, h-4, v-4, h-3, z"/>
+</svg>
+```
 
 Аналогично задается графический примитив облака.
 
@@ -72,31 +82,46 @@
 
 ![Графический примитив птеродактиля] (learn\images\my-first-component\pterodactyl2.png "Птеродактиль")
 
-Для создания эффекта взмахов крыльев к ним необходимо добавить тег **animate**, который поочередно будет скрывать и отображать их с определенным периодом в 0.3 секунды, как это было сделано для эффекта смены ног у тиранозавра.
+Для создания эффекта взмахов крыльев к ним можно добавить тег **animate**, который будет поочередно скрывать и отображать крылья через определенный временной интервал равный 0.3 секунды.
 
 ```text
-<animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
-<animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"></animate>
+ <!--Верхнее крыло-->
+<path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z " id="top-wing" visibility="visible">
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Нижнее крыло-->
+<path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z " id="bottom-wing" visibility="visible">
+    <animate attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
+</path>
 ```
 
 Для каждого из этих элементов создадим пользовательский компоненты следующим образом:
 
 1. Компонент тиранозавра («oda-dino»).
 
-```text
+```javascript
 ODA({ is: 'oda-dino',
     template: `
         <style>
-            /* Раздел стилей */
+            svg path {
+                fill: var(--dino-color);
+            }
+            #small-eye {
+                fill: var(--dino-eyes-color);
+            }
+            #big-eye {
+                stroke: var(--dino-eyes-color);
+            }
         </style>
 
         <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
 
             <!-- Тело -->
-            <path d="M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
+            <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body"/>
 
             <!--Глаз маленький-->
-            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye" class="eyes"/>
+            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"/>
 
             <!--Глаз большой-->
             <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
@@ -105,21 +130,24 @@ ODA({ is: 'oda-dino',
             <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
             <!--Первая нога-->
-            <path d=" M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z " id="first-leg" visibility="hidden"/>
+            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
 
             <!--Вторая нога-->
-            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden"/>
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
 
             <!-- Третья нога -->
-            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg"/>
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg">
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
 
             <!--Четвертая нога-->
-            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg"/>
-
-            <animate href="#first-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
-            <animate href="#fourth-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-            <animate href="#second-leg" attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
-            <animate href="#third-leg" attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount = "indefinite"/>
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
         </svg>
     `,
     props: {
