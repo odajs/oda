@@ -19,7 +19,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 <oda-grid-part fix="right"></oda-grid-part>
             </div>
         </div>
-        <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
+        
     `,
     correctPanelSize(e){
         e.target.parentElement.style.minWidth =  e.target.getBoundingClientRect().width+'px';
@@ -38,6 +38,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     metadata:[],
     dataSet: [],
     groups: [],
+    labels: [],
     get rows(){
         return this.dataSet;
     },
@@ -156,8 +157,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     sorts: [],
 
 })
-ODA({is: 'oda-grid-part',
-    template:`
+ODA({
+    is: 'oda-grid-part',
+    template: `
         <style>
             ::-webkit-scrollbar {
                 width: {{!nextElementSibling?6:0}}px;
@@ -180,22 +182,20 @@ ODA({is: 'oda-grid-part',
             }
 
         </style>
-        <oda-grid-header ~if="showHeader"></oda-grid-header>
+        <oda-grid-header  ~if="showHeader"></oda-grid-header>
         <oda-grid-body :even-odd class="flex" :scroll-top="rowsScrollTop"></oda-grid-body>
         <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
     `,
     fix: '',
-    get columns(){
-        return this.table.columns?.filter(col=>((col.fix || '') === (this.fix || '')));
+    get columns() {
+        return this.table.columns?.filter(col => ((col.fix || '') === (this.fix || '')));
     },
-    get cells(){
-        return this.table.cells?.filter(col=>((col.fix || '') === (this.fix || '')));
+    get cells() {
+        return this.table.cells?.filter(col => ((col.fix || '') === (this.fix || '')));
     },
     colsScrollLeft: 0,
-    set colsScrollLeft(n){
-        this.$('oda-grid-header').scrollTop
-    }
 })
+
 ODA({is:'oda-grid-header',
     template: `
         <style>
@@ -209,7 +209,7 @@ ODA({is:'oda-grid-header',
                 overflow-y: scroll;
             }
         </style>
-        <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft">
+        <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
                 <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
@@ -234,7 +234,7 @@ ODA({is: 'oda-grid-header-cell',
                 overflow: hidden;
                 cursor: pointer;
                 @apply --header;
-                @apply --raised;
+                /*@apply --raised;*/
                 position: relative;
                 font-weight: bold;
                 box-sizing: border-box;
@@ -253,8 +253,9 @@ ODA({is: 'oda-grid-header-cell',
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
-            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):''" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
-            <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
+            <oda-icon style="opacity: .5" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-forward:270':'icons:arrow-forward:90'):''" :icon-size="iconSize/2" >{{column.$sort}}</oda-icon>
+            <span style="position: absolute; top: 0px; right: 0px; font-size: xx-small; margin: 2px; opacity: .5">{{sortId}}</span>
+            <span class="no-flex" style="height: 90%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
             <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
@@ -286,9 +287,13 @@ ODA({is: 'oda-grid-header-cell',
                 this.sorts.push(this.column);
             }
         }
+        this.sortId = undefined;
     },
     filter: undefined,
     parentItems: null,
+    get sortId(){
+        return (this.sorts.indexOf(this.column) + 1) || '';
+    },
     props:{
         title:{
             get(){
@@ -452,11 +457,29 @@ ODA({is: 'oda-grid-groups',
         <style>
             :host{
                 @apply --horizontal;
-                padding: 4px;
+                align-items: center;
+                opacity: .8;
+            }
+            div{
+                align-items: center;
+                @apply --horizontal;
+            }
+            oda-icon{
+                transform: scale(.5);
             }
         </style>
-        <label disabled if="groups.length">Drag here to set row groups</label>
-        <div ~for="groups">{{item}}</div>
+        <div class="flex">
+            <oda-icon class="disabled" icon="device:storage"></oda-icon>
+            <label class="disabled" if="groups.length">Drag here to set row groups</label>
+            <div ~for="groups">{{item}}</div>
+        </div>
+        <div ~if="pivotMode" class="flex" style="border-left: 1px solid var(--border-color)">
+            <oda-icon class="disabled" icon="device:storage:90"></oda-icon>
+            <label class="disabled" if="groups.length">Drag here to set column labels</label>
+            <div ~for="labels">{{item}}</div>
+        </div>
+        <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="border-radius: 50%;"></oda-button>
+
     `,
 })
 ODA({is: 'oda-grid-body',
@@ -510,6 +533,7 @@ ODA({is: 'oda-grid-body',
     listeners:{
         scroll(e){
             this.rowsScrollTop = this.scrollTop;
+            this.colsScrollLeft = this.scrollLeft;
         }
     }
 })
