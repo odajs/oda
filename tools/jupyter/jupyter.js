@@ -35,11 +35,13 @@ ODA({
     focusedIndex: -1,
     get focusedItem() { return this.notebook?.cells?.[this.focusedIndex] || undefined },
     set src(n) {
-        if (!n.startsWith('http'))
-            n = path + '/' + n;
-        ODA.loadJSON(n).then(res => {
-            this.notebook = res;
-        })
+        if (n) {
+            if (!n.startsWith('http'))
+                n = path + '/' + n;
+            ODA.loadJSON(n).then(res => {
+                this.notebook = res;
+            })
+        }
     },
     notebook: {}
 })

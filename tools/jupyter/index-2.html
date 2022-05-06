@@ -4,6 +4,7 @@
 
 <script type="module">
     import '../../oda.js';
+    import { LZString } from './lib/lz-string.js';
     ODA({ is: 'oda-jupyter-app', imports: '@oda/button, ./jupyter.js',
         template: `
             <style>
@@ -14,6 +15,7 @@
             </style>
 
             <div style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border: 1px solid gray; position: sticky; top: 0; background: white; z-index: 99; background: lightgray; margin: 1px">
+                <oda-button @pointerdown="share">share</oda-button>
                 <oda-button @tap="saveFile">save</oda-button>
                 <oda-button for="load" @tap="this.$('#load').click()">load</oda-button>
                 <input id="load" type="file" style="display: none" @change="loadFile($event)"/>
@@ -24,7 +26,21 @@
             <oda-jupyter id="jupyter" :src show-border></oda-jupyter>
         `,
         src: './jupyter-2.json',
+        lzs: '',
         get jupyter() { return this.$('#jupyter') },
+        ready() {
+            const _location = window.location.href;
+            this.lzs = _location.split('?lzs=')[1];
+            try {
+                this.lzs = LZString.decompressFromEncodedURIComponent(this.lzs);
+                if (this.lzs)
+                    this.src = '';
+            } catch (err) { console.log(err) }
+        },
+        attached() {
+            if (this.lzs)
+                this.jupyter.notebook = JSON.parse(this.lzs);
+        },
         loadFile(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -47,6 +63,13 @@
             if (window.confirm(`Do you really want delete current cell ?`)) {
                 this.jupyter.notebook.cells = [];
             }
-        }
+        },
+        share() {
+            const str = JSON.stringify(this.jupyter.notebook, null, 4);
+            if (str) {
+                let url = this.$url + ('#?lzs=') + LZString.compressToEncodedURIComponent(str);
+                window.open(url, '_blank').focus();
+            }
+        },
     })
 </script>
