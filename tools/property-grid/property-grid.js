@@ -48,24 +48,50 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     onSlot(e) {
         this.inspectedObject = e.target.assignedElements();
     },
-   _beforeExpand(node, force) {
+    _beforeExpand(node, force) {
+        if (typeof node.value !== 'object') return;
         if (!force && node?.items?.length)
-            return node?.items || [];
-        return (node.items = new PropertyGridDataSet(node.value, this.expertMode, this.onlySave).items);
+           return node?.items || [];
+        return (node.items = new PropertyGridDataSet(node.value, this.expertMode, false, false).items);
         // return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
-    }
+    },
+    _sort(array = []) {
+        if (!this.sorts.length) return;
+        array.sort((a, b) => {
+            let res = 0;
+            this.sorts.some(col => {
+                const _a = a[col[this.columnId]];
+                const _b = b[col[this.columnId]];
+                if (!isNaN(_a) && !isNaN(_b)){
+                    res = parseFloat(_a) > parseFloat(_b) ? 1 : -1
+                } else {
+                    res = (String(_a)).localeCompare(String(_b)) * col.$sort;
+                }
+                if (res) return true;
+            });
+            return res;
+        });
+    },
 })
 CLASS({is: 'PropertyGridDataSet',
-    ctor(inspectedObject, expert, onlySave){
+    ctor(inspectedObject, expert, onlySave, isArray){
         this.expert = expert;
         this.onlySave = onlySave;
-        this.inspectedObjects = Array.isArray(inspectedObject)?inspectedObject:[inspectedObject];
+        this.inspectedObjects = isArray ? inspectedObject : [inspectedObject];
     },
     get items(){
         const items = []
         for (let obj of this.inspectedObjects || []) {
             if (!obj) continue
-            const props = obj.props || {}
+            let props = obj.props
+            if (!props) {
+                props = Object.getOwnPropertyNames(obj).reduce((res, k, idx, keys) => {
+                    res[k] = { type: obj[k]?.constructor || res[keys[idx-1]] || String}
+                    return res
+                }, {})
+            }
+
+
             const propsNames = Object.keys(props)
             let proto = obj
             while (proto) {
