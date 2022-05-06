@@ -35,7 +35,8 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
             set(n) {
                 this.src = this.source;
             }
-        }
+        },
+        label: ''
     },
     src: '',
     fount: '',

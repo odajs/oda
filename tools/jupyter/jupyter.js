@@ -29,7 +29,8 @@ ODA({
         },
         editors: {
             default: ['html', 'code', 'markdown']
-        }
+        },
+        collapsedMode: false
     },
     focusedIndex: -1,
     get focusedItem() { return this.notebook?.cells?.[this.focusedIndex] || undefined },
@@ -97,9 +98,10 @@ ODA({
                 @apply --no-flex;
                 padding: 1px;
                 height: {{editMode ? '80vh' : 'unset'}};
+                margin: 0 2px;
             }
             .main {
-                min-height: 22px;
+                min: 22px;
             }
             .editor{
                 padding: 4px;
@@ -111,11 +113,19 @@ ODA({
             oda-splitter2:hover {
                 opacity: .7;
             }
+            .row {
+                cursor: pointer;
+                padding: 5px;
+                color: gray;
+                font-size: 12px;
+                border: 1px solid lightgray;
+            }
         </style>
-        <div class="vertical flex main">
-            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount"></div>
+        <div class="vertical flex main" ~if="!collapsedMode">
+            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize></oda-splitter2>
         </div>
+        <div class="row" ~if="collapsedMode" ~class="{shadow: !readOnly && focused}">{{this.cell?.label || this.cell?.cell_type || ''}}</div>
         <oda-jupyter-toolbar ~if="!readOnly && focused"></oda-jupyter-toolbar>
     `,
     set cell(n) {

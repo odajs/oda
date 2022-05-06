@@ -2219,7 +2219,7 @@ if (!window.ODA) {
                 }
                 else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ ) || name in this.__proto__) { // понаблюдать 👀
                         this[name] = v;
-                        return;
+                        if(!(name in this.__proto__)) return;
                 }
             }
             // понаблюдать 👀

@@ -6,7 +6,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 @apply --flex;
                 overflow: hidden;
             }
-        </style>   
+        </style>
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal" style="overflow: hidden;">
             <div ~if="columns?.some(i=>i.fix === 'left')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
@@ -17,7 +17,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             <div ~if="columns?.some(i=>i.fix === 'right')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
                 <oda-splitter save-key="right-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
                 <oda-grid-part fix="right"></oda-grid-part>
-            </div>      
+            </div>
         </div>
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="position: absolute; right: 0px; top: 0px; z-index: 1; border-radius: 50%;"></oda-button>
     `,
@@ -166,7 +166,16 @@ ODA({is: 'oda-grid-part',
                 overflow: hidden;
                 max-height: 100%;
             }
-        </style>        
+
+            .hidden-scroll { /* скрывает скроллбары, но позволяет скроллить */
+                scrollbar-width: none; /* Firefox */
+                overflow-y: scroll;
+            }
+
+            .hidden-scroll::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+        </style>
         <oda-grid-header ~if="showHeader" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-header>
         <oda-grid-body :even-odd class="flex" ~style="{'overflow-y': showScroll?'scroll':'hidden'}" :scroll-top="rowsScrollTop"></oda-grid-body>
         <oda-grid-footer  ~if="showFooter" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-footer>
@@ -217,7 +226,7 @@ ODA({is: 'oda-grid-header-cell',
         <style>
             :host{
                 @apply --vertical;
-                overflow: hidden;   
+                overflow: hidden;
                 cursor: pointer;
                 @apply --header;
                 @apply --raised;
@@ -241,7 +250,7 @@ ODA({is: 'oda-grid-header-cell',
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
             <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
-        </div>       
+        </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
             <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
@@ -510,7 +519,7 @@ ODA({is: 'oda-grid-body',
 ODA({is: 'oda-grid-footer',
     template: `
         <style>
-            :host{  
+            :host{
                 @apply --no-flex;
                 @apply --header;
                 @apply --raised;

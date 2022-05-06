@@ -14,8 +14,8 @@ ODA({is: 'oda-hexagon-layout',
                   overflow: hidden;
                   background: {{background}};
                   margin:  -{{h / 2 }}px -{{size / 2 + distance}}px;
-                  
-                  
+
+
               }
               :host([tracking]):before{
                     content: "";
@@ -89,25 +89,6 @@ ODA({is: 'oda-hexagon-layout',
                     this.width = this.offsetWidth;
             // })
         },
-        track(e){
-            if(focusedHex) return;
-            e.stopPropagation();
-            switch (e.detail.state){
-                case 'start':{
-                    this.tracking = true;
-                    this.tr = {left: e.detail.x, top: e.detail.y, width: 0, height: 0};
-                } break;
-                case 'track':{
-                    this.tr.width =  e.detail.x-this.tr.left;
-                    this.tr.height =  e.detail.y-this.tr.top;
-                    this.render();
-                } break;
-                case 'end':{
-                    this.tracking = false;
-                    this.tr = {};
-                } break;
-            }
-        }
     },
     addItem(item) {
         let row = this.data.find(i=>(i.y === (item.y || 0)))
@@ -142,7 +123,7 @@ ODA({is: 'oda-hexagon-row',
                   @apply --horizontal;
                   @apply --no-flex;
                   justify-content: start;
-                  
+
               }
           </style>
           <oda-hexagon ~style="{margin: '0px '+distance+'px'}" class="no-flex" ~for="cols" :x="index" :y></oda-hexagon>
@@ -220,7 +201,7 @@ ODA({is: 'oda-hexagon',
           :host([active]) {
               filter: brightness(.9) !important;
               cursor: pointer;
-             
+
           }
           :host>* {
               overflow: visible;
@@ -293,7 +274,8 @@ ODA({is: 'oda-hexagon',
     },
 
     listeners:{
-        down(e){
+        down(e) {
+            e.stopPropagation();
             if (this.active)
                 focusedHex = this;
             else
@@ -312,7 +294,7 @@ ODA({is: 'oda-hexagon',
         dragend(e){
             this.showTrash = false;
         },
-        dragstart(e){
+        dragstart(e) {
             const obj = {mime: 'oda/hexagon-item'}
             obj.data = Post['oda/hexagon-item'] = this.item;
             Post['host'] = this;

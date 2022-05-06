@@ -32,7 +32,8 @@ ODA({ is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
             set(n) {
                 this.src = this.source;
             }
-        }
+        },
+        label: ''
     },
     get editors() {
         return {
