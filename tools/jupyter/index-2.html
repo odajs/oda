@@ -18,7 +18,7 @@
                 <oda-button for="load" @tap="this.$('#load').click()">load</oda-button>
                 <input id="load" type="file" style="display: none" @change="loadFile($event)"/>
                 <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
-                <oda-button @tap="jupyter.notebook.cells = []">clear</oda-button>
+                <oda-button @tap="clear">clear</oda-button>
                 <oda-button @tap="document.location.reload()">reload</oda-button>
             </div>
             <oda-jupyter id="jupyter" :src show-border></oda-jupyter>
@@ -42,6 +42,11 @@
             a.href = URL.createObjectURL(blob);
             a.download = (this.jupyter.notebook.label || 'oda-jupyter') + '.json';
             a.click();
+        },
+        clear() {
+            if (window.confirm(`Do you really want delete current cell ?`)) {
+                this.jupyter.notebook.cells = [];
+            }
         }
     })
 </script>

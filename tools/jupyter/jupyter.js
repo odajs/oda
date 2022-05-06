@@ -264,7 +264,9 @@ ODA({
         })
     },
     deleteCell() {
-        this.editMode = false;
-        this.notebook.cells.splice(this.focusedIndex, 1);
+        if (window.confirm(`Do you really want delete current cell ?`)) {
+            this.editMode = false;
+            this.notebook.cells.splice(this.focusedIndex, 1);
+        }
     }
 })
