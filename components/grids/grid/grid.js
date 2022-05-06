@@ -90,6 +90,10 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return convertColumns(this.columns)
     },
     props:{
+        pivotMode:{
+            default: false,
+            save: true
+        },
         evenOdd: {
             default: false,
             save: true
@@ -133,9 +137,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         showFilter:{
             default: true,
             save: true,
-            // set(n){
-            //     this.headerResize();
-            // }
         },
         showFooter:{
             default: false,
@@ -146,19 +147,30 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             save: true
         }
     },
-    colsScrollLeft: 0,
-    rowsScrollTop: 0,
-    setTopScrolls(){
+    set rowsScrollTop(n){
         for (let part of this.$$('oda-grid-part')){
-            part.$('oda-grid-body').scrollTop = this.rowsScrollTop;
+            part.$('oda-grid-body').scrollTop = n;
         }
     },
+    rowsScrollTop: 0,
     sorts: [],
 
 })
 ODA({is: 'oda-grid-part',
     template:`
         <style>
+            ::-webkit-scrollbar {
+                width: {{!nextElementSibling?6:0}}px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-thumb {          
+                background: var(--header-background);
+                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                @apply --dark;
+                width: 16px;
+            }
             :host{
                 @apply --header;
                 @apply --vertical;
@@ -167,18 +179,10 @@ ODA({is: 'oda-grid-part',
                 max-height: 100%;
             }
 
-            .hidden-scroll { /* скрывает скроллбары, но позволяет скроллить */
-                scrollbar-width: none; /* Firefox */
-                overflow-y: scroll;
-            }
-
-            .hidden-scroll::-webkit-scrollbar {
-                display: none; /* Chrome, Safari, Opera */
-            }
         </style>
-        <oda-grid-header ~if="showHeader" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-header>
-        <oda-grid-body :even-odd class="flex" ~style="{'overflow-y': showScroll?'scroll':'hidden'}" :scroll-top="rowsScrollTop"></oda-grid-body>
-        <oda-grid-footer  ~if="showFooter" ~style="{'overflow-y': showScroll?'scroll':'hidden'}"></oda-grid-footer>
+        <oda-grid-header ~if="showHeader"></oda-grid-header>
+        <oda-grid-body :even-odd class="flex" :scroll-top="rowsScrollTop"></oda-grid-body>
+        <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
     `,
     fix: '',
     get columns(){
@@ -187,9 +191,10 @@ ODA({is: 'oda-grid-part',
     get cells(){
         return this.table.cells?.filter(col=>((col.fix || '') === (this.fix || '')));
     },
-    get showScroll(){
-        return !this.nextElementSibling;
-    },
+    colsScrollLeft: 0,
+    set colsScrollLeft(n){
+        this.$('oda-grid-header').scrollTop
+    }
 })
 ODA({is:'oda-grid-header',
     template: `
@@ -201,7 +206,7 @@ ODA({is:'oda-grid-header',
                 @apply --horizontal;
                 overflow: hidden;
                 @apply --raised;
-                overflow-y: visible;
+                overflow-y: scroll;
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-Left="colsScrollLeft">
@@ -247,8 +252,8 @@ ODA({is: 'oda-grid-header-cell',
         </style>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
             <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
-            <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 4px;">{{title}}</span>
-            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):'icons:apps'" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
+            <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
+            <oda-icon :bubble="sorts.indexOf(column) + 1" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-drop-up':'icons:arrow-drop-down'):''" :icon-size="iconSize/2" ~style="{opacity: column?.$sort>0?1:.1}">{{column.$sort}}</oda-icon>
             <span class="no-flex" style="height: 100%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
@@ -465,17 +470,18 @@ ODA({is: 'oda-grid-body',
                 @apply --vertical;
                 @apply --flex;
                 @apply --content;
+                overflow-y: scroll;
             }
             .row{
                 @apply --horizontal;
                 @apply --content;
-                border-bottom: {{rowLines?'1px solid gray':'none'}};
                 min-height: {{rowHeight}}px;
                 max-height: {{rowHeight}}px;
                 height: {{rowHeight}}px;
                 flex: {{(autoWidth || fix)?1:0}};
             }
             .cell{
+                border-bottom: {{rowLines?'1px solid gray':'none'}};
                 @apply --no-flex;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -504,15 +510,6 @@ ODA({is: 'oda-grid-body',
     listeners:{
         scroll(e){
             this.rowsScrollTop = this.scrollTop;
-            this.table.setTopScrolls();
-        },
-        wheel(e){
-            this.rowsScrollTop += e.deltaY;
-            if (this.rowsScrollTop<0)
-                this.rowsScrollTop = 0;
-            else if (this.rowsScrollTop > this.scrollHeight)
-                this.rowsScrollTop = this.scrollHeight;
-            this.table.setTopScrolls();
         }
     }
 })
@@ -523,6 +520,7 @@ ODA({is: 'oda-grid-footer',
                 @apply --no-flex;
                 @apply --header;
                 @apply --raised;
+                overflow-y: scroll;
             }
         </style>
             footer
