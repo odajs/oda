@@ -6,7 +6,7 @@ ODA({ is: 'oda-tree', imports: '@oda/table', extends: 'oda-table',
         keyName: 'name',
     },
     attached() {
-        if (!this.columns?.length) this.columns = [{name: this.keyName, treeMode: true, $sort: 1}];
+        if (!this.columns?.length) this.columns = [{name: this.keyName, treeMode: true/*, $sort: 1*/}];
     },
     observers: [
         function setFocusedNode(focusedRow) {

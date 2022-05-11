@@ -9,12 +9,12 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         </style>
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal" style="overflow: hidden;">
-            <div ~if="visibleColumns?.some(i=>i.fix === 'left')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
+            <div ~if="metadata[0].items.some(col=>col.checked)" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
                 <oda-grid-part @resize="correctPanelSize" fix="left"></oda-grid-part>
                 <oda-splitter save-key="left-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
             <oda-grid-part style="overflow: hidden;"></oda-grid-part>
-            <div ~if="visibleColumns?.some(i=>i.fix === 'right')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
+            <div ~if="metadata[2].items.some(col=>col.checked)" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
                 <oda-splitter save-key="right-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
                 <oda-grid-part fix="right"></oda-grid-part>
             </div>
@@ -44,7 +44,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return this.clientWidth;
     },
     headerResize(e){
+
         this.interval('header-resize',()=>{
+            console.log('headerResize')
             const parts = this.table.$$('oda-grid-part');
             const headers = parts.map(part=>{
                 return part.$$('oda-grid-header');
@@ -58,45 +60,38 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             for (let h of headers){
                 h.style.minHeight = height+'px';
             }
+
         })
     },
     get metadata(){
-        return [
-            {name: 'Left fix', $expanded: true, hideExpander: true, hideCheckbox: true,
-            items: this.columns?.filter(col => col.fix === 'left')},
-            {name: 'Main', $expanded: true, hideExpander: true, hideCheckbox: true,
-                items: this.columns?.filter(col => !col.fix)},
-            {name: 'Right fix', $expanded: true, hideExpander: true, hideCheckbox: true,
-            items: this.columns?.filter(col => col.fix === 'right')},
-        ]
-    },
-    get visibleColumns(){
-        return this.columns.map((col, idx)=>{
-            col.$order = ((idx + 1) * this.orderStep);
+        const columns = this.columns.map((col, idx)=>{
             col.checked = (col.checked === undefined && !col.hidden) || col.checked;
             return col;
-        }).filter(col => col.checked !== false);
+        })
+        return [
+            {name: 'Left fix', $expanded: true, hideExpander: true, hideCheckbox: true, fix: 'left', iconExpanded: 'editor:border-left',
+            items: columns?.filter(col => col.fix === 'left')},
+            {name: 'Main', $expanded: true, hideExpander: true, hideCheckbox: true, fix: '',  iconExpanded: 'editor:border-all',
+                items: columns?.filter(col => !col.fix)},
+            {name: 'Right fix', $expanded: true, hideExpander: true, hideCheckbox: true, fix: 'right',  iconExpanded: 'editor:border-right',
+            items: columns?.filter(col => col.fix === 'right')},
+        ]
     },
     orderStep: 1000000,
-    get cells(){
-        const convertColumns = (items)=>{
-            return items.reduce((res, col)=>{
-                if (!col.items?.length || !col.$expanded){
-                    res.push(col);
-                }
-                else{
-                    const next = col.items.map(c=>{
-                        c.fix = col.fix;
-                        return c;
-                    })
-                    res.push(...convertColumns(next));
-                }
-                return res;
-            }, [])
-        }
-        return convertColumns(this.visibleColumns)
+    getTemplateTag(row, col) {
+        if (row.$role)
+            return row.template || col.template || this.defaultTemplate;
+        if (row.$group)
+            return this.defaultGroupTemplate;
+        if (col.treeMode)
+            return this.defaultTreeTemplate;
+        let template = col.template || row.template || this.defaultTemplate;
+        if (typeof template === 'object')
+            return template.tag || template.is || template.template;
+        return template;
     },
     props:{
+        defaultTemplate: 'oda-grid-cell',
         pivotMode:{
             default: false,
             save: true
@@ -163,8 +158,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     sorts: [],
 
 })
-ODA({
-    is: 'oda-grid-part',
+ODA({is: 'oda-grid-part',
     template: `
         <style>
             ::-webkit-scrollbar {
@@ -186,18 +180,36 @@ ODA({
                 overflow: hidden;
                 max-height: 100%;
             }
-
         </style>
         <oda-grid-header  ~if="showHeader"></oda-grid-header>
         <oda-grid-body :even-odd class="flex" :scroll-top="rowsScrollTop"></oda-grid-body>
         <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
     `,
-    fix: '',
-    get visibleColumns() {
-        return this.table.columns?.filter(col => ((col.fix || '') === (this.fix || ''))).filter(col=> col.checked !== false);
+    get part(){
+        return this;
     },
+    fix: '',
+    get columns() {
+        return this.metadata?.find(col => col.fix === this.fix)?.items.filter(col=> col.checked !== false) || [];
+    },
+
     get cells() {
-        return this.table.cells?.filter(col => ((col.fix || '') === (this.fix || ''))).filter(col=> col.checked !== false);
+        const convertColumns = (items)=>{
+            return items.reduce((res, col)=>{
+                if (!col.items?.length || !col.$expanded){
+                    res.push(col);
+                }
+                else{
+                    const next = col.items.map(c=>{
+                        c.fix = col.fix;
+                        return c;
+                    })
+                    res.push(...convertColumns(next));
+                }
+                return res;
+            }, [])
+        }
+        return convertColumns(this.columns).filter(col=> col.checked !== false) || [];
     },
     colsScrollLeft: 0,
 })
@@ -217,7 +229,7 @@ ODA({is:'oda-grid-header',
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-header-cell :order-step="orderStep/10" ~for="visibleColumns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
+                <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -233,6 +245,15 @@ ODA({is:'oda-grid-header',
     },
     get header(){
         return this;
+    },
+    listeners:{
+        resize(e){
+            // e.preventDefault();
+            // this.interval('h-resize', ()=>{
+                this.headerResize();
+            // })
+
+        }
     }
 })
 ODA({is: 'oda-grid-header-cell',
@@ -259,14 +280,14 @@ ODA({is: 'oda-grid-header-cell',
             }
         </style>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
-            <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="column.$expanded = !column.$expanded"></oda-icon>
+            <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="expand()"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
             <oda-icon style="opacity: .5" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-forward:270':'icons:arrow-forward:90'):''" :icon-size="iconSize/2" >{{column.$sort}}</oda-icon>
             <span style="position: absolute; top: 0px; right: 0px; font-size: xx-small; margin: 2px; opacity: .5">{{sortId}}</span>
             <span class="no-flex" style="height: 90%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell  :order-step="orderStep/10" ~for="visibleColumns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
+            <oda-grid-header-cell  :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" style="align-items: center;" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
@@ -274,9 +295,12 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
-    get visibleColumns(){
+    expand(){
+        this.column.$expanded = !this.column.$expanded;
+        this.resize();
+    },
+    get columns(){
         return this.column?.items?.map((col, idx)=>{
-            col.$order = ((idx+1) * this.orderStep + this.column.$order);
             col.checked = (col.checked === undefined && !col.hidden) || col.checked
             return col
         }).filter(col=> col.checked !== false)
@@ -312,15 +336,18 @@ ODA({is: 'oda-grid-header-cell',
         }
 
     },
-    column: null,
+    set column(n){
+        if (n)
+            n.$width = this.getBoundingClientRect().width;
+    },
     listeners:{
-        resize(e){
-            this.interval('column-resize', ()=>{
-                this.headerResize();
-                this.column.$width = this.getBoundingClientRect().width;
-            })
+        resize: 'resize'
+    },
+    resize(e){
+        // this.interval('column-resize', ()=>{
 
-        }
+            this.column.$width = this.getBoundingClientRect().width;
+        // })
     },
     getStyle(){
         const min = this.iconSize / 2 *  (this.column?.items?.length || 1);
@@ -328,7 +355,6 @@ ODA({is: 'oda-grid-header-cell',
         if (this.column.width){
             if (this.autoWidth && this.last){
                 res.width = 'auto';
-                // res.minWidth = this.column.width +'px';
             }
             else if (!this.column?.$expanded || this.getBoundingClientRect().width <= this.column.width)
                 res.width = this.column.width + 'px';
@@ -407,8 +433,10 @@ ODA({is: 'oda-grid-header-cell',
             case 'start': {
                 this.style.backgroundColor = 'white';
                 this._elements = Array.from(this.parentElement.children);
+                this._items = this.domHost.column?.items || this.table.columns;
                 this._proxy = this.create('oda-table-drag-proxy', {label: this.title, ...e.detail.start});
                 document.body.appendChild(this._proxy);
+                this._current = this;
             } break;
             case 'track': {
                 this._proxy.x = e.detail.x;
@@ -418,20 +446,25 @@ ODA({is: 'oda-grid-header-cell',
                 }
                 else{
                     for (let el of this._elements){
-                        if (el === this) continue;
+                        if (el === this._current) continue;
                         const pos = el.getBoundingClientRect();
-                        if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x) continue;
-                        if (Math.sign(e.detail.ddx) !== Math.sign(el.column.$order - this.column.$order)) continue;
-                        const order = this.column.$order;
-                        this.column.$order = el.column.$order;
-                        el.column.$order = order;
+                        if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x)  continue;
+                        const idx1 = this._items.indexOf(this._current.column);
+                        const idx2 = this._items.indexOf(el.column);
+                        if (Math.sign(e.detail.ddx) !== Math.sign(idx2 - idx1)) continue;
+                        this._current.style.backgroundColor = '';
+                        this._items[idx1] = el.column;
+                        this._items[idx2] = this._current.column;
+                        this._current = el;
+                        this.domHost.columns = undefined;
+                        this.metadata = undefined;
+                        this._current.style.backgroundColor = 'white';
                     }
                 }
             } break;
             case 'end': {
                 this._proxy.remove();
-                this.style.backgroundColor = '';
-                this.style.opacity = '';
+                this._current.style.backgroundColor = '';
             } break;
         }
     }
@@ -498,6 +531,9 @@ ODA({is: 'oda-grid-groups',
 ODA({is: 'oda-grid-body',
     template: `
         <style>
+            /*:host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])!*>.cell:not([fix])*! {*/
+            /*    background-color: rgba(0,0,0,.05);*/
+            /*}*/
             :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])>.cell:not([fix]) {
                 background-color: rgba(0,0,0,.05);
             }
@@ -515,28 +551,30 @@ ODA({is: 'oda-grid-body',
                 max-height: {{rowHeight}}px;
                 height: {{rowHeight}}px;
                 flex: {{(autoWidth || fix)?1:0}};
+                /*border-bottom: {{rowLines?'1px solid gray':'none'}};*/
             }
             .cell{
-                border-bottom: {{rowLines?'1px solid gray':'none'}};
                 @apply --no-flex;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 border-right: {{colLines?'1px solid gray':'none'}};
+                border-bottom: {{rowLines?'1px solid gray':'none'}};
             }
         </style>
-        <div is="style">
-        {{getCellsClasses()}}
-        </div>
+        <style>
+        {{cellsClasses}}
+        </style>
         <div class="vertical no-flex">
             <div class="row" ~for="row in rows">
-                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
+                <div ~is="getTemplateTag(row, col)" ~if="col?.$width" :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells" :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
             </div>
+            
         </div>
     `,
-    getCellsClasses(){
-        return this.cells.map(cell=>{
-            return `.C${cell.$order}{
-                order: ${cell.$order};
+    get cellsClasses(){
+
+        return this.cells.map((cell, idx)=>{
+            return `.C${idx}{
                 min-width: ${cell.$width}px;
                 max-width: ${cell.$width}px;
                 width: ${cell.$width}px;
@@ -547,6 +585,16 @@ ODA({is: 'oda-grid-body',
         scroll(e){
             this.rowsScrollTop = this.scrollTop;
             this.colsScrollLeft = this.scrollLeft;
+        },
+        wheel(e){
+            if (e.ctrlKey || e.altKey) return;
+
+            if (e.shiftKey)
+                this.colsScrollLeft -= e.deltaX;
+            else{
+                e.preventDefault();
+                this.rowsScrollTop += e.deltaY;
+            }
         }
     }
 })
@@ -585,13 +633,11 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
                 transform: scale(.7);
             }
             div>div[focused]{
-                /*border-left: 2px solid var(--focused-color);*/
                 background-color: var(--content-background) !important;
-                /*box-shadow: inset 2px 0 0 0  var(--focused-color) !important;*/
             }
         </style>
         <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
-            <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" :data-set="table.metadata"></oda-tree>
+            <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" allow-drag allow-drop :data-set="table.metadata"></oda-tree>
             <oda-property-grid ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
         </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
@@ -606,3 +652,45 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
     ],
     table: null,
 })
+cells: {
+    ODA({
+        is: 'oda-grid-cell-base', template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+                align-items: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-height: 1px;
+                min-width: 1px;
+            }
+            :host * {
+                text-overflow: ellipsis;
+                position: relative;
+            }
+            .expander {
+                cursor: pointer;
+            }
+        </style>`,
+        row: Object,
+    });
+
+    ODA({
+        is: 'oda-grid-cell', extends: 'oda-grid-cell-base',
+        template: /*html*/`
+        <style>
+            :host>div{
+                white-space: nowrap;
+                margin: 4px;
+                width: 100%;
+            }
+        </style>
+        <div class="flex" ~is="template" :column :row style="overflow: hidden">{{value}}</div>`,
+        get value(){
+            return this.row?.[this.column?.name]
+        },
+        props: {
+            template: 'div',
+        }
+    });
+}
