@@ -9,12 +9,12 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         </style>
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal" style="overflow: hidden;">
-            <div ~if="columns?.some(i=>i.fix === 'left')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
-                <oda-grid-part @resize="correctPanelSize" fix="left"  ></oda-grid-part>
+            <div ~if="visibleColumns?.some(i=>i.fix === 'left')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
+                <oda-grid-part @resize="correctPanelSize" fix="left"></oda-grid-part>
                 <oda-splitter save-key="left-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
             <oda-grid-part style="overflow: hidden;"></oda-grid-part>
-            <div ~if="columns?.some(i=>i.fix === 'right')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
+            <div ~if="visibleColumns?.some(i=>i.fix === 'right')" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;">
                 <oda-splitter save-key="right-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
                 <oda-grid-part fix="right"></oda-grid-part>
             </div>
@@ -31,7 +31,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             {parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true}
         );
     },
-    metadata:[],
     dataSet: [],
     groups: [],
     labels: [],
@@ -61,11 +60,22 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             }
         })
     },
-    get columns(){
-        return this.metadata.map((col, idx)=>{
-            col.$order = /*col.$order || */((idx + 1) * this.orderStep);
-            return col
-        });
+    get metadata(){
+        return [
+            {name: 'Left fix', $expanded: true, hideExpander: true, hideCheckbox: true,
+            items: this.columns?.filter(col => col.fix === 'left')},
+            {name: 'Main', $expanded: true, hideExpander: true, hideCheckbox: true,
+                items: this.columns?.filter(col => !col.fix)},
+            {name: 'Right fix', $expanded: true, hideExpander: true, hideCheckbox: true,
+            items: this.columns?.filter(col => col.fix === 'right')},
+        ]
+    },
+    get visibleColumns(){
+        return this.columns.map((col, idx)=>{
+            col.$order = ((idx + 1) * this.orderStep);
+            col.checked = (col.checked === undefined && !col.hidden) || col.checked;
+            return col;
+        }).filter(col => col.checked !== false);
     },
     orderStep: 1000000,
     get cells(){
@@ -84,7 +94,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 return res;
             }, [])
         }
-        return convertColumns(this.columns)
+        return convertColumns(this.visibleColumns)
     },
     props:{
         pivotMode:{
@@ -183,11 +193,11 @@ ODA({
         <oda-grid-footer  ~if="showFooter"></oda-grid-footer>
     `,
     fix: '',
-    get columns() {
-        return this.table.columns?.filter(col => ((col.fix || '') === (this.fix || '')));
+    get visibleColumns() {
+        return this.table.columns?.filter(col => ((col.fix || '') === (this.fix || ''))).filter(col=> col.checked !== false);
     },
     get cells() {
-        return this.table.cells?.filter(col => ((col.fix || '') === (this.fix || '')));
+        return this.table.cells?.filter(col => ((col.fix || '') === (this.fix || ''))).filter(col=> col.checked !== false);
     },
     colsScrollLeft: 0,
 })
@@ -207,7 +217,7 @@ ODA({is:'oda-grid-header',
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-header-cell ~show="item?.checked" :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
+                <oda-grid-header-cell :order-step="orderStep/10" ~for="visibleColumns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -256,7 +266,7 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 90%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell ~show="item?.checked" :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
+            <oda-grid-header-cell  :order-step="orderStep/10" ~for="visibleColumns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" style="align-items: center;" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
@@ -264,11 +274,12 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
-    get columns(){
+    get visibleColumns(){
         return this.column?.items?.map((col, idx)=>{
-            col.$order = /*col.$order || */((idx+1) * this.orderStep + this.column.$order);
+            col.$order = ((idx+1) * this.orderStep + this.column.$order);
+            col.checked = (col.checked === undefined && !col.hidden) || col.checked
             return col
-        })
+        }).filter(col=> col.checked !== false)
     },
     orderStep: 0,
     sort(){
@@ -518,7 +529,7 @@ ODA({is: 'oda-grid-body',
         </div>
         <div class="vertical no-flex">
             <div class="row" ~for="row in rows">
-                <div ~show="col?.checked" :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
+                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
             </div>
         </div>
     `,
@@ -558,7 +569,8 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
             :host{
                 @apply --horizontal;
                 width: 300px;
-                min-height: 100vh;
+                @apply --flex;
+                height: 100vh;
             }
             div>div{
                 align-items: center;
@@ -575,11 +587,13 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
             div>div[focused]{
                 /*border-left: 2px solid var(--focused-color);*/
                 background-color: var(--content-background) !important;
-                box-shadow: inset 2px 0 0 0  var(--focused-color) !important;
+                /*box-shadow: inset 2px 0 0 0  var(--focused-color) !important;*/
             }
         </style>
-        <oda-tree allow-check="double" ~show="focusedTab === 0" :data-set="table.columns"></oda-tree>
-        <oda-property-grid ~show="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
+        <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
+            <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" :data-set="table.metadata"></oda-tree>
+            <oda-property-grid ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
+        </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
         </div>
