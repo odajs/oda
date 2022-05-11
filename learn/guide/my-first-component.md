@@ -161,7 +161,7 @@ ODA({ is: 'oda-dino',
 
 Для быстрого доступа к **svg** части динозавра предусмотрено одноименное свойство в разделе **props**. Значение этого свойства формируется в хуке **attached** во время добавления компонента в DOM документа.
 
-1. Компонент кактуса («oda-cactus»).
+\2. Компонент кактуса («oda-cactus»).
 
 ```javascript
 ODA({ is: 'oda-cactus',
@@ -179,7 +179,7 @@ ODA({ is: 'oda-cactus',
 })
 ```
 
-1. Компонент облака («oda-cloud»).
+\3. Компонент облака («oda-cloud»).
 
 ```javascript
 ODA({ is: 'oda-cloud',
@@ -212,7 +212,7 @@ ODA({ is: 'oda-cloud',
 })
 ```
 
-1. Компонент птеродактиля («oda-pterodactyl»).
+\4. Компонент птеродактиля («oda-pterodactyl»).
 
 ```javascript
 ODA({ is: 'oda-pterodactyl',
