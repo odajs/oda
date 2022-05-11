@@ -84,7 +84,7 @@
 
 Для создания эффекта взмахов крыльев к ним можно добавить тег **animate**, который будет поочередно скрывать и отображать крылья через определенный временной интервал равный 0.3 секунды.
 
-```text
+```html
  <!--Верхнее крыло-->
 <path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z " id="top-wing" visibility="visible">
     <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
@@ -161,7 +161,7 @@ ODA({ is: 'oda-dino',
 
 Для быстрого доступа к **svg** части динозавра предусмотрено одноименное свойство в разделе **props**. Значение этого свойства формируется в хуке **attached** во время добавления компонента в DOM документа.
 
-\2. Компонент кактуса («oda-cactus»).
+2. Компонент кактуса («oda-cactus»).
 
 ```javascript
 ODA({ is: 'oda-cactus',
@@ -179,7 +179,7 @@ ODA({ is: 'oda-cactus',
 })
 ```
 
-\3. Компонент облака («oda-cloud»).
+3. Компонент облака («oda-cloud»).
 
 ```javascript
 ODA({ is: 'oda-cloud',
@@ -212,7 +212,7 @@ ODA({ is: 'oda-cloud',
 })
 ```
 
-\4. Компонент птеродактиля («oda-pterodactyl»).
+4. Компонент птеродактиля («oda-pterodactyl»).
 
 ```javascript
 ODA({ is: 'oda-pterodactyl',
@@ -282,99 +282,109 @@ ODA({ is: 'oda-pterodactyl',
 В заголовочном части документа подключается файл со стилями, в котором заданы css-переменные и классы для стилизации элементов игры:
 
 1. Набор css-переменных
-:root {
-    --dino-top: 314px;
-    --dino-max-top: 20px;
-    --base-color: grey;
-    --cloud-color: #e2e2e2;
-    --moon-color: #e2e2e2;
-    --day-color: blue;
-    --pterodactyl-color: var(--base-color);
-    --star-color: #e2e2e2;
-    --ground-color: var(--base-color);
-    --horizon-color: var(--base-color);
-    --bump-color: var(--base-color);
-    --dino-color: var(--dark-base-color);
-    --cactus-color: var(--base-color);
-    /* --dino-eyes-color: white; */
 
-    /* --day-color: white; */
-    --dino-eyes-color: #121212;
-    --night-body: #121212;
-    --night-background-color: #121212;
+    ```css
+    :root {
+        --dino-top: 314px;
+        --dino-max-top: 20px;
+        --base-color: grey;
+        --cloud-color: #e2e2e2;
+        --moon-color: #e2e2e2;
+        --day-color: blue;
+        --pterodactyl-color: var(--base-color);
+        --star-color: #e2e2e2;
+        --ground-color: var(--base-color);
+        --horizon-color: var(--base-color);
+        --bump-color: var(--base-color);
+        --dino-color: var(--dark-base-color);
+        --cactus-color: var(--base-color);
+        /* --dino-eyes-color: white; */
 
-    --header-color: honeydew;
-    --header-background-color: grey;
-    --background-color: white;
+        /* --day-color: white; */
+        --dino-eyes-color: #121212;
+        --night-body: #121212;
+        --night-background-color: #121212;
 
-    /* --form-border-color: #888; */
-    --form-color: #444;
-    --form-border-color: #ddd;
-    --form-header-border-color: #ddd;
-    --form-outline-color: #999;
+        --header-color: honeydew;
+        --header-background-color: grey;
+        --background-color: white;
 
-    --button-color: #04aa6d;
-    --tab-color: #999;
-    --tab-selected-color: #666;
-    --tab-select-border-color: #4cc8f1;
+        /* --form-border-color: #888; */
+        --form-color: #444;
+        --form-border-color: #ddd;
+        --form-header-border-color: #ddd;
+        --form-outline-color: #999;
 
-    --cancel-button-color: #f44336;
+        --button-color: #04aa6d;
+        --tab-color: #999;
+        --tab-selected-color: #666;
+        --tab-select-border-color: #4cc8f1;
 
-    --form-background-color: #fefefe;
+        --cancel-button-color: #f44336;
 
-    /* --form-header-background-color: #fcfcfc; */
-    --form-header-background-color: #f1f1f1;
-    --form-header-color: #f1f1f1;
+        --form-background-color: #fefefe;
 
-    --dark-background-color: #121212;
+        /* --form-header-background-color: #fcfcfc; */
+        --form-header-background-color: #f1f1f1;
+        --form-header-color: #f1f1f1;
 
-
-    --dark-color: white;
-    --dark-header-color: #252525;
-    --dark-input-background-color: #3b3b3b;
-    --dark-input-border-color: #ccc;
-    --dark-input-color: white;
-
-    --dark-tab-color: #b5b5b5;
-    --dark-tab-hover-color: white;
-    --dark-tab-focus-color: #b5b5b5;
-    --dark-tab-selected-color: white;
-    --dark-tab-border-color: #b5b5b5;
+        --dark-background-color: #121212;
 
 
-    --dark-base: #808080;
-    --dark-base-color: #e2e2e2;
-    --dark-cactus-body: #878787;
-    --dark-small-cactus-body: #878787;
-    --dark-cactus-border: #4c4c4c;
-    --dark-cloud-color: var(--dark-base-color);
-    --dark-moon-color: var(--dark-base-color);
-    --dark-pterodactyl-color: var(--dark-base-color);
-    --dark-star-color: var(--dark-base-color);
-    --dark-ground-color: var(--dark-base-color);
-    --dark-horizon-color: var(--dark-base-color);
-    --dark-bump-color: var(--dark-base-color);
-    --dark-dino-color: var(--base-color);
-    --dark-cactus-color: var(--dark-base-color);
+        --dark-color: white;
+        --dark-header-color: #252525;
+        --dark-input-background-color: #3b3b3b;
+        --dark-input-border-color: #ccc;
+        --dark-input-color: white;
 
-}
+        --dark-tab-color: #b5b5b5;
+        --dark-tab-hover-color: white;
+        --dark-tab-focus-color: #b5b5b5;
+        --dark-tab-selected-color: white;
+        --dark-tab-border-color: #b5b5b5;
+
+
+        --dark-base: #808080;
+        --dark-base-color: #e2e2e2;
+        --dark-cactus-body: #878787;
+        --dark-small-cactus-body: #878787;
+        --dark-cactus-border: #4c4c4c;
+        --dark-cloud-color: var(--dark-base-color);
+        --dark-moon-color: var(--dark-base-color);
+        --dark-pterodactyl-color: var(--dark-base-color);
+        --dark-star-color: var(--dark-base-color);
+        --dark-ground-color: var(--dark-base-color);
+        --dark-horizon-color: var(--dark-base-color);
+        --dark-bump-color: var(--dark-base-color);
+        --dark-dino-color: var(--base-color);
+        --dark-cactus-color: var(--dark-base-color);
+
+    }
+    ```
 
 1. Стиль тела документа
+
+```css
 body {
     margin: 0px;
     font-family: Arial, Helvetica, sans-serif;
 }
+```
 
 1. Стиль внешней обертки
+
+```css
 #wrapper {
     height: 100%;
     width: 100%;
     position: absolute;
     background-color: var(--header-background-color);
 }
+```
 
 1. Стиль непосредственной области игры
 
+```css
 #game-space {
     height: 500px;
     width: 100%;
@@ -384,29 +394,37 @@ body {
     background-color: var(--background-color);
     overflow: hidden;
 }
+```
 
 1. Стиль заголовка игры
 
+```css
 h1{
     text-align: center;
     color: honeydew;
     margin-bottom: 0px;
     font-family: "Comic Sans MS";
 }
+```
 
 1. Стиль надписи завершения игры.
 
+```css
 #game-over{
     position: relative;
     top: 35%;
 }
+```
 
 1. Стиль надписи с количеством набранных очков.
 
+```css
 #score{
     font-size: 50px;
     margin-top: 0px;
 }
+```
+
 
 oda-dino {
     position: absolute;
