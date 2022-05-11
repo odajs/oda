@@ -25,15 +25,11 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         e.target.parentElement.style.minWidth =  e.target.getBoundingClientRect().width+'px';
     },
     async showSettings(e){
-        await ODA.import('@tools/property-grid');
-        try{
-            await ODA.showDropdown(
-                'oda-property-grid',
-                { inspectedObject: this.table, onlySave: true, style: 'max-width: 500px; min-width: 300px;' },
-                { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
-            );
-        }
-        catch (e){}
+        await ODA.showDropdown(
+            'oda-grid-settings',
+            {table: this.table},
+            {parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true}
+        );
     },
     metadata:[],
     dataSet: [],
@@ -211,7 +207,7 @@ ODA({is:'oda-grid-header',
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
+                <oda-grid-header-cell ~show="item?.checked" :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -224,6 +220,9 @@ ODA({is:'oda-grid-header',
         else
             flex = !item.width && this.autoWidth;
         return {flex: flex, "no-flex": !flex};
+    },
+    get header(){
+        return this;
     }
 })
 ODA({is: 'oda-grid-header-cell',
@@ -234,7 +233,6 @@ ODA({is: 'oda-grid-header-cell',
                 overflow: hidden;
                 cursor: pointer;
                 @apply --header;
-                /*@apply --raised;*/
                 position: relative;
                 font-weight: bold;
                 box-sizing: border-box;
@@ -244,7 +242,7 @@ ODA({is: 'oda-grid-header-cell',
             }
             input{
                 width: auto;
-                max-height: {{iconSize * .7}}px;
+                /*padding: 2px;*/
                 margin: 2px;
                 width: 1px;
                 outline: none;
@@ -258,11 +256,11 @@ ODA({is: 'oda-grid-header-cell',
             <span class="no-flex" style="height: 90%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
+            <oda-grid-header-cell ~show="item?.checked" :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
         </div>
-        <div class="horizontal flex" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
+        <div class="horizontal flex" style="align-items: center;" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
-            <oda-icon  icon="icons:filter" :icon-size="iconSize * .4" style="padding: 0px;"></oda-icon>
+            <oda-icon  icon="icons:filter" :icon-size="iconSize * .5" style="padding: 0px;"></oda-icon>
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
@@ -404,15 +402,19 @@ ODA({is: 'oda-grid-header-cell',
             case 'track': {
                 this._proxy.x = e.detail.x;
                 this._proxy.y = e.detail.y;
-                if (this.parentElement.getBoundingClientRect().y > e.detail.y) return;
-                for (let el of this._elements){
-                    if (el === this) continue;
-                    const pos = el.getBoundingClientRect();
-                    if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x) continue;
-                    if (Math.sign(e.detail.ddx) !== Math.sign(el.column.$order - this.column.$order)) continue;
-                    const order = this.column.$order;
-                    this.column.$order = el.column.$order;
-                    el.column.$order = order;
+                if (this.parentElement.getBoundingClientRect().y > e.detail.y) {
+
+                }
+                else{
+                    for (let el of this._elements){
+                        if (el === this) continue;
+                        const pos = el.getBoundingClientRect();
+                        if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x) continue;
+                        if (Math.sign(e.detail.ddx) !== Math.sign(el.column.$order - this.column.$order)) continue;
+                        const order = this.column.$order;
+                        this.column.$order = el.column.$order;
+                        el.column.$order = order;
+                    }
                 }
             } break;
             case 'end': {
@@ -516,7 +518,7 @@ ODA({is: 'oda-grid-body',
         </div>
         <div class="vertical no-flex">
             <div class="row" ~for="row in rows">
-                <div :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
+                <div ~show="col?.checked" :tabindex="col.$order" style="box-sizing: border-box; overflow: hidden;" ~for="col in cells" :col="col"  ~class="'C'+col.$order+' cell'">{{row[col.name]}}</div>
             </div>
         </div>
     `,
@@ -549,4 +551,44 @@ ODA({is: 'oda-grid-footer',
         </style>
             footer
     `
+})
+ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                width: 300px;
+                min-height: 100vh;
+            }
+            div>div{
+                align-items: center;
+                @apply --horizontal;
+                padding: 8px 4px;
+                cursor: pointer;
+            }
+            div>div:hover{
+                color: var(--focused-color) !important;
+            }
+            oda-icon{
+                transform: scale(.7);
+            }
+            div>div[focused]{
+                /*border-left: 2px solid var(--focused-color);*/
+                background-color: var(--content-background) !important;
+                box-shadow: inset 2px 0 0 0  var(--focused-color) !important;
+            }
+        </style>
+        <oda-tree allow-check="double" ~show="focusedTab === 0" :data-set="table.columns"></oda-tree>
+        <oda-property-grid ~show="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
+        <div style="writing-mode: vertical-lr;" class="horizontal header">
+            <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
+        </div>
+    `,
+    focusedTab: 0,
+    tabs: [
+        {icon: 'icons:tree-structure:90', title: 'columns'},
+        {icon: 'icons:filter:90', title: 'filters'},
+        {icon: 'icons:settings:90', title: 'properties'},
+    ],
+    table: null,
 })
