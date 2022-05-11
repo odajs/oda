@@ -385,9 +385,7 @@ body {
     overflow: hidden;
 }
 
-#game-space.dark {
-    background-color: var(--dark-background-color) !important;
-}
+1. Стиль заголовка игры
 
 h1{
     text-align: center;
@@ -396,14 +394,14 @@ h1{
     font-family: "Comic Sans MS";
 }
 
+1. Стиль надписи завершения игры.
+
 #game-over{
     position: relative;
     top: 35%;
 }
 
-.hidden {
-    display: none;
-}
+1. Стиль надписи с количеством набранных очков.
 
 #score{
     font-size: 50px;
