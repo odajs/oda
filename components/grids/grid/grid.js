@@ -44,8 +44,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return this.clientWidth;
     },
     headerResize(e){
-
-        this.interval('header-resize',()=>{
+        // this.interval('header-resize',()=>{
             console.log('headerResize')
             const parts = this.table.$$('oda-grid-part');
             const headers = parts.map(part=>{
@@ -53,7 +52,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             }).flat();
             let height = 0;
             for (let h of headers){
-                h.style.minHeight = '';
+                // h.style.minHeight = '';
                 if (height < h.scrollHeight)
                     height = h.scrollHeight;
             }
@@ -61,7 +60,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 h.style.minHeight = height+'px';
             }
 
-        })
+        // })
     },
     get metadata(){
         const columns = this.columns.map((col, idx)=>{
@@ -248,11 +247,7 @@ ODA({is:'oda-grid-header',
     },
     listeners:{
         resize(e){
-            // e.preventDefault();
-            // this.interval('h-resize', ()=>{
-                this.headerResize();
-            // })
-
+            this.headerResize();
         }
     }
 })
@@ -456,9 +451,11 @@ ODA({is: 'oda-grid-header-cell',
                         this._items[idx1] = el.column;
                         this._items[idx2] = this._current.column;
                         this._current = el;
+                        this.cells = undefined;
                         this.domHost.columns = undefined;
                         this.metadata = undefined;
                         this._current.style.backgroundColor = 'white';
+
                     }
                 }
             } break;
@@ -566,13 +563,13 @@ ODA({is: 'oda-grid-body',
         </style>
         <div class="vertical no-flex">
             <div class="row" ~for="row in rows">
-                <div ~is="getTemplateTag(row, col)" ~if="col?.$width" :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells" :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
+                <div ~is="getTemplateTag(row, col)"  :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
             </div>
             
         </div>
     `,
     get cellsClasses(){
-
+        console.log('cellsClasses')
         return this.cells.map((cell, idx)=>{
             return `.C${idx}{
                 min-width: ${cell.$width}px;
@@ -588,12 +585,14 @@ ODA({is: 'oda-grid-body',
         },
         wheel(e){
             if (e.ctrlKey || e.altKey) return;
-
-            if (e.shiftKey)
-                this.colsScrollLeft -= e.deltaX;
+            e.preventDefault();
+            if (e.shiftKey){
+                this.colsScrollLeft += e.deltaY;
+                this.scrollLeft = this.colsScrollLeft;
+            }
             else{
-                e.preventDefault();
                 this.rowsScrollTop += e.deltaY;
+                this.scrollTop = this.rowsScrollTop;
             }
         }
     }
@@ -672,7 +671,8 @@ cells: {
                 cursor: pointer;
             }
         </style>`,
-        row: Object,
+        row: null,
+        column: null
     });
 
     ODA({
