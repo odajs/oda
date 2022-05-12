@@ -44,23 +44,26 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         return this.clientWidth;
     },
     headerResize(e){
-        // this.interval('header-resize',()=>{
-            console.log('headerResize')
-            const parts = this.table.$$('oda-grid-part');
-            const headers = parts.map(part=>{
-                return part.$$('oda-grid-header');
-            }).flat();
-            let height = 0;
-            for (let h of headers){
-                // h.style.minHeight = '';
-                if (height < h.scrollHeight)
-                    height = h.scrollHeight;
-            }
-            for (let h of headers){
-                h.style.minHeight = height+'px';
-            }
+        if (this._headerResize) return;
+        this._headerResize = true;
+        console.log('headerResize')
+        const parts = this.table.$$('oda-grid-part');
+        const headers = parts.map(part=>{
+            return part.$$('oda-grid-header');
+        }).flat();
+        let height = 0;
 
-        // })
+        for (let h of headers){
+            h.style.minHeight = '';
+            if (height < h.scrollHeight)
+                height = h.scrollHeight;
+        }
+        for (let h of headers){
+            h.style.minHeight = height+'px';
+        }
+        this.interval('_headerResize', ()=>{
+            this._headerResize = false;
+        })
     },
     get metadata(){
         const columns = this.columns.map((col, idx)=>{
@@ -228,7 +231,7 @@ ODA({is:'oda-grid-header',
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
             <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~style="{order: item.$order}" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
+                <oda-grid-header-cell :order-step="orderStep/10" ~for="columns" :last="item === items.last" :column="item" :parent-items="items" ~class="getColumnClass(items, item, true)"></oda-grid-header-cell>
             </div>
         </div>
     `,
@@ -275,14 +278,14 @@ ODA({is: 'oda-grid-header-cell',
             }
         </style>
         <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
-            <oda-icon ~if="column?.items" style="opacity: .3" :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="expand()"></oda-icon>
+            <oda-icon ~if="column?.items" style="opacity: .3" @down.stop :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="expand"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
             <oda-icon style="opacity: .5" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-forward:270':'icons:arrow-forward:90'):''" :icon-size="iconSize/2" >{{column.$sort}}</oda-icon>
             <span style="position: absolute; top: 0px; right: 0px; font-size: xx-small; margin: 2px; opacity: .5">{{sortId}}</span>
             <span class="no-flex" style="height: 90%; cursor: col-resize;" ~style="{width: sizerWidth + 3 + 'px',visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}" @track="onColSizeTrack"></span>
         </div>
         <div ~if="column?.items" ~show="column?.$expanded" class="horizontal flex dark" >
-            <oda-grid-header-cell  :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last" ~style="{order: item.$order}" ></oda-grid-header-cell>
+            <oda-grid-header-cell  :order-step="orderStep/10" ~for="columns" :column="item" :parent-items="items" ~class="getColumnClass(items, item)" :last="item === items.last"></oda-grid-header-cell>
         </div>
         <div class="horizontal flex" style="align-items: center;" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
@@ -291,8 +294,13 @@ ODA({is: 'oda-grid-header-cell',
         </div>
     `,
     expand(){
+        if (!this.column.$expanded){
+            const width = this.getBoundingClientRect().width;
+            this.column.items?.forEach(col=>{
+                col.$width = col.$width || width / this.column.items.length;
+            })
+        }
         this.column.$expanded = !this.column.$expanded;
-        this.resize();
     },
     get columns(){
         return this.column?.items?.map((col, idx)=>{
@@ -331,18 +339,17 @@ ODA({is: 'oda-grid-header-cell',
         }
 
     },
-    set column(n){
-        if (n)
-            n.$width = this.getBoundingClientRect().width;
-    },
+    column: null,
     listeners:{
-        resize: 'resize'
-    },
-    resize(e){
-        // this.interval('column-resize', ()=>{
-
-            this.column.$width = this.getBoundingClientRect().width;
-        // })
+        resize(e){
+            e.stopPropagation();
+            const width = this.getBoundingClientRect().width;
+            if (!width) return;
+            this.column.items?.forEach(col=>{
+                col.$width = col.$width || width / this.column.items.length;
+            })
+            this.column.$width = width;
+        }
     },
     getStyle(){
         const min = this.iconSize / 2 *  (this.column?.items?.length || 1);
@@ -569,12 +576,13 @@ ODA({is: 'oda-grid-body',
         </div>
     `,
     get cellsClasses(){
-        console.log('cellsClasses')
+        // console.log('cellsClasses')
         return this.cells.map((cell, idx)=>{
+            const w = cell.$width;
             return `.C${idx}{
-                min-width: ${cell.$width}px;
-                max-width: ${cell.$width}px;
-                width: ${cell.$width}px;
+                min-width: ${w}px;
+                max-width: ${w}px;
+                width: ${w}px;
             }`;
         }).join('\r\n');
     },
@@ -652,8 +660,7 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
     table: null,
 })
 cells: {
-    ODA({
-        is: 'oda-grid-cell-base', template: /*html*/`
+    ODA({is: 'oda-grid-cell-base', template: /*html*/`
         <style>
             :host {
                 @apply --horizontal;

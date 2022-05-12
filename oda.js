@@ -408,6 +408,7 @@ if (!window.ODA) {
                 this.render();
             }
             notify(block, value) {
+
                 if (block?.options.target === this) {
                     const prop = block.prop;
                     if (prop){
@@ -416,7 +417,8 @@ if (!window.ODA) {
                         }
                     }
                 }
-                this.interval('notify', async ()=>{
+
+                this.interval('notify', ()=>{
                     if (this.parentNode){
                         for (const prop of this.$core.reflects) {
                             const val = this[prop.name]
@@ -428,6 +430,9 @@ if (!window.ODA) {
                     }
                     this.render();
                 })
+                if (block && !this.isConnected){
+                    block.options.hosts.delete(this);
+                }
             }
             render() {
                 if (!this.$core.shadowRoot) return;
@@ -758,6 +763,7 @@ if (!window.ODA) {
             }
             desc.set = function (val) {
                 const old = this[key];
+                if (val == old) return;
                 val = toType(prop.type, val);
                 if (val === old) return;
 
@@ -1588,9 +1594,9 @@ if (!window.ODA) {
     let inRender = false;
     async function render() {
         if (!inRender) {
-            inRender = true;
-            await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-            inRender = false;
+            // inRender = true;
+            updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+            // inRender = false;
         }
     }
     async function updateDom(src, $el, $parent, pars) {
@@ -1638,10 +1644,16 @@ if (!window.ODA) {
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
                     const children = $el.childNodes;
-                    const list = items.map((node, i) => {
-                        const elem = children[idx + i];
-                        /*await*/return updateDom.call(this, node.child, elem , $el, node.params);
-                    })
+                    const list = [];
+                    for(let j = 0; j<items.length; j++){
+                        const elem = children[idx + j];
+                        const node = items[j]
+                        list.push(updateDom.call(this, node.child, elem , $el, node.params))
+                    }
+                    // const list = items.map((node, i) => {
+                    //     const elem = children[idx + i];
+                    //     /*await*/return updateDom.call(this, node.child, elem , $el, node.params);
+                    // })
                     await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];
@@ -1782,10 +1794,9 @@ if (!window.ODA) {
     let renderQueue = [], rid = 0;
     ODA.render = function (renderer) {
         renderQueue.add(renderer);
-        if(rid) return;
+        if(rid) return
         rid = requestAnimationFrame(raf);
-        // console.log('ODA.render', rid);
-    };
+    }
     async function raf() {
         while (renderQueue.length){
             await renderQueue.shift()?.();
@@ -2217,14 +2228,22 @@ if (!window.ODA) {
                         }
                     }
                 }
-                else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ ) || name in this.__proto__) { // понаблюдать 👀
+                else if (name in this.__proto__) { // понаблюдать 👀
+                    if (this[name] != v)
                         this[name] = v;
-                        if(!(name in this.__proto__)) return;
+                    // if(!(name in this.__proto__)) return;
+                }
+                else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
+                    if (this[name] != v)
+                        this[name] = v;
+                    return;
+                        // if(!(name in this.__proto__)) return;
                 }
             }
             // понаблюдать 👀
             if (typeof v === 'object' || (typeof v === 'function') || this.nodeType !== 1 || this.$node?.vars.has(name)) {
-                this[name] = v;
+                if (this[name] != v)
+                    this[name] = v;
             }
             else {
                 const d = !this.$core && (Object.getOwnPropertyDescriptor(this.__proto__, name) || name in this);
