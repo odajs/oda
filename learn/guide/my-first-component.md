@@ -223,30 +223,20 @@ ODA({ is: 'oda-pterodactyl',
             }
         </style>
         <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg" class="pterodactyls">
+            <!--Тело птеродактиля-->
             <path d=" M0 31, h4, v-4, h5, v-5, h4, v-4, h5, v-5, h9, v9, h4, v9, h32, v4, h5, v5, h27, v4, h-14, v5, h9, v4, h-13, v5, h-32, v-5, h-4, v-4, h-5, v-5, h-5, v-4, h-4, v-5, h-27, z " stroke="transparent" id="pterodactyl"/>
 
             <!--Верхнее крыло-->
             <path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z " id="top-wing" visibility="visible">
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
+
             <!--Нижнее крыло-->
             <path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z " id="bottom-wing" visibility="visible">
                 <animate attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
             </path>
         </svg>
-    `,
-    gameOver(){
-        this.style.animationPlayState="paused";
-        const svg = this.$core.root.querySelector("svg");
-        svg.pauseAnimations();
-    },
-    gameStart(){
-        if (this.style.animationPlayState === "paused") {
-            this.style.animationPlayState="running";
-            const svg = this.$core.root.querySelector("svg");
-            svg.unpauseAnimations();
-        }
-    },
+    `
 })
 ```
 
@@ -279,90 +269,96 @@ ODA({ is: 'oda-pterodactyl',
 
 Здесь задается стандартная HTML-страница с заголовком «**My First Component**».
 
-В заголовочном части этого документа подключается файл **style.css**, в котором заданы css-переменные и классы для стилизации элементов игры:
+В заголовочном части этого документа подключаются:
+
+1. Файл со стилями отображения элементов игры **style.css**.
+1. Файл **oda.js** c библиотекой самого фреймворка **ODA**.
+1. Файл **oda-dino-game.js** c javascript кодом работы самой игры.
+
+ тся файл **style.css**, в котором заданы css-переменные и классы для стилизации элементов игры:
 
 1. Набор css-переменных
 
-    ```css
-    :root {
-        --dino-top: 314px;
-        --dino-max-top: 20px;
-        --base-color: grey;
-        --cloud-color: #e2e2e2;
-        --moon-color: #e2e2e2;
-        --day-color: blue;
-        --pterodactyl-color: var(--base-color);
-        --star-color: #e2e2e2;
-        --ground-color: var(--base-color);
-        --horizon-color: var(--base-color);
-        --bump-color: var(--base-color);
-        --dino-color: var(--dark-base-color);
-        --cactus-color: var(--base-color);
-        /* --dino-eyes-color: white; */
+```css
+:root {
+    --dino-top: 314px;
+    --dino-max-top: 20px;
+    --base-color: grey;
+    --cloud-color: #e2e2e2;
+    --moon-color: #e2e2e2;
+    --day-color: blue;
+    --pterodactyl-color: var(--base-color);
+    --star-color: #e2e2e2;
+    --ground-color: var(--base-color);
+    --horizon-color: var(--base-color);
+    --bump-color: var(--base-color);
+    --dino-color: var(--dark-base-color);
+    --cactus-color: var(--base-color);
+    /* --dino-eyes-color: white; */
 
-        /* --day-color: white; */
-        --dino-eyes-color: #121212;
-        --night-body: #121212;
-        --night-background-color: #121212;
+    /* --day-color: white; */
+    --dino-eyes-color: #121212;
+    --night-body: #121212;
+    --night-background-color: #121212;
 
-        --header-color: honeydew;
-        --header-background-color: grey;
-        --background-color: white;
+    --header-color: honeydew;
+    --header-background-color: grey;
+    --background-color: white;
 
-        /* --form-border-color: #888; */
-        --form-color: #444;
-        --form-border-color: #ddd;
-        --form-header-border-color: #ddd;
-        --form-outline-color: #999;
+    /* --form-border-color: #888; */
+    --form-color: #444;
+    --form-border-color: #ddd;
+    --form-header-border-color: #ddd;
+    --form-outline-color: #999;
 
-        --button-color: #04aa6d;
-        --tab-color: #999;
-        --tab-selected-color: #666;
-        --tab-select-border-color: #4cc8f1;
+    --button-color: #04aa6d;
+    --tab-color: #999;
+    --tab-selected-color: #666;
+    --tab-select-border-color: #4cc8f1;
 
-        --cancel-button-color: #f44336;
+    --cancel-button-color: #f44336;
 
-        --form-background-color: #fefefe;
+    --form-background-color: #fefefe;
 
-        /* --form-header-background-color: #fcfcfc; */
-        --form-header-background-color: #f1f1f1;
-        --form-header-color: #f1f1f1;
+    /* --form-header-background-color: #fcfcfc; */
+    --form-header-background-color: #f1f1f1;
+    --form-header-color: #f1f1f1;
 
-        --dark-background-color: #121212;
-
-
-        --dark-color: white;
-        --dark-header-color: #252525;
-        --dark-input-background-color: #3b3b3b;
-        --dark-input-border-color: #ccc;
-        --dark-input-color: white;
-
-        --dark-tab-color: #b5b5b5;
-        --dark-tab-hover-color: white;
-        --dark-tab-focus-color: #b5b5b5;
-        --dark-tab-selected-color: white;
-        --dark-tab-border-color: #b5b5b5;
+    --dark-background-color: #121212;
 
 
-        --dark-base: #808080;
-        --dark-base-color: #e2e2e2;
-        --dark-cactus-body: #878787;
-        --dark-small-cactus-body: #878787;
-        --dark-cactus-border: #4c4c4c;
-        --dark-cloud-color: var(--dark-base-color);
-        --dark-moon-color: var(--dark-base-color);
-        --dark-pterodactyl-color: var(--dark-base-color);
-        --dark-star-color: var(--dark-base-color);
-        --dark-ground-color: var(--dark-base-color);
-        --dark-horizon-color: var(--dark-base-color);
-        --dark-bump-color: var(--dark-base-color);
-        --dark-dino-color: var(--base-color);
-        --dark-cactus-color: var(--dark-base-color);
+    --dark-color: white;
+    --dark-header-color: #252525;
+    --dark-input-background-color: #3b3b3b;
+    --dark-input-border-color: #ccc;
+    --dark-input-color: white;
 
-    }
-    ```
+    --dark-tab-color: #b5b5b5;
+    --dark-tab-hover-color: white;
+    --dark-tab-focus-color: #b5b5b5;
+    --dark-tab-selected-color: white;
+    --dark-tab-border-color: #b5b5b5;
 
-1. Стиль тела документа
+
+    --dark-base: #808080;
+    --dark-base-color: #e2e2e2;
+    --dark-cactus-body: #878787;
+    --dark-small-cactus-body: #878787;
+    --dark-cactus-border: #4c4c4c;
+    --dark-cloud-color: var(--dark-base-color);
+    --dark-moon-color: var(--dark-base-color);
+    --dark-pterodactyl-color: var(--dark-base-color);
+    --dark-star-color: var(--dark-base-color);
+    --dark-ground-color: var(--dark-base-color);
+    --dark-horizon-color: var(--dark-base-color);
+    --dark-bump-color: var(--dark-base-color);
+    --dark-dino-color: var(--base-color);
+    --dark-cactus-color: var(--dark-base-color);
+
+}
+```
+
+2. Стиль тела документа
 
 ```css
 body {
@@ -371,7 +367,7 @@ body {
 }
 ```
 
-1. Стиль внешней обертки
+3. Стиль внешней обертки
 
 ```css
 #wrapper {
@@ -382,7 +378,7 @@ body {
 }
 ```
 
-1. Стиль непосредственной области игры
+4. Стиль непосредственной области игры
 
 ```css
 #game-space {
@@ -396,7 +392,7 @@ body {
 }
 ```
 
-1. Стиль заголовка игры
+5. Стиль заголовка игры
 
 ```css
 h1{
@@ -407,7 +403,7 @@ h1{
 }
 ```
 
-1. Стиль надписи завершения игры.
+6. Стиль надписи завершения игры.
 
 ```css
 #game-over{
