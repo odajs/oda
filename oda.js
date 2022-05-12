@@ -429,10 +429,13 @@ if (!window.ODA) {
                         }
                     }
                     this.render();
+
                 })
-                if (block && !this.isConnected){
-                    block.options.hosts.delete(this);
-                }
+                this.debounce('notify-clear', ()=>{
+                    if (block && !this.isConnected){
+                        block.options.hosts.delete(this);
+                    }
+                }, 100)
             }
             render() {
                 if (!this.$core.shadowRoot) return;
