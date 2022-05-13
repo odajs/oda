@@ -186,6 +186,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                         }
                     })
                     this.links = undefined;
+                    this.async(() => {
+                        this.links = undefined;
+                    }, 200);
                 } break;
                 case 'end': {
                     this.lastdown = null;
