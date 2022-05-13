@@ -9,6 +9,9 @@ ODA({ is: 'oda-splitter2', template: `
                 background-color: {{color || 'lightgray'}};
                 z-index: 11;
             }
+            :host(:hover) {
+                filter: brightness(90%);
+            }
         </style>
     `,
     props: {
