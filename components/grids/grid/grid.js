@@ -31,6 +31,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             {parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true}
         );
     },
+    dragMode: '',
     dataSet: [],
     groups: [],
     labels: [],
@@ -277,7 +278,7 @@ ODA({is: 'oda-grid-header-cell',
                 outline: none;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove">
+        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove" ~class="{disabled: dragMode && !_allowDrop, success: _allowDrop}">
             <oda-icon ~if="column?.items" style="opacity: .3" @down.stop :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="expand"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
             <oda-icon style="opacity: .5" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-forward:270':'icons:arrow-forward:90'):''" :icon-size="iconSize/2" >{{column.$sort}}</oda-icon>
@@ -289,10 +290,13 @@ ODA({is: 'oda-grid-header-cell',
         </div>
         <div class="horizontal flex" style="align-items: center;" ~if="showFilter && !column?.$expanded" ~style="{maxHeight: iconSize+'px'}">
             <input class="flex" ::value="filter" ~style="{visibility: (getBoundingClientRect().width > iconSize * 2)?'visible':'hidden'}">
-            <oda-icon  icon="icons:filter" :icon-size="iconSize * .5" style="padding: 0px;"></oda-icon>
+            <oda-icon  icon="icons:filter" :icon-size="iconSize * .3"></oda-icon>
             <span class="no-flex" style="height: 100%;" ~style="{width: sizerWidth + 3 + 'px', visibility: hideSizer?'hidden':'visible', 'border-right': sizerWidth+'px solid ' + sizerColor}"></span>
         </div>
     `,
+    get _allowDrop(){
+        return this.dragMode?.includes?.(this);
+    },
     expand(){
         if (!this.column.$expanded){
             const width = this.getBoundingClientRect().width;
@@ -444,9 +448,10 @@ ODA({is: 'oda-grid-header-cell',
                 this._proxy.x = e.detail.x;
                 this._proxy.y = e.detail.y;
                 if (this.parentElement.getBoundingClientRect().y > e.detail.y) {
-
+                    this.dragMode = 'drag-to-group-panel';
                 }
                 else{
+                    this.dragMode = this._elements;
                     for (let el of this._elements){
                         if (el === this._current) continue;
                         const pos = el.getBoundingClientRect();
@@ -467,6 +472,7 @@ ODA({is: 'oda-grid-header-cell',
                 }
             } break;
             case 'end': {
+                this.dragMode = ''
                 this._proxy.remove();
                 this._current.style.backgroundColor = '';
             } break;
@@ -509,27 +515,35 @@ ODA({is: 'oda-grid-groups',
                 @apply --horizontal;
                 align-items: center;
                 opacity: .8;
+                
             }
             div{
+                margin: 2px;
                 align-items: center;
                 @apply --horizontal;
+                overflow: hidden;
+            }
+            label{
+                @apply --flex;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
             oda-icon{
                 transform: scale(.5);
             }
         </style>
-        <div class="flex">
-            <oda-icon class="disabled" icon="device:storage"></oda-icon>
-            <label class="disabled" if="groups.length">Drag here to set row groups</label>
+        <div class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', disabled: !dragMode}">
+            <oda-icon icon="device:storage"></oda-icon>
+            <label if="groups.length">Drag here to set row groups</label>
             <div ~for="groups">{{item}}</div>
         </div>
-        <div ~if="pivotMode" class="flex" style="border-left: 1px solid var(--border-color)">
-            <oda-icon class="disabled" icon="device:storage:90"></oda-icon>
-            <label class="disabled" if="groups.length">Drag here to set column labels</label>
+        <div ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', disabled: !dragMode}">
+            <oda-icon icon="device:storage:90"></oda-icon>
+            <label if="groups.length">Drag here to set column labels</label>
             <div ~for="labels">{{item}}</div>
         </div>
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="border-radius: 50%;"></oda-button>
-
     `,
 })
 ODA({is: 'oda-grid-body',
@@ -576,7 +590,6 @@ ODA({is: 'oda-grid-body',
         </div>
     `,
     get cellsClasses(){
-        // console.log('cellsClasses')
         return this.cells.map((cell, idx)=>{
             const w = cell.$width;
             return `.C${idx}{
