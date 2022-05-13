@@ -1,15 +1,15 @@
 {
-	"readOnly": false,
-	"cells": [
-		{
-			"cell_type": "html",
-			"source": "<h1><font color=\"#0062ff\">HTML cell ...</font></h1>",
+    "readOnly": false,
+    "cells": [
+        {
+            "cell_type": "html",
+            "source": "<h1><font color=\"#0062ff\">HTML cell ...</font></h1>",
             "items": [
                 {
                     "cell_type": "code",
                     "source": "<!-- Code cell ... -->\r\n\r\n<hr>\r\n<b style=\"color:blue\">Code cell...</b>\r\n<hr>\r\n<b style=\"color:gray\">with preview</b>\r\n<hr> \r\n",
                     "args": "",
-                    "cell_h": 256
+                    "cell_h": 160
                 },
                 {
                     "cell_type": "markdown",
@@ -21,10 +21,10 @@
                     "cell_type": "code",
                     "source": "code...",
                     "args": "{}",
-                    "cell_h": 640,
+                    "cell_h": 64,
                     "fount": ""
                 }
             ]
-		}
-	]
+        }
+    ]
 }
