@@ -9,8 +9,8 @@ ODA({
             }
         </style>
         <oda-jupyter-divider ~if="!readOnly" index="-1" :notebook></oda-jupyter-divider>
-        <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell :cell="item" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)" :notebook></oda-jupyter-cell>
+        <div ~for="(i, index) in notebook?.cells" class="vertical no-flex">
+            <oda-jupyter-cell :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)" :notebook></oda-jupyter-cell>
             <oda-jupyter-divider ~if="!readOnly" :index :notebook></oda-jupyter-divider>
         </div>
     `,
