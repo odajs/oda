@@ -278,90 +278,32 @@ ODA({ is: 'oda-pterodactyl',
 
 (learn\images\my-first-component\game-window.png "Начальное окно игры")
 
-Для стилизации элемент игры в файле **style.css** заданы следующие css-переменные:
+Для стилизации элементов игры в файле **style.css** заданы следующие css-правила:
 
 1. Набор css-переменных
 
 ```css
 :root {
-    --base-color: grey;
-    --dark-base-color: #e2e2e2;
-    --cactus-color: var(--base-color);
-    --cloud-color: #e2e2e2;
-    --dino-color: var(--dark-base-color);
-    --dino-eyes-color: #121212;
+    --base-color: #e2e2e2;
+    --dino-color: var(--base-color);
+    --cloud-color: var(--base-color);
     --pterodactyl-color: var(--base-color);
+    --horizon-color: var(--base-color);
+
+    --dark-color: #121212 !important;
+    --background-color: var(--dark-color);
+    --dino-eyes-color: var(--dark-color);
+
+    --header-color: honeydew !important;
+    --header-background-color: grey;
+    --cactus-color: grey;
 
     --dino-top: 314px;
     --dino-max-top: 20px;
-    --moon-color: #e2e2e2;
-    --day-color: blue;
-    --star-color: #e2e2e2;
-    --ground-color: var(--base-color);
-    --horizon-color: var(--base-color);
-    --bump-color: var(--base-color);
-
-    /* --dino-eyes-color: white; */
-
-    /* --day-color: white; */
-    --night-body: #121212;
-    --night-background-color: #121212;
-
-    --header-color: honeydew;
-    --header-background-color: grey;
-    --background-color: white;
-
-    /* --form-border-color: #888; */
-    --form-color: #444;
-    --form-border-color: #ddd;
-    --form-header-border-color: #ddd;
-    --form-outline-color: #999;
-
-    --button-color: #04aa6d;
-    --tab-color: #999;
-    --tab-selected-color: #666;
-    --tab-select-border-color: #4cc8f1;
-
-    --cancel-button-color: #f44336;
-
-    --form-background-color: #fefefe;
-
-    /* --form-header-background-color: #fcfcfc; */
-    --form-header-background-color: #f1f1f1;
-    --form-header-color: #f1f1f1;
-
-    --dark-background-color: #121212;
-
-
-    --dark-color: white;
-    --dark-header-color: #252525;
-    --dark-input-background-color: #3b3b3b;
-    --dark-input-border-color: #ccc;
-    --dark-input-color: white;
-
-    --dark-tab-color: #b5b5b5;
-    --dark-tab-hover-color: white;
-    --dark-tab-focus-color: #b5b5b5;
-    --dark-tab-selected-color: white;
-    --dark-tab-border-color: #b5b5b5;
-
-
-    --dark-base: #808080;
-    --dark-cactus-body: #878787;
-    --dark-small-cactus-body: #878787;
-    --dark-cactus-border: #4c4c4c;
-    --dark-cloud-color: var(--dark-base-color);
-    --dark-moon-color: var(--dark-base-color);
-    --dark-pterodactyl-color: var(--dark-base-color);
-    --dark-star-color: var(--dark-base-color);
-    --dark-ground-color: var(--dark-base-color);
-    --dark-horizon-color: var(--dark-base-color);
-    --dark-bump-color: var(--dark-base-color);
-    --dark-dino-color: var(--base-color);
-    --dark-cactus-color: var(--dark-base-color);
-
 }
 ```
+
+Здесь переменная **--base-color** задает базовый цвет динозавра, облаков, птеродактиля и горизонта. Переменная **dark-color** определяет цвет основной области игры и глаз динозавра, а переменная **header-color** задает цвет текста заголовков. Цвет фона заголовка игры и кактуса задается обычным серым.
 
 2. Стиль тела документа
 
@@ -408,16 +350,7 @@ h1{
 }
 ```
 
-6. Стиль надписи завершения игры.
-
-```css
-#game-over{
-    position: relative;
-    top: 35%;
-}
-```
-
-1. Стиль надписи с количеством набранных очков.
+6. Стиль надписи с количеством набранных очков.
 
 ```css
 #score{
@@ -426,153 +359,24 @@ h1{
 }
 ```
 
+7. Стиль надписи начала или окончания игры
 
+```css
+#game-over{
+    position: relative;
+    top: 35%;
+}
+```
+
+8. Стиль отображения тиранозавра.
+
+```css
 oda-dino {
     position: absolute;
     left: 72px;
-    top: 314px;
+    top: var(--dino-top);
     z-index: 300;
 }
+```
 
-oda-cloud {
-    position: absolute;
-    animation-name: cloud-move;
-    animation-duration: 6s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-@keyframes cloud-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -150px;
-    }
-}
-
-oda-cactus {
-    position: absolute;
-    top: 301px;
-    animation-name: cactus-move;
-    animation-duration: 3s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 200;
-}
-
-@keyframes cactus-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -136px;
-    }
-}
-
-oda-pterodactyl {
-    position: absolute;
-    animation-name: pterodactyl-move;
-    animation-duration: 3s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 200;
-}
-
-@keyframes pterodactyl-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -136px;
-    }
-}
-
-oda-moon {
-    position: absolute;
-    left: 100%;
-    top: 70px;
-    animation-name: moon-move;
-    animation-duration: 5s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-@keyframes moon-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -64px;
-    }
-}
-
-oda-star1 {
-    position: absolute;
-    animation-name: star1-move;
-    animation-duration: 6s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-oda-star2 {
-    position: absolute;
-    left: 50%;
-    animation-name: star2-move;
-    animation-duration: 6s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-@keyframes star1-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -25px;
-    }
-}
-
-@keyframes star2-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -25px;
-    }
-}
-
-.horizon {
-    position: absolute;
-    top: 435px;
-    width: 100%;
-    height: 3px;
-    background-color: var(--horizon-color);
-}
-
-.dino-jump {
-    animation-name: dino-jump;
-    animation-duration: 1s;
-    animation-iteration-count: 1;
-    animation-timing-function: ease-out;
-}
-
-@keyframes dino-jump{
-    from {
-      top: var(--dino-top);
-      animation-timing-function: ease-out;
-    }
-    50% {
-       top: var(--dino-max-top);
-       animation-timing-function: ease-in;
-    }
-    to {
-        top: var(--dino-top);
-        animation-timing-function: ease-in;
-    }
-}
-
+Для начала игры зададим обработчик нажатия клавиш 

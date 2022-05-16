@@ -1,11 +1,8 @@
 ODA({ is: 'oda-pterodactyl',
     template: `
         <style>
-            .hidden {
-                display: none;
-            }
             svg path {
-                fill: var(--dark-pterodactyl-color);
+                fill: var(--pterodactyl-color);
             }
         </style>
         <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg" class="pterodactyls">
