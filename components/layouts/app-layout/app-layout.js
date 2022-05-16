@@ -92,8 +92,9 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             default: 300,
             save: true,
             set(n) {
-                if (this.offsetWidth && n > this.offsetWidth * .8) {
-                    this.leftWidth = this.offsetWidth * .8;
+                const max = Math.max((this.offsetWidth || 0) * .8, 270)
+                if (this.offsetWidth && n > max) {
+                    this.leftWidth = max;
                 }
                 else if (n < 270)
                     this.leftWidth = 270;
@@ -104,8 +105,9 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             default: 300,
             save: true,
             set(n) {
-                if (this.offsetWidth && n > this.offsetWidth * .8) {
-                    this.rightWidth = this.offsetWidth * .8;
+                const max = Math.max((this.offsetWidth || 0) * .8, 270)
+                if (this.offsetWidth && n > max) {
+                    this.rightWidth = max;
                 }
                 else if (n < 270)
                     this.rightWidth = 270;
