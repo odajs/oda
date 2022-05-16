@@ -1,9 +1,7 @@
 ODA({ is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
     template: `  
         <style>
-            ::-webkit-scrollbar { width: 4px; height: 4px; }
-            ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
-            ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
+            ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
             :host{
                 @apply --horizontal;
                 @apply --flex;
@@ -80,7 +78,7 @@ ODA({ is: 'oda-jodit-editor', extends: 'oda-tmp-editor',
     get srcdoc() {
         return `
 <style>
-    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; background: var(--body-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
     body, html { 
         margin: 0;
         min-width: 100%;
@@ -105,9 +103,6 @@ ODA({ is: 'oda-jodit-editor', extends: 'oda-tmp-editor',
 ODA({ is: 'oda-cde-editor', extends: 'oda-tmp-editor',
     get srcdoc() {
         return `
-<style>
-    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
-</style>
 <div id="editor">${this.src || ''}</div>
 <script src="https://cdn.ckeditor.com/4.17.2/full/ckeditor.js"></script>
 <script>
@@ -126,7 +121,6 @@ ODA({ is: 'oda-tiny-editor', extends: 'oda-tmp-editor',
     get srcdoc() {
         return `
 <style> 
-    ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
     body, html { 
         margin: 0; 
     }
