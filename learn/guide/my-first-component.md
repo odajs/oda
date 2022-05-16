@@ -278,30 +278,32 @@ ODA({ is: 'oda-pterodactyl',
 
 (learn\images\my-first-component\game-window.png "Начальное окно игры")
 
-
- тся файл **style.css**, в котором заданы css-переменные и классы для стилизации элементов игры:
+Для стилизации элемент игры в файле **style.css** заданы следующие css-переменные:
 
 1. Набор css-переменных
 
 ```css
 :root {
+    --base-color: grey;
+    --dark-base-color: #e2e2e2;
+    --cactus-color: var(--base-color);
+    --cloud-color: #e2e2e2;
+    --dino-color: var(--dark-base-color);
+    --dino-eyes-color: #121212;
+    --pterodactyl-color: var(--base-color);
+
     --dino-top: 314px;
     --dino-max-top: 20px;
-    --base-color: grey;
-    --cloud-color: #e2e2e2;
     --moon-color: #e2e2e2;
     --day-color: blue;
-    --pterodactyl-color: var(--base-color);
     --star-color: #e2e2e2;
     --ground-color: var(--base-color);
     --horizon-color: var(--base-color);
     --bump-color: var(--base-color);
-    --dino-color: var(--dark-base-color);
-    --cactus-color: var(--base-color);
+
     /* --dino-eyes-color: white; */
 
     /* --day-color: white; */
-    --dino-eyes-color: #121212;
     --night-body: #121212;
     --night-background-color: #121212;
 
@@ -345,7 +347,6 @@ ODA({ is: 'oda-pterodactyl',
 
 
     --dark-base: #808080;
-    --dark-base-color: #e2e2e2;
     --dark-cactus-body: #878787;
     --dark-small-cactus-body: #878787;
     --dark-cactus-border: #4c4c4c;

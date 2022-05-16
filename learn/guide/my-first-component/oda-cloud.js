@@ -1,9 +1,6 @@
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            .hidden {
-                display: none;
-            }
             svg.clouds path {
                 fill: var(--cloud-color);
             }
