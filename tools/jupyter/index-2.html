@@ -19,6 +19,7 @@
                 <oda-button @tap="saveFile">save</oda-button>
                 <oda-button for="load" @tap="this.$('#load').click()">load</oda-button>
                 <input id="load" type="file" style="display: none" @change="loadFile($event)"/>
+                <oda-button @tap="jupyter.collapsedMode = !jupyter.collapsedMode" allow-toggle ::toggled="jupyter.collapsedMode">collapsedMode</oda-button>
                 <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
                 <oda-button @tap="clear">clear</oda-button>
                 <oda-button @tap="document.location.reload()">reload</oda-button>

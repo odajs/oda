@@ -136,7 +136,7 @@ ODA({
                 border: 1px solid lightgray;
             }
         </style>
-        <div class="vertical flex main" ~if="!collapsedMode">
+        <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
             <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize></oda-splitter2>
             <div ~if="cell?.items" class="vertical flex">
@@ -147,7 +147,7 @@ ODA({
                 <!-- <oda-icon :icon="cell.expanded?'icons:chevron-left:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon> -->
             </div>
         </div>
-        <div class="row" ~if="collapsedMode" ~class="{shadow: !readOnly && focused}">{{this.cell?.label || this.cell?.cell_type || ''}}</div>
+        <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{this.cell?.label || this.cell?.cell_type || ''}}</div>
         <oda-jupyter-toolbar ~if="!readOnly && focused" :notebook></oda-jupyter-toolbar>
     `,
     notebook: {},
@@ -260,6 +260,10 @@ ODA({
                                 const elm = dd[i];
                                 elm.fire('cancel');
                             }
+                        }
+                        if (this.editMode) {
+                            this.editMode = false;
+                            this.async(() => this.editMode = true);
                         }
                     }
                 } else if (target.props[key].category === 'editor - ' + control2.localName) {
