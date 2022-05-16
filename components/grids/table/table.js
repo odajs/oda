@@ -944,13 +944,20 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     _scroll(e) {
         this.interval('scroll', () => {
-            this.headerHeight = this.showHeader && this.$refs.header?.offsetHeight || 0; //
-            this.footerHeight = this.showFooter && this.$refs.footer?.offsetHeight || 0; //
+            this.headerHeight = this.showHeader && this.$refs.header?.offsetHeight || 0;
+            this.footerHeight = this.showFooter && this.$refs.footer?.offsetHeight || 0;
             if (this.$refs.body) {
-                this._scrollTop = Math.round(this.$refs.body.scrollTop / this._rowHeight) * this._rowHeight;
-                this._scrollWidth = this.$refs.body.scrollWidth;
-                this._height = this.$refs.body.offsetHeight - this.headerHeight - this.footerHeight;
-                this._scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
+                const scrollTop = Math.round(this.$refs.body.scrollTop / this._rowHeight) * this._rowHeight;
+                const scrollWidth = this.$refs.body.scrollWidth;
+                const height = this.$refs.body.offsetHeight - this.headerHeight - this.footerHeight;
+                const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
+
+                if ( scrollWidth && height ) {
+                    this._scrollTop = scrollTop
+                    this._scrollWidth = scrollWidth
+                    this._height = height
+                    this._scrollbarWidth = scrollbarWidth
+                }
             }
         }, 16)
     },
