@@ -42,82 +42,34 @@ function createPterodactyl(){
     });
 }
 
-function createMoon(){
-    const gameSpace = document.getElementById('game-space');
-    gameSpace.append(document.createElement('oda-moon'));
-    const newMoon = gameSpace.lastChild;
-    const min = 10;
-    const max = 100;
-    newMoon.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    newMoon.getAnimations().forEach((anim, i, arr) => {
-        anim.onfinish = () => {
-            newMoon.remove();
-        };
-    });
-}
 
-function createStar(starName) {
-    const gameSpace = document.getElementById('game-space');
-    gameSpace.append(document.createElement(starName));
-    const newStar = gameSpace.lastChild;
-    const min = 10;
-    const max = 100;
-    newStar.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    newStar.getAnimations().forEach((anim, i, arr) => {
-        anim.onfinish = () => {
-            newStar.remove();
-        };
-    });
-    return newStar;
-}
-
-function nightBegin() {
-    createMoon();
-    createStar('oda-star1');
-    createStar('oda-star2');
-}
-
-function nightEnd() {
-    let moons = document.querySelectorAll('oda-moon');
-    moons.forEach(moon => moon.remove());
-
-    let stars1 = document.querySelectorAll('oda-star1');
-    star1.forEach(star => star.remove());
-
-    stars2 = document.querySelectorAll('oda-star2');
-    stars2.forEach(star => star.remove());
-}
-
-
-function createGround(){
-    const gameSpace = document.getElementById('game-space');
-
-    gameSpace.append(document.createElement('oda-ground'));
-    newGround = gameSpace.lastChild;
-    newGround.select(Math.floor(Math.random() * 7));
-    const min = 442;
-    const max = 451;
-    newGround.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    newGround.getAnimations().forEach((anim, i, arr) => {
-        anim.onfinish = () => {
-            newGround.remove();
-        };
-    });
-}
-
-function createHorizon() {
-    const gameSpace = document.getElementById('game-space');
-    const newHorizon = document.createElement('div');
-    newHorizon.classList.add('horizon');
-    gameSpace.append(newHorizon);
-}
 
 let scoreID;
 
 function startGame() {
     const gameOver = document.querySelector('#game-over');
+
     gameOver.style.display = "none";
     gameOver.innerText = "Game Over";
+
+    const audio = document.querySelector('audio');
+    audio.play();
+
+    scoreID = setInterval(() => {
+        score.textContent = +score.textContent + 1;
+    }, 100);
+
+    document.addEventListener('keydown', dinoKeyDown);
+
+    requestAnimationFrame(checkDino);
+}
+
+function continueGame() {
+
+    const gameOver = document.querySelector('#game-over');
+    gameOver.style.display = "none";
+
+    document.removeEventListener('keyup', continueGameKeyUp);
 
     const audio = document.querySelector('audio');
     audio.play();
@@ -143,45 +95,36 @@ function startGame() {
         pterodactyl.gameStart();
     });
 
-    let score = document.getElementById('score');//.textContent;
+    const score = document.getElementById('score');
     score.textContent = 0;
-    //document.getElementById('score').textContent = score;
-
-    
     scoreID = setInterval(() => {
-        //let score = document.getElementById('score').textContent;
-        //score =+score + 1;
-        //document.getElementById('score').textContent = score;
         score.textContent = +score.textContent + 1;
     }, 100);
+
+    document.addEventListener('keydown', dinoKeyDown);
+
     requestAnimationFrame(checkDino);
 }
 
-function dinoKeyDown(e){
-    //e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
-
+function startGameKeyUp(e) {
     if (e.code === 'Space') {
-        if (!isGameOver) {
-            dino.jump();
-        }
+        startGame();
     }
 }
 
-function dinoKeyUp(e){
-    //e.code === 'Space' && (!dino.getElementById('body').classList.contains("hidden") || gameOver)) {
-
+function dinoKeyDown(e) {
     if (e.code === 'Space') {
-        if (isGameOver) {
-            isGameOver = false;
-            startGame();
-        }
+        dino.jump();
     }
 }
 
-createHorizon();
+function continueGameKeyUp(e) {
+    if (e.code === 'Space') {
+        continueGame();
+    }
+}
 
-document.addEventListener('keydown', dinoKeyDown);
-document.addEventListener('keyup', dinoKeyUp);
+document.addEventListener('keyup', startGameKeyUp, {once: true});
 
 let cloudDistance = 0;
 let nextCloudDistance = 0;
@@ -226,12 +169,9 @@ function checkDino() {
     requestAnimationFrame(checkDino);
 }
 
-let isGameOver = true;
-
 function gameOver() {
-    isGameOver = true;
-    document.querySelector('#game-over').style.display = "";
 
+    document.querySelector('#game-over').style.display = "";
 
     clearInterval(scoreID);
 
@@ -248,16 +188,6 @@ function gameOver() {
         cactus.gameOver();
     });
 
-    // const grounds = document.querySelectorAll('.grounds');
-    // grounds.forEach(ground => {
-    //     ground.style.animationPlayState="paused";
-    // });
-
-    // const bumps = document.querySelectorAll('.bumps');
-    // bumps.forEach(bump => {
-    //     bump.style.animationPlayState="paused";
-    // });
-
     const pterodactyls = document.querySelectorAll('oda-pterodactyl');
     pterodactyls.forEach(pterodactyl => {
         pterodactyl.gameOver();
@@ -266,22 +196,8 @@ function gameOver() {
     const audio = document.querySelector('audio');
     audio.currentTime = 0;
     audio.pause();
-    // const moon = document.querySelectorAll('.moon');
-    // moon.forEach(moon => {
-    //     moon.style.animationPlayState="paused";
-    // });
 
-    // let star = document.querySelectorAll('.star1');
-    // star.forEach(star => {
-    //     star.style.animationPlayState="paused";
-    // });
+    document.removeEventListener('keydown', dinoKeyDown);
 
-    // star = document.querySelectorAll('.star2');
-    // star.forEach(star => {
-    //     star.style.animationPlayState="paused";
-    // });
-
-    // dino.style.animationPlayState="paused";
-    // dino.pauseAnimations();
-    //alert("Game Over. Для продолжения нажмите пробел");
+    document.addEventListener('keyup', continueGameKeyUp);
 }

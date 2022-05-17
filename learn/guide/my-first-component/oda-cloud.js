@@ -17,9 +17,6 @@ ODA({ is: 'oda-cloud',
         this.style.animationPlayState="paused";
     },
     gameStart(){
-        if (this.style.animationPlayState === "paused") {
-            this.style.animationPlayState="running";
-        }
+        this.style.animationPlayState="running";
     }
-
 })
