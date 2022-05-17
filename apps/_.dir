@@ -50,7 +50,7 @@
   },
   {
     "name": "sierpinski-triangle",
-    "label": "sierpinski-triangle",
+    "label": "Треугольник Серпинского",
     "content": {
       "link": "index.html"
     }

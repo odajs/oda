@@ -1597,9 +1597,9 @@ if (!window.ODA) {
     let inRender = false;
     async function render() {
         if (!inRender) {
-            // inRender = true;
-            updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-            // inRender = false;
+            inRender = true;
+            await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+            inRender = false;
         }
     }
     async function updateDom(src, $el, $parent, pars) {
