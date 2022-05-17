@@ -2,8 +2,6 @@ import "./oda-dino.js";
 import "./oda-cactus.js";
 import "./oda-cloud.js";
 import "./oda-pterodactyl.js";
-import "./oda-moon.js";
-import "./oda-stars.js";
 
 function createCloud(){
     const gameSpace = document.getElementById('game-space');
@@ -149,7 +147,7 @@ function startGame() {
     score.textContent = 0;
     //document.getElementById('score').textContent = score;
 
-    document.addEventListener('keydown', dinoKeyDown);
+    
     scoreID = setInterval(() => {
         //let score = document.getElementById('score').textContent;
         //score =+score + 1;

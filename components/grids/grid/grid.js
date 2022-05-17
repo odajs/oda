@@ -21,6 +21,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         </div>
         
     `,
+    coords:{},
     correctPanelSize(e){
         e.target.parentElement.style.minWidth =  e.target.getBoundingClientRect().width+'px';
     },
@@ -47,7 +48,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     headerResize(e){
         if (this._headerResize) return;
         this._headerResize = true;
-        console.log('headerResize')
+        // console.log('headerResize')
         const parts = this.table.$$('oda-grid-part');
         const headers = parts.map(part=>{
             return part.$$('oda-grid-header');
@@ -449,13 +450,21 @@ ODA({is: 'oda-grid-header-cell',
                 this._proxy.y = e.detail.y;
                 if (this.parentElement.getBoundingClientRect().y > e.detail.y) {
                     this.dragMode = 'drag-to-group-panel';
+                    for (let panel in this.coords){
+                        const pos = this.coords[panel];
+                        if(e.detail.y < pos.y) continue;
+                        if(e.detail.y > (pos.y + pos.height)) continue;
+                        if(e.detail.x < pos.x) continue;
+                        if(e.detail.x > (pos.x + pos.width)) continue;
+                        this[panel].add(this.column);
+                    }
                 }
                 else{
                     this.dragMode = this._elements;
                     for (let el of this._elements){
                         if (el === this._current) continue;
                         const pos = el.getBoundingClientRect();
-                        if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x)  continue;
+                        if (pos.x > e.detail.x || (pos.x + pos.width) < e.detail.x) continue;
                         const idx1 = this._items.indexOf(this._current.column);
                         const idx2 = this._items.indexOf(el.column);
                         if (Math.sign(e.detail.ddx) !== Math.sign(idx2 - idx1)) continue;
@@ -467,7 +476,6 @@ ODA({is: 'oda-grid-header-cell',
                         this.domHost.columns = undefined;
                         this.metadata = undefined;
                         this._current.style.backgroundColor = 'white';
-
                     }
                 }
             } break;
@@ -513,38 +521,70 @@ ODA({is: 'oda-grid-groups',
         <style>
             :host{
                 @apply --horizontal;
-                align-items: center;
-                opacity: .8;
-                
+                opacity: .8; 
             }
-            div{
-                margin: 2px;
+            :host>div>div{
+                /*margin: 2px;*/
                 align-items: center;
                 @apply --horizontal;
                 overflow: hidden;
+                height: 100%;
             }
             label{
                 @apply --flex;
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+                @apply --disabled;
             }
             oda-icon{
                 transform: scale(.5);
+                @apply --disabled;
             }
         </style>
-        <div class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', disabled: !dragMode}">
+        <div class="horizontal flex" style="align-items: center;">
+            <div id="groups" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="min-width: 50%;">
             <oda-icon icon="device:storage"></oda-icon>
-            <label if="groups.length">Drag here to set row groups</label>
-            <div ~for="groups">{{item}}</div>
+            <oda-group-item ~for="groups" :item="item"></oda-group-item>
+            <label ~if="!groups?.length">Drag here to set row groups</label>
         </div>
-        <div ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', disabled: !dragMode}">
+        <div id="labels" ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="border-left: 1px solid var(--border-color); min-width: 50%;">
             <oda-icon icon="device:storage:90"></oda-icon>
-            <label if="groups.length">Drag here to set column labels</label>
-            <div ~for="labels">{{item}}</div>
+            <oda-group-item ~for="labels" :item="item"></oda-group-item>
+            <label ~if="!labels?.length">Drag here to set column labels</label>   
+        </div>    
         </div>
+
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="border-radius: 50%;"></oda-button>
     `,
+    _resize(e){
+        this.coords[e.target.id] = e.target.getBoundingClientRect();
+    }
+})
+ODA({is: 'oda-group-item',
+     template:`
+        <style>
+            :host{
+                @apply --content;
+                @apply --horizontal;
+                align-items: center;
+                @apply --no-flex;
+                @apply --shadow;
+                margin-right: 4px;
+                border-radius: {{iconSize/6}}px !important;
+            }
+            label{
+                margin: 2px 0px 2px 8px;
+            }           
+        </style>
+        <label>{{item?.label || item?.name}}</label>
+        <oda-button :icon-size="iconSize/2" icon="icons:close" @tap="_delete"></oda-button>
+     `,
+    _delete(e){
+        this[this.parentElement.id].remove(this.item);
+    },
+    item: null
+
 })
 ODA({is: 'oda-grid-body',
     template: `

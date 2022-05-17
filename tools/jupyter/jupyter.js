@@ -116,7 +116,7 @@ ODA({
                 margin: 0 2px;
             }
             .main {
-                min: 22px;
+                min-height: 22px;
             }
             .editor{
                 padding: 4px;
@@ -137,8 +137,10 @@ ODA({
             }
         </style>
         <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
-            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
-            <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize></oda-splitter2>
+            <div class="vertical flex main">
+                <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
+                <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
+            </div>
             <div ~if="cell?.items" class="vertical flex">
                 <oda-icon :icon="cell.expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon>
                 <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
