@@ -638,7 +638,20 @@ stopMove(){
 
 1. Конечные координаты тиранозавра по высоте (**--dino-top: 314px**).
 
-В момент прыжка динозавра, заданного в методе **jump** компонента **oda-dino**, к нему добавляется css-класс прыжка **dino-jump**.
+Этот ключевой кадр используется в css-классе **dino-jump**, который определяет параметры прыжка тиранозавра.
+
+```css
+.dino-jump {
+    animation-name: dino-jump;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+```
+
+Здесь задано то, что прыжок будет длится одну секунду и повторяться однократно.
+
+Данный класс добавляется к компоненту тиранозавра **oda-dino** в его методе **jump**.
 
 ```javascript
 jump() {
@@ -654,34 +667,66 @@ jump() {
 }
 ```
 
-Кроме этого, останавливается анимация ног тиранозавра с возможностью ее возобновления после завершения прыжка.Для этого предусмотрен специальный **callback** **onfinish**.
+В этом методе, кроме добавления css-класса, на время прыжка останавливается анимация ног тиранозавра с возможностью ее возобновления после окончания прыжка. Для этого предусмотрен специальный **callback** **onfinish**, в котором удаляется добавленный класс анимации и возобновляется анимации ног.
 
-Сам css-класс **dino-jump** задан следующим образом:
+Аналогично задается анимация движения кактусов, облаков и птеродактилей.
 
-```css
-.dino-jump {
-    animation-name: dino-jump;
-    animation-duration: 1s;
-    animation-iteration-count: 1;
-    animation-timing-function: ease-out;
+В этом случае ключевые кадры определяют анимацию не по верхней координате, а по левой.
+
+@keyframes cloud-move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -150px;
+    }
+}
+
+После захода за левую границу окна браузера облака, кактусы и птеродактиль будут удалятся. Для этого в методах создания этих элементов предусмотрен **callback** **onfinish**, который срабатывает в момент завершения анимации.
+
+```javascript
+function createCloud(){
+    const gameSpace = document.getElementById('game-space');
+    gameSpace.append( document.createElement('oda-cloud'));
+    const newCloud = gameSpace.lastChild;
+    const min = 20;
+    const max = 150;
+    newCloud.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    newCloud.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            newCloud.remove();
+        };
+    });
 }
 ```
 
-В нем анимационный эффект выполняется только один раз в течении одной секунды.
+В этом **callback** и выполняется удаление вновь созданного элемента. Кроме этого, при создании каждого элемента задается координата его расположения по высоте с небольшим случайным отклонением. В результате этого элементы будут появляться в игре на разной высоте.
 
+Если пользователь захочет продолжить игру, то он может повторно нажать на клавишу пробела.
 
-
-
-
-
-
+Для этого в методе **GaveOver** добавлен слушатель **continueGameKeyUp**.
 
 ```javascript
-function startGame() {
-    const gameOver = document.querySelector('#game-over');
+document.addEventListener('keyup', continueGameKeyUp);
+```
 
+Он при отпускание клавиши пробела вызывает метод продолжения игры.
+
+```javascript
+function continueGameKeyUp(e) {
+    if (e.code === 'Space') {
+        continueGame();
+    }
+}
+```
+
+```javascript
+function continueGame() {
+
+    const gameOver = document.querySelector('#game-over');
     gameOver.style.display = "none";
-    gameOver.innerText = "Game Over";
+
+    document.removeEventListener('keyup', continueGameKeyUp);
 
     const audio = document.querySelector('audio');
     audio.play();
@@ -695,27 +740,30 @@ function startGame() {
     nextCactusDistance = 0;
 
     const dino = document.querySelector('oda-dino');
-    dino.gameStart();
+    dino.continueMove();
 
     const clouds = document.querySelectorAll('oda-cloud');
     clouds.forEach(cloud => {
-        cloud.gameStart();
+        cloud.continueMove();
     });
 
     const pterodactyls = document.querySelectorAll('oda-pterodactyl');
     pterodactyls.forEach(pterodactyl => {
-        pterodactyl.gameStart();
+        pterodactyl.continueMove();
     });
 
-    let score = document.getElementById('score');
-
+    const score = document.getElementById('score');
     score.textContent = 0;
-
-
-
     scoreID = setInterval(() => {
         score.textContent = +score.textContent + 1;
     }, 100);
+
+    document.addEventListener('keydown', dinoKeyDown);
+
     requestAnimationFrame(checkDino);
 }
 ```
+
+В этом методе
+
+В результате это пользователь сможет начать новую игру заново, стараясь улучшить свой предыдущий результат.
