@@ -24,7 +24,8 @@ ODA({ is: 'oda-layout-designer',
         settings: {
             default: {},
             save: true
-        }
+        },
+        iconSize: 24
     },
     get rootSavekey() {
         return this.data?.savekey || 'root';
@@ -299,7 +300,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 outline: 1px dashed red;
             }
         </div>
-        <div class="vertical flex" style="overflow: hidden" @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
+        <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <label ~if="showLabel" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>

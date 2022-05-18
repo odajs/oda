@@ -1,10 +1,17 @@
 <meta charset="utf-8">
 <script type="module" src="/web/oda/oda.js"></script>
 <script type="module" src="./layout-designer.js"></script>
+<style>
+    button {
+        cursor: pointer;
+        margin: 4px;
+        padding: 4px;
+    }
+</style>
 <div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray;">
-    <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode" style="margin: 4px;">Design mode</button>
-    <button onclick="testLayoutDesigner.resetSettings()" style="margin: 4px;">Reset settings</button>
-    <button onclick="document.location.reload()" style="margin: 4px;">Reload page</button>
+    <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode; this.style.background = testLayoutDesigner.designMode ? 'yellow' : 'lightgray'" style="background: yellow; border: 1px solid gray; border-radius: 2px;">Design mode</button>
+    <button onclick="testLayoutDesigner.resetSettings();">Reset settings</button>
+    <button onclick="document.location.reload()">Reload page</button>
 </div>
 <oda-layout-designer keys="fields" id="testLayoutDesigner" design-mode></oda-layout-designer>
 <script type="module">
