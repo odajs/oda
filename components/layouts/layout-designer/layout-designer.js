@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0;" :root-savekey></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0;" :root-savekey="rootSaveKey"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -23,7 +23,7 @@ ODA({ is: 'oda-layout-designer',
         keys: '',
         iconSize: 24
     },
-    get rootSavekey() {
+    get rootSaveKey() {
         return this.data?.savekey || 'root';
     },
     get layout() {
@@ -32,13 +32,13 @@ ODA({ is: 'oda-layout-designer',
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
     async saveScript(layout, action) {
-        console.log(layout.owner.saveKey, action)
+        console.log(layout.owner.saveKey || layout.root.saveKey, action)
         if (layout.owner) {
-            layout.owner.actions ||= [];
-            layout.owner.actions.add(action);
+            layout.owner.lay.actions ||= [];
+            layout.owner.lay.actions.add(action);
         } else {
-            layout.root.actions ||= [];
-            layout.root.actions.add(action);
+            layout.root.lay.actions ||= [];
+            layout.root.lay.actions.add(action);
         }
     },
     resetSettings() {
@@ -63,25 +63,29 @@ ODA({ is: 'oda-layout-designer-structure',
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
     `,
     props: {
-        layout: null,
+        layout: {
+            default: null,
+            set(n) {
+                if (n)
+                    n.lay = this;
+            }
+        },
         rootSavekey: '',
         actions: {
             default: [],
-            save: true
+            save: true,
+            set(v) {
+                // console.log(v)
+            }
         },
         saveKey: ''
     },
     observers: [
         async function execute(layout, actions) {
             if (layout) {
-                this.saveKey = layout.saveKey = this.rootSavekey || layout.id || layout.name || layout.showLabel;
+                this.saveKey = layout.saveKey = this.rootSavekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
                 if (actions)
                     await this.layout.execute(actions);
-                actions ||= [];
-                if (this.layout.owner)
-                    this.layout.owner.actions = actions;
-                else
-                    this.layout.root.actions = actions;
             }
         }
     ]
