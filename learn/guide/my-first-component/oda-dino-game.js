@@ -85,16 +85,16 @@ function continueGame() {
     nextCactusDistance = 0;
 
     const dino = document.querySelector('oda-dino');
-    dino.gameStart();
+    dino.continueMove();
 
     const clouds = document.querySelectorAll('oda-cloud');
     clouds.forEach(cloud => {
-        cloud.gameStart();
+        cloud.continueMove();
     });
 
     const pterodactyls = document.querySelectorAll('oda-pterodactyl');
     pterodactyls.forEach(pterodactyl => {
-        pterodactyl.gameStart();
+        pterodactyl.continueMove();
     });
 
     const score = document.getElementById('score');
@@ -178,21 +178,21 @@ function gameOver() {
     clearInterval(scoreID);
 
     const dino = document.querySelector('oda-dino');
-    dino.gameOver();
+    dino.stopMove();
 
     const clouds = document.querySelectorAll('oda-cloud');
     clouds.forEach(cloud => {
-        cloud.gameOver();
+        cloud.stopMove();
     });
 
     const cactuses = document.querySelectorAll('oda-cactus');
     cactuses.forEach(cactus => {
-        cactus.gameOver();
+        cactus.stopMove();
     });
 
     const pterodactyls = document.querySelectorAll('oda-pterodactyl');
     pterodactyls.forEach(pterodactyl => {
-        pterodactyl.gameOver();
+        pterodactyl.stopMove();
     });
 
     const audio = document.querySelector('audio');

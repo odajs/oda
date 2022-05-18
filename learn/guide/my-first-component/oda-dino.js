@@ -84,14 +84,14 @@ ODA({ is: 'oda-dino',
             }
         });
     },
-    gameOver(){
+    stopMove(){
         this.style.animationPlayState="paused";
         this.svg.pauseAnimations();
         this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
         this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
         this.svg.getElementById('month').setAttribute('visibility', 'visible');
     },
-    gameStart(){
+    continueMove(){
         if (this.style.animationPlayState === "paused") {
             this.classList.remove("dino-jump");
             this.svg.unpauseAnimations();

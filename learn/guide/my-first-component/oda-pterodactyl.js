@@ -20,12 +20,12 @@ ODA({ is: 'oda-pterodactyl',
             </path>
         </svg>
     `,
-    gameOver(){
+    stopMove(){
         this.style.animationPlayState="paused";
         const svg = this.$core.root.querySelector("svg");
         svg.pauseAnimations();
     },
-    gameStart(){
+    continueMove(){
         this.style.animationPlayState="running";
         const svg = this.$core.root.querySelector("svg");
         svg.unpauseAnimations();

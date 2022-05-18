@@ -517,7 +517,164 @@ function checkDino() {
 }
 ```
 
+В нем создаются:
+
+1. **Облака** с помощью специальной функции **createCloud**.
+
+2. **Кактусы** с помощью функции **createCactus**.
+
+3. **Птеродактили** с помощью функции **createCactus**.
+
+Все эти элементы создаются через определенный интервал с небольшой случайной составляющей. Для этого каждый такт анимации счетчики: **cloudDistance**, **cactusDistance** и **pterodactylDistance** увеличиваются на 1. Кода они достигнут заданного случайного значения **nextCloudDistance**, **nextCactusDistance** и **nextPterodactylDistance** будет создан новый соответствующий элемент.
+
+В конце метода проверяется пересечение динозавра со всеми кактусами с помощью его метода **isIntersection** компонента **oda-dino**.
+
 В методе начала игры **startGame** создаются все необходимые для нее элементы.
+
+Если пересечение произошло, то игра останавливается с помощью функции **gameOver**. В противном случае, вызов метод **checkDino** повторяется в следующем такте анимации.
+
+Метод **gameOver** реализован следующем образом:
+
+```javascript
+function gameOver() {
+
+    document.querySelector('#game-over').style.display = "";
+
+    clearInterval(scoreID);
+
+    const dino = document.querySelector('oda-dino');
+    dino.stopMove();
+
+    const clouds = document.querySelectorAll('oda-cloud');
+    clouds.forEach(cloud => {
+        cloud.stopMove();
+    });
+
+    const cactuses = document.querySelectorAll('oda-cactus');
+    cactuses.forEach(cactus => {
+        cactus.stopMove();
+    });
+
+    const pterodactyls = document.querySelectorAll('oda-pterodactyl');
+    pterodactyls.forEach(pterodactyl => {
+        pterodactyl.stopMove();
+    });
+
+    const audio = document.querySelector('audio');
+    audio.currentTime = 0;
+    audio.pause();
+
+    document.removeEventListener('keydown', dinoKeyDown);
+
+    document.addEventListener('keyup', continueGameKeyUp);
+}
+```
+
+В нем:
+
+1. Отображается надпись с окончанием игры «Game Over».
+
+1. Останавливается таймер счетчика набранных очков с использованием идентификатора **scoreID**.
+
+1. Останавливается анимация динозавра вызовом метода «**stopMove**» компонента «**oda-dino**».
+
+В нем приостанавливается эффект анимации прыжка с заданием значения **paused** для стиля **animationPlayState**. Кроме этого, останавливается анимация движения лап с помощью метода **pauseAnimations** элемента **svg**, а также прячется маленький глаз и отображаются рот и большой глаз динозавра, заданием свойства «**visibility**» значениями «**visible**» и «**hidden**» у соответствующих элементов.
+
+```javascript
+stopMove(){
+    this.style.animationPlayState="paused";
+    this.svg.pauseAnimations();
+    this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
+    this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
+    this.svg.getElementById('month').setAttribute('visibility', 'visible');
+}
+```
+
+У птеродактиля отключается только эффект движения и взмахи крыльев.
+
+```javascript
+stopMove(){
+    this.style.animationPlayState="paused";
+    const svg = this.$core.root.querySelector("svg");
+    svg.pauseAnimations();
+},
+```
+
+У кактусов и облаков отключается только анимация эффекта движения.
+
+```javascript
+stopMove(){
+    this.style.animationPlayState="paused";
+}
+```
+
+Анимация эффекта движения задается у всех элементов с помощью ключевых кадров.
+
+Так для анимации прыжка динозавра объявлен следующий ключевой кадр:
+
+```css
+@keyframes dino-jump{
+    from {
+      top: var(--dino-top);
+      animation-timing-function: ease-out;
+    }
+    50% {
+       top: var(--dino-max-top);
+       animation-timing-function: ease-in;
+    }
+    to {
+        top: var(--dino-top);
+        animation-timing-function: ease-in;
+    }
+}
+```
+
+Здесь используются css-переменные, которые задают:
+
+1. Начальные координаты тиранозавра по высоте (**--dino-top: 314px**).
+
+1. Промежуточное координаты тиранозавра по высоте (
+    **--dino-max-top: 20px**).
+
+1. Конечные координаты тиранозавра по высоте (**--dino-top: 314px**).
+
+В момент прыжка динозавра, заданного в методе **jump** компонента **oda-dino**, к нему добавляется css-класс прыжка **dino-jump**.
+
+```javascript
+jump() {
+    this.classList.add("dino-jump");
+    this.svg.pauseAnimations();
+    this.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            this.classList.remove("dino-jump");
+            this.offsetHeight; // reflow
+            this.svg.unpauseAnimations();
+        }
+    });
+}
+```
+
+Кроме этого, останавливается анимация ног тиранозавра с возможностью ее возобновления после завершения прыжка.Для этого предусмотрен специальный **callback** **onfinish**.
+
+Сам css-класс **dino-jump** задан следующим образом:
+
+```css
+.dino-jump {
+    animation-name: dino-jump;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+```
+
+В нем анимационный эффект выполняется только один раз в течении одной секунды.
+
+
+
+
+
+
+
 
 ```javascript
 function startGame() {

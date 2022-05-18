@@ -17,7 +17,7 @@ ODA({ is: 'oda-cactus',
         this.polygons = new Map();
         this.polygons.set('cactus', createPolygon(svg,'path'));
     },
-    gameOver(){
+    stopMove(){
         this.style.animationPlayState="paused";
     },
 })
