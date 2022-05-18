@@ -71,7 +71,6 @@ function continueGame() {
     const gameOver = document.querySelector('#game-over');
     gameOver.style.display = "none";
 
-    document.removeEventListener('keyup', continueGameKeyUp);
 
     const audio = document.querySelector('audio');
     audio.play();
@@ -102,6 +101,8 @@ function continueGame() {
     scoreID = setInterval(() => {
         score.textContent = +score.textContent + 1;
     }, 100);
+
+    document.removeEventListener('keyup', continueGameKeyUp);
 
     document.addEventListener('keydown', dinoKeyDown);
 

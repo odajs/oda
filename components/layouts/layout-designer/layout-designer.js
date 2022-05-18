@@ -21,10 +21,6 @@ ODA({ is: 'oda-layout-designer',
             }
         },
         keys: '',
-        settings: {
-            default: {},
-            save: true
-        },
         iconSize: 24
     },
     get rootSavekey() {
@@ -35,23 +31,17 @@ ODA({ is: 'oda-layout-designer',
     },
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
-    async loadScript() {
-        return this.settings;
-    },
     async saveScript(layout, action) {
-        const saveKey = layout.root?.saveKey;
-        if (typeof this.settings !== 'object')
-            this.settings = {};
-        this.settings[saveKey] ||= [];
-        if (!Array.isArray(this.settings[saveKey]))
-            this.settings[saveKey] = [];
-        this.settings[saveKey].push(action);
+        console.log(layout.owner.saveKey, action)
+        if (layout.owner) {
+            layout.owner.actions ||= [];
+            layout.owner.actions.add(action);
+        } else {
+            layout.root.actions ||= [];
+            layout.root.actions.add(action);
+        }
     },
     resetSettings() {
-        const keys = this.keys;
-        this.settings = {};
-        this.keys = '...';
-        this.keys = keys; 
     }
 })
 
@@ -74,15 +64,24 @@ ODA({ is: 'oda-layout-designer-structure',
     `,
     props: {
         layout: null,
-        rootSavekey: ''
+        rootSavekey: '',
+        actions: {
+            default: [],
+            save: true
+        },
+        saveKey: ''
     },
-    // iconSize: 32,
     observers: [
-        async function execute(layout, settings) {
+        async function execute(layout, actions) {
             if (layout) {
-                layout.saveKey = this.rootSavekey || (this.savekey + '_' + (layout.id || layout.name || ''));
-                if (settings?.[layout.saveKey])
-                    await this.layout.execute(settings[layout.saveKey]);
+                this.saveKey = layout.saveKey = this.rootSavekey || layout.id || layout.name || layout.showLabel;
+                if (actions)
+                    await this.layout.execute(actions);
+                actions ||= [];
+                if (this.layout.owner)
+                    this.layout.owner.actions = actions;
+                else
+                    this.layout.root.actions = actions;
             }
         }
     ]
@@ -321,7 +320,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
-            this.saveScript(this.layout, action)
+            this.saveScript(this.layout, action);
         }
     },
     listeners: {
@@ -334,12 +333,12 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                     label: 'grouping', run: () => {
                         const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id, block: getUUID() } };
                         this.layout.toGroup(action);
-                        this.saveScript(this.layout, action)
+                        this.saveScript(this.layout, action);
                     }
                 }, { label: 'hide / unhide', run: () => {
                         this.layout.isHide = !this.layout.isHide;
                         const action = { action: "hide", hide: this.layout.isHide, props: { target: this.layout.id } };
-                        this.saveScript(this.layout, action)
+                        this.saveScript(this.layout, action);
                     }
                 }]
             }, { title: e.target.layout?.label });
