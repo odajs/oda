@@ -40,8 +40,6 @@ ODA({ is: 'oda-layout-designer',
             layout.root.lay.actions ||= [];
             layout.root.lay.actions.add(action);
         }
-    },
-    resetSettings() {
     }
 })
 
