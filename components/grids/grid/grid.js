@@ -48,7 +48,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     headerResize(e){
         if (this._headerResize) return;
         this._headerResize = true;
-        // console.log('headerResize')
         const parts = this.table.$$('oda-grid-part');
         const headers = parts.map(part=>{
             return part.$$('oda-grid-header');
@@ -63,7 +62,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         for (let h of headers){
             h.style.minHeight = height+'px';
         }
-        this.interval('_headerResize', ()=>{
+        this.debounce('_headerResize', ()=>{
             this._headerResize = false;
         })
     },
@@ -194,7 +193,7 @@ ODA({is: 'oda-grid-part',
     },
     fix: '',
     get columns() {
-        return this.metadata?.find(col => col.fix === this.fix)?.items.filter(col=> col.checked !== false) || [];
+        return this.metadata?.find(col => col.fix === this.fix)?.items.filter(col=> col.checked !== false && !this.groups.includes(col)) || [];
     },
 
     get cells() {
@@ -213,7 +212,7 @@ ODA({is: 'oda-grid-part',
                 return res;
             }, [])
         }
-        return convertColumns(this.columns).filter(col=> col.checked !== false) || [];
+        return convertColumns(this.columns).filter(col=> col.checked !== false && !this.groups.includes(col)) || [];
     },
     colsScrollLeft: 0,
 })
@@ -311,7 +310,7 @@ ODA({is: 'oda-grid-header-cell',
         return this.column?.items?.map((col, idx)=>{
             col.checked = (col.checked === undefined && !col.hidden) || col.checked
             return col
-        }).filter(col=> col.checked !== false)
+        }).filter(col=> col.checked !== false && !this.groups.includes(col))
     },
     orderStep: 0,
     sort(){
@@ -448,6 +447,8 @@ ODA({is: 'oda-grid-header-cell',
             case 'track': {
                 this._proxy.x = e.detail.x;
                 this._proxy.y = e.detail.y;
+                for (let panel in this.coords)
+                    this[panel].remove(this.column);
                 if (this.parentElement.getBoundingClientRect().y > e.detail.y) {
                     this.dragMode = 'drag-to-group-panel';
                     for (let panel in this.coords){
@@ -483,6 +484,9 @@ ODA({is: 'oda-grid-header-cell',
                 this.dragMode = ''
                 this._proxy.remove();
                 this._current.style.backgroundColor = '';
+                this.domHost.columns = undefined;
+                this.metadata = undefined;
+                this.cells = undefined;
             } break;
         }
     }
@@ -543,16 +547,16 @@ ODA({is: 'oda-grid-groups',
             }
         </style>
         <div class="horizontal flex" style="align-items: center;">
-            <div id="groups" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="min-width: 50%;">
-            <oda-icon icon="device:storage"></oda-icon>
-            <oda-group-item ~for="groups" :item="item"></oda-group-item>
-            <label ~if="!groups?.length">Drag here to set row groups</label>
-        </div>
-        <div id="labels" ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="border-left: 1px solid var(--border-color); min-width: 50%;">
-            <oda-icon icon="device:storage:90"></oda-icon>
-            <oda-group-item ~for="labels" :item="item"></oda-group-item>
-            <label ~if="!labels?.length">Drag here to set column labels</label>   
-        </div>    
+            <div id="groups" class="no-flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="min-width: 50%;">
+                <oda-icon icon="device:storage"></oda-icon>
+                <oda-group-item ~for="groups" :item="item"></oda-group-item>
+                <label ~if="!groups?.length">Drag here to set row groups</label>
+            </div>
+            <div id="labels" ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="border-left: 1px solid var(--border-color); min-width: 50%;">
+                <oda-icon icon="device:storage:90"></oda-icon>
+                <oda-group-item ~for="labels" :item="item"></oda-group-item>
+                <label ~if="!labels?.length">Drag here to set column labels</label>   
+            </div>    
         </div>
 
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="border-radius: 50%;"></oda-button>
@@ -582,8 +586,21 @@ ODA({is: 'oda-group-item',
      `,
     _delete(e){
         this[this.parentElement.id].remove(this.item);
+        this.metadata = undefined;
     },
-    item: null
+    item: null,
+    listeners:{
+        track(e){
+            switch (e.detail.state) {
+                case 'start': {
+                } break;
+                case 'track': {
+                } break;
+                case 'end': {
+                } break;
+            }
+        }
+    }
 
 })
 ODA({is: 'oda-grid-body',
@@ -671,7 +688,7 @@ ODA({is: 'oda-grid-footer',
             footer
     `
 })
-ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
+ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
     template:`
         <style>
             :host{
@@ -696,9 +713,10 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree',
                 background-color: var(--content-background) !important;
             }
         </style>
+        <oda-splitter align="vertical"></oda-splitter>
         <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
             <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" allow-drag allow-drop :data-set="table.metadata"></oda-tree>
-            <oda-property-grid ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
+            <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
         </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
