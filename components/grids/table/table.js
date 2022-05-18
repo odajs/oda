@@ -977,9 +977,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     async _select(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
+            if(!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);
             if (e.shiftKey) {
-                let from = this.selectedRows.length ? this.items.indexOf(this.selectedRows[0]) : 0;
-                from = (from > -1) ? from : 0;
+                let from = this.selectionStartIndex;
                 let to = this.rows.indexOf(item);
                 this.clearSelection();
                 if (from <= to) {
@@ -998,9 +998,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 const idx = this.selectedRows.indexOf(item);
                 if (idx < 0)
                     this._addSelection(item);
-                else
+                else {
                     this.selectedRows.splice(idx, 1);
+                    if (item === this.selectionStartRow) {
+                        this.selectionStartRow = this.selectedRows[0] || null;
+                    }
+                }
             } else {
+                this.selectionStartIndex = -1;
                 this.clearSelection()
                 this._addSelection(item);
             }
