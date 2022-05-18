@@ -250,6 +250,9 @@ ODA({ is: 'oda-pterodactyl',
             <oda-dino id="dino"></oda-dino>
         </div>
     </div>
+    <audio autoplay loop preload="auto">
+        <source src="audio/t-rex-get-it-on.mp3" type="audio/mp3">
+    </audio>
 </body>
 
 </html>
@@ -388,7 +391,13 @@ oda-dino {
 }
 ```
 
-Для начала игры необходимо задать обработчик нажатия клавиш в основном файле **oda-dino-game** следующим образом:
+Для начала игры необходимо зарегистрировать   обработчик нажатия клавиш клавиатуры в файле с кодом игры **oda-dino-game.js**следующим образом:
+
+```javascript
+document.addEventListener('keyup', startGameKeyUp);
+```
+
+Этот обработчик будет срабатывать при отпускании клавиши пробела (**Space**) и запускать игру, вызовом специального метода **startGame**.
 
 ```javascript
 function startGameKeyUp(e) {
@@ -398,12 +407,114 @@ function startGameKeyUp(e) {
 }
 ```
 
-В этом обработчике при нажатие на клавишу пробела (**Space**) проверяется не началась ли на данный момент игра, и если не началась, то вызывается метод **startGame**, который запускает ее на выполнение.
-
-Данный метод привязывается к событию отпускания клавиш клавиатуры **keyup** на уровне документа.
+Метод **startGame** определим следующим образом:
 
 ```javascript
-document.addEventListener('keyup', dinoKeyUp);
+function startGame() {
+    const gameOver = document.querySelector('#game-over');
+
+    gameOver.style.display = "none";
+    gameOver.innerText = "Game Over";
+
+    const audio = document.querySelector('audio');
+    audio.play();
+
+    scoreID = setInterval(() => {
+        score.textContent = +score.textContent + 1;
+    }, 100);
+
+    document.removeEventListener('keyup', startGameKeyUp);
+
+    document.addEventListener('keydown', dinoKeyDown);
+
+    requestAnimationFrame(checkDino);
+}
+```
+
+В этом методе:
+
+1. Скрывается надпись «**Для начала игры нажмите пробел**» и вместо нее записывается текст сообщения об окончании игры «**GameOver**», который будет отображаться в будущем.
+
+1. Запускается воспроизведение музыкальной композиции группы T-Rex «**Get It On**». Для этого в папку **audio** помещен файл «t-rex-get-it-on.mp3» с минусовкой этой песни.
+
+```html
+<audio autoplay loop preload="auto">
+    <source src="audio/t-rex-get-it-on.mp3" type="audio/mp3">
+</audio>
+```
+
+1. Задается таймер, который каждые 100 миллисекунд увеличивает количество набранных очков игроком на 1. Для того, чтобы остановить таймер, указатель не него сохраняется в глобальной переменной scoreID.
+
+```javascript
+scoreID = setInterval(() => {
+    score.textContent = +score.textContent + 1;
+}, 100);
+```
+
+1. Удаляется обработчик начала игры **startGameKeyUp**.
+
+```javascript
+document.removeEventListener('keyup', startGameKeyUp);
+```
+
+1. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра.
+
+```javascript
+document.addEventListener('keydown', dinoKeyDown);
+```
+
+В нем при нажатии на клавишу пробела вызывается соответствующий метод **jump** компонента **oda-dino**, запускающий анимацию прыжка тиранозавра.
+
+```javascript
+function dinoKeyDown(e) {
+    if (e.code === 'Space') {
+        dino.jump();
+    }
+}
+```
+
+1. Запускается метод **checkDino** со следующим тактом прорисовки окна браузера, в котором динамически будут создаваться все остальные элементы игры и определяться наличие или отсутствие столкновения динозавра с кактусом.
+
+```javascript
+requestAnimationFrame(checkDino);
+```
+
+Метод **checkDino** реализован следующим образом:
+
+```javascript
+function checkDino() {
+    cloudDistance++;
+    if (cloudDistance > nextCloudDistance) {
+        cloudDistance = 0;
+        createCloud();
+        nextCloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
+    }
+
+    cactusDistance++;
+    if (cactusDistance > nextCactusDistance) {
+        cactusDistance = 0;
+        createCactus();
+        nextCactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
+    }
+
+    pterodactylDistance++;
+    if (pterodactylDistance > nextPterodactylDistance) {
+        pterodactylDistance = 0;
+        createPterodactyl();
+        nextPterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
+    }
+
+    let cactuses = document.querySelectorAll('oda-cactus');
+
+    for (var i = 0; i < cactuses.length; ++i) {
+        if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
+            gameOver();
+            return;
+        }
+    }
+
+    requestAnimationFrame(checkDino);
+}
 ```
 
 В методе начала игры **startGame** создаются все необходимые для нее элементы.

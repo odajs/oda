@@ -59,6 +59,8 @@ function startGame() {
         score.textContent = +score.textContent + 1;
     }, 100);
 
+    document.removeEventListener('keyup', startGameKeyUp);
+
     document.addEventListener('keydown', dinoKeyDown);
 
     requestAnimationFrame(checkDino);
@@ -124,7 +126,7 @@ function continueGameKeyUp(e) {
     }
 }
 
-document.addEventListener('keyup', startGameKeyUp, {once: true});
+document.addEventListener('keyup', startGameKeyUp);
 
 let cloudDistance = 0;
 let nextCloudDistance = 0;
