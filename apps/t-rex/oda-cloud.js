@@ -1,7 +1,8 @@
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            svg.clouds path {
+            svg.clouds path,
+            svg.clouds rect {
                 fill: var(--cloud-color);
             }
         </style>

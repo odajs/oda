@@ -185,7 +185,8 @@ ODA({ is: 'oda-cactus',
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            svg.clouds path {
+            svg.clouds path,
+            svg.clouds rect {
                 fill: var(--cloud-color);
             }
         </style>
@@ -207,7 +208,7 @@ ODA({ is: 'oda-pterodactyl',
     template: `
         <style>
             svg path {
-                fill: var(--dark-pterodactyl-color);
+                fill: var(--pterodactyl-color);
             }
         </style>
         <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg" class="pterodactyls">
@@ -245,7 +246,7 @@ ODA({ is: 'oda-pterodactyl',
     <div id="wrapper">
         <h1>Счет игры</h1>
         <h1 id ="score">0.0</h1>
-        <div id="game-space" class="dark">
+        <div id="game-space">
             <h1 id="game-over">Для начала игры нажмите пробел</h1>
             <oda-dino id="dino"></oda-dino>
         </div>
