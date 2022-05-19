@@ -55,7 +55,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 align-content: flex-start;
             }
             [selected] {
-                background-color: var(--selection-background);
+                background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
             }
         </style>
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
