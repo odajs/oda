@@ -7,7 +7,7 @@ ODA({
                 cursor: pointer;
             }
             text {
-                font: {{fontSize()}}px sans-serif;
+                font: {{fontSize}}px sans-serif;
             }
             button {
                 height: 30px;
@@ -25,12 +25,12 @@ ODA({
                 position: relative;
             }
         </style>
-        <div class="outerDiv">
+        <div class="outerDiv" ref="outerDiv">
             <button @tap="start" ~if="showButton"> <b>Start</b> </button>
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <text x="10" :y="fontSize()" ~show="!showButton">Drag some vertex</text>
-                <text x="10" :y="2.5*fontSize()" ~show="!showButton" fill="#fff">Dots: {{dots.length}}</text>
-                <text x="10" :y="4*fontSize()" ~show="dotsPerSecond" fill="#fff">Dots per second: {{dotsPerSecond}}</text>
+                <text x="10" :y="fontSize" ~show="!showButton">Drag some vertex</text>
+                <text x="10" :y="2.5*fontSize" ~show="!showButton" fill="#fff">Dots: {{dots.length}}</text>
+                <text x="10" :y="4*fontSize" ~show="dotsPerSecond" fill="#fff">Dots per second: {{dotsPerSecond}}</text>
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="radiusDot" :style="'fill:'+dots[index].color"></circle>
                 <circle ~for="triangleVertices.length" :id="index" :cx="triangleVertices[index].x" :cy="triangleVertices[index].y" :r="radiusVertex" 
                         :style="'fill:'+triangleVertices[index].color" @track="move" class="vertex"></circle>
@@ -49,15 +49,20 @@ ODA({
     dotsPerSecond: undefined,
     dots: [],
     showButton: true,
+    fontSize: undefined,
 
+    attached() {
+        const resizeObserver = new ResizeObserver( this.onSizeChanged.bind(this) );
+        resizeObserver.observe(this.$refs.outerDiv);
+    },
+    onSizeChanged( entries ) {
+        this.fontSize = 16 * (this.$refs.svg?.viewBox.baseVal.width / this.$refs.svg?.getBoundingClientRect().width);
+        },
     start() {
         this.showButton = false;
         this.drawTriangleVertices();
         setInterval(this.createPoint.bind(this), 0);
         setInterval(this.measurement.bind(this), 1000);
-    },
-    fontSize() {
-        return 16 * (this.$refs.svg?.viewBox.baseVal.width / this.$refs.svg?.getBoundingClientRect().width);
     },
     measurement() { //Расчет текущей скорости построения
         if( this.previousQuantityOfDots.length == 10 ) 
