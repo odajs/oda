@@ -84,14 +84,14 @@ ODA({ is: 'oda-dino',
             }
         });
     },
-    stopMove(){
+    stopMove() {
         this.style.animationPlayState="paused";
         this.svg.pauseAnimations();
         this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
         this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
         this.svg.getElementById('month').setAttribute('visibility', 'visible');
     },
-    continueMove(){
+    continueMove() {
         if (this.style.animationPlayState === "paused") {
             this.classList.remove("dino-jump");
             this.svg.unpauseAnimations();
@@ -112,8 +112,6 @@ ODA({ is: 'oda-dino',
         {
             return false;
         }
-
-        // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
 
         return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)
          || (getComputedStyle(this.svg.getElementById('first-leg')).visibility === 'visible' ?

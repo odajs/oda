@@ -61,7 +61,7 @@ function startGame() {
 
     document.removeEventListener('keyup', startGameKeyUp);
 
-    document.addEventListener('keydown', dinoKeyDown);
+    document.addEventListener('keydown', dinoJumpKeyDown);
 
     requestAnimationFrame(checkDino);
 }
@@ -72,8 +72,6 @@ function continueGame() {
     gameOver.style.display = "none";
 
 
-    const audio = document.querySelector('audio');
-    audio.play();
 
     const cactuses = document.querySelectorAll('oda-cactus');
     cactuses.forEach(cactus => {
@@ -102,9 +100,12 @@ function continueGame() {
         score.textContent = +score.textContent + 1;
     }, 100);
 
+    const audio = document.querySelector('audio');
+    audio.play();
+
     document.removeEventListener('keyup', continueGameKeyUp);
 
-    document.addEventListener('keydown', dinoKeyDown);
+    document.addEventListener('keydown', dinoJumpKeyDown);
 
     requestAnimationFrame(checkDino);
 }
@@ -115,15 +116,15 @@ function startGameKeyUp(e) {
     }
 }
 
-function dinoKeyDown(e) {
-    if (e.code === 'Space') {
-        dino.jump();
-    }
-}
-
 function continueGameKeyUp(e) {
     if (e.code === 'Space') {
         continueGame();
+    }
+}
+
+function dinoJumpKeyDown(e) {
+    if (e.code === 'Space') {
+        dino.jump();
     }
 }
 
@@ -200,7 +201,7 @@ function gameOver() {
     audio.currentTime = 0;
     audio.pause();
 
-    document.removeEventListener('keydown', dinoKeyDown);
+    document.removeEventListener('keydown', dinoJumpKeyDown);
 
     document.addEventListener('keyup', continueGameKeyUp);
 }

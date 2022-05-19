@@ -1,9 +1,6 @@
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            .hidden {
-                display: none;
-            }
             svg.clouds path {
                 fill: var(--cloud-color);
             }
@@ -16,13 +13,10 @@ ODA({ is: 'oda-cloud',
             <rect x="96" y="19" height="3" width="4" />
         </svg>
     `,
-    gameOver(){
+    stopMove(){
         this.style.animationPlayState="paused";
     },
-    gameStart(){
-        if (this.style.animationPlayState === "paused") {
-            this.style.animationPlayState="running";
-        }
+    continueMove(){
+        this.style.animationPlayState="running";
     }
-
 })

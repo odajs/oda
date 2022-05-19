@@ -1,5 +1,4 @@
 :root {
-    /* --base-color: grey; */
     --base-color: #e2e2e2;
     --dino-color: var(--base-color);
     --cloud-color: var(--base-color);
@@ -13,73 +12,8 @@
     --header-color: honeydew !important;
     --header-background-color: grey;
     --cactus-color: grey;
-
-
-
-
     --dino-top: 314px;
     --dino-max-top: 20px;
-
-    /* --moon-color: #e2e2e2; */
-    /* --day-color: blue; */
-    /* --star-color: #e2e2e2; */
-    /* --ground-color: var(--base-color); */
-    /* --bump-color: var(--base-color); */
-    /* --dino-eyes-color: white; */
-
-    /* --day-color: white; */
-    /* --night-body: #121212; */
-    /* --night-background-color: #121212; */
-
-    /* --background-color: white; */
-
-    /* --form-border-color: #888; */
-    /* --form-color: #444;
-    --form-border-color: #ddd;
-    --form-header-border-color: #ddd;
-    --form-outline-color: #999;
-
-    --button-color: #04aa6d;
-    --tab-color: #999;
-    --tab-selected-color: #666;
-    --tab-select-border-color: #4cc8f1;
-
-    --cancel-button-color: #f44336;
-
-    --form-background-color: #fefefe; */
-
-    /* --form-header-background-color: #fcfcfc; */
-    /* --form-header-background-color: #f1f1f1;
-    --form-header-color: #f1f1f1; */
-
-
-
-    /* --dark-color: white; */
-    /* --dark-header-color: #252525;
-    --dark-input-background-color: #3b3b3b;
-    --dark-input-border-color: #ccc;
-    --dark-input-color: white;
-
-    --dark-tab-color: #b5b5b5;
-    --dark-tab-hover-color: white;
-    --dark-tab-focus-color: #b5b5b5;
-    --dark-tab-selected-color: white;
-    --dark-tab-border-color: #b5b5b5;
-
-
-    --dark-base: #808080;
-    --dark-cactus-body: #878787;
-    --dark-small-cactus-body: #878787;
-    --dark-cactus-border: #4c4c4c;
-    --dark-cloud-color: var(--dark-base-color);
-    --dark-moon-color: var(--dark-base-color);
-    --dark-pterodactyl-color: var(--dark-base-color);
-    --dark-star-color: var(--dark-base-color);
-    --dark-ground-color: var(--dark-base-color);
-    --dark-horizon-color: var(--dark-base-color);
-    --dark-bump-color: var(--dark-base-color);
-    --dark-dino-color: var(--base-color);
-    --dark-cactus-color: var(--dark-base-color); */
 }
 
 body {
@@ -104,10 +38,6 @@ body {
     overflow: hidden;
 }
 
-/* #game-space.dark {
-    background-color: var(--dark-background-color) !important;
-} */
-
 h1 {
     text-align: center;
     color: var(--header-color);
@@ -115,16 +45,12 @@ h1 {
     font-family: "Comic Sans MS";
 }
 
-#game-over{
+#game-over {
     position: relative;
     top: 35%;
 }
 
-/* .hidden {
-    display: none;
-} */
-
-#score{
+#score {
     font-size: 50px;
     margin-top: 0px;
 }
@@ -191,63 +117,6 @@ oda-pterodactyl {
     }
 }
 
-/* oda-moon {
-    position: absolute;
-    left: 100%;
-    top: 70px;
-    animation-name: moon-move;
-    animation-duration: 5s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-@keyframes moon-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -64px;
-    }
-}
-
-oda-star1 {
-    position: absolute;
-    animation-name: star1-move;
-    animation-duration: 6s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-oda-star2 {
-    position: absolute;
-    left: 50%;
-    animation-name: star2-move;
-    animation-duration: 6s;
-    animation-iteration-count: 1;
-    animation-timing-function: linear;
-    z-index: 100;
-}
-
-@keyframes star1-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -25px;
-    }
-}
-
-@keyframes star2-move {
-    from {
-        left: 100%;
-    }
-    to {
-        left: -25px;
-    }
-} */
-
 .horizon {
     position: absolute;
     top: 435px;
@@ -263,14 +132,14 @@ oda-star2 {
     animation-timing-function: ease-out;
 }
 
-@keyframes dino-jump{
+@keyframes dino-jump {
     from {
-      top: var(--dino-top);
-      animation-timing-function: ease-out;
+        top: var(--dino-top);
+        animation-timing-function: ease-out;
     }
     50% {
-       top: var(--dino-max-top);
-       animation-timing-function: ease-in;
+        top: var(--dino-max-top);
+        animation-timing-function: ease-in;
     }
     to {
         top: var(--dino-top);

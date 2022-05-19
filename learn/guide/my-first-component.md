@@ -425,7 +425,7 @@ function startGame() {
 
     document.removeEventListener('keyup', startGameKeyUp);
 
-    document.addEventListener('keydown', dinoKeyDown);
+    document.addEventListener('keydown', dinoJumpKeyDown);
 
     requestAnimationFrame(checkDino);
 }
@@ -460,13 +460,13 @@ document.removeEventListener('keyup', startGameKeyUp);
 5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра.
 
 ```javascript
-document.addEventListener('keydown', dinoKeyDown);
+document.addEventListener('keydown', dinoJumpKeyDown);
 ```
 
 В нем при нажатии на клавишу пробела вызывается соответствующий метод **jump** компонента **oda-dino**, запускающий анимацию прыжка тиранозавра.
 
 ```javascript
-function dinoKeyDown(e) {
+function dinoJumpKeyDown(e) {
     if (e.code === 'Space') {
         dino.jump();
     }
@@ -564,7 +564,7 @@ function gameOver() {
     audio.currentTime = 0;
     audio.pause();
 
-    document.removeEventListener('keydown', dinoKeyDown);
+    document.removeEventListener('keydown', dinoJumpKeyDown);
 
     document.addEventListener('keyup', continueGameKeyUp);
 }
@@ -763,7 +763,7 @@ function continueGame() {
 
     document.removeEventListener('keyup', continueGameKeyUp);
 
-    document.addEventListener('keydown', dinoKeyDown);
+    document.addEventListener('keydown', dinoJumpKeyDown);
 
     requestAnimationFrame(checkDino);
 }
@@ -771,13 +771,11 @@ function continueGame() {
 
 1. Скрывается надпись «**GameOver**».
 
-2. Возобновляется проигрывание музыкальной композиции группы T-Rex «**Get It On**».
+2. Удаляются все кактусы.
 
-3. Удаляются все кактусы.
+3. Обнулятся позиция текущего кактуса так, чтобы со следующим анимационным кадром был сразу создан новый кактус.
 
-4. Обнулятся позиция текущего кактуса так, чтобы со следующим анимационным кадром был сразу создан новый кактус.
-
-5. Возобновляется анимация движения ног тиранозавра методом **continueMove**.
+4. Возобновляется анимация движения ног тиранозавра методом **continueMove**.
 
 ```javascript
 continueMove(){
@@ -792,29 +790,17 @@ continueMove(){
 
 В нем удаляется анимация предыдущего прыжка, если он был до столкновения с кактусом. Возобновляется анимация движения ног методом **unpauseAnimations**. Отменяется пауза анимации в in-line стилях. Скрываются большой глаз и рот, а отображается предыдущий маленький глаз **small-eye**
 
-6. Возобновляется анимация движения облаков и птеродактилей их методами **continueMove**.
+5. Возобновляется анимация движения облаков и птеродактилей их методами **continueMove**.
 
-5. Задается таймер, который каждые 100 миллисекунд увеличивает количество набранных очков игроком на 1. Для того, чтобы остановить таймер, указатель не него сохраняется в глобальной переменной scoreID.
+6. Очищается предыдущее значение счетчика очков **score**, и запускается новый таймер для их увелечения на единицу через каждые 100 миллисекунд.
 
-```javascript
-scoreID = setInterval(() => {
-    score.textContent = +score.textContent + 1;
-}, 100);
-```
+7. Возобновляется проигрывание музыкальной композиции группы T-Rex «**Get It On**».
 
-4. Удаляется обработчик начала игры **startGameKeyUp**.
+8. Удаляется обработчик нажатия клавиш продолжения игры **continueGameKeyUp**.
 
-```javascript
-document.removeEventListener('keyup', startGameKeyUp);
-```
+9. Регистрируется обработчик нажатия клавиш для выполнения прыжка тиранозавром **dinoJumpKeyDown**.
 
-5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра.
+10. Запускается метод проверки столкновения тиранозавра с кактусами **checkDino** на следующем кадре анимации с помощью метода **requestAnimationFrame**.
 
-```javascript
-document.addEventListener('keydown', dinoKeyDown);
-```
+В результате это пользователь сможет заново начать новую игру, стараясь улучшить свой предыдущий результат.
 
-В нем при нажатии на клавишу пробела вызывается соответствующий метод **jump** компонента **oda-dino**, запускающий анимацию прыжка тиранозавра.
-
-
-В результате это пользователь сможет начать новую игру заново, стараясь улучшить свой предыдущий результат.

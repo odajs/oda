@@ -3,9 +3,6 @@ import {createPolygon, intersectPolygonPolygon} from "./utils.js"
 ODA({ is: 'oda-dino',
     template: `
         <style>
-            .hidden {
-                display: none;
-            }
             svg path {
                 fill: var(--dino-color);
             }
@@ -20,10 +17,10 @@ ODA({ is: 'oda-dino',
         <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
 
             <!-- Тело -->
-            <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body" visibility="visible"/>
+            <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body"/>
 
             <!--Глаз маленький-->
-            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye" class="eyes"/>
+            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"/>
 
             <!--Глаз большой-->
             <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
@@ -32,10 +29,10 @@ ODA({ is: 'oda-dino',
             <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
             <!-- Тело наклон-->
-            <path d=" M0 53, h6, v6, h13, v7, h26, v-7, h54, v7, h13, v-3, h6, v-7, h52, v7, h6, v28, h-32, v7, h19, v6, h-45, v-6, h-12, v9, h-7, v7, h7, v6, h-13, v-13, h-16, v4, h-39, v-7, h-6, v-6, h-6, v-7, h-7, v-6, h-6, v-6, h-7, v-7, h-6, z " id="body-bow" visibility="visible" class="hidden"/>
+            <path d=" M0 53, h6, v6, h13, v7, h26, v-7, h54, v7, h13, v-3, h6, v-7, h52, v7, h6, v28, h-32, v7, h19, v6, h-45, v-6, h-12, v9, h-7, v7, h7, v6, h-13, v-13, h-16, v4, h-39, v-7, h-6, v-6, h-6, v-7, h-7, v-6, h-6, v-6, h-7, v-7, h-6, z " id="body-bow" visibility="hidden" class="hidden"/>
 
             <!--Глаз маленький наклон-->
-            <rect x="125" y="66" fill="white" height="6" width="6" id="small-eye-bow" visibility="visible" class="hidden"/>
+            <rect x="125" y="66" fill="white" height="6" width="6" id="small-eye-bow" visibility="hidden"/>
 
             <!--Глаз большой наклон-->
             <rect x="126.5" y="67.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye-bow" visibility="hidden"/>
@@ -87,14 +84,14 @@ ODA({ is: 'oda-dino',
             }
         });
     },
-    gameOver(){
+    stopMove() {
         this.style.animationPlayState="paused";
         this.svg.pauseAnimations();
         this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
         this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
         this.svg.getElementById('month').setAttribute('visibility', 'visible');
     },
-    gameStart(){
+    continueMove() {
         if (this.style.animationPlayState === "paused") {
             this.classList.remove("dino-jump");
             this.svg.unpauseAnimations();
@@ -115,8 +112,6 @@ ODA({ is: 'oda-dino',
         {
             return false;
         }
-
-        // const bow = dino.getElementById('body').classList.contains("hidden") ? "-bow" : "";
 
         return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)
          || (getComputedStyle(this.svg.getElementById('first-leg')).visibility === 'visible' ?

@@ -1,4 +1,4 @@
-import {createPolygon, intersectPolygonPolygon} from "./utils.js"
+import {createPolygon} from "./utils.js"
 
 ODA({ is: 'oda-cactus',
     template: `
