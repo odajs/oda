@@ -408,7 +408,6 @@ if (!window.ODA) {
                 this.render();
             }
             notify(block, value) {
-
                 if (block?.options.target === this) {
                     const prop = block.prop;
                     if (prop){
@@ -418,8 +417,16 @@ if (!window.ODA) {
                     }
                 }
 
-                this.interval('notify', ()=>{
-                    if (this.parentNode){
+                if (!this.isConnected){
+                    if (block?.options.hosts.has(this)){
+                        this.debounce('debounce-clear', () => {
+                            if (!this.isConnected)
+                                block.options.hosts.delete(this);
+                        }, 100)
+                    }
+                }
+                else {
+                    this.interval('render-interval', ()=>{
                         for (const prop of this.$core.reflects) {
                             const val = this[prop.name]
                             if (val || val === 0)
@@ -427,15 +434,9 @@ if (!window.ODA) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
-                    }
-                    this.render();
-
-                })
-                this.debounce('notify-clear', ()=>{
-                    if (block && !this.isConnected){
-                        block.options.hosts.delete(this);
-                    }
-                }, 100)
+                        this.render();
+                    })
+                }
             }
             render() {
                 if (!this.$core.shadowRoot) return;
@@ -1337,9 +1338,9 @@ if (!window.ODA) {
                             result = exec.call(this, fn, [e, e.detail, ...(e.target.$for || [])]);
                         if (result?.then)
                             await result;
-                        this.debounce('event_debounce', () => {
-                            this.render();
-                        })
+                        // this.debounce('event_debounce', () => {
+                        //     this.render();
+                        // }, 100)
                     };
                 }
                 else if (name === 'is')
@@ -1603,8 +1604,9 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, $parent, pars) {
-        if ($el?.$sleep && !this.$wake)
-            return;
+
+        // if ((this.$sleep  || $el?.$sleep) && !this.$wake)
+        //     return;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1723,21 +1725,19 @@ if (!window.ODA) {
             return this[name];
         });
 
-
-        if ($el.$core/*  && !$el.$sleep */ && this.parentNode) {
-            updateDom.call($el, $el.$core.node, $el.$core.shadowRoot);
-        }
-        else if ($el.localName === 'slot') {
-            const elements = $el.assignedElements?.() || [];
-            for (let el of elements) {
-                if (el.$core/*  && !$el.$sleep */) {
-                    updateDom.call(el, el.$core.node, el.$core.shadowRoot);
+        if (!$el.$sleep || this.$wake){
+            if ($el.$core && this.isConnected) {
+                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot);
+            }
+            else if ($el.localName === 'slot') {
+                const elements = $el.assignedElements?.() || [];
+                for (let el of elements) {
+                    if (el.$core && !el.$sleep) {
+                        updateDom.call(el, el.$core.node, el.$core.shadowRoot);
+                    }
                 }
             }
         }
-
-
-
 
 
         if (!$el.slot || $el.slotProxy || $el.slot === '?' || this.slot === '?' || $el.parentElement?.slot)

@@ -34,9 +34,13 @@ ODA({ is: 'oda-layout-designer',
     lays: null,
     async saveScript(layout, action) {
         console.log(layout.owner.saveKey || layout.root.saveKey, action)
-        if (layout.owner?.type === 'tab') {
-            layout.owner.owner.owner.lay.actions ||= []; // target => tab => group => saveKey 
-            layout.owner.owner.owner.lay.actions.add(action);
+        if (layout.owner?.type === 'tab' || layout.owner?.type === 'group') {
+            let owner = layout.owner;
+            while (owner?.type === 'tab' || owner?.type === 'group') {
+                owner = owner.owner
+            }
+            owner.lay.actions ||= [];
+            owner.lay.actions.add(action);
         } else if (layout.owner) {
             layout.owner.lay.actions ||= [];
             layout.owner.lay.actions.add(action);
@@ -113,6 +117,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
                 text-overflow: ellipsis;
                 margin: 2px;
                 padding: 8px;
+                cursor: pointer; 
                 font-size: {{fontSize}};
             }
             input {
@@ -139,7 +144,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         </style>
         <label class="group-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
         <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;">
-           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-left: 1px solid white;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+           <div @tap="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid white;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
