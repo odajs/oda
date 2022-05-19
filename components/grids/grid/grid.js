@@ -443,13 +443,15 @@ ODA({is: 'oda-grid-header-cell',
                 this._proxy = this.create('oda-table-drag-proxy', {label: this.title, ...e.detail.start});
                 document.body.appendChild(this._proxy);
                 this._current = this;
+                this._parentRect = this.parentElement.getBoundingClientRect();
             } break;
             case 'track': {
+                this._proxy.mode = 'move';
                 this._proxy.x = e.detail.x;
                 this._proxy.y = e.detail.y;
                 for (let panel in this.coords)
                     this[panel].remove(this.column);
-                if (this.parentElement.getBoundingClientRect().y > e.detail.y) {
+                if (this._parentRect.y > e.detail.y) {
                     this.dragMode = 'drag-to-group-panel';
                     for (let panel in this.coords){
                         const pos = this.coords[panel];
@@ -459,6 +461,9 @@ ODA({is: 'oda-grid-header-cell',
                         if(e.detail.x > (pos.x + pos.width)) continue;
                         this[panel].add(this.column);
                     }
+                }
+                if (this._parentRect.bottom < e.detail.y) {
+                    this._proxy.mode = 'delete';
                 }
                 else{
                     this.dragMode = this._elements;
@@ -473,15 +478,20 @@ ODA({is: 'oda-grid-header-cell',
                         this._items[idx1] = el.column;
                         this._items[idx2] = this._current.column;
                         this._current = el;
-                        this.cells = undefined;
-                        this.domHost.columns = undefined;
-                        this.metadata = undefined;
                         this._current.style.backgroundColor = 'white';
+                        // this.interval('column-replace', ()=>{
+                            this.domHost.columns = undefined;
+                            this.metadata = undefined;
+                            this.cells = undefined;
+                        // })
                     }
                 }
             } break;
             case 'end': {
                 this.dragMode = ''
+                if (this._proxy.mode === 'delete'){
+                    this.column.checked = false;
+                }
                 this._proxy.remove();
                 this._current.style.backgroundColor = '';
                 this.domHost.columns = undefined;
@@ -510,13 +520,28 @@ ODA({is: 'oda-table-drag-proxy',
                 top: 0px;
                 left: 0px;
                 transform: translate3d({{x}}px, {{y}}px, 0px);
+                backgroundColor: {{backgroundColor}} !important;
             }
         </style>
         <oda-icon icon-size="16" :icon style="margin: 4px;"></oda-icon>
         <span style="margin-right: 4px; text-overflow: ellipsis; overflow: inherit;">{{label}}</span>
     `,
-    icon: 'icons:open-with',
+    get backgroundColor(){
+        switch (this.mode) {
+            case 'delete':
+                return  'var(--error-color)';
+        }
+        return  'var(--success-color)';
+    },
+    get icon(){
+        switch (this.mode) {
+            case 'delete':
+                return  'icons:close';
+        }
+        return  'icons:open-with';
+    },
     label: 'PROXY',
+    mode: 'move',
     x: 0,
     y: 0
 })
@@ -581,22 +606,40 @@ ODA({is: 'oda-group-item',
                 margin: 2px 0px 2px 8px;
             }           
         </style>
-        <label>{{item?.label || item?.name}}</label>
+        <label>{{title}}</label>
         <oda-button :icon-size="iconSize/2" icon="icons:close" @tap="_delete"></oda-button>
      `,
     _delete(e){
         this[this.parentElement.id].remove(this.item);
         this.metadata = undefined;
     },
+    get title(){
+        return this.item?.label || this.item?.name;
+    },
     item: null,
     listeners:{
         track(e){
             switch (e.detail.state) {
                 case 'start': {
+                    this._proxy = this.create('oda-table-drag-proxy', {label: this.title, ...e.detail.start});
+                    document.body.appendChild(this._proxy);
+                    this._parentRect = this.parentElement.getBoundingClientRect();
                 } break;
                 case 'track': {
+                    this._proxy.x = e.detail.x;
+                    this._proxy.y = e.detail.y;
+                    if (this._parentRect.bottom < e.detail.y) {
+                        this._proxy.mode = 'delete';
+                    }
+                    else{
+                        this._proxy.mode = 'move';
+                    }
                 } break;
                 case 'end': {
+                    if (this._proxy.mode === 'delete') {
+                        this._delete();
+                    }
+                    this._proxy.remove();
                 } break;
             }
         }

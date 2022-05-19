@@ -1603,8 +1603,8 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, $parent, pars) {
-        // if (this.$sleep && !this.$wake)
-        //     return;
+        if ($el?.$sleep && !this.$wake)
+            return;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {

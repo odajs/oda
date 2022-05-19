@@ -62,7 +62,7 @@ oda-dino {
     z-index: 300;
 }
 
-oda-cloud {
+/* oda-cloud {
     position: absolute;
     animation-name: cloud-move;
     animation-duration: 6s;
@@ -78,7 +78,7 @@ oda-cloud {
     to {
         left: -150px;
     }
-}
+} */
 
 oda-cactus {
     position: absolute;

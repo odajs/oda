@@ -9,17 +9,17 @@
         imports:['@oda/app-layout'],
         template:`
             <app-layout-toolbar slot="top">
-                <div slot="top-left" class="horizontal">
+                <div slot="left" class="horizontal">
                     <oda-button icon="icons:forward" @tap="fire('next')">next</oda-button>
                     <oda-button icon="device:gps-fixed" allow-toggle ::toggled="showLines"></oda-button>
                     <oda-button icon="av:pause" allow-toggle ::toggled="stop"></oda-button>
                 </div>
-                <div slot="top-right" class="horizontal center">
+                <div slot="right" class="horizontal center">
                     <label>time:<input ::value="timeLimit" style="width: 50px;"></label>
                     <label>bugs:<input ::value="bugCount" style="width: 35px;"></label>
                     <label>targets:<input ::value="targetCount" style="width: 35px;"></label>
                 </div>
-              <div slot="top-center" class="horizontal center">
+              <div slot="center" class="horizontal center">
                     <label>time:{{step}}</label>
                     <label style="margin-left: 4px;">age:{{epoch}}</label>
                </div>

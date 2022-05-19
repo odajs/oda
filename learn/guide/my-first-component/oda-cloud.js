@@ -5,6 +5,22 @@ ODA({ is: 'oda-cloud',
             svg.clouds rect {
                 fill: var(--cloud-color);
             }
+            :host {
+                position: absolute;
+                animation-name: cloud-move;
+                animation-duration: 6s;
+                animation-iteration-count: 1;
+                animation-timing-function: linear;
+                z-index: 100;
+            }
+            @keyframes cloud-move {
+                from {
+                    left: 100%;
+                }
+                to {
+                    left: -150px;
+                }
+            }
         </style>
         <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg" class="clouds">
             <path d = "M0 38, v3, h7, v-3, h3, v-3, h-6, v3, z"/>
