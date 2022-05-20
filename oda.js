@@ -1596,17 +1596,16 @@ if (!window.ODA) {
         return $el;
     }
     let inRender = false;
-    async function render() {
+    async function render(renderId) {
         if (!inRender) {
             inRender = true;
-            await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+            await updateDom.call(this, this.$core.node, this.$core.shadowRoot, renderId);
             inRender = false;
         }
     }
-    async function updateDom(src, $el, $parent, pars) {
-
-        // if ((this.$sleep  || $el?.$sleep) && !this.$wake)
-        //     return;
+    async function updateDom(src, $el, renderId, $parent, pars) {
+        if (renderId !== renderCounter)
+            return;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1639,6 +1638,7 @@ if (!window.ODA) {
         }
         if ($el.localName in ODA.deferred)
             return;
+
         $el.$wake = $el.$wake || this.$wake;
         $el.$for = pars;
         const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
@@ -1653,12 +1653,8 @@ if (!window.ODA) {
                     for(let j = 0; j<items.length; j++){
                         const elem = children[idx + j];
                         const node = items[j]
-                        list.push(updateDom.call(this, node.child, elem , $el, node.params))
+                        list.push(updateDom.call(this, node.child, elem, renderId, $el, node.params))
                     }
-                    // const list = items.map((node, i) => {
-                    //     const elem = children[idx + i];
-                    //     /*await*/return updateDom.call(this, node.child, elem , $el, node.params);
-                    // })
                     await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];
@@ -1673,7 +1669,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars);
+                    await updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }
@@ -1700,12 +1696,8 @@ if (!window.ODA) {
                     const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
                     const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
                     const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-
                     if (bottUpdates > topUpdates && $el.fire) {
                         this.setProperty(listener.expr, obj[propName]);
-                        // requestAnimationFrame(() => {
-                        //     $el.fire(i + '-changed', { detail: {value: obj[propName]}});
-                        // });
                     } else {
                         $el.setProperty(i, b);
                     }
@@ -1727,13 +1719,13 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot);
+                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, renderId);
             }
             else if ($el.localName === 'slot') {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
                     if (el.$core && !el.$sleep) {
-                        updateDom.call(el, el.$core.node, el.$core.shadowRoot);
+                        updateDom.call(el, el.$core.node, el.$core.shadowRoot, renderId);
                     }
                 }
             }
@@ -1794,15 +1786,16 @@ if (!window.ODA) {
         host.insertBefore($el, target);
     }
 
-    let renderQueue = [], rid = 0;
+    let renderQueue = [], rid = 0, renderCounter = 0
     ODA.render = function (renderer) {
         renderQueue.add(renderer);
         if(rid) return
         rid = requestAnimationFrame(raf);
     }
     async function raf() {
+        renderCounter = rid
         while (renderQueue.length){
-            await renderQueue.shift()?.();
+            await renderQueue.shift()?.(renderCounter);
         }
         rid = 0;
     }
@@ -2286,7 +2279,7 @@ if (!window.ODA) {
         };
         Node.prototype.render = function () {
             if (!this.$wake && (this.$sleep || !this.$node)) return;
-            updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for);
+            updateDom.call(this.domHost, this.$node, this, renderCounter, this.parentNode, this.$for);
         };
     }
     Element:{
