@@ -425,7 +425,7 @@ if (!window.ODA) {
                         }, 100)
                     }
                 }
-                else {
+                // else {
                     this.interval('render-interval', ()=>{
                         for (const prop of this.$core.reflects) {
                             const val = this[prop.name]
@@ -434,23 +434,28 @@ if (!window.ODA) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
-                        this.render();
+
                     })
-                }
+                this.render();
+                // }
+
             }
             render() {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
-                this.onRender?.();
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
+                        console.log(this,  'visibility')
                     }, 100)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 500)
+                    }, 1000)
+                }
+                else{
+                    this.onRender?.();
                 }
             }
             resolveUrl(path) {
