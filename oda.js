@@ -434,15 +434,16 @@ if (!window.ODA) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
-
+                        this.render();
                     })
-                this.render();
+
                 // }
 
             }
             render() {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
+                this.onRender?.();
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
@@ -452,10 +453,7 @@ if (!window.ODA) {
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 1000)
-                }
-                else{
-                    this.onRender?.();
+                    }, 500)
                 }
             }
             resolveUrl(path) {
