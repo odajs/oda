@@ -449,11 +449,11 @@ if (!window.ODA) {
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
                         console.log(this,  'visibility')
-                    }, 100)
+                    }, 300)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                    }, 500)
+                    }, 1000)
                 }
             }
             resolveUrl(path) {

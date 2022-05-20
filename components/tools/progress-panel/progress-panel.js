@@ -26,7 +26,7 @@ ODA({is: 'oda-progress-panel',
         }, this.delay);
         return this._show;
     },
-    delay: 5_000,
+    delay: 500,
     props: {
         hideLabels: false,
     },
