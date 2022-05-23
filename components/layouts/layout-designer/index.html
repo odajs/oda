@@ -10,7 +10,7 @@
 </style>
 <div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray;">
     <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode; this.style.background = testLayoutDesigner.designMode ? 'yellow' : 'lightgray'" style="background: lightgray; border: 1px solid gray; border-radius: 2px;">Design mode</button>
-    <button onclick="testLayoutDesigner.resetSettings();">Reset settings</button>
+    <button onclick="testLayoutDesigner.clearSavedScripts();">clearSavedScripts</button>
     <button onclick="document.location.reload()">Reload page</button>
 </div>
 <oda-layout-designer keys="fields" id="testLayoutDesigner"></oda-layout-designer>

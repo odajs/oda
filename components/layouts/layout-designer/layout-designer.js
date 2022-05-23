@@ -36,6 +36,10 @@ ODA({ is: 'oda-layout-designer',
         console.log('..... ', layout.root.saveKey, action)
         layout.root.lay.actions ||= [];
         layout.root.lay.actions.add(action);
+        this.lays.add(layout);
+    },
+    clearSavedScripts() {
+        this.lays.forEach(i => i.root.lay.actions = []);
     }
 })
 
@@ -85,7 +89,7 @@ ODA({ is: 'oda-layout-designer-structure',
     ]
 })
 
-ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
+ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     template: /*html*/`
         <style>
             :host{
@@ -116,7 +120,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
                 padding: 0px;
                 margin-left: auto;
             }
-            .group-label {
+            .tabs-label {
                 border-bottom: 1px solid lightgray;
                 font-weight: bold;
                 margin: 1px;
@@ -127,7 +131,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
                 font-size: {{fontSize}};
             }
         </style>
-        <label class="group-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
+        <label class="tabs-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
         <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;">
            <div @mousedown.stop.prev="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid white;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
@@ -138,7 +142,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
             <oda-button :icon-size @tap.stop="addTab" ~if="designMode" icon="icons:add"></oda-button>
         </div>
     `,
-    props: { 
+    props: {
         fontSize: '14px'
     },
     get draggable() {
@@ -149,12 +153,12 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     addTab() {
         const tabID = getUUID();
         const blockID = getUUID();
-        const action = { id: tabID, action: "addTab", props: { group: this.layout.id, tab: tabID, block: blockID } };
+        const action = { id: tabID, action: "addTab", props: { tabs: this.layout.id, tab: tabID, block: blockID } };
         this.layout.addTab(action, this.layout);
         this.saveScript(this.layout, action);
     },
     removeTab(e, item) {
-        const action = { action: "removeTab", props: { group: this.layout.id, tab: item.id } };
+        const action = { action: "removeTab", props: { tabs: this.layout.id, tab: item.id } };
         this.layout.removeTab(action, item);
         this.saveScript(this.layout, action);
     },
@@ -162,7 +166,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
         this.layout.$expanded = true;
         this.layout.$focused = item;
         if (this.designMode) {
-            const action = { action: "selectTab", props: { group: this.layout.id, tab: item.id } };
+            const action = { action: "selectTab", props: { tabs: this.layout.id, tab: item.id } };
             this.saveScript(this.layout, action);
         }
     },
@@ -198,7 +202,7 @@ ODA({ is: 'oda-layout-designer-group', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-layout-designer-group-structure',
+ODA({ is: 'oda-layout-designer-tabs-structure',
     template: /*html*/`
         <style>
             :host{
@@ -242,7 +246,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
-            .group{
+            .tabs{
                 /* @apply --header; */
             }
             [focused]{
@@ -302,8 +306,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <label ~if="showLabel" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isGroup" 
-                        ~class="{group:layout.isGroup}" 
+                <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isTabs" 
+                        ~class="{tabs:layout.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                     <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
@@ -329,12 +333,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             if (!this.designMode) return;
             const res = await ODA.showDropdown('oda-menu', {
                 items: [{
-                    label: 'grouping', run: () => {
-                        const action = { groupId: getUUID(), id: getUUID(), action: "toGroup", props: { target: this.layout.id, block: getUUID() } };
-                        this.layout.toGroup(action);
+                    label: 'create Tabs', run: () => {
+                        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
+                        this.layout.createTabs(action);
                         this.saveScript(this.layout, action);
                     }
-                }, { label: 'hide / unhide', run: () => {
+                }, {
+                    label: 'hide / unhide', run: () => {
                         this.layout.isHide = !this.layout.isHide;
                         const action = { action: "hide", hide: this.layout.isHide, props: { target: this.layout.id } };
                         this.saveScript(this.layout, action);
@@ -351,7 +356,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     },
     labelPos: 'top',
     get showLabel() {
-        return !this.layout.isGroup;
+        return !this.layout.isTabs;
     },
     layout: null,
     get draggable() {
@@ -367,7 +372,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     },
     ondragstart(e) {
         e.stopPropagation();
-        this.dragInfo.isMoveTab  = false;
+        this.dragInfo.isMoveTab = false;
         this.dragInfo.dragItem = this.layout;
         e.dataTransfer.setDragImage((this.selection && this.selection.includes(this.dragInfo.dragItem) && this.selection.length) > 1 ? img3 : img, -20, 7);
     },
@@ -453,66 +458,66 @@ CLASS({ is: 'Layout',
         return this.data?.label || this.name;
     },
     get $template() {
-        return this.isGroup ? 'oda-layout-designer-group' : '';
+        return this.isTabs ? 'oda-layout-designer-tabs' : '';
     },
     get $structure() {
-        return this.isGroup ? 'oda-layout-designer-group-structure' : '';
+        return this.isTabs ? 'oda-layout-designer-tabs-structure' : '';
     },
-    get isGroup() {
-        return this.type === "group";
+    get isTabs() {
+        return this.type === "tabs";
     },
-    async toGroup(action) {
+    async createTabs(action) {
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const group = new Layout({ id: action.groupId, label: `Group` }, item.key, item.owner, item.root);
-        const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, group, item.root);
-        group.type = 'group';
-        group.width = 0;
-        group.items = [tab];
-        group.$expanded = true;
-        group.$focused = tab;
-        group.order = item.order;
-        group._order = item._order;
+        const tabs = new Layout({ id: action.tabsId, label: `Tabs` }, item.key, item.owner, item.root);
+        const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
+        tabs.type = 'tabs';
+        tabs.width = 0;
+        tabs.items = [tab];
+        tabs.$expanded = true;
+        tabs.$focused = tab;
+        tabs.order = item.order;
+        tabs._order = item._order;
         tab.items = [item];
         tab.order = tab._order = 0;
         tab.type = 'tab';
         tab.blockID = action.props.block;
-        item.owner.items.splice(myIdx, 1, group);
+        item.owner.items.splice(myIdx, 1, tabs);
         item.owner = tab;
     },
     async addTab(action, layout) {
-        const group = layout || await this.find(action.props.group);
-        if (!group) return;
-        const tab = new Layout({ id: action.id, label: `Tab ${group.items.length + 1}` }, group.key, group, group.root);
+        const tabs = layout || await this.find(action.props.tabs);
+        if (!tabs) return;
+        const tab = new Layout({ id: action.id, label: `Tab ${tabs.items.length + 1}` }, tabs.key, tabs, tabs.root);
         tab.type = 'tab';
-        group.items.push(tab)
-        group.$focused = tab;
-        const block = new Layout({ label: ` ` }, group.key, tab, group.root);
+        tabs.items.push(tab)
+        tabs.$focused = tab;
+        const block = new Layout({ label: ` ` }, tabs.key, tab, tabs.root);
         block.isVirtual = true;
         tab.blockID = block.id = action.props.block;
         tab.items = [block];
-        tab.order = tab._order = group.items.length
+        tab.order = tab._order = tabs.items.length
     },
     async removeTab(action, layout) {
-        const group = layout ? this : await this.find(action.props.group);
+        const tabs = layout ? this : await this.find(action.props.tabs);
         const tab = layout || await this.find(action.props.tab);
-        if (!group || !tab) return;
-        tab.root.items.splice(tab.owner.items.indexOf(group), 0, ...tab.items.filter(i => {
+        if (!tabs || !tab) return;
+        tab.root.items.splice(tab.owner.items.indexOf(tabs), 0, ...tab.items.filter(i => {
             i.owner = i.root;
             i._order = i.order;
             if (!i.isVirtual) return i;
         }));
-        group.items.splice(group.items.indexOf(tab), 1);
-        if (group.items.length === 0) {
-            group.owner.items.splice(group.owner.items.indexOf(group), 1);
+        tabs.items.splice(tabs.items.indexOf(tab), 1);
+        if (tabs.items.length === 0) {
+            tabs.owner.items.splice(tabs.owner.items.indexOf(tabs), 1);
         }
     },
     async selectTab(action, layout) {
-        const group = layout ? this : await this.find(action.props.group);
+        const tabs = layout ? this : await this.find(action.props.tabs);
         const tab = layout || await this.find(action.props.tab);
-        if (!group || !tab) return;
-        group.$focused = tab;
+        if (!tabs || !tab) return;
+        tabs.$focused = tab;
     },
     async renameTab(action, layout) {
         const tab = layout || await this.find(action.props.tab);
