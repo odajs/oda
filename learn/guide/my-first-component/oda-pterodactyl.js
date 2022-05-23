@@ -4,6 +4,22 @@ ODA({ is: 'oda-pterodactyl',
             svg path {
                 fill: var(--pterodactyl-color);
             }
+            :host {
+                position: absolute;
+                z-index: 200;
+                animation-name: move;
+                animation-duration: 3s;
+                animation-iteration-count: 1;
+                animation-timing-function: linear;
+            }
+            @keyframes move {
+                from {
+                    left: 100%;
+                }
+                to {
+                    left: -136px;
+                }
+            }
         </style>
         <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg" class="pterodactyls">
             <!--Тело птеродактиля-->
@@ -20,6 +36,17 @@ ODA({ is: 'oda-pterodactyl',
             </path>
         </svg>
     `,
+    attached() {
+        this.setPosition(10,100);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
     stopMove(){
         this.style.animationPlayState="paused";
         const svg = this.$core.root.querySelector("svg");
@@ -30,4 +57,6 @@ ODA({ is: 'oda-pterodactyl',
         const svg = this.$core.root.querySelector("svg");
         svg.unpauseAnimations();
     },
+
+
 })

@@ -12,6 +12,26 @@ ODA({ is: 'oda-dino',
             #big-eye {
                 stroke: var(--dino-eyes-color);
             }
+            .dino-jump {
+                animation-name: dino-jump;
+                animation-duration: 1s;
+                animation-iteration-count: 1;
+                animation-timing-function: ease-out;
+            }
+            @keyframes dino-jump {
+                from {
+                    top: var(--dino-top);
+                    animation-timing-function: ease-out;
+                }
+                50% {
+                    top: var(--dino-max-top);
+                    animation-timing-function: ease-in;
+                }
+                to {
+                    top: var(--dino-top);
+                    animation-timing-function: ease-in;
+                }
+            }
         </style>
 
         <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
@@ -28,50 +48,46 @@ ODA({ is: 'oda-dino',
             <!--Рот-->
             <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
-            <!-- Тело наклон-->
-            <path d=" M0 53, h6, v6, h13, v7, h26, v-7, h54, v7, h13, v-3, h6, v-7, h52, v7, h6, v28, h-32, v7, h19, v6, h-45, v-6, h-12, v9, h-7, v7, h7, v6, h-13, v-13, h-16, v4, h-39, v-7, h-6, v-6, h-6, v-7, h-7, v-6, h-6, v-6, h-7, v-7, h-6, z " id="body-bow" visibility="hidden" class="hidden"/>
-
-            <!--Глаз маленький наклон-->
-            <rect x="125" y="66" fill="white" height="6" width="6" id="small-eye-bow" visibility="hidden"/>
-
-            <!--Глаз большой наклон-->
-            <rect x="126.5" y="67.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye-bow" visibility="hidden"/>
-
-            <!--Рот наклон-->
-            <path d="M143 90,v9,h20,v-1,h7,v-8,z" fill="grey" id="month-bow" visibility="hidden"/>
-
-            <!--Первая нога-->
-            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
-                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
-            </path>
-
-            <!--Вторая нога-->
-            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+            <!--Первая нога поднятая-->
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!-- Третья нога -->
-            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg">
+            <!--Первая нога опущенная-->
+            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Четвертая нога-->
-            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg">
+            <!-- Вторая нога поднятая -->
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+
+            <!--Вторая нога опущенная-->
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>
+
+
         </svg>
     `,
     props: {
-        svg: {}
+        svg: {},
+        audio: {},
+    },
+    ready() {
+        this.audio = new Audio('./audio/t-rex-get-it-on.mp3');
+        this.audio.volume = .8;
+        this.audio.play();
     },
     attached() {
         this.polygons = new Map();
         this.svg = this.$core.root.querySelector("svg");
         this.polygons.set('dino-body', createPolygon(this.svg,'#body'));
-        this.polygons.set('dino-first-leg', createPolygon(this.svg,'#first-leg'));
-        this.polygons.set('dino-second-leg', createPolygon(this.svg,'#second-leg'));
-        this.polygons.set('dino-third-leg', createPolygon(this.svg,'#third-leg'));
-        this.polygons.set('dino-fourth-leg', createPolygon(this.svg,'#fourth-leg'));
+        this.polygons.set('dino-first-leg-up', createPolygon(this.svg,'#first-leg-up'));
+        this.polygons.set('dino-first-leg-down', createPolygon(this.svg,'#first-leg-down'));
+        this.polygons.set('dino-second-leg-up', createPolygon(this.svg,'#second-leg-up'));
+        this.polygons.set('dino-second-leg-down', createPolygon(this.svg,'#second-leg-down'));
     },
     jump() {
         this.classList.add("dino-jump");
@@ -85,6 +101,7 @@ ODA({ is: 'oda-dino',
         });
     },
     stopMove() {
+        this.audio.pause();
         this.style.animationPlayState="paused";
         this.svg.pauseAnimations();
         this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
@@ -92,14 +109,13 @@ ODA({ is: 'oda-dino',
         this.svg.getElementById('month').setAttribute('visibility', 'visible');
     },
     continueMove() {
-        if (this.style.animationPlayState === "paused") {
-            this.classList.remove("dino-jump");
-            this.svg.unpauseAnimations();
-            this.style.animationPlayState=null;
-            this.svg.getElementById('big-eye').setAttribute('visibility', 'hidden');
-            this.svg.getElementById('small-eye').setAttribute('visibility', 'visible');
-            this.svg.getElementById('month').setAttribute('visibility', 'hidden');
-        }
+        this.audio.play();
+        this.classList.remove("dino-jump");
+        this.svg.unpauseAnimations();
+        this.style.animationPlayState=null;
+        this.svg.getElementById('big-eye').setAttribute('visibility', 'hidden');
+        this.svg.getElementById('small-eye').setAttribute('visibility', 'visible');
+        this.svg.getElementById('month').setAttribute('visibility', 'hidden');
     },
     isIntersection(cactus) {
         let dinoCoords = this.getBoundingClientRect();
@@ -114,11 +130,11 @@ ODA({ is: 'oda-dino',
         }
 
         return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)
-         || (getComputedStyle(this.svg.getElementById('first-leg')).visibility === 'visible' ?
-                 intersectPolygonPolygon(this.polygons.get('dino-first-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
-                 intersectPolygonPolygon(this.polygons.get('dino-fourth-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)) ||
-             (getComputedStyle(this.svg.getElementById('second-leg')).visibility === 'visible' ?
-                 intersectPolygonPolygon(this.polygons.get('dino-second-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
-                 intersectPolygonPolygon(this.polygons.get('dino-third-leg'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
+         || (getComputedStyle(this.svg.getElementById('first-leg-up')).visibility === 'visible' ?
+                 intersectPolygonPolygon(this.polygons.get('dino-first-leg-up'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                 intersectPolygonPolygon(this.polygons.get('dino-first-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)) ||
+             (getComputedStyle(this.svg.getElementById('second-leg-up')).visibility === 'visible' ?
+                 intersectPolygonPolygon(this.polygons.get('dino-second-leg-up'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                 intersectPolygonPolygon(this.polygons.get('dino-third-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
     }
 })

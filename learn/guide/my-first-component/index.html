@@ -6,21 +6,10 @@
     <title>My First Component</title>
     <link rel="stylesheet" href="css/style.css">
     <script type="module" src="../../../oda.js"></script>
-    <script type="module" src="./oda-dino-game.js"></script>
+    <script type="module" src="./oda-game.js"></script>
 </head>
 <body>
-    <div id="wrapper">
-        <h1>Счет игры</h1>
-        <h1 id="score">0.0</h1>
-        <div id="game-space">
-            <h1 id="game-over">Для начала игры нажмите пробел</h1>
-            <oda-dino id="dino"></oda-dino>
-            <div class="horizon"></div>
-        </div>
-    </div>
-    <audio autoplay loop preload="auto">
-        <source src="audio/t-rex-get-it-on.mp3" type="audio/mp3">
-    </audio>
+    <oda-game></oda-game>
 </body>
 
 </html>

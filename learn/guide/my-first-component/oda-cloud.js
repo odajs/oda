@@ -7,13 +7,13 @@ ODA({ is: 'oda-cloud',
             }
             :host {
                 position: absolute;
-                animation-name: cloud-move;
+                z-index: 100;
+                animation-name: move;
                 animation-duration: 6s;
                 animation-iteration-count: 1;
                 animation-timing-function: linear;
-                z-index: 100;
             }
-            @keyframes cloud-move {
+            @keyframes move {
                 from {
                     left: 100%;
                 }
@@ -35,5 +35,16 @@ ODA({ is: 'oda-cloud',
     },
     continueMove(){
         this.style.animationPlayState="running";
-    }
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
+    attached() {
+        this.setPosition(20, 150);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
 })
