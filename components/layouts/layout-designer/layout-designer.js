@@ -391,13 +391,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 x = e.layerX,
                 w = e.target.offsetWidth;
             x = (x - w / 2) / w * 2;
-            // let y = e.layerY,
-            //     h = e.target.offsetHeight;
-            // y = (y - h / 2) / h * 2;
-            // if (Math.abs(x) > Math.abs(y))
-            to = x < 0 ? 'left' : 'right';
-            // else
-            //     to = y < 0 ? 'top' : 'bottom';
+            let y = e.layerY,
+                h = e.target.offsetHeight;
+            y = (y - h / 2) / h * 2;
+            if (Math.abs(x) > Math.abs(y))
+                to = x < 0 ? 'left' : 'right';
+            else
+                to = y < 0 ? 'top' : 'bottom';
             this.dragInfo.to = to;
             this.layout.dragTo = 'drag-to-' + to;
             this.dragInfo.targetItem = this.layout;
@@ -535,25 +535,29 @@ CLASS({ is: 'Layout',
         const targItem = dragInfo.targetItem || await this.find(action.props.target);
         if (!dragItem || !targItem) return;
         let idxTarg = targItem._order;
-        dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
-        if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
-            const idxDrag = dragItem.owner.items.indexOf(dragItem);
-            const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-            if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
-                const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
-                block.isVirtual = true;
-                block.id = dragItem.blockID;
-                dragItem.owner.items = [block];
+        if (action.props.to === 'left' || action.props.to === 'right') {
+            dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
+            if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
+                const idxDrag = dragItem.owner.items.indexOf(dragItem);
+                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+                if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
+                    const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
+                    block.isVirtual = true;
+                    block.id = dragItem.blockID;
+                    dragItem.owner.items = [block];
+                }
+                targItem.owner.items.splice(idxTarg, 0, drag);
+                drag.owner = targItem.owner;
             }
-            targItem.owner.items.splice(idxTarg, 0, drag);
-            drag.owner = targItem.owner;
-        }
-        targItem.owner.items.sort((a, b) => a._order - b._order).map((i, idx) => {
-            i._order = idx - .1 <= idxTarg ? idx : idx + 1;
-        });
-        if (targItem.isVirtual) {
-            idxTarg = targItem.owner.items.indexOf(targItem);
-            targItem.owner.items.splice(idxTarg, 1);
+            targItem.owner.items.sort((a, b) => a._order - b._order).map((i, idx) => {
+                i._order = idx - .1 <= idxTarg ? idx : idx + 1;
+            });
+            if (targItem.isVirtual) {
+                idxTarg = targItem.owner.items.indexOf(targItem);
+                targItem.owner.items.splice(idxTarg, 1);
+            }
+        } else {
+            
         }
     },
     async expanded(action) {
