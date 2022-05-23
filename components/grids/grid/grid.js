@@ -495,7 +495,7 @@ ODA({is: 'oda-grid-header-cell',
                 this._proxy.remove();
                 this._current.style.backgroundColor = '';
                 this.domHost.columns = undefined;
-                this.metadata = undefined;
+                this.metadata = undefined
                 this.cells = undefined;
             } break;
         }
