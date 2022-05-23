@@ -686,7 +686,6 @@ ODA({is: 'oda-grid-body',
             <div class="row" ~for="row in rows">
                 <div ~is="getTemplateTag(row, col)"  :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
             </div>
-            
         </div>
     `,
     get cellsClasses(){
@@ -722,13 +721,48 @@ ODA({is: 'oda-grid-footer',
     template: `
         <style>
             :host{
+                @apply --horizontal;
                 @apply --no-flex;
                 @apply --header;
                 @apply --raised;
                 overflow-y: scroll;
+                overflow-x: hidden;
             }
         </style>
-            footer
+        <style>
+            {{cellsClasses}}
+        </style>
+        <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
+            <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
+                <oda-grid-footer-cell :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" ~class="'C'+idx+' cell'"></oda-grid-footer-cell>
+            </div>
+        </div>
+
+        
+    `,
+    get cellsClasses(){
+        return this.cells.map((cell, idx)=>{
+            const w = cell.$width;
+            return `.C${idx}{
+                min-width: ${w}px;
+                max-width: ${w}px;
+                width: ${w}px;
+            }`;
+        }).join('\r\n');
+    },
+})
+ODA({is:'oda-grid-footer-cell',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                padding: 4px;
+                border-right: 1px solid gray;
+                align-self: center;
+                height: 100%;
+            }
+        </style>
+        footer {{column?.name}}
     `
 })
 ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
