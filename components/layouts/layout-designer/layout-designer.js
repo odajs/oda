@@ -33,21 +33,9 @@ ODA({ is: 'oda-layout-designer',
     structureTemplate: 'oda-layout-designer-structure',
     lays: null,
     async saveScript(layout, action) {
-        console.log(layout.owner.saveKey || layout.root.saveKey, action)
-        if (layout.owner?.type === 'tab' || layout.owner?.type === 'group') {
-            let owner = layout.owner;
-            while (owner?.type === 'tab' || owner?.type === 'group') {
-                owner = owner.owner
-            }
-            owner.lay.actions ||= [];
-            owner.lay.actions.add(action);
-        } else if (layout.owner) {
-            layout.owner.lay.actions ||= [];
-            layout.owner.lay.actions.add(action);
-        } else {
-            layout.root.lay.actions ||= [];
-            layout.root.lay.actions.add(action);
-        }
+        console.log('..... ', layout.root.saveKey, action)
+        layout.root.lay.actions ||= [];
+        layout.root.lay.actions.add(action);
     }
 })
 
@@ -79,10 +67,7 @@ ODA({ is: 'oda-layout-designer-structure',
         rootSavekey: '',
         actions: {
             default: [],
-            save: true,
-            set(v) {
-                // console.log(v)
-            }
+            save: true
         },
         saveKey: ''
     },
