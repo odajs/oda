@@ -30,15 +30,6 @@ ODA({ is: 'oda-cloud',
             <rect x="96" y="19" height="3" width="4" />
         </svg>
     `,
-    stopMove(){
-        this.style.animationPlayState="paused";
-    },
-    continueMove(){
-        this.style.animationPlayState="running";
-    },
-    setPosition(min, max) {
-        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    },
     attached() {
         this.setPosition(20, 150);
         this.getAnimations().forEach((anim, i, arr) => {
@@ -46,5 +37,14 @@ ODA({ is: 'oda-cloud',
                 this.remove();
             };
         });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
+    stopMove(){
+        this.style.animationPlayState="paused";
+    },
+    continueMove(){
+        this.style.animationPlayState="running";
     },
 })

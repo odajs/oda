@@ -26,7 +26,7 @@ ODA({ is: 'oda-game',
                 font-family: "Comic Sans MS", Arial, sans-serif;
                 color: var(--header-color);
             }
-            #game-over {
+            #message {
                 position: relative;
                 top: 35%;
             }
@@ -50,52 +50,153 @@ ODA({ is: 'oda-game',
         </style>
 
         <h1>Счет игры</h1>
-        <h1 id="score" ref="score">0.0</h1>
+        <h1 id="score">{{score || '0'}}</h1>
         <div id="game-space" ref="game-space">
-            <h1 id="game-over">Для начала игры нажмите пробел</h1>
+            <h1 id="message" ~show="showMessage">{{message}}</h1>
             <oda-dino ref="dino"></oda-dino>
             <div class="horizon"></div>
         </div>
     `,
     props: {
         scoreID: 1,
+        score: 0,
+        showMessage: true,
+        message: 'Для начала игры нажмите пробел',
+        cloudDistance: 0,
+        nextCloudDistance: 0,
+        cactusDistance: 0,
+        nextCactusDistance: 0,
+        pterodactylDistance: 0,
+        nextPterodactylDistance: 0,
     },
     get dino() {
         return this.$refs.dino;
     },
-    get gameOver() {
-        return this.$refs["game-over"];
-    },
-    get score() {
-        return this.$refs["score"];
+    get gameSpace() {
+        return this.$refs["game-space"];
     },
     ready() {
-        this.listen('keydown', 'startGame', {target: document});
+        this.listen('keyup', 'startGame', {target: document});
     },
-    dinoJump() {
-        this.dino.jump();
+    dinoJump(e) {
+        if (e.code === 'Space') {
+            this.dino.jump();
+        }
     },
     startGame(e) {
         if (e.code !== 'Space') {
             return;
         }
+        this.showMessage = false;
+        this.message = "Game Over";
 
-        //const gameOver = document.querySelector('#game-over');
+         this.scoreID = setInterval(() => {
+             this.score++;
+         }, 100);
 
-        this.gameOver.style.display = "none";
-        this.gameOver.innerText = "Game Over";
-
-
-        this.scoreID = setInterval(() => {
-            this.score.textContent = +this.score.textContent + 1;
-        }, 100);
-
-        this.unlisten('keydown', 'startGame', {target: document});
+        this.unlisten('keyup', 'startGame', {target: document});
 
         this.listen('keydown', 'dinoJump', {target: document});
 
-        //requestAnimationFrame(checkDino);
+        requestAnimationFrame(this.checkDino.bind(this));
+    },
+    checkDino() {
+        this.createCloud();
+        this.createCactus();
+        this.createPterodactyl();
+        let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+        for (var i = 0; i < cactuses.length; ++i) {
+            if (this.dino.isIntersection && this.dino.isIntersection(cactuses[i])) {
+                this.gameOver();
+                return;
+            }
+        }
+        requestAnimationFrame(this.checkDino.bind(this));
+    },
+    continueGame() {
+        this.showMessage = false;
 
-        this.unlisten('keydown', 'startGame', {target: document});
+        const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+        cactuses.forEach(cactus => {
+            cactus.remove();
+        });
+
+        this.cactusDistance = 0;
+        this.nextCactusDistance = 0;
+
+
+        this.dino.continueMove();
+
+        const clouds = this.gameSpace.querySelectorAll('oda-cloud');
+        clouds.forEach(cloud => {
+            cloud.continueMove();
+        });
+
+        const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
+        pterodactyls.forEach(pterodactyl => {
+            pterodactyl.continueMove();
+        });
+
+        this.score = 0;
+
+        this.scoreID = setInterval(() => {
+            this.score++;
+        }, 100);
+
+        this.unlisten('keyup', 'continueGame', {target: document});
+
+        this.listen('keydown', 'dinoJump', {target: document});
+
+        requestAnimationFrame(this.checkDino.bind(this));
+    },
+    gameOver() {
+        this.showMessage = true;
+
+        clearInterval(this.scoreID);
+
+        this.dino.stopMove();
+
+        const clouds = this.gameSpace.querySelectorAll('oda-cloud');
+        clouds.forEach(cloud => {
+            cloud.stopMove();
+        });
+
+        const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+        cactuses.forEach(cactus => {
+            cactus.stopMove();
+        });
+
+        const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
+        pterodactyls.forEach(pterodactyl => {
+            pterodactyl.stopMove();
+        });
+
+        this.unlisten('keydown', 'dinoJump', {target: document});
+
+        this.listen('keyup', 'continueGame', {target: document});
+    },
+    createCloud() {
+        this.cloudDistance++;
+        if (this.cloudDistance > this.nextCloudDistance) {
+            this.cloudDistance = 0;
+            this.gameSpace.append(document.createElement('oda-cloud'));
+            this.nextCloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
+        }
+    },
+    createCactus() {
+        this.cactusDistance++;
+        if (this.cactusDistance > this.nextCactusDistance) {
+            this.cactusDistance = 0;
+            this.gameSpace.append(document.createElement('oda-cactus'));
+            this.nextCactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
+        }
+    },
+    createPterodactyl() {
+        this.pterodactylDistance++;
+        if (this.pterodactylDistance > this.nextPterodactylDistance) {
+            this.pterodactylDistance = 0;
+            this.gameSpace.append(document.createElement('oda-pterodactyl'));
+            this.nextPterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
+        }
     }
 })

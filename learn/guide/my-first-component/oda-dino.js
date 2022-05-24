@@ -12,7 +12,7 @@ ODA({ is: 'oda-dino',
             #big-eye {
                 stroke: var(--dino-eyes-color);
             }
-            .dino-jump {
+            :host(.dino-jump) {
                 animation-name: dino-jump;
                 animation-duration: 1s;
                 animation-iteration-count: 1;
@@ -135,6 +135,6 @@ ODA({ is: 'oda-dino',
                  intersectPolygonPolygon(this.polygons.get('dino-first-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)) ||
              (getComputedStyle(this.svg.getElementById('second-leg-up')).visibility === 'visible' ?
                  intersectPolygonPolygon(this.polygons.get('dino-second-leg-up'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
-                 intersectPolygonPolygon(this.polygons.get('dino-third-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
+                 intersectPolygonPolygon(this.polygons.get('dino-second-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
     }
 })
