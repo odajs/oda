@@ -30,39 +30,79 @@
 3. Облака.
 4. Птеродактиля.
 
-Графический примитив тиранозавра состоит из его тела, глаза, рта и двух пар задних ног.
+Графический примитив динозавра состоит из его тела,
 
-![Расположение задних ног] (learn\images\my-first-component\dino1.png "Первое расположение задних ног")
+```html
+<svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
+    <!-- Тело -->
+    <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body"/>
+</svg>
+```
 
-Вторая пара задних ног имеет несколько иное расположение по сравнению с первой.
+глаза,
 
-![Расположение ног] (learn\images\my-first-component\dino2.png "Второе расположение задних ног")
+```html
+<!--Глаз маленький-->
+<rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"/>
+```
 
-Использование двух пар задних ног позволяет создать анимационный эффект бега тиранозавра. Для этого достаточно к тегу каждой ноги добавить специальный элемент **animate**, которые будет поочередно скрывать или отображать определенную ногу динозавра через заданный временной интервал.
+рта и двух пар ног, каждая из которых может находится в одном из двух положений.
 
-```javascript
-<!--Первая нога-->
-<path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
+![Расположение ног] (learn\images\my-first-component\dino1.png "Первое расположение ног динозавра")
+
+В первом положении одна нога поднята вверх, а вторая опущена вниз.
+
+![Расположение ног] (learn\images\my-first-component\dino2.png "Второе расположение ног динозавра")
+
+Во втором положении первая нога опущена вниз, а вторая поднята вверх.
+
+Использование двух положений ног позволяет создать анимационный эффект бега динозавра. Для этого достаточно к тегу каждой ноги добавить специальный элемент **animate**, которые будет поочередно скрывать или отображать определенную ногу динозавра через заданный временной интервал.
+
+```html
+<!--Первая нога поднята вверх-->
+<path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
+    <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Первая нога опущена вниз-->
+<path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
     <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
 </path>
 
-<!--Вторая нога-->
-<path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+<!-- Вторая нога поднята вверх -->
+<path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Вторая нога опущена вниз-->
+<path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
     <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
 </path>
 ```
 
-Кроме этого, к файлу примитива динозавра можно добавить большой глаз и рот, которые будут появляться в момент его столкновения с каким-либо кактусом.
+Кроме этого, к SVG-примитиву динозавра можно добавить большой глаз и рот.
 
-![Тиранозавр со большим глазом и закрытым ртом] (learn\images\my-first-component\dino3.png "Большой глаз и рот тиранозавра")
+```html
+<!--Глаз большой-->
+<rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
 
-Графический примитив самого кактуса имеет следующий вид:
+<!--Рот-->
+<path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
+```
+
+Изначально они отображаться не будут. Для у них свойство **visibility** установлено в значение **hidden**.
+
+Они будет появляться только в момент столкновения динозавра с кактусом, создавая эффект испуга на его лице.
+
+![Динозавр с большим глазом и закрытым ртом] (learn\images\my-first-component\dino3.png "Динозавр с большим глазом и закрытым ртом")
+
+Графический примитив кактуса имеет следующий вид:
 
 ![Графический примитив кактуса] (learn\images\my-first-component\cactus.png "Кактус")
 
 Он задается SVG-элементом с использованием только одного тега «**path**».
 
-```javascript
+```html
 <svg version="1.1" baseProfile="full" width="74" height="147" xmlns="http://www.w3.org/2000/svg">
     <path d="M0 41, h3,v-3, h10, v3, h3, v42, h10, v-80, h3, v-3, h16, v3, h3, v80, h10, v-48, h3, v-3, h10, v3, h3, v48, h-3, v3, h-4, v3, h-3, v4, h-3, v3, h-13, v51, h-22, v-48, h-16, v-3, h-3, v-3, h-4, v-4, h-3, z"/>
 </svg>
@@ -70,41 +110,40 @@
 
 Аналогично задается графический примитив облака.
 
-![Графический примитив облака] (learn\images\my-first-component\cloud.png "Облако")
+![Графический примитив облака] (learn\images\my-first-component\cloud.png "Графический примитив облака")
 
-Графический примитив птеродактиля содержит его тело и два крыла.
-
-Первое крыло поднято вверх.
+Графический примитив птеродактиля содержит его тело
+и два крыла, первое из которых поднято вверх
 
 ![Графический примитив птеродактиля] (learn\images\my-first-component\pterodactyl1.png "Птеродактиль")
 
-Второе крыло опущено вниз.
+, а второе опущено вниз.
 
 ![Графический примитив птеродактиля] (learn\images\my-first-component\pterodactyl2.png "Птеродактиль")
 
 Для создания эффекта взмахов крыльев к ним можно добавить тег **animate**, который будет поочередно скрывать и отображать определенное крыло через заданный временной интервал.
 
 ```html
- <!--Верхнее крыло-->
-<path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z " id="top-wing" visibility="visible">
+<!--Крыло поднято вверх-->
+<path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z ">
     <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
 </path>
 
-<!--Нижнее крыло-->
-<path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z " id="bottom-wing" visibility="visible">
+<!--Крыло опущено вниз-->
+<path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z ">
     <animate attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
 </path>
 ```
 
-Для управления этими SVG-элементами для каждого из них создадим пользовательский компонент, использую фреймворк «ODA».
+Для управления всеми этими SVG-примитивами создадим пользовательские компоненты, использую фреймворк «ODA».
 
-1. Компонент тиранозавра («oda-dino»).
+1. Компонент «oda-dino» будет управлять графическим примитивом динозавра.
 
 ```javascript
 ODA({ is: 'oda-dino',
     template: `
         <style>
-            svg path {
+            path {
                 fill: var(--dino-color);
             }
             #small-eye {
@@ -129,37 +168,32 @@ ODA({ is: 'oda-dino',
             <!--Рот-->
             <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
-            <!--Первая нога-->
-            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg" visibility="hidden" >
-                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
-            </path>
-
-            <!--Вторая нога-->
-            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg" visibility="hidden">
+            <!--Первая нога поднята вверх-->
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!-- Третья нога -->
-            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="third-leg">
+            <!--Первая нога опущена вниз-->
+            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Четвертая нога-->
-            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="fourth-leg">
+            <!-- Вторая нога поднята вверх -->
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+
+            <!--Вторая нога опущена вниз-->
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>
         </svg>
     `,
-    props: {
-        svg: {}
-    },
-    attached() {
-        this.svg = this.$core.root.querySelector("svg");
-    }
-})
 ```
 
-Для быстрого доступа к SVG-примитиву динозавра предусмотрим свойство **svg** в разделе **props**. Значение этого свойства инициализируем в хуке **attached**, который будет вызываться перед непосредственным добавлением компонента в DOM документа.
+Пока в этом компоненте находится лишь один раздел шаблона **template** с  SVG-примитивом динозавра, с css-стилями отображения его элементов, заданными в подразделе **style**.
+
+Этот компонент динозавра можно записать в файл **oda-dino.js**, и расположить его в папке с именем **js**, в которую будут помещаться все остальные файлы с js-кодом игры в дальнейшем.
 
 2. Компонент кактуса («oda-cactus») содержит только его SVG-примитив и стиль его отображения.
 
@@ -167,30 +201,29 @@ ODA({ is: 'oda-dino',
 ODA({ is: 'oda-cactus',
     template: `
         <style>
-            svg path {
+            path {
                 fill: var(--cactus-color);
             }
         </style>
-
         <svg version="1.1" baseProfile="full" width="74" height="147" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 41, h3,v-3, h10, v3, h3, v42, h10, v-80, h3, v-3, h16, v3, h3, v80, h10, v-48, h3, v-3, h10, v3, h3, v48, h-3, v3, h-4, v3, h-3, v4, h-3, v3, h-13, v51, h-22, v-48, h-16, v-3, h-3, v-3, h-4, v-4, h-3, z"/>
         </svg>
-    `
+    `,
 })
 ```
 
-3. Компонент облака («oda-cloud») реализован аналогично компоненту кактуса. Он содержит SVG-примитив и стиль его отображения.
+3. Компонент облака «**oda-cloud**» реализован аналогично компоненту кактуса. У него пока тоже задан только SVG-примитив и стиль его отображения.
 
 ```javascript
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            svg.clouds path,
-            svg.clouds rect {
+            path,
+            rect {
                 fill: var(--cloud-color);
             }
         </style>
-        <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg" class="clouds">
+        <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg">
             <path d = "M0 38, v3, h7, v-3, h3, v-3, h-6, v3, z"/>
             <path d = "M13 35, h3, v-6, h4, v-4, h22, v-3, h3, v-3, h10, v-10, h6, v-3, h3, v-3, h16, v-3, h13, v3, h7, v3, h3, v7, h9, v3, h16, v6, h10, v7, h6, v6, h-3, v-3, h-6, v-7, h-10, v-6, h-16, v-3, h-6, v3, h-3, v-10, h-4, v-3, h-6, v-3, h-6, v3, h-16, v3, h-4, v4, h-6, v9, h-10, v3, h-3, v4, h-22, v3, h-3, v6, h-7, z"/>
             <path d = "M32 38, h112, v-3, h4, v6, h-116, z"/>
@@ -201,87 +234,35 @@ ODA({ is: 'oda-cloud',
 })
 ```
 
-4. Компонент птеродактиля («oda-pterodactyl») кроме SVG-примитива его тела содержит крылья с эффектом анимации.
+4. Компонент птеродактиля «**oda-pterodactyl**» кроме SVG-примитива его тела содержит крылья с эффектом анимации.
 
 ```javascript
 ODA({ is: 'oda-pterodactyl',
     template: `
         <style>
-            svg path {
+            path {
                 fill: var(--pterodactyl-color);
             }
         </style>
-        <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg" class="pterodactyls">
+        <svg version="1.1" baseProfile="full" width="95" height="84" xmlns="http://www.w3.org/2000/svg">
             <!--Тело птеродактиля-->
             <path d=" M0 31, h4, v-4, h5, v-5, h4, v-4, h5, v-5, h9, v9, h4, v9, h32, v4, h5, v5, h27, v4, h-14, v5, h9, v4, h-13, v5, h-32, v-5, h-4, v-4, h-5, v-5, h-5, v-4, h-4, v-5, h-27, z " stroke="transparent" id="pterodactyl"/>
 
-            <!--Верхнее крыло-->
-            <path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z " id="top-wing" visibility="visible">
+            <!--Крыло поднято вверх-->
+            <path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z ">
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Нижнее крыло-->
-            <path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z " id="bottom-wing" visibility="visible">
+            <!--Крыло опущено вниз-->
+            <path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z ">
                 <animate attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
             </path>
         </svg>
-    `
+    `,
 })
 ```
 
-Все эти компоненты можно отобразить на веб-странице, которую можно задать с помощью следующего индексного файла с именем «index.html»:
-
-```html
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Component</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script type="module" src="../../../oda.js"></script>
-    <script type="module" src="./oda-dino-game.js"></script>
-</head>
-<body>
-    <div id="wrapper">
-        <h1>Счет игры</h1>
-        <h1 id ="score">0.0</h1>
-        <div id="game-space">
-            <h1 id="game-over">Для начала игры нажмите пробел</h1>
-            <oda-dino id="dino"></oda-dino>
-        </div>
-    </div>
-    <audio autoplay loop preload="auto">
-        <source src="audio/t-rex-get-it-on.mp3" type="audio/mp3">
-    </audio>
-</body>
-
-</html>
-```
-
-Здесь создается HTML-документ с заголовком «**My First Component**».
-
-В заголовочном части этого документа подключаются следующие файлы:
-
-1. **style.css** – файл со стилями отображения элементов игры.
-1. **oda.js** – файл c библиотекой самого фреймворка **ODA**.
-1. **oda-dino-game.js** – файл c javascript кодом работы самой игры.
-
-В теле документа задается внешняя обертка «**wrapper**», внутри которой располагаются:
-
-1. Заголовок для вывода текста «Счет игры».
-1. Элемент для вывода текущего счет игры (id="**score**").
-1. Непосредственная область игры (id="**game-space**").
-1. Сообщение начала или окончания игры (id="**game-over**").
-1. Сам динозавра в виде пользовательского компонента «**oda-dino**»
-
-В результате этого окно игры в начальном состоянии будет иметь следующий вид:
-
-(learn\images\my-first-component\game-window.png "Начальное окно игры")
-
-Для стилизации элементов игры в файле **style.css** заданы следующие css-правила:
-
-1. Набор css-переменных
+Для общей стилизации всех этих компонентов в файле **style.css**, расположенном в папке **css**, зададим глобальные css-переменные.
 
 ```css
 :root {
@@ -298,60 +279,130 @@ ODA({ is: 'oda-pterodactyl',
     --header-color: honeydew !important;
     --header-background-color: grey;
     --cactus-color: grey;
-
     --dino-top: 314px;
     --dino-max-top: 20px;
 }
 ```
 
-Здесь переменная **--base-color** задает базовый цвет динозавра, облаков, птеродактиля и горизонта. Переменная **dark-color** определяет цвет основной области игры и цвет глаз динозавра, а переменная **header-color** задает цвет текста заголовков. Фон игры и кактуса задается обычным серым цветом **grey**.
+Все эти переменные можно будет использовать внутри теневого дерева любого компонента, задавая таким образом общий дизайн игры.
 
-2. Стиль тела документа задает нулевые отступы и базовый набор шрифтов, отображения элементов.
+Здесь кактусы и фон игры задаются серым цветом. Динозавр, облака и птеродактили будут отображаться светлым цветом, а непосредственная область игры будет темной.
 
-```css
-body {
-    margin: 0px;
-    font-family: Arial, Helvetica, sans-serif;
-}
+Все элементы игры будет задавать в общем компоненте с именем «**oda-game**».
+
+```javascript
+ODA({ is: 'oda-game',
+    template: `
+        <style>
+            :host {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                background-color: var(--header-background-color);
+            }
+            #game-space {
+                position: absolute;
+                top: 200px;
+                width: 100%;
+                height: 500px;
+                overflow: hidden;
+                background-color: var(--background-color) !important;
+            }
+            h1 {
+                margin-bottom: 0px;
+                text-align: center;
+                font-family: "Comic Sans MS", Arial, sans-serif;
+                color: var(--header-color);
+            }
+            #score {
+                font-size: 50px;
+                margin-top: 0px;
+            }
+            #message {
+                position: relative;
+                top: 35%;
+            }
+            oda-dino {
+                position: absolute;
+                top: var(--dino-top);
+                left: 72px;
+                z-index: 300;
+            }
+            #horizon {
+                position: absolute;
+                top: 435px;
+                width: 100%;
+                height: 3px;
+                background-color: var(--horizon-color);
+            }
+        </style>
+
+        <h1>Счет игры</h1>
+        <h1 id="score">{{score || '0'}}</h1>
+        <div id="game-space" ref="game-space">
+            <h1 id="message" ~show="showMessage">{{message}}</h1>
+            <oda-dino ref="dino"></oda-dino>
+            <div id="horizon"></div>
+        </div>
+    `,
+})
 ```
 
-3. Стиль внешней обертки **wrapper** задает цвет и размеры внешней области игры.
+В его шаблоне располагаются:
+
+1. Заголовок с текстом «Счет игры».
+1. Элемент для вывода текущего счета игры с идентификатором id="**score**".
+1. Непосредственная область игры (id="**game-space**").
+1. Сообщение о начале или об окончании игры (id="**message**").
+1. Сам динозавр в виде компонента «**oda-dino**»
+1. Горизонт в виде элемента div с идентификатором «horizon», с помощью которого будет отображаться горизонт
+
+В результате этого окно игры в первом запуске будет иметь следующий вид:
+
+(learn\images\my-first-component\game-window.png "Начальное окно игры")
+
+Для стилизации всех этих элементов в разделе **style** заданы следующие css-правила:
+
+1. Стиль самого компонента.
 
 ```css
-#wrapper {
+ :host {
     height: 100%;
     width: 100%;
-    position: relative;
+    position: absolute;
     background-color: var(--header-background-color);
 }
 ```
 
-4. Стиль непосредственной области игры **game-space** задает область, в которой будет отображаться все основные элементы игры.
+Это правило задает серую область, которая занимает полностью все тело документа.
+
+2. Стиль непосредственной раздела игры **game-space** задает область, в которой будет отображаться все основные элементы игры.
 
 ```css
 #game-space {
-    height: 500px;
-    width: 100%;
-    top: 200px;
-    left: 0px;
     position: absolute;
-    background-color: var(--background-color);
+    top: 200px;
+    width: 100%;
+    height: 500px;
     overflow: hidden;
+    background-color: var(--background-color) !important;
 }
 ```
 
-5. Заголовочный стиль **h1** определяет шрифт и цвет заголовочных надписей в области игры, а также их расположение.
+Эта область будет иметь темный цвет, который задается с помощью css-переменной «**--background-color**».
+
+3. Заголовочный стиль **h1** определяет базовый шрифт, цвет и расположение заголовочных надписей игры.
 
 ```css
 h1 {
-    text-align: center;
-    color: --header-color;
     margin-bottom: 0px;
-    font-family: "Comic Sans MS";
+    text-align: center;
+    font-family: "Comic Sans MS", Arial, sans-serif;
+    color: var(--header-color);
 }
 ```
 
-6. Стиль для надписи с количеством набранных очков **score** задает отличный от стандартного стиля отображения заголовков размер шрифта и верхнего отступа.
+4. Стиль надписи с количеством набранных очков **score** задает размер шрифта и величину верхнего отступа, которые отличаются от предыдущего стандартного стиля отображения заголовков.
 
 ```css
 #score{
@@ -360,30 +411,32 @@ h1 {
 }
 ```
 
-7. Стиль отображения надписи начала или окончания игры **game-over** определяет позицию расположения надписи относительно основной области игры.
+5. Стиль отображения сообщения о начале или об окончании игры **message** определяет позицию расположения надписи относительно основной области игры.
 
 ```css
-#game-over{
+#message {
     position: relative;
     top: 35%;
 }
 ```
 
-8. Стиль отображения тиранозавра **oda-dino** задает его начальное расположение в области игры.
+6. Стиль отображения динозавра **oda-dino** задает его начальное расположение в области игры.
 
 ```css
 oda-dino {
     position: absolute;
-    left: 72px;
     top: var(--dino-top);
+    left: 72px;
     z-index: 300;
 }
 ```
 
-9. Стиль отображения горизонта определяет его начальное расположение и цвет.
+Здесь используется css-переменная «**--dino-top**», которая задает смещение динозавра относительно начала непосредственной области игры в 314 пикселей.
+
+7. Стиль отображения горизонта определяет его начальное расположение и цвет.
 
 ```css
-.horizon {
+#horizon {
     position: absolute;
     top: 435px;
     width: 100%;
@@ -392,21 +445,62 @@ oda-dino {
 }
 ```
 
-Для начала игры необходимо зарегистрировать   обработчик нажатия клавиш клавиатуры в файле с кодом игры **oda-dino-game.js**следующим образом:
+Для отображения этого компонента создадим HTML-документ с именем «**index.html**».
 
-```javascript
-document.addEventListener('keyup', startGameKeyUp);
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First Component</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- <script type="module" src="../../../oda.js"></script> -->
+    <script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/oda.js"></script>
+    <script type="module" src="js/oda-game.js"></script>
+</head>
+<body>
+    <oda-game></oda-game>
+</body>
+</html>
 ```
 
-Этот обработчик будет срабатывать при отпускании клавиши пробела (**Space**) и запускать игру, вызовом специального метода **startGame**.
+В заголовочном части этого документа подключаются следующие файлы:
+
+1. **style.css** – файл со стилями отображения элементов игры.
+1. **oda.js** – файл c библиотекой самого фреймворка **ODA** с помощью cdn.
+1. **oda-game.js** – файл с кодом компонента oda-game.
+
+Обратите внимание на тело данного документа. Там задается только один тег с именем пользовательского компонента **oda-game**. Все остальные для создания этого компонента фреймворк ODA сделает за Вас автоматически. Красота!!!
+
+При открытии этого файла в браузере Вы увидите начальное окно игру.
+
+(learn\images\my-first-component\game-window.png "Начальное окно игры")
+
+Однако для начала игры придется расширить функциональные возможности всех наших компонентов.
+
+Для этого зададим в компоненте «**oda-game**» свойства в разделе props следующим образом:
 
 ```javascript
-function startGameKeyUp(e) {
-    if (e.code === 'Space') {
-        startGame();
-    }
-}
+props: {
+    scoreID: 1,
+    score: 0,
+    showMessage: true,
+    message: 'Для начала игры нажмите пробел',
+    cloudDistance: 0,
+    nextCloudDistance: 0,
+    cactusDistance: 0,
+    nextCactusDistance: 0,
+    pterodactylDistance: 0,
+    nextPterodactylDistance: 0,
+},
 ```
+
+Здесь,
+
+1. scoreID – хранит значение уникального идентификатора таймера.
+1. score – текущее количество набранных очков.
+
 
 Метод **startGame** определим следующим образом:
 

@@ -3,7 +3,7 @@ import {createPolygon, intersectPolygonPolygon} from "./utils.js"
 ODA({ is: 'oda-dino',
     template: `
         <style>
-            svg path {
+            path {
                 fill: var(--dino-color);
             }
             #small-eye {
@@ -48,22 +48,22 @@ ODA({ is: 'oda-dino',
             <!--Рот-->
             <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
 
-            <!--Первая нога поднятая-->
+            <!--Первая нога поднята вверх-->
             <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Первая нога опущенная-->
+            <!--Первая нога опущена вниз-->
             <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!-- Вторая нога поднятая -->
+            <!-- Вторая нога поднята вверх -->
             <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
                 <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
             </path>
 
-            <!--Вторая нога опущенная-->
+            <!--Вторая нога опущена вниз-->
             <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
                 <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
             </path>

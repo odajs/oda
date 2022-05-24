@@ -1,8 +1,8 @@
 ODA({ is: 'oda-cloud',
     template: `
         <style>
-            svg.clouds path,
-            svg.clouds rect {
+            path,
+            rect {
                 fill: var(--cloud-color);
             }
             :host {
@@ -22,7 +22,7 @@ ODA({ is: 'oda-cloud',
                 }
             }
         </style>
-        <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg" class="clouds">
+        <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg">
             <path d = "M0 38, v3, h7, v-3, h3, v-3, h-6, v3, z"/>
             <path d = "M13 35, h3, v-6, h4, v-4, h22, v-3, h3, v-3, h10, v-10, h6, v-3, h3, v-3, h16, v-3, h13, v3, h7, v3, h3, v7, h9, v3, h16, v6, h10, v7, h6, v6, h-3, v-3, h-6, v-7, h-10, v-6, h-16, v-3, h-6, v3, h-3, v-10, h-4, v-3, h-6, v-3, h-6, v3, h-16, v3, h-4, v4, h-6, v9, h-10, v3, h-3, v4, h-22, v3, h-3, v6, h-7, z"/>
             <path d = "M32 38, h112, v-3, h4, v6, h-116, z"/>

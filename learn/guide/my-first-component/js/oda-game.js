@@ -26,13 +26,13 @@ ODA({ is: 'oda-game',
                 font-family: "Comic Sans MS", Arial, sans-serif;
                 color: var(--header-color);
             }
-            #message {
-                position: relative;
-                top: 35%;
-            }
             #score {
                 font-size: 50px;
                 margin-top: 0px;
+            }
+            #message {
+                position: relative;
+                top: 35%;
             }
             oda-dino {
                 position: absolute;
@@ -40,7 +40,7 @@ ODA({ is: 'oda-game',
                 left: 72px;
                 z-index: 300;
             }
-            .horizon {
+            #horizon {
                 position: absolute;
                 top: 435px;
                 width: 100%;
@@ -54,7 +54,7 @@ ODA({ is: 'oda-game',
         <div id="game-space" ref="game-space">
             <h1 id="message" ~show="showMessage">{{message}}</h1>
             <oda-dino ref="dino"></oda-dino>
-            <div class="horizon"></div>
+            <div id="horizon"></div>
         </div>
     `,
     props: {

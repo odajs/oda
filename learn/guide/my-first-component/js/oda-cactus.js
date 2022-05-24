@@ -3,7 +3,7 @@ import {createPolygon} from "./utils.js"
 ODA({ is: 'oda-cactus',
     template: `
         <style>
-            svg path {
+            path {
                 fill: var(--cactus-color);
             }
             :host {
