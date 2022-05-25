@@ -523,149 +523,173 @@ oda-dino {
 
 ```javascript
 props: {
-    scoreID: 1,
+    timerID: 0,
     score: 0,
     message: 'Для начала игры нажмите пробел',
     showMessage: true,
-    cloudDistance: 0,
-    nextCloudDistance: 0,
-    cactusDistance: 0,
-    nextCactusDistance: 0,
-    pterodactylDistance: 0,
-    nextPterodactylDistance: 0,
+    nextCloud: 0,
+    nextCactus: 0,
+    nextPterodactyl: 50,
 },
 ```
 
 Здесь,
 
-1. Свойство «**scoreID**» предназначено для хранения уникального идентификатора таймера со счетчиком очков игры.
+1. Свойство «**timerID**» предназначено для хранения уникального идентификатора таймера  счетчика очков игры.
 1. «**score**» – свойство для хранения текущего количества набранных очков.
-1. «**message**» – свойство с сообщением для ползователя.
+1. «**message**» – свойство с сообщением для пользователя.
 1. «**showMessage**» – флаг, определяющий отображение предыдущего свойства.
-1. «**cloudDistance**» текущее значение времени, прошедшее с появления предыдущего облака.
-1. «**nextCloudDistance**» текущее значение времени, прошедшее с появления предыдущего облака.
+1. «**nextCloud**» счетчик кадров анимаций до появления следующего облака.
+1. «**nextCactus**» счетчик кадров анимаций до появления следующего кактуса.
+1. «**nextPterodactyl**» счетчик кадров анимаций до появления следующего птеродактиля.
 
-Метод **startGame** определим следующим образом:
+Все счетчики здесь, кроме счетчика появления птеродактиля, имеют начальные нулевые значения.
+
+Некоторые свойства компонента с доступом только для чтения выполнены с помощью геттеров. К таким свойствам относятся:
+
+1. «**dino**» – ссылка на компонент динозавра «**oda-dino**».
 
 ```javascript
-function startGame() {
-    const gameOver = document.querySelector('#game-over');
-
-    gameOver.style.display = "none";
-    gameOver.innerText = "Game Over";
-
-    const audio = document.querySelector('audio');
-    audio.play();
-
-    scoreID = setInterval(() => {
-        score.textContent = +score.textContent + 1;
-    }, 100);
-
-    document.removeEventListener('keyup', startGameKeyUp);
-
-    document.addEventListener('keydown', dinoJumpKeyDown);
-
-    requestAnimationFrame(checkDino);
+get dino() {
+    return this.$refs.dino;
 }
 ```
 
-В этом методе:
-
-1. Скрывается надпись «**Для начала игры нажмите пробел**» и вместо нее записывается текст сообщения об окончании игры «**GameOver**», который будет отображаться в будущем.
-
-2. Запускается воспроизведение музыкальной композиции группы T-Rex «**Get It On**». Для этого в папку **audio** помещен файл «t-rex-get-it-on.mp3» с минусовкой этой песни.
-
-```html
-<audio autoplay loop preload="auto">
-    <source src="audio/t-rex-get-it-on.mp3" type="audio/mp3">
-</audio>
-```
-
-3. Задается таймер, который каждые 100 миллисекунд увеличивает количество набранных очков игроком на 1. Для того, чтобы остановить таймер, указатель не него сохраняется в глобальной переменной scoreID.
+2. «**gameSpace**» – ссылка на рабочую область игры, в которой будет находиться все остальные компоненты.
 
 ```javascript
-scoreID = setInterval(() => {
+get gameSpace() {
+    return this.$refs["game-space"];
+},
+
+Для начала игры необходимо зарегистрировать обработчик, который будет срабатывать при отпускании пользователем любой клавиши клавиатуры. Для этого в хуке «**ready**»  вызовем предопределенный метод «**listen**», который будет автоматически зарегистрировать указанный обработчик события.
+
+```javascript
+ready() {
+    this.listen('keyup', 'startGame', {target: document});
+}
+```
+
+В качестве обработчика события здесь регистрируется метод компонента «**startGame**», который будет выполнятся при наступлении события «**keyup**».
+
+```javascript
+startGame(e) {
+    if (e.code !== 'Space') {
+        return;
+    }
+    this.showMessage = false;
+    this.message = "Game Over";
+
+    this.timerID = setInterval(() => {
+        this.score++;
+    }, 100);
+
+    this.unlisten('keyup', 'startGame', {target: document});
+
+    this.listen('keydown', 'dinoJump', {target: document});
+
+    requestAnimationFrame(this.checkDino.bind(this));
+},
+```
+
+В нем предусмотрены следующие действия:
+
+1. Проверка, какую клавишу нажал и отпустил пользователь в данный момент. Если была нажата не клавиша пробела, то сразу же происходит выход из этого метода.
+
+2. Если же была нажата клавиша пробела, то надпись «**Для начала игры нажмите пробел**» скрывается присвоением свойству «**showMessage**» значения «**false**», а её текст заменяется на сообщение «**Game Over**», которое будет появляться следующий раз в момент окончания игры.
+
+```javascript
+    this.showMessage = false;
+    this.message = "Game Over";
+```
+
+3. Создание таймер, который будет каждые 100 миллисекунд увеличивает счетчик набранных очков на 1. Для остановки этого таймера его идентификатор сохраняется в свойстве «**timerID**» нашего компонента.
+
+```javascript
+timerID = setInterval(() => {
     score.textContent = +score.textContent + 1;
 }, 100);
 ```
 
-4. Удаляется обработчик начала игры **startGameKeyUp**.
+4. Удаление обработчика начала игры **startGame** с помощью предопределенного метода «**unlisten**».
 
 ```javascript
-document.removeEventListener('keyup', startGameKeyUp);
+this.unlisten('keyup', 'startGame', {target: document});;
 ```
 
-5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра.
+5. Регистрация обработчика нажатия клавиш для выполнения прыжка динозавра «**dinoJump**» с помощью предопределенного метода «**listen**».
 
 ```javascript
-document.addEventListener('keydown', dinoJumpKeyDown);
+this.listen('keydown', 'dinoJump', {target: document});document.addEventListener('keydown', dinoJumpKeyDown);
 ```
 
-В нем при нажатии на клавишу пробела вызывается соответствующий метод **jump** компонента **oda-dino**, запускающий анимацию прыжка тиранозавра.
+6. Запуск метода «**checkDino**» со следующим кадром анимации, в котором динамически будут создаваться все остальные элементы игры и определяться факт столкновения динозавра с кактусом.
 
 ```javascript
-function dinoJumpKeyDown(e) {
-    if (e.code === 'Space') {
-        dino.jump();
-    }
-}
+ requestAnimationFrame(this.checkDino.bind(this));
 ```
 
-6. Запускается метод **checkDino** со следующим тактом прорисовки окна браузера, в котором динамически будут создаваться все остальные элементы игры и определяться наличие или отсутствие столкновения динозавра с кактусом.
+Для привязки к этому метод контекста данного компонента необходимо обязательно воспользоваться метод «**bind**». В противном случае указатель «**this**» внутри метода «**checkDino**» будет иметь неопределенное значение «**undefined**».
+
+Метод «**checkDino**» в компоненте «**oda-game**» можно задать следующим образом:
 
 ```javascript
-requestAnimationFrame(checkDino);
-```
-
-Метод **checkDino** реализован следующим образом:
-
-```javascript
-function checkDino() {
-    cloudDistance++;
-    if (cloudDistance > nextCloudDistance) {
-        cloudDistance = 0;
-        createCloud();
-        nextCloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
-    }
-
-    cactusDistance++;
-    if (cactusDistance > nextCactusDistance) {
-        cactusDistance = 0;
-        createCactus();
-        nextCactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
-    }
-
-    pterodactylDistance++;
-    if (pterodactylDistance > nextPterodactylDistance) {
-        pterodactylDistance = 0;
-        createPterodactyl();
-        nextPterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
-    }
-
-    let cactuses = document.querySelectorAll('oda-cactus');
-
+checkDino() {
+    this.createCloud();
+    this.createCactus();
+    this.createPterodactyl();
+    let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
     for (var i = 0; i < cactuses.length; ++i) {
-        if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
-            gameOver();
+        if (this.dino.isIntersection && this.dino.isIntersection(cactuses[i])) {
+            this.gameOver();
             return;
         }
     }
-
-    requestAnimationFrame(checkDino);
+    requestAnimationFrame(this.checkDino.bind(this));
 }
 ```
 
 В нем создаются:
 
-1. **Облака** с помощью специальной функции **createCloud**.
+1. **Облака** с помощью метода компонента «**createCloud**».
 
-2. **Кактусы** с помощью функции **createCactus**.
+```javascript
+createCloud() {
+    if (this.nextCloud === 0) {
+        this.gameSpace.append(document.createElement('oda-cloud'));
+        this.nextCloud = Math.floor(20 + Math.random() * (150 + 1 - 20));
+    }
+    this.nextCloud--;
+},
+```
 
-3. **Птеродактили** с помощью функции **createCactus**.
+2. **Кактусы** с помощью метода «**createCactus**».
 
-Все эти элементы создаются через определенный интервал с небольшой случайной составляющей. Для этого каждый такт анимации счетчики: **cloudDistance**, **cactusDistance** и **pterodactylDistance** увеличиваются на 1. Кода они достигнут заданного случайного значения **nextCloudDistance**, **nextCactusDistance** и **nextPterodactylDistance** будет создан новый соответствующий элемент.
+```javascript
+    createCactus() {
+        if (this.nextCactus === 0) {
+            this.gameSpace.append(document.createElement('oda-cactus'));
+            this.nextCactus = Math.floor(100 + Math.random() * (150 + 1 - 100));
+        }
+        this.nextCactus--;
+    },
+```
 
-В конце метода проверяется пересечение динозавра со всеми кактусами с помощью его метода **isIntersection** компонента **oda-dino**.
+3. **Птеродактили** с помощью метода «**createCactus**».
+
+```javascript
+createPterodactyl() {
+    if (this.nextPterodactyl === 0) {
+        this.gameSpace.append(document.createElement('oda-pterodactyl'));
+        this.nextPterodactyl = Math.floor(150 + Math.random() * (200 + 1 - 150));
+    }
+    this.nextPterodactyl--;
+}
+```
+
+В каждом из этих методов все элементы создаются через определенный интервал с небольшой случайной составляющей. Для этого каждый такт анимации счетчики: «**nextCloud**», «**nextCactus**» и «**nextPterodactyl**» уменьшаются на 1. Как только они достигнут нулевого значения, то запуститься механизм создания нового элемента (облака, кактуса или птеродактиль) в рабочей области игры и будет задано следующее случайное значение, через которое они должны будут создаваться в следующий раз. В результате этого все элементы будет создаваться через небольшой интервал друг после друга.
+
+В конце метода «**checkDino**» проверяется пересечение динозавра со всеми кактусами с помощью его метода «**isIntersection**».
 
 В методе начала игры **startGame** создаются все необходимые для нее элементы.
 
@@ -678,7 +702,7 @@ function gameOver() {
 
     document.querySelector('#game-over').style.display = "";
 
-    clearInterval(scoreID);
+    clearInterval(timerID);
 
     const dino = document.querySelector('oda-dino');
     dino.stopMove();
@@ -712,7 +736,7 @@ function gameOver() {
 
 1. Отображается надпись с окончанием игры «Game Over».
 
-1. Останавливается таймер счетчика набранных очков с использованием идентификатора **scoreID**.
+1. Останавливается таймер счетчика набранных очков с использованием идентификатора **timerID**.
 
 1. Останавливается анимация динозавра вызовом метода «**stopMove**» компонента «**oda-dino**».
 
@@ -911,7 +935,7 @@ function continueGame() {
 
     const score = document.getElementById('score');
     score.textContent = 0;
-    scoreID = setInterval(() => {
+    timerID = setInterval(() => {
         score.textContent = +score.textContent + 1;
     }, 100);
 

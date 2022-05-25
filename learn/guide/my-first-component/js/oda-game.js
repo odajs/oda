@@ -58,13 +58,13 @@ ODA({ is: 'oda-game',
         </div>
     `,
     props: {
-        scoreID: 1,
+        timerID: 1,
         score: 0,
         message: 'Для начала игры нажмите пробел',
         showMessage: true,
-        cloudDistance: 0,
-        cactusDistance: 0,
-        pterodactylDistance: 0,
+        nextCloud: 0,
+        nextCactus: 0,
+        nextPterodactyl: 50,
     },
     get dino() {
         return this.$refs.dino;
@@ -87,7 +87,7 @@ ODA({ is: 'oda-game',
         this.showMessage = false;
         this.message = "Game Over";
 
-         this.scoreID = setInterval(() => {
+         this.timerID = setInterval(() => {
              this.score++;
          }, 100);
 
@@ -118,8 +118,8 @@ ODA({ is: 'oda-game',
             cactus.remove();
         });
 
-        this.cactusDistance = 0;
-        this.nextCactusDistance = 0;
+        this.nextCactus = 0;
+        this.nextNextCactus = 0;
 
 
         this.dino.continueMove();
@@ -136,7 +136,7 @@ ODA({ is: 'oda-game',
 
         this.score = 0;
 
-        this.scoreID = setInterval(() => {
+        this.timerID = setInterval(() => {
             this.score++;
         }, 100);
 
@@ -149,7 +149,7 @@ ODA({ is: 'oda-game',
     gameOver() {
         this.showMessage = true;
 
-        clearInterval(this.scoreID);
+        clearInterval(this.timerID);
 
         this.dino.stopMove();
 
@@ -173,24 +173,24 @@ ODA({ is: 'oda-game',
         this.listen('keyup', 'continueGame', {target: document});
     },
     createCloud() {
-        if (this.cloudDistance === 0) {
+        if (this.nextCloud === 0) {
             this.gameSpace.append(document.createElement('oda-cloud'));
-            this.cloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
+            this.nextCloud = Math.floor(20 + Math.random() * (150 + 1 - 20));
         }
-        this.cloudDistance--;
+        this.nextCloud--;
     },
     createCactus() {
-        if (this.cactusDistance === 0) {
+        if (this.nextCactus === 0) {
             this.gameSpace.append(document.createElement('oda-cactus'));
-            this.cactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
+            this.nextCactus = Math.floor(100 + Math.random() * (150 + 1 - 100));
         }
-        this.cactusDistance--;
+        this.nextCactus--;
     },
     createPterodactyl() {
-        if (this.pterodactylDistance === 0) {
+        if (this.nextPterodactyl === 0) {
             this.gameSpace.append(document.createElement('oda-pterodactyl'));
-            this.pterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
+            this.nextPterodactyl = Math.floor(150 + Math.random() * (200 + 1 - 150));
         }
-        this.pterodactylDistance--;
+        this.nextPterodactyl--;
     }
 })
