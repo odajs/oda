@@ -298,16 +298,21 @@ ODA({is: 'oda-grid-header-cell',
         return this.dragMode?.includes?.(this);
     },
     expand(){
-        if (!this.column.$expanded){
-            const width = this.getBoundingClientRect().width;
-            this.column.items?.forEach(col=>{
-                col.$width = col.$width || width / this.column.items.length;
-            })
-        }
         this.column.$expanded = !this.column.$expanded;
+        // this.async(()=>{
+        //     if (this.column.$expanded){
+        //         const width = this.getBoundingClientRect().width;
+        //         this.column.items?.forEach(col=>{
+        //             col.$width = col.$width || width / this.column.items.length;
+        //         })
+        //     }
+        // }, 100)
     },
     get columns(){
+        if (!this.column?.$expanded)
+            return [];
         return this.column?.items?.map((col, idx)=>{
+            col.$width = 0;
             col.checked = (col.checked === undefined && !col.hidden) || col.checked
             return col
         }).filter(col=> col.checked !== false && !this.groups.includes(col))
@@ -349,7 +354,7 @@ ODA({is: 'oda-grid-header-cell',
             e.stopPropagation();
             const width = this.getBoundingClientRect().width;
             if (!width) return;
-            this.column.items?.forEach(col=>{
+            this.columns?.forEach(col=>{
                 col.$width = col.$width || width / this.column.items.length;
             })
             this.column.$width = width;
@@ -684,7 +689,7 @@ ODA({is: 'oda-grid-body',
         </style>
         <div class="vertical no-flex">
             <div class="row" ~for="row in rows">
-                <div ~is="getTemplateTag(row, col)"  :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
+                <div ~show="col.$width" ~is="getTemplateTag(row, col)"  :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
             </div>
         </div>
     `,
@@ -737,8 +742,6 @@ ODA({is: 'oda-grid-footer',
                 <oda-grid-footer-cell :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" ~class="'C'+idx+' cell'"></oda-grid-footer-cell>
             </div>
         </div>
-
-        
     `,
     get cellsClasses(){
         return this.cells.map((cell, idx)=>{
