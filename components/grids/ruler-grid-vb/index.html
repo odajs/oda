@@ -1,0 +1,85 @@
+<meta charset="utf-8">
+<script type="module" src="/web/oda/oda.js"></script>
+<script type="module" src="./ruler-grid-vb.js"></script>
+
+<oda-tester>
+    <oda-ruler-grid-vb id="rulergrid"></oda-ruler-grid-vb>
+</oda-tester>
+<!-- <button id="resetButton">reset</button> -->
+
+<script>
+    setTimeout(drawDemo, 500);
+    // resetButton.addEventListener('click', () => { rulergrid.reset(); });
+    function drawDemo() {
+        for (let x = -5_000; x < 5_000; x += 500) {
+            for (let y = -5_000; y < 5_000; y += 500) {
+                const divEl = document.createElement('div');
+                divEl.setAttribute('slot', 'content');
+                divEl.style.setProperty('cursor', 'grab');
+                divEl.style.setProperty('position', 'absolute');
+                divEl.style.setProperty('user-select', 'none');
+                divEl.style.setProperty('border-radius', '5px');
+                divEl.style.setProperty('box-shadow', '0px 0px 3px rgba(0,0,0,.25), 2px 2px 5px rgba(0,0,0,.5)');
+                divEl.style.setProperty('width', '100px');
+                divEl.style.setProperty('height', '50px');
+                divEl.style.setProperty('left', `${x}px`);
+                divEl.style.setProperty('top', `${y}px`);
+                divEl.style.setProperty('padding-top', `25px`);
+                divEl.style.setProperty('text-align', `center`);
+                const deg = ~~(((x + y + 5_000) / 500) * 20_000 / 360);
+                divEl.style.setProperty('background-color', `hsl(${deg}deg 100% 50%)`);
+                divEl.style.setProperty('color', `hsl(${deg - 180}deg 100% 50%)`);
+                divEl.textContent = `(${x / 500}, ${y / 500})`;
+
+                divEl.addEventListener('mousedown', (event) => {
+                    if (event.button !== 0) return;
+                    divEl.style.setProperty('cursor', 'grabbing');
+                    const move = (event) => {
+                        const x = parseFloat(getComputedStyle(divEl).left.slice(0, -2));
+                        const y = parseFloat(getComputedStyle(divEl).top.slice(0, -2));
+                        const nx = x + event.movementX * rulergrid.scale;
+                        const ny = y + event.movementY * rulergrid.scale;
+                        divEl.style.setProperty('left', `${nx}px`);
+                        divEl.style.setProperty('top', `${ny}px`);
+                        if (divEl.outLine) {
+                            divEl.outLine.setAttribute('x1', `${nx + 50}`);
+                            divEl.outLine.setAttribute('y1', `${ny + 25}`);
+                        }
+                        if (divEl.inLines?.length) {
+                            for (const l of divEl.inLines) {
+                                l.setAttribute('x2', `${nx + 50}`);
+                                l.setAttribute('y2', `${ny + 25}`);
+                            }
+                        }
+                    }
+                    const stop = () => {
+                        window.removeEventListener('mousemove', move);
+                        divEl.style.removeProperty('cursor');
+                    }
+                    window.addEventListener('mousemove', move);
+                    window.addEventListener('mouseup', stop, { once: true });
+                });
+                rulergrid.appendChild(divEl);
+
+                if (Math.random() > 0.5) {
+                    const svg = rulergrid.svg;
+                    const c = document.createElementNS(svg.namespaceURI, 'line');
+                    divEl.outLine = c;
+                    const b = rulergrid.children[~~Math.abs(Math.random() * rulergrid.children.length)];
+                    b.inLines ??= [];
+                    b.inLines.push(c);
+                    //x1="0" y1="80" x2="100" y2="20"
+
+                    c.setAttribute('x1', `${divEl.offsetLeft + 50}`);
+                    c.setAttribute('y1', `${divEl.offsetTop + 25}`);
+                    c.setAttribute('x2', `${b.offsetLeft + 50}`);
+                    c.setAttribute('y2', `${b.offsetTop + 25}`);
+                    c.setAttribute('stroke-width', '2');
+                    c.setAttribute('stroke', `hsl(${deg}deg 100% 50%)`);
+                    svg.appendChild(c);
+                }
+            }
+        }
+        rulergrid.reset();
+    }
+</script>
