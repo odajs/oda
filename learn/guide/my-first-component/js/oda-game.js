@@ -60,14 +60,11 @@ ODA({ is: 'oda-game',
     props: {
         scoreID: 1,
         score: 0,
-        showMessage: true,
         message: 'Для начала игры нажмите пробел',
+        showMessage: true,
         cloudDistance: 0,
-        nextCloudDistance: 0,
         cactusDistance: 0,
-        nextCactusDistance: 0,
         pterodactylDistance: 0,
-        nextPterodactylDistance: 0,
     },
     get dino() {
         return this.$refs.dino;
@@ -176,27 +173,24 @@ ODA({ is: 'oda-game',
         this.listen('keyup', 'continueGame', {target: document});
     },
     createCloud() {
-        this.cloudDistance++;
-        if (this.cloudDistance > this.nextCloudDistance) {
-            this.cloudDistance = 0;
+        if (this.cloudDistance === 0) {
             this.gameSpace.append(document.createElement('oda-cloud'));
-            this.nextCloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
+            this.cloudDistance = Math.floor(20 + Math.random() * (150 + 1 - 20));
         }
+        this.cloudDistance--;
     },
     createCactus() {
-        this.cactusDistance++;
-        if (this.cactusDistance > this.nextCactusDistance) {
-            this.cactusDistance = 0;
+        if (this.cactusDistance === 0) {
             this.gameSpace.append(document.createElement('oda-cactus'));
-            this.nextCactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
+            this.cactusDistance = Math.floor(100 + Math.random() * (150 + 1 - 100));
         }
+        this.cactusDistance--;
     },
     createPterodactyl() {
-        this.pterodactylDistance++;
-        if (this.pterodactylDistance > this.nextPterodactylDistance) {
-            this.pterodactylDistance = 0;
+        if (this.pterodactylDistance === 0) {
             this.gameSpace.append(document.createElement('oda-pterodactyl'));
-            this.nextPterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
+            this.pterodactylDistance = Math.floor(150 + Math.random() * (200 + 1 - 150));
         }
+        this.pterodactylDistance--;
     }
 })
