@@ -160,7 +160,7 @@ ODA({ is: 'oda-network', template: /*html*/`
     _onDblClick(event, d) {
         if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaObject) {
             this.focusedItem.item.show();
-        } else if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaClass) {
+        } else if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaStorage) {
             this.focusedItem.item.navigate();
         }
     },

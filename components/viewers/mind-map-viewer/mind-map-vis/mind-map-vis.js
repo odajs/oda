@@ -215,7 +215,7 @@ ODA({
     _onDblClick(event, d) {
         if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaObject) {
             this.focusedItem.item.show();
-        } else if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaClass) {
+        } else if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaStorage) {
             this.focusedItem.item.navigate();
         }
     },
@@ -345,7 +345,7 @@ ODA({
             //width: (this.offsetWidth) + 'px',
             //height: this.offsetHeight + 'px'
             height: '878px'
-            
+
         };
         Object.assign(opts, this.options);
 
@@ -479,6 +479,6 @@ ODA({
         }, 10);
     }
 
-    
+
 });
 })();

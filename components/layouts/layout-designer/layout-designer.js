@@ -222,6 +222,43 @@ ODA({ is: 'oda-layout-designer-tabs-structure',
     `
 })
 
+ODA({ is: 'oda-layout-designer-group-structure',
+    template: /*html*/`
+        <style>
+            :host{
+                @apply --vertical;
+                @apply --flex;
+                position: relative;
+            }
+            .group {
+                display: flex;
+                flex: 1;
+                padding: 0 4px 4px 0;
+                border: {{borderColor ? '1px solid ' + borderColor : ''}};
+                flex-direction: {{layout.type==='vGroup' ? 'column' : 'row'}};
+            }
+            .group-label {
+                font-weight: bold;
+                margin: 1px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: {{fontSize}};
+                cursor: {{designMode ? 'pointer' : 'unset'}};
+            }
+        </style>
+        <div ~if="designMode || layout.label" class="horizontal flex" style="align-items: center">
+            <label class="group-label" ~is="editLabel ? 'input' : 'label'" ::value="layout.label">{{layout.label}}</label>
+            <oda-button :icon-size="16" ~if="designMode" icon="icons:close" fill="red"></oda-button>
+        </div>
+        <div class="group">
+            <oda-layout-designer-container class="flex" ~for="layout?.items" :layout="item"></oda-layout-designer-container>
+        </div>   
+    `,
+    editLabel: false,
+    fontSize: '14px',
+    borderColor: 'lightgray'
+})
+
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
     template: /*html*/`
         <style>
@@ -230,7 +267,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 @apply --vertical;
                 overflow: hidden;
                 @apply --flex;
-                min-width: {{hasChildren?'100%':'32px'}};
+                min-width: {{hasChildren && !layout.isGroup?'100%':'32px'}};
                 /* flex-grow: {{layout?.noFlex?'1':'100'}}; */
                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /* flex-basis: auto; */
@@ -303,8 +340,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </div>
         <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
-            <label ~if="showLabel" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
-            <div class="horizontal flex" style="align-items: center;">
+            <label ~if="showLabel && !layout?.isGroup" class="no-flex" ~style="{ marginLeft: iconSize + 'px'}">{{layout?.label}}</label>
+            <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
                 <oda-icon style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout.isTabs}" 
@@ -313,7 +350,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded || layout?.isGroup" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
     `,
     width: undefined,
     get hasChildren() {
@@ -461,10 +498,15 @@ CLASS({ is: 'Layout',
         return this.isTabs ? 'oda-layout-designer-tabs' : '';
     },
     get $structure() {
-        return this.isTabs ? 'oda-layout-designer-tabs-structure' : '';
+        if (this.isTabs) return 'oda-layout-designer-tabs-structure';
+        if (this.isGroup) return 'oda-layout-designer-group-structure';
+        return '';
     },
     get isTabs() {
         return this.type === "tabs";
+    },
+    get isGroup() {
+        return this.type === "vGroup" || this.type === "hGroup";
     },
     async createTabs(action) {
         const item = action ? await this.find(action.props.target) : this;
@@ -536,6 +578,20 @@ CLASS({ is: 'Layout',
         if (!dragItem || !targItem) return;
         let idxTarg = targItem._order;
         if (action.props.to === 'left' || action.props.to === 'right') {
+            if (targItem.owner.type === 'vGroup' || targItem.owner.items?.length) {
+                const group = new Layout({ id: getUUID(), label: `Group` }, targItem.key, targItem.owner, targItem.root);
+                const idxTarget = targItem.owner.items.indexOf(targItem);
+                const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
+    
+                const idxDrag = dragItem.owner.items.indexOf(dragItem);
+                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+                
+                drag.owner = target.owner = group;
+                group._order = target._order;
+                group.type = 'hGroup';
+                group.items = [drag, target];
+                return
+            }
             dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
             if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
                 const idxDrag = dragItem.owner.items.indexOf(dragItem);
@@ -555,9 +611,23 @@ CLASS({ is: 'Layout',
             if (targItem.isVirtual) {
                 idxTarg = targItem.owner.items.indexOf(targItem);
                 targItem.owner.items.splice(idxTarg, 1);
+
             }
         } else {
-            
+            if (targItem.owner.type === 'hGroup' || !targItem.owner.type) {
+                const group = new Layout({ id: getUUID(), label: `Group` }, targItem.key, targItem.owner, targItem.root);
+                const idxTarget = targItem.owner.items.indexOf(targItem);
+                const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
+
+                const idxDrag = dragItem.owner.items.indexOf(dragItem);
+                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+                
+                drag.owner = target.owner = group;
+                group._order = target._order;
+                group.type = 'vGroup';
+                group.items = [drag, target];
+                return;
+            }
         }
     },
     async expanded(action) {
