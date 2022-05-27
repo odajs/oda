@@ -54,7 +54,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 flex-wrap: wrap;
                 /*justify-content: space-around;*/
                 align-content: flex-start;
-                flex-direction: {{layout.type==='vGroup' ? 'column' : 'row'}};
+                flex-direction: {{layout?.type==='vGroup' ? 'column' : 'row'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
@@ -216,10 +216,10 @@ ODA({ is: 'oda-layout-designer-group-structure',
                 @apply --flex;
                 position: relative;
                 padding: {{layout?.hideLabel ? 0 : '0 4px 4px 0'}};
-                border: {{designMode ? '2px solid blue' : (layout?.hideLabel && borderColor) ? '' : '1px solid ' + borderColor || 'lightgray'}};
+                border: {{designMode ? '2px solid blue' : (layout?.hideLabel || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
         </style>
-        <oda-layout-designer-structure class="flex" :layout></oda-layout-designer-structure>
+        <oda-layout-designer-structure ~if="layout?.$expanded" class="flex" :layout></oda-layout-designer-structure>
     `,
     borderColor: 'lightgray'
 })
@@ -292,8 +292,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
-            <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: layout?.isTabs ? '' : iconSize + 'px'}">
-                <oda-icon ~if="layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+            <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
+                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal no-flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @blur="setLabel">{{layout._label || layout.label}}</label>
                     <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showSettings" style="padding: 0; margin: 0"></oda-button>
@@ -318,6 +318,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
             this.saveScript(this.layout, action);
+            this.render();
         }
     },
     listeners: {
@@ -589,11 +590,11 @@ CLASS({ is: 'Layout',
         if (!dragItem || !targItem) return;
         if (targItem.owner.type === 'tabs' || action.props.to === 'left' || action.props.to === 'right') {
             if (targItem.owner.type !== 'hGroup' && (targItem.items?.length || dragItem.items?.length)) {
-                this._createGroup(action, dragItem, targItem, 'hGroup', '100%');
+                this._createGroup(action, dragItem, targItem, 'hGroup');
             } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.type === 'hGroup' ) {
                 this._makeMove(action, dragItem, targItem, action.props.to);
             } else {
-                this._createGroup(action, dragItem, targItem, 'hGroup', '');
+                this._createGroup(action, dragItem, targItem, 'hGroup');
             }
         } else {
             if (targItem.owner.type === 'vGroup') {
@@ -626,14 +627,14 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 1);
         }
     },
-    _createGroup(action, dragItem, targItem, groupType, width = '') {
+    _createGroup(action, dragItem, targItem, groupType) {
         const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-label` }, targItem.key, targItem.owner, targItem.root);
         const idxTarget = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
         const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
         drag.owner = target.owner = group;
-        group.width = width;
+        group.$expanded = true;
         group._order = target._order;
         group.type = groupType;
         group.items = [drag, target];
