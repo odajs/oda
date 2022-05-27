@@ -918,9 +918,7 @@ gameOver() {
 
 1. Останавливается таймер счетчика набранных очков с использованием ранее сохраненного идентификатора в свойстве компонента **timerID**.
 
-1. Останавливается анимация динозавра вызовом метода «**stopMove**» компонента «**oda-dino**».
-
-В нем приостанавливается эффект анимации прыжка динозавра с заданием значения **paused** для стиля **animationPlayState**
+1. Останавливается анимация динозавра вызовом метода «**stopMove**» компонента «**oda-dino**» заданием у свойства **animationPlayState** значения **paused**.
 
 ```javascript
 stopMove(){
@@ -932,7 +930,7 @@ stopMove(){
 }
 ```
 
- Кроме этого, останавливается анимация движения ног динозавра с помощью метода **pauseAnimations** элемента **svg**, а также прячется маленький глаз и отображаются его рот и большой глаз с помощью свойства «**visibility**».
+ Кроме этого, приостанавливается анимация движения ног динозавра с помощью метода **pauseAnimations** элемента **svg**, а также прячется маленький глаз и отображаются рот и его большой глаз  с помощью свойства «**visibility**».
 
 У птеродактиля во время завершения игры отключается только эффект движения и взмахи крыльев.
 
@@ -952,9 +950,9 @@ stopMove(){
 }
 ```
 
-Эффект движения задается у всех элементов игры с помощью ключевых кадров.
+Движение у всех этих элементов задается помощью ключевых кадров. Для этого, их необходимо задать в разделе «**style**» шаблона каждого компонента.
 
-Так для анимации прыжка динозавра задан следующий ключевой кадр:
+Анимационный кадр прыжка динозавра задается следующим образом:
 
 ```css
 @keyframes dino-jump{
@@ -973,16 +971,15 @@ stopMove(){
 }
 ```
 
-Здесь используются css-переменные, которые задают:
+Здесь используются css-переменные, которые задают координаты расположения динозавра по высоте:
 
-1. Начальные координаты расположения динозавра по высоте (**--dino-top: 314px**).
+1. Начальные (**--dino-top: 314px**).
 
-1. Промежуточное координаты динозавра по высоте (
-    **--dino-max-top: 20px**).
+1. Промежуточное (**--dino-max-top: 20px**).
 
-1. Конечные координаты динозавра по высоте (**--dino-top: 314px**).
+1. Конечные (**--dino-top: 314px**).
 
-Этот ключевой кадр используется в css-классе **dino-jump**, который определяет анимацию параметры прыжка динозавра.
+Сама анимация прыжка задается с помощью css-класса **dino-jump**.
 
 ```css
  .dino-jump {
@@ -993,9 +990,9 @@ stopMove(){
 }
 ```
 
-Ключевой кадр «**dino-jump**» и класс стилизации «**.dino-jump**» необходимо поместить в шаблон компонента «**oda-dino**» в блок «**style**».
+В нем используется ключевой кадр «**dino-jump**» и указывается время прыжка в 1 секунду.
 
-Данная анимация добавляется к компоненту хосту компонента **oda-dino** в его методе **jump**.
+Данный класс нужно добавить к хосту компонента **oda-dino** в момент прыжка. Для этого нужно задать в классе динозавра метод **jump**.
 
 ```javascript
  jump() {
@@ -1011,11 +1008,13 @@ stopMove(){
 },
 ```
 
-В этом методе, кроме добавления css-класса «**dino-jump**», на время прыжка останавливается анимация ног тиранозавра с возможностью ее возобновления после окончания прыжка. Для этого предусмотрен специальный **callback** **onfinish**, в котором удаляется добавленный класс анимации и возобновляется анимации ног динозавра.
+В нем, кроме добавления css-класса «**dino-jump**», во время прыжка приостанавливается анимация ног динозавра.
+
+После окончания прыжка удаляется css-класс «**dino-jump**» и у динозавра возобновляется анимация ног. Все это предусмотрено в колбэке **onfinish**.
 
 Аналогично задается анимация движения кактусов, облаков и птеродактилей.
 
-В этом случае ключевые кадры определяют анимацию элементов не по высоте, а по левой стороне. Например, для облаков ключевой кадр будет объявлен следующим образом:
+Для этого ключевые кадры задают изменение позиции элементов не по высоте, а по левой координате. Например, для облаков ключевой кадр будет объявлен следующим образом:
 
 ```javascript
 @keyframes move {
@@ -1027,7 +1026,7 @@ stopMove(){
     }
 }
 ```
-Ключевые кадры для кактусов и птеродактилей будут отображать свои компоненты, начиная с правой границы браузера летящими к левой границе.
+Ключевые кадры движения кактусов и птеродактилей будут одинаковыми.
 
 ```javascript
 @keyframes move {
@@ -1040,8 +1039,10 @@ stopMove(){
 }
 ```
 
-Эти ключевые кадры будут использоваться при стилизации хостов соответствующих компонентов.
+Отрицательные значения левой координаты при завершении движения определяется тем, что тело всех элементов должно зайти за левую границу области игры, и только после этого эти элементы должны быть удалены.
 
+Для начала движения у всех этих элементов задается псевдо-класс «**host**», который запускает анимацию сразу же после их создания
+,
 Например, движение облаков облаков начнется справа налево и будет продолжаться 6 секунд.
 
 ```javascript
@@ -1070,7 +1071,7 @@ stopMove(){
 
 Кроме этого, птеродактили будут располагаться перед облаками, так как у них CSS-свойство «**z-index**» задается с большим значением.
 
-В отличие от птеродактилей у кактусов всегда будет оставаться фиксированная высота. Поэтому она задается непосредственно при стилизации хоста компонента «**oda-cactus**» равной 301 пикселю.
+В отличие от птеродактилей у кактусов высота расположения будет всегда оставаться постоянной. Поэтому она сразу задается в псевдо-классе «**host**» компонента «**oda-cactus**» равной 301 пикселю.
 
 ```javascript
 :host {
@@ -1100,117 +1101,181 @@ stopMove(){
     },
 ```
 
-Кроме этого, в колбэке окончания анимации  «**onfinish**» предусмотрено автоматическое удаление птеродактиля,  когда он полностью выйдет за правую границу игры.
+Кроме этого, в колбэке окончания анимации  «**onfinish**» предусмотрено автоматическое удаление птеродактиля,  когда его тело полностью выйдет за левую границу игры.
 
-Аналогично в хуке «**attached**» предусмотрен создание облаков со
+Аналогично в хуке «**attached**» предусмотрен создание облаков, вертикальная позиция расположения которых то же определяется случайным образом но в несколько другом диапазоне от 20 до 150 пикселей.
 
 ```javascript
-    attached() {
-        this.setPosition(20, 150);
-        this.getAnimations().forEach((anim, i, arr) => {
-            anim.onfinish = () => {
-                this.remove();
-            };
-        });
-    },
-    setPosition(min, max) {
-        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    },
+attached() {
+    this.setPosition(20, 150);
+    this.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            this.remove();
+        };
+    });
+},
+setPosition(min, max) {
+    this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+},
 ```
 
-После захода за левую границу окна браузера облака, кактусы и птеродактили будут удалятся. Для этого в методах создания этих элементов предусмотрен **callback** **onfinish**, который срабатывает в момент завершения анимации.
+После захода за левую границу области игры облака так же, как и птеродактили с кактусами должны быть удалены. Для этого в этом хуке тоже предусмотрен колбэк  **onfinish**.
+
+Если пользователь захочет продолжить игру после столкновения динозавра с кактусом, то он может повторно нажать на клавишу пробела.
+
+Для этого в методе «**GaveOver**» добавлен слушатель
 
 ```javascript
-    attached() {
-        this.setPosition(10,100);
-        this.getAnimations().forEach((anim, i, arr) => {
-            anim.onfinish = () => {
-                this.remove();
-            };
-        });
-    },
-    setPosition(min, max) {
-        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    },
+this.listen('keyup', 'continueGame', {target: document});
 ```
 
-В этом **callback** и выполняется удаление вновь созданного элемента. Кроме этого, при создании каждого элемента задается координата его расположения по высоте с небольшим случайным отклонением. В результате этого элементы будут появляться в игре на чуть разных высотах.
-
-Если пользователь захочет продолжить игру, то он может повторно нажать на клавишу пробела.
-
-Для этого в методе **GaveOver** добавлен слушатель **continueGameKeyUp**.
+, который при отпускание клавиши пробела вызывает метод продолжения игры «**continueGame**».
 
 ```javascript
-document.addEventListener('keyup', continueGameKeyUp);
-```
+continueGame() {
+    this.showMessage = false;
 
-Он при отпускание клавиши пробела вызывает метод продолжения игры «**continueGame**».
+    const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+    cactuses.forEach(cactus => {
+        cactus.remove();
+    });
 
-```javascript
-function continueGameKeyUp(e) {
-    if (e.code === 'Space') {
-        continueGame();
-    }
+    this.nextCactus = 0;
+
+    this.dino.continueMove();
+
+    const clouds = this.gameSpace.querySelectorAll('oda-cloud');
+    clouds.forEach(cloud => {
+        cloud.continueMove();
+    });
+
+    const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
+    pterodactyls.forEach(pterodactyl => {
+        pterodactyl.continueMove();
+    });
+
+    this.score = 0;
+
+    this.timerID = setInterval(() => {
+        this.score++;
+    }, 100);
+
+    this.unlisten('keyup', 'continueGame', {target: document});
+
+    this.listen('keydown', 'dinoJump', {target: document});
+
+    requestAnimationFrame(this.checkDino.bind(this));
 }
 ```
 
 В этом методе выполняются следующие действия:
 
+1. Скрывается надпись об окончании игры «**GameOver**».
+
 ```javascript
-function continueGame() {
+this.showMessage = false;
+```
+2. Удаляются все кактусы.
 
-    const gameOver = document.querySelector('#game-over');
-    gameOver.style.display = "none";
+```javascript
+const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+cactuses.forEach(cactus => {
+    cactus.remove();
+});
+```
 
+3. Обнуляется счетчик появления следующего кактуса.
 
-    const audio = document.querySelector('audio');
-    audio.play();
+```javascript
+this.nextCactus = 0;
+```
 
-    const cactuses = document.querySelectorAll('oda-cactus');
-    cactuses.forEach(cactus => {
-        cactus.remove();
-    });
+4. Возобновляется анимация движения ног динозавра методом **continueMove**.
 
-    cactusDistance = 0;
-    nextCactusDistance = 0;
+```javascript
+this.dino.continueMove();
+```
 
-    const dino = document.querySelector('oda-dino');
-    dino.continueMove();
+5. Возобновляется анимация движения облаков и птеродактилей их методами **continueMove**.
 
-    const clouds = document.querySelectorAll('oda-cloud');
-    clouds.forEach(cloud => {
-        cloud.continueMove();
-    });
+```javascript
+const clouds = this.gameSpace.querySelectorAll('oda-cloud');
+clouds.forEach(cloud => {
+    cloud.continueMove();
+});
 
-    const pterodactyls = document.querySelectorAll('oda-pterodactyl');
-    pterodactyls.forEach(pterodactyl => {
-        pterodactyl.continueMove();
-    });
+const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
+pterodactyls.forEach(pterodactyl => {
+    pterodactyl.continueMove();
+});
+```
 
-    const score = document.getElementById('score');
-    score.textContent = 0;
-    timerID = setInterval(() => {
-        score.textContent = +score.textContent + 1;
-    }, 100);
+6. Очищается предыдущее значение счетчика очков **score**, и запускается новый таймер для их увелечения на единицу через каждые 100 миллисекунд.
 
-    document.removeEventListener('keyup', continueGameKeyUp);
+```javascript
+this.score = 0;
+this.timerID = setInterval(() => {
+    this.score++;
+}, 100);
+```
 
-    document.addEventListener('keydown', dinoJumpKeyDown);
+7. Удаляется обработчик нажатия клавиш продолжения игры **continueGameKeyUp**.
 
-    requestAnimationFrame(checkDino);
+```javascript
+this.unlisten('keyup', 'continueGame', {target: document});
+```
+
+8. Регистрируется обработчик нажатия клавиш для выполнения прыжка тиранозавром **dinoJumpKeyDown**.
+
+```javascript
+this.listen('keydown', 'dinoJump', {target: document});
+```
+
+9. Запускается метод проверки столкновения тиранозавра с кактусами **checkDino** на следующем кадре анимации с помощью метода **requestAnimationFrame**.
+
+```javascript
+ requestAnimationFrame(this.checkDino.bind(this));
+```
+
+В результате это пользователь сможет заново начать новую игру, стараясь улучшить свой предыдущий результат.
+
+Во время начала игры и во время ее возобновления можно добавить проигрывание музыкальной композиции группы T-Rex «**Get It On**».
+
+Для этого первоначально нужно поместить музыкальный файл в папку «**audio**». Пусть этот файл будет иметь имя «**t-rex-get-it-on.mp3**».
+
+На втором этапе к компоненту «**oda-dino**» нужно добавить свойство «**audio**» и проинициализировать его в хуке «**ready**» следующим образом:
+
+```javascript
+props: {
+    svg: {},
+    audio: {},
+},
+ready() {
+    this.audio = new Audio('./audio/t-rex-get-it-on.mp3');
+    this.audio.volume = .8;
+    this.audio.loop = true;
+    this.audio.play();
 }
 ```
 
-1. Скрывается надпись «**GameOver**».
-
-2. Удаляются все кактусы.
-
-3. Обнулятся позиция текущего кактуса так, чтобы со следующим анимационным кадром был сразу создан новый кактус.
-
-4. Возобновляется анимация движения ног тиранозавра методом **continueMove**.
+В моменты столкновения динозавра с кактусом проигрывание этой композиции можно приостановить методом «**pause**».
 
 ```javascript
-continueMove(){
+stopMove() {
+    this.audio.pause();
+    this.style.animationPlayState="paused";
+    this.svg.pauseAnimations();
+    this.svg.getElementById('big-eye').setAttribute('visibility', 'visible');
+    this.svg.getElementById('small-eye').setAttribute('visibility', 'hidden');
+    this.svg.getElementById('month').setAttribute('visibility', 'visible');
+},
+```
+
+А при возобновления игры можно продолжить её проигрывание с помощью метода «**play**».
+
+```javascript
+continueMove() {
+    this.audio.play();
     this.classList.remove("dino-jump");
     this.svg.unpauseAnimations();
     this.style.animationPlayState=null;
@@ -1220,19 +1285,6 @@ continueMove(){
 }
 ```
 
-В нем удаляется анимация предыдущего прыжка, если он был до столкновения с кактусом. Возобновляется анимация движения ног методом **unpauseAnimations**. Отменяется пауза анимации в in-line стилях. Скрываются большой глаз и рот, а отображается предыдущий маленький глаз **small-eye**
+В результате этого пользователь сможет насладиться легендарным хитом группы «T-Rex» «**Get It On**» во время игры.
 
-5. Возобновляется анимация движения облаков и птеродактилей их методами **continueMove**.
-
-6. Очищается предыдущее значение счетчика очков **score**, и запускается новый таймер для их увелечения на единицу через каждые 100 миллисекунд.
-
-7. Возобновляется проигрывание музыкальной композиции группы T-Rex «**Get It On**».
-
-8. Удаляется обработчик нажатия клавиш продолжения игры **continueGameKeyUp**.
-
-9. Регистрируется обработчик нажатия клавиш для выполнения прыжка тиранозавром **dinoJumpKeyDown**.
-
-10. Запускается метод проверки столкновения тиранозавра с кактусами **checkDino** на следующем кадре анимации с помощью метода **requestAnimationFrame**.
-
-В результате это пользователь сможет заново начать новую игру, стараясь улучшить свой предыдущий результат.
-
+![Давай займемся любовью] (learn\images\my-first-component\get-it-on.jpg "Давай займемся любовью")

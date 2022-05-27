@@ -78,6 +78,7 @@ ODA({ is: 'oda-dino',
     ready() {
         this.audio = new Audio('./audio/t-rex-get-it-on.mp3');
         this.audio.volume = .8;
+        this.audio.loop = true;
         this.audio.play();
     },
     attached() {

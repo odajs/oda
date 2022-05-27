@@ -119,8 +119,6 @@ ODA({ is: 'oda-game',
         });
 
         this.nextCactus = 0;
-        this.nextNextCactus = 0;
-
 
         this.dino.continueMove();
 

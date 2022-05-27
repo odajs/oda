@@ -226,8 +226,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
                 border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '2px dotted red' : designMode ? '1px dashed lightblue' : '1px solid transparent'}};
-                min-width: {{layout?.minWidth || (layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
-                max-width: {{layout.maxWidth || 'unset'}};
+                min-width: {{layout?.minWidth ? layout?.minWidth : (layout.isGroup || layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
+                width: {{layout.width ? layout.width : 'unset'}};
             }
 
             [disabled] {
@@ -443,12 +444,20 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
         </div>
         <div class="horizontal row" style="align-items: center">
-        <label>max-width</label>
-            <input id="maxWidth" ::value="layout.maxWidth" @blur="setWidth">
+        <label>width</label>
+            <input id="width" ::value="layout.width" @blur="setStyle">
+        </div>
+        <div class="horizontal row" style="align-items: center">
+            <label>max-width</label>
+            <input id="maxWidth" ::value="layout.maxWidth" @blur="setStyle">
         </div>
         <div class="horizontal row" style="align-items: center">
             <label>min-width</label>
-            <input id="minWidth" ::value="layout.minWidth" @blur="setWidth">
+            <input id="minWidth" ::value="layout.minWidth" @blur="setStyle">
+        </div>
+        <div class="horizontal row" style="align-items: center">
+            <label>style</label>
+            <input id="style" ::value="layout.style" @blur="setStyle">
         </div>
 
         <span ~if="layout.isGroup">Group</span>
@@ -488,7 +497,7 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
         const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
         this.lay.saveScript(this.layout, action);
     },
-    setWidth(e) {
+    setStyle(e) {
         this.render();
     }
 })
