@@ -23,7 +23,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             : this.items;
     },
     props: {
-        value: null,
+        value: Object,
         hideButton:{
             default: false,
             reflectToAttribute: true

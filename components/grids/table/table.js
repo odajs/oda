@@ -1166,7 +1166,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             e.dataTransfer.setDragImage(new Image(), 0, 0);
         }
     },
-
+    _dropCheckWait: null,
     _onDragLeave(e) {
         const el = e.path.find(p => p.row);
         if (el)
@@ -1287,6 +1287,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
 
     _onDragEnd(e) {
         this.draggedRows = [];
+        this._dropCheckWait = null;
     },
     _dblclick(e) {
         const el = e.path.find(p => p.row);

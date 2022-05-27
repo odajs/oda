@@ -562,7 +562,7 @@ get gameSpace() {
     return this.$refs["game-space"];
 },
 
-Для начала игры необходимо зарегистрировать обработчик, который будет срабатывать при отпускании пользователем любой клавиши клавиатуры. Для этого в хуке «**ready**»  вызовем предопределенный метод «**listen**», который будет автоматически зарегистрировать указанный обработчик события.
+Для начала игры необходимо зарегистрировать обработчик, который будет срабатывать при отпускании пользователем любой клавиши клавиатуры. Для этого в хуке «**ready**» компонента «**oda-game**» вызовем предопределенный метод «**listen**», который автоматически зарегистрирует указанный обработчик события.
 
 ```javascript
 ready() {
@@ -570,7 +570,7 @@ ready() {
 }
 ```
 
-В качестве обработчика события здесь регистрируется метод компонента «**startGame**», который будет выполнятся при наступлении события «**keyup**».
+В качестве обработчика события здесь выступает метод «**startGame**», который будет и будет полнятся при наступлении события «**keyup**».
 
 ```javascript
 startGame(e) {
@@ -592,18 +592,22 @@ startGame(e) {
 },
 ```
 
-В нем предусмотрены следующие действия:
+Данный метод проверяет, какую клавишу нажал и отпустил пользователь в данный момент.
 
-1. Проверка, какую клавишу нажал и отпустил пользователь в данный момент. Если была нажата не клавиша пробела, то сразу же происходит выход из этого метода.
+Если была нажата клавиша не пробела, то сразу же происходит выход из этого метода.
 
-2. Если же была нажата клавиша пробела, то надпись «**Для начала игры нажмите пробел**» скрывается присвоением свойству «**showMessage**» значения «**false**», а её текст заменяется на сообщение «**Game Over**», которое будет появляться следующий раз в момент окончания игры.
+ В противном случае выполняются следующие действия:
+
+ 1. Скрывается надпись «**Для начала игры нажмите пробел**» присвоением свойству «**showMessage**» значения «**false**»
+
+ 2. Текст надписи заменяется сообщением «**Game Over**», которое будет появляться при столкновении динозавра с кактусом.
 
 ```javascript
     this.showMessage = false;
     this.message = "Game Over";
 ```
 
-3. Создание таймер, который будет каждые 100 миллисекунд увеличивает счетчик набранных очков на 1. Для остановки этого таймера его идентификатор сохраняется в свойстве «**timerID**» нашего компонента.
+3. Создается таймер, который будет каждые 100 миллисекунд увеличивать счетчик набранных очков на единицу.
 
 ```javascript
 timerID = setInterval(() => {
@@ -611,25 +615,27 @@ timerID = setInterval(() => {
 }, 100);
 ```
 
-4. Удаление обработчика начала игры **startGame** с помощью предопределенного метода «**unlisten**».
+Для остановки таймера в дальнейшем его идентификатор сохраняется в свойстве «**timerID**» нашего компонента.
+
+4. Удаляется обработчик начала игры **startGame** с помощью предопределенного метода «**unlisten**».
 
 ```javascript
 this.unlisten('keyup', 'startGame', {target: document});;
 ```
 
-5. Регистрация обработчика нажатия клавиш для выполнения прыжка динозавра «**dinoJump**» с помощью предопределенного метода «**listen**».
+5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра «**dinoJump**» с помощью предопределенного метода «**listen**».
 
 ```javascript
 this.listen('keydown', 'dinoJump', {target: document});document.addEventListener('keydown', dinoJumpKeyDown);
 ```
 
-6. Запуск метода «**checkDino**» со следующим кадром анимации, в котором динамически будут создаваться все остальные элементы игры и определяться факт столкновения динозавра с кактусом.
+6. Запускается метода «**checkDino**» со приходом следующего кадра анимации, в котором динамически будут создаваться все остальные элементы игры и определяться факт столкновения динозавра с кактусом.
 
 ```javascript
  requestAnimationFrame(this.checkDino.bind(this));
 ```
 
-Для привязки к этому метод контекста данного компонента необходимо обязательно воспользоваться метод «**bind**». В противном случае указатель «**this**» внутри метода «**checkDino**» будет иметь неопределенное значение «**undefined**».
+Для привязки к этому метод контекста текущего компонента необходимо обязательно использовать метод «**bind**». В противном случае указатель «**this**» внутри метода «**checkDino**» будет иметь неопределенное значение «**undefined**».
 
 Метод «**checkDino**» в компоненте «**oda-game**» можно задать следующим образом:
 
@@ -651,7 +657,7 @@ checkDino() {
 
 В нем создаются:
 
-1. **Облака** с помощью метода компонента «**createCloud**».
+1. **Облака** с помощью метода «**createCloud**».
 
 ```javascript
 createCloud() {
@@ -687,60 +693,234 @@ createPterodactyl() {
 }
 ```
 
-В каждом из этих методов все элементы создаются через определенный интервал с небольшой случайной составляющей. Для этого каждый такт анимации счетчики: «**nextCloud**», «**nextCactus**» и «**nextPterodactyl**» уменьшаются на 1. Как только они достигнут нулевого значения, то запуститься механизм создания нового элемента (облака, кактуса или птеродактиль) в рабочей области игры и будет задано следующее случайное значение, через которое они должны будут создаваться в следующий раз. В результате этого все элементы будет создаваться через небольшой интервал друг после друга.
+Все эти методы нужно добавить в компонент «**oda-game**».
 
-В конце метода «**checkDino**» проверяется пересечение динозавра со всеми кактусами с помощью его метода «**isIntersection**».
+В каждом из них соответствующие элементы создаются через определенный интервал с небольшой случайной составляющей. Для этого каждый такт анимации счетчики «**nextCloud**», «**nextCactus**» и «**nextPterodactyl**» уменьшаются на 1. Как только они достигнут нулевого значения, то запуститься механизм создания нового элемента (облака, кактуса или птеродактиль) и будет сгенерировано следующее случайное значение, через которое они должны будут появиться в следующий раз. В результате этого все элементы в игре будет создаваться через небольшой интервал друг после друга.
 
-В методе начала игры **startGame** создаются все необходимые для нее элементы.
-
-Если пересечение произошло, то игра останавливается с помощью функции **gameOver**. В противном случае, вызов метод **checkDino** повторяется в следующем такте анимации.
-
-Метод **gameOver** реализован следующем образом:
+В конце метода «**checkDino**» проверяется пересечение динозавра со всеми кактусами с помощью метода «**isIntersection**» класса «**oda-dino**».
 
 ```javascript
-function gameOver() {
+isIntersection(cactus) {
+    let dinoCoords = this.getBoundingClientRect();
+    let cactusCoords = cactus.getBoundingClientRect();
 
-    document.querySelector('#game-over').style.display = "";
+    if ((cactusCoords.left+cactusCoords.width < dinoCoords.left ||
+        dinoCoords.left+dinoCoords.width < cactusCoords.left ||
+        dinoCoords.top + dinoCoords.height < cactusCoords.top ||
+        cactusCoords.top + cactusCoords.height < dinoCoords.top))
+    {
+        return false;
+    }
 
-    clearInterval(timerID);
+    return intersectPolygonPolygon(this.polygons.get('dino-body'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)
+        || (getComputedStyle(this.svg.getElementById('first-leg-up')).visibility === 'visible' ?
+                intersectPolygonPolygon(this.polygons.get('dino-first-leg-up'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                intersectPolygonPolygon(this.polygons.get('dino-first-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords)) ||
+            (getComputedStyle(this.svg.getElementById('second-leg-up')).visibility === 'visible' ?
+                intersectPolygonPolygon(this.polygons.get('dino-second-leg-up'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords) :
+                intersectPolygonPolygon(this.polygons.get('dino-second-leg-down'), cactus.polygons.get('cactus'), dinoCoords, cactusCoords));
+}
+```
 
-    const dino = document.querySelector('oda-dino');
-    dino.stopMove();
 
-    const clouds = document.querySelectorAll('oda-cloud');
+В нем находятся текущие координаты кактуса и динозавра с помощью метода «**getBoundingClientRect**», а затем определяется фак пересечения полигонов тела динозавра «**dino-body**» и его ног с полигоном кактуса.
+
+Для этого первоначально все элементы «**path**» SVG-примитива динозавра и кактуса преобразуются в полигоны внутри их классов с помощью хука **attached**, который вызывается автоматически при присоединении компонента к DOM документа.
+
+```javascript
+    attached() {
+        this.polygons = new Map();
+        this.svg = this.$core.root.querySelector("svg");
+        this.polygons.set('dino-body', createPolygon(this.svg,'#body'));
+        this.polygons.set('dino-first-leg-up', createPolygon(this.svg,'#first-leg-up'));
+        this.polygons.set('dino-first-leg-down', createPolygon(this.svg,'#first-leg-down'));
+        this.polygons.set('dino-second-leg-up', createPolygon(this.svg,'#second-leg-up'));
+        this.polygons.set('dino-second-leg-down', createPolygon(this.svg,'#second-leg-down'));
+    },
+```
+
+В этом хуке к компоненту динозавра добавляется свойство «**polygons**», в котором записываются полигоны его тела и всех ног под уникальными именами, так чтобы их было быстрее найти в дальнейшем.
+
+Аналогично формируется хук «**attached**» у компонента кактуса «**oda-cactus**».
+
+```javascript
+attached() {
+    const svg = this.$core.root.querySelector("svg");
+    this.polygons = new Map();
+    this.polygons.set('cactus', createPolygon(svg,'path'));
+    this.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            this.remove();
+        };
+    });
+},
+```
+
+В этих хуках для преобразования SVG-элементов «**path**» в прямолинейные полигоны используются функции «**createPolygon**», которая задается отдельно в js-модуле «**utils.js**».
+
+```javascript
+export function createPolygon(svg, selector) {
+    return pathToPolygon(svg.querySelector(selector));
+}
+```
+
+Она находит соответствующий элемент у переданного SVG-примитива и вызывает функцию преобразования **pathToPolygon**, которая задается в том же модуле следующим образом:
+
+```javascript
+function pathToPolygon(path) {
+    const points = path.getAttribute('d').split(',');
+    let polygon = [];
+    let lastPoint = new Point(0,0);
+    points.forEach(point => {
+        point = point.trim();
+        switch (point[0]) {
+            case 'M':
+                point = point.slice(1).split(' ');
+                lastPoint.x += +point[0];
+                lastPoint.y += +point[1];
+                polygon.push(lastPoint.clone());
+                break;
+            case 'h':
+                lastPoint.x += +point.slice(1);
+                polygon.push(lastPoint.clone());
+                break;
+            case 'v':
+                lastPoint.y += +point.slice(1);
+                polygon.push(lastPoint.clone());
+                break;
+        }
+    })
+    return polygon;
+}
+```
+Эта функция используют для преобразования специальный класс точек «**Point**».
+
+```javascript
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    clone() {
+        return new Point(this.x,this.y);
+    }
+    moveTo(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+}
+```
+
+фактически функция «**pathToPolygon**» преобразует последовательность относительных точек, в последовательность абсолютных точек каждого элемента SVG-пути «path».
+
+Для нахождения пересечения двух полигонов используется функция «**intersectPolygonPolygon**»
+
+```javascript
+export function intersectPolygonPolygon(polygon1, polygon2, dinoCoords, svgCoords) {
+    var length = polygon1.length;
+    for ( let i = 0; i < length; i++ ) {
+        const result = intersectionLinePolygon(polygon1[i], polygon1[(i+1) % length], polygon2, dinoCoords, svgCoords);
+        if (result)
+            return true;
+    }
+    return false;
+}
+```
+
+Она использует функцию «**intersectionLinePolygon**», которая находит пересечение полигона с одной линией, заданной с помощью двух точек начала и конца.
+
+```javascript
+function intersectionLinePolygon(point1, point2, polygon, dinoCoords , svgCoords) {
+    const length = polygon.length;
+
+    for ( let i = 0; i < length; i++ ) {
+        if ( intersectionLineLine(point1.clone(), point2.clone(), polygon[i].clone(), polygon[(i+1) % length].clone(), dinoCoords, svgCoords) )
+            return true;
+    }
+
+    return false;
+}
+```
+
+Эта функция в свою очередь использует функцию «**intersectionLineLine**», для нахождения пересечения линии с линией.
+
+```javascript
+function intersectionLineLine(a1, b1, a2, b2, dinoCoords, svgCoords) {
+
+    a1.moveTo(dinoCoords.x, dinoCoords.y);
+    b1.moveTo(dinoCoords.x, dinoCoords.y);
+    a2.moveTo(svgCoords.x, svgCoords.y);
+    b2.moveTo(svgCoords.x, svgCoords.y);
+
+    let maxA = {
+        x: Math.max(a1.x, b1.x),
+        y: Math.max(a1.y, b1.y),
+    }
+
+    let minA = {
+        x: Math.min(a1.x, b1.x),
+        y: Math.min(a1.y, b1.y),
+    };
+
+    let maxB = {
+        x: Math.max(a2.x, b2.x),
+        y: Math.max(a2.y, b2.y),
+    }
+
+    let minB = {
+        x: Math.min(a2.x, b2.x),
+        y: Math.min(a2.y, b2.y),
+    };
+
+    return minA.x <= minB.x && minB.x <= maxA.x && minA.y >= minB.y && minA.y <= maxB.y ||
+        minA.x <= maxB.x && maxB.x <= maxA.x && maxA.y >= minB.y && maxA.y <= maxB.y ||
+        minB.x <= minA.x && minA.x <= maxB.x && minB.y >= minA.y && minB.y <= maxA.y ||
+        minB.x <= maxA.x && maxA.x <= maxB.x && maxB.y >= minA.y && maxB.y <= maxA.y;
+}
+```
+
+Именно эта функции в итоге и определяет пересекается ли динозавр с кактусом или нет.
+
+Если пересечение будет найдено, то будет вызван метод «**gameOver**» компонента «**oda-game**». В противном случае проверка пересечения динозавра с кактусом продолжится на следующем кадре анимации.
+
+В методе «**gameOver**» выполняются следующие действия:
+
+```javascript
+gameOver() {
+    this.showMessage = true;
+
+    clearInterval(this.timerID);
+
+    this.dino.stopMove();
+
+    const clouds = this.gameSpace.querySelectorAll('oda-cloud');
     clouds.forEach(cloud => {
         cloud.stopMove();
     });
 
-    const cactuses = document.querySelectorAll('oda-cactus');
+    const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
     cactuses.forEach(cactus => {
         cactus.stopMove();
     });
 
-    const pterodactyls = document.querySelectorAll('oda-pterodactyl');
+    const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
     pterodactyls.forEach(pterodactyl => {
         pterodactyl.stopMove();
     });
 
-    const audio = document.querySelector('audio');
-    audio.currentTime = 0;
-    audio.pause();
+    this.unlisten('keydown', 'dinoJump', {target: document});
 
-    document.removeEventListener('keydown', dinoJumpKeyDown);
-
-    document.addEventListener('keyup', continueGameKeyUp);
+    this.listen('keyup', 'continueGame', {target: document});
 }
 ```
 
-В нем:
+1. Отображается сообщение об окончании игры «**Game Over**».
 
-1. Отображается надпись с окончанием игры «Game Over».
-
-1. Останавливается таймер счетчика набранных очков с использованием идентификатора **timerID**.
+1. Останавливается таймер счетчика набранных очков с использованием ранее сохраненного идентификатора в свойстве компонента **timerID**.
 
 1. Останавливается анимация динозавра вызовом метода «**stopMove**» компонента «**oda-dino**».
 
-В нем приостанавливается эффект анимации прыжка с заданием значения **paused** для стиля **animationPlayState**.
+В нем приостанавливается эффект анимации прыжка динозавра с заданием значения **paused** для стиля **animationPlayState**
 
 ```javascript
 stopMove(){
@@ -752,9 +932,9 @@ stopMove(){
 }
 ```
 
- Кроме этого, останавливается анимация движения лап с помощью метода **pauseAnimations** элемента **svg**, а также прячется маленький глаз и отображаются рот и большой глаз динозавра, заданием свойства «**visibility**» значениями «**visible**» и «**hidden**» у соответствующих элементов.
+ Кроме этого, останавливается анимация движения ног динозавра с помощью метода **pauseAnimations** элемента **svg**, а также прячется маленький глаз и отображаются его рот и большой глаз с помощью свойства «**visibility**».
 
-У птеродактиля отключается только эффект движения и взмахи крыльев.
+У птеродактиля во время завершения игры отключается только эффект движения и взмахи крыльев.
 
 ```javascript
 stopMove(){
@@ -772,7 +952,7 @@ stopMove(){
 }
 ```
 
-Анимация эффекта движения задается у всех элементов игры с помощью ключевых кадров.
+Эффект движения задается у всех элементов игры с помощью ключевых кадров.
 
 Так для анимации прыжка динозавра задан следующий ключевой кадр:
 
@@ -795,17 +975,17 @@ stopMove(){
 
 Здесь используются css-переменные, которые задают:
 
-1. Начальные координаты тиранозавра по высоте (**--dino-top: 314px**).
+1. Начальные координаты расположения динозавра по высоте (**--dino-top: 314px**).
 
-1. Промежуточное координаты тиранозавра по высоте (
+1. Промежуточное координаты динозавра по высоте (
     **--dino-max-top: 20px**).
 
-1. Конечные координаты тиранозавра по высоте (**--dino-top: 314px**).
+1. Конечные координаты динозавра по высоте (**--dino-top: 314px**).
 
-Этот ключевой кадр используется в css-классе **dino-jump**, который определяет параметры прыжка тиранозавра.
+Этот ключевой кадр используется в css-классе **dino-jump**, который определяет анимацию параметры прыжка динозавра.
 
 ```css
-.dino-jump {
+ .dino-jump {
     animation-name: dino-jump;
     animation-duration: 1s;
     animation-iteration-count: 1;
@@ -813,12 +993,12 @@ stopMove(){
 }
 ```
 
-Здесь задано то, что прыжок будет длится одну секунду и не будет повторяться.
+Ключевой кадр «**dino-jump**» и класс стилизации «**.dino-jump**» необходимо поместить в шаблон компонента «**oda-dino**» в блок «**style**».
 
-Данный класс добавляется к компоненту тиранозавра **oda-dino** в его методе **jump**.
+Данная анимация добавляется к компоненту хосту компонента **oda-dino** в его методе **jump**.
 
 ```javascript
-jump() {
+ jump() {
     this.classList.add("dino-jump");
     this.svg.pauseAnimations();
     this.getAnimations().forEach((anim, i, arr) => {
@@ -828,17 +1008,17 @@ jump() {
             this.svg.unpauseAnimations();
         }
     });
-}
+},
 ```
 
-В этом методе, кроме добавления css-класса, на время прыжка останавливается анимация ног тиранозавра с возможностью ее возобновления после окончания прыжка. Для этого предусмотрен специальный **callback** **onfinish**, в котором удаляется добавленный класс анимации и возобновляется анимации ног.
+В этом методе, кроме добавления css-класса «**dino-jump**», на время прыжка останавливается анимация ног тиранозавра с возможностью ее возобновления после окончания прыжка. Для этого предусмотрен специальный **callback** **onfinish**, в котором удаляется добавленный класс анимации и возобновляется анимации ног динозавра.
 
 Аналогично задается анимация движения кактусов, облаков и птеродактилей.
 
-В этом случае ключевые кадры определяют анимацию не по верхней координате элемента, а по левой. Например, для облаков ключевой кадр будет объявлен следующим образом:
+В этом случае ключевые кадры определяют анимацию элементов не по высоте, а по левой стороне. Например, для облаков ключевой кадр будет объявлен следующим образом:
 
 ```javascript
-@keyframes cloud-move {
+@keyframes move {
     from {
         left: 100%;
     }
@@ -847,37 +1027,111 @@ jump() {
     }
 }
 ```
+Ключевые кадры для кактусов и птеродактилей будут отображать свои компоненты, начиная с правой границы браузера летящими к левой границе.
 
-Этот ключевой кадр будет использоваться в css-классе **oda-cloud**, который задается движение облаков сразу после их создания от левой границы до правой за время 6 секунд.
+```javascript
+@keyframes move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -136px;
+    }
+}
+```
 
-```css
-Класс облаков
-oda-cloud {
+Эти ключевые кадры будут использоваться при стилизации хостов соответствующих компонентов.
+
+Например, движение облаков облаков начнется справа налево и будет продолжаться 6 секунд.
+
+```javascript
+:host {
     position: absolute;
-    animation-name: cloud-move;
+    z-index: 100;
+    animation-name: move;
     animation-duration: 6s;
     animation-iteration-count: 1;
     animation-timing-function: linear;
-    z-index: 100;
 }
+```
+
+Анимация птеродактилей будет длиться 3 секунды.
+
+```javascript
+:host {
+    position: absolute;
+    z-index: 200;
+    animation-name: move;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+```
+
+Кроме этого, птеродактили будут располагаться перед облаками, так как у них CSS-свойство «**z-index**» задается с большим значением.
+
+В отличие от птеродактилей у кактусов всегда будет оставаться фиксированная высота. Поэтому она задается непосредственно при стилизации хоста компонента «**oda-cactus**» равной 301 пикселю.
+
+```javascript
+:host {
+    position: absolute;
+    top: 301px;
+    z-index: 200;
+    animation-name: move;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+```
+
+Позиция появления птеродактиля определяется случайным образом в диапазоне от 10 до 100 пикселей в момент его создания в хуке «**attached**» с помощью метода «**setPosition**».
+
+```javascript
+    attached() {
+        this.setPosition(10,100);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
+```
+
+Кроме этого, в колбэке окончания анимации  «**onfinish**» предусмотрено автоматическое удаление птеродактиля,  когда он полностью выйдет за правую границу игры.
+
+Аналогично в хуке «**attached**» предусмотрен создание облаков со
+
+```javascript
+    attached() {
+        this.setPosition(20, 150);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
 ```
 
 После захода за левую границу окна браузера облака, кактусы и птеродактили будут удалятся. Для этого в методах создания этих элементов предусмотрен **callback** **onfinish**, который срабатывает в момент завершения анимации.
 
 ```javascript
-function createCloud(){
-    const gameSpace = document.getElementById('game-space');
-    gameSpace.append( document.createElement('oda-cloud'));
-    const newCloud = gameSpace.lastChild;
-    const min = 20;
-    const max = 150;
-    newCloud.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
-    newCloud.getAnimations().forEach((anim, i, arr) => {
-        anim.onfinish = () => {
-            newCloud.remove();
-        };
-    });
-}
+    attached() {
+        this.setPosition(10,100);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
 ```
 
 В этом **callback** и выполняется удаление вновь созданного элемента. Кроме этого, при создании каждого элемента задается координата его расположения по высоте с небольшим случайным отклонением. В результате этого элементы будут появляться в игре на чуть разных высотах.

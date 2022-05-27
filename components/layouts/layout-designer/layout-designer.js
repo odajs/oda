@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0;" :root-savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root-savekey="rootSaveKey"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -97,6 +97,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 @apply --flex;
                 height: 100%;
                 margin-top: 8px;
+                margin-left: {{iconSize + 'px'}};
             }
             [focused]{
                 @apply --content;
@@ -109,30 +110,14 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 cursor: pointer; 
                 font-size: {{fontSize}};
             }
-            input {
-                border: none;
-                outline: none;
-                margin: 1px;
-                font-size: {{fontSize}};
-            }
             oda-button{
                 transform: scale(.6);
                 padding: 0px;
                 margin-left: auto;
             }
-            .tabs-label {
-                border-bottom: 1px solid lightgray;
-                margin: 1px;
-                padding: 8px 4px 8px 4px;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                cursor: {{designMode ? 'pointer' : 'unset'}};
-                font-size: {{fontSize}};
-            }
         </style>
-        <label class="tabs-label" ~is="editTab===layout ? 'input' : 'label'" @dblclick="editTab = designMode ? layout : undefined" ::value="layout.label" @change="tabRename($event, layout)">{{layout.label}}</label>
-        <div class="horizontal flex header" style="flex-wrap: wrap; border-top: 1px solid white;" ~style="{opacity: layout?.$expanded ? '1' : '0'}">
-           <div @mousedown.stop.prev="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid white;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+        <div ~if="layout.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
+           <div @mousedown.stop.prev="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
@@ -202,7 +187,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
 })
 
 ODA({ is: 'oda-layout-designer-tabs-structure',
-    template: /*html*/`
+    template: `
         <style>
             :host{
                 @apply --horizontal;
@@ -212,8 +197,9 @@ ODA({ is: 'oda-layout-designer-tabs-structure',
                 /*@apply --header;*/
                 padding: 4px;
                 position: relative;
+                border: 1px solid darkgray;
                 margin-left: {{iconSize}}px !important;
-                @apply --shadow;
+                border-top: none;
             }
 
         </style>
@@ -222,7 +208,7 @@ ODA({ is: 'oda-layout-designer-tabs-structure',
 })
 
 ODA({ is: 'oda-layout-designer-group-structure',
-    template: /*html*/`
+    template: `
         <style>
             :host{
                 @apply --vertical;
@@ -232,8 +218,8 @@ ODA({ is: 'oda-layout-designer-group-structure',
             .group {
                 display: flex;
                 flex: 1;
-                padding: 0 4px 4px 0;
-                border: {{borderColor ? '1px solid ' + borderColor : ''}};
+                padding: {{layout?.hideLabel ? 0 : '0 4px 4px 0'}};
+                border: {{designMode ? '2px solid blue' : (layout?.hideLabel && borderColor) ? '' : '1px solid ' + borderColor || 'lightgray'}};
                 flex-direction: {{layout.type==='vGroup' ? 'column' : 'row'}};
             }
         </style>
@@ -245,14 +231,13 @@ ODA({ is: 'oda-layout-designer-group-structure',
 })
 
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
-    template: /*html*/`
+    template: `
         <style>
             :host{
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
                 @apply --flex;
-                min-width: {{hasChildren && !layout.isGroup?'100%':'32px'}};
                 /* flex-grow: {{layout?.noFlex?'1':'100'}}; */
                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /* flex-basis: auto; */
@@ -260,9 +245,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
-            }
-            .tabs{
-                /* @apply --header; */
+                min-width: {{layout?.width || (hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '2px dotted red' : designMode ? '1px dashed lightblue' : '1px solid transparent'}};
             }
             [focused]{
                 @apply --content;
@@ -301,58 +285,40 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 pointer-events: none;
                 background-color: rgba(255,0,0,.3) !important;
             }
-            .group-label {
-                padding: 4px 0;
-                margin: 1px;
+            .label {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: {{fontSize}};
                 cursor: {{designMode ? 'pointer' : 'unset'}};
+                padding: {{layout?.hideLabel ? 0 : '44px 0'}};
+                margin: {{layout?.hideLabel ? 0 : '1px'}}";
+                width: 100%;
+                color: {{designMode && layout?.isGroup ? layout?.hideLabel ? 'red' : 'blue' : layout?.isHide ? 'red' : ''}};
             }
-            input {
-                border: none;
-                outline: none;
-                margin: 1px;
-                font-size: {{fontSize}};
+            [contenteditable] {
+                outline: 0px solid transparent;
             }
         </style>
-        <div ~if="designMode" ~is="designMode?'style':'div'">
-            :host{
-                outline: 1px dashed lightblue;
-            }
-        </div>
-        <div ~if="designMode && layout?.isVirtual" ~is="designMode?'style':'div'">
-            :host{
-                outline: 1px dashed blue;
-            }
-        </div>
-        <div ~if="designMode && layout?.isHide" ~is="designMode?'style':'div'">
-            :host{
-                outline: 1px dashed red;
-            }
-        </div>
         <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
-            <div ~if="showLabel && (designMode || layout.label)" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: iconSize + 'px'}">
-                <label class="group-label" ~is="editLabel ? 'input' : 'label'" ::value="layout._label" @dblclick="editLabel = designMode" @change="setLabel">{{layout._label || layout.label}}</label>
-                <oda-button ~if="designMode && layout?.isGroup" :icon-size="16" ~if="designMode" icon="icons:close" fill="red"></oda-button>
+            <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: layout?.isTabs ? '' : iconSize + 'px'}">
+                <oda-icon ~if="layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <label class="label" :contenteditable="designMode" @blur="setLabel">{{layout._label || layout.label}}</label>
+                <oda-button ~show="layout?.isGroup && designMode" :icon-size="16" icon="icons:close" fill="red"></oda-button>
             </div>
             <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
-                <oda-icon style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <oda-icon ~if="!layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isTabs" 
-                        ~class="{tabs:layout.isTabs}" 
+                        ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                     <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded || layout?.isGroup" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="margin-bottom: 16px;" ~style="{marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded || layout?.isGroup" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideLabel ? 0 : '4px', marginLeft: layout?.hideLabel ? 0 : iconSize/2+'px', paddingLeft: layout?.hideLabel ? 0 : iconSize/2+'px'}"></div>
     `,
-    editLabel: false,
     fontSize: 'small',
     width: undefined,
-    get hasChildren() {
-        return this.layout?.items?.length;
-    },
+    get hasChildren() { return this.layout?.items?.length },
     expand() {
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
@@ -365,20 +331,32 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             e.preventDefault();
             e.stopPropagation();
             if (!this.designMode) return;
-            const res = await ODA.showDropdown('oda-menu', {
-                items: [{
-                    label: 'create Tabs', run: () => {
+            const items = [
+                    {
+                    label: '1. create Tabs', icon: 'icons:add', run: () => {
                         const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
                         this.layout.createTabs(action);
                         this.saveScript(this.layout, action);
                     }
                 }, {
-                    label: 'hide / unhide', run: () => {
+                    label: '2. hide/unhide Layout', icon: 'maps:layers', run: () => {
                         this.layout.isHide = !this.layout.isHide;
-                        const action = { action: "hide", hide: this.layout.isHide, props: { target: this.layout.id } };
+                        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
                         this.saveScript(this.layout, action);
                     }
-                }]
+                }
+            ]
+            if (this.layout.isGroup) {
+                items.push({
+                    label: '3. hide/unhide Group-label', icon: 'odant:field', run: () => {
+                        this.layout.hideLabel = !this.layout.hideLabel;
+                        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
+                        this.saveScript(this.layout, action);
+                    }
+                })
+            }
+            const res = await ODA.showDropdown('oda-menu', {
+                items
             }, { title: e.target.layout?.label });
             res.focusedItem.run.call(this)
         },
@@ -389,16 +367,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         'drop': 'ondragdrop',
     },
     labelPos: 'top',
-    get showLabel() {
-        return !this.layout.isTabs;
-    },
     layout: null,
     get draggable() {
         return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
     },
-    setLabel() {
-        this.editLabel = undefined;
+    setLabel(e) {
         if (this.designMode) {
+            this.layout._label = e.target.innerText || this.layout.label;
             const action = { action: "setLabel", label: this.layout._label || this.layout.label, props: { id: this.layout.id } };
             this.saveScript(this.layout, action)
         }
@@ -516,7 +491,7 @@ CLASS({ is: 'Layout',
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const tabs = new Layout({ id: action.tabsId, label: `Tabs` }, item.key, item.owner, item.root);
+        const tabs = new Layout({ id: action.tabsId, label: `Tabs-label` }, item.key, item.owner, item.root);
         const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
         tabs.type = 'tabs';
         tabs.width = 0;
@@ -571,69 +546,73 @@ CLASS({ is: 'Layout',
         if (!lay) return;
         lay._label = action.label;
     },
-    async hide(action, layout) {
+    async hideLayout(action, layout) {
         const item = layout || await this.find(action.props.target);
         if (!item) return;
-        item.isHide = action.hide;
+        item.isHide = action.hideLayout;
+    },
+    async hideGroupLabel(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        item.hideLabel = action.hideGroupLabel;
     },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
         const dragItem = dragInfo.dragItem || await this.find(action.props.item);
         const targItem = dragInfo.targetItem || await this.find(action.props.target);
+        await dragItem.items;
+        await targItem.items;
         if (!dragItem || !targItem) return;
-        let idxTarg = targItem._order;
-        if (action.props.to === 'left' || action.props.to === 'right') {
-            if (targItem.owner.type === 'vGroup' || targItem.owner.items?.length) {
-                const group = new Layout({ id: action.id || getUUID(), label: action.label || `Group` }, targItem.key, targItem.owner, targItem.root);
-                const idxTarget = targItem.owner.items.indexOf(targItem);
-                const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
-    
-                const idxDrag = dragItem.owner.items.indexOf(dragItem);
-                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-                
-                drag.owner = target.owner = group;
-                group._order = target._order;
-                group.type = 'hGroup';
-                group.items = [drag, target];
-                return
-            }
-            dragItem._order = idxTarg = action.props.to === 'left' ? idxTarg - .1 : idxTarg + .1;
-            if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
-                const idxDrag = dragItem.owner.items.indexOf(dragItem);
-                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-                if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
-                    const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
-                    block.isVirtual = true;
-                    block.id = dragItem.blockID;
-                    dragItem.owner.items = [block];
-                }
-                targItem.owner.items.splice(idxTarg, 0, drag);
-                drag.owner = targItem.owner;
-            }
-            targItem.owner.items.sort((a, b) => a._order - b._order).map((i, idx) => {
-                i._order = idx - .1 <= idxTarg ? idx : idx + 1;
-            });
-            if (targItem.isVirtual) {
-                idxTarg = targItem.owner.items.indexOf(targItem);
-                targItem.owner.items.splice(idxTarg, 1);
-
+        if (targItem.owner.type === 'tabs' || action.props.to === 'left' || action.props.to === 'right') {
+            if (targItem.owner.type !== 'hGroup' && (targItem.items?.length || dragItem.items?.length)) {
+                this._createGroup(action, dragItem, targItem, 'hGroup', '100%');
+            } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.type === 'hGroup' ) {
+                this._makeMove(action, dragItem, targItem, action.props.to);
+            } else {
+                this._createGroup(action, dragItem, targItem, 'hGroup', '');
             }
         } else {
-            if (targItem.owner.type === 'hGroup' || !targItem.owner.type) {
-                const group = new Layout({ id: action.id || getUUID(), label: action.label || `Group` }, targItem.key, targItem.owner, targItem.root);
-                const idxTarget = targItem.owner.items.indexOf(targItem);
-                const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
-
-                const idxDrag = dragItem.owner.items.indexOf(dragItem);
-                const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-                
-                drag.owner = target.owner = group;
-                group._order = target._order;
-                group.type = 'vGroup';
-                group.items = [drag, target];
-                return;
+            if (targItem.owner.type === 'vGroup') {
+                this._makeMove(action, dragItem, targItem, action.props.to);
+            } else {
+                this._createGroup(action, dragItem, targItem, 'vGroup');
             }
         }
+    },
+    _makeMove(action, dragItem, targItem, moveTo) {
+        let idxTarg = targItem._order;
+        dragItem._order = idxTarg = action.props.to === moveTo ? idxTarg - .1 : idxTarg + .1;
+        if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
+            const idxDrag = dragItem.owner.items.indexOf(dragItem);
+            const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+            if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
+                const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
+                block.isVirtual = true;
+                block.id = dragItem.blockID;
+                dragItem.owner.items = [block];
+            }
+            targItem.owner.items.splice(idxTarg, 0, drag);
+            drag.owner = targItem.owner;
+        }
+        targItem.owner.items.sort((a, b) => a._order - b._order).map((i, idx) => {
+            i._order = idx - .1 <= idxTarg ? idx : idx + 1;
+        });
+        if (targItem.isVirtual) {
+            idxTarg = targItem.owner.items.indexOf(targItem);
+            targItem.owner.items.splice(idxTarg, 1);
+        }
+    },
+    _createGroup(action, dragItem, targItem, groupType, width = '') {
+        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-label` }, targItem.key, targItem.owner, targItem.root);
+        const idxTarget = targItem.owner.items.indexOf(targItem);
+        const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
+        const idxDrag = dragItem.owner.items.indexOf(dragItem);
+        const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
+        drag.owner = target.owner = group;
+        group.width = width;
+        group._order = target._order;
+        group.type = groupType;
+        group.items = [drag, target];
     },
     async expanded(action) {
         const item = await this.find(action?.props?.target);

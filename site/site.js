@@ -90,11 +90,15 @@ site: {
                 <div class="vertical" style="padding: 10px;">
                     <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
                     <div class="horizontal" style="align-items:center; justify-content: flex-end;">
+                        <a ~if="location.href.includes('components/') || location.href.includes('benchmarks/') || location.href.includes('apps/')" class="no-flex" :href="location.href.replace('index.html', '').replace('#', '')" target="_blank">
+                            <oda-icon icon="icons:open-in-new" :icon-size="25" title="open in new window"></oda-icon>
+                        </a>
+                        <div class="flex"></div>
                         <a class="no-flex" :href="sets?.hrefYoutube" target="_blank">
                             <img src="site/youtube.png" height="18" style="padding: 6px 6px 0 0;"/>
                         </a>
                         <a class="no-flex" href="https://github.com/odajs/oda" target="_blank">
-                            <oda-icon icon="social-media:github" :icon-size="28" ></oda-icon>
+                            <oda-icon icon="social-media:github" :icon-size="28"></oda-icon>
                         </a>
                     </div>
                 </div>
