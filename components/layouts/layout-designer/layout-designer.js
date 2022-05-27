@@ -225,8 +225,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
-                min-width: {{layout?.width || (layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
                 border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '2px dotted red' : designMode ? '1px dashed lightblue' : '1px solid transparent'}};
+                min-width: {{layout?.minWidth || (layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                max-width: {{layout.maxWidth || 'unset'}};
             }
 
             [disabled] {
@@ -281,7 +282,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal no-flex" style="align-items: center;">
-                    <label class="label" :contenteditable="designMode" @blur="setLabel">{{layout._label || layout.label}}</label>
+                    <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
                     <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showSettings" style="padding: 0; margin: 0"></oda-button>
                 </div>
             </div>
@@ -327,11 +328,18 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     get draggable() {
         return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
     },
-    setLabel(e) {
+    setLabel(e, blur) {
         if (this.designMode) {
-            this.layout._label = e.target.innerText || this.layout.label;
-            const action = { action: "setLabel", label: this.layout._label || this.layout.label, props: { id: this.layout.id } };
-            this.saveScript(this.layout, action)
+            const tst = /\n|\r/g.test(e.target.innerText);
+            if (tst)
+                e.target.innerText = '';
+            else
+                this.layout._label = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
+            if (blur) {
+                const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
+                this.saveScript(this.layout, action);
+            }
+            this.render();
         }
     },
     onpointerdown(e) {
@@ -416,6 +424,9 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
                 cursor: pointer;
                 margin-right: auto;
             }
+            .row {
+                padding: 1px 0;
+            }
             .row:hover {
                 background: lightgray;
             }
@@ -430,6 +441,14 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
         <div class="horizontal row" style="align-items: center" @tap="hideLayout(); render()">
             <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
+        </div>
+        <div class="horizontal row" style="align-items: center">
+        <label>max-width</label>
+            <input id="maxWidth" ::value="layout.maxWidth" @blur="setWidth">
+        </div>
+        <div class="horizontal row" style="align-items: center">
+            <label>min-width</label>
+            <input id="minWidth" ::value="layout.minWidth" @blur="setWidth">
         </div>
 
         <span ~if="layout.isGroup">Group</span>
@@ -469,6 +488,9 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
         const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
         this.lay.saveScript(this.layout, action);
     },
+    setWidth(e) {
+        this.render();
+    }
 })
 
 CLASS({ is: 'Layout',
