@@ -419,18 +419,37 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
             .row:hover {
                 background: lightgray;
             }
+            span {
+                font-size: small;
+                color: gray;
+                border-bottom: 1px solid lightgray;
+            }
         </style>
-        <div class="horizontal row" style="align-items: center" @tap="createTabs()">
-            <oda-icon icon="icons:add"></oda-icon>
-            <label>create tabs</label>
-        </div>
+
+        <span>Layout</span>
         <div class="horizontal row" style="align-items: center" @tap="hideLayout(); render()">
             <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
         </div>
+
+        <span ~if="layout.isGroup">Group</span>
         <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="hideGroupLabel(); render()">
             <oda-icon icon="maps:layers" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
-            <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label</label>
+            <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label (Group-border)</label>
+        </div>
+        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="">
+            <oda-icon icon="icons:delete"></oda-icon>
+            <label>delete Group ...</label>
+        </div>
+        
+        <span>Tabs</span>
+        <div class="horizontal row" style="align-items: center" @tap="createTabs()">
+            <oda-icon icon="icons:add"></oda-icon>
+            <label>create tabs</label>
+        </div>
+        <div ~if="layout.isTabs" class="horizontal row" style="align-items: center" @tap="">
+            <oda-icon icon="icons:delete"></oda-icon>
+            <label>delete tabs ...</label>
         </div>
     `,
     layout: null,
