@@ -1,7 +1,7 @@
 ODA({ is: 'oda-layout-designer',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 overflow-x: hidden;
                 overflow-y: auto;
                 @apply --vertical;
@@ -33,26 +33,28 @@ ODA({ is: 'oda-layout-designer',
     structureTemplate: 'oda-layout-designer-structure',
     lays: null,
     async saveScript(layout, action) {
-        console.log('..... ', layout.root.saveKey, action)
+        // console.log('..... ', layout.root.saveKey, action)
         layout.root.lay.actions ||= [];
         layout.root.lay.actions.add(action);
         this.lays.add(layout);
     },
     clearSavedScripts() {
         this.lays.forEach(i => i.root.lay.actions = []);
+        document.location.reload();
     }
 })
 
 ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
                 flex-wrap: wrap;
                 /*justify-content: space-around;*/
                 align-content: flex-start;
+                flex-direction: {{layout.type==='vGroup' ? 'column' : 'row'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
@@ -92,14 +94,14 @@ ODA({ is: 'oda-layout-designer-structure',
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 @apply --vertical;
                 @apply --flex;
                 height: 100%;
                 margin-top: 8px;
                 margin-left: {{iconSize + 'px'}};
             }
-            [focused]{
+            [focused] {
                 @apply --content;
             }
             .tab {
@@ -110,7 +112,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 cursor: pointer; 
                 font-size: {{fontSize}};
             }
-            oda-button{
+            oda-button {
                 transform: scale(.6);
                 padding: 0px;
                 margin-left: auto;
@@ -189,12 +191,11 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
 ODA({ is: 'oda-layout-designer-tabs-structure',
     template: `
         <style>
-            :host{
+            :host {
                 @apply --horizontal;
                 @apply --flex;
                 min-height: 32px;
                 min-width: 32px;
-                /*@apply --header;*/
                 padding: 4px;
                 position: relative;
                 border: 1px solid darkgray;
@@ -214,18 +215,11 @@ ODA({ is: 'oda-layout-designer-group-structure',
                 @apply --vertical;
                 @apply --flex;
                 position: relative;
-            }
-            .group {
-                display: flex;
-                flex: 1;
                 padding: {{layout?.hideLabel ? 0 : '0 4px 4px 0'}};
                 border: {{designMode ? '2px solid blue' : (layout?.hideLabel && borderColor) ? '' : '1px solid ' + borderColor || 'lightgray'}};
-                flex-direction: {{layout.type==='vGroup' ? 'column' : 'row'}};
             }
         </style>
-        <div class="group">
-            <oda-layout-designer-container class="flex" ~for="layout?.items" :layout="item"></oda-layout-designer-container>
-        </div>   
+        <oda-layout-designer-structure class="flex" :layout></oda-layout-designer-structure>
     `,
     borderColor: 'lightgray'
 })
@@ -233,7 +227,7 @@ ODA({ is: 'oda-layout-designer-group-structure',
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
     template: `
         <style>
-            :host{
+            :host {
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
@@ -245,13 +239,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
-                min-width: {{layout?.width || (hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                min-width: {{layout?.width || (layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
                 border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '2px dotted red' : designMode ? '1px dashed lightblue' : '1px solid transparent'}};
             }
-            [focused]{
-                @apply --content;
-            }
-            [disabled]{
+
+            [disabled] {
                 pointer-events: none;
                 opacity: .3;
             }
@@ -290,8 +282,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 white-space: nowrap;
                 font-size: {{fontSize}};
                 cursor: {{designMode ? 'pointer' : 'unset'}};
-                padding: {{layout?.hideLabel ? 0 : '44px 0'}};
-                margin: {{layout?.hideLabel ? 0 : '1px'}}";
+                padding: {{!designMode && layout?.hideLabel ? '0' : '0px 4px'}} !important;
+                margin: {{!designMode && layout?.hideLabel ? '0' : '1px'}} !important;
                 width: 100%;
                 color: {{designMode && layout?.isGroup ? layout?.hideLabel ? 'red' : 'blue' : layout?.isHide ? 'red' : ''}};
             }
@@ -302,8 +294,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}">
             <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" style="align-items: center" ~style="{ marginLeft: layout?.isTabs ? '' : iconSize + 'px'}">
                 <oda-icon ~if="layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <label class="label" :contenteditable="designMode" @blur="setLabel">{{layout._label || layout.label}}</label>
-                <oda-button ~show="layout?.isGroup && designMode" :icon-size="16" icon="icons:close" fill="red"></oda-button>
+                <div class="horizontal no-flex" style="align-items: center;">
+                    <label class="label" :contenteditable="designMode" @blur="setLabel">{{layout._label || layout.label}}</label>
+                    <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showSettings" style="padding: 0; margin: 0"></oda-button>
+                </div>
             </div>
             <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="!layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
@@ -327,44 +321,19 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
     },
     listeners: {
-        async contextmenu(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!this.designMode) return;
-            const items = [
-                    {
-                    label: '1. create Tabs', icon: 'icons:add', run: () => {
-                        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
-                        this.layout.createTabs(action);
-                        this.saveScript(this.layout, action);
-                    }
-                }, {
-                    label: '2. hide/unhide Layout', icon: 'maps:layers', run: () => {
-                        this.layout.isHide = !this.layout.isHide;
-                        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
-                        this.saveScript(this.layout, action);
-                    }
-                }
-            ]
-            if (this.layout.isGroup) {
-                items.push({
-                    label: '3. hide/unhide Group-label', icon: 'odant:field', run: () => {
-                        this.layout.hideLabel = !this.layout.hideLabel;
-                        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
-                        this.saveScript(this.layout, action);
-                    }
-                })
-            }
-            const res = await ODA.showDropdown('oda-menu', {
-                items
-            }, { title: e.target.layout?.label });
-            res.focusedItem.run.call(this)
-        },
+        'contextmenu': 'showSettings',
         'dragstart': 'ondragstart',
         'dragend': 'ondragend',
         'dragover': 'ondragover',
         'dragleave': 'ondragleave',
         'drop': 'ondragdrop',
+    },
+    async showSettings(e) {
+        if (!this.designMode) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const parent = e.target.id === 'settings' ? e.target : undefined;
+        await ODA.showDropdown('oda-layout-designer-settings', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
     },
     labelPos: 'top',
     layout: null,
@@ -384,7 +353,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         else
             this.selection = [];
         if (this.selection?.[0] && this.selection[0].root !== this.layout.root) return;
-        this.selection.add(this.layout);
+        this.selection.push(this.layout);
     },
     ondragstart(e) {
         e.stopPropagation();
@@ -439,6 +408,61 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
         this.render();
     }
+})
+
+ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
+    template: `
+        <style>
+            :host {
+                @apply --vertical;
+                background-color: white;
+                border: 1px solid gray;
+                margin: 2px;
+                padding: 4px;
+                min-width: 180px;
+            }
+            oda-icon {
+                transform: scale(.8);
+                padding: 0 4px 0 0;  
+            }
+            label {
+                cursor: pointer;
+                margin-right: auto;
+            }
+            .row:hover {
+                background: lightgray;
+            }
+        </style>
+        <div class="horizontal row" style="align-items: center" @tap="createTabs()">
+            <oda-icon icon="icons:add"></oda-icon>
+            <label>create tabs</label>
+        </div>
+        <div class="horizontal row" style="align-items: center" @tap="hideLayout(); render()">
+            <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
+            <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
+        </div>
+        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="hideGroupLabel(); render()">
+            <oda-icon icon="maps:layers" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
+            <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label</label>
+        </div>
+    `,
+    layout: null,
+    lay: null,
+    createTabs() {
+        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
+        this.layout.createTabs(action);
+        this.lay.saveScript(this.layout, action);
+    },
+    hideLayout() {
+        this.layout.isHide = !this.layout.isHide;
+        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
+        this.lay.saveScript(this.layout, action);
+    },
+    hideGroupLabel() {
+        this.layout.hideLabel = !this.layout.hideLabel;
+        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
+        this.lay.saveScript(this.layout, action);
+    },
 })
 
 CLASS({ is: 'Layout',
@@ -541,7 +565,7 @@ CLASS({ is: 'Layout',
         tabs.$focused = tab;
     },
     async setLabel(action, layout) {
-        console.log(action.props.id)
+        // console.log(action.props.id)
         const lay = layout || await this.find(action.props.id);
         if (!lay) return;
         lay._label = action.label;
