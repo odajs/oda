@@ -601,7 +601,6 @@ if (!window.ODA) {
             }
             get $refs() {
                 if (!this.$core.refs || Object.keys(this.$core.refs).length === 0) {
-                    // this.render(); // firefox fix
                     this.$core.refs = Object.assign({}, this.$core.slotRefs);
                     let els = [...this.$core.shadowRoot.querySelectorAll('*'), ...this.querySelectorAll('*')];
                     els = Array.prototype.filter.call(els, i => i.$ref);
@@ -609,11 +608,11 @@ if (!window.ODA) {
                         let ref = el.$ref;
                         let arr = this.$core.refs[ref];
                         if (Array.isArray(arr))
-                        arr.push(el);
+                            arr.push(el);
                         else if (el.$for)
-                        this.$core.refs[ref] = [el];
+                            this.$core.refs[ref] = [el];
                         else
-                        this.$core.refs[ref] = el;
+                            this.$core.refs[ref] = el;
                     }
                 }
                 return this.$core.refs;
