@@ -55,6 +55,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 /*justify-content: space-around;*/
                 align-content: flex-start;
                 flex-direction: {{layout?.type==='vGroup' ? 'column' : 'row'}};
+                border: {{!layout?.isGroup ? '' : designMode ? '2px solid blue' : (layout?.hideLabel || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
@@ -75,7 +76,8 @@ ODA({ is: 'oda-layout-designer-structure',
             default: [],
             save: true
         },
-        saveKey: ''
+        saveKey: '',
+        borderColor: 'lightgray'
     },
     observers: [
         async function execute(layout, actions) {
@@ -208,22 +210,6 @@ ODA({ is: 'oda-layout-designer-tabs-structure',
     `
 })
 
-ODA({ is: 'oda-layout-designer-group-structure',
-    template: `
-        <style>
-            :host{
-                @apply --vertical;
-                @apply --flex;
-                position: relative;
-                padding: {{layout?.hideLabel ? 0 : '0 4px 4px 0'}};
-                border: {{designMode ? '2px solid blue' : (layout?.hideLabel || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
-            }
-        </style>
-        <oda-layout-designer-structure ~if="layout?.$expanded" class="flex" :layout></oda-layout-designer-structure>
-    `,
-    borderColor: 'lightgray'
-})
-
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
     template: `
         <style>
@@ -308,7 +294,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded || layout?.isGroup" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideLabel ? 0 : '4px', marginLeft: layout?.hideLabel ? 0 : iconSize/2+'px', paddingLeft: layout?.hideLabel ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideLabel ? 0 : '4px', marginLeft: layout?.hideLabel ? 0 : iconSize/2+'px', paddingLeft: layout?.hideLabel ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,
@@ -502,9 +488,7 @@ CLASS({ is: 'Layout',
         return this.isTabs ? 'oda-layout-designer-tabs' : '';
     },
     get $structure() {
-        if (this.isTabs) return 'oda-layout-designer-tabs-structure';
-        if (this.isGroup) return 'oda-layout-designer-group-structure';
-        return '';
+        return this.isTabs ? 'oda-layout-designer-tabs-structure' : '';
     },
     get isTabs() {
         return this.type === "tabs";
