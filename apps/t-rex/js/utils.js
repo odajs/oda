@@ -1,4 +1,3 @@
-
 export function createPolygon(svg, selector) {
     return pathToPolygon(svg.querySelector(selector));
 }
