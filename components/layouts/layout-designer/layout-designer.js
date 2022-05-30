@@ -40,7 +40,7 @@ ODA({ is: 'oda-layout-designer',
     },
     clearSavedScripts() {
         this.lays.forEach(i => {
-            i.lay.actions = [];
+            i.lay?.actions && (i.lay.actions = []);
             i.root.lay.actions = [];
         })
         document.location.reload();
@@ -299,12 +299,17 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal no-flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
-                    <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showContextMenu" style="padding: 0; margin: 0"></oda-button>
+                    <div class="horizontal" ~if="designMode && selection.has(layout)">
+                        <oda-button ~if="layout.isGroup" icon="material:format-text" icon-size="16" @tap="hideGroupLabel" style="padding: 0; margin: 0" :fill="layout.hideLabel ? 'red' : ''" :title="(layout.hideLabel ? 'unhide' : 'hide') + ' group label'"></oda-button>
+                        <oda-button ~if="layout.isGroup" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>
+                        <oda-button icon="maps:layers" icon-size="16" @tap="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'"></oda-button>
+                        <oda-button icon="icons:tab" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create tabs"></oda-button>
+                    </div>
                 </div>
             </div>
             <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="!layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;"  :disabled="designMode && !layout?.isTabs" 
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                     <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
@@ -431,6 +436,26 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             owner = owner.owner;
         }
         this.render();
+    },
+    createTabs() {
+        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
+        this.layout.createTabs(action);
+        this.saveScript(this.layout, action);
+    },
+    hideLayout() {
+        this.layout.isHide = !this.layout.isHide;
+        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
+        this.saveScript(this.layout, action);
+    },
+    hideGroupLabel() {
+        this.layout.hideLabel = !this.layout.hideLabel;
+        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
+        this.saveScript(this.layout, action);
+    },
+    deleteGroup() {
+        const action = { action: "deleteGroup", props: { target: this.layout.id } };
+        this.layout.deleteGroup(action, this.layout);
+        this.saveScript(this.layout, action);
     }
 })
 
@@ -465,56 +490,33 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
                 border-bottom: 1px solid lightgray;
             }
         </style>
+        
+        <div ~if="layout.isGroup" class="vertical">
+            <span>Group</span>
+            <div class="horizontal row" style="align-items: center" @tap="lay.hideGroupLabel()">
+                <oda-icon icon="material:format-text" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
+                <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label (Group-border)</label>
+            </div>
+            <div class="horizontal row" style="align-items: center" @tap="lay.deleteGroup(); fire('ok');">
+                <oda-icon icon="icons:delete"></oda-icon>
+                <label>delete Group ...</label>
+            </div>
+        </div>
 
         <span>Layout</span>
-        <div class="horizontal row" style="align-items: center" @tap="hideLayout(); render()">
+        <div class="horizontal row" style="align-items: center" @tap="lay.hideLayout()">
             <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
         </div>
-
-        <span ~if="layout.isGroup">Group</span>
-        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="hideGroupLabel(); render()">
-            <oda-icon icon="maps:layers" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
-            <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label (Group-border)</label>
-        </div>
-        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="deleteGroup">
-            <oda-icon icon="icons:delete"></oda-icon>
-            <label>delete Group ...</label>
-        </div>
         
         <span>Tabs</span>
-        <div class="horizontal row" style="align-items: center" @tap="createTabs()">
-            <oda-icon icon="icons:add"></oda-icon>
+        <div class="horizontal row" style="align-items: center" @tap="lay.createTabs()">
+            <oda-icon icon="icons:tab"></oda-icon>
             <label>create tabs</label>
-        </div>
-        <div ~if="layout.isTabs" class="horizontal row" style="align-items: center" @tap="">
-            <oda-icon icon="icons:delete"></oda-icon>
-            <label>delete tabs ...</label>
         </div>
     `,
     layout: null,
-    lay: null,
-    createTabs() {
-        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
-        this.layout.createTabs(action);
-        this.lay.saveScript(this.layout, action);
-    },
-    hideLayout() {
-        this.layout.isHide = !this.layout.isHide;
-        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
-        this.lay.saveScript(this.layout, action);
-    },
-    hideGroupLabel() {
-        this.layout.hideLabel = !this.layout.hideLabel;
-        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
-        this.lay.saveScript(this.layout, action);
-    },
-    deleteGroup() {
-        const action = { action: "deleteGroup", props: { target: this.layout.id } };
-        this.layout.deleteGroup(action, this.layout);
-        this.lay.saveScript(this.layout, action);
-        this.fire('ok');
-    }
+    lay: null
 })
 import '/web/oda/tools/property-grid/test/new/property-grid.js';
 ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
