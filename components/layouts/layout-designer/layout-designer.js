@@ -707,21 +707,22 @@ CLASS({ is: 'Layout',
             if (targItem.owner.type !== 'hGroup' && (targItem.items?.length || dragItem.items?.length)) {
                 this._createGroup(action, dragItem, targItem, 'hGroup');
             } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.type === 'hGroup' ) {
-                this._makeMove(action, dragItem, targItem, action.props.to);
+                this._makeMove(action, dragItem, targItem);
             } else {
                 this._createGroup(action, dragItem, targItem, 'hGroup');
             }
         } else {
             if (targItem.owner.type === 'vGroup') {
-                this._makeMove(action, dragItem, targItem, action.props.to);
+                this._makeMove(action, dragItem, targItem);
             } else {
                 this._createGroup(action, dragItem, targItem, 'vGroup');
             }
         }
     },
-    _makeMove(action, dragItem, targItem, moveTo) {
+    _makeMove(action, dragItem, targItem) {
+        const moveTo = action.props.to;
         let idxTarg = targItem._order;
-        dragItem._order = idxTarg = action.props.to === moveTo ? idxTarg - .1 : idxTarg + .1;
+        dragItem._order = idxTarg = (moveTo === 'left' || moveTo === 'bottom') ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
