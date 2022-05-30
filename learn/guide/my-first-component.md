@@ -340,9 +340,9 @@ ODA({ is: 'oda-game',
 
         <h1>Счет игры</h1>
         <h1 id="score">{{score || '0'}}</h1>
-        <div id="game-space" ~ref="game-space">
+        <div id="game-space" ref="game-space">
             <h1 id="message" ~show="showMessage">{{message}}</h1>
-            <oda-dino ~ref="dino"></oda-dino>
+            <oda-dino ref="dino"></oda-dino>
             <div id="horizon"></div>
         </div>
     `,
@@ -365,7 +365,7 @@ ODA({ is: 'oda-game',
 В ней будут динамически создаваться все остальные элементы игры.
 
 ```html
-div id="game-space" ref="game-space">
+<div id="game-space" ref="game-space">
 ```
 
 Для доступа к этой области предусмотрена ссылка на нее, которая задается с помощью директивы **~ref**.
@@ -383,7 +383,7 @@ div id="game-space" ref="game-space">
 1. Сам динозавр в виде компонента «**oda-dino**»
 
 ```html
-<oda-dino ~ref="dino"></oda-dino>
+<oda-dino ref="dino"></oda-dino>
 ```
 
 Для доступа к этому элементу задается ссылка на него с помощью директивы **~ref**.
