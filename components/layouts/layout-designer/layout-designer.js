@@ -477,7 +477,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
             <oda-icon icon="maps:layers" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
             <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label (Group-border)</label>
         </div>
-        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="">
+        <div ~if="layout.isGroup" class="horizontal row" style="align-items: center" @tap="deleteGroup">
             <oda-icon icon="icons:delete"></oda-icon>
             <label>delete Group ...</label>
         </div>
@@ -508,6 +508,12 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         this.layout.hideLabel = !this.layout.hideLabel;
         const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
         this.lay.saveScript(this.layout, action);
+    },
+    deleteGroup() {
+        const action = { action: "deleteGroup", props: { target: this.layout.id } };
+        this.layout.deleteGroup(action, this.layout);
+        this.lay.saveScript(this.layout, action);
+        this.fire('ok');
     }
 })
 import '/web/oda/tools/property-grid/test/new/property-grid.js';
@@ -553,7 +559,7 @@ ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
         const type = this.layout.cnt ? 'cnt' : 'str';
         const action = { action: "setStyle", props: { type, target: this.layout.id, key: e.detail.value.key, value: e.detail.value.value } };
         (this.layout.cnt || this.layout.lay).saveScript(this.layout, action);
-        console.log(action);
+        // console.log(action);
     }
 })
 
@@ -669,6 +675,18 @@ CLASS({ is: 'Layout',
         const item = layout || await this.find(action.props.target);
         if (!item) return;
         item.hideLabel = action.hideGroupLabel;
+    },
+    async deleteGroup(action, layout) {
+        const group = layout || await this.find(action.props.target);
+        if (!group) return;
+        const idx = group.owner.items.indexOf(group);
+        if (group.items?.length) {
+            group.items.forEach(i => {
+                i.owner = group.owner;
+                i._order = i.order;
+            })
+            group.owner.items.splice(idx, 1, ...group.items);
+        }
     },
     async setStyle(action, layout) {
         const item = layout || await this.find(action.props.target);
