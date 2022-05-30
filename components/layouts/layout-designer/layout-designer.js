@@ -39,13 +39,17 @@ ODA({ is: 'oda-layout-designer',
         this.lays.add(layout);
     },
     clearSavedScripts() {
-        this.lays.forEach(i => i.root.lay.actions = []);
+        this.lays.forEach(i => {
+            i.lay.actions = [];
+            i.root.lay.actions = [];
+        })
         document.location.reload();
     },
     async showSettings(e){
+        if (!this.designMode) return;
         await ODA.showDropdown(
             'oda-layout-designer-settings',
-            {io: this.selection[0]?.lay?.style || this.layout?.lay?.style || {}},
+            {layout: this.selection[0] || this.layout || {}},
             {parent: e.target || e, intersect: true, align: 'left', title: 'Settings'}
         );
     },
@@ -94,6 +98,10 @@ ODA({ is: 'oda-layout-designer-structure',
                 if (actions?.length && !this.lays.has(this.layout)) {
                     await this.layout.execute(actions);
                     this.lays.add(this.layout); // for single execution - to remove looping
+                    (this.layout.styles || []).forEach(i => {
+                        if (i.type === 'str')
+                            this.style[i.key] = i.value;
+                    })
                 }
             }
         }
@@ -336,6 +344,19 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     get draggable() {
         return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
     },
+    attached() {
+        this.async(() => {
+            this.layout.cnt = this;
+            (this.layout.styles || []).forEach(i => {
+                if (i.type === 'cnt')
+                    this.style[i.key] = i.value;
+                (this.layout.owner?.styles || []).forEach(i => {
+                    if (i.type === 'str')
+                        this.layout.owner.lay.style[i.key] = i.value;
+                })
+            })
+        }, 100);
+    },
     setLabel(e, blur) {
         if (this.designMode) {
             const tst = /\n|\r/g.test(e.target.innerText);
@@ -487,13 +508,10 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         this.layout.hideLabel = !this.layout.hideLabel;
         const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
         this.lay.saveScript(this.layout, action);
-    },
-    setStyle(e) {
-        this.render();
     }
 })
-
-ODA({is:'oda-layout-designer-settings', imports: '@tools/property-grid',
+import '/web/oda/tools/property-grid/test/new/property-grid.js';
+ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
     template:`
         <style>
             :host{
@@ -519,7 +537,7 @@ ODA({is:'oda-layout-designer-settings', imports: '@tools/property-grid',
             }
         </style>
         <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
-            <oda-property-grid class="flex" ~if="focusedTab === 0" :inspected-object="io"></oda-property-grid>
+            <oda-property-grid2 class="flex" ~if="focusedTab === 0" :io @pg-changed="setStyle" show-buttons="false"></oda-property-grid2>
         </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
@@ -529,7 +547,14 @@ ODA({is:'oda-layout-designer-settings', imports: '@tools/property-grid',
     tabs: [
         {icon: 'icons:settings:90', title: 'properties'},
     ],
-    io: null,
+    layout: null,
+    get io() { return this.layout?.cnt?.style || this.layout?.lay?.style },
+    setStyle(e) {
+        const type = this.layout.cnt ? 'cnt' : 'str';
+        const action = { action: "setStyle", props: { type, target: this.layout.id, key: e.detail.value.key, value: e.detail.value.value } };
+        (this.layout.cnt || this.layout.lay).saveScript(this.layout, action);
+        console.log(action);
+    }
 })
 
 CLASS({ is: 'Layout',
@@ -645,6 +670,12 @@ CLASS({ is: 'Layout',
         if (!item) return;
         item.hideLabel = action.hideGroupLabel;
     },
+    async setStyle(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        item.styles ||= [];
+        item.styles.push({ key: action.props.key, value: action.props.value, type: action.props.type });
+    },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
         const dragItem = dragInfo.dragItem || await this.find(action.props.item);
@@ -714,6 +745,7 @@ CLASS({ is: 'Layout',
             await this[i.action]?.(i);
     },
     async find(id, item = this.root) {
+        if (item.id === id) return item;
         let items = await item.items;
         items = item.items;
         if (!items?.length) return;
