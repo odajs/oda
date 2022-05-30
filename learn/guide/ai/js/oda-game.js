@@ -133,66 +133,6 @@ ODA({ is: 'oda-game',
         // }
         requestAnimationFrame(this.checkDino.bind(this));
     },
-    continueGame() {
-        this.showMessage = false;
-
-        const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        cactuses.forEach(cactus => {
-            cactus.remove();
-        });
-
-        this.nextCactus = 0;
-
-        this.dino.continueMove();
-
-        const clouds = this.gameSpace.querySelectorAll('oda-cloud');
-        clouds.forEach(cloud => {
-            cloud.continueMove();
-        });
-
-        const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
-        pterodactyls.forEach(pterodactyl => {
-            pterodactyl.continueMove();
-        });
-
-        this.score = 0;
-
-        this.timerID = setInterval(() => {
-            this.score++;
-        }, 100);
-
-        this.unlisten('keyup', 'continueGame', {target: document});
-
-        this.listen('keydown', 'dinoJump', {target: document});
-
-        requestAnimationFrame(this.checkDino.bind(this));
-    },
-    gameOver() {
-        this.showMessage = true;
-
-        clearInterval(this.timerID);
-
-        this.dino.stopMove();
-
-        const clouds = this.gameSpace.querySelectorAll('oda-cloud');
-        clouds.forEach(cloud => {
-            cloud.stopMove();
-        });
-
-        const cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        cactuses.forEach(cactus => {
-            cactus.stopMove();
-        });
-
-        const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
-        pterodactyls.forEach(pterodactyl => {
-            pterodactyl.stopMove();
-        });
-
-        this.unlisten('keydown', 'dinoJump', {target: document});
-
-        this.listen('keyup', 'continueGame', {target: document});
-    },
     createCloud() {
         if (this.nextCloud === 0) {
             this.gameSpace.append(document.createElement('oda-cloud'));
