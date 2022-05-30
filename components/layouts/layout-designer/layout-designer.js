@@ -41,7 +41,14 @@ ODA({ is: 'oda-layout-designer',
     clearSavedScripts() {
         this.lays.forEach(i => i.root.lay.actions = []);
         document.location.reload();
-    }
+    },
+    async showSettings(e){
+        await ODA.showDropdown(
+            'oda-layout-designer-settings',
+            {io: this.selection[0]?.lay?.style || this.layout?.lay?.style || {}},
+            {parent: e.target || e, intersect: true, align: 'left', title: 'Settings'}
+        );
+    },
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -284,7 +291,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal no-flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
-                    <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showSettings" style="padding: 0; margin: 0"></oda-button>
+                    <oda-button id="settings" ~if="designMode && selection.has(layout)" icon="icons:settings" icon-size="16" @tap="showContextMenu" style="padding: 0; margin: 0"></oda-button>
                 </div>
             </div>
             <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
@@ -310,19 +317,19 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
     },
     listeners: {
-        'contextmenu': 'showSettings',
+        'contextmenu': 'showContextMenu',
         'dragstart': 'ondragstart',
         'dragend': 'ondragend',
         'dragover': 'ondragover',
         'dragleave': 'ondragleave',
         'drop': 'ondragdrop',
     },
-    async showSettings(e) {
+    async showContextMenu(e) {
         if (!this.designMode) return;
         e.preventDefault();
         e.stopPropagation();
         const parent = e.target.id === 'settings' ? e.target : undefined;
-        await ODA.showDropdown('oda-layout-designer-settings', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
+        await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
     },
     labelPos: 'top',
     layout: null,
@@ -406,7 +413,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     }
 })
 
-ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
+ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
     template: `
         <style>
             :host {
@@ -442,22 +449,6 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
         <div class="horizontal row" style="align-items: center" @tap="hideLayout(); render()">
             <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
-        </div>
-        <div class="horizontal row" style="align-items: center">
-        <label>width</label>
-            <input id="width" ::value="layout.width" @blur="setStyle">
-        </div>
-        <div class="horizontal row" style="align-items: center">
-            <label>max-width</label>
-            <input id="maxWidth" ::value="layout.maxWidth" @blur="setStyle">
-        </div>
-        <div class="horizontal row" style="align-items: center">
-            <label>min-width</label>
-            <input id="minWidth" ::value="layout.minWidth" @blur="setStyle">
-        </div>
-        <div class="horizontal row" style="align-items: center">
-            <label>style</label>
-            <input id="style" ::value="layout.style" @blur="setStyle">
         </div>
 
         <span ~if="layout.isGroup">Group</span>
@@ -500,6 +491,45 @@ ODA({ is: 'oda-layout-designer-settings', imports: '@oda/icon',
     setStyle(e) {
         this.render();
     }
+})
+
+ODA({is:'oda-layout-designer-settings', imports: '@tools/property-grid',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                width: 400px;
+                @apply --flex;
+                height: 100vh;
+            }
+            div>div{
+                align-items: center;
+                @apply --horizontal;
+                padding: 8px 4px;
+                cursor: pointer;
+            }
+            div>div:hover{
+                color: var(--focused-color) !important;
+            }
+            oda-icon{
+                transform: scale(.7);
+            }
+            div>div[focused]{
+                background-color: var(--content-background) !important;
+            }
+        </style>
+        <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
+            <oda-property-grid class="flex" ~if="focusedTab === 0" :inspected-object="io"></oda-property-grid>
+        </div>
+        <div style="writing-mode: vertical-lr;" class="horizontal header">
+            <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
+        </div>
+    `,
+    focusedTab: 0,
+    tabs: [
+        {icon: 'icons:settings:90', title: 'properties'},
+    ],
+    io: null,
 })
 
 CLASS({ is: 'Layout',

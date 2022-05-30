@@ -8,10 +8,13 @@
         padding: 4px;
     }
 </style>
-<div style="display: flex; flex-direction: row-reverse; border-bottom: 1px solid gray;">
-    <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode; this.style.background = testLayoutDesigner.designMode ? 'yellow' : 'lightgray'" style="background: lightgray; border: 1px solid gray; border-radius: 2px;">Design mode</button>
-    <button onclick="testLayoutDesigner.clearSavedScripts();">clearSavedScripts</button>
+<div style="display: flex; border-bottom: 1px solid gray;">
+    <div style="flex: 1"></div>
     <button onclick="document.location.reload()">Reload page</button>
+    <button onclick="testLayoutDesigner.clearSavedScripts();">clearSavedScripts</button>
+    <button onclick="testLayoutDesigner.designMode = !testLayoutDesigner.designMode; this.style.background = testLayoutDesigner.designMode ? 'yellow' : 'lightgray'" style="background: lightgray; border: 1px solid gray; border-radius: 2px;">Design mode</button>
+    <button onclick="testLayoutDesigner.showSettings(this)">Settings</button>
+
 </div>
 <oda-layout-designer keys="fields" id="testLayoutDesigner" style="margin: 8px;"></oda-layout-designer>
 <script type="module">
