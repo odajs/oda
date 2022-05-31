@@ -125,12 +125,15 @@ ODA({ is: 'oda-game',
         this.createCactus();
         this.createPterodactyl();
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        // for (var i = 0; i < cactuses.length; ++i) {
-        //     if (this.dino.isIntersection && this.dino.isIntersection(cactuses[i])) {
-        //         this.gameOver();
-        //         return;
-        //     }
-        // }
+        let dinos = this.gameSpace.querySelectorAll('oda-dino');
+        dinos.forEach( dino => {
+            for (var i = 0; i < cactuses.length; ++i) {
+                if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
+                    dino.remove();
+                    return;
+                }
+            }
+        })
         requestAnimationFrame(this.checkDino.bind(this));
     },
     createCloud() {
