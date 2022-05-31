@@ -526,7 +526,7 @@ ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
                 @apply --horizontal;
                 width: 400px;
                 @apply --flex;
-                height: 100vh;
+                height: calc(100vh - 40px);
             }
             div>div{
                 align-items: center;
