@@ -722,7 +722,7 @@ CLASS({ is: 'Layout',
     _makeMove(action, dragItem, targItem) {
         const moveTo = action.props.to;
         let idxTarg = targItem._order;
-        dragItem._order = idxTarg = (moveTo === 'left' || moveTo === 'bottom') ? idxTarg - .1 : idxTarg + .1;
+        dragItem._order = idxTarg = (moveTo === 'left' || moveTo === 'top') ? idxTarg - .1 : idxTarg + .1;
         if (targItem.owner !== targItem.root || dragItem.owner !== dragItem.root) {
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
@@ -744,6 +744,7 @@ CLASS({ is: 'Layout',
         }
     },
     _createGroup(action, dragItem, targItem, groupType) {
+        const moveTo = action.props.to;
         const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-label` }, targItem.key, targItem.owner, targItem.root);
         const idxTarget = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarget, 1, group)[0];
@@ -751,9 +752,17 @@ CLASS({ is: 'Layout',
         const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
         drag.owner = target.owner = group;
         group.$expanded = true;
+        group.order = target.order;
         group._order = target._order;
         group.type = groupType;
         group.items = [drag, target];
+        if (moveTo === 'left' || moveTo === 'top') {
+            drag._order = 0;
+            target._order = 1;
+        } else {
+            drag._order = 1;
+            target._order = 0;
+        }
     },
     async expanded(action) {
         const item = await this.find(action?.props?.target);

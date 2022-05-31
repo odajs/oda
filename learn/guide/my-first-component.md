@@ -862,7 +862,7 @@ function intersectionLineLine(a1, b1, a2, b2, dinoCoords, svgCoords) {
     let minA = {
         x: Math.min(a1.x, b1.x),
         y: Math.min(a1.y, b1.y),
-    };
+    }
 
     let maxB = {
         x: Math.max(a2.x, b2.x),
@@ -872,7 +872,7 @@ function intersectionLineLine(a1, b1, a2, b2, dinoCoords, svgCoords) {
     let minB = {
         x: Math.min(a2.x, b2.x),
         y: Math.min(a2.y, b2.y),
-    };
+    }
 
     return minA.x <= minB.x && minB.x <= maxA.x && minA.y >= minB.y && minA.y <= maxB.y ||
         minA.x <= maxB.x && maxB.x <= maxA.x && maxA.y >= minB.y && maxA.y <= maxB.y ||

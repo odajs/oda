@@ -348,7 +348,7 @@ function makeData(el, { expert, group, sort, categories, search }, sure = false)
     let _search;
     if (search) {
         _search = data.items.filter(i => {
-            return i.label.includes(search);
+            return i.label.toLowerCase().includes(search.toLowerCase());
         });
         data.items = _search;
     }
