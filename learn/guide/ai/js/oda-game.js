@@ -79,7 +79,7 @@ ODA({ is: 'oda-game',
         this.bestBrain = new NeuralNetwork(this.topology);
         this.listen('keyup', 'startGame', {target: document});
     },
-    changeBestDinoBrain(dinoBrain) {
+    changeBestBrain(dinoBrain) {
         if (dinoBrain.cost > this.bestBrain.cost) {
             this.bestBrain.cost = dinoBrain.cost
             this.bestBrain.clone(dinoBrain);
@@ -129,8 +129,10 @@ ODA({ is: 'oda-game',
         dinos.forEach( dino => {
             for (var i = 0; i < cactuses.length; ++i) {
                 if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
+                    dino.dinoBrain.cost = this.score;
+                    this.changeBestBrain(dino.dinoBrain);
                     dino.remove();
-                    return;
+                    break;
                 }
             }
         })
