@@ -545,7 +545,7 @@ ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
             }
         </style>
         <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
-            <oda-property-grid2 class="flex" ~if="focusedTab === 0" :io @pg-changed="setStyle" show-buttons="false"></oda-property-grid2>
+            <oda-property-grid2 class="flex" ~if="focusedTab === 0" :io @pg-changed="setStyle" show-buttons="false" show-search></oda-property-grid2>
         </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>

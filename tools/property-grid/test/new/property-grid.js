@@ -61,15 +61,17 @@ ODA({ is: "oda-property-grid2", imports: '@oda/button, @tools/containers',
                 height: 100%;
             }
         </style>
-        <div class="hheader dark">
-            <div class="label dark" style="height:32px">{{item?.label || label}}</div>
-            <div ~if="showButtons" class="horizontal">
+        <div class="hheader dark horizontal">
+            <div ~if="!showSearch" class="label dark" style="height:32px">{{item?.label || label}}</div>
+            <div ~if="!showSearch && showButtons" class="horizontal">
                 <oda-button class="flex" aloow-toggle :toggled="focus" icon="icons:radio-button-checked" title="view focused" @click="_focus"></oda-button>
                 <oda-button class="flex" icon="icons:refresh" title="refresh" @tap="_expert"></oda-button>
                 <oda-button class="flex" :icon="sort==='ascending'?'icons:sort:180':sort==='descending'?'icons:sort':'icons:menu'" title="sort" @tap="_sort"></oda-button>
                 <oda-button class="flex" aloow-toggle :toggled="group" icon="icons:list" title="category" @tap="_group"></oda-button>
                 <oda-button class="flex" aloow-toggle :toggled="expertMode" icon="icons:settings" title="expertMode" @tap="_expert('expert')"></oda-button>
             </div>
+            <oda-icon ~if="showSearch" icon="icons:search"></oda-icon>
+            <input ~if="showSearch" @input="_search" class="flex" style="margin: 1px 4px 1px 2px; border: none;">
         </div>
         <div class="container" ref="cnt" @up="_splitter=false" @scroll="_scroll($event)">
             <div class="splitter2" ref="splitter2"></div>
@@ -99,6 +101,7 @@ ODA({ is: "oda-property-grid2", imports: '@oda/button, @tools/containers',
             },
             freeze: true
         },
+        search: '',
         ioLength: 0,
         expertMode: Boolean,
         group: true,
@@ -118,7 +121,8 @@ ODA({ is: "oda-property-grid2", imports: '@oda/button, @tools/containers',
         _splitter: false,
         categories: Array,
         showButtons: true,
-        args() { return { expert: this.expertMode, group: this.group, sort: this.sort, categories: this.categories } },
+        args() { return { expert: this.expertMode, group: this.group, sort: this.sort, categories: this.categories, search: this.search } },
+        showSearch: false
     },
     attached() {
         this.getData();
@@ -183,6 +187,10 @@ ODA({ is: "oda-property-grid2", imports: '@oda/button, @tools/containers',
             const io = this.focus ? this.focused.el || this.focused : this.io;
             this.getData(io);
         }
+    },
+    _search(e) {
+        this.search = e.target.value;
+        this.getData();
     }
 })
 
@@ -266,7 +274,7 @@ ODA({
     }
 })
 
-function makeData(el, { expert, group, sort, categories }, sure = false) {
+function makeData(el, { expert, group, sort, categories, search }, sure = false) {
     const editors = {
         'boolean': 'checkbox',
         'number': 'number',
@@ -336,6 +344,13 @@ function makeData(el, { expert, group, sort, categories }, sure = false) {
             if (a.label > b.label) return sort === 'ascending' ? 1 : -1;
             if (b.label > a.label) return sort === 'ascending' ? -1 : 1;
         });
+    }
+    let _search;
+    if (search) {
+        _search = data.items.filter(i => {
+            return i.label.includes(search);
+        });
+        data.items = _search;
     }
     return data;
 }

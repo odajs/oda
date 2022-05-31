@@ -623,7 +623,7 @@ this.timerID = setInterval(() => {
 4. Удаляется обработчик начала игры **startGame** с помощью предопределенного метода «**unlisten**».
 
 ```javascript
-this.unlisten('keyup', 'startGame', {target: document});;
+this.unlisten('keyup', 'startGame', {target: document});
 ```
 
 5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра «**dinoJump**» с помощью предопределенного метода «**listen**».
