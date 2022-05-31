@@ -61,7 +61,7 @@ ODA({ is: 'oda-game',
     props: {
         timerID: 1,
         score: 0,
-        message: 'Для начала игры нажмите пробел',
+        message: 'Для начала обучения нажмите пробел',
         showMessage: true,
         nextCloud: 0,
         nextCactus: 0,
