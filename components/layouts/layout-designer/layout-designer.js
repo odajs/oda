@@ -34,14 +34,14 @@ ODA({ is: 'oda-layout-designer',
     lays: null,
     async saveScript(layout, action) {
         // console.log('..... ', layout.root.saveKey, action)
-        layout.root.lay.actions ||= [];
-        layout.root.lay.actions.add(action);
+        layout.root.str.actions ||= [];
+        layout.root.str.actions.add(action);
         this.lays.add(layout);
     },
     clearSavedScripts() {
         this.lays.forEach(i => {
-            i.lay?.actions && (i.lay.actions = []);
-            i.root.lay.actions = [];
+            i.str?.actions && (i.str.actions = []);
+            i.root.str.actions = [];
         })
         document.location.reload();
     },
@@ -79,7 +79,7 @@ ODA({ is: 'oda-layout-designer-structure',
             default: null,
             set(n) {
                 if (n)
-                    n.lay = this;
+                    n.str= this;
             }
         },
         rootSavekey: '',
@@ -357,7 +357,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                     this.style[i.key] = i.value;
                 (this.layout.owner?.styles || []).forEach(i => {
                     if (i.type === 'str')
-                        this.layout.owner.lay.style[i.key] = i.value;
+                        this.layout.owner.str.style[i.key] = i.value;
                 })
             })
         }, 100);
@@ -556,7 +556,7 @@ ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
         {icon: 'icons:settings:90', title: 'properties'},
     ],
     layout: null,
-    get io() { return this.layout?.cnt?.style || this.layout?.lay?.style },
+    get io() { return this.layout?.cnt?.style || this.layout?.str?.style },
     setStyle(e) {
         const type = this.layout.cnt ? 'cnt' : 'str';
         const action = { action: "setStyle", props: { type, target: this.layout.id, key: e.detail.value.key, value: e.detail.value.value } };
