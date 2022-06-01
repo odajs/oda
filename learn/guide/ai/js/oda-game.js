@@ -135,7 +135,9 @@ ODA({ is: 'oda-game',
                     break;
                 }
             }
+            dino.jump();
         })
+
         requestAnimationFrame(this.checkDino.bind(this));
     },
     createCloud() {
