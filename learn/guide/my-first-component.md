@@ -22,7 +22,428 @@
 Цель игры – набрать как можно больше очков, справляясь с увеличивающейся скоростью движения кактусов.
 Элементы управления игры достаточно просты. Если нажать клавишу «Пробел» или «Стрелка вверх», то динозавр прыгает через препятствие.
 
-Давайте попробуем реализовать эту игру, используя графические примитивы SVG-графики и функциональные возможности фреймворка ODA.js для управления ими.
+Давайте попробуем реализовать эту игру, с использованием графических примитивы SVG-графики и возможностей фреймворка «**ODA**» для управления ими.
+
+Для этого сначала создадим индексный файл с именем «**index.html**», указав в его теле только один тег «**oda-game**», который и будет хостом будущего компонента.
+
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First Component</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/oda.js"></script>
+    <script type="module" src="js/oda-game.js"></script>
+</head>
+<body>
+    <oda-game></oda-game>
+</body>
+</html>
+```
+
+В заголовочной части этого HTML-документа подключим три файла:
+
+1. «**style.css**» – файл с глобальными css-переменными для стилизации всех элементов игры.
+
+Этот файл необходимо разместить в папке «css» и задать в нем следующие css-переменные.
+
+```css
+:root {
+    --base-color: #e2e2e2;
+    --dino-color: var(--base-color);
+    --cloud-color: var(--base-color);
+    --pterodactyl-color: var(--base-color);
+    --horizon-color: var(--base-color);
+
+    --dark-color: #121212 !important;
+    --background-color: var(--dark-color);
+    --dino-eyes-color: var(--dark-color);
+
+    --header-color: honeydew !important;
+    --header-background-color: grey;
+    --cactus-color: grey;
+    --dino-top: 314px;
+    --dino-max-top: 20px;
+}
+```
+
+Здесь предусмотрено, что кактусы и фон игры будут отображаться серым цветом «**grey**», а непосредственная область игры будет темной («**--dark-color: #121212**»). Динозавр, облака и птеродактили на этой темной области будут отображаться более светлым цветом («**--base-color: #e2e2e2**»).
+
+Все эти переменные можно будет использовать для стилизации элементов теневого дерева всех остальных компонентов, задавая с их помощью общий дизайн игры.
+
+2. «**oda.js**» – файл c библиотекой самого фреймворка **ODA**.
+
+```javascript
+<script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/oda.js"></script>
+```
+
+3. «**oda-game.js**» – файл с js-кодом самого компонента «**oda-game**».
+
+Если отобразить этот файл в браузере, то его окно останется пустым, так как сам компонента «**oda-game**» еще не определен, и браузер не знает, как отображать тэг <oda-game></oda-game>.
+
+![Пустое окно игры](learn\images\my-first-component\empty-window.png "Пустое окно игры")
+
+Для отображения этого тэга создадим папку «**js**» и поместим в него файл «**oda-game.js**» с кодом нашего первого компонента.
+
+```javascript
+ODA({ is: 'oda-game',
+    template: `
+        <style>
+            :host {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                background-color: var(--header-background-color);
+            }
+            #game-space {
+                position: absolute;
+                top: 200px;
+                width: 100%;
+                height: 500px;
+                overflow: hidden;
+                background-color: var(--background-color) !important;
+            }
+            h1 {
+                margin-bottom: 0px;
+                text-align: center;
+                font-family: "Comic Sans MS", Arial, sans-serif;
+                color: var(--header-color);
+            }
+            #score {
+                font-size: 50px;
+                margin-top: 0px;
+            }
+            #message {
+                position: relative;
+                top: 35%;
+            }
+            oda-dino {
+                position: absolute;
+                top: var(--dino-top);
+                left: 72px;
+                z-index: 300;
+            }
+            #horizon {
+                position: absolute;
+                top: 435px;
+                width: 100%;
+                height: 3px;
+                background-color: var(--horizon-color);
+            }
+        </style>
+
+        <h1>Счет игры</h1>
+        <h1 id="score">{{score || '0'}}</h1>
+        <div id="game-space" ref="game-space">
+            <h1 id="message" ~show="showMessage">{{message}}</h1>
+            <oda-dino ref="dino"></oda-dino>
+            <div id="horizon"></div>
+        </div>
+    `,
+})
+```
+
+В его разделе «**template**» определяются:
+
+1. Заголовок с надписью «**Счет игры**».
+
+```html
+<h1 id="score">{{score || '0'}}</h1>
+```
+
+2. Элемент вывода текущего счета игры с идентификатором «**id="score"**».
+
+```html
+<h1 id="score">{{score || '0'}}</h1>
+```
+
+В нем используется интерполяционная подстановка «**Mustache**», которая будет автоматически изменять текст в этом элементе при любом изменении счета игра «**score**».
+
+3. Рабочая область игры («**id="game-space"**»), в которой будет В ней динамически создаваться все остальные элементы игры.
+
+```html
+<div id="game-space" ref="game-space">
+```
+
+ Для доступа к этой области создается ссылка не нее с помощью директивы **ref**, а для ее стилизации предусмотрен одноименный идентификатор «**id**».
+
+4. Сообщение о начале или об окончании игры («**id="message"**»).
+
+```html
+<h1 id="message" ~show="showMessage">{{message}}</h1>
+```
+
+С помощью  этого элемента будет отображаться сообщение пользователю о начале или об окончании игры.
+
+Текст этого сообщения будет располагаться в свойстве «**message**» компонента и отображаться с помощью интерполяционной подстановки «**Mustache**» только тогда, когда сопутствующее свойство «**showMessage**» будет иметь значение «**true**». В противном случае это сообщение будет автоматически скрыто директивой фреймворка «**~show**».
+
+5. Сам динозавр, который задается в виде компонента «**oda-dino**».
+
+```html
+<oda-dino ref="dino"></oda-dino>
+```
+
+Для быстрого доступа к этому элементу предусмотрена ссылка на него, заданная также с помощью директивы «**ref**».
+
+6. Элемент «**div**» с идентификатором «**horizon**».
+
+```html
+<div id="horizon"></div>
+```
+
+С его помощью будет схематично отображаться линия горизонта.
+
+В результате этого начальное окно игры будет иметь следующий вид:
+
+![Начальное окно игры](learn\images\my-first-component\game-window.png "Начальное окно игры")
+
+Для стилизации всех элементов игры в разделе «**style**» шаблона компонента «**oda-game**» были заданы следующие css-правила:
+
+1. «**host**» – стиль самого компонента.
+
+```css
+ :host {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background-color: var(--header-background-color);
+}
+```
+
+Это правило задает серую область, которая занимает полностью все тело документа.
+
+2. «**#game-space**» – стиль рабочей области игры.
+
+```css
+#game-space {
+    position: absolute;
+    top: 200px;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background-color: var(--background-color) !important;
+}
+```
+
+Эта область будет иметь темный цвет, который задается с помощью css-переменной «**--background-color**».
+
+3. Заголовочный стиль «**h1**» определяет базовый шрифт, его цвет и расположение заголовочных надписей игры.
+
+```css
+h1 {
+    margin-bottom: 0px;
+    text-align: center;
+    font-family: "Comic Sans MS", Arial, sans-serif;
+    color: var(--header-color);
+}
+```
+
+4. Стиль надписи с количеством набранных очков «**#score**» задает размер шрифта и величину верхнего отступа, которые отличаются от стандартного стиля отображения заголовков, задаваемого общим css-правилом «**h1**».
+
+```css
+#score{
+    font-size: 50px;
+    margin-top: 0px;
+}
+```
+
+5. Стиль отображения сообщения о начале или об окончании игры «**#message**».
+
+```css
+#message {
+    position: relative;
+    top: 35%;
+}
+```
+
+Он определяет позицию расположения надписи с сообщением относительно рабочей области игры.
+
+6. Стиль отображения динозавра **oda-dino**.
+
+```css
+oda-dino {
+    position: absolute;
+    top: var(--dino-top);
+    left: 72px;
+    z-index: 300;
+}
+```
+
+Он задает начальное расположение динозавра с помощью сss-переменной «**--dino-top**», которая имеет значение 314 пикселей. Именно на эту величину будут смещен изначально динозавр относительно рабочей области игры.
+
+7. Стиль отображения горизонта «#horizon».
+
+```css
+#horizon {
+    position: absolute;
+    top: 435px;
+    width: 100%;
+    height: 3px;
+    background-color: var(--horizon-color);
+}
+```
+
+Он определяет расположение и цвет горизонта в области игры.
+
+В результате этого начальное окно игры отобразиться следующим образом:
+
+![Промежуточное окно игры](learn\images\my-first-component\no-score-window.png "Промежуточное окно игры")
+
+Для отображения надписи о начале игры и задания начального значения счетчика набранных очков в компонент «**oda-game**» необходимо задать свойство  «**props**» после свойства «**template**».
+
+```javascript
+props: {
+    score: 0,
+    message: 'Для начала игры нажмите пробел',
+    showMessage: true,
+},
+```
+
+Здесь задано:
+
+1. «**score**» – свойство для хранения текущего количества набранных очков.
+1. «**message**» – свойство с сообщением пользователю.
+1. «**showMessage**» – флаг, определяющий необходимость отображения текста сообщения.
+
+В результате этого надпись и начальное нулевое количество набранных очков автоматически отобразятся в области игры благодаря использованию подстановки «**{{Mustache}}**».
+
+![Окно игры с надписью и очками](learn\images\my-first-component\no-score-window.png "Окно игры с надписью и очками")
+
+Для того, чтобы в области игры отобразить динозавра создадим в папке «**js**» файл «oda-dino.js» с компонентом «**oda-dino**».
+
+```javascript
+ODA({ is: 'oda-dino',
+    template: `
+        <style>
+            path {
+                fill: var(--dino-color);
+            }
+            #small-eye {
+                fill: var(--dino-eyes-color);
+            }
+            #big-eye {
+                stroke: var(--dino-eyes-color);
+            }
+        </style>
+
+        <svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- Тело -->
+            <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body"/>
+
+            <!--Глаз маленький-->
+            <rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"/>
+
+            <!--Глаз большой-->
+            <rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
+
+            <!--Рот-->
+            <path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
+
+            <!--Первая нога поднята вверх-->
+            <path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+
+            <!--Первая нога опущена вниз-->
+            <path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+
+            <!-- Вторая нога поднята вверх -->
+            <path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
+                <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+
+            <!--Вторая нога опущена вниз-->
+            <path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
+                <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+            </path>
+        </svg>
+    `,
+})
+```
+
+Пока в этом компоненте находится лишь один раздел шаблона «**template**» с  SVG-примитивом динозавра и с css-стилями его отображения.
+
+Графический примитив динозавра состоит из его тела,
+
+```html
+<svg version="1.1" baseProfile="full" width="128" height="137" xmlns="http://www.w3.org/2000/svg">
+    <!-- Тело -->
+    <path d=" M0 48, h7, v12, h6, v7, h6, v6, h13, v-6, h7, v-7, h9, v-6, h10, v-6, h6, v-42, h7, v-6, h51, v6, h6, v29, h-32, v6, h19, v7, h-25, v12, h13, v13, h-7, v-6, h-6, v22, h-7, v10, h-6, v6, h-6, v7, h-45, v-7, h-7, v-6, h-6, v-7, h-6, v-6, h-7, z " stroke="transparent" id="body"/>
+</svg>
+```
+
+глаза,
+
+```html
+<!--Глаз маленький-->
+<rect x="77" y="9" fill="white" height="7" width="6" id="small-eye"/>
+```
+
+рта и двух пар ног, каждая из которых может находится в одном из двух положений.
+
+![Расположение ног](learn\images\my-first-component\dino1.png "Первое расположение ног динозавра")
+
+В первом положении одна нога поднята вверх, а вторая опущена вниз.
+
+![Расположение ног](learn\images\my-first-component\dino2.png "Второе расположение ног динозавра")
+
+Во втором положении первая нога опущена вниз, а вторая поднята вверх.
+
+Использование двух положений ног позволяет задать анимационный эффект бега динозавра. Для этого достаточно к тегу каждой ноги добавить специальный элемент **animate**, которые будет поочередно скрывать или отображать определенную ногу динозавра через заданный временной интервал.
+
+```html
+<!--Первая нога поднята вверх-->
+<path d=" M32 111, v7, h7, v6, h12, v-6, h-6, v-7, z " visibility="hidden" id="first-leg-up">
+    <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Первая нога опущена вниз-->
+<path d="M32 111, v26, h13, v-6, h-6, v-7, h6, v-6, h6, v-7, z" id="first-leg-down" visibility="hidden" >
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!-- Вторая нога поднята вверх -->
+<path d="M64 111, v7, h16, v-6, h-9, v-1, z" visibility="hidden" id="second-leg-up">
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Вторая нога опущена вниз-->
+<path d="M58 111,v7,h6,v19,h13,v-6,h-6,v-20,z" id="second-leg-down" visibility="hidden">
+    <animate attributeName="visibility" values="hidden;visible" dur="0.3s" repeatCount="indefinite"/>
+</path>
+```
+
+Кроме этого, к SVG-примитиву динозавра можно добавить большой глаз и рот.
+
+```html
+<!--Глаз большой-->
+<rect x="78.5" y="10.5" fill="transparent" stroke-width="3" stroke="white" height="10" width="10" id="big-eye" visibility="hidden"/>
+
+<!--Рот-->
+<path d=" M95 34, v8, h20, v-1, h13, v-7, z " id="month" visibility="hidden"/>
+```
+
+Изначально они отображаться не будут. Для этого у них свойство «**visibility**» установлено в значение «**hidden**».
+
+Рот и большой глаз будут появляться только в момент столкновения динозавра с кактусом, создавая эффект удивления или испуга на его лице.
+
+![Динозавр с большим глазом и закрытым ртом](learn\images\my-first-component\dino3.png "Динозавр с большим глазом и закрытым ртом")
+
+Для того, чтобы компонент динозавра отобразился в области игры необходимо подключить файл с его модулем к файлу с кодом игры «**oda-game.js**» следующим образом:
+
+```javascript
+import "./oda-dino.js";
+```
+
+В результате этого в рабочей области отобразиться SVG-образ динозавра с анимацией движения его ног.
+
+![Окно с динозавром](learn\images\my-first-component\dino-window.png "Окно с динозавром")
 
 Для этого будет использовать образы четырех основных элементов игры:
 
