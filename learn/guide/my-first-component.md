@@ -312,7 +312,24 @@ props: {
 
 ![Окно игры с надписью и очками](learn\images\my-first-component\no-score-window.png "Окно игры с надписью и очками")
 
-Для того, чтобы в области игры отобразить динозавра создадим в папке «**js**» файл «oda-dino.js» с компонентом «**oda-dino**».
+Некоторые вспомогательные свойства компонента можно задать с помощью геттеров. К таким свойствам относятся:
+
+1. «**dino**» – ссылка на компонент динозавра «**oda-dino**».
+
+```javascript
+get dino() {
+    return this.$refs.dino;
+},
+```
+
+2. «**gameSpace**» – ссылка на рабочую область игры, в которую будут добавляться все остальные элементы игры.
+
+```javascript
+get gameSpace() {
+    return this.$refs["game-space"];
+},
+```
+Для того, чтобы в области игры отобразить динозавра создадим в папке «**js**» файл «**oda-dino.js**» с компонентом «**oda-dino**».
 
 ```javascript
 ODA({ is: 'oda-dino',
@@ -444,6 +461,415 @@ import "./oda-dino.js";
 В результате этого в рабочей области отобразиться SVG-образ динозавра с анимацией движения его ног.
 
 ![Окно с динозавром](learn\images\my-first-component\dino-window.png "Окно с динозавром")
+
+Однако игра на данном этапе не будет реагировать ни на какие действия пользователя. Для ее начала добавим в хуке «**ready**» компонента «**oda-game**» слушателя события отпускания клавиши клавиатуры с помощью предопределенного метода «**listen**».
+
+```javascript
+ready() {
+    this.listen('keyup', 'startGame', {target: document});
+},
+```
+
+В нем в качестве обработчика события «**keyup**» регистрируется метод компонента «**startGame**», который можно задать следующим образом:
+
+```javascript
+startGame(e) {
+    if (e.code !== 'Space') {
+        return;
+    }
+    this.showMessage = false;
+    this.message = "Game Over";
+
+    this.timerID = setInterval(() => {
+        this.score++;
+    }, 100);
+
+    this.unlisten('keyup', 'startGame', {target: document});
+
+    this.listen('keydown', 'dinoJump', {target: document});
+},
+```
+
+Данный метод проверяет, какую клавишу нажал и отпустил пользователь в данный момент.
+
+Если была нажата любая клавиша кроме пробела, то будет происходить сразу выход из этого метода.
+
+Если же была нажата клавиша пробела, то при ее отпускании будут выполняться следующие действия:
+
+ 1. Скрывается надпись «**Для начала игры нажмите пробел**» присвоением свойству «**showMessage**» значения «**false**»
+
+ ```javascript
+    this.showMessage = false;
+```
+
+ 2. Текст надписи заменяется сообщением «**Game Over**», которое будет появляться при столкновении динозавра с кактусом.
+
+```javascript
+    this.message = "Game Over";
+```
+
+3. Создается таймер, который будет каждые 100 миллисекунд увеличивать счетчик набранных очков на единицу.
+
+```javascript
+this.timerID = setInterval(() => {
+    this.score++;
+}, 100);
+```
+
+Для остановки этого таймера во время окончания игры его идентификатор первоначально сохраняется в  специальном свойстве «**timerID**», которое необходимо добавить к компоненту «**oda-game**» в разделе «**props**».
+
+```javascript
+props: {
+    timerID: 0,
+    score: 0,
+    message: 'Для начала игры нажмите пробел',
+    showMessage: true,
+},
+```
+
+4. Удаляется обработчик начала игры «**startGame**» с помощью предопределенного метода «**unlisten**».
+
+```javascript
+this.unlisten('keyup', 'startGame', {target: document});
+```
+
+5. Регистрируется обработчик нажатия клавиш для выполнения прыжка динозавра с помощью предопределенного метода «**listen**».
+
+```javascript
+this.listen('keydown', 'dinoJump', {target: document});
+```
+
+Сам обработчик нужно добавить в компонент «**oda-dino**» в виде метода «**dinoJump**».
+
+```javascript
+dinoJump(e) {
+    if (e.code === 'Space') {
+        this.dino.jump();
+    }
+},
+```
+
+Этот метод вызывается лишь метод «**jump**» компонента «**oda-dino**» при условии того, что пользователь нажал клавишу пробела «**Space**».
+
+Для создании эффекта прыжка в разделе «**style**» шаблона компонента «**oda-dino**» необходимо добавить следующий анимационный кадр:
+
+```css
+@keyframes dino-jump{
+    from {
+      top: var(--dino-top);
+      animation-timing-function: ease-out;
+    }
+    50% {
+       top: var(--dino-max-top);
+       animation-timing-function: ease-in;
+    }
+    to {
+        top: var(--dino-top);
+        animation-timing-function: ease-in;
+    }
+}
+```
+
+Здесь используются css-переменные, которые задают координаты расположения динозавра по высоте на разных фазах прыжка:
+
+1. Начальные положение («**--dino-top: 314px**»).
+
+1. Промежуточное положение («**--dino-max-top: 20px**»).
+
+1. Конечное положение («**--dino-top: 314px**»).
+
+Сама анимация прыжка задается с помощью css-класса «**dino-jump**», который будет применяться к компоненту только тогда, когда к нему будет добавлен это css-класс.
+
+```css
+:host(.dino-jump) {
+    animation-name: dino-jump;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+```
+
+В этом css-правиле используется ключевой кадр «**dino-jump**» и указывается продолжительность прыжка в 1 секунду.
+
+Данный класс нужно добавить к тэгу компонента «**oda-dino**» в момент прыжка. Это можно выполнить с помощью специального метода «**jump**», который необходимо добавить к компоненту «**oda-dino**».
+
+```javascript
+jump() {
+    this.classList.add("dino-jump");
+    this.svg.pauseAnimations();
+    this.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            this.classList.remove("dino-jump");
+            this.offsetHeight; // reflow
+            this.svg.unpauseAnimations();
+        }
+    });
+},
+```
+
+В этом методе, кроме добавления css-класса анимации прыжка динозавра «**dino-jump**» еще приостанавливается и анимация движения его ног с помощью метода «**pauseAnimations**».
+
+После окончания прыжка срабатывает колбэк «**onfinish**», в котором у тэга компонента удаляется css-класс прыжка «**dino-jump**» и возобновляется анимация движения ног методом «**unpauseAnimations**».
+
+Для более быстрого обращения к SVG-примитиву динозавра в его компоненте нужно предусмотреть вспомогательное свойство «**svg**» и проинициализировать его в хуке «**attached**» следующим образом:
+
+```javascript
+props: {
+    svg: {},
+},
+attached() {
+    this.svg = this.$core.root.querySelector("svg");
+},
+```
+
+В результате этого при первом нажатии и отпускании клавиши пробела исчезнет надпись с сообщением о начале игры и запуститься счетчик набранных очков.
+
+![Начало игры](learn\images\my-first-component\start-game-window.png "Начало игры")
+
+При следующих нажатиях клавиши пробела динозавр будет прыгать вверх.
+
+![Прыжок динозавра](learn\images\my-first-component\jump-dino-window.png "Прыжок динозавра")
+
+Для создания кактуса добавим к игре новый компонент «**oda-cactus**». Для этого в папке «**js**» создадим новый файл «**oda-cactus.js**» и поместим в него следующий код.
+
+```javascript
+ODA({ is: 'oda-cactus',
+    template: `
+        <style>
+            path {
+                fill: var(--cactus-color);
+            }
+            :host {
+                position: absolute;
+                top: 301px;
+                z-index: 200;
+                animation-name: move;
+                animation-duration: 3s;
+                animation-iteration-count: 1;
+                animation-timing-function: linear;
+            }
+            @keyframes move {
+                from {
+                    left: 100%;
+                }
+                to {
+                    left: -136px;
+                }
+            }
+        </style>
+
+        <svg version="1.1" baseProfile="full" width="74" height="147" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 41, h3,v-3, h10, v3, h3, v42, h10, v-80, h3, v-3, h16, v3, h3, v80, h10, v-48, h3, v-3, h10, v3, h3, v48, h-3, v3, h-4, v3, h-3, v4, h-3, v3, h-13, v51, h-22, v-48, h-16, v-3, h-3, v-3, h-4, v-4, h-3, z"/>
+        </svg>
+    `,
+})
+```
+
+Графический примитив кактуса имеет следующий вид:
+
+![Графический примитив кактуса](learn\images\my-first-component\cactus.png "Кактус")
+
+Он задается SVG-элементом с использованием только одного тэга «**path**».
+
+```html
+<svg version="1.1" baseProfile="full" width="74" height="147" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 41, h3,v-3, h10, v3, h3, v42, h10, v-80, h3, v-3, h16, v3, h3, v80, h10, v-48, h3, v-3, h10, v3, h3, v48, h-3, v3, h-4, v3, h-3, v4, h-3, v3, h-13, v51, h-22, v-48, h-16, v-3, h-3, v-3, h-4, v-4, h-3, z"/>
+</svg>
+```
+
+Анимацию движения кактуса от правой границы игры до левой задает следующий ключевой кадр.
+
+```javascript
+@keyframes move {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -136px;
+    }
+}
+```
+
+Отрицательное значение левой координаты для окончания движения кактуса задается для того, чтобы все тело кактуса могло зайти за левую границу рабочей области игры.
+
+Данный ключевой кадр используется в псевдоклассе «**:host**», который применяется к хосту компонента сразу после его создания.
+
+```css
+:host {
+    position: absolute;
+    top: 301px;
+    z-index: 200;
+    animation-name: move;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+```
+
+В нем продолжительность анимации движения кактуса задается равной 3 секундам.
+
+Для отображения кактуса в области игры необходимо подключить его модуль с кодом к файлу компонента «**oda-game**» следующим образом:
+
+```javascript
+import "./oda-dino.js";
+import "./oda-cactus.js";
+```
+
+Также для тестирования в его теле можно задать тэг «**oda-cactus**».
+
+```html
+<h1>Счет игры</h1>
+<h1 id="score">{{score || '0'}}</h1>
+<div id="game-space" ref="game-space">
+    <h1 id="message" ~show="showMessage">{{message}}</h1>
+    <oda-dino ref="dino"></oda-dino>
+    <oda-cactus></oda-cactus>
+    <div id="horizon"></div>
+</div>
+```
+
+В результате этого кактус начнет двигаться справа налево сразу после отображения игры в браузере еще до ее начала.
+
+![Графический примитив кактуса](learn\images\my-first-component\cactus-move-window.png "Кактус")
+
+Однако после окончания анимации он появится у левой границе области игры.
+
+Для того, чтобы после выхода за левую границу кактус удалялся бы автоматически в его компоненте можно предусмотреть специальный колбэк, который будет задаваться в хуке «**attached**» сразу после создания компонента.
+
+```javascript
+attached() {
+    this.getAnimations().forEach((anim, i, arr) => {
+        anim.onfinish = () => {
+            this.remove();
+        };
+    });
+},
+```
+
+Здесь предусмотрено удаление кактуса сразу же после завершения анимации.
+
+В результате этого кактус после выхода за левую границу области игры опять появляться в ней больше не будет.
+
+![Удаление кактуса](learn\images\my-first-component\dino-window.png "Кактус")
+
+Аналогично создаются другие элементы игры, такие как облака и птеродактили.
+
+Для представления облаков создадим компонент «**oda-cloud**» и поместим его код  в папку «**js**» в виде файла «**oda-cloud.js**».
+
+```javascript
+ODA({ is: 'oda-cloud',
+    template: `
+        <style>
+            path,
+            rect {
+                fill: var(--cloud-color);
+            }
+            :host {
+                position: absolute;
+                z-index: 100;
+                animation-name: move;
+                animation-duration: 6s;
+                animation-iteration-count: 1;
+                animation-timing-function: linear;
+            }
+            @keyframes move {
+                from {
+                    left: 100%;
+                }
+                to {
+                    left: -150px;
+                }
+            }
+        </style>
+        <svg version="1.1" baseProfile="full" width="150" height="51" xmlns="http://www.w3.org/2000/svg">
+            <path d = "M0 38, v3, h7, v-3, h3, v-3, h-6, v3, z"/>
+            <path d = "M13 35, h3, v-6, h4, v-4, h22, v-3, h3, v-3, h10, v-10, h6, v-3, h3, v-3, h16, v-3, h13, v3, h7, v3, h3, v7, h9, v3, h16, v6, h10, v7, h6, v6, h-3, v-3, h-6, v-7, h-10, v-6, h-16, v-3, h-6, v3, h-3, v-10, h-4, v-3, h-6, v-3, h-6, v3, h-16, v3, h-4, v4, h-6, v9, h-10, v3, h-3, v4, h-22, v3, h-3, v6, h-7, z"/>
+            <path d = "M32 38, h112, v-3, h4, v6, h-116, z"/>
+            <rect x="29" y="35" height="3" width="3" />
+            <rect x="96" y="19" height="3" width="4" />
+        </svg>
+    `,
+    attached() {
+        this.setPosition(20, 150);
+        this.getAnimations().forEach((anim, i, arr) => {
+            anim.onfinish = () => {
+                this.remove();
+            };
+        });
+    },
+    setPosition(min, max) {
+        this.style.top = Math.floor(min + Math.random() * (max + 1 - min)) + 'px';
+    },
+})
+```
+
+В этом компоненте задается SVG-примитив облака.
+
+![Графический примитив облака](learn\images\my-first-component\cloud.png "Графический примитив облака")
+
+В отличие от кактусов облака должны появляться в игре на разной высоте. Для этого при их создании вызывается специальный метод «**setPosition**», который генерирует случайную высоту их появления в диапазоне от 20 до 150 пикселей относительное верхней границы рабочей области игры.
+
+Для отображения облаков к компоненту «**oda-game**» необходимо подключить js-модуль «**oda-cloud**» следующим образом:
+
+```javascript
+import "./oda-dino.js";
+import "./oda-cactus.js";
+import "./oda-cloud.js";
+```
+
+Чтобы протестировать этот компонент, можно в компоненте «**oda-game**» задать тэг «**oda-cloud**».
+
+```html
+<h1>Счет игры</h1>
+<h1 id="score">{{score || '0'}}</h1>
+<div id="game-space" ref="game-space">
+    <h1 id="message" ~show="showMessage">{{message}}</h1>
+    <oda-dino ref="dino"></oda-dino>
+    <oda-cactus></oda-cactus>
+    <oda-cloud></oda-cloud>
+    <div id="horizon"></div>
+</div>
+```
+
+В результате этого в области игры должно появиться облако, которое будет двигаться от правой границы до левой, а после захода за левую границу оно должно удалятся автоматически.
+
+![Движение облака](learn\images\my-first-component\cloud-move-window2.png "Движение облака")
+
+Кроме этого, при многократной загрузке игры облако должно появляться на разной высоте.
+
+![Разная высота облака](learn\images\my-first-component\cloud-move-window.png "Разная высота облака")
+
+Графический примитив птеродактиля содержит его тело
+и два крыла, первое из которых поднято вверх
+
+![Графический примитив птеродактиля](learn\images\my-first-component\pterodactyl1.png "Птеродактиль")
+
+, а второе опущено вниз.
+
+![Графический примитив птеродактиля](learn\images\my-first-component\pterodactyl2.png "Птеродактиль")
+
+Для создания эффекта взмахов крыльев к ним можно добавить тег **animate**, который будет поочередно скрывать и отображать определенное крыло через заданный временной интервал.
+
+```html
+<!--Крыло поднято вверх-->
+<path d=" M36 32, v-19, h-5, v-13, h5, v4, h5, v5, h4, v4, h5, v5, h4, v4, h5, v5, h4, v5, z ">
+    <animate attributeName="visibility" values="visible;hidden" dur="0.3s" repeatCount="indefinite"/>
+</path>
+
+<!--Крыло опущено вниз-->
+<path d=" M36 47, h18, v18, h-5, v5, h-4, v9, h-5, v5, h-4, z ">
+    <animate attributeName="visibility" values = "hidden;visible" dur="0.3s" repeatCount="indefinite"></animate>
+</path>
+```
+
+6. Запускается метода «**checkDino**» со приходом следующего кадра анимации, в котором динамически будут создаваться все остальные элементы игры и определяться факт столкновения динозавра с кактусом.
+
+```javascript
+ requestAnimationFrame(this.checkDino.bind(this));
+```
+
+Для привязки к этому метод контекста текущего компонента необходимо обязательно использовать метод «**bind**». В противном случае указатель «**this**» внутри метода «**checkDino**» будет иметь неопределенное значение «**undefined**».
+
 
 Для этого будет использовать образы четырех основных элементов игры:
 
