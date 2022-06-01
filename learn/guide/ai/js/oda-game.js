@@ -54,7 +54,7 @@ ODA({ is: 'oda-game',
         <h1 id="score">{{score || '0'}}</h1>
         <div id="game-space" ref="game-space">
             <h1 id="message" ~show="showMessage">{{message}}</h1>
-
+            <oda-dino ~for="showDinos"></oda-dino>
             <div id="horizon"></div>
         </div>
     `,
@@ -68,6 +68,7 @@ ODA({ is: 'oda-game',
         nextPterodactyl: 50,
         topology: [1,2],
         populationCount: 10,
+        showDinos: [false, false, false, false, false, false, false, false, false, false],
     },
     get dino() {
         return this.$refs.dino;
@@ -96,28 +97,21 @@ ODA({ is: 'oda-game',
             this.gameSpace.append(newDino);
         }
     },
-    dinoJump(e) {
-        if (e.code === 'Space') {
-            this.dino.jump();
-        }
-    },
     startGame(e) {
-        if (e.code !== 'Space') {
-            return;
-        }
         this.showMessage = false;
-        this.message = "Game Over";
-
-         this.timerID = setInterval(() => {
-             this.score++;
-         }, 100);
-
-        this.unlisten('keyup', 'startGame', {target: document});
-
-        this.listen('keydown', 'dinoJump', {target: document});
-
+        this.timerID = setInterval(() => {
+            this.score++;
+        }, 100);
         this.createPopulation();
-
+        requestAnimationFrame(this.checkDino.bind(this));
+    },
+    newGame() {
+        let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+        cactuses.forEach((cactus) =>
+            cactus.remove()
+        )
+        this.createPopulation();
+        this.score = 0;
         requestAnimationFrame(this.checkDino.bind(this));
     },
     checkDino() {
@@ -126,18 +120,24 @@ ODA({ is: 'oda-game',
         this.createPterodactyl();
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
         let dinos = this.gameSpace.querySelectorAll('oda-dino');
+        let removeCount = 0;
         dinos.forEach( dino => {
             for (var i = 0; i < cactuses.length; ++i) {
                 if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
                     dino.dinoBrain.cost = this.score;
                     this.changeBestBrain(dino.dinoBrain);
                     dino.remove();
+                    removeCount--;
                     break;
                 }
             }
-            dino.jump();
+            if (dinos.length === removeCount) {
+                this.newGame();
+            }
+            else {
+                dino.jump();
+            }
         })
-
         requestAnimationFrame(this.checkDino.bind(this));
     },
     createCloud() {
