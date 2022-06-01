@@ -1141,7 +1141,7 @@ setPosition(min, max) {
 this.listen('keyup', 'continueGame', {target: document});
 ```
 
-, который при отпускание клавиши пробела вызывает метод продолжения игры «**continueGame**».
+, который при отпускание любой клавиши вызывает метод продолжения игры «**continueGame**».
 
 ```javascript
 continueGame() {
@@ -1208,7 +1208,7 @@ this.nextCactus = 0;
 this.dino.continueMove();
 ```
 
-5. Возобновляется анимация движения облаков и птеродактилей их методами **continueMove**.
+5. Возобновляется анимация движения облаков.
 
 ```javascript
 const clouds = this.gameSpace.querySelectorAll('oda-cloud');
@@ -1216,13 +1216,37 @@ clouds.forEach(cloud => {
     cloud.continueMove();
 });
 
+Для этого используется метод «**continueMove**» компонента «**oda-cloud**», который задается следующим образом:
+
+```javascript
+continueMove(){
+    this.style.animationPlayState="running";
+},
+```
+
+В нем просто возобновляется приостановленная анимация движения облака.
+
+6. Возобновляется анимация движения птеродактилей.
+
+```javascript
 const pterodactyls = this.gameSpace.querySelectorAll('oda-pterodactyl');
 pterodactyls.forEach(pterodactyl => {
     pterodactyl.continueMove();
 });
 ```
 
-6. Очищается предыдущее значение счетчика очков **score**, и запускается новый таймер для их увелечения на единицу через каждые 100 миллисекунд.
+Для этого также используется метод «**continueMove**», но уже компонента «**oda-pterodactyl**».
+
+```javascript
+continueMove(){
+    this.style.animationPlayState="running";
+    const svg = this.$core.root.querySelector("svg");
+    svg.unpauseAnimations();
+},
+```
+Кроме анимации движения птеродактилей в этом методе возобновляется и анимация взмахов их крыльев.
+
+7. Очищается предыдущее значение счетчика очков **score**, и запускается новый таймер для их увелечения на единицу через каждые 100 миллисекунд.
 
 ```javascript
 this.score = 0;
@@ -1231,19 +1255,19 @@ this.timerID = setInterval(() => {
 }, 100);
 ```
 
-7. Удаляется обработчик нажатия клавиш продолжения игры **continueGameKeyUp**.
+8. Удаляется обработчик нажатия клавиш продолжения игры «**continueGameKeyUp**».
 
 ```javascript
 this.unlisten('keyup', 'continueGame', {target: document});
 ```
 
-8. Регистрируется обработчик нажатия клавиш для выполнения прыжка тиранозавром **dinoJumpKeyDown**.
+9. Регистрируется обработчик нажатия клавиш для выполнения прыжка тиранозавром «**dinoJumpKeyDown**».
 
 ```javascript
 this.listen('keydown', 'dinoJump', {target: document});
 ```
 
-9. Запускается метод проверки столкновения тиранозавра с кактусами **checkDino** на следующем кадре анимации с помощью метода **requestAnimationFrame**.
+10. Запускается метод проверки столкновения тиранозавра с кактусами «**checkDino**» на следующем кадре анимации с помощью метода «**requestAnimationFrame**».
 
 ```javascript
  requestAnimationFrame(this.checkDino.bind(this));
@@ -1270,7 +1294,7 @@ ready() {
 }
 ```
 
-В моменты столкновения динозавра с кактусом проигрывание этой композиции можно приостановить методом «**pause**».
+В момент столкновения динозавра с кактусом проигрывание этой музыкальной композиции нужно приостановить методом «**pause**».
 
 ```javascript
 stopMove() {
@@ -1283,7 +1307,7 @@ stopMove() {
 },
 ```
 
-А при возобновления игры можно продолжить проигрывание музыки с помощью метода «**play**».
+А при возобновления игры можно продолжить ее проигрывание с помощью метода «**play**», добавленного в метод «**continueMove**» компонента «**oda-dino**».
 
 ```javascript
 continueMove() {
@@ -1297,6 +1321,6 @@ continueMove() {
 }
 ```
 
-В результате этого пользователь, играя, сможет насладиться легендарным хитом группы «T-Rex» «**Get It On**».
+В результате этого пользователь, играя в игру, сможет насладиться легендарным хитом группы «T-Rex» «**Get It On**».
 
 ![Давай займемся любовью](learn\images\my-first-component\get-it-on.jpg "Давай займемся любовью")
