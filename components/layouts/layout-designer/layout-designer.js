@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root-savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -24,7 +24,7 @@ ODA({ is: 'oda-layout-designer',
         iconSize: 24
     },
     get rootSaveKey() {
-        return this.data?.savekey || 'root';
+        return (this.saveKey ? this.saveKey + '_' : '') + 'root';
     },
     get layout() {
         return this.data && new Layout(this.data, this.keys);
@@ -82,7 +82,7 @@ ODA({ is: 'oda-layout-designer-structure',
                     n.str= this;
             }
         },
-        rootSavekey: '',
+        root_savekey: '',
         actions: {
             default: [],
             save: true
@@ -93,7 +93,7 @@ ODA({ is: 'oda-layout-designer-structure',
     observers: [
         async function execute(layout, actions) {
             if (layout) {
-                this.saveKey = layout.saveKey = this.rootSavekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
+                this.saveKey = layout.saveKey = this.root_savekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
                 this.lays ||= new Set();
                 if (actions?.length && !this.lays.has(this.layout)) {
                     await this.layout.execute(actions);
