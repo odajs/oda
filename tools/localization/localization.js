@@ -8,8 +8,22 @@ Localization.phraze = {}
 Localization.words = {}
 Localization.dictionary = { phraze:{'_':'_'}, words:{'_':'_'} }
 ODA.translate = (val)=>{
+    if (typeof val !== 'string') return val;
+    const testLeter =  new RegExp('[a-z].*?','gi')
+    //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
+    const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+    const words = val.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+    //
+    phraze.forEach(v => ODA.localization.phraze[v]='')
+    words.forEach(v => ODA.localization.words[v]='')
 
-
+    const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi");
+    const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi");
+    //console.log(reWords)
+    var newVal = val.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
+                    .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
+    //console.log(val, newVal)
+    return newVal
 }
 
 ODA.loadJSON(Localization.path + '_.dir').then(res => { 

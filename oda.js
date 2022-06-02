@@ -1196,25 +1196,25 @@ if (!window.ODA) {
             let value = el.textContent.trim();
             if (!value) return;
             src.translate = (el.parentElement?.nodeName === 'STYLE' || el.parentElement?.getAttribute('is') === 'style') ? false : true;
-            function translateVal (val) {
-                if (typeof val !== 'string') return val;
-                const testLeter =  new RegExp('[a-z].*?','gi')
-                //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
-                const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-                const words = val.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-                //
-                phraze.forEach(v => ODA.localization.phraze[v]='')
-                words.forEach(v => ODA.localization.words[v]='')
+            // function translateVal (val) {
+            //     if (typeof val !== 'string') return val;
+            //     const testLeter =  new RegExp('[a-z].*?','gi')
+            //     //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
+            //     const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+            //     const words = val.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+            //     //
+            //     phraze.forEach(v => ODA.localization.phraze[v]='')
+            //     words.forEach(v => ODA.localization.words[v]='')
 
-                const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi");
-                const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi");
-                //console.log(reWords)
-                var newVal = val.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
-                                .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
-                //console.log(val, newVal)
-                return newVal
-            }
-            if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value)) || ( src.translate && ODA.localization ) ) {
+            //     const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi");
+            //     const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi");
+            //     //console.log(reWords)
+            //     var newVal = val.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
+            //                     .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
+            //     //console.log(val, newVal)
+            //     return newVal
+            // }
+            if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value)) || ( src.translate /*&& ODA.localization*/ ) ) {
                 let expr = value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
                     expr += '()';
@@ -1223,9 +1223,9 @@ if (!window.ODA) {
                 src.text.push(function textContent($el) {
                     let val = exec.call(this, fn, $el.$for);
                     //todo  localization
-                    if (src.translate && ODA.localization?.dictionary && val) {
+                    if (src.translate && /*ODA.localization?.dictionary &&*/ val) {
                         //console.log('!!')
-                        val = translateVal(val)
+                        val = ODA.translate(val) //translateVal(val)
                     }
                     if ($el.textContent == val) return
                     $el.textContent = val;
