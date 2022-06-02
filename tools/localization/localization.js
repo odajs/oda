@@ -7,6 +7,10 @@ Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/../../
 Localization.phraze = {}
 Localization.words = {}
 Localization.dictionary = { phraze:{'_':'_'}, words:{'_':'_'} }
+ODA.translate = (val)=>{
+
+
+}
 
 ODA.loadJSON(Localization.path + '_.dir').then(res => { 
     Localization.localesAvailable = res    

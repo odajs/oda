@@ -2357,6 +2357,9 @@ if (!window.ODA) {
             };
         }
     }
+    ODA.translate = (val)=>{
+        return val;
+    }
     ODA.import = async function (url, context, prototype){
         url = url.trim();
         if (url in ODA.aliases)
