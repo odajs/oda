@@ -10,7 +10,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         <oda-grid-groups class="header">GROUPS</oda-grid-groups>
         <div class="flex horizontal" style="overflow: hidden;">
             <div ~if="metadata[0].items.some(col=>col.checked)" class="raised horizontal header no-flex" style="overflow: hidden; max-width: 30%;filter: brightness(0.9);">
-                <oda-grid-part @resize="correctPanelSize" fix="left"></oda-grid-part>
+                <oda-grid-part fix="left"></oda-grid-part>
                 <oda-splitter save-key="left-fix" :size="sizerWidth" :color="sizerColor"></oda-splitter>
             </div>
             <oda-grid-part style="overflow: hidden;"></oda-grid-part>
@@ -22,9 +22,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         
     `,
     coords:{},
-    correctPanelSize(e){
-        // e.target.parentElement.style.minWidth =  e.target.getBoundingClientRect().width+'px';
-    },
     async showSettings(e){
         await ODA.showDropdown(
             'oda-grid-settings',
@@ -81,6 +78,27 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             this._headerResize = false;
         })
     },
+    footerResize(e){
+        if (this._footerResize) return;
+        this._footerResize = true;
+        const parts = this.table.$$('oda-grid-part');
+        const footers = parts.map(part=>{
+            return part.$$('oda-grid-footer');
+        }).flat();
+        let height = 0;
+
+        for (let h of footers){
+            h.style.minHeight = '';
+            if (height < h.scrollHeight)
+                height = h.scrollHeight;
+        }
+        for (let h of footers){
+            h.style.minHeight = height+'px';
+        }
+        this.debounce('_footerResize', ()=>{
+            this._footerResize = false;
+        })
+    },
     get metadata(){
         const columns = this.columns.map((col, idx)=>{
             col.checked = (col.checked === undefined && !col.hidden) || col.checked;
@@ -108,7 +126,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             return template.tag || template.is || template.template;
         return template;
     },
+    focusedRow: null,
     props:{
+        allowFocus: false,
         defaultTemplate: 'oda-grid-cell',
         pivotMode:{
             default: false,
@@ -260,15 +280,18 @@ ODA({is: 'oda-grid-body',
                 @apply --no-flex;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                border-right: {{colLines?'1px solid gray':'none'}};
+                border-right: {{colLines?'1px solid gray':'none'}}; 
                 border-bottom: {{rowLines?'1px solid gray':'none'}};
+            }
+            [focused]{
+                @apply --focused;
             }
         </style>
         <style>
         {{cellsClasses}}
         </style>
         <div class="vertical no-flex">
-            <div class="row" ~for="row in rows">
+            <div class="row" ~for="row in rows" :focused="allowFocus && row === focusedRow" @tap="focusedRow = row">
                 <div ~show="col.$width" ~is="getTemplateTag(row, col)"  :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" :row="row"  ~class="'C'+idx+' cell'"></div>
             </div>
         </div>
@@ -789,25 +812,25 @@ groups:{
 footer:{
     ODA({is: 'oda-grid-footer',
         template: `
-        <style>
-            :host{
-                @apply --horizontal;
-                @apply --no-flex;
-                @apply --header;
-                @apply --raised;
-                overflow-y: scroll;
-                overflow-x: hidden;
-            }
-        </style>
-        <style>
-            {{cellsClasses}}
-        </style>
-        <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
-            <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
-                <oda-grid-footer-cell :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" ~class="'C'+idx+' cell'"></oda-grid-footer-cell>
+            <style>
+                :host{
+                    @apply --horizontal;
+                    @apply --no-flex;
+                    @apply --header;
+                    @apply --raised;
+                    overflow-y: scroll;
+                    overflow-x: hidden;
+                }
+            </style>
+            <style>
+                {{cellsClasses}}
+            </style>
+            <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
+                <div class="horizontal" style="min-width: 100%; position: relative;" ~class="{flex: fix}">
+                    <oda-grid-footer-cell :tabindex="idx" style="box-sizing: border-box; overflow: hidden;" ~for="(col, idx) in cells"  :column="col" ~class="'C'+idx+' cell'"></oda-grid-footer-cell>
+                </div>
             </div>
-        </div>
-    `,
+        `,
         get cellsClasses(){
             return this.cells.map((cell, idx)=>{
                 const w = cell.$width;
@@ -818,20 +841,30 @@ footer:{
             }`;
             }).join('\r\n');
         },
+        get header(){
+            return this;
+        },
+        listeners:{
+            resize(e){
+                this.footerResize();
+            }
+        }
     })
     ODA({is:'oda-grid-footer-cell',
         template:`
-        <style>
-            :host{
-                @apply --horizontal;
-                padding: 4px;
-                border-right: 1px solid gray;
-                align-self: center;
-                height: 100%;
-            }
-        </style>
-        footer {{column?.name}}
-    `
+            <style>
+                :host{
+                    @apply --horizontal;
+                    padding: 4px;
+                    border-right: 1px solid gray;
+                    height: 100%;
+                    align-items: center;
+                }
+            </style>
+            <div class="flex">
+                footer {{column?.name}}
+            </div> 
+        `
     })
 }
 cells: {

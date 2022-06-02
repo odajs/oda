@@ -1197,6 +1197,7 @@ if (!window.ODA) {
             if (!value) return;
             src.translate = (el.parentElement?.nodeName === 'STYLE' || el.parentElement?.getAttribute('is') === 'style') ? false : true;
             function translateVal (val) {
+                if (typeof val !== 'string') return val;
                 const testLeter =  new RegExp('[a-z].*?','gi')
                 //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
                 const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
