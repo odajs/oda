@@ -2,7 +2,29 @@ import ODA from '../../oda.js';
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
 
-Localization.currentLocal = /* odaUserLocal || */ window.navigator.userLanguage || window.navigator.language || window.navigator.systemLanguage
+function getFirstBrowserLanguage ()  {
+    let nav = window.navigator,i,language,
+        browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'];
+
+    if (Array.isArray(nav.languages)) {  // support for HTML 5.1 "navigator.languages"
+      for (i = 0; i < nav.languages.length; i++) {
+        language = nav.languages[i];
+        if (language && language.length) { return language; }
+      }
+    }
+
+    for (i = 0; i < browserLanguagePropertyKeys.length; i++) {  // support for other well known properties in browsers
+      language = nav[browserLanguagePropertyKeys[i]];
+      if (language && language.length) { return language; }
+    }
+    return null;
+  };
+
+// console.log(getFirstBrowserLanguage());
+
+Localization.currentLocal = getFirstBrowserLanguage ()
+
+// Localization.currentLocal = /* odaUserLocal || */ window.navigator.userLanguage || window.navigator.language || window.navigator.systemLanguage
 Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/../../locales/'; // locales path
 Localization.phraze = {}
 Localization.words = {}
@@ -45,7 +67,7 @@ window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey) {
         var table = await ODA.createComponent("oda-localization-table");
         ODA.showDialog(table, {}, {
-            icon: 'icons:flag', title: 'Dictionarys',
+            icon: 'icons:flag', title: 'Dictionaries',
             buttons: [{ label: 'Dowload', icon: 'icons:file-download' }]
         })
             .then(ok => {
