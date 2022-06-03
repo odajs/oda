@@ -1,4 +1,4 @@
-ODA({ is: 'oda-layout-designer',
+ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
     template: /*html*/`
         <style>
             :host {
@@ -32,13 +32,24 @@ ODA({ is: 'oda-layout-designer',
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
     lays: null,
-    async saveScript(layout, action) {
-        // console.log('..... ', layout.root.saveKey, action)
-        layout.root.str.actions ||= [];
-        layout.root.str.actions.add(action);
+    scripts: null,
+    async makeScript(layout, action) {
+        this.scripts ||= new Map();
+        const actions = this.scripts.get(layout.root) || [];
+        actions.push(action);
+        this.scripts.set(layout.root, actions);
         this.lays.add(layout);
     },
+    saveScripts() {
+        this.scripts ||= new Map();
+        for (const [root, actions] of this.scripts) {
+            root.str.actions ||= [];
+            root.str.actions.push(...actions);
+        }
+        this.scripts = null;
+    },
     clearSavedScripts() {
+        this.scripts = null;
         this.lays.forEach(i => {
             i.str?.actions && (i.str.actions = []);
             i.root.str.actions = [];
@@ -49,8 +60,8 @@ ODA({ is: 'oda-layout-designer',
         if (!this.designMode) return;
         await ODA.showDropdown(
             'oda-layout-designer-settings',
-            {layout: this.selection[0] || this.layout || {}},
-            {parent: e.target || e, intersect: true, align: 'left', title: 'Settings'}
+            { layout: this.selection[0] || this.layout || {}, self: this },
+            { parent: e.target || e, intersect: true, align: 'left', title: 'Settings' }
         );
     },
 })
@@ -158,19 +169,19 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         const blockID = getUUID();
         const action = { id: tabID, action: "addTab", props: { tabs: this.layout.id, tab: tabID, block: blockID } };
         this.layout.addTab(action, this.layout);
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     },
     removeTab(e, item) {
         const action = { action: "removeTab", props: { tabs: this.layout.id, tab: item.id } };
         this.layout.removeTab(action, item);
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     },
     ontap(e, item) {
         this.layout.$expanded = true;
         this.layout.$focused = item;
         if (this.designMode) {
             const action = { action: "selectTab", props: { tabs: this.layout.id, tab: item.id } };
-            this.saveScript(this.layout, action);
+            this.makeScript(this.layout, action);
         }
     },
     ondragstart(e, item) {
@@ -192,7 +203,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.dragInfo.targetItem = item;
         this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: 'left' } };
         this.layout.move(this.dragInfo);
-        this.saveScript(this.layout, this.dragInfo._action);
+        this.makeScript(this.layout, this.dragInfo._action);
         this.hoverItem = undefined;
         this.dragInfo.isMoveTab = false;
     },
@@ -200,7 +211,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.editTab = undefined;
         if (this.designMode) {
             const action = { action: "setLabel", label: item.label, props: { id: item.id } };
-            this.saveScript(this.layout, action)
+            this.makeScript(this.layout, action)
         }
     }
 })
@@ -325,7 +336,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
-            this.saveScript(this.layout, action);
+            this.makeScript(this.layout, action);
             this.render();
         }
     },
@@ -371,7 +382,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 this.layout._label = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
             if (blur) {
                 const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
-                this.saveScript(this.layout, action);
+                this.makeScript(this.layout, action);
             }
             this.render();
         }
@@ -424,7 +435,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         e.stopPropagation();
         this.dragInfo._action = { id: getUUID(), action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo);
-        this.saveScript(this.layout, this.dragInfo._action);
+        this.makeScript(this.layout, this.dragInfo._action);
         this.clearDragTo();
     },
     clearDragTo() {
@@ -440,22 +451,22 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     createTabs() {
         const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
         this.layout.createTabs(action);
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     },
     hideLayout() {
         this.layout.isHide = !this.layout.isHide;
         const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     },
     hideGroupLabel() {
         this.layout.hideLabel = !this.layout.hideLabel;
         const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     },
     deleteGroup() {
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
         this.layout.deleteGroup(action, this.layout);
-        this.saveScript(this.layout, action);
+        this.makeScript(this.layout, action);
     }
 })
 
@@ -504,7 +515,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         </div>
 
         <span>Layout</span>
-        <div class="horizontal row" style="align-items: center" @tap="lay.hideLayout()">
+        <div class="horizontal row" style="align-items: center" @tap="lay.hideLayout(); lay.render(); render()">
             <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
         </div>
@@ -560,7 +571,7 @@ ODA({ is:'oda-layout-designer-settings', // imports: '@tools/property-grid2',
     setStyle(e) {
         const type = this.layout.cnt ? 'cnt' : 'str';
         const action = { action: "setStyle", props: { type, target: this.layout.id, key: e.detail.value.key, value: e.detail.value.value } };
-        (this.layout.cnt || this.layout.lay).saveScript(this.layout, action);
+        this.self.makeScript(this.layout, action);
         // console.log(action);
     }
 })

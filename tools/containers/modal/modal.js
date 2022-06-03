@@ -57,6 +57,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
     control: null,
     _slot(e) {
         this.control = this.control || e.target.assignedNodes()?.[0]
+        this.control.style.setProperty('overflow', 'hidden');
     },
     onDown(e) {
         e.stopPropagation();
