@@ -61,9 +61,14 @@ ODA({
     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
     template: /*html*/ `
         <style>
+            :host {@apply --vertical;}
             #battons-row {display: flex;}
-            .selelem {display: flex; border:1px solid #f0f0f0; margin: 3px; }
+            .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
             .label {line-height:34px;}
+            ::-webkit-scrollbar {width: 6px; height: 6px;}
+            ::-webkit-scrollbar-track {-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);}
+            ::-webkit-scrollbar-thumb {border-radius: 3px; background: var(--header-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);}
+            ::-webkit-scrollbar-thumb:hover {@apply --dark; width: 16px;}
         </style>
         <div id='battons-row'>
             <div class='selelem'>
@@ -77,12 +82,13 @@ ODA({
             <div class='selelem'>
                 <oda-selectbox :items="localesAvailable" ::sidx="lidx" ><oda-selectbox>
             </div>
-            
         </div>
-        <oda-localization-grid ::content="phrazeBase" ~if="tDict" :header-names="['phraze','translate']" ></oda-localization-grid>
-        <oda-localization-grid ::content="phrazeDop" ~if="tDict && eyeAll"></oda-localization-grid>
-        <oda-localization-grid ::content="wordsBase" ~if="!tDict" :header-names="['words','translate']" ></oda-localization-grid>
-        <oda-localization-grid ::content="wordsDop" ~if="!tDict && eyeAll"></oda-localization-grid>
+        <div style="overflow: auto;">
+            <oda-localization-grid ::content="phrazeBase" ~if="tDict" :header-names="['phraze','translate']" ></oda-localization-grid>
+            <oda-localization-grid ::content="phrazeDop" ~if="tDict && eyeAll"></oda-localization-grid>
+            <oda-localization-grid ::content="wordsBase" ~if="!tDict" :header-names="['words','translate']" ></oda-localization-grid>
+            <oda-localization-grid ::content="wordsDop" ~if="!tDict && eyeAll"></oda-localization-grid>
+        </div>
     `,
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
@@ -154,12 +160,13 @@ ODA({
             .val {grid-column:2;background:#fff;}
             oda-basic-input {padding:0;}
             oda-basic-input.odd  {background:#f0f0f0;}
-            .head {grid-row:1; background:#ddd; text-align:center; font-weight:bold; line-height:26px;}
+            .head {grid-row:1; background:#ddd; text-align:center; font-weight:bold; line-height:26px; position: sticky; top: 0px;}
         </style>
         <div id='gridall'>
-        <div class='key head'>{{headerNames[0]}}</div><div class='val head'>{{headerNames[1]}}</div>
-        <oda-basic-input :class="'key '+ ((index%2)? 'even':'odd')" :style="'grid-row:'+(index+2)" ~for="content" ::value="content[index].key" :read-only="true"> </oda-basic-input>
-        <oda-basic-input :class="'val '+ ((index%2)? 'even':'odd')" :style="'grid-row:'+(index+2)" ~for="content" ::value="content[index].val"> </oda-basic-input>
+            <div class='key head'>{{headerNames[0]}}</div>
+            <div class='val head'>{{headerNames[1]}}</div>
+            <oda-basic-input :class="'key '+ ((index%2)? 'even':'odd')" :style="'grid-row:'+(index+2)" ~for="content" ::value="content[index].key" :read-only="true"> </oda-basic-input>
+            <oda-basic-input :class="'val '+ ((index%2)? 'even':'odd')" :style="'grid-row:'+(index+2)" ~for="content" ::value="content[index].val"> </oda-basic-input>
         </div>
     `,
     props: {
