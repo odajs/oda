@@ -1,8 +1,8 @@
-Искусственный интеллект «Artificial Intelligence» – это свойство интеллектуальных систем выполнять творческие функции, которые традиционно считаются прерогативой человека.
+Искусственный интеллект «**Artificial Intelligence**» – это свойство интеллектуальных систем выполнять творческие функции, которые традиционно считаются прерогативой человека.
 
 Продемонстрируем эти свойства на примере игры динозавр «T-Rex», научив компьютер автоматически принимать решение о необходимости прыжка динозавра через кактус.
 
-Для этого добавим к обычной игре, js-module «**neural-net**», в котором объявим класс с именем «**NeuralNetwork**» для представления нейронной сети.
+Для этого добавим к обычной игре, js-модуль «**neural-net**», в котором объявим класс «**NeuralNetwork**» для представления нейронной сети.
 
 ```javascript
 export class NeuralNetwork
@@ -166,22 +166,24 @@ export class NeuralSection
 
 ```
 
-Конструктору этого класса передаются два параметра:
-
-1. «**inputCount**» – количество входных нейронов
-1. «**outputCount**» – количество выходных нейронов
+В этом классе конструктору передаются два параметра:
 
 ```javascript
 constructor (inputCount=0, outputCount)
 ```
 
+1. «**inputCount**» – количество входных нейронов.
+1. «**outputCount**» – количество выходных нейронов.
+
 Для каждого входного нейрона создается массив весов, которые связывают его со всеми выходными нейронами.
 
 ```javascript
-    this.weights = new Array(inputCount + 1);
+this.weights = new Array(inputCount + 1);
 ```
 
-Массив весов задается на единицу больше количества входных нейронов из-за необходимо задания нейрона смещения. На вход этого нейрона всегда подается входной сигнал равный единицы во избежания получения нулевого сигнала на выходе при нулевом сигнале на всех входах, когда веса нейросети никак не будут учитываться.
+Массив весов задается на единицу больше количества входных нейронов из-за необходимо задания нейрона смещения. На вход этого нейрона всегда подается входной сигнал равный единицы во избежании отсутствия реакции нейросети на изменение весов при нулевых входных сигналах.
+
+Для каждого входного нейрона формируется массив весов, который будет связывать входной нейрон со всеми выходными нейронами.
 
 ```javascript
 for (let i = 0; i < this.weights.length; i++) {
@@ -189,15 +191,63 @@ for (let i = 0; i < this.weights.length; i++) {
 }
 ```
 
+Все веса по умолчанию задаются случайными значениями в диапазоне от -0.5 до 0.5.
 
+```javascript
     for (let i = 0; i < this.weights.length; i++)
         for (let j = 0; j < this.weights[i].length; j++)
             this.weights[i][j] = Math.random() - 0.5;
 }
-ло
+```
 
-Функция активации задает форму выходного сигнала на выходе нейросети. Существуют разные способы ее задания. В нашем случае ее можно задать следующим образом:
+Для клонирования лучшей нейросети в классе «**NeuralSection**» предусмотрим метод «**clone**».
 
+```javascript
+ clone() {
+    const clone = new NeuralSection();
+    clone.weights = new Array(this.weights.length);
+
+    for (let i = 0; i < this.weights.length; i++) {
+        clone.weights[i] = new Array(this.weights[i].length);
+    }
+
+    for (let i = 0; i < this.weights.length; i++) {
+        for (let j = 0; j < this.weights[i].length; j++) {
+                clone.weights[i][j] = this.weights[i][j];
+        }
+    }
+    return clone;
+}
+```
+
+В нем создается новый слой, весам которого присваиваются на случайные значения, а значения весов текущего слоя, в отличие от предыдущего конструктора.
+
+Метод «**feedForward**» позволяет найти выходное значение, которое должно быть на всех нейронах текущего слоя.
+
+```javascript
+feedForward(input) {
+    let output = new Array(this.weights[0].length);
+    output.fill(0);
+    for (let i = 0; i < this.weights.length; i++) {
+        for (let j = 0; j < this.weights[i].length; j++) {
+            if (i === this.weights.length - 1)
+                output[j] += this.weights[i][j];
+            else
+                output[j] += this.weights[i][j] * input[i];
+        }
+    }
+
+    for (let i = 0; i < output.length; i++)
+        output[i] = ReLU(output[i]);
+    return output;
+}
+```
+
+Для этого выходные значения находятся как сумма произведений весов соответствующих нейронов на их входные сигналы. Здесь считается, что на нейрон смещения всегда подается единичные сигнал, поэтому его веса ни на что не умножаются.
+
+Окончательно выходной сигнал каждого нейрона преобразуется с помощью функции активации «**ReLU**». Она задает нормированную форму выходного сигнала. Существуют разные способы ее задания. В нашем случае ее можно задать следующим образом:
+
+```javascript
 function ReLU(x) {
     if (x >= 0)
         return x;
@@ -206,10 +256,299 @@ function ReLU(x) {
 }
 ```
 
-Это обычная линейная зависимость, с нулевыми значения при отрицательном уровне входного сигнала. При ее использовании гарантируется, что сигнал на выходе любого нейрона будет всегда либо больше либо равным нулю.
+Фактически это обычная линейная зависимость, которая уменьшает влияние отрицательных выходных значений в двадцать раз.
+
+Для изменения весов нейросети предусмотрен метод «**mutate**».
+
+```javascript
+mutate (mutationProbability, mutationAmount) {
+    for (let i = 0; i < this.weights.length; i++) {
+        for (let j = 0; j < this.weights[i].length; j++) {
+            if (Math.random() < mutationProbability)
+                this.weights[i][j] = (Math.random()) * (mutationAmount * 2) - mutationAmount;
+        }
+    }
+}
+```
+
+В нем веса изменяются в диапазоне от -mutationAmount до +mutationAmount с заданной вероятностью «**mutationProbability**». Все эти значения передаются в списке параметров и задаются в одноименном методе «**mutate**»
+класса «**NeuralNetwork**». В результате некоторые веса нейронов данного слоя нейросети будет задаваться заново в указанном диапазоне, позволяя найти лучшее решение.
+
+Для обучения этой нейросети используем игру «**Динозавр T-Rex**», которая была создана в уроке «**Мой первый компонента**».
+
+С этой целью модифицируем основной файл игры «**oda-game.js**».
+
+Сначала подключим к нему класс нейросети «**NeuralNetwork**».
+
+```javascript
+import {NeuralNetwork} from './neural-net.js';
+```
+
+В шаблоне компонента игры «**oda-game**» зададим не одного, а целую популяцию динозавров.
+
+```javascript
+<h1>Счет игры</h1>
+<h1 id="score">{{score || '0'}}</h1>
+<div id="game-space" ref="game-space">
+    <h1 id="message" ~show="showMessage">{{message}}</h1>
+    <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
+    <div id="horizon"></div>
+</div>
+```
+
+Для этого будет использовать директиву «**~for**» фреймворка «**ODA**». В этой директиве указывается массив «**showDinos**», который определяет как и количество динозавров в каждой популяции, так и необходимость их отображения.
+Этот массив задается в виде отдельного свойства в разделе «**props**» компонента «**oda-game**».
+
+```javascript
+props: {
+    timerID: 1,
+    score: 0,
+    message: 'Для начала обучения нажмите пробел',
+    showMessage: true,
+    nextCloud: 0,
+    nextCactus: 0,
+    nextPterodactyl: 50,
+    topology: [1,2],
+    populationCount: 10,
+    showDinos: [],
+},
+```
+
+Количество динозавров в популяции задается свойством «**populationCount**» со значением по умолчанию равным 10.
+
+Сам массив «**showDinos**» инициализируется в хуке «**ready**» следующим образом:
+
+```javascript
+ready() {
+    this.showDinos = Array(this.populationCount).fill(true)
+    this.bestBrain = new NeuralNetwork(this.topology);
+    this.listen('keyup', 'startGame', {target: document});
+},
+```
+
+Все элементы этого массива будут иметь значение «**true**», которое говорит, что всех динозавров в популяции нужно изначально отображать. В противном случае директива «**~show**» не отображала бы их в компоненте.
+
+В хуке «**ready**» также задается свойство «**bestBrain**», в котором будет храниться лучшая нейросеть среди всех динозавров.
+
+Для доступа к каждому отдельному динозавру создается уникальная ссылка не него с помощью директивы «**~ref**». Благодаря этому к каждому динозавру можно будет обратиться по его индексу в массиве «**showDinos**».
+
+Для задание нейросети у каждого динозавра в их компоненте «**oda-dino**» нужно предусмотреть свойство «**dinoBrain**» в разделе «**props**».
+
+```javascript
+    props: {
+        svg: {},
+        audio: {},
+        dinoBrain: {},
+    },
+```
+
+В результате этого при создании популяции динозавров, основанной на лучшей нейронной сети, каждому динозавру можно задать свой собственный мозг. Это можно сделать с помощью специального метода «**createPopulation**» компонента «**oda-game**»
+
+```javascript
+createPopulation() {
+    for (let i = 0; i < this.populationCount; i++) {
+        const dino = this.$refs[i][0];
+        dino.dinoBrain = this.bestBrain.clone();
+        dino.dinoBrain.cost = 0;
+    }
+},
+```
+
+При создании новой сети ее начальная стоимость обнуляется, а веса лучшей сети мутируют в методе «**clone**».
+
+Создание популяции осуществляется и при создании игры и при гибели всех динозавров.
+
+Для этого в методе «**startGame**» добавлен вызов метода «**createPopulation**».
+
+```javascript
+startGame() {
+    this.createPopulation();
+    this.showMessage = false;
+    this.timerID = setInterval(() => {
+        this.score++;
+    }, 100);
+    requestAnimationFrame(this.checkDino.bind(this));
+},
+```
+
+Кроме этого:
+
+1. Прячется надпись о необходимости нажатия пробела для начала обучения нейросети.
+
+```javascript
+this.showMessage = false;
+```
+2. Запускается таймер набранных очков.
+
+```javascript
+this.timerID = setInterval(() => {
+    this.score++;
+}, 100);
+```
+3. Вызывается метод определения столкновения динозавров с кактусами «**checkDino**».
 
 
-![Потеря соединения] (learn\images\my-first-component\my-first-component1.png "Потеря соединения")
+Этот метод нужно задать у компонента «**oda-game**» следующим образом:
+
+```javascript
+ checkDino() {
+    if (this.showDinos.every((value) => !value)) {
+        this.score = 0;
+        this.nextCactus = 0;
+        this.newPopulation();
+    }
+    this.createCloud();
+    this.createCactus();
+    this.createPterodactyl();
+    let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+    for (let i = 0; i < this.populationCount; i++) {
+        if (this.showDinos[i]) {
+            const dino = this.$refs[i][0];
+            for (let j = 0; j < cactuses.length; j++) {
+                let cactusCoords = cactuses[j].getBoundingClientRect();
+                let dinoCoords = dino.getBoundingClientRect();
+                if (cactusCoords.x + cactusCoords.width < dinoCoords.x )
+                    continue;
+                if (dino.isIntersection && dino.isIntersection(cactuses[j])) {
+                    dino.dinoBrain.cost = this.score;
+                    this.changeBestBrain(dino.dinoBrain);
+                    dino.stopJump();
+                    this.showDinos[i] = false;
+                    break;
+                }
+                else {
+                    dino.jump2(cactuses[j])
+                }
+            }
+        }
+    }
+   requestAnimationFrame(this.checkDino.bind(this));
+},
+```
+
+В нем проверяется не удалены ли все динозавры в результате их столкновения с кактусами с помощью метода «**every**» массива «**showDinos**». Если они будут все удалены, то тогда:
+
+1. Обнуляется счетчик очков.
+1. Обнуляется время появления следующего кактуса.
+1. Создается новая популяции динозавров с помощью метода «**newPopulation**».
+
+Метод «**newPopulation**» необходимо добавить к компоненту «**oda-game**» следующим образом:
+
+```javascript
+newPopulation() {
+    let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+    cactuses.forEach((cactus) => cactus.remove());
+    this.showDinos.fill(true);
+    this.createPopulation();
+},
+```
+
+В нем:
+
+1. Удаляются все кактусы, которые были созданы до этого.
+1. Отображаются заново все скрытые динозавры присвоением всем элементам массива «**showDinos**» значения «**true**» с помощью метод «**fill**».
+1. Вызывается метод «**createPopulation**», в котором у каждого динозавра задается новая нейросеть на основе лучшей нейросети, хранящейся в свойстве «**bestBrain**» компонента «**oda-game**».
+
+Если не все динозавры столкнулись с кактусами, то метод «**checkDino**» продолжает проверку это факта.
+
+```javascript
+let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+for (let i = 0; i < this.populationCount; i++) {
+    if (this.showDinos[i]) {
+        const dino = this.$refs[i][0];
+        for (let j = 0; j < cactuses.length; j++) {
+            let cactusCoords = cactuses[j].getBoundingClientRect();
+            let dinoCoords = dino.getBoundingClientRect();
+            if (cactusCoords.x + cactusCoords.width < dinoCoords.x )
+                continue;
+            if (dino.isIntersection && dino.isIntersection(cactuses[j])) {
+                dino.dinoBrain.cost = this.score;
+                if (dino.dinoBrain.cost > this.bestBrain.cost) {
+                    this.bestBrain.cost = dino.dinoBrain.cost
+                    this.bestBrain.clone(dino.dinoBrain);
+                }
+                dino.stopJump();
+                this.showDinos[i] = false;
+                break;
+            }
+            else {
+                dino.jump2(cactuses[j])
+            }
+        }
+    }
+}
+```
+
+Для этого он получает список всех кактусов и для каждого из них проверяет не пересекаются ли их координаты с координатами очередного еще отображаемого динозавра. Если координаты пересекаются, то
+
+1. Фиксируется у текущего динозавра количество набранных его нейросетью очков.
+
+```javascript
+dino.dinoBrain.cost = this.score;
+```
+
+2. Проверяется не стала ли стоимость текущей сети больше стоимости лучшей сети.
+
+```javascript
+if (dino.dinoBrain.cost > this.bestBrain.cost) {
+    this.bestBrain.cost = dino.dinoBrain.cost
+    this.bestBrain.clone(dino.dinoBrain);
+}
+```
+
+Если стала, то текущая нейросеть становится лучшей.
+
+3. Останавливается анимация прыжка этого динозавра с помощью метода «**stopJump**» компонента «**oda-dino**».
+
+```javascript
+stopJump(){
+    this.classList.remove("dino-jump");
+    this.offsetHeight; // reflow
+    this.svg.unpauseAnimations();
+},
+```
+
+4. Скрывается текущий динозавр, задаем в массиве «**showDinos**» для него значения «**false**».
+
+```javascript
+this.showDinos[i] = false;
+```
+
+5. Прекращается проверка его столкновения с другими кактусами с помощью директивы «**break**».
+
+Если пересечений не было, то осуществляется проверка необходимости прыжка динозавром. Для этого используется его метод «**jump**».
+
+```javascript
+jump(cactus) {
+    const cactusCoords = cactus.getBoundingClientRect();
+    if (!this.classList.contains("dino-jump")) {
+        const dinoCoords = this.getBoundingClientRect();
+        const inputs = [[this.map( cactusCoords.x - dinoCoords.x - dinoCoords.width, this.parentNode.offsetLeft + dinoCoords.x + dinoCoords.width, this.parentNode.offsetLeft + this.parentNode.offsetWidth - dinoCoords.x - dinoCoords.width , 0, 1)]];
+        const result = this.dinoBrain.feedForward(inputs[0]);
+        if (result[1]  > result[0]) {
+            this.classList.add("dino-jump");
+            this.svg.pauseAnimations();
+            this.getAnimations().forEach((anim, i, arr) => {
+                anim.onfinish = () => {
+                    this.classList.remove("dino-jump")
+                    this.offsetHeight; // не удаляй reflow
+                    this.svg.unpauseAnimations();
+                }
+            });
+        }
+    }
+},
+```
+
+В этом методе если динозавр еще не прыгнул, то находится его расстояние до кактуса по формуле:
+
+```javascript
+cactusCoords.x - dinoCoords.x - dinoCoords.width
+```
+
+Это значение передается на вход нейросети, которая имеет следующую архитектуру.
+
+![Архитектура нейросети] (learn\images\ai\neural-net.png "Потеря соединения")
 
 Эту игру можно запустить и в online режиме, указав в строке адреса браузера служебную ссылку **chrome://dino**.
 

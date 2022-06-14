@@ -481,7 +481,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.makeScript(this.layout, action);
     },
     hideLayout(e) {
-        e.stopPropagation();
+        e?.stopPropagation();
         this.layout.isHide = !this.layout.isHide;
         this.render();
         const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
