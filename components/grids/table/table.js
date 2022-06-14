@@ -1636,7 +1636,7 @@ cells: {
                     }
                 }
 
-                this.table.fire('checked-changed');
+                this.table.fire('checked-changed', this.item);
             }
         });
     }

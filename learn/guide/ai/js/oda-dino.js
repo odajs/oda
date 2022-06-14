@@ -102,6 +102,34 @@ ODA({ is: 'oda-dino',
             }
         });
     },
+    stopJump(){
+        this.classList.remove("dino-jump");
+        this.offsetHeight; // reflow
+        this.svg.unpauseAnimations();
+    },
+    jump2(cactus) {
+        const cactusCoords = cactus.getBoundingClientRect();
+        if (!this.classList.contains("dino-jump")) {
+            const dinoCoords = this.getBoundingClientRect();
+            const inputs = [[this.map( cactusCoords.x - dinoCoords.x - dinoCoords.width, this.parentNode.offsetLeft + dinoCoords.x + dinoCoords.width, this.parentNode.offsetLeft + this.parentNode.offsetWidth - dinoCoords.x - dinoCoords.width , 0, 1)]];
+            const result = this.dinoBrain.feedForward(inputs[0]);
+            if (result[1]  > result[0]) {
+                this.classList.add("dino-jump");
+                this.svg.pauseAnimations();
+                this.getAnimations().forEach((anim, i, arr) => {
+                    anim.onfinish = () => {
+                        this.classList.remove("dino-jump")
+                        this.offsetHeight; // не удаляй reflow
+                        this.svg.unpauseAnimations();
+                    }
+                });
+            }
+        }
+    },
+
+    map (n, start1, stop1, start2, stop2) {
+        return (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+    },
     stopMove() {
         this.audio.pause();
         this.style.animationPlayState="paused";

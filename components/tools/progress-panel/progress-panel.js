@@ -8,7 +8,7 @@ ODA({is: 'oda-progress-panel',
         }
     </style>
     <div ~if="items?.length && !expanded && show" class="horizontal" style="align-items: center;">
-        <oda-progress-bar ~props="item" :task="item" :hide-label="hideLabels" hide-buttons style="cursor: pointer;"></oda-progress-bar>
+        <oda-progress-bar ~props="item" :hide-percent="hidePercents" :task="item" :hide-label="hideLabels" hide-buttons style="cursor: pointer;"></oda-progress-bar>
         <div ~if="!hideLabels && (items?.length || 0) > 1" >{{items?.length || ''}} requests</div>
     </div>
     <div ~if="items?.length && expanded" style="overflow: auto;">
@@ -29,6 +29,7 @@ ODA({is: 'oda-progress-panel',
     delay: 500,
     props: {
         hideLabels: false,
+        hidePercents: true,
     },
     get item() {
         if (this.items.length > 0) {
@@ -134,7 +135,7 @@ ODA({is: 'oda-progress-bar',
     <svg :viewBox="\`0 0 \${iconSize} \${iconSize}\`" class="progress-ring no-flex">
         <circle ref="ring" :stroke="error ? 'red' : stroke" fill="transparent" stroke-width="3" :r="~~(iconSize/ 7 * 3)" :cx="iconSize / 2" :cy="iconSize / 2"/>
     </svg>
-    <div ~if="progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">
+    <div ~if="!hidePercent && progress" class="progress-block" ~style="{color: progress === 1 ? '#00bb00' : 'gray' }">
         <div ~if="!error || progress < 1" class="text">{{~~(100*progress)}}</div>
         <oda-icon :icon-size="iconSize*0.75" ~if="error && (progress === 0 || progress === 1)" icon="icons:error"></oda-icon>
     </div>
@@ -150,9 +151,10 @@ ODA({is: 'oda-progress-bar',
     label: '',
     error: null,
     task: null,
-    hideLabel: false,
     props: {
         hideButtons: false,
+        hidePercent: false,
+        hideLabel: false,
     },
     observers: [
         function calcRing(progress) {

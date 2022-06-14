@@ -54,7 +54,7 @@ ODA({ is: 'oda-game',
         <h1 id="score">{{score || '0'}}</h1>
         <div id="game-space" ref="game-space">
             <h1 id="message" ~show="showMessage">{{message}}</h1>
-            <oda-dino ~for="showDinos"></oda-dino>
+            <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
             <div id="horizon"></div>
         </div>
     `,
@@ -68,7 +68,7 @@ ODA({ is: 'oda-game',
         nextPterodactyl: 50,
         topology: [1,2],
         populationCount: 10,
-        showDinos: [false, false, false, false, false, false, false, false, false, false],
+        showDinos: [],
     },
     get dino() {
         return this.$refs.dino;
@@ -79,6 +79,7 @@ ODA({ is: 'oda-game',
     ready() {
         this.bestBrain = new NeuralNetwork(this.topology);
         this.listen('keyup', 'startGame', {target: document});
+        this.showDinos = Array(this.populationCount).fill(true)
     },
     changeBestBrain(dinoBrain) {
         if (dinoBrain.cost > this.bestBrain.cost) {
@@ -88,56 +89,82 @@ ODA({ is: 'oda-game',
     },
     createPopulation() {
         for (let i = 0; i < this.populationCount; i++) {
-            const newDino = document.createElement('oda-dino');
-            newDino.dinoBrain = this.bestBrain.clone();
-            newDino.dinoBrain.cost = 0;
+            const dino = this.$refs[i][0];
+            dino.dinoBrain = this.bestBrain.clone();
+            dino.dinoBrain.cost = 0;
             if ( Math.random() < 0.75 ) {
-                newDino.dinoBrain.mutate();
+                dino.dinoBrain.mutate();
             }
-            this.gameSpace.append(newDino);
         }
+    },
+    newPopulation() {
+        let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
+        cactuses.forEach((cactus) => cactus.remove());
+        this.showDinos.fill(true);
+        this.createPopulation();
     },
     startGame(e) {
         this.showMessage = false;
+        this.createPopulation();
         this.timerID = setInterval(() => {
             this.score++;
         }, 100);
-        this.createPopulation();
-        requestAnimationFrame(this.checkDino.bind(this));
-    },
-    newGame() {
-        let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        cactuses.forEach((cactus) =>
-            cactus.remove()
-        )
-        this.createPopulation();
-        this.score = 0;
         requestAnimationFrame(this.checkDino.bind(this));
     },
     checkDino() {
+        if (this.showDinos.every((value) => !value)) {
+            this.score = 0;
+            this.newPopulation();
+            this.nextCactus = 0;
+        }
         this.createCloud();
         this.createCactus();
         this.createPterodactyl();
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        let dinos = this.gameSpace.querySelectorAll('oda-dino');
-        let removeCount = 0;
-        dinos.forEach( dino => {
-            for (var i = 0; i < cactuses.length; ++i) {
-                if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
-                    dino.dinoBrain.cost = this.score;
-                    this.changeBestBrain(dino.dinoBrain);
-                    dino.remove();
-                    removeCount--;
-                    break;
+        for (let i = 0; i < this.populationCount; i++) {
+            if (this.showDinos[i]) {
+                const dino = this.$refs[i][0];
+                for (let j = 0; j < cactuses.length; j++) {
+                    let cactusCoords = cactuses[j].getBoundingClientRect();
+                    let dinoCoords = dino.getBoundingClientRect();
+                    if (cactusCoords.x + cactusCoords.width < dinoCoords.x )
+                        continue;
+                    if (dino.isIntersection && dino.isIntersection(cactuses[j])) {
+                        dino.dinoBrain.cost = this.score;
+                        this.changeBestBrain(dino.dinoBrain);
+                        dino.stopJump();
+                        this.showDinos[i] = false;
+                        break;
+                    }
+                    else {
+                        dino.jump2(cactuses[j])
+                    }
                 }
             }
-            if (dinos.length === removeCount) {
-                this.newGame();
-            }
-            else {
-                dino.jump();
-            }
-        })
+        }
+
+
+
+
+        // let dinos = this.gameSpace.querySelectorAll('oda-dino');
+        // let removeCount = 0;
+        // dinos.forEach( dino => {
+        //     for (var i = 0; i < cactuses.length; ++i) {
+        //         if (dino.isIntersection && dino.isIntersection(cactuses[i])) {
+        //             dino.dinoBrain.cost = this.score;
+        //             this.changeBestBrain(dino.dinoBrain);
+        //             dino.remove();
+        //             removeCount--;
+        //             break;
+        //         }
+        //     }
+        //     if (dinos.length === removeCount) {
+        //         this.newGame();
+        //     }
+        //     else {
+        //         dino.jump();
+        //     }
+        // })
         requestAnimationFrame(this.checkDino.bind(this));
     },
     createCloud() {

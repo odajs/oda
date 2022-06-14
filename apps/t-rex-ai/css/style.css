@@ -1,0 +1,17 @@
+:root {
+    --base-color: #e2e2e2;
+    --dino-color: var(--base-color);
+    --cloud-color: var(--base-color);
+    --pterodactyl-color: var(--base-color);
+    --horizon-color: var(--base-color);
+
+    --dark-color: #121212 !important;
+    --background-color: var(--dark-color);
+    --dino-eyes-color: var(--dark-color);
+
+    --header-color: honeydew !important;
+    --header-background-color: grey;
+    --cactus-color: grey;
+    --dino-top: 314px;
+    --dino-max-top: 20px;
+}

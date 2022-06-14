@@ -27,6 +27,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         :host .title-bar {
             @apply --heading;
             align-items: center;
+            background-color: {{isTopModal ? 'var(--selected-color) !important' : ''}};
         }
         :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
             min-height: {{iconSize + iconSize / 8 + 5}}px;
@@ -295,16 +296,22 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     show() {
 
     },
+    get isTopModal() {
+        return this.modal;
+    },
     _top() {
         if (this.modal) {
             const my = Number(getComputedStyle(this)["zIndex"]);
-            const z = this._getModals().reduce((res, el) => {
+            const modals = this._getModals();
+            const z = modals.reduce((res, el) => {
                 const z = Number(getComputedStyle(el)["zIndex"]);
                 if (z > res)
                     res = z;
                 return res;
             }, 0);
             if (my <= z) {
+                modals.forEach(el => el.isTopModal = false);
+                this.isTopModal = true;
                 this.style.zIndex = z + 1;
             }
         }

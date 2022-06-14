@@ -41,8 +41,8 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         <input id="label" class="flex" ::value="label" :placeholder="placeholderLabel" autofocus>
         <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
     </div>
-    <label for="name" class="horizontal">Имя:</label>
-    <div class="horizontal input-container">
+    <label ~if="!hideName" for="name" class="horizontal">Имя:</label>
+    <div ~if="!hideName" class="horizontal input-container">
         <input ~if="!hideName" id="name" class="flex" ::value="name" :placeholder="placeholderName">
     </div>
     `,
@@ -124,8 +124,6 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 this._list?.domHost?.setSize();
                 return;
             }
-            // Для показа всего списка при нажатии на dropDown
-            this.text = undefined;
         }
         catch {
             this.interval('dd', () => {

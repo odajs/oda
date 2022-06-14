@@ -443,7 +443,7 @@ if (!window.ODA) {
             render() {
                 if (!this.$core.shadowRoot) return;
                 ODA.render((this.rootHost || this).$core?.renderer);
-                this.onRender?.();
+                callHook.call(this, 'onRender');
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
@@ -1912,7 +1912,7 @@ if (!window.ODA) {
         }
         return cache.file[url];
     };
-    const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed'];
+    const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender'];
     const toString = Object.prototype.toString;
     function isNativeObject(obj) {
         return obj && (obj.constructor === Object);// ||  toString.call(c) === '[object Object]';
@@ -2229,8 +2229,14 @@ if (!window.ODA) {
                     }
                 }
                 else if (name in this.__proto__) { // понаблюдать 👀
-                    if (this[name] != v)
-                        this[name] = v;
+                    try{
+                        if (this[name] != v)
+                            this[name] = v;
+                    }
+                    catch (e){
+                       // console.log(e)
+                    }
+
                     // if(!(name in this.__proto__)) return;
                 }
                 else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀

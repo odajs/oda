@@ -56,6 +56,20 @@
     }
   },
   {
+    "name": "t-rex-ai",
+    "label": "Динозавр T-Rex (+AI)",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "oda-bird",
+    "label": "Нейроптицы",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
     "name": "tetris",
     "label": "Тетрис",
     "content": {

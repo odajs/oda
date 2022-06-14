@@ -119,28 +119,38 @@ ODA({is: 'oda-splitter', template: /*html*/`
 });
 
 ODA({ is: 'oda-splitter-mover', template: /*html*/`
-    <style>
-        :host{
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            animation: fadin 5s ease-in-out;
-            background-color: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-            cursor: col-resize;
-        }
-        :host div{
-            position: absolute;
-            z-index: 1001;
-            @apply --header;
-        }
-        @keyframes fadin {
-            from {background-color: rgba(0, 0, 0, 0)}
-            to {background-color: rgba(0, 0, 0, 0.4)}
-        }
-    </style>
-    <div class="border" ~style="_getStyle(pos)"></div>
+        <style>
+            :host{
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                animation: fadin 5s ease-in-out;
+                background-color: rgba(0, 0, 0, 0.4);
+                z-index: 1000;
+                cursor: col-resize;
+            }
+            :host div{
+                position: absolute;
+                z-index: 1001;
+                @apply --header;
+            }
+            @keyframes fadin {
+                from {background-color: rgba(0, 0, 0, 0)}
+                to {background-color: rgba(0, 0, 0, 0.4)}
+            }
+        </style>
+        <div class="border" ~style="_getStyle(pos)"></div>
     `,
+    attached(){
+        this.async(()=>{
+            this.style.setProperty?.('visibility', 'visible');
+        })
+    },
+    listeners:{
+        tap(e){
+
+        }
+    },
     align: '',
     pos: null,
     _getStyle(e) {

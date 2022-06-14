@@ -1,124 +1,121 @@
 Искусственный интеллект «Artificial Intelligence» – это свойство интеллектуальных систем выполнять творческие функции, которые традиционно считаются прерогативой человека.
 
-Продемонстрируем эти свойства на примере игры динозавр «T-Rex», научив компьютер принимать решение о прыжке динозавра через кактус при его приближении. для этого добавим к обычной игре, js-module «neural-net», в котором объявим класс для представления нейронной сети.
+Продемонстрируем эти свойства на примере игры динозавр «T-Rex», научив компьютер автоматически принимать решение о необходимости прыжка динозавра через кактус.
+
+Для этого добавим к обычной игре, js-module «**neural-net**», в котором объявим класс с именем «**NeuralNetwork**» для представления нейронной сети.
 
 ```javascript
 export class NeuralNetwork
 {
     constructor (topology, clone)
     {
-        // Validation Checks
-        if (topology.length < 2)
-            throw Error("A Neural Network cannot contain less than 2 Layers.", "Topology");
-
-        for (let i = 0; i < topology.length; i++) {
-            if(topology[i] < 1)
-                throw Error ("A single layer of neurons must contain, at least, one neuron.", "Topology");
-        }
-
-        // Set topology
-        this.theTopology = topology; //new List<uint>(topology).AsReadOnly();
-
-        // Initialize Sections
+        this.theTopology = topology;
         this.sections = new Array(this.theTopology.length - 1);
-
         if (clone) return;
-
-        // Set the Sections
         for (let i = 0; i < this.sections.length; i++) {
             this.sections[i] = new NeuralSection(this.theTopology[i], this.theTopology[i + 1]);
         }
     }
-
-    cost = 0;
-
-    clone(){
+    clone() {
         const clone = new NeuralNetwork(this.theTopology, true);
-
-        // Set the Sections
         for (let i = 0; i < this.sections.length; i++) {
               clone.sections[i] = this.sections[i].clone();
         }
         return clone;
     }
-
-    change(neuralNet){
-        // Set the Sections
-        for (let i = 0; i < this.sections.length; i++) {
-            this.sections[i] = neuralNet.sections[i].clone();
-            this.cost = neuralNet.cost;
-        }
-    }
-
-    get topology(){ // Returns the topology in the form of an array
-        const res = new Array(this.theTopology.length);
-        res.fill(0)
-        // this.theTopology.CopyTo(res, 0);
-        return res;
-    }
-
     feedForward(input)
     {
-        // Validation Checks
-        if (input === null)
-            throw Error("The input array cannot be set to null.", "input");
-        else if (input.length !== this.theTopology[0])
-            throw Error("The input array's length does not match the number of neurons in the input layer.", "Input");
-
         let output = input;
-
-        // Feed values through all sections
         for (let i = 0; i < this.sections.length; i++) {
             output = this.sections[i].feedForward(output);
         }
         return output;
     }
-
-    /**
-    * <summary>
-    * Mutate the NeuralNetwork.
-    * </summary>
-    * <param name="mutationProbability">The probability
-    * that a weight is going to be mutated. (Ranges 0-1)</param>
-    * <param name="mutationAmount">The maximum amount a mutated weight would change.
-    * </param>
-    */
     mutate (mutationProbability = 0.05, mutationAmount = 1.0) {
-        // Mutate each section
-        for (let i = 0; i < this.sections.length; i++)
-        {
+        for (let i = 0; i < this.sections.length; i++) {
             this.sections[i].mutate(mutationProbability, mutationAmount);
-        }
+        )
     }
+    cost = 0;
 }
+```
 
+В данном классе задается топология сети. Ее архитектура передается конструктору класса в виде массива с именем «**topology**» в списке параметров.
+
+```javascript
+constructor (topology, clone)
+```
+
+Длина этого массива определяет количество слоев нейросети, а значение каждого элемента этого массива определяет количество нейронов на каждом из этих слоев.
+
+Переданное значение этой топологии сохраняется в свойстве «**theTopology**» данного класса для использования в других методах.
+
+```javascript
+this.theTopology = topology;
+```
+
+Второй параметр «**clone**» предусматривает досрочный выход из конструктора без инициализации созданных слоев сети при условии, что он будет иметь значение «**true**».
+
+```javascript
+if (clone) return;
+```
+
+В противном случае каждый слой создается отдельно с помощью конструктора специального класса «**NeuralSection**».
+
+```javascript
+ for (let i = 0; i < this.sections.length; i++) {
+    this.sections[i] = new NeuralSection(this.theTopology[i], this.theTopology[i + 1]);
+}
+```
+
+Метод «**clone**» позволяет создать клон текущей нейросети. Для этого в нем создается новая сеть с помощью предыдущего конструктора, но веса нейронов на каждом слое задаются такими же, как и веса нейронов текущей сети.
+
+```javascript
+clone() {
+    const clone = new NeuralNetwork(this.theTopology, true);
+    for (let i = 0; i < this.sections.length; i++) {
+            clone.sections[i] = this.sections[i].clone();
+    }
+    return clone;
+}
+```
+
+Метод «**feedForward**» позволяет найти значение на выходе сети, используя переданное ему значение на ее входе. Для этого он последовательное передает входные значения на каждом слое и получает его выходные значения, передавая их в качестве входных значений следующим слоям пока не получит окончательный результат на последнем слое.
+
+```javascript
+feedForward(input)
+{
+    let output = input;
+    for (let i = 0; i < this.sections.length; i++) {
+        output = this.sections[i].feedForward(output);
+    }
+    return output;
+}
+```
+
+Метод  «**mutate**» позволяет изменить веса сети с заданной вероятностью. По умолчанию в нем вероятность мутаций задается равной 0.05 и передается для мутации весов на всех слоях.
+
+```javascript
+mutate (mutationProbability = 0.05, mutationAmount = 1.0) {
+    for (let i = 0; i < this.sections.length; i++) {
+        this.sections[i].mutate(mutationProbability, mutationAmount);
+    )
+}
+```
+
+Для выбора лучшей сети в классе «**NeuralNetwork**» предусмотрено свойство «**cost**», которое изначально задается равным нулю.
+
+Каждый слой нейронов представляет собой объект класса «**NeuralSection**», который объявляется в том же самом модуле, что и класс «**NeuralNetwork**» следующим образом:
+
+```javascript
 export class NeuralSection
 {
-    /**
-    * <summary>
-    * Initiate a NeuralSection from a topology and a seed.
-    * </summary>
-    * <param name="inputCount">The number of input neurons in the section.</param>
-    * <param name="outputCount">The number of output neurons in the section.</param>
-    * <param name="Randomizer">The Ransom instance of the NeuralNetwork.</param>
-    */
     constructor (inputCount=0, outputCount)
     {
-        // Validation Checks
-        if (inputCount === 0)
-            return;
-            // throw Error("You cannot create a Neural Layer with no input neurons.", "InputCount");
-        else if (outputCount === 0)
-            throw Error("You cannot create a Neural Layer with no output neurons.", "outputCount");
-
-        // Initialize the weights array
-        this.weights = new Array(inputCount + 1); // +1 for the Bias Neuron
-
+        this.weights = new Array(inputCount + 1); // +1 для нейрона смещения
         for (let i = 0; i < this.weights.length; i++) {
             this.weights[i] = new Array(outputCount);
         }
-
-        // Set random weights
         for (let i = 0; i < this.weights.length; i++)
             for (let j = 0; j < this.weights[i].length; j++)
                 this.weights[i][j] = Math.random() - 0.5;
@@ -132,60 +129,31 @@ export class NeuralSection
             clone.weights[i] = new Array(this.weights[i].length);
         }
 
-        // Set weights
         for (let i = 0; i < this.weights.length; i++) {
             for (let j = 0; j < this.weights[i].length; j++) {
                     clone.weights[i][j] = this.weights[i][j];
             }
         }
-
         return clone;
     }
 
-    /**
-    * <summary>
-    * Feed input through the NeuralSection and get the output.
-    * </summary>
-    * <param name="input">The values to set the input neurons.</param>
-    * <returns>The values in the output neurons after propagation.</returns>
-    */
     feedForward(input) {
-        // Validation Checks
-        if (input === null)
-            throw Error("The input array cannot be set to null.", "Input");
-        else if (input.length !== this.weights.length - 1)
-            throw Error("The input array's length does not match the number of neurons in the input layer.", "Input");
-
-        // Initialize output Array
         let output = new Array(this.weights[0].length);
         output.fill(0);
-
-        // Calculate Value
         for (let i = 0; i < this.weights.length; i++) {
             for (let j = 0; j < this.weights[i].length; j++) {
-                if (i === this.weights.length - 1) // If is Bias Neuron
-                    output[j] += this.weights[i][j]; // Then, the value of the neuron is equal to one
+                if (i === this.weights.length - 1)
+                    output[j] += this.weights[i][j];
                 else
                     output[j] += this.weights[i][j] * input[i];
             }
         }
 
-        // Apply Activation Function
         for (let i = 0; i < output.length; i++)
             output[i] = ReLU(output[i]);
-
         return output;
     }
 
-    /**
-    * <summary>
-    * Mutate the NeuralSection.
-    * </summary>
-    * <param name="mutationProbability">The probability
-    * that a weight is going to be mutated. (Ranges 0-1)</param>
-    * <param name="mutationAmount">The maximum amount a Mutated Weight would change.
-    * </param>
-    */
     mutate (mutationProbability, mutationAmount) {
         for (let i = 0; i < this.weights.length; i++) {
             for (let j = 0; j < this.weights[i].length; j++) {
@@ -194,15 +162,41 @@ export class NeuralSection
             }
         }
     }
-
-    /**
-    * <summary>
-    * Puts a double through the activation function ReLU.
-    * </summary>
-    * <param name="x">The value to put through the function.</param>
-    * <returns>x after it is put through ReLU.</returns>
-    */
 }
+
+```
+
+Конструктору этого класса передаются два параметра:
+
+1. «**inputCount**» – количество входных нейронов
+1. «**outputCount**» – количество выходных нейронов
+
+```javascript
+constructor (inputCount=0, outputCount)
+```
+
+Для каждого входного нейрона создается массив весов, которые связывают его со всеми выходными нейронами.
+
+```javascript
+    this.weights = new Array(inputCount + 1);
+```
+
+Массив весов задается на единицу больше количества входных нейронов из-за необходимо задания нейрона смещения. На вход этого нейрона всегда подается входной сигнал равный единицы во избежания получения нулевого сигнала на выходе при нулевом сигнале на всех входах, когда веса нейросети никак не будут учитываться.
+
+```javascript
+for (let i = 0; i < this.weights.length; i++) {
+    this.weights[i] = new Array(outputCount);
+}
+```
+
+
+    for (let i = 0; i < this.weights.length; i++)
+        for (let j = 0; j < this.weights[i].length; j++)
+            this.weights[i][j] = Math.random() - 0.5;
+}
+ло
+
+Функция активации задает форму выходного сигнала на выходе нейросети. Существуют разные способы ее задания. В нашем случае ее можно задать следующим образом:
 
 function ReLU(x) {
     if (x >= 0)
@@ -210,8 +204,10 @@ function ReLU(x) {
     else
         return x / 20;
 }
-
 ```
+
+Это обычная линейная зависимость, с нулевыми значения при отрицательном уровне входного сигнала. При ее использовании гарантируется, что сигнал на выходе любого нейрона будет всегда либо больше либо равным нулю.
+
 
 ![Потеря соединения] (learn\images\my-first-component\my-first-component1.png "Потеря соединения")
 
