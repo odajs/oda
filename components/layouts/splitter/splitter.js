@@ -147,8 +147,8 @@ ODA({ is: 'oda-splitter-mover', template: /*html*/`
         })
     },
     listeners:{
-        tap(e){
-
+        mousedown(e){
+            this.remove();
         }
     },
     align: '',

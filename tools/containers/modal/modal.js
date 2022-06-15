@@ -11,7 +11,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             height: 100%;
             overflow: hidden;
             pointer-events: auto;
-            @apply --vertical;  
+            @apply --vertical;
             animation: fadin 5s ease-in-out;
             background-color: rgba(0, 0, 0, 0.4);
         }
@@ -70,6 +70,7 @@ ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-l
             border-radius: 4px;
             max-height: calc(100% - 8px);
             max-width: calc(100% - 8px);
+            min-width: 270px;
         }
     </style>
     <slot></slot> `,

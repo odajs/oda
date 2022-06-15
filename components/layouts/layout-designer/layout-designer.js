@@ -332,8 +332,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                             <oda-button icon="icons:tab" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>
                         </div>
                         <div class="flex"></div>
+                        <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @pointerdown="resize" ></oda-icon>
                         <oda-button class="eye" ~if="designMode" icon="image:remove-red-eye" icon-size="16" @pointerdown="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'" :selected="selection.has(layout)"></oda-button>
-
                     </div>
                 </div>
             </div>
@@ -342,7 +342,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
-                    <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
+                        <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
             </div>
         </div>
@@ -497,6 +497,28 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
         this.layout.deleteGroup(action, this.layout);
         this.makeScript(this.layout, action);
+    },
+    resize(e) {
+        e.stopPropagation();
+        this._prevX = e.clientX;
+        const rect = this.getBoundingClientRect();
+        this._prevWidth = rect.width;
+        document.addEventListener('pointermove', this._moveHandler = this._moveHandler || this.moveHandler.bind(this));
+        document.addEventListener('pointerup', this._upHandler = this._upHandler || this.upHandler.bind(this));
+    },
+    moveHandler(e) {
+        let w = this._prevWidth + e.clientX - this._prevX;
+        this.style.maxWidth = `${w}px`;
+        this.style.width = `${w}px`;
+        this.style.userSelect = 'none';
+        this.style.pointerEvents = 'none';
+        console.log(w)
+    },
+    upHandler(e) {
+        this.style.removeProperty('user-select');
+        this.style.removeProperty('pointer-events');
+        document.removeEventListener('pointermove', this._moveHandler);
+        document.removeEventListener('pointerup', this._upHandler);
     }
 })
 

@@ -31,6 +31,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             min-height: 24px;
             max-height: 24px;
             border: none;
+            width: 100%;
         }
         oda-button {
             padding: 0;

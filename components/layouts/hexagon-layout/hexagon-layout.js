@@ -82,12 +82,10 @@ ODA({is: 'oda-hexagon-layout',
     },
     listeners:{
         resize(e){
-            // this.interval('resize', ()=>{
-                if (this.height<this.offsetHeight)
-                    this.height = this.offsetHeight;
-                if (this.width < this.offsetWidth)
-                    this.width = this.offsetWidth;
-            // })
+            if (this.height<this.offsetHeight)
+                this.height = this.offsetHeight;
+            if (this.width < this.offsetWidth)
+                this.width = this.offsetWidth;
         },
     },
     addItem(item) {
