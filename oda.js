@@ -448,7 +448,7 @@ if (!window.ODA) {
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
-                        console.log(this,  'visibility')
+                        // console.log(this,  'visibility')
                     }, 300)
                     this.interval('force-show', ()=>{
                         this.$wake = false;

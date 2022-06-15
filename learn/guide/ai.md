@@ -302,7 +302,7 @@ import {NeuralNetwork} from './neural-net.js';
 props: {
     timerID: 1,
     score: 0,
-    message: 'Для начала обучения нажмите пробел',
+    message: 'Для начала обучения нажмите на пробел',
     showMessage: true,
     nextCloud: 0,
     nextCactus: 0,
@@ -360,12 +360,16 @@ createPopulation() {
 Для этого в методе «**startGame**» добавлен вызов метода «**createPopulation**».
 
 ```javascript
-startGame() {
+startGame(e) {
+    if (e.code !== 'Space') {
+        return;
+    }
     this.createPopulation();
     this.showMessage = false;
     this.timerID = setInterval(() => {
         this.score++;
     }, 100);
+    this.unlisten('keyup', 'startGame', {target: document});
     requestAnimationFrame(this.checkDino.bind(this));
 },
 ```
@@ -384,8 +388,14 @@ this.timerID = setInterval(() => {
     this.score++;
 }, 100);
 ```
-3. Вызывается метод определения столкновения динозавров с кактусами «**checkDino**».
 
+3. Отменяется обработчик нажатия каких-либо клавиш клавиатуры.
+
+```javascript
+this.unlisten('keyup', 'startGame', {target: document});
+```
+
+4. Вызывается метод определения столкновения динозавров с кактусами «**checkDino**».
 
 Этот метод нужно задать у компонента «**oda-game**» следующим образом:
 
