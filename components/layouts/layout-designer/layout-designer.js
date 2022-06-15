@@ -676,45 +676,33 @@ CLASS({ is: 'Layout',
         // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
     },
     get hideHeader() {
-         return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel;
+         return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel || this._hideHeader;
     },
     async createTabs(action) {
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const tabs = new Layout({ id: action.tabsId, label: `Tabs-label` }, item.key, item.owner, item.root);
-        // const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
+        const tabs = new Layout({ id: action.tabsId, label: `Group-label` }, item.key, item.owner, item.root);
+        const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
         tabs.type = 'tabs';
         tabs.width = 0;
-        tabs.items = [item];
+        tabs.items = [tab];
         tabs.$expanded = true;
-        // tabs.$focused = tab;
+        tabs.$focused = tab;
         tabs.order = item.order;
         tabs._order = item._order;
-        // tab.items = [item];
-        // tab.order = tab._order = 0;
-        // tab.type = 'tab';
-        // tab.blockID = action.props.block;
+        tab._hideHeader = true;
+        tab.$expanded = true;
+        tab.items = [item];
+        tab.order = tab._order = 0;
+        tab.type = 'tab';
+        tab.blockID = action.props.block;
         item.owner.items.splice(myIdx, 1, tabs);
-        item.owner = tabs;
+        item.owner = tab;
     },
     async addTab(action, layout) {
         let tabs = layout || await this.find(action.props.tabs);
         if (!tabs) return;
-        if (tabs.type === "vGroup" || this.type === "hGroup" || (tabs.type === "tabs" && tabs.items.length <= 1)) {
-            const myIdx = tabs.owner.items.indexOf(tabs);
-            let tab = tabs.owner.items.splice(myIdx, 1)[0];
-            tab.type = 'tab';
-            tabs = new Layout({ id: action.tabsId, label: `Group-label` }, tab.key, tab.owner, tab.root);
-            tabs.type = 'tabs';
-            tabs.width = 0;
-            tabs.items = [tab];
-            tabs.$expanded = true;
-            tabs.$focused = tab;
-            tabs.order = tab.order;
-            tabs._order = tab._order;
-            tabs.owner.items.splice(myIdx, 0, tabs);
-        }
         const tab = new Layout({ id: action.id, label: `Tab ${tabs.items.length + 1}` }, tabs.key, tabs, tabs.root);
         tab.type = 'tab';
         tabs.items.push(tab)
