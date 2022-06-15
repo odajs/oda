@@ -73,7 +73,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
-                flex-wrap: wrap;
+                flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
                 /*justify-content: space-around;*/
                 align-content: flex-start;
                 flex-direction: {{layout?.type==='vGroup' ? 'column' : 'row'}};
@@ -250,8 +250,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
-                border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '1px dashed red' : designMode ? '1px dashed lightblue' : layout?.isGroup ? '1px solid gray' : '1px solid transparent'}};
-                min-width: {{layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                border: {{designMode && layout?.isVirtual ? '1px dotted blue' : designMode && layout?.isHide ? '1px dashed red' : designMode ? '1px dashed lightblue' : layout?.isGroup ? '1px solid gray' : '1px solid transparent'}};
+                min-width: {{layout?.hideHeader ? '' : layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
                 background-color: {{layout?.isGroup ? 'lightgray' : ''}};
@@ -319,8 +319,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 opacity: 1;
             }
         </style>
-        <div ~if="!layout?.hideHeader" class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <div ~if="(designMode || !layout?.hideLabel) && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
+        <div ~if="designMode || !layout?.hideHeader" class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
+            <div ~if="(designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
@@ -337,7 +337,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                     </div>
                 </div>
             </div>
-            <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
+            <div ~if="!layout?.isGroup && !layout?.hideHeader" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="!layout?.isTabs && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
@@ -828,7 +828,7 @@ CLASS({ is: 'Layout',
     },
     _createGroup(action, dragItem, targItem, groupType) {
         const moveTo = action.props.to;
-        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-label` }, targItem.key, targItem.owner, targItem.root);
+        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-virtual` }, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarg, 1, group)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);

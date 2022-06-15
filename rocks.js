@@ -603,6 +603,7 @@ if (!globalThis.KERNEL) {
 
         const capitalGlossary = Object.create(null);
         function toCapital(str) {
+            if (!str) return '';
             return (capitalGlossary[str] = str[0].toUpperCase() + str.slice(1));
         }
 
