@@ -127,13 +127,12 @@
             <oda-button :icon-size :icon></oda-button>
             <h4 ~for="5" class="horizontal center">
                 Запись № {{item}}
-                <oda-button :id="'Title № ' + item" @pointerdown.stop="ontap" icon="icons:add" icon-size="48"></oda-button>
+                <oda-button :id="'Title № ' + item" @tap.stop="ontap" icon="icons:add" icon-size="48"></oda-button>
             </h4>
        `,
         iconSize: 24,
         icon: '',
         async ontap(e) {
-            let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
             try {
                 count || 0;
                 count = +count + 1;

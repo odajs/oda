@@ -81,6 +81,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     }
                 }
                 onMouseDown = (e) => {
+                    e.stopPropagation();
                     let inside = false; // курсор внутри контейнера
                     for (const ch of host.$core?.shadowRoot?.children) {
                         const r = ch.getBoundingClientRect?.();

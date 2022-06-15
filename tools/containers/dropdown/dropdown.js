@@ -2,7 +2,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
             :host {
-                pointer-events: {{pointerEvents}};
+                /*pointer-events: none;*/
                 z-index: 100;
                 transition: background-color 5s;
             }
@@ -105,7 +105,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             reflectToAttribute: true,
         },
         cancelAfterLeave: false,
-        pointerEvents: 'unset'
+        // pointerEvents: 'unset'
     },
     contentRect: null,
     get _style() {
