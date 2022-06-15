@@ -532,6 +532,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.style.removeProperty('pointer-events');
         document.removeEventListener('pointermove', this._moveHandler);
         document.removeEventListener('pointerup', this._upHandler);
+        const action = { action: "setWidth", props: { target: this.layout.id, width: this.style.width } };
+        this.makeScript(this.layout, action);
     }
 })
 
@@ -776,6 +778,14 @@ CLASS({ is: 'Layout',
         if (!item) return;
         item.styles ||= [];
         item.styles.push({ key: action.props.key, value: action.props.value, type: action.props.type });
+    },
+    async setWidth(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        this.async(() => {
+            item.cnt.style.minWidth = '0px';
+            item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
+        }, 300)
     },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
