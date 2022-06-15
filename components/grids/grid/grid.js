@@ -64,7 +64,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         const start = Math.max(Math.floor(this.rowsScrollTop / this.rowHeight), 0);
         const length = start + this.pageSize + 2;
         const rows = this.items.slice(start, length);
-        // console.log(this.rowsScrollTop, start, length)
         return rows;
     },
     get table(){
@@ -73,12 +72,12 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     get tableWidth(){
         return this.clientWidth;
     },
-    headerResize(e){
-        if (this._headerResize) return;
-        this._headerResize = true;
+    heightResize(control='oda-grid-header'){
+        // if (this._hr) return;
+        // this._hr = true;
         const parts = this.table.$$('oda-grid-part');
         const headers = parts.map(part=>{
-            return part.$$('oda-grid-header');
+            return part.$$(control);
         }).flat();
         let height = 0;
 
@@ -90,30 +89,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         for (let h of headers){
             h.style.minHeight = height+'px';
         }
-        this.debounce('_headerResize', ()=>{
-            this._headerResize = false;
-        })
-    },
-    footerResize(e){
-        if (this._footerResize) return;
-        this._footerResize = true;
-        const parts = this.table.$$('oda-grid-part');
-        const footers = parts.map(part=>{
-            return part.$$('oda-grid-footer');
-        }).flat();
-        let height = 0;
-
-        for (let h of footers){
-            h.style.minHeight = '';
-            if (height < h.scrollHeight)
-                height = h.scrollHeight;
-        }
-        for (let h of footers){
-            h.style.minHeight = height+'px';
-        }
-        this.debounce('_footerResize', ()=>{
-            this._footerResize = false;
-        })
+        // this.debounce(control, ()=>{
+        //     this._hr = false;
+        // }, 100)
     },
     get metadata(){
         const columns = this.columns.map((col, idx)=>{
@@ -180,7 +158,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             save: true
         },
         sizerColor:{
-            default: 'gray',
+            default: 'var(--border-color)',
             save: true,
             editor: '@oda/color-picker'
         },
@@ -219,7 +197,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
     },
     rowsScrollTop: 0,
     sorts: [],
-
 })
 ODA({is: 'oda-grid-part',
     template: `
@@ -300,14 +277,13 @@ ODA({is: 'oda-grid-body',
                 max-height: {{rowHeight}}px;
                 height: {{rowHeight}}px;
                 flex: {{(autoWidth || fix)?1:0}};
-                border-bottom: {{rowLines?'1px solid gray':'none'}};
+                border-bottom: {{rowLines?'1px solid var(--border-color)':'none'}};
             }
             .cell{
                 @apply --no-flex;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                border-right: {{colLines?'1px solid gray':'none'}}; 
-                /*border-bottom: {{rowLines?'1px solid gray':'none'}};*/
+                border-right: {{colLines?'1px solid var(--border-color)':'none'}}; 
             }
             [focused]{
                 @apply --focused;
@@ -396,11 +372,12 @@ header:{
             :host{
                 @apply --no-flex;
                 position: relative;
-                border-top: 1px solid gray;
+                border-top: 1px solid var(--border-color);
                 @apply --horizontal;
                 overflow: hidden;
                 @apply --raised;
                 overflow-y: scroll;
+                border-bottom: 1px solid var(--border-color);
             }
         </style>
         <div class="flex horizontal" style="overflow: hidden;" :scroll-left="colsScrollLeft">
@@ -424,7 +401,7 @@ header:{
         },
         listeners:{
             resize(e){
-                this.headerResize();
+                this.heightResize(this.localName);
             }
         }
     })
@@ -451,7 +428,7 @@ header:{
                 outline: none;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid gray;" ~style="getStyle()" @tap="sort()" @track="onMove" ~class="{disabled: dragMode && !_allowDrop, success: _allowDrop}">
+        <div class="horizontal flex" style="align-items: center; overflow: hidden; border-bottom: 1px solid var(--border-color);" ~style="getStyle()" @tap="sort()" @track="onMove" ~class="{disabled: dragMode && !_allowDrop, success: _allowDrop}">
             <oda-icon ~if="column?.items" style="opacity: .3" @down.stop :icon-size :icon="column?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap.stop="expand"></oda-icon>
             <span class="flex" style="text-overflow: ellipsis; overflow: hidden; padding: 4px 0px 4px 8px;">{{title}}</span>
             <oda-icon style="opacity: .5" ~show="getBoundingClientRect().width > iconSize * 2"  :icon="column?.$sort?(column.$sort === 2?'icons:arrow-forward:270':'icons:arrow-forward:90'):''" :icon-size="iconSize/2" >{{column.$sort}}</oda-icon>
@@ -473,10 +450,11 @@ header:{
         expand(){
             this.column.$expanded = !this.column.$expanded;
             this.$next(()=>{
-                this.headerResize();
-            },1)
+                this.heightResize();
+            })
 
-            // this.async(()=>{
+
+            // this.debounce('expand', ()=>{
             //     if (this.column.$expanded){
             //         const width = this.getBoundingClientRect().width;
             //         this.column.items?.forEach(col=>{
@@ -527,14 +505,15 @@ header:{
         },
         column: null,
         listeners:{
-            resize(e){
+            resize(e) {
                 e.stopPropagation();
-                const width = this.getBoundingClientRect().width;
-                if (!width) return;
-                this.columns?.forEach(col=>{
-                    col.$width = col.$width || width / this.column.items.length;
-                })
-                this.column.$width = width;
+                // if (!this.column?.$expanded) return;
+                const width = Math.round(this.getBoundingClientRect().width);
+                // if (!width) return;
+                // this.columns?.forEach(col => {
+                //     col.$width = col.$width || width / this.columns.length;
+                // })
+                this.column.$width = this.column.$width || width;
             }
         },
         getStyle(){
@@ -842,6 +821,7 @@ footer:{
                     @apply --raised;
                     overflow-y: scroll;
                     overflow-x: hidden;
+                    border-top: 2px solid var(--border-color);
                 }
             </style>
             <style>
@@ -868,7 +848,7 @@ footer:{
         },
         listeners:{
             resize(e){
-                this.footerResize();
+                this.heightResize(this.localName);
             }
         }
     })
@@ -878,7 +858,7 @@ footer:{
                 :host{
                     @apply --horizontal;
                     padding: 4px;
-                    border-right: 1px solid gray;
+                    border-right: 1px solid var(--border-color);
                     height: 100%;
                     align-items: center;
                 }
