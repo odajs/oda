@@ -146,13 +146,14 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             }
         </style>
         <div ~if="layout?.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
-           <div @mousedown.stop.prev="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+           <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
                 <oda-button class="btn" :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
+            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode" icon="icons:pin" title="pin current tab" icon-size="16"></oda-button>
         </div>
     `,
     props: {
@@ -175,10 +176,10 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.layout.removeTab(action, item);
         this.makeScript(this.layout, action);
     },
-    ontap(e, item) {
+    selectTab(item, force) {
         this.layout.$expanded = true;
         this.layout.$focused = item;
-        if (this.designMode) {
+        if (this.designMode && force) {
             const action = { action: "selectTab", props: { tabs: this.layout.id, tab: item.id } };
             this.makeScript(this.layout, action);
         }
@@ -320,7 +321,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div ~if="designMode || !layout?.hideHeader" class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <div ~if="(designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
+            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
@@ -328,8 +329,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                         <oda-button ~if="layout?.isGroup" :icon-size @tap.stop="addTab" icon="icons:add"></oda-button  title="add tab">
                         <div class="horizontal no-flex" ~if="selection.has(layout)">
                             <oda-button ~if="layout.isGroup" icon="material:format-text" icon-size="16" @tap="hideGroupLabel" style="padding: 0; margin: 0" :fill="layout.hideLabel ? 'red' : ''" :title="(layout.hideLabel ? 'unhide' : 'hide') + ' group label'"></oda-button>
-                            <oda-button ~if="layout.isGroup" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>
-                            <oda-button icon="icons:tab" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>
+                            <oda-button ~if="layout?.isGroup || layout?.type === 'hGroup' || layout?.type === 'vGroup'" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>
+                            <oda-button icon="av:library-add" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>
                         </div>
                         <div class="flex"></div>
                         <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @pointerdown="resize" ></oda-icon>
@@ -399,6 +400,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout.addTab(action, this.layout);
         this.makeScript(this.layout, action);
         this.render();
+    },
+    removeTab(tab) {
+        const action = { action: "removeTab", props: { tabs: this.layout.id, tab: tab.id } };
+        this.layout.removeTab(action, tab);
+        this.makeScript(this.layout, action);
     },
     setLabel(e, blur) {
         if (this.designMode) {
@@ -494,6 +500,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.makeScript(this.layout, action);
     },
     deleteGroup() {
+        if (this.layout.items[0]?.isTab1) {
+            this.removeTab(this.layout.items[0]);
+        }
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
         this.layout.deleteGroup(action, this.layout);
         this.makeScript(this.layout, action);
@@ -696,6 +705,7 @@ CLASS({ is: 'Layout',
         tab.items = [item];
         tab.order = tab._order = 0;
         tab.type = 'tab';
+        tab.isTab1 = true;
         tab.blockID = action.props.block;
         item.owner.items.splice(myIdx, 1, tabs);
         item.owner = tab;
