@@ -153,7 +153,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 <oda-button class="btn" :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
-            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode" icon="icons:pin" title="pin current tab" icon-size="16"></oda-button>
+            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode" icon="icons:pin" title="pin current tab" icon-size="14"></oda-button>
         </div>
     `,
     props: {
@@ -256,7 +256,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
                 background-color: {{layout?.isGroup ? 'lightgray' : ''}};
-                margin: {{layout?.isGroup ? '4px 0' : ''}};
+                margin: {{layout?.isGroup ? '4px 0 4px 4px' : '0'}};
                 border-radius: {{layout?.isGroup ? '4px' : ''}};
             }
 
@@ -520,7 +520,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.style.minWidth = '100%';
         w = (w * 100) / this.getBoundingClientRect().width;
         this.async(() => {
-            this.style.minWidth = '';
+            this.style.minWidth = '0px';
             this.style.maxWidth = `${w}%`;
             this.style.width = `${w}%`;
             this.style.userSelect = 'none';
@@ -569,23 +569,23 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         
         <span>Group</span>
         <div class="horizontal row" style="align-items: center" @tap="lay.createTabs()">
-            <oda-icon icon="icons:tab"></oda-icon>
+            <oda-icon icon="av:library-add"></oda-icon>
             <label>create group</label>
         </div>
         <div ~if="layout.isGroup" class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="lay.hideGroupLabel()">
                 <oda-icon icon="material:format-text" :fill="layout.hideLabel ? 'red' : ''"></oda-icon>
-                <label>{{layout.hideLabel ? 'unhide' : 'hide'}} Group-label (Group-border)</label>
+                <label>{{layout.hideLabel ? 'unhide' : 'hide'}} group label</label>
             </div>
             <div class="horizontal row" style="align-items: center" @tap="lay.deleteGroup(); fire('ok');">
                 <oda-icon icon="icons:delete"></oda-icon>
-                <label>delete Group ...</label>
+                <label>delete group</label>
             </div>
         </div>
 
         <span>Layout</span>
         <div class="horizontal row" style="align-items: center" @tap="lay.hideLayout(); lay.render(); render()">
-            <oda-icon icon="maps:layers" :fill="layout.isHide ? 'red' : ''"></oda-icon>
+            <oda-icon icon="image:remove-red-eye" :fill="layout.isHide ? 'red' : ''"></oda-icon>
             <label>{{layout.isHide ? 'unhide' : 'hide'}} layout</label>
         </div>
     `,
