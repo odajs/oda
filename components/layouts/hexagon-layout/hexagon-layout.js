@@ -12,6 +12,7 @@ ODA({is: 'oda-hexagon-layout',
                   @apply --flex;
                   justify-content: start;
                   overflow: hidden;
+                  position: relative;
                   background: {{background}};
                   margin:  -{{h / 2 }}px -{{size / 2 + distance}}px;
 
@@ -28,7 +29,10 @@ ODA({is: 'oda-hexagon-layout',
                     opacity: .5
                 }
           </style>
-          <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - index}"></oda-hexagon-row>
+          <div class="flex vertical">
+            <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - index}"></oda-hexagon-row>          
+          </div>
+          <oda-icon class="error shadow" ~show="showTrash" :icon-size="size" icon="icons:delete" ~style="{right: size + 'px', bottom: size+'px'}" style="position: absolute; z-index: 10000; border-radius: 25%" ></oda-icon>   
       `,
     width: 5,
     height: 5,
@@ -73,12 +77,14 @@ ODA({is: 'oda-hexagon-layout',
             readOnly: true,
         }
     },
+    get layout(){
+        return this;
+    },
     get rows(){
         return Math.ceil(this.height/this.size)+1
     },
     set showTrash(n){
-        this.trashItem.x = Math.floor(this.offsetWidth/(this.size + this.distance * 2))-2;
-        this.trashItem.y =  Math.floor(this.offsetHeight/(this.h + this.distance * (Math.sqrt(3)/2) * 2))+1;
+
     },
     listeners:{
         resize(e){
@@ -98,18 +104,14 @@ ODA({is: 'oda-hexagon-layout',
         return row.items.push(item);
     },
     removeItem(item) {
-        let row = this.data.find(i=>(i.y === (item.y || 0)))
-        if (!row) return;
-        const idx = row.items.findIndex(i=>i.x === (item.x || 0))
-        row.items.splice(idx, 1);
+        this.data?.remove(item);
+        // let row = this.data.find(i=>(i.y === (item.y || 0)))
+        // if (!row) return;
+        // const idx = row.items.findIndex(i=>i.x === (item.x || 0))
+        // row.items.splice(idx, 1);
     },
     __drop(e, hex){
         console.warn('method __drop not implemented!');
-    },
-    get trashItem(){
-        return {background: 'red', x:1,  y:1, allowDrop: true, is: 'oda-icon', props:{
-                icon:'icons:delete', iconSize: this.size / 2
-            }}
     }
 })
 
@@ -118,6 +120,7 @@ ODA({is: 'oda-hexagon-row',
     template:`
           <style>
               :host{
+                  position: relative;
                   @apply --horizontal;
                   @apply --no-flex;
                   justify-content: start;
@@ -291,12 +294,15 @@ ODA({is: 'oda-hexagon',
         },
         dragend(e){
             this.showTrash = false;
+            if (e.x < (this.layout.offsetWidth - this.size * 3)) return;
+            if (e.y < (this.layout.offsetHeight - this.size * 3)) return;
+            this.removeItem(this.item);
+            this.domHost.items = undefined
         },
         dragstart(e) {
             const obj = {mime: 'oda/hexagon-item'}
             obj.data = Post['oda/hexagon-item'] = this.item;
             Post['host'] = this;
-            // e.dataTransfer.setDragImage(this.$core.shadowRoot.firstElementChild, this.size/4*window.devicePixelRatio, this.size/4*window.devicePixelRatio);
             e.dataTransfer.setData(obj.mime, obj.data);
             this.showTrash = true;
         },
@@ -309,7 +315,7 @@ ODA({is: 'oda-hexagon',
             this.$removeClass('drag-hover');
         },
         drop(e){
-            this.showTrash = false
+            this.showTrash = false;
             this.$removeClass('drag-hover');
             e.preventDefault()
             for (let type of e.dataTransfer.types){
@@ -318,16 +324,6 @@ ODA({is: 'oda-hexagon',
                         const item = Post[type];
                         const host = Post['host'];
                         host.moveTo(this);
-                        // if (this.x !== this.trashItem.x && this.y !== this.trashItem.y){
-                        //     item.x = this.x;
-                        //     if (host.domHost.y !== this.y){
-                        //         host.domHost.remove(item);
-                        //         this.domHost.add(item);
-                        //     }
-                        // }
-                        // else{
-                        //     host.domHost.remove(item);
-                        // }
                         this.item = undefined;
                         host.item = undefined;
                         return;
@@ -335,7 +331,6 @@ ODA({is: 'oda-hexagon',
                 }
             }
             this.domHost.__drop(e, this);
-            // this.data = [...this.data];
         }
     },
     remove(){

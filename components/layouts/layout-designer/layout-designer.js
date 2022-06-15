@@ -77,7 +77,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 /*justify-content: space-around;*/
                 align-content: flex-start;
                 flex-direction: {{layout?.type==='vGroup' ? 'column' : 'row'}};
-                border: {{!layout?.isGroup ? '' : (layout?.hideLabel || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
+                border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
@@ -145,7 +145,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 padding: 0px;
             }
         </style>
-        <div ~if="layout.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
+        <div ~if="layout?.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
            <div @mousedown.stop.prev="ontap($event, item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
@@ -251,7 +251,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 order: {{layout?._order ?? 'unset'}};
                 display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
                 border: {{designMode && layout?.isVirtual ? '2px dotted blue' : designMode && layout?.isHide ? '1px dashed red' : designMode ? '1px dashed lightblue' : layout?.isGroup ? '1px solid gray' : '1px solid transparent'}};
-                min-width: {{layout?.minWidth ? layout?.minWidth : (layout.isGroup || layout.owner.type==='vGroup' ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                min-width: {{layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
                 background-color: {{layout?.isGroup ? 'lightgray' : ''}};
@@ -298,9 +298,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 white-space: nowrap;
                 font-size: {{fontSize}};
                 cursor: {{designMode ? 'pointer' : 'unset'}};
-                padding: {{!designMode && layout?.hideLabel ? '0' : '0px 4px'}} !important;
-                margin: {{!designMode && layout?.hideLabel ? '0' : '1px'}} !important;
-                color: {{designMode && layout?.isGroup ? layout?.hideLabel ? 'red' : 'blue' : layout?.isHide ? 'red' : ''}};
+                padding: {{!designMode && layout?.hideHeader ? '0' : '0px 4px'}} !important;
+                margin: {{!designMode && layout?.hideHeader ? '0' : '1px'}} !important;
+                color: {{designMode && layout?.isGroup ? layout?.hideHeader ? 'red' : 'blue' : layout?.isHide ? 'red' : ''}};
             }
             [contenteditable] {
                 outline: 0px solid transparent;
@@ -319,8 +319,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 opacity: 1;
             }
         </style>
-        <div class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <div ~if="designMode || !layout?.hideLabel" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
+        <div ~if="!layout?.hideHeader" class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
+            <div ~if="(designMode || !layout?.hideLabel) && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
                 <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="horizontal flex" style="align-items: center;">
                     <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
@@ -338,7 +338,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
             <div ~if="!layout?.isGroup" class="horizontal flex" style="align-items: center;">
-                <oda-icon ~if="!layout?.isTabs" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <oda-icon ~if="!layout?.isTabs && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
@@ -346,7 +346,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideLabel ? 0 : '4px', marginLeft: layout?.hideLabel ? 0 : iconSize/2+'px', paddingLeft: layout?.hideLabel ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,
@@ -508,11 +508,15 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     },
     moveHandler(e) {
         let w = this._prevWidth + e.clientX - this._prevX;
-        this.style.maxWidth = `${w}px`;
-        this.style.width = `${w}px`;
-        this.style.userSelect = 'none';
-        this.style.pointerEvents = 'none';
-        console.log(w)
+        this.style.minWidth = '100%';
+        w = (w * 100) / this.getBoundingClientRect().width;
+        this.async(() => {
+            this.style.minWidth = '';
+            this.style.maxWidth = `${w}%`;
+            this.style.width = `${w}%`;
+            this.style.userSelect = 'none';
+            this.style.pointerEvents = 'none';
+        })
     },
     upHandler(e) {
         this.style.removeProperty('user-select');
@@ -668,7 +672,11 @@ CLASS({ is: 'Layout',
         return this.type === "tabs" && this.items.length > 1;
     },
     get isGroup() {
-        return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
+        return this.type === "group" || (this.type === "tabs" && this.items.length <= 1);
+        // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
+    },
+    get hideHeader() {
+         return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel;
     },
     async createTabs(action) {
         const item = action ? await this.find(action.props.target) : this;
