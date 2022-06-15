@@ -347,7 +347,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,

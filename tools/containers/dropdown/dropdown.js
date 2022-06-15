@@ -1,24 +1,34 @@
 ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     template: /*html*/`
         <style>
+            @keyframes fadeIn {
+                from {
+                    background-color: rgba(0,0,0,0);
+                }
+                to {
+                    background-color: rgba(0,0,0,.2);
+                }
+            }
             :host {
                 /*pointer-events: none;*/
                 z-index: 100;
-                transition: background-color 5s;
+                animation: fadeIn 5s forwards;
+                background-color: rgba(0,0,0,0);
+                /*transition: background-color 5s;*/
             }
-            :host([is-ready]){
-                background-color: rgba(0,0,0,.1);
-            }
+            /*:host([is-ready]){*/
+            /*    background-color: rgba(0,0,0,.1);*/
+            /*}*/
             :host>div{
-                visibility: hidden;
+                /*visibility: hidden;*/
                 pointer-events: auto;
                 position: fixed;
                 overflow: hidden;
             }
-            :host([is-ready]) div{
-                visibility: visible;
-                overflow: hidden;
-            }
+            /*:host([is-ready]) div{*/
+            /*    visibility: visible;*/
+            /*    overflow: hidden;*/
+            /*}*/
             oda-title {
                 min-height: 34px;
                 max-height: 34px;
@@ -100,10 +110,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         iconSize: 24,
         minWidth: 100,
         minHeight: 0,
-        isReady: {
-            default: false,
-            reflectToAttribute: true,
-        },
+        // isReady: {
+        //     default: false,
+        //     reflectToAttribute: true,
+        // },
         cancelAfterLeave: false,
         // pointerEvents: 'unset'
     },
@@ -238,19 +248,19 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
     setSize(e) {
         this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
-        this.interval('set-size', () => {
-            this.isReady = true;
-        })
+        // this.interval('set-size', () => {
+        //     this.isReady = true;
+        // })
     },
     _close(e) {
-        if (this.windows.some(w => e.target instanceof w.Node)) {
-            let dd = this;
-            while (e?.target && dd) {
-                if (dd.contains?.(e.target))
-                    return;
-                dd = dd.nextElementSibling;
-            }
-        }
+        // if (this.windows.some(w => e.target instanceof w.Node)) {
+        //     let dd = this;
+        //     while (e?.target && dd) {
+        //         if (dd.contains?.(e.target))
+        //             return;
+        //         dd = dd.nextElementSibling;
+        //     }
+        // }
         this.fire('cancel');
     }
 })

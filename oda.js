@@ -449,7 +449,7 @@ if (!window.ODA) {
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
                         // console.log(this,  'visibility')
-                    }, 300)
+                    }, 200)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
