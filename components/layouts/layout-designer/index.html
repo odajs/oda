@@ -23,7 +23,6 @@
             <div style="display: flex; border-bottom: 1px solid gray;">
                 <div class="flex"></div>
                 <oda-button ~if="designMode" icon="notification:sync" @tap="clearSavedScripts" title="reset view"></oda-button>
-                <oda-button ~if="designMode" icon="icons:settings" @tap="showSettings" title="show settings"></oda-button>
                 <oda-button ~if="designMode" @tap="saveScripts" icon="icons:save" :fill="scripts?.size ? 'red' : ''" :disabled="!scripts?.size"></oda-button>
                 <oda-button  :icon="designMode?'icons:close':'image:tune'" :toggled="designMode" @tap="designMode = !designMode" ~style="{fill: designMode ? 'red' : ''}" title="Перейти в режим дизайна"></oda-button>
                 <oda-button @tap="document.location.reload()">Reload page</oda-button>

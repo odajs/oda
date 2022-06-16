@@ -279,7 +279,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
             [disabled] {
                 pointer-events: none;
-                opacity: .3;
+                opacity: .5;
             }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);
@@ -325,7 +325,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;"
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode"
                         ~style="{alignItems: width ? 'center' : ''}">
                         <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
@@ -333,17 +333,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         </div>
         <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: '4px', marginLeft: iconSize/2+'px', paddingLeft: iconSize/2+'px'}"></div>
     `,
-    fontSize: 'small',
-    width: undefined,
-    get hasChildren() { return this.layout?.items?.length },
-    expand() {
-        this.layout && (this.layout.$expanded = !this.layout.$expanded);
-        if (this.designMode) {
-            const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
-            this.makeScript(this.layout, action);
-            this.render();
-        }
-    },
     props: {
         label: {
             default: {
@@ -351,7 +340,16 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 align: 'top',
             },
             save: true
-        }
+        },
+        fontSize: 'small',
+        width: ''
+    },
+    layout: null,
+    get draggable() {
+        return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
+    },
+    get hasChildren() { 
+        return this.layout?.items?.length;
     },
     listeners: {
         'contextmenu': 'showContextMenu',
@@ -360,18 +358,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         'dragover': 'ondragover',
         'dragleave': 'ondragleave',
         'drop': 'ondragdrop',
-    },
-    async showContextMenu(e) {
-        if (!this.designMode) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const parent = e.target.id === 'settings' ? e.target : undefined;
-        await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
-    },
-    labelPos: 'top',
-    layout: null,
-    get draggable() {
-        return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
     },
     attached() {
         this.async(() => {
@@ -386,18 +372,20 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             })
         }, 100);
     },
-    addTab() {
-        const tabID = getUUID();
-        const blockID = getUUID();
-        const action = { id: tabID, action: "addTab", props: { tabs: this.layout.id, tab: tabID, block: blockID } };
-        this.layout.addTab(action, this.layout);
-        this.makeScript(this.layout, action);
-        this.render();
+    async showContextMenu(e) {
+        if (!this.designMode) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const parent = e.target.id === 'settings' ? e.target : undefined;
+        await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
     },
-    removeTab(tab) {
-        const action = { action: "removeTab", props: { tabs: this.layout.id, tab: tab.id } };
-        this.layout.removeTab(action, tab);
-        this.makeScript(this.layout, action);
+    expand() {
+        this.layout && (this.layout.$expanded = !this.layout.$expanded);
+        if (this.designMode) {
+            const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
+            this.makeScript(this.layout, action);
+            this.render();
+        }
     },
     setLabel(e, blur) {
         if (this.designMode) {
@@ -473,32 +461,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             owner = owner.owner;
         }
         this.render();
-    },
-    createTabs() {
-        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
-        this.layout.createTabs(action);
-        this.makeScript(this.layout, action);
-    },
-    hideLayout(e) {
-        e?.stopPropagation();
-        this.layout.isHide = !this.layout.isHide;
-        this.render();
-        const action = { action: "hideLayout", hideLayout: this.layout.isHide, props: { target: this.layout.id } };
-        this.makeScript(this.layout, action);
-    },
-    hideGroupLabel() {
-        this.layout.hideLabel = !this.layout.hideLabel;
-        this.render();
-        const action = { action: "hideGroupLabel", hideGroupLabel: this.layout.hideLabel, props: { target: this.layout.id } };
-        this.makeScript(this.layout, action);
-    },
-    deleteGroup() {
-        if (this.layout.items[0]?.isTab1) {
-            this.removeTab(this.layout.items[0]);
-        }
-        const action = { action: "deleteGroup", props: { target: this.layout.id } };
-        this.layout.deleteGroup(action, this.layout);
-        this.makeScript(this.layout, action);
     }
 })
 
