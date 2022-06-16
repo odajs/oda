@@ -100,7 +100,8 @@ ODA({ is: 'oda-layout-designer-structure',
             save: true
         },
         saveKey: '',
-        borderColor: 'lightgray'
+        borderColor: 'lightgray',
+        fontSize: 'small',
     },
     observers: [
         async function execute(layout, actions) {
@@ -120,8 +121,21 @@ ODA({ is: 'oda-layout-designer-structure',
     ]
 })
 
-ODA({ is: 'oda-layout-groups',
+ODA({ is: 'oda-layout-designer-group',
     template: `
+        <style>
+            :host {
+                @apply -- horizontal;
+                @aplly --flex;
+            }
+            .label {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: {{fontSize}};
+                cursor: {{designMode ? 'pointer' : 'unset'}};
+            }
+        </style>
+        <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
         <!--            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">-->
         <!--                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>-->
         <!--                <div class="horizontal flex" style="align-items: center;">-->
@@ -138,7 +152,8 @@ ODA({ is: 'oda-layout-groups',
         <!--                    </div>-->
         <!--                </div>-->
         <!--            </div>-->
-    `
+    `,
+    layout: null,
 })
 
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
@@ -167,7 +182,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 padding: 0px;
             }
         </style>
-        <div ~if="layout?.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
+        <div  class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
            <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
@@ -322,11 +337,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
+            <label ~if="!layout?.hideLabel" class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode"
-                        ~style="{alignItems: width ? 'center' : ''}">
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" ~style="{alignItems: width ? 'center' : ''}">
                         <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
             </div>
@@ -341,7 +355,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             },
             save: true
         },
-        fontSize: 'small',
         width: ''
     },
     layout: null,
@@ -373,11 +386,17 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }, 100);
     },
     async showContextMenu(e) {
-        if (!this.designMode) return;
+        if (!this.designMode) 
+            return;
         e.preventDefault();
         e.stopPropagation();
         const parent = e.target.id === 'settings' ? e.target : undefined;
         await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
+    },
+    createTabs() {
+        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
+        this.layout.createTabs(action);
+        this.makeScript(this.layout, action);
     },
     expand() {
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
@@ -522,53 +541,6 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
     lay: null
 })
 
-import '/web/oda/tools/property-grid/test/new/property-grid.js';
-ODA({ is: 'oda-layout-designer-settings', // imports: '@tools/property-grid2',
-    template: `
-        <style>
-            :host{
-                @apply --horizontal;
-                width: 400px;
-                @apply --flex;
-                height: calc(100vh - 40px);
-            }
-            div>div{
-                align-items: center;
-                @apply --horizontal;
-                padding: 8px 4px;
-                cursor: pointer;
-            }
-            div>div:hover{
-                color: var(--focused-color) !important;
-            }
-            oda-icon{
-                transform: scale(.7);
-            }
-            div>div[focused]{
-                background-color: var(--content-background) !important;
-            }
-        </style>
-        <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
-            <oda-property-grid2 class="flex" ~if="focusedTab === 0" :io @pg-changed="setStyle" show-buttons="false" show-search></oda-property-grid2>
-        </div>
-        <div style="writing-mode: vertical-lr;" class="horizontal header">
-            <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
-        </div>
-    `,
-    focusedTab: 0,
-    tabs: [
-        { icon: 'icons:settings:90', title: 'properties' },
-    ],
-    layout: null,
-    get io() { return this.layout?.cnt?.style || this.layout?.str?.style },
-    setStyle(e) {
-        const type = this.layout.cnt ? 'cnt' : 'str';
-        const action = { action: "setStyle", props: { type, target: this.layout.id, key: e.detail.value.key, value: e.detail.value.value } };
-        this.self.makeScript(this.layout, action);
-        // console.log(action);
-    }
-})
-
 CLASS({ is: 'Layout',
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
@@ -602,19 +574,21 @@ CLASS({ is: 'Layout',
         return this.data?.label || this.name;
     },
     get $template() {
-        return this.isTabs ? 'oda-layout-designer-tabs' : '';
+        if (this.isTabs) return 'oda-layout-designer-tabs';
+        if (this.isGroup) return 'oda-layout-designer-group';
     },
     get $structure() {
-        return this.isTabs ? 'oda-layout-designer-tabs-structure' : '';
+        if (this.isTabs) return 'oda-layout-designer-tabs-structure';
+
     },
     get isTabs() {
         return this.type === "tabs" && this.items.length > 1;
     },
     get isGroup() {
-        return this.type === "group" || (this.type === "tabs" && this.items.length <= 1);
+        return this.type === "group" || this.type === 'hGroup' || this.type === 'vGroup' || (this.type === "tabs" && this.items.length <= 1);
     },
-    get hideHeader() {
-        return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel || this._hideHeader;
+    get hideLabel() {
+        return this.type === 'tabs' || this.type === 'group' || this.type === 'hGroup' || this.type === 'vGroup' ||this._hideLabel;
     },
     async createTabs(action) {
         const item = action ? await this.find(action.props.target) : this;
@@ -629,7 +603,6 @@ CLASS({ is: 'Layout',
         tabs.$focused = tab;
         tabs.order = item.order;
         tabs._order = item._order;
-        tab._hideHeader = true;
         tab.$expanded = true;
         tab.items = [item];
         tab.order = tab._order = 0;
@@ -749,7 +722,7 @@ CLASS({ is: 'Layout',
     },
     _createGroup(action, dragItem, targItem, groupType) {
         const moveTo = action.props.to;
-        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-virtual` }, targItem.key, targItem.owner, targItem.root);
+        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType }, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarg, 1, group)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
