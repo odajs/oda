@@ -254,14 +254,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         // })
     },
     _close(event) {
-        if (event?.target === this) {
-            const { x, y } = event
-            const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
-            for (const dd of dropDowns) {
-                const { left, top, right, bottom } = dd.control.getBoundingClientRect?.()
-                if (x > left && y > top && x < right && y < bottom) break
-                dd.fire('cancel')
-            }
+        if(this.$('#main').getBoundingClientRect().includesPoint(event)) return
+        const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
+        for (const dd of dropDowns) {
+            if (dd.control.getBoundingClientRect().includesPoint(event)) break
+            dd.fire('cancel')
         }
     }
 })

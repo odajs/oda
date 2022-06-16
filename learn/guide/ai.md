@@ -31,7 +31,7 @@ export class NeuralNetwork
         }
         return output;
     }
-    mutate (mutationProbability = 0.05, mutationAmount = 1.0) {
+    mutate (mutationProbability = 0.2, mutationAmount = 1.0) {
         for (let i = 0; i < this.sections.length; i++) {
             this.sections[i].mutate(mutationProbability, mutationAmount);
         )
@@ -93,10 +93,10 @@ feedForward(input)
 }
 ```
 
-Метод  «**mutate**» позволяет изменить веса сети с заданной вероятностью. По умолчанию в нем вероятность мутаций задается равной 0.05 и передается для мутации весов на всех слоях.
+Метод  «**mutate**» позволяет изменить веса сети с заданной вероятностью. По умолчанию в нем вероятность мутаций задается равной 0.2 и используется для мутации весов нейронов на всех слоях.
 
 ```javascript
-mutate (mutationProbability = 0.05, mutationAmount = 1.0) {
+mutate (mutationProbability = 0.2, mutationAmount = 1.0) {
     for (let i = 0; i < this.sections.length; i++) {
         this.sections[i].mutate(mutationProbability, mutationAmount);
     )
@@ -286,8 +286,70 @@ import {NeuralNetwork} from './neural-net.js';
 В шаблоне компонента игры «**oda-game**» зададим не одного, а целую популяцию динозавров.
 
 ```javascript
+    <h1>Счет игры</h1>
+    <h1 class="score">{{score || '0'}}</h1>
+    <div id="game-space" ref="game-space">
+        <h1 id="message" ~show="showMessage">{{message}}</h1>
+        <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
+        <div id="horizon"></div>
+    </div>
+```
+
+Для этого будем использовать директиву «**~for**» фреймворка «**ODA**». В ней укажем имя массива «**showDinos**», который будет определяет и количество динозавров в каждой популяции, и необходимость их отображения.
+Этот массив нужно задать в виде отдельного свойства в разделе «**props**» компонента «**oda-game**».
+
+```javascript
+props: {
+    timerID: 1,
+    score: 0,
+    message: 'Для начала обучения нажмите пробел',
+    showMessage: true,
+    nextCloud: 0,
+    nextCactus: 0,
+    nextPterodactyl: 50,
+    topology: [1,2],
+    populationSize: 10,
+    showDinos: [],
+    populationCount: 1,
+    bestCost: 0,
+},
+```
+
+Сам массив «**showDinos**» инициализируется в хуке «**ready**» следующим образом:
+
+```javascript
+ready() {
+    this.showDinos = Array(this.populationSize).fill(true)
+    this.bestBrain = new NeuralNetwork(this.topology);
+    this.listen('keyup', 'startGame', {target: document});
+},
+```
+
+Все элементы этого массива будут изначально иметь значение «**true**», которое говорит о том, что все динозавры в популяции должны отображаться. Если какому-либо элементу этого массива присвоить значение «**false**», то, используя это значение, директива «**~show**» автоматические установит у компонента соответствующего динозавра css-стиль  отображения «**display: none**», т.е. этот динозавр отображаться перестанет.
+
+В хуке «**ready**» также задается свойство «**bestBrain**», в котором будет храниться лучшая нейросеть среди всех нейросеть созданных динозавров.
+
+Для доступа к каждому отдельному динозавру создается уникальная ссылка не него с помощью директивы «**~ref**». Благодаря этому к каждому динозавру можно будет обратиться по его индексу в массиве «**showDinos**».
+
+Кроме этого, в разделе «**props**» задаются дополнительные свойства:
+
+1. «**populationSize**» – размер популяции динозавров.
+1. «**populationCount**» – номер текущий популяции.
+1. «**bestCost**» – стоимость лучшей нейросети.
+
+Для отображения номера текущей популяции и лучшей стоимость в шаблоне компоненте «**oda-game**» нужно предусмотреть соответствующие HTML-элементы.
+
+```javascript
 <h1>Счет игры</h1>
-<h1 id="score">{{score || '0'}}</h1>
+<h1 class="score">{{score || '0'}}</h1>
+<div id="population">
+    <h1>Популяция</h1>
+    <h1 class="score">{{populationCount || "0"}}</h1>
+</div>
+<div id="best-cost">
+    <h1>Лучший</h1>
+    <h1 class="score">{{bestCost || "0"}}</h1>
+</div>
 <div id="game-space" ref="game-space">
     <h1 id="message" ~show="showMessage">{{message}}</h1>
     <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
@@ -295,43 +357,80 @@ import {NeuralNetwork} from './neural-net.js';
 </div>
 ```
 
-Для этого будет использовать директиву «**~for**» фреймворка «**ODA**». В этой директиве указывается массив «**showDinos**», который определяет как и количество динозавров в каждой популяции, так и необходимость их отображения.
-Этот массив задается в виде отдельного свойства в разделе «**props**» компонента «**oda-game**».
+Для этого добавляются два элемента «**div**» с уникальными идентификаторами «**population**» и «**best-cost**».
+
+В первом элементе «**div**» будет выводится номер текущей популяции с помощью шаблонной подстановки «**{{Mustache}}**», а во второй будет выводить количество очков, набранное лучшим динозавров.
+
+Первый элемент будет позиционировать с левого края заголовочной области игры, а второй – с правого. Для этого в раздел «**style**» шаблона компонента «**oda-game**» добавить два дополнительных стиля «**#population**» и «**#best-cost**».
 
 ```javascript
-props: {
-    timerID: 1,
-    score: 0,
-    message: 'Для начала обучения нажмите на пробел',
-    showMessage: true,
-    nextCloud: 0,
-    nextCactus: 0,
-    nextPterodactyl: 50,
-    topology: [1,2],
-    populationCount: 10,
-    showDinos: [],
-},
+<style>
+:host {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background-color: var(--header-background-color);
+}
+#game-space {
+    position: absolute;
+    top: 200px;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background-color: var(--background-color) !important;
+}
+h1 {
+    margin-bottom: 0px;
+    text-align: center;
+    font-family: "Comic Sans MS", Arial, sans-serif;
+    color: var(--header-color);
+}
+.score {
+    font-size: 50px;
+    margin-top: 0px;
+}
+#message {
+    position: relative;
+    top: 35%;
+}
+
+oda-dino {
+    position: absolute;
+    top: var(--dino-top);
+    left: 72px;
+    z-index: 300;
+}
+#horizon {
+    position: absolute;
+    top: 435px;
+    width: 100%;
+    height: 3px;
+    background-color: var(--horizon-color);
+}
+#population {
+    position: absolute;
+    top: 0px;
+    margin-left: 10px;
+}
+#best-cost {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    margin-right: 10px;
+}
+</style>
 ```
 
-Количество динозавров в популяции задается свойством «**populationCount**» со значением по умолчанию равным 10.
-
-Сам массив «**showDinos**» инициализируется в хуке «**ready**» следующим образом:
+Кроме этого, заменим селектор стиля элемента «#score» на селектор класса «.**score**», чтобы стиль отображения текущего количества набранных очков распространялся и на номер текущей популяции и на наибольшее количество набранных очков.
 
 ```javascript
-ready() {
-    this.showDinos = Array(this.populationCount).fill(true)
-    this.bestBrain = new NeuralNetwork(this.topology);
-    this.listen('keyup', 'startGame', {target: document});
-},
+.score {
+    font-size: 50px;
+    margin-top: 0px;
+}
 ```
 
-Все элементы этого массива будут иметь значение «**true**», которое говорит, что всех динозавров в популяции нужно изначально отображать. В противном случае директива «**~show**» не отображала бы их в компоненте.
-
-В хуке «**ready**» также задается свойство «**bestBrain**», в котором будет храниться лучшая нейросеть среди всех динозавров.
-
-Для доступа к каждому отдельному динозавру создается уникальная ссылка не него с помощью директивы «**~ref**». Благодаря этому к каждому динозавру можно будет обратиться по его индексу в массиве «**showDinos**».
-
-Для задание нейросети у каждого динозавра в их компоненте «**oda-dino**» нужно предусмотреть свойство «**dinoBrain**» в разделе «**props**».
+Для задание нейросети у каждого динозавра в их компоненте «**oda-dino**» нужно предусмотреть свойство «**dinoBrain**». Это можно сделать в разделе «**props**» этого компонента следующим образом:
 
 ```javascript
     props: {
@@ -341,11 +440,11 @@ ready() {
     },
 ```
 
-В результате этого при создании популяции динозавров, основанной на лучшей нейронной сети, каждому динозавру можно задать свой собственный мозг. Это можно сделать с помощью специального метода «**createPopulation**» компонента «**oda-game**»
+В результате этого у каждого динозавра можно будет создать свою собственную нейросеть на основе общей лучшей нейросети, полученной на предыдущей популяции. Именно это и происходит в специальном методе «**createPopulation**», который нужно добавить к компоненту «**oda-game**» следующим образом:
 
 ```javascript
 createPopulation() {
-    for (let i = 0; i < this.populationCount; i++) {
+    for (let i = 0; i < this.populationSize; i++) {
         const dino = this.$refs[i][0];
         dino.dinoBrain = this.bestBrain.clone();
         dino.dinoBrain.cost = 0;
@@ -353,19 +452,19 @@ createPopulation() {
 },
 ```
 
-При создании новой сети ее начальная стоимость обнуляется, а веса лучшей сети мутируют в методе «**clone**».
+Здесь новая сеть создается клонировать лучшей нейросети. При этом ее начальная стоимость обнуляется, а веса мутируют в методе «**clone**» так, чтобы новая сеть могла попытаться найти лучшее решение.
 
-Создание популяции осуществляется и при создании игры и при гибели всех динозавров.
+Этот метод нужно использовать и в момент создания игры и в момент гибели всех динозавров, созданных на предыдущей популяции.
 
-Для этого в методе «**startGame**» добавлен вызов метода «**createPopulation**».
+Сначала метода «**createPopulation**» нужно вызвать в методе «**startGame**» для того, чтобы начать процесс обучения динозавров.
 
 ```javascript
 startGame(e) {
     if (e.code !== 'Space') {
         return;
     }
-    this.createPopulation();
     this.showMessage = false;
+    this.createPopulation();
     this.timerID = setInterval(() => {
         this.score++;
     }, 100);
@@ -374,9 +473,9 @@ startGame(e) {
 },
 ```
 
-Кроме этого:
+Кроме этого, здесь:
 
-1. Прячется надпись о необходимости нажатия пробела для начала обучения нейросети.
+1. Прячется надпись о необходимости нажатия на клавишу пробела для начала обучения нейросети.
 
 ```javascript
 this.showMessage = false;
@@ -395,22 +494,22 @@ this.timerID = setInterval(() => {
 this.unlisten('keyup', 'startGame', {target: document});
 ```
 
-4. Вызывается метод определения столкновения динозавров с кактусами «**checkDino**».
+4. Вызывается метод определения столкновения динозавров с кактусами «**checkDino**» со следующим кадром анимации.
 
-Этот метод нужно задать у компонента «**oda-game**» следующим образом:
+Этот метод нужно задать в компоненте «**oda-game**» следующим образом:
 
 ```javascript
- checkDino() {
+checkDino() {
     if (this.showDinos.every((value) => !value)) {
         this.score = 0;
-        this.nextCactus = 0;
         this.newPopulation();
+        this.nextCactus = 0;
     }
     this.createCloud();
     this.createCactus();
     this.createPterodactyl();
     let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-    for (let i = 0; i < this.populationCount; i++) {
+    for (let i = 0; i < this.populationSize; i++) {
         if (this.showDinos[i]) {
             const dino = this.$refs[i][0];
             for (let j = 0; j < cactuses.length; j++) {
@@ -431,7 +530,7 @@ this.unlisten('keyup', 'startGame', {target: document});
             }
         }
     }
-   requestAnimationFrame(this.checkDino.bind(this));
+    requestAnimationFrame(this.checkDino.bind(this));
 },
 ```
 
@@ -445,6 +544,7 @@ this.unlisten('keyup', 'startGame', {target: document});
 
 ```javascript
 newPopulation() {
+    this.populationCount++;
     let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
     cactuses.forEach((cactus) => cactus.remove());
     this.showDinos.fill(true);
@@ -462,7 +562,7 @@ newPopulation() {
 
 ```javascript
 let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-for (let i = 0; i < this.populationCount; i++) {
+for (let i = 0; i < this.populationSize; i++) {
     if (this.showDinos[i]) {
         const dino = this.$refs[i][0];
         for (let j = 0; j < cactuses.length; j++) {
@@ -525,9 +625,9 @@ stopJump(){
 this.showDinos[i] = false;
 ```
 
-5. Прекращается дальнейшая проверка столкновения этого динозавра с другими кактусами с помощью директивы «**break**».
+5. Прекращается дальнейшая проверка столкновения этого динозавра с другими кактусами вызовом директивы «**break**».
 
-Если пересечений динозавра с кактусами не было, то проверяется с помощью нейросети необходимость совершения прыжка динозавром. Для этого используется метод «**jump**», который нужно задать в компоненте «**oda-dino**» следующим образом:
+Если пересечений динозавра с кактусами не было, то с помощью нейросети проверяется необходимость совершения прыжка динозавром. Для этого используется метод «**jump**», который нужно определить в компоненте «**oda-dino**» следующим образом:
 
 ```javascript
 jump(cactus) {
@@ -574,28 +674,19 @@ map (n, start1, stop1, start2, stop2) {
 
 Если сигнал на втором выходном нейроне окажется больше чем сигнал первого нейрона, то принимается решение о необходимо прыжка динозавра через кактус. В противном случае метод «**jump**» никаких действий больше выполнять не будет. Если же решение о прыжке было принято, то
 
- this.classList.add("dino-jump");
-        this.svg.pauseAnimations();
-        this.getAnimations().forEach((anim, i, arr) => {
-            anim.onfinish = () => {
-                this.classList.remove("dino-jump")
-                this.offsetHeight; // не удаляй reflow
-                this.svg.unpauseAnimations();
-            }
-        });
 1. К компоненту динозавра добавляется CSS-класс прыжка «**dino-jump**».
 
 ```javascript
 this.classList.add("dino-jump");
 ```
 
-2. Останавливается анимация движения ног динозавра.
+2. Останавливается анимация движения его ног.
 
 ```javascript
 this.svg.pauseAnimations();
 ```
 
-3. Задается функция обратного вызова «**onfinish**», которая будет выполняться после окончания прыжка динозавра.
+3. Задается функция обратного вызова «**onfinish**», которая будет автоматически выполняться после завершения прыжка динозавром.
 
 ```javascript
 this.getAnimations().forEach((anim, i, arr) => {
@@ -607,9 +698,8 @@ this.getAnimations().forEach((anim, i, arr) => {
 });
 ```
 
-В ней удаляется CSS-класс «**dino-jump**», задающий анимацию прыжка динозавра, и возобновляется анимация движения ног динозавра методом «**unpauseAnimations**».
+В ней удаляется CSS-класс «**dino-jump**», задающий анимацию прыжка, и возобновляется анимация движения его ног вызовом метода «**unpauseAnimations**» у его SVG-образа.
 
-После всего этого нужно запустить игру в браузере и подождать некоторое время, пока динозавр не научится автоматически перепрыгивать через кактусы на своих собственных ошибках.
+После всего этого нужно запустить игру в браузере и подождать некоторое время, пока динозавр не научится автоматически перепрыгивать через кактусы путем многократных проб и ошибок.
 
-На первых этапах игры все динозавры разбиваются об кактусы, не совершая каких-либо прыжков. Затем появляются динозавры, которые начинают хаотически прыгать, иногда случайно перепрыгивая через кактусы. После этого, могут появится читеры, которые постоянно прыгают, найдя более или менее приемлемое решение данной задачи. Однако потом и они разбиваются об какой-то кактус. На основе таких попыток нейросеть в конце концов находится действительно правильное решение, когда динозавр не прыгает хаотично, а подбегая поближе к кактусу совершает осмысленный прыжок через него.
-
+На первых этапах игры все динозавры разбиваются об кактусы, не совершая каких-либо прыжков. Затем появляются динозавры, которые начинают хаотически прыгать, иногда случайно перепрыгивая через кактусы. После этого, могут появится «читеры», которые постоянно прыгают, найдя более или менее приемлемое решение данной задачи. Однако потом и они разбиваются о какой-нибудь кактус. На основе таких попыток нейросеть в конце концов находится действительно правильное решение, когда динозавр не прыгает хаотично, а подбегая поближе к кактусу совершает осмысленный прыжок через него.

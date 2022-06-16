@@ -2525,5 +2525,13 @@ if (!window.ODA) {
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
     }
+
+    if ('DOMRect' in globalThis && !('includesPoint' in DOMRect.prototype)) {
+        function includesPoint({ x, y }) {
+            const { left, top, right, bottom } = this;
+            if (x > left && y > top && x < right && y < bottom) return true;
+        }
+        Object.defineProperty(DOMRect.prototype, 'includesPoint', { value: includesPoint });
+    }
 }
 export default ODA;

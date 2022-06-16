@@ -99,9 +99,9 @@ ODA({ is: 'oda-game',
         return this.$refs["game-space"];
     },
     ready() {
+        this.showDinos = Array(this.populationSize).fill(true)
         this.bestBrain = new NeuralNetwork(this.topology);
         this.listen('keyup', 'startGame', {target: document});
-        this.showDinos = Array(this.populationSize).fill(true)
     },
     changeBestBrain(dinoBrain) {
         if (dinoBrain.cost > this.bestBrain.cost) {

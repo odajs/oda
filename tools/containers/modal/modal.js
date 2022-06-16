@@ -59,6 +59,9 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         this.control = this.control || e.target.assignedNodes()?.[0]
         this.control.style.setProperty('overflow', 'hidden');
     },
+    _close(event) {
+        if (!this.$('oda-modal-content').getBoundingClientRect().includesPoint(event)) this.fire('cancel')
+    }
 })
 ODA({is: 'oda-modal-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
     template: /*html*/`

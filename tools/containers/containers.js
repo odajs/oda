@@ -145,13 +145,12 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     // close(e, (list) => list.length, false);
                     setTimeout(() => resolve(ctrl));
                 }
-
                 host.addEventListener('cancel', onCancel);
                 host.addEventListener('ok', onOk);
 
                 windows.forEach(w => {
-                    w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('pointerdown', onMouseDown, true);
+                w.addEventListener('keydown', onKeyDown, true);
+                w.addEventListener('pointerdown', onMouseDown);
                 });
             });
             result.finally(() => {
@@ -164,7 +163,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
 
                 windows.forEach(w => {
                     w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('pointerdown', onMouseDown, true);
+                    w.removeEventListener('pointerdown', onMouseDown);
                 });
 
                 setTimeout(() => host.remove());
