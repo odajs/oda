@@ -70,14 +70,14 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
-                align-items: flex-end;
+                align-items: {{layout?.type ==='vGroup' ? 'normal' : 'flex-end'}};
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
                 flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
                 /*justify-content: space-around;*/
                 align-content: flex-start;
-                flex-direction: {{layout?.type==='vGroup' ? 'column' : 'row'}};
+                flex-direction: {{layout?.type ==='vGroup' ? 'column' : 'row'}};
                 border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
@@ -341,7 +341,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
             <div ~if="!layout?.isGroup && !layout?.hideHeader" class="horizontal flex" style="align-items: center;">
-                <oda-icon ~if="!layout?.isTabs && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+                <oda-icon ~if="!layout?.isTabs && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" style="cursor: pointer" ~style="{opacity: hasChildren ? .3 : 0, cursor: hasChildren ? 'pointer' : ''}" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">

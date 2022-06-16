@@ -35,13 +35,13 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             }
         </style>
         <div class="vertical shadow content" ~style="_style" id="main">
-            <div @resize="setSize" class="vertical flex">
+            <div @resize="setSize" class="vertical flex" style="overflow: hidden">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
                 </oda-title>
-                <div class="flex vertical">
+                <div class="flex vertical" style="overflow: auto;">
                     <slot @slotchange="onSlot"></slot>
                 </div>
             </div>
