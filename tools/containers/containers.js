@@ -1,6 +1,6 @@
 import "../../oda.js";
 const CONTAINERS = ODA.regTool('containers');
-const containerStack = [];
+// const containerStack = [];
 const path = import.meta.url.split('/').slice(0,-1).join('/')
 ODA.loadJSON(path + '/_.dir').then(res=>{
     CONTAINERS.items = (res || []).map(i => i.name);
@@ -63,28 +63,38 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             // } else {
             //     containerStack.push(host);
             // }
-            containerStack.push(host);
+            // containerStack.push(host);
 
             let close, onMouseDown, onKeyDown, onCancel, onOk;
             const windows = [...Array.prototype.map.call(window.top, w => w), window];
             windows.add(window.top);
 
             const result = new Promise((resolve, reject) => {
-                close = (e, condition, fireEvent = true) => {
-                    const list = containerStack.filter(c => c.allowClose !== false);
-
-                    while (condition(list)) {
-                        const c = list.pop();
-                        if (c) {
-                            if (fireEvent) c.fire('cancel');
-                            containerStack.remove(c);
-                        }
-                    }
-                }
+                // close = (e, condition, fireEvent = true) => {
+                //     const list = containerStack.filter(c => c.allowClose !== false);
+                //
+                //     while (condition(list)) {
+                //         const c = list.pop();
+                //         if (c) {
+                //             if (fireEvent) c.fire('cancel');
+                //             containerStack.remove(c);
+                //         }
+                //     }
+                // }
                 onMouseDown = (e) => {
                     console.log(e.target, host, host ===  e.target)
                     if (host ===  e.target){
-                        host.fire('cancel')
+                        if (host._close)
+                            host._close();
+                        else
+                            host.fire('cancel');
+                        // console.log(containerStack.length)
+                        // host._close?()
+                        // setTimeout(()=>{
+                        //     console.log(containerStack.length)
+                        // }, 100)
+
+
                     }
                     // if (e.target === host){
                     //     let inside = false; // курсор внутри контейнера
@@ -128,11 +138,12 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     }
                 }
                 onCancel = (e) => {
+                    // containerStack.remove(host);
                     reject()
                     // setTimeout(() => reject());
                 }
                 onOk = (e) => {
-                    close(e, (list) => list.length, false);
+                    // close(e, (list) => list.length, false);
                     setTimeout(() => resolve(ctrl));
                 }
 

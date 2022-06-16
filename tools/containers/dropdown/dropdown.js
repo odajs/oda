@@ -92,14 +92,15 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
             }
         }
     ],
-    listeners: {
-        pointerleave: function cancel() {
-             if (this.cancelAfterLeave) this.fire('cancel');
-        }
-    },
+    // listeners: {
+    //     pointerleave: function cancel() {
+    //          if (this.cancelAfterLeave) this.fire('cancel');
+    //     }
+    // },
     props: {
         parent: { type: [HTMLElement, Object] },
         intersect: false,
+        cascade: false,
         align: {
             default: 'bottom',
             list: ['bottom', 'top', 'left', 'right']
@@ -114,7 +115,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         //     default: false,
         //     reflectToAttribute: true,
         // },
-        cancelAfterLeave: false,
+        // cancelAfterLeave: false,
         // pointerEvents: 'unset'
     },
     contentRect: null,
