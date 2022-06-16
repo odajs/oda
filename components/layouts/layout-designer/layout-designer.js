@@ -70,6 +70,7 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
+                align-items: flex-end;
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
@@ -240,6 +241,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     template: `
         <style>
             :host {
+                /*align-self: end;*/
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
@@ -783,8 +785,10 @@ CLASS({ is: 'Layout',
         const item = layout || await this.find(action.props.target);
         if (!item) return;
         this.async(() => {
-            item.cnt.style.minWidth = '0px';
-            item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
+            if (item.cnt) {
+                item.cnt.style.minWidth = '0px';
+                item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
+            }
         }, 300)
     },
     async move(dragInfo) {
