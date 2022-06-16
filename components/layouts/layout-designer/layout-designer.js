@@ -74,14 +74,15 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
-                flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
+                flex-wrap: wrap;
                 /*justify-content: space-around;*/
                 align-content: flex-start;
                 flex-direction: {{layout?.type ==='vGroup' ? 'column' : 'row'}};
-                border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
+                box-shadow: inset 0 0 0 1px blue;
+                /* border: 1px dotted blue  !important; */
             }
         </style>
         <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
@@ -310,7 +311,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 padding: 8px 4px 4px 4px;
                 order: {{layout?._order ?? 'unset'}};
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
-                min-width: {{layout?.hideHeader ? '' : layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                min-width: {{hasChildren || layout?.owner.isGroup ? '100%' : '32px'}};
             }
             [disabled] {
                 pointer-events: none;
