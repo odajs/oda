@@ -82,10 +82,9 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 //     }
                 // }
                 onMouseDown = (e) => {
-                    console.log(e.target, host, host ===  e.target)
                     if (host ===  e.target){
                         if (host._close)
-                            host._close();
+                            host._close(e);
                         else
                             host.fire('cancel');
                         // console.log(containerStack.length)

@@ -38,10 +38,10 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             overflow: hidden;
         }
     </style>
-    <oda-dialog-content class="shadow" :size="fullSize ? 'max' : 'normal'" :autosize :title :allow-close :icon>
+    <oda-modal-content class="shadow" :size="fullSize ? 'max' : 'normal'" :autosize :title :allow-close :icon @mousedown.stop>
         <slot class="no-flex" name="modal-title" slot="title-bar"></slot>
         <slot @slotchange="_slot" @tap.stop class="content flex vertical" @dblclick.stop></slot>
-    </oda-dialog-content>
+    </oda-modal-content>
     `,
     help: '',
     props: {
@@ -59,11 +59,8 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         this.control = this.control || e.target.assignedNodes()?.[0]
         this.control.style.setProperty('overflow', 'hidden');
     },
-    onDown(e) {
-        e.stopPropagation();
-    },
 })
-ODA({is: 'oda-dialog-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
+ODA({is: 'oda-modal-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
     template: /*html*/`
     <style>
         :host{

@@ -253,15 +253,15 @@ ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
         //     this.isReady = true;
         // })
     },
-    _close(e) {
-        // if (this.windows.some(w => e.target instanceof w.Node)) {
-        //     let dd = this;
-        //     while (e?.target && dd) {
-        //         if (dd.contains?.(e.target))
-        //             return;
-        //         dd = dd.nextElementSibling;
-        //     }
-        // }
-        this.fire('cancel');
+    _close(event) {
+        if (event?.target === this) {
+            const { x, y } = event
+            const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
+            for (const dd of dropDowns) {
+                const { left, top, right, bottom } = dd.control.getBoundingClientRect?.()
+                if (x > left && y > top && x < right && y < bottom) break
+                dd.fire('cancel')
+            }
+        }
     }
 })
