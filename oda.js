@@ -1340,11 +1340,14 @@ if (!window.ODA) {
                             result = handler.call(this, e, e.detail);
                         else
                             result = exec.call(this, fn, [e, e.detail, ...(e.target.$for || [])]);
-                        if (result?.then)
-                            await result;
-                        // this.debounce('event_debounce', () => {
-                        //     this.render();
-                        // }, 100)
+                        if (result?.then){
+                            try{
+                                await result;
+                            }
+                            catch (e){
+
+                            }
+                        }
                     };
                 }
                 else if (name === 'is')
