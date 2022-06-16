@@ -27,7 +27,7 @@ ODA({ is: 'oda-game',
                 font-family: "Comic Sans MS", Arial, sans-serif;
                 color: var(--header-color);
             }
-            #score {
+            .score {
                 font-size: 50px;
                 margin-top: 0px;
             }
@@ -35,6 +35,7 @@ ODA({ is: 'oda-game',
                 position: relative;
                 top: 35%;
             }
+
             oda-dino {
                 position: absolute;
                 top: var(--dino-top);
@@ -48,10 +49,29 @@ ODA({ is: 'oda-game',
                 height: 3px;
                 background-color: var(--horizon-color);
             }
+            #population {
+                position: absolute;
+                top: 0px;
+                margin-left: 10px;
+            }
+            #best-cost {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                margin-right: 10px;
+            }
         </style>
 
         <h1>Счет игры</h1>
-        <h1 id="score">{{score || '0'}}</h1>
+        <h1 class="score">{{score || '0'}}</h1>
+        <div id="population">
+            <h1>Популяция</h1>
+            <h1 class="score">{{populationCount || "0"}}</h1>
+        </div>
+        <div id="best-cost">
+            <h1>Лучший</h1>
+            <h1 class="score">{{bestCost || "0"}}</h1>
+        </div>
         <div id="game-space" ref="game-space">
             <h1 id="message" ~show="showMessage">{{message}}</h1>
             <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
@@ -67,8 +87,10 @@ ODA({ is: 'oda-game',
         nextCactus: 0,
         nextPterodactyl: 50,
         topology: [1,2],
-        populationCount: 10,
+        populationSize: 10,
         showDinos: [],
+        populationCount: 1,
+        bestCost: 0,
     },
     get dino() {
         return this.$refs.dino;
@@ -77,18 +99,18 @@ ODA({ is: 'oda-game',
         return this.$refs["game-space"];
     },
     ready() {
+        this.showDinos = Array(this.populationSize).fill(true)
         this.bestBrain = new NeuralNetwork(this.topology);
         this.listen('keyup', 'startGame', {target: document});
-        this.showDinos = Array(this.populationCount).fill(true)
     },
     changeBestBrain(dinoBrain) {
         if (dinoBrain.cost > this.bestBrain.cost) {
-            this.bestBrain.cost = dinoBrain.cost
+            this.bestCost = this.bestBrain.cost = dinoBrain.cost
             this.bestBrain.clone(dinoBrain);
         }
     },
     createPopulation() {
-        for (let i = 0; i < this.populationCount; i++) {
+        for (let i = 0; i < this.populationSize; i++) {
             const dino = this.$refs[i][0];
             dino.dinoBrain = this.bestBrain.clone();
             dino.dinoBrain.cost = 0;
@@ -98,17 +120,22 @@ ODA({ is: 'oda-game',
         }
     },
     newPopulation() {
+        this.populationCount++;
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
         cactuses.forEach((cactus) => cactus.remove());
         this.showDinos.fill(true);
         this.createPopulation();
     },
     startGame(e) {
+        if (e.code !== 'Space') {
+            return;
+        }
         this.showMessage = false;
         this.createPopulation();
         this.timerID = setInterval(() => {
             this.score++;
         }, 100);
+        this.unlisten('keyup', 'startGame', {target: document});
         requestAnimationFrame(this.checkDino.bind(this));
     },
     checkDino() {
@@ -121,7 +148,7 @@ ODA({ is: 'oda-game',
         this.createCactus();
         this.createPterodactyl();
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
-        for (let i = 0; i < this.populationCount; i++) {
+        for (let i = 0; i < this.populationSize; i++) {
             if (this.showDinos[i]) {
                 const dino = this.$refs[i][0];
                 for (let j = 0; j < cactuses.length; j++) {

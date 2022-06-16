@@ -69,7 +69,7 @@ export class NeuralNetwork
         return output;
     }
 
-    mutate (mutationProbability = 0.05, mutationAmount = 1.0) {
+    mutate (mutationProbability = 0.2, mutationAmount = 1.0) {
         // Mutate each section
         for (let i = 0; i < this.sections.length; i++)
         {

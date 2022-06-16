@@ -38,15 +38,20 @@
         "name": "smart-caching",
         "label": "Smart-кэширование",
         "status": "check"
-   },
+    },
     {
         "name": "smart-rendering",
         "label": "Smart-рендеринг",
         "status": "check"
-   },
-   {
+    },
+    {
         "name": "my-first-component.md",
         "label": "Мой первый компонент",
+        "status": "check"
+    },
+    {
+        "name": "ai.md",
+        "label": "Искусственный интеллект",
         "status": "check"
     },
     {

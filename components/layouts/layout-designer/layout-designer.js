@@ -119,7 +119,10 @@ ODA({ is: 'oda-layout-designer-structure',
         }
     ]
 })
+ODA({is: 'oda-layout-groups',
 
+
+})
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     template: /*html*/`
         <style>
@@ -322,25 +325,26 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 opacity: 1;
             }
         </style>
-        <div ~if="designMode || !layout?.hideHeader" class="vertical flex" style="overflow: hidden" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">
-                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="horizontal flex" style="align-items: center;">
-                    <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
-                    <div class="horizontal flex" ~if="designMode">
-                        <oda-button ~if="layout?.isGroup" :icon-size @tap.stop="addTab" icon="icons:add"></oda-button  title="add tab">
-                        <div class="horizontal no-flex" ~if="selection.has(layout)">
-                            <oda-button ~if="layout.isGroup" icon="material:format-text" icon-size="16" @tap="hideGroupLabel" style="padding: 0; margin: 0" :fill="layout.hideLabel ? 'red' : ''" :title="(layout.hideLabel ? 'unhide' : 'hide') + ' group label'"></oda-button>
-                            <oda-button ~if="layout?.isGroup || layout?.type === 'hGroup' || layout?.type === 'vGroup'" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>
-                            <oda-button icon="av:library-add" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>
-                        </div>
-                        <div class="flex"></div>
-                        <oda-button class="eye" ~if="designMode" icon="image:remove-red-eye" icon-size="16" @pointerdown="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'" :selected="selection.has(layout)"></oda-button>
-                    </div>
-                </div>
-            </div>
-            <div ~if="!layout?.isGroup && !layout?.hideHeader" class="horizontal flex" style="align-items: center;">
-                <oda-icon ~if="!layout?.isTabs && layout?.type !== 'vGroup' && layout?.type !== 'hGroup'" style="cursor: pointer" ~style="{opacity: hasChildren ? .3 : 0, cursor: hasChildren ? 'pointer' : ''}" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
+        <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
+<!--            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">-->
+<!--                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>-->
+<!--                <div class="horizontal flex" style="align-items: center;">-->
+<!--                    <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>-->
+<!--                    <div class="horizontal flex" ~if="designMode">-->
+<!--                        <oda-button ~if="layout?.isGroup" :icon-size @tap.stop="addTab" icon="icons:add"></oda-button  title="add tab">-->
+<!--                        <div class="horizontal no-flex" ~if="selection.has(layout)">-->
+<!--                            <oda-button ~if="layout.isGroup" icon="material:format-text" icon-size="16" @tap="hideGroupLabel" style="padding: 0; margin: 0" :fill="layout.hideLabel ? 'red' : ''" :title="(layout.hideLabel ? 'unhide' : 'hide') + ' group label'"></oda-button>-->
+<!--                            <oda-button ~if="layout?.isGroup || layout?.type === 'hGroup' || layout?.type === 'vGroup'" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>-->
+<!--                            <oda-button icon="av:library-add" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>-->
+<!--                        </div>-->
+<!--                        <div class="flex"></div>-->
+<!--                        <oda-button class="eye" ~if="designMode" icon="image:remove-red-eye" icon-size="16" @pointerdown="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'" :selected="selection.has(layout)"></oda-button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+            <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
+            <div class="horizontal flex" style="align-items: center;">
+                <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
@@ -348,7 +352,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,
@@ -359,6 +363,15 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
             this.makeScript(this.layout, action);
             this.render();
+        }
+    },
+    props:{
+        label:{
+            default:{
+                color: 'black',
+                align: 'top',
+            },
+            save: true
         }
     },
     listeners: {
