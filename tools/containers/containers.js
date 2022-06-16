@@ -125,16 +125,16 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
                 onKeyDown = (e) => {
                     if (e.keyCode === 27) onCancel(e);
-                    else if (e.keyCode === 13) {
-                        if (!host.focusedButton) {
-                            const accent = host.buttonElems?.find(b => b.hasAttribute('accent'));
-                            if (accent) {
-                                e.stopPropagation();
-                                accent.click?.();
-                            }
-                            else onOk(e);
-                        }
-                    }
+                    // else if (e.keyCode === 13) {
+                    //     if (!host.focusedButton) {
+                    //         const accent = host.buttonElems?.find(b => b.hasAttribute('accent'));
+                    //         if (accent) {
+                    //             e.stopPropagation();
+                    //             accent.click?.();
+                    //         }
+                    //         else onOk(e);
+                    //     }
+                    // }
                 }
                 onCancel = (e) => {
                     // containerStack.remove(host);

@@ -1,11 +1,11 @@
 ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     template: /*html*/`
     <oda-dialog-footer ~if="control" ref="footer" :control class="no-flex" slot="*" :buttons :hide-ok-button :hide-cancel-button>
-    </oda-dialog-footer> 
+    </oda-dialog-footer>
     `,
     buttons: [],
-    get buttonElems() {
-        return this.$refs.footer.$refs.buttons;
+    get accentButton() {
+        return this.buttons.find(b => b.accent)
     },
     focusedButton: null,
     props: {
@@ -13,19 +13,25 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     },
     hideOkButton: false,
     hideCancelButton: false,
-    // keyBindings: {
-    //     enter() {
-    //         if (this.focusedButton?.item?.execute)
-    //             this.focusedButton.item.execute();
-    //         this.fire('ok');
-    //     }
-    // },
     listeners: {
         dblclick(e) {
             e.stopPropagation();
-            this.fire('ok');
+            this.ok();
         }
-    }
+    },
+    _onKeyDown(e) {
+        switch (e.keyCode) {
+            case 13 /* enter */: this.ok(); break;
+            case 27 /* esc */: this.cancel(); break;
+        }
+    },
+    attached() { this.listen('keydown', '_onKeyDown', { target: window}) },
+    detached() { this.unlisten('keydown', '_onKeyDown', { target: window}) },
+    ok(item = this.focusedButton || this.accentButton) {
+        if (typeof item?.execute === 'function') item?.execute();
+        (this.domHost || this).fire('ok', item)
+    },
+    cancel() { (this.domHost || this).fire('cancel') }
 })
 ODA({is: 'oda-dialog-footer',
     template: /*html*/`
@@ -33,8 +39,6 @@ ODA({is: 'oda-dialog-footer',
         :host{
             @apply --horizontal;
             @apply --header;
-            /*order: 10;*/
-            /*border-radius: 4px;*/
         }
         oda-button{
             margin: 4px;
@@ -54,27 +58,23 @@ ODA({is: 'oda-dialog-footer',
         }
         [accent]{
             font-weight: bolder;
-            border: 1px solid black;
-            @apply --header; 
+            background-color: var(--focused-color) !important;
+            @apply --header;
         }
     </style>
     <div class="flex horizontal">
         <slot></slot>
         <slot name="footer"></slot>
-        <oda-button ref="buttons" ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn"  @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
+        <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
     </div>
     <div class="no-flex horizontal">
-        <oda-button hide-icon ~if="!hideOkButton" @tap="domHost.fire('ok')" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">OK</oda-button>
-        <oda-button hide-icon ~if="!hideCancelButton" @tap="domHost.fire('cancel')" style="width: 70px" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">Cancel</oda-button>
+        <oda-button hide-icon ~if="!hideOkButton" @tap="ok" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">OK</oda-button>
+        <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">Cancel</oda-button>
     </div>
     `,
     clickBtn(e) {
-        if (e.target.hasAttribute('disabled')) return true;
-        this.focusedButton = e.target;
-        const item = e.target.item;
-        if (item.execute)
-            item.execute.call(this, e, this.control);
-        this.domHost.fire('ok', item);
+        if (e.target.hasAttribute('disabled')) return;
+        this.ok(e.target?.item)
     },
     control: {},
     props: {
@@ -82,10 +82,6 @@ ODA({is: 'oda-dialog-footer',
         hideOkButton: false,
         hideCancelButton: false,
     },
-    onFocusIn(e) {
-        this.focusedButton = e.target;
-    },
-    onBlur(e) {
-        this.focusedButton = null;
-    }
+    onFocusIn(e) { this.focusedButton = e.target },
+    onBlur(e) { this.focusedButton = null }
 })

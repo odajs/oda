@@ -1,4 +1,4 @@
-ODA({is: 'oda-dropdown', imports: '@oda/title, @tools/modal',
+ODA({is: 'oda-dropdown', imports: '@oda/title',
     template: /*html*/`
         <style>
             @keyframes fadeIn {

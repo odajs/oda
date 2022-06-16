@@ -88,6 +88,9 @@ ODA({is: 'oda-modal-content', extends: 'oda-form-layout', imports: '@oda/form-la
     _close() {
         this.fire('cancel');
     },
+    onVisible() {
+        this.control?.focus?.();
+    }
 })
 ODA({is: 'oda-dialog-message', imports: '@oda/icon',
     template: /*html*/`

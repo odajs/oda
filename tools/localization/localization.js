@@ -48,8 +48,8 @@ ODA.translate = (val)=>{
     return newVal
 }
 
-ODA.loadJSON(Localization.path + '_.dir').then(res => { 
-    Localization.localesAvailable = res    
+ODA.loadJSON(Localization.path + '_.dir').then(res => {
+    Localization.localesAvailable = res
     Localization.lidx = res.findIndex(l => (l.name == Localization.currentLocal))
     if ((res.find(l => (l.name == Localization.currentLocal)))!=undefined)
         ODA.loadJSON(Localization.path + Localization.currentLocal + '.json').then(res => { Localization.dictionary = res})
@@ -68,11 +68,11 @@ window.addEventListener('keydown', async e => {
         var table = await ODA.createComponent("oda-localization-table");
         ODA.showDialog(table, {}, {
             icon: 'icons:flag', title: 'Dictionaries',
-            buttons: [{ label: 'Dowload', icon: 'icons:file-download' }]
+            buttons: [{ label: 'Download', icon: 'icons:file-download' }]
         })
             .then(ok => {
                 ok.setNewDict()
-                if (ok.focusedButton.label == 'Dowload') { ok.dlDict() }
+                if (ok.focusedButton.label == 'Download') { ok.dlDict() }
             })
             .catch(err => { });
     }
@@ -205,7 +205,7 @@ ODA({   is: 'oda-selectbox', imports: '@oda/button',  template: /*html*/ `
             .hide-- {display: none;}
             .option {position:absolute; background:rgb(240, 240, 240); z-index: 99; border:1px solid rgb(153, 153, 153); }
             .option oda-button { justify-content: flex-start ; margin:1px -1px; padding:2px;}
-            
+
         </style>
         <div class="line" @tap="showOptions=!showOptions">
             <oda-icon :icon="items[sidx]?.icon" ></oda-icon>
@@ -224,7 +224,7 @@ ODA({   is: 'oda-selectbox', imports: '@oda/button',  template: /*html*/ `
                 this.sidx=e
                 this.showOptions=false
             }}
-            
+
         },
     })
 

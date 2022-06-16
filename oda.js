@@ -448,11 +448,13 @@ if (!window.ODA) {
                     this.debounce('first-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
+                        callHook.call(this, 'onVisible');
                         // console.log(this,  'visibility')
                     }, 200)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
+                        callHook.call(this, 'onVisible');
                     }, 1000)
                 }
             }
@@ -1915,7 +1917,7 @@ if (!window.ODA) {
         }
         return cache.file[url];
     };
-    const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender'];
+    const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender', 'onVisible'];
     const toString = Object.prototype.toString;
     function isNativeObject(obj) {
         return obj && (obj.constructor === Object);// ||  toString.call(c) === '[object Object]';
