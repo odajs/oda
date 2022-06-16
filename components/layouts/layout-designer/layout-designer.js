@@ -335,7 +335,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                             <oda-button icon="av:library-add" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>
                         </div>
                         <div class="flex"></div>
-                        <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @pointerdown="resize" ></oda-icon>
                         <oda-button class="eye" ~if="designMode" icon="image:remove-red-eye" icon-size="16" @pointerdown="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'" :selected="selection.has(layout)"></oda-button>
                     </div>
                 </div>
@@ -507,34 +506,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
         this.layout.deleteGroup(action, this.layout);
-        this.makeScript(this.layout, action);
-    },
-    resize(e) {
-        e.stopPropagation();
-        this._prevX = e.clientX;
-        const rect = this.getBoundingClientRect();
-        this._prevWidth = rect.width;
-        document.addEventListener('pointermove', this._moveHandler = this._moveHandler || this.moveHandler.bind(this));
-        document.addEventListener('pointerup', this._upHandler = this._upHandler || this.upHandler.bind(this));
-    },
-    moveHandler(e) {
-        let w = this._prevWidth + e.clientX - this._prevX;
-        this.style.minWidth = '100%';
-        w = (w * 100) / this.getBoundingClientRect().width;
-        this.async(() => {
-            this.style.minWidth = '0px';
-            this.style.maxWidth = `${w}%`;
-            this.style.width = `${w}%`;
-            this.style.userSelect = 'none';
-            this.style.pointerEvents = 'none';
-        })
-    },
-    upHandler(e) {
-        this.style.removeProperty('user-select');
-        this.style.removeProperty('pointer-events');
-        document.removeEventListener('pointermove', this._moveHandler);
-        document.removeEventListener('pointerup', this._upHandler);
-        const action = { action: "setWidth", props: { target: this.layout.id, width: this.style.width } };
         this.makeScript(this.layout, action);
     }
 })
@@ -780,16 +751,6 @@ CLASS({ is: 'Layout',
         if (!item) return;
         item.styles ||= [];
         item.styles.push({ key: action.props.key, value: action.props.value, type: action.props.type });
-    },
-    async setWidth(action, layout) {
-        const item = layout || await this.find(action.props.target);
-        if (!item) return;
-        this.async(() => {
-            if (item.cnt) {
-                item.cnt.style.minWidth = '0px';
-                item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
-            }
-        }, 300)
     },
     async move(dragInfo) {
         const action = dragInfo?._action || dragInfo;
