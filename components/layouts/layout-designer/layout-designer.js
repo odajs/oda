@@ -121,6 +121,48 @@ ODA({ is: 'oda-layout-designer-structure',
     ]
 })
 
+ODA({ is: 'oda-layout-designer-label',
+    template: `
+        <style>
+            :host {
+                @apply -- horizontal;
+                @aplly --flex;
+            }
+            label {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: {{fontSize}};
+                cursor: {{designMode ? 'pointer' : 'unset'}};
+            }
+            [contenteditable] {
+                outline: 0px solid transparent;
+            }
+        </style>
+        <label ~if="!layout?.hideLabel || showLabel" :contenteditable="designMode" @input="setLabel($event, false)" @blur="setLabel($event, true)">{{layout._label || layout.label}}</label>
+    `,
+    props: {
+        showLabel: {
+            default: false,
+            reflectToAttribute: true
+        }
+    },
+    layout: null,
+    setLabel(e, blur) {
+        if (this.designMode) {
+            const tst = /\n|\r/g.test(e.target.innerText);
+            if (tst)
+                e.target.innerText = '';
+            else
+                this.layout._label = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
+            if (blur) {
+                const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
+                this.makeScript(this.layout, action);
+            }
+            this.render();
+        }
+    }
+})
+
 ODA({ is: 'oda-layout-designer-group',
     template: `
         <style>
@@ -128,30 +170,8 @@ ODA({ is: 'oda-layout-designer-group',
                 @apply -- horizontal;
                 @aplly --flex;
             }
-            .label {
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-size: {{fontSize}};
-                cursor: {{designMode ? 'pointer' : 'unset'}};
-            }
         </style>
-        <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
-        <!--            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">-->
-        <!--                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>-->
-        <!--                <div class="horizontal flex" style="align-items: center;">-->
-        <!--                    <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>-->
-        <!--                    <div class="horizontal flex" ~if="designMode">-->
-        <!--                        <oda-button ~if="layout?.isGroup" :icon-size @tap.stop="addTab" icon="icons:add"></oda-button  title="add tab">-->
-        <!--                        <div class="horizontal no-flex" ~if="selection.has(layout)">-->
-        <!--                            <oda-button ~if="layout.isGroup" icon="material:format-text" icon-size="16" @tap="hideGroupLabel" style="padding: 0; margin: 0" :fill="layout.hideLabel ? 'red' : ''" :title="(layout.hideLabel ? 'unhide' : 'hide') + ' group label'"></oda-button>-->
-        <!--                            <oda-button ~if="layout?.isGroup || layout?.type === 'hGroup' || layout?.type === 'vGroup'" icon="icons:delete" icon-size="16" @tap="deleteGroup" style="padding: 0; margin: 0" title="delete group"></oda-button>-->
-        <!--                            <oda-button icon="av:library-add" icon-size="16" @tap="createTabs" style="padding: 0; margin: 0" title="create group"></oda-button>-->
-        <!--                        </div>-->
-        <!--                        <div class="flex"></div>-->
-        <!--                        <oda-button class="eye" ~if="designMode" icon="image:remove-red-eye" icon-size="16" @pointerdown="hideLayout" style="padding: 0; margin: 0" :fill="layout.isHide ? 'red' : ''" :title="(layout.isHide ? 'unhide' : 'hide') + ' layout'" :selected="selection.has(layout)"></oda-button>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </div>-->
+        <oda-layout-designer-label show-label :layout></oda-layout-designer-label>
     `,
     layout: null,
 })
@@ -326,21 +346,12 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 pointer-events: none;
                 background-color: rgba(255,0,0,.3) !important;
             }
-            .label {
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-size: {{fontSize}};
-                cursor: {{designMode ? 'pointer' : 'unset'}};
-            }
-            [contenteditable] {
-                outline: 0px solid transparent;
-            }
         </style>
         <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <label ~if="!layout?.hideLabel" class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
+            <oda-layout-designer-label :layout></oda-layout-designer-label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" ~style="{alignItems: width ? 'center' : ''}">
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs && !layout?.isGroup" ~style="{alignItems: width ? 'center' : ''}">
                         <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
                 </div>
             </div>
@@ -403,20 +414,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         if (this.designMode) {
             const action = { action: "expanded", props: { target: this.layout.id, value: this.layout.$expanded } };
             this.makeScript(this.layout, action);
-            this.render();
-        }
-    },
-    setLabel(e, blur) {
-        if (this.designMode) {
-            const tst = /\n|\r/g.test(e.target.innerText);
-            if (tst)
-                e.target.innerText = '';
-            else
-                this.layout._label = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
-            if (blur) {
-                const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
-                this.makeScript(this.layout, action);
-            }
             this.render();
         }
     },
