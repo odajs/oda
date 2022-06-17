@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -84,7 +84,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 box-shadow: inset 0 0 0 1px blue;
             }
         </style>
-        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-block':'oda-layout-designer-container'"  ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></div>
+        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-structure':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
     `,
     _select(e){
         if (!this.designMode) return;
@@ -138,7 +138,7 @@ ODA({ is: 'oda-layout-designer-block',
                 @apply --flex;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="content" :layout :root_savekey="rootSaveKey"></oda-layout-designer-structure>
     `
 })
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
@@ -250,7 +250,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-                order: {{layout?._order ?? 'unset'}};
+
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
                 min-width: {{layout?.minWidth ? layout?.minWidth : hasChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
@@ -307,7 +307,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 outline: 0px solid transparent;
             }
         </style>
-        <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
+        <div class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
             <label class="label" ~if="layout.title" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
@@ -403,14 +403,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         const action = { action: "setLabel", label: this.layout.title, props: { id: this.layout.id } };
         this.makeScript(this.layout, action);
 
-    },
-    onpointerdown(e) {
-        if (e.ctrlKey || e.metaKey)
-            this.selection ||= [];
-        else
-            this.selection = [];
-        if (this.selection?.[0] && this.selection[0].root !== this.layout.root) return;
-        this.selection.push(this.layout);
     },
     ondragstart(e) {
         e.stopPropagation();
@@ -745,12 +737,10 @@ CLASS({ is: 'Layout',
         await dragItem.items;
         await targItem.items;
         if (action.props.to === 'left' || action.props.to === 'right') {
-            if (targItem.owner.align !== 'horizontal' && (targItem.items?.length || dragItem.items?.length)) {
+            if (targItem.owner.align === 'vertical') {
                 this._createBlock(action, dragItem, targItem, 'horizontal');
-            } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.align === 'horizontal' ) {
-                this._makeMove(action, dragItem, targItem);
             } else {
-                this._createBlock(action, dragItem, targItem, 'horizontal');
+                this._makeMove(action, dragItem, targItem);
             }
         } else {
             if (targItem.owner.align === 'vertical') {
@@ -786,18 +776,18 @@ CLASS({ is: 'Layout',
     },
     _createBlock(action, dragItem, targItem, align = 'horizontal') {
         const moveTo = action.props.to;
-        const group = new Layout({ id: action.id || getUUID()}, targItem.key, targItem.owner, targItem.root);
+        const block = new Layout({ id: action.id || getUUID()}, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
-        const target = targItem.owner.items.splice(idxTarg, 1, group)[0];
+        const target = targItem.owner.items.splice(idxTarg, 1, block)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
         const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
-        drag.owner = target.owner = group;
-        group.$expanded = true;
-        group.order = target.order;
-        group._order = target._order;
-        group.type = 'block';
-        group.align = align
-        group.items = [drag, target];
+        drag.owner = target.owner = block;
+        block.$expanded = true;
+        block.order = target.order;
+        block._order = target._order;
+        block.type = 'block';
+        block.align = align
+        block.items = [drag, target];
         if (moveTo === 'left' || moveTo === 'top') {
             drag._order = 0;
             target._order = 1;
