@@ -241,6 +241,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         <style>
             :host {
                 /*align-self: end;*/
+                margin-right: 4px;
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
