@@ -70,7 +70,7 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
-                align-items: {{layout?.type ==='vGroup' ? 'normal' : 'flex-end'}};
+                align-items: {{layout?.align ==='vertical' ? 'normal' : 'flex-end'}};
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
@@ -82,6 +82,7 @@ ODA({ is: 'oda-layout-designer-structure',
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
+                box-shadow: inset 0 0 0 1px blue;
             }
         </style>
         <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-block':'oda-layout-designer-container'"  ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></div>
@@ -267,7 +268,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
 
             [disabled] {
                 pointer-events: none;
-                opacity: .3;
+                opacity: .5;
             }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);
@@ -313,10 +314,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
-            <label class="label" ~if="layout.title" :contenteditable="designMode" @blur="selectLabel" @click="focusLabel" ~html="layout?.title"></label>
+            <label class="label" ~if="layout.title" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isGroup" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                         <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
@@ -399,8 +400,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout.removeTab(action, tab);
         this.makeScript(this.layout, action);
     },
-    focusLabel() {
-        // document.execCommand('selectAll',false,null)
+    selectLabel() {
+        document.execCommand('selectAll', false, null);
     },
     setLabel(e) {
         if (!this.designMode) return
@@ -470,9 +471,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
         this.render();
     },
-    createTabs() {
-        const action = { tabsId: getUUID(), id: getUUID(), action: "createTabs", props: { target: this.layout.id, block: getUUID() } };
-        this.layout.createTabs(action);
+    createGroup() {
+        const action = { tabsId: getUUID(), id: getUUID(), action: "createGroup", props: { target: this.layout.id, block: getUUID() } };
+        this.layout.createGroup(action);
         this.makeScript(this.layout, action);
     },
     hideLayout(e) {
@@ -531,7 +532,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         </style>
         
         <span>Group</span>
-        <div class="horizontal row" style="align-items: center" @tap="lay.createTabs()">
+        <div class="horizontal row" style="align-items: center" @tap="lay.createGroup()">
             <oda-icon icon="av:library-add"></oda-icon>
             <label>create group</label>
         </div>
@@ -647,17 +648,12 @@ CLASS({ is: 'Layout',
         return this.isGroup ? 'oda-layout-designer-pages' : '';
     },
     get isGroup() {
-        return this.type === "group";//|| (this.type === "tabs" && this.items.length <= 1);
-        // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
+        return this.type === "group";
     },
     get isBlock() {
-        return this.type === "block";//|| (this.type === "tabs" && this.items.length <= 1);
-        // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
+        return this.type === "block";
     },
-    get hideHeader() {
-         return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel || this._hideHeader;
-    },
-    async createTabs(action) {
+    async createGroup(action) {
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
@@ -755,18 +751,18 @@ CLASS({ is: 'Layout',
         await dragItem.items;
         await targItem.items;
         if (action.props.to === 'left' || action.props.to === 'right') {
-            if (targItem.owner.type !== 'hGroup' && (targItem.items?.length || dragItem.items?.length)) {
-                this._createGroup(action, dragItem, targItem, 'hGroup');
-            } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.type === 'hGroup' ) {
+            if (targItem.owner.align !== 'horizontal' && (targItem.items?.length || dragItem.items?.length)) {
+                this._createBlock(action, dragItem, targItem, 'horizontal');
+            } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.align === 'horizontal' ) {
                 this._makeMove(action, dragItem, targItem);
             } else {
-                this._createGroup(action, dragItem, targItem, 'horizontal');
+                this._createBlock(action, dragItem, targItem, 'horizontal');
             }
         } else {
-            if (targItem.owner.type === 'vGroup') {
+            if (targItem.owner.align === 'vertical') {
                 this._makeMove(action, dragItem, targItem);
             } else {
-                this._createGroup(action, dragItem, targItem, 'vertical');
+                this._createBlock(action, dragItem, targItem, 'vertical');
             }
         }
     },
@@ -794,7 +790,7 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 1);
         }
     },
-    _createGroup(action, dragItem, targItem, align = 'horizontal') {
+    _createBlock(action, dragItem, targItem, align = 'horizontal') {
         const moveTo = action.props.to;
         const group = new Layout({ id: action.id || getUUID()}, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
