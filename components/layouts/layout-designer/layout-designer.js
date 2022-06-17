@@ -77,15 +77,28 @@ ODA({ is: 'oda-layout-designer-structure',
                 flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
                 /*justify-content: space-around;*/
                 align-content: flex-start;
-                flex-direction: {{layout?.type ==='vGroup' ? 'column' : 'row'}};
+                flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
                 border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
             }
         </style>
-        <oda-layout-designer-container ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></oda-layout-designer-container>
+        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-block':'oda-layout-designer-container'"  ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)"></div>
     `,
+    _select(e){
+        if (!this.designMode) return;
+        if (e.sourceEvent.ctrlKey){
+            const el = this.selection[0];
+            if (el && !this.layout.items.includes(el)) return;
+            if (this.selection.includes( e.target.layout))
+                this.selection.remove(e.target.layout);
+            else
+                this.selection.add(e.target.layout);
+        }
+        else
+            this.selection.splice(0, this.selection.length, e.target.layout)
+    },
     props: {
         layout: {
             default: null,
@@ -118,6 +131,16 @@ ODA({ is: 'oda-layout-designer-structure',
             }
         }
     ]
+})
+ODA({ is: 'oda-layout-designer-block',
+    template: `
+        <style>
+            :host{
+                @apply --flex;
+            }
+        </style>
+        <oda-layout-designer-structure class="flex content" :layout style="flex:0; padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
+    `
 })
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     template: /*html*/`
@@ -213,26 +236,6 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-layout-designer-tabs-structure',
-    template: `
-        <style>
-            :host {
-                @apply --horizontal;
-                @apply --flex;
-                min-height: 32px;
-                min-width: 32px;
-                padding: 4px;
-                position: relative;
-                margin-left: {{iconSize}}px !important;
-                border: {{layout?.isGroup ? '' : '1px solid gray'}};
-                border-top: none;
-            }
-
-        </style>
-        <oda-layout-designer-structure ~if="item === layout.$focused || layout?.items?.length === 1" class="flex" ~for="layout?.items" :layout="item"></oda-layout-designer-structure>
-    `
-})
-
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
     template: `
         <style>
@@ -253,9 +256,12 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 min-width: {{layout?.hideHeader ? '' : layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
-                background-color: {{layout?.isGroup ? 'lightgray' : ''}};
-                margin: {{layout?.isGroup ? '4px 0 4px 4px' : '0'}};
-                border-radius: {{layout?.isGroup ? '4px' : ''}};
+            }
+            :host([is-group]){
+                @apply --border;
+                @apply --header;
+                @apply --shadow;
+                border-radius: 4px;
             }
 
             [disabled] {
@@ -318,7 +324,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 opacity: 1;
             }
         </style>
-        <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" @mousedown.stop.prev @pointerdown="onpointerdown" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
+        <div  class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
 <!--            <div ~if="!layout.isTab1 && (designMode || !layout?.hideLabel)" class="horizontal flex" ~class="{isgroup: layout?.isGroup}" style="align-items: center" ~style="{ marginLeft: layout?.isTabs || layout?.isGroup ? '' : iconSize + 'px'}">-->
 <!--                <oda-icon ~if="layout?.isTabs || layout?.isGroup" style="cursor: pointer; opacity: .3" :icon-size :icon="hasChildren?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @pointerdown.stop @tap.stop="expand()"></oda-icon>-->
 <!--                <div class="horizontal flex" style="align-items: center;">-->
@@ -366,6 +372,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 hidden: false
             },
             save: true
+        },
+        isGroup:{
+            type: Boolean,
+            get(){
+                return this.layout?.isGroup;
+            },
+            reflectToAttribute: true
         }
     },
     listeners: {
@@ -663,6 +676,10 @@ CLASS({ is: 'Layout',
         return this.type === "group";//|| (this.type === "tabs" && this.items.length <= 1);
         // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
     },
+    get isBlock() {
+        return this.type === "block";//|| (this.type === "tabs" && this.items.length <= 1);
+        // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
+    },
     get hideHeader() {
          return this.type === 'vGroup' || this.type === 'hGroup' || this.hideLabel || this._hideHeader;
     },
@@ -763,19 +780,19 @@ CLASS({ is: 'Layout',
         if (!dragItem || !targItem) return;
         await dragItem.items;
         await targItem.items;
-        if (targItem.owner.type === 'tabs' || action.props.to === 'left' || action.props.to === 'right') {
+        if (action.props.to === 'left' || action.props.to === 'right') {
             if (targItem.owner.type !== 'hGroup' && (targItem.items?.length || dragItem.items?.length)) {
                 this._createGroup(action, dragItem, targItem, 'hGroup');
             } else if (!targItem.owner.type || targItem.owner.type === 'tabs' || targItem.owner.type === 'hGroup' ) {
                 this._makeMove(action, dragItem, targItem);
             } else {
-                this._createGroup(action, dragItem, targItem, 'hGroup');
+                this._createGroup(action, dragItem, targItem, 'horizontal');
             }
         } else {
             if (targItem.owner.type === 'vGroup') {
                 this._makeMove(action, dragItem, targItem);
             } else {
-                this._createGroup(action, dragItem, targItem, 'vGroup');
+                this._createGroup(action, dragItem, targItem, 'vertical');
             }
         }
     },
@@ -803,9 +820,9 @@ CLASS({ is: 'Layout',
             targItem.owner.items.splice(idxTarg, 1);
         }
     },
-    _createGroup(action, dragItem, targItem, groupType) {
+    _createGroup(action, dragItem, targItem, align = 'horizontal') {
         const moveTo = action.props.to;
-        const group = new Layout({ id: action.id || getUUID(), label: action.label || groupType + `-virtual` }, targItem.key, targItem.owner, targItem.root);
+        const group = new Layout({ id: action.id || getUUID()}, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarg, 1, group)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
@@ -814,7 +831,8 @@ CLASS({ is: 'Layout',
         group.$expanded = true;
         group.order = target.order;
         group._order = target._order;
-        group.type = groupType;
+        group.type = 'block';
+        group.align = align
         group.items = [drag, target];
         if (moveTo === 'left' || moveTo === 'top') {
             drag._order = 0;
