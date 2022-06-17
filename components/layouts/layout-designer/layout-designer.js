@@ -119,19 +119,12 @@ ODA({ is: 'oda-layout-designer-structure',
         }
     ]
 })
-ODA({is: 'oda-layout-groups',
-
-
-})
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
     template: /*html*/`
         <style>
             :host {
                 @apply --vertical;
                 @apply --flex;
-                height: 100%;
-                margin-top: 8px;
-                margin-left: {{iconSize + 'px'}};
             }
             [focused] {
                 @apply --content;
@@ -149,7 +142,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 padding: 0px;
             }
         </style>
-        <div ~if="layout?.$expanded" class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
+        <div class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
            <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
@@ -370,6 +363,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             default:{
                 color: 'black',
                 align: 'top',
+                hidden: false
             },
             save: true
         }
@@ -660,16 +654,13 @@ CLASS({ is: 'Layout',
         return this.data?.label || this.name;
     },
     get $template() {
-        return this.isTabs ? 'oda-layout-designer-tabs' : '';
+        return this.isGroup ? 'oda-layout-designer-tabs' : '';
     },
     get $structure() {
-        return this.isTabs ? 'oda-layout-designer-tabs-structure' : '';
-    },
-    get isTabs() {
-        return this.type === "tabs" && this.items.length > 1;
+        return this.isGroup ? 'oda-layout-designer-pages' : '';
     },
     get isGroup() {
-        return this.type === "group" || (this.type === "tabs" && this.items.length <= 1);
+        return this.type === "group";//|| (this.type === "tabs" && this.items.length <= 1);
         // return this.type === "tab" || this.type === "vGroup" || this.type === "hGroup" || (this.type === "tabs" && this.items.length <= 1);
     },
     get hideHeader() {
@@ -681,7 +672,7 @@ CLASS({ is: 'Layout',
         const myIdx = item.owner.items.indexOf(item);
         const tabs = new Layout({ id: action.tabsId, label: `Group-label` }, item.key, item.owner, item.root);
         const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
-        tabs.type = 'tabs';
+        tabs.type = 'group';
         tabs.width = 0;
         tabs.items = [tab];
         tabs.$expanded = true;
