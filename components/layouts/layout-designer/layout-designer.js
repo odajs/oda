@@ -70,6 +70,7 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
+                position: relative;
                 align-items: {{layout?.align ==='vertical' ? 'normal' : 'flex-end'}};
                 @apply --horizontal;
                 @apply --no-flex;
@@ -240,7 +241,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         <style>
             :host {
                 /*align-self: end;*/
-                margin-right: 4px;
+                padding-right: 4px;
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
