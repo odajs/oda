@@ -74,11 +74,10 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --horizontal;
                 @apply --no-flex;
                 overflow: visible;
-                flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
+                flex-wrap: wrap;
                 justify-content: space-around;
                 align-content: flex-start;
                 flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
-                border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
@@ -113,8 +112,7 @@ ODA({ is: 'oda-layout-designer-structure',
             default: [],
             save: true
         },
-        saveKey: '',
-        borderColor: 'lightgray'
+        saveKey: ''
     },
     observers: [
         async function execute(layout, actions) {
@@ -253,9 +251,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
                 order: {{layout?._order ?? 'unset'}};
-                display: {{!designMode && (layout?.isHide || layout?.isVirtual) ? 'none' : 'unset'}};
-                border: {{designMode && layout?.isVirtual ? '1px dotted blue' : designMode && layout?.isHide ? '1px dashed red' : designMode ? '1px dashed lightblue' : layout?.isGroup ? '1px solid gray' : '1px solid transparent'}};
-                min-width: {{layout?.hideHeader ? '' : layout?.minWidth ? layout?.minWidth : (layout.isGroup ? '100%' : hasChildren && !layout?.isGroup && !layout?.owner.isGroup)?'100%':'32px'}};
+                border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
+                min-width: {{layout?.minWidth ? layout?.minWidth : hasChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
             }
@@ -305,9 +302,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 white-space: nowrap;
                 font-size: {{fontSize}};
                 cursor: {{designMode ? 'pointer' : 'unset'}};
-                padding: {{!designMode && layout?.hideHeader ? '0' : '0px 4px'}} !important;
-                margin: {{!designMode && layout?.hideHeader ? '0' : '1px'}} !important;
-                color: {{designMode && layout?.isGroup ? layout?.hideHeader ? 'red' : 'blue' : layout?.isHide ? 'red' : ''}};
             }
             [contenteditable] {
                 outline: 0px solid transparent;
@@ -324,7 +318,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: '4px', marginLeft: layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,
