@@ -75,7 +75,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --no-flex;
                 overflow: visible;
                 flex-wrap: {{layout?.hideHeader ? '' : 'wrap'}};
-                /*justify-content: space-around;*/
+                justify-content: space-around;
                 align-content: flex-start;
                 flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
                 border: {{!layout?.isGroup ? '' : (layout?.hideHeader || !layout?.$expanded) ? '' : '1px solid ' + borderColor || 'lightgray'}};
@@ -169,7 +169,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
            <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
-                <label class="tab" ~is="editTab===item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
+                <label class="tab" ~is="editTab === item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
                 <oda-button class="btn" :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
@@ -341,7 +341,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
 <!--                    </div>-->
 <!--                </div>-->
 <!--            </div>-->
-            <label class="label" :contenteditable="designMode" @input="setLabel" @blur="setLabel($event, blur)">{{layout._label || layout.label}}</label>
+            <label class="label" ~if="layout.title" :contenteditable="designMode" @input="setLabel" @focus="_sel">{{layout.title}}</label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isTabs" 
@@ -353,6 +353,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         </div>
         <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: layout?.hideHeader ? 0 : '4px', marginLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.hideHeader || layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
     `,
+    _sel(e){
+
+    },
     fontSize: 'small',
     width: undefined,
     get hasChildren() { return this.layout?.items?.length },
@@ -428,18 +431,18 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.makeScript(this.layout, action);
     },
     setLabel(e, blur) {
-        if (this.designMode) {
-            const tst = /\n|\r/g.test(e.target.innerText);
-            if (tst)
-                e.target.innerText = '';
-            else
-                this.layout._label = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
-            if (blur) {
-                const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
-                this.makeScript(this.layout, action);
-            }
-            this.render();
-        }
+        if (!this.designMode) return
+        const tst = /\n|\r/g.test(e.target.innerText);
+        if (tst)
+            e.target.innerText = '';
+        else
+            this.layout.title = e.target.innerText?.replace(/\n|\r/g, "") || this.layout.label;
+        // if (blur) {
+        //     const action = { action: "setLabel", label: this.layout._label, props: { id: this.layout.id } };
+        //     this.makeScript(this.layout, action);
+        // }
+        // this.render();
+
     },
     onpointerdown(e) {
         if (e.ctrlKey || e.metaKey)
@@ -656,6 +659,12 @@ CLASS({ is: 'Layout',
             })
         }
         return this.items = items?.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
+    },
+    get title(){
+        return this._label || this.label;
+    },
+    set title(n){
+        this._label = n;
     },
     get id() {
         return this.data?.id || this.data?.name || 'root';
