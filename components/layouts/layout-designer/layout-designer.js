@@ -175,12 +175,15 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 transform: scale(.6);
                 padding: 0px;
             }
+            [contenteditable] {
+                outline: 0px solid transparent;
+            }
         </style>
         <div class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
            <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
-                <label class="tab" ~is="editTab === item ? 'input' : 'label'" class="flex" @dblclick="editTab = designMode ? item : undefined" ::value="item.label" @change="tabRename($event, item)" @blur="editTab=undefined">{{item?.label}}</label>
+                <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
                 <oda-button class="btn" :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
@@ -194,7 +197,6 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         return this.layout && this.designMode ? 'true' : 'false';
     },
     hoverItem: undefined,
-    editTab: undefined,
     addTab() {
         const tabID = getUUID();
         const blockID = getUUID();
@@ -240,9 +242,9 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.dragInfo.isMoveTab = false;
     },
     tabRename(e, item) {
-        this.editTab = undefined;
-        if (this.designMode) {
-            const action = { action: "setLabel", label: item.label, props: { id: item.id } };
+        if (this.designMode && this.label !== e.target.innerHTML) {
+            console.log(e.target.innerHTML)
+            const action = { action: "setLabel", label: e.target.innerHTML, props: { id: item.id } };
             this.makeScript(this.layout, action)
         }
     }
@@ -325,7 +327,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isGroup" 
-                        ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                         <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
                 </div>
