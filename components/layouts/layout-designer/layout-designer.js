@@ -77,7 +77,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 box-shadow: inset 0 0 0 1px blue;
             }
         </style>
-        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-structure':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
+        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-block':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
     `,
     _select(e) {
         if (!this.designMode) return;
@@ -108,17 +108,18 @@ ODA({ is: 'oda-layout-designer-structure',
         saveKey: ''
     },
     observers: [
-        async function execute(layout, actions) {
+        function execute(layout, actions) {
             if (layout) {
                 this.saveKey = layout.saveKey = this.root_savekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
                 this.lays ||= new Set();
                 if (actions?.length && !this.lays.has(this.layout)) {
-                    await this.layout.execute(actions);
-                    this.lays.add(this.layout); // for single execution - to remove looping
-                    (this.layout.styles || []).forEach(i => {
-                        if (i.type === 'str')
-                            this.style[i.key] = i.value;
-                    })
+                    this.layout.execute(actions).then(res=>{
+                        this.lays.add(this.layout); // for single execution - to remove looping
+                        (this.layout.styles || []).forEach(i => {
+                            if (i.type === 'str')
+                                this.style[i.key] = i.value;
+                        })
+                    });
                 }
             }
         }
@@ -130,10 +131,13 @@ ODA({ is: 'oda-layout-designer-block',
         <style>
             :host{
                 @apply --flex;
+                @apply --horizontal;
+                flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
             }
         </style>
-        <oda-layout-designer-structure class="content" :layout></oda-layout-designer-structure>
-    `
+        <oda-layout-designer-structure class="flex content" :layout></oda-layout-designer-structure>
+    `,
+    width: 0,
 })
 
 ODA({ is: 'oda-layout-designer-pages',
@@ -153,7 +157,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             :host {
                 @apply --vertical;
                 @apply --flex;
-                margin: 4 0px;
+                margin: 4px 0px;
             }
             [focused] {
                 @apply --content;
