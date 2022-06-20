@@ -69,7 +69,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 overflow: visible;
                 flex-wrap: wrap;
                 justify-content: space-around;
-                align-content: flex-start;
+                /* align-content: flex-start; */
                 flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
             }
             [selected] {
@@ -115,10 +115,6 @@ ODA({ is: 'oda-layout-designer-structure',
                 if (actions?.length && !this.lays.has(this.layout)) {
                     this.layout.execute(actions).then(res=>{
                         this.lays.add(this.layout); // for single execution - to remove looping
-                        (this.layout.styles || []).forEach(i => {
-                            if (i.type === 'str')
-                                this.style[i.key] = i.value;
-                        })
                     });
                 }
             }
