@@ -41,7 +41,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                     this._combo = document.createElement('oda-combo-list');
                     this._combo.items = await this.getFiltered();
                     this._combo.focusedItem = this.value;
-                    this.value = (await ODA.showDropdown(this._combo, {}, { parent: this, focused: !!e })).focusedItem;
+                    this.value = (await ODA.showDropdown(this._combo, {}, { parent: this, focused: !!e, useParentWidth: true})).focusedItem;
                 }
                 finally {
                     this._combo = undefined;
@@ -100,6 +100,7 @@ ODA({is: 'oda-combo-list',
             @apply --vertical;
             overflow-y: auto;
             overflow-x: hidden;
+            padding: 0px 8px;
         }
     </style>
     <label style="min-height: 24px; align-content: center;" ~for="items" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label || item}}</label>
