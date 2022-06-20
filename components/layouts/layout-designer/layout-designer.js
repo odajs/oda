@@ -168,7 +168,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 text-overflow: ellipsis;
                 margin: 2px;
                 padding: 8px;
-                cursor: pointer; 
+                cursor: pointer;
                 font-size: {{fontSize}};
             }
             oda-button.btn {
@@ -179,15 +179,15 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 outline: 0px solid transparent;
             }
         </style>
-        <div class="horizontal flex header" style="flex-wrap: wrap; border: 1px solid gray;">
-           <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start; border-right: 1px solid gray;" ~style="{'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
-                    :draggable :focused="item === layout.$focused" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
+        <div class="horizontal flex header" style="flex-wrap: wrap;" ~style="{border: layout?.items?.length > 1 ? '1px solid gray' : ''}">
+           <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'border-right': layout?.items?.length > 1 ? '1px solid gray' : '', 'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+                    :draggable :focused="item === layout.$focused && layout?.items?.length > 1" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
                 <oda-button class="btn" :icon-size ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
-            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode" icon="icons:pin" title="pin current tab" icon-size="14"></oda-button>
+            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1" icon="icons:pin" title="pin current tab" icon-size="14"></oda-button>
         </div>
     `,
     props: {
@@ -242,8 +242,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.dragInfo.isMoveTab = false;
     },
     tabRename(e, item) {
-        if (this.designMode && this.label !== e.target.innerHTML) {
-            console.log(e.target.innerHTML)
+        if (this.designMode && (!this.title || this.title !== e.target.innerHTML)) {
             const action = { action: "setLabel", label: e.target.innerHTML, props: { id: item.id } };
             this.makeScript(this.layout, action)
         }
@@ -276,6 +275,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 @apply --header;
                 @apply --shadow;
                 border-radius: 4px;
+                padding: 4px;
             }
 
             [disabled] {
