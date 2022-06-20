@@ -2262,8 +2262,10 @@ if (!window.ODA) {
                 if (d){
                     if (d === true || (d.set && v !== undefined)) {
                         try{
-                            if (this[name] != v)
-                                this[name] = v;
+                            if (!(name === 'src' && this.localName === 'iframe' && typeof(v) === 'string'
+                                    && decodeURIComponent(this[name]) === decodeURIComponent(v)))
+                                if (this[name] != v)
+                                    this[name] = v;
                             if (d !== true) //todo надо думать
                                 return;
                         }

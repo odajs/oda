@@ -1,36 +1,33 @@
-import '../../buttons/button/button.js';
-
-ODA({
-    is: 'oda-image-viewer',
+ODA({is: 'oda-image-viewer', imports: '@oda/button',
     template: /*html*/`
-        <style>
-            :host {
-                @apply --vertical;
-                @apply --flex;
-                background-color: #242424;
-                overflow: hidden;
-            }
-            :host > .img {
-                cursor: grab;
-            }
-            :host > .img:active {
-                cursor: grabbing;
-            }
-            :host .image{
-                width: 100%;
-                height: 100%;
-                background: no-repeat center;
-                background-size: contain;
-            }
-        </style>
-        <div class="horizontal center" style="z-index: 1;">
-            <oda-button icon="image:rotate-left" fill="white" @tap="_rotateLeft"></oda-button>
-            <oda-button icon="image:rotate-right" fill="white" @tap="_rotateRight"></oda-button>
-            <oda-button icon="icons:file-download" fill="white" @tap="_download"></oda-button>
-        </div>
-        <div ref="img" class="img flex" :style="_imageStyle">
-            <div class="image" :style="\`background-image: url('\${src}');\`"></div>
-        </div>
+    <style>
+        :host {
+            @apply --vertical;
+            @apply --flex;
+            background-color: #242424;
+            overflow: hidden;
+        }
+        :host > .img {
+            cursor: grab;
+        }
+        :host > .img:active {
+            cursor: grabbing;
+        }
+        :host .image{
+            width: 100%;
+            height: 100%;
+            background: no-repeat center;
+            background-size: contain;
+        }
+    </style>
+    <div class="horizontal center" style="z-index: 1;" @dblclick.stop>
+        <oda-button icon="image:rotate-left" fill="white" @tap="_rotateLeft"></oda-button>
+        <oda-button icon="image:rotate-right" fill="white" @tap="_rotateRight"></oda-button>
+        <oda-button icon="icons:file-download" fill="white" @tap="_download"></oda-button>
+    </div>
+    <div ref="img" class="img flex" :style="_imageStyle">
+        <div class="image" :style="\`background-image: url('\${src}');\`"></div>
+    </div>
     `,
     props: {
         src: '',

@@ -126,7 +126,7 @@ ODA({ is: 'oda-layout-designer-structure',
 })
 
 ODA({ is: 'oda-layout-designer-block',
-    template: `
+    template: /*html*/`
         <style>
             :host{
                 @apply --flex;
@@ -137,7 +137,7 @@ ODA({ is: 'oda-layout-designer-block',
 })
 
 ODA({ is: 'oda-layout-designer-pages',
-    template: `
+    template: /*html*/`
         <style>
             :host{
                 @apply --flex;
@@ -249,7 +249,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
 })
 
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 /*align-self: end;*/
@@ -327,7 +327,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
-                        <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
+                    <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
                 </div>
             </div>
         </div>
@@ -335,7 +335,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     `,
     fontSize: 'small',
     width: undefined,
-    get hasChildren() { return this.layout?.items?.length },
+    get hasChildren() { return this.layout?.items?.length || this.layout.showStructure; },
     expand() {
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
@@ -478,7 +478,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
 })
 
 ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
-    template: `
+    template: /*html*/`
         <style>
             :host {
                 @apply --vertical;
@@ -514,10 +514,10 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
             <oda-icon icon="av:library-add"></oda-icon>
             <label>create group</label>
         </div>
-        <div ~if="layout.isGroup" class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="lay.deleteGroup(); fire('ok');">
+        <div ~if="layout.isGroup || layout.owner.isBlock" class="vertical">
+            <div class="horizontal row" style="align-items: center" @tap="_deleteGroup">
                 <oda-icon icon="icons:delete"></oda-icon>
-                <label>delete group</label>
+                <label>ungroup</label>
             </div>
         </div>
         <span ~if="!layout.title">Label</span>
@@ -530,6 +530,13 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
     `,
     layout: null,
     lay: null,
+    _deleteGroup() {
+        if (this.layout.owner?.isBlock) {
+            // this.layout.owner.cnt.deleteGroup();
+        }
+        this.lay.deleteGroup();
+        fire('ok');
+    },
     _restoreLabel() {
         this.layout.title = this.layout.label || 'label';
         this.fire('ok');
@@ -558,6 +565,9 @@ CLASS({ is: 'Layout',
             })
         }
         return this.items = items?.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
+    },
+    get showStructure() {
+        return this.data?.showStructure;
     },
     get title() {
         return this._label || this.label;
