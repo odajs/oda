@@ -27,7 +27,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         :host .title-bar {
             @apply --heading;
             align-items: center;
-            background-color: {{isTopModal ? 'var(--selected-color) !important' : ''}};
+            background-color: {{isTopModal ? 'var(--focused-color) !important' : ''}};
         }
         :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
             min-height: {{iconSize + iconSize / 8 + 5}}px;

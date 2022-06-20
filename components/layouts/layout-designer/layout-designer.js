@@ -139,7 +139,17 @@ ODA({ is: 'oda-layout-designer-block',
                 @apply --flex;
             }
         </style>
-        <oda-layout-designer-structure class="content" :layout :root_savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="content" :layout></oda-layout-designer-structure>
+    `
+})
+ODA({ is: 'oda-layout-designer-pages',
+    template: `
+        <style>
+            :host{
+                @apply --flex;
+            }
+        </style>
+        <oda-layout-designer-structure class="content" :layout="layout?.$focused"></oda-layout-designer-structure>
     `
 })
 ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
@@ -148,6 +158,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             :host {
                 @apply --vertical;
                 @apply --flex;
+                margin: 4 0px;
             }
             [focused] {
                 @apply --content;
@@ -203,6 +214,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             const action = { action: "selectTab", props: { tabs: this.layout.id, tab: item.id } };
             this.makeScript(this.layout, action);
         }
+        this.render();
     },
     ondragstart(e, item) {
         e.stopPropagation();
@@ -251,7 +263,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-
+                min-height: {{iconSize + 4}}px;
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
                 min-width: {{layout?.minWidth ? layout?.minWidth : hasChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
@@ -315,7 +327,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isGroup" 
                         ~class="{tabs:layout?.isTabs}" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
-                        <div class="flex" ~is="layout?.$template || editTemplate" :layout ::width></div>
+                        <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
                 </div>
             </div>
         </div>
