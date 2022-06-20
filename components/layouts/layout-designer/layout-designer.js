@@ -183,7 +183,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
             <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1" icon="icons:pin" title="pin current tab"></oda-button>
-            <oda-button ~if="designMode && !layout?.title" @tap.stop="editGroupLabel" icon="editor:mode-edit" title="edit Group label"></oda-button>
+            <oda-button ~if="designMode && !layout?.title" @tap.stop="restoreGroupLabel" icon="material:format-text" title="restore Group label"></oda-button>
         </div>
     `,
     props: {
@@ -243,7 +243,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             this.makeScript(this.layout, action)
         }
     },
-    editGroupLabel() {
+    restoreGroupLabel() {
         this.layout.title = 'Group-label';
     }
 })
@@ -311,7 +311,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 pointer-events: none;
                 background-color: rgba(255,0,0,.3) !important;
             }
-            .label {
+            .lbl {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: {{fontSize}};
@@ -322,16 +322,16 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
-            <label class="label" ~if="layout.title" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
+            <label class="lbl" ~if="layout.title" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
             <div class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !layout?.isGroup" 
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                         <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex structure" style="border-left: 1px dashed var(--border-color, silver);" ~style="{marginBottom: '4px', marginLeft: layout?.isGroup ? 0 : iconSize/2+'px', paddingLeft: layout?.isGroup ? 0 : iconSize/2+'px'}"></div>
+        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex" style="border-left: 1px dashed var(--border-color, silver); marginBottom: '4px'" ~style="{marginLeft: isGroup ? 0 : iconSize/2+'px', paddingLeft: isGroup ? 0 : iconSize/2+'px'}"></div>
     `,
     fontSize: 'small',
     width: undefined,
@@ -520,9 +520,20 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
                 <label>delete group</label>
             </div>
         </div>
+        <span ~if="!layout.title">Label</span>
+        <div ~if="!layout.title" class="vertical">
+            <div class="horizontal row" style="align-items: center" @tap="_restoreLabel">
+                <oda-icon icon="material:format-text"></oda-icon>
+                <label>restore label</label>
+            </div>
+        </div>
     `,
     layout: null,
-    lay: null
+    lay: null,
+    _restoreLabel() {
+        this.layout.title = this.layout.label || 'label';
+        this.fire('ok');
+    }
 })
 
 CLASS({ is: 'Layout',
@@ -588,7 +599,6 @@ CLASS({ is: 'Layout',
         tabs.$focused = tab;
         tabs.order = item.order;
         tabs._order = item._order;
-        tab._hideHeader = true;
         tab.$expanded = true;
         tab.items = [item];
         tab.order = tab._order = 0;
