@@ -54,7 +54,7 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             i.str?.actions && (i.str.actions = []);
             i.root.str.actions = [];
         })
-        document.location.reload();
+        // document.location.reload();
     }
 })
 
@@ -69,7 +69,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 overflow: visible;
                 flex-wrap: wrap;
                 justify-content: space-around;
-                /* align-content: flex-start; */
+                align-content: {{layout?.isBlock ? '' : 'flex-start'}};
                 flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
             }
             [selected] {
