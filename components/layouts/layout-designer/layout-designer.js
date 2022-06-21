@@ -54,7 +54,8 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             i.str?.actions && (i.str.actions = []);
             i.root.str.actions = [];
         })
-        // document.location.reload();
+        this.lays = new Set();
+        this.layout = undefined;
     }
 })
 
@@ -408,11 +409,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             })
         }, 100);
     },
-    removeTab(tab) {
-        const action = { action: "removeTab", props: { tabs: this.layout.id, tab: tab.id } };
-        this.layout.removeTab(action, tab);
-        this.makeScript(this.layout, action);
-    },
     selectLabel() {
         document.execCommand('selectAll', false, null);
     },
@@ -481,6 +477,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout.createGroup(action);
         this.makeScript(this.layout, action);
     },
+    removeTab(tab) {
+        const action = { action: "removeTab", props: { tabs: this.layout.id, tab: tab.id } };
+        this.layout.removeTab(action, tab);
+        this.makeScript(this.layout, action);
+    },
     deleteGroup(layout = this.layout) {
         if (layout.items?.[0]?.isTab1) {
             this.removeTab(layout.items[0]);
@@ -528,7 +529,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
             <oda-icon icon="av:library-add"></oda-icon>
             <label>create group</label>
         </div>
-        <div ~if="layout.isGroup || layout.owner.isBlock" class="vertical">
+        <div ~if="layout.owner.isBlock" class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="_deleteGroup">
                 <oda-icon icon="icons:delete"></oda-icon>
                 <label>ungroup</label>
