@@ -77,7 +77,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 box-shadow: inset 0 0 0 1px blue;
             }
         </style>
-        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-block':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
+        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-container':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
     `,
     _select(e) {
         if (!this.designMode) return;
@@ -122,19 +122,19 @@ ODA({ is: 'oda-layout-designer-structure',
     ]
 })
 
-ODA({ is: 'oda-layout-designer-block',
-    template: /*html*/`
-        <style>
-            :host{
-                @apply --flex;
-                @apply --horizontal;
-                flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
-            }
-        </style>
-        <oda-layout-designer-structure class="flex content" :layout></oda-layout-designer-structure>
-    `,
-    width: 0,
-})
+// ODA({ is: 'oda-layout-designer-block',
+//     template: /*html*/`
+//         <style>
+//             :host{
+//                 @apply --flex;
+//                 @apply --horizontal;
+//                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
+//             }
+//         </style>
+//         <oda-layout-designer-structure class="flex content" :layout></oda-layout-designer-structure>
+//     `,
+//     width: 0,
+// })
 
 ODA({ is: 'oda-layout-designer-pages',
     template: /*html*/`
@@ -179,10 +179,10 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                     :draggable :focused="item === layout.$focused && layout?.items?.length > 1" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
+                <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1 && layout?.$focused === item" icon="icons:pin" title="pin current tab"></oda-button>
                 <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
             </div>
             <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
-            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1" icon="icons:pin" title="pin current tab"></oda-button>
             <oda-button ~if="designMode && !layout?.title" @tap.stop="restoreGroupLabel" icon="material:format-text" title="restore Group label"></oda-button>
         </div>
     `,
@@ -253,30 +253,35 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         <style>
             :host {
                 /*align-self: end;*/
-                padding-right: 4px;
+                /* padding-right: 4px; */
                 box-sizing: border-box;
                 @apply --vertical;
                 overflow: hidden;
                 @apply --flex;
                 /* flex-grow: {{layout?.noFlex?'1':'100'}}; */
-                flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
+                flex: {{width ? '0 0 auto':'1000000000000000000000000000000 1 auto'}};
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
                 min-height: {{iconSize + 4}}px;
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
-                min-width: {{layout?.minWidth ? layout?.minWidth : hasChildren ? '100%' : '32px'}};
+                min-width: {{layout?.minWidth ? layout?.minWidth : isChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
             }
-            :host([is-group]){
+            :host([is-group]) {
                 @apply --border;
                 @apply --header;
-                @apply --shadow;
+                /* @apply --shadow; */
                 border-radius: 4px;
                 padding: 4px;
+                margin: 2px;
             }
-
+            :host([is-children]) .str {
+                border-left: 1px dashed var(--border-color, silver);
+                margin-left: {{iconSize / 2}}px;
+                padding-left: {{iconSize / 2}}px;
+            }
             [disabled] {
                 pointer-events: none;
                 opacity: .5;
@@ -305,6 +310,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 right: 0;
                 bottom: 0;
                 background-color: rgba(0,255,0,.3);
+                z-index: 1;
             }
             .drag-to-error:after {
                 content: "";
@@ -321,9 +327,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 outline: 0px solid transparent;
             }
         </style>
-        <div class="vertical flex" style="overflow: hidden; padding-top: 4px;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
-            <label class="lbl" ~if="layout.title" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
-            <div class="horizontal flex" style="align-items: center;">
+        <div class="vertical flex" style="overflow: hidden;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
+            <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
+            <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup" 
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
@@ -331,11 +337,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 </div>
             </div>
         </div>
-        <div ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout class="flex" style="border-left: 1px dashed var(--border-color, silver); marginBottom: '4px'" ~style="{marginLeft: isGroup ? 0 : iconSize/2+'px', paddingLeft: isGroup ? 0 : iconSize/2+'px'}"></div>
+        <div class="str" ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout style="marginBottom: 4px"></div>
     `,
     fontSize: 'small',
     width: undefined,
-    get hasChildren() { return this.layout?.items?.length || this.layout.showStructure; },
+    get hasChildren() { return this.layout?.items?.length },
     expand() {
         this.layout && (this.layout.$expanded = !this.layout.$expanded);
         if (this.designMode) {
@@ -357,6 +363,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             type: Boolean,
             get() {
                 return this.layout?.isGroup;
+            },
+            reflectToAttribute: true
+        },
+        isChildren: {
+            type: Boolean,
+            get() {
+                return this.hasChildren && (!this.layout?.isGroup && !this.layout?.isBlock);
             },
             reflectToAttribute: true
         }
@@ -467,13 +480,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.layout.createGroup(action);
         this.makeScript(this.layout, action);
     },
-    deleteGroup() {
-        if (this.layout.items[0]?.isTab1) {
-            this.removeTab(this.layout.items[0]);
+    deleteGroup(layout = this.layout) {
+        if (layout.items?.[0]?.isTab1) {
+            this.removeTab(layout.items[0]);
         }
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
-        this.layout.deleteGroup(action, this.layout);
-        this.makeScript(this.layout, action);
+        layout.deleteGroup(action, layout);
+        this.makeScript(layout, action);
     }
 })
 
@@ -510,7 +523,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
         </style>
         
         <span>Group</span>
-        <div class="horizontal row" style="align-items: center" @tap="lay.createGroup()">
+        <div class="horizontal row" style="align-items: center" @tap="_createGroup">
             <oda-icon icon="av:library-add"></oda-icon>
             <label>create group</label>
         </div>
@@ -530,12 +543,16 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
     `,
     layout: null,
     lay: null,
+    _createGroup() {
+        this.lay.createGroup();
+        this.fire('ok');
+    },
     _deleteGroup() {
         if (this.layout.owner?.isBlock) {
-            // this.layout.owner.cnt.deleteGroup();
+            this.lay.deleteGroup(this.layout.owner);
         }
         this.lay.deleteGroup();
-        fire('ok');
+        this.fire('ok');
     },
     _restoreLabel() {
         this.layout.title = this.layout.label || 'label';
@@ -565,9 +582,6 @@ CLASS({ is: 'Layout',
             })
         }
         return this.items = items?.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
-    },
-    get showStructure() {
-        return this.data?.showStructure;
     },
     get title() {
         return this._label || this.label;
