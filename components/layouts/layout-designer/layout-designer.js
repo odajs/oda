@@ -167,7 +167,6 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 font-size: {{fontSize}};
             }
             oda-button {
-                transform: scale(.6);
                 padding: 0px;
             }
             [contenteditable] {
@@ -179,11 +178,13 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                     :draggable :focused="item === layout.$focused && layout?.items?.length > 1" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
-                <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1 && layout?.$focused === item" icon="icons:pin" title="pin current tab"></oda-button>
-                <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)"></oda-button>
+                <div class="vertical">
+                    <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)" :icon-size="iconSize/2"></oda-button>
+                    <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1 && layout?.$focused === item" icon="icons:pin" title="pin current tab" :icon-size="iconSize/2"></oda-button>
+                </div>
             </div>
-            <oda-button @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab"></oda-button>
-            <oda-button ~if="designMode && !layout?.title" @tap.stop="restoreGroupLabel" icon="material:format-text" title="restore Group label"></oda-button>
+            <oda-button class="btn" @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab" :icon-size="iconSize/1.2"></oda-button>
+            <oda-button ~if="designMode && !layout?.title" @tap.stop="restoreGroupLabel" icon="material:format-text" title="restore Group label" :icon-size="iconSize/1.2"></oda-button>
         </div>
     `,
     props: {
