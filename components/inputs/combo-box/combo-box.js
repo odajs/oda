@@ -29,9 +29,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             reflectToAttribute: true
         }
     },
+    iconSize: 24,
     filter: '',
     async dropdown(e) {
-        
+
         if (this.value) {
             this.value = null;
         }
@@ -58,7 +59,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             }
         }
         this.filter = '';
-        
+
     },
     async input(e) {
         if (this.value) return;

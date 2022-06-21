@@ -329,6 +329,9 @@ if (!window.ODA) {
                         val = (val === '') ? true : (val === undefined ? false : val);
                         this.setProperty(a.name, val);
                     })
+                    if (this.style.getPropertyValue?.('visibility') !== 'hidden') {
+                        callHook.call(this, 'onVisible')
+                    }
                 })
             }
             disconnectedCallback() {

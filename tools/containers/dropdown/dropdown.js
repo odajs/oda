@@ -254,7 +254,11 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         // })
     },
     _close(event) {
-        if(this.$('#main').getBoundingClientRect().includesPoint(event)) return
+        switch (event.type) {
+            case 'scroll': if (event.path.includes(this)) return;
+            case 'click':
+            case 'tap': if (this.$('#main').getBoundingClientRect().includesPoint(event)) return;
+        }
         const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
         for (const dd of dropDowns) {
             if (dd.control.getBoundingClientRect().includesPoint(event)) break
