@@ -30,7 +30,7 @@ ODA({is: 'oda-title', imports: '@oda/button',
     <slot name="title-left"></slot>
     <div class="title">
         <oda-icon ~if="icon" :icon-size :icon></oda-icon>
-        <span class="label bold flex">{{title}}</span>
+        <span class="label flex" ~html="title"></span>
         <div class="horizontal no-flex" style="margin-left: 8px;">
             <oda-button ~if="help" :icon-size icon="icons:help" @tap="_help"></oda-button>
             <oda-button ~if="allowClose" :icon-size icon="icons:close" @tap="fire('cancel')" style="background-color: red"></oda-button>
