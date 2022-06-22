@@ -177,7 +177,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         <div class="horizontal flex header" style="flex-wrap: wrap;" ~style="{border: layout?.items?.length > 1 ? '1px solid gray' : ''}">
            <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'border-right': layout?.items?.length > 1 ? '1px solid gray' : '', 'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused && layout?.items?.length > 1" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
-                    @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)">
+                    @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)" @contextmenu="showContextMenu($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
                 <div class="vertical">
                     <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)" :icon-size="iconSize/2"></oda-button>
@@ -240,14 +240,22 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.dragInfo.isMoveTab = false;
     },
     tabRename(e, item) {
-        if (this.designMode && (!this.title || this.title !== e.target.innerHTML)) {
-            const action = { action: "setLabel", label: e.target.innerHTML, props: { id: item.id } };
+        const label = e.target?.innerHTML || e;
+        if (this.designMode && (!item.title || item.title !== label)) {
+            item.title = label;
+            const action = { action: "setLabel", label, props: { id: item.id } };
             this.makeScript(this.layout, action)
         }
     },
     restoreGroupLabel() {
         this.layout.title = 'Group-label';
-    }
+    },
+    async showContextMenu(e, tab) {
+        if (!this.designMode || !tab) return;
+        e.preventDefault();
+        e.stopPropagation();
+        await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: tab, lay: this, isTab: true }, { title: tab.label });
+    },
 })
 
 ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tools/containers',
@@ -545,12 +553,13 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         <div class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="_editLabel">
                 <oda-icon icon="image:edit"></oda-icon>
-                <label>edit label</label>
+                <label>edit {{isTab ? 'tab ' : ''}}label</label>
             </div>
         </div>
     `,
     layout: null,
     lay: null,
+    isTab: false,
     _createGroup() {
         this.lay.createGroup();
         this.fire('ok');
@@ -571,7 +580,11 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         const res = await ODA.showDialog('oda-pell-editor', { src: this.layout.title }, { title: this.layout.label });
         if (res !== undefined) {
             this.layout.title = res.editor?.content?.innerHTML || '';
-            this.lay.setLabel(this.layout.title)
+            if (this.isTab) {
+                this.lay.tabRename(this.layout.title, this.layout)
+            } else {
+                this.lay.setLabel(this.layout.title)
+            }
         }
     }
 })
