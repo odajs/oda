@@ -349,9 +349,6 @@ ODA({is: 'app-layout-toolbar',
             default: 24,
             shared: true
         },
-        // pref(){
-        //     return this.getAttribute('slot') || ''
-        // }
     }
 });
 
