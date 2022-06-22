@@ -21,6 +21,7 @@
     "@oda/monaco-editor": "components/editors/monaco-editor/monaco-editor.js",
     "@oda/wysiwyg": "components/editors/wysiwyg/wysiwyg.js",
     "@oda/ruler-grid": "components/grids/ruler-grid/ruler-grid.js",
+    "@oda/ruler-grid-vb": "components/grids/ruler-grid-vb/ruler-grid-vb.js",
     "@oda/leaflet": "components/viewers/leaflet/leaflet.js",
     "@oda/calculator": "components/tools/calculator/calculator.js",
     "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
