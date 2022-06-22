@@ -265,7 +265,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-                min-height: {{iconSize + 4}}px;
+                /* min-height: {{iconSize + 4}}px; */
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
                 min-width: {{layout?.minWidth ? layout?.minWidth : isChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
@@ -414,7 +414,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     },
     setLabel(e) {
         if (!this.designMode) return
-        this.layout.title = e.target.innerHTML;
+        this.layout.title = e.target?.innerHTML || e;
         const action = { action: "setLabel", label: this.layout.title, props: { id: this.layout.id } };
         this.makeScript(this.layout, action);
 
@@ -492,7 +492,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     }
 })
 
-ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
+ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-editor',
     template: /*html*/`
         <style>
             :host {
@@ -535,11 +535,17 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
                 <label>ungroup</label>
             </div>
         </div>
-        <span ~if="!layout.title">Label</span>
+        <span>Label</span>
         <div ~if="!layout.title" class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="_restoreLabel">
                 <oda-icon icon="material:format-text"></oda-icon>
                 <label>restore label</label>
+            </div>
+        </div>
+        <div class="vertical">
+            <div class="horizontal row" style="align-items: center" @tap="_editLabel">
+                <oda-icon icon="image:edit"></oda-icon>
+                <label>edit label</label>
             </div>
         </div>
     `,
@@ -559,6 +565,14 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon',
     _restoreLabel() {
         this.layout.title = this.layout.label || 'label';
         this.fire('ok');
+    },
+    async _editLabel() {
+        this.fire('ok');
+        const res = await ODA.showDialog('oda-pell-editor', { src: this.layout.title }, { title: this.layout.label });
+        if (res !== undefined) {
+            this.layout.title = res.editor?.content?.innerHTML || '';
+            this.lay.setLabel(this.layout.title)
+        }
     }
 })
 
