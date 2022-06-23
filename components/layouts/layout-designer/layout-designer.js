@@ -569,11 +569,11 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         <div ~if="lay?.hiddenLayouts?.length" class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="_unhideAllLayout()">
                 <oda-icon icon="icons:more-horiz"></oda-icon>
-                <label>unhide ALL</label>
+                <label>unhide All layouts</label>
             </div>
-            <div ~for="_lay in lay?.hiddenLayouts" class="horizontal row" style="align-items: center" @tap="_unhideLayout(_lay)">
+            <div ~for="lay?.hiddenLayouts" class="horizontal row" style="align-items: center" @tap="_unhideLayout(item)">
                 <oda-icon icon="image:remove-red-eye"></oda-icon>
-                <label>{{_lay.label}}</label>
+                <label>{{item.label}}</label>
             </div>
         </div>
     `,
