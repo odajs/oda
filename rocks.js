@@ -384,7 +384,7 @@ if (!globalThis.KERNEL) {
                     let prot = this.__proto__.__proto__;
                     let pd;
                     while (prot && !pd){
-                        pd = Object.getOwnPropertyDescriptor(prot.constructor.__model__, name);
+                        pd = Object.getOwnPropertyDescriptor(prot, name);
                         prot = prot.__proto__;
                     }
                     if (!pd) return;
