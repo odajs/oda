@@ -384,7 +384,7 @@ if (!globalThis.KERNEL) {
                     let prot = this.__proto__.__proto__;
                     let pd;
                     while (prot && !pd){
-                        pd = Object.getOwnPropertyDescriptor(prot, name);
+                        pd = Object.getOwnPropertyDescriptor(prot.constructor.__model__, name) || Object.getOwnPropertyDescriptor(prot.constructor.__model__?.props || {}, name);
                         prot = prot.__proto__;
                     }
                     if (!pd) return;
@@ -392,6 +392,8 @@ if (!globalThis.KERNEL) {
                         return pd.get.call(this);
                     if (typeof pd.value === "function")
                         return pd.value.call(this, ...args)
+                    if (pd.value?.get)
+                        return pd.value.get.call(this);
                     return  pd.value;
                 }
             },
