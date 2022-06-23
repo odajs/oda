@@ -13,6 +13,7 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
     data: null,
     selection: [],
     dragInfo: {},
+    hiddenLayouts: [],
     props: {
         designMode: {
             default: false,
@@ -78,7 +79,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 box-shadow: inset 0 0 0 1px blue;
             }
         </style>
-        <div @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-container':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
+        <div ~if="!hiddenLayouts.includes(next)" @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-container':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
     `,
     _select(e) {
         if (!this.designMode) return;
@@ -175,7 +176,7 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             }
         </style>
         <div class="horizontal flex header" style="flex-wrap: wrap;" ~style="{border: layout?.items?.length > 1 ? '1px solid gray' : ''}">
-           <div @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'border-right': layout?.items?.length > 1 ? '1px solid gray' : '', 'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
+           <div ~if="!hiddenLayouts.includes(item)"  @mousedown.stop.prev="selectTab(item)" ~for="layout?.items" class="horizontal" style="align-items: start" ~style="{'border-right': layout?.items?.length > 1 ? '1px solid gray' : '', 'box-shadow': hoverItem === item ? 'inset 4px 0 0 0 var(--success-color)' : ''}"
                     :draggable :focused="item === layout.$focused && layout?.items?.length > 1" @dragstart.stop="ondragstart($event, item)" @dragover.stop="ondragover($event, item)"
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)" @contextmenu="showContextMenu($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
@@ -421,9 +422,10 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         document.execCommand('selectAll', false, null);
     },
     setLabel(e) {
-        if (!this.designMode) return
-        this.layout.title = e.target?.innerHTML || e;
-        const action = { action: "setLabel", label: this.layout.title, props: { id: this.layout.id } };
+        const label = e.target?.innerHTML || e;
+        if (!this.designMode || this.layout.title?.toString() === label) return
+        this.layout.title = label;
+        const action = { action: "setLabel", label, props: { id: this.layout.id } };
         this.makeScript(this.layout, action);
 
     },
@@ -556,6 +558,24 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
                 <label>edit {{isTab ? 'tab ' : ''}}label</label>
             </div>
         </div>
+        <span>Layout</span>
+        <div class="vertical">
+            <div class="horizontal row" style="align-items: center" @tap="_hideLayout">
+                <oda-icon icon="icons:close"></oda-icon>
+                <label>hide layout</label>
+            </div>
+        </div>
+        <span ~if="lay?.hiddenLayouts?.length">unhide Layouts</span>
+        <div ~if="lay?.hiddenLayouts?.length" class="vertical">
+            <div class="horizontal row" style="align-items: center" @tap="_unhideAllLayout()">
+                <oda-icon icon="icons:more-horiz"></oda-icon>
+                <label>unhide ALL</label>
+            </div>
+            <div ~for="_lay in lay?.hiddenLayouts" class="horizontal row" style="align-items: center" @tap="_unhideLayout(_lay)">
+                <oda-icon icon="image:remove-red-eye"></oda-icon>
+                <label>{{_lay.label}}</label>
+            </div>
+        </div>
     `,
     layout: null,
     lay: null,
@@ -586,7 +606,25 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
                 this.lay.setLabel(this.layout.title)
             }
         }
-    }
+    },
+    _hideLayout() {
+        this.lay.hiddenLayouts.add(this.layout);
+        const action = { action: "hideLayout", hideLayout: true, props: { target: this.layout.id } };
+        this.lay.makeScript(this.layout, action);
+        this.fire('ok');
+    },
+    _unhideLayout(item) {
+        this.lay.hiddenLayouts.remove(item);
+        const action = { action: "hideLayout", hideLayout: false, props: { target: item.id } };
+        this.lay.makeScript(this.layout, action);
+        this.fire('ok');
+    },
+    _unhideAllLayout() {
+        this.lay.hiddenLayouts = [];
+        const action = { action: "unhideAllLayout", props: { target: this.layout.id } };
+        this.lay.makeScript(this.layout, action);
+        this.fire('ok');
+    },
 })
 
 CLASS({ is: 'Layout',
@@ -786,6 +824,17 @@ CLASS({ is: 'Layout',
         const item = await this.find(action?.props?.target);
         if (item)
             item.$expanded = action.props.value;
+    },
+    async hideLayout(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        const hidden = this.str?.hiddenLayouts || this.cnt?.hiddenLayouts;
+        if (action.hideLayout) hidden.add(item);
+        else hidden.remove(item);
+    },
+    unhideAllLayout() {
+        if (this.str) this.str.hiddenLayouts = [];
+        if (this.cnt) this.cnt.hiddenLayouts = [];
     },
     async execute(actions) {
         if (!actions || !Array.isArray(actions)) return;
