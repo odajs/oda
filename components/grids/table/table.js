@@ -240,7 +240,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     props: {
         allowCheck: {
             default: 'none',
-            list: ['none', 'single', 'down', 'up', 'double']
+            list: ['none', 'single', 'down', 'up', 'double', 'cleardown']
         },
         allowDrag: false,
         allowDrop: false,
@@ -1592,12 +1592,12 @@ cells: {
             _toggleChecked(e) {
                 if (this.allowCheck === 'none') return;
 
-                const checkChildren = (item) => {
+                const checkChildren = (item, clear = false) => {
                     (item.items || []).forEach(i => {
                         if (item.checked !== 'intermediate') {
-                            i.checked = item.checked;
+                            i.checked = clear ? false : item.checked;
                             updateCheckedRows(i);
-                            checkChildren(i);
+                            checkChildren(i, clear);
                         }
                     })
                 };
@@ -1624,14 +1624,18 @@ cells: {
                 this.item.checked = !(!!this.item.checked);
                 updateCheckedRows(this.item);
                 if (this.allowCheck !== 'single') {
-                    if (this.allowCheck === 'double' || this.allowCheck === 'down') {
-                        checkChildren(this.item);
-                    }
-                    if (this.allowCheck === 'double' || this.allowCheck === 'up') {
-                        let parent = this.item.$parent;
-                        while (parent) {
-                            updateChecked(parent);
-                            parent = parent.$parent;
+                    if (this.allowCheck === 'cleardown') {
+                        checkChildren(this.item, true);
+                    } else {
+                        if (this.allowCheck === 'double' || this.allowCheck === 'down') {
+                            checkChildren(this.item);
+                        }
+                        if (this.allowCheck === 'double' || this.allowCheck === 'up') {
+                            let parent = this.item.$parent;
+                            while (parent) {
+                                updateChecked(parent);
+                                parent = parent.$parent;
+                            }
                         }
                     }
                 }
