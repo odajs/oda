@@ -56,6 +56,8 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             i.root.str.actions = [];
         })
         this.lays = new Set();
+        this.selection = [];
+        this.hiddenLayouts = [];
         this.layout = undefined;
     }
 })
