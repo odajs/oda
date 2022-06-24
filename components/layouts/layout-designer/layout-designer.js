@@ -391,7 +391,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
     },
     get showStructure(){
-        return (this.hasChildren || this.layout?.showStructure) && (this.layout?.$structure || this.structureTemplate)
+        return (this.hasChildren || this.layout?.showStructure) && (this.layout?.$structure || this.structureTemplate) && this.layout?.$expanded;
     },
     listeners: {
         'contextmenu': 'showContextMenu',
@@ -690,7 +690,7 @@ export const Layout = CLASS({ is: 'Layout',
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
         const tabs = new this.constructor({ id: action.tabsId, label: `Group-label` }, item.key, item.owner, item.root);
-        const tab = new this.constructor({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
+        const tab = new this.constructor({ id: action.id, label: `Label` }, item.key, tabs, item.root);
         tabs.type = 'group';
         tabs.width = 0;
         tabs.items = [tab];
@@ -804,7 +804,7 @@ export const Layout = CLASS({ is: 'Layout',
     },
     _createBlock(action, dragItem, targItem, align = 'horizontal') {
         const moveTo = action.props.to;
-        const block = new this.layoutCtor({ id: action.id || getUUID() }, targItem.key, targItem.owner, targItem.root);
+        const block = new this.constructor({ id: action.id || getUUID() }, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarg, 1, block)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);
