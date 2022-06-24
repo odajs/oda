@@ -4,10 +4,9 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     </oda-dialog-footer>
     `,
     buttons: [],
-    get accentButton() {
-        return this.buttons.find(b => b.accent)
+    get focusedButton() {
+        return this.buttons.find(b => b.focused)
     },
-    focusedButton: null,
     props: {
         title: 'Dialog'
     },
@@ -27,7 +26,7 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     },
     attached() { this.listen('keydown', '_onKeyDown', { target: window}) },
     detached() { this.unlisten('keydown', '_onKeyDown', { target: window}) },
-    ok(item = this.focusedButton || this.accentButton) {
+    ok(item = this.focusedButton) {
         if (typeof item?.execute === 'function') item?.execute();
         (this.domHost || this).fire('ok', item)
     },
@@ -56,10 +55,8 @@ ODA({is: 'oda-dialog-footer',
         :host>div{
             flex-wrap: wrap;
         }
-        [accent]{
-            font-weight: bolder;
-            background-color: var(--focused-color) !important;
-            @apply --header;
+        [focused]{
+            @apply --focused;
         }
     </style>
     <div class="flex horizontal">
