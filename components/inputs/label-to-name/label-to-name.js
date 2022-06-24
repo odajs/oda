@@ -39,7 +39,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
     </style>
     <label for="label">Метка:</label>
     <div class="horizontal input-container">
-        <input id="label" class="flex" ::value="label" :placeholder="placeholderLabel" autofocus>
+        <input id="label" class="flex" ::value="label" :placeholder="placeholderLabel" >
         <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
     </div>
     <label ~if="!hideName" for="name" class="horizontal">Имя:</label>
