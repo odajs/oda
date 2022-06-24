@@ -28,7 +28,10 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
         return (this.saveKey ? this.saveKey + '_' : '') + 'root';
     },
     get layout() {
-        return this.data && new Layout(this.data, this.keys);
+        return this.data && new this.layoutCtor(this.data, this.keys);
+    },
+    get layoutCtor() {
+        return Layout;
     },
     editTemplate: 'span',
     structureTemplate: 'oda-layout-designer-structure',
@@ -344,13 +347,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
-                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup" 
+                <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup"
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
                     <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
                 </div>
             </div>
         </div>
-        <div class="str" ~if="hasChildren && layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout style="marginBottom: 4px"></div>
+        <div class="str" ~if="showStructure" ~is="layout?.$structure || structureTemplate" :layout style="marginBottom: 4px"></div>
     `,
     fontSize: 'small',
     width: undefined,
@@ -386,6 +389,9 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             },
             reflectToAttribute: true
         }
+    },
+    get showStructure(){
+        return (this.hasChildren || this.layout?.showStructure) && (this.layout?.$structure || this.structureTemplate)
     },
     listeners: {
         'contextmenu': 'showContextMenu',
@@ -517,7 +523,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
             }
             oda-icon {
                 transform: scale(.8);
-                padding: 0 4px 0 0;  
+                padding: 0 4px 0 0;
             }
             label {
                 cursor: pointer;
@@ -535,7 +541,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
                 border-bottom: 1px solid lightgray;
             }
         </style>
-        
+
         <span>Group</span>
         <div class="horizontal row" style="align-items: center" @tap="_createGroup">
             <oda-icon icon="av:library-add"></oda-icon>
@@ -629,7 +635,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
     },
 })
 
-CLASS({ is: 'Layout',
+export const Layout = CLASS({ is: 'Layout',
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
         // this.saveKey = data.saveKey || data.$class?.id || undefined;
@@ -647,10 +653,10 @@ CLASS({ is: 'Layout',
         const items = this.data?.[this.key];
         if (items?.then) {
             return items.then(items => {
-                this.items = items.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
+                this.items = items.map((i, idx) => new this.constructor(i, this.key, this, this, idx + 1))
             })
         }
-        return this.items = items?.map((i, idx) => new Layout(i, this.key, this, this, idx + 1))
+        return this.items = items?.map((i, idx) => new this.constructor(i, this.key, this, this, idx + 1))
     },
     get title() {
         return this._label || this.label;
@@ -683,8 +689,8 @@ CLASS({ is: 'Layout',
         const item = action ? await this.find(action.props.target) : this;
         if (!item) return;
         const myIdx = item.owner.items.indexOf(item);
-        const tabs = new Layout({ id: action.tabsId, label: `Group-label` }, item.key, item.owner, item.root);
-        const tab = new Layout({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
+        const tabs = new this.constructor({ id: action.tabsId, label: `Group-label` }, item.key, item.owner, item.root);
+        const tab = new this.constructor({ id: action.id, label: `Tab 1` }, item.key, tabs, item.root);
         tabs.type = 'group';
         tabs.width = 0;
         tabs.items = [tab];
@@ -704,11 +710,11 @@ CLASS({ is: 'Layout',
     async addTab(action, layout) {
         let tabs = layout || await this.find(action.props.tabs);
         if (!tabs) return;
-        const tab = new Layout({ id: action.id, label: `Tab ${tabs.items.length + 1}` }, tabs.key, tabs, tabs.root);
+        const tab = new this.constructor({ id: action.id, label: `Tab ${tabs.items.length + 1}` }, tabs.key, tabs, tabs.root);
         tab.type = 'tab';
         tabs.items.push(tab)
         tabs.$focused = tab;
-        const block = new Layout({ label: ` ` }, tabs.key, tab, tabs.root);
+        const block = new this.constructor({ label: ` ` }, tabs.key, tab, tabs.root);
         block.isVirtual = true;
         tab.blockID = block.id = action.props.block;
         tab.items = [block];
@@ -780,7 +786,7 @@ CLASS({ is: 'Layout',
             const idxDrag = dragItem.owner.items.indexOf(dragItem);
             const drag = dragItem.owner.items.splice(idxDrag, 1)[0];
             if (dragItem.owner.type === 'tab' && !dragItem.owner.items.length) {
-                const block = new Layout({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
+                const block = new this.constructor({ label: ` ` }, dragItem.key, dragItem.owner, dragItem.root);
                 block.isVirtual = true;
                 block.id = dragItem.blockID;
                 dragItem.owner.items = [block];
@@ -798,7 +804,7 @@ CLASS({ is: 'Layout',
     },
     _createBlock(action, dragItem, targItem, align = 'horizontal') {
         const moveTo = action.props.to;
-        const block = new Layout({ id: action.id || getUUID() }, targItem.key, targItem.owner, targItem.root);
+        const block = new this.layoutCtor({ id: action.id || getUUID() }, targItem.key, targItem.owner, targItem.root);
         let idxTarg = targItem.owner.items.indexOf(targItem);
         const target = targItem.owner.items.splice(idxTarg, 1, block)[0];
         const idxDrag = dragItem.owner.items.indexOf(dragItem);

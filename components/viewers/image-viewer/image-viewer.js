@@ -30,7 +30,12 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
     </div>
     `,
     props: {
-        src: '',
+        src: {
+            set() {
+                this._reset();
+            },
+            default: ''
+        },
         alt: '',
         title: '',
         _x: 0,
