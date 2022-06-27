@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="padding-top: 16px;" :is-root="true"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :is-root="true" :layout style="padding-top: 16px;"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -22,7 +22,11 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             }
         },
         keys: '',
-        iconSize: 24
+        iconSize: 24,
+        scriptsString: {
+            default: '',
+            save: true
+        }
     },
     // get rootSaveKey() {
     //     return (this.saveKey ? this.saveKey + '_' : '') + 'root';
@@ -37,20 +41,28 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
     structureTemplate: 'oda-layout-designer-structure',
     lays: null,
     scripts: null,
+    needSave: false,
     async makeScript(layout, action) {
         this.scripts ||= new Map();
         const actions = this.scripts.get(layout.root._id) || [];
         actions.push(action);
         this.scripts.set(layout.root._id, actions);
         this.lays.add(layout._id);
+        this.needSave = true;
     },
     saveScripts() {
-        this.scripts ||= new Map();
-        for (const [root, actions] of this.scripts) {
-            root.str.actions ||= [];
-            root.str.actions.push(...actions);
-        }
-        this.scripts = null;
+        // this.scripts ||= new Map();
+        // for (const [root, actions] of this.scripts) {
+        //     root.str.actions ||= [];
+        //     root.str.actions.push(...actions);
+        // }
+        // this.scripts = null;
+        let obj = {};
+        this.scripts.forEach((value, id) => {
+            obj[id] = value;
+        })
+        this.scriptsString = JSON.stringify(obj);
+        this.needSave = false;
     },
     clearSavedScripts() {
         this.scripts = null;
@@ -58,12 +70,19 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             i.str?.actions && (i.str.actions = []);
             i.root?.str && (i.root.str.actions = []);
         })
+        this.scriptsString = '';
         this.lays = new Set();
         this.selection = [];
         this.hiddenLayouts = [];
         this.layout = undefined;
+        this.needSave = true;
     },
-    loadScripts: null
+    isLoadScript: false,
+    loadScripts() {
+        if (this.scriptsString) {
+            return JSON.parse(this.scriptsString);
+        }
+    }
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -108,15 +127,18 @@ ODA({ is: 'oda-layout-designer-structure',
                     n.isRoot = this.isRoot;
                     n.str = this;
                     this.lays ||= new Set();
+                    this.scripts ||= new Map();
                     let _scripts = {};
-                    if (!this.scripts && this.loadScripts) {
-                        this.scripts ||= new Map();
+                    if (!this.isLoadScript) {
                         _scripts = await this.loadScripts();
-                        Object.keys(_scripts || {}).forEach(key => {
-                            let actions = this.scripts.get(key) || [];
-                            actions = [...actions, ..._scripts[key]];
-                            this.scripts.set(key, actions);
-                        })
+                        if (_scripts) {
+                            this.isLoadScript = true;
+                            Object.keys(_scripts || {}).forEach(key => {
+                                let actions = this.scripts.get(key) || [];
+                                actions = [...actions, ..._scripts[key]];
+                                this.scripts.set(key, actions);
+                            })
+                        }
                     }
                     if (!this.lays.has(this.layout._id)) {
                         let actions = this.scripts.get(this.layout._id) 
@@ -690,7 +712,7 @@ export const Layout = CLASS({ is: 'Layout',
         this._label = n;
     },
     get _id() {
-        return this.isRoot ? 'root' : this.id;
+        return this.isRoot ? 'root' : '' + this.id;
     },
     get id() {
         return this.data?.id || this.data?.name || 'root';

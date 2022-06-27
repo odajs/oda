@@ -192,6 +192,7 @@ ODA({is: 'oda-hexagon',
         }
         :host([active]):after {
             border-top: {{h/4}}px solid {{background}};
+            
              z-index: -1;
         }
         :host:after {
@@ -211,18 +212,18 @@ ODA({is: 'oda-hexagon',
           :host(.drag-hover)>div {
               filter: brightness(.6) !important;
           }
-          :host(:hover)>.block:after{
-                transform: scale(2) !important;
-                top: {{size/4*3}}px !important;
-          }
-          :host(:hover)>.block{
+          :host(:hover)>.container:after{
                 transform: scale(1.5) !important;
+                top: {{size}}px !important;
           }
-          :host>.block{
+          :host(:hover) .block{
+                transform: scale(1.25) !important;
+          }
+          :host .block{
                 transform: scale(1);
                 transition: top .5s, transform  .5s;
           }
-          :host([label])>.block:after{
+          :host([label])>.container:after{
             white-space: normal;
             overflow: hidden;
             transform: scale(1);
@@ -241,7 +242,10 @@ ODA({is: 'oda-hexagon',
             background-color: transparent;
           }
         </style>
-        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
+        <div class="flex vertical container" style="overflow: visible; align-items: center; align-self: center;">
+            <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
+        </div>
+        
       `,
     get allowDrop(){
         return (this.x && this.y && (!this.active || this?.item?.allowDrop));
