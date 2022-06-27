@@ -235,7 +235,7 @@ ODA({is: 'oda-hexagon',
             text-align: center;
             position: absolute;
             content: "{{label}}";
-            top: {{size/2 * 1.3}}px;
+            top: {{size/2 * 1.5}}px;
             font-size: x-small;
             width: {{size * 1.5}}px;
             @apply --text-shadow;
