@@ -615,6 +615,12 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         </div>
         <span>Layout</span>
         <div class="vertical">
+        <div class="horizontal row" style="align-items: center" @tap="_setWidth">
+                <oda-icon icon="icons:aspect-ratio"></oda-icon>
+                <label>{{layout.minWidth === '100%' ? 'unset' : 'set'}} width 100%</label>
+            </div>
+        </div>
+        <div class="vertical">
             <div class="horizontal row" style="align-items: center" @tap="_hideLayout">
                 <oda-icon icon="icons:close"></oda-icon>
                 <label>hide layout</label>
@@ -680,6 +686,13 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         this.lay.makeScript(this.layout, action);
         this.fire('ok');
     },
+    _setWidth(e) {
+        this.layout.minWidth = this.layout.minWidth === '100%' ? '' : '100%';
+        this.lay.render();
+        const action = { action: "setMinWidth", props: { target: this.layout.id, width: this.layout.minWidth } };
+        this.lay.makeScript(this.layout, action);
+        this.fire('ok');
+    }
 })
 
 export const Layout = CLASS({ is: 'Layout',
@@ -893,6 +906,11 @@ export const Layout = CLASS({ is: 'Layout',
     unhideAllLayout() {
         if (this.str) this.str.hiddenLayouts = [];
         if (this.cnt) this.cnt.hiddenLayouts = [];
+    },
+    async setMinWidth(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        item.minWidth = action.props.width;
     },
     async execute(actions) {
         if (!actions || !Array.isArray(actions)) return;
