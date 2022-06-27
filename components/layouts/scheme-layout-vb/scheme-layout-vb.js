@@ -1,4 +1,4 @@
-ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @tools/containers', extends: 'oda-ruler-grid-vb', template: /*html*/`
+ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @tools/containers', extends: 'oda-ruler-grid-vb', template: /*template*/`
         <oda-scheme-container slot="content" ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{left: \`\${itm?.x}px\`, top: \`\${itm?.y}px\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <oda-scheme-link slot="content" ~for="link in filteredLinks" :link ~style="{
             left: ((link?.rect.x + vb.x) * scale + (link?.pos === 'left'?-(iconSize * 1.3 + link.pin.size):link?.pos === 'right'?(iconSize * 1.3 + link.pin.size):0)) + 'px',
@@ -197,7 +197,7 @@ ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @to
         this.selection.clear();
     }
 });
-ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
+ODA({ is: 'oda-scheme-container-toolbar', template: /*template*/`
     <style>
         :host {
             @apply --horizontal;
@@ -228,7 +228,7 @@ ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
     },
     topPosition: 0
 });
-ODA({ is: 'oda-scheme-container', template: /*html*/`
+ODA({ is: 'oda-scheme-container', template: /*template*/`
     <style>
         :host {
             position: absolute;
@@ -248,14 +248,12 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             @apply --content;
         }
     </style>
-    <!--<oda-scheme-container-toolbar ~if="editMode && focused" ></oda-scheme-container-toolbar> не работает-->
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
         <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal" ::height="top"></oda-scheme-interface>
         <div class="flex horizontal">
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left" ::width="left"></oda-scheme-interface>
             <div class="flex shadow vertical content">
-                <!-- <div :disabled="editMode" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>-->
                 <div @attached="blockReady" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
             </div>
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" pos="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
@@ -271,10 +269,10 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         this.async(() => {
             this.layout.links = undefined;
             this.hasBlock = true;
-        }); // todo: delay for lines
+        });
     },
     hasBlock: false,
-    contextItem: null, // test
+    contextItem: null,
     get container() {
         return this;
     },
@@ -308,7 +306,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         return this.$$('.block')?.[0];
     }
 });
-ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
+ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*template*/`
     <style>
         :host {
             justify-content: center;
@@ -347,7 +345,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*html*/`
         return this.offsetHeight;
     }
 });
-ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
+ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*template*/`
     <style>
         :host {
             @apply --content;
@@ -545,7 +543,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         return 'var(--success-color)';
     }
 })
-ODA({ is: 'oda-scheme-link', template: /*html*/`
+ODA({ is: 'oda-scheme-link', template: /*template*/`
     <style>
         :host {
             position: absolute;

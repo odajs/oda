@@ -169,48 +169,27 @@ ODA({ is: 'oda-ruler-vb', template: /*template*/`
             @apply --horizontal;
             @apply --shadow;
             @apply --header;
-            {{vertical?'width: ' + iconSize + 'px;':''}}
-            {{!vertical?'height: ' + iconSize + 'px;':''}}
+            {{vertical?'width: ' + 24 + 'px;':''}}
+            {{!vertical?'height: ' + 24 + 'px;':''}}
         }
         :host svg {
             width: 100%;
             height: 100%;
         }
     </style>
-    <div style="font-size: xx-small; min-width: 24px; max-width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
-    <!-- <svg class="content" xmlns="http://www.w3.org/2000/svg" :view-box="((vb.x) * scale) + ' ' + ((vb.y) * scale) + ' ' + (vb.w * scale) + ' ' + (vb.h * scale)">
+    <div style="font-size: xx-small; width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
+    <svg :view-box="vertical ? ('0 ' + (vb.y * scale) + ' ' + (24 * scale) + ' ' + (vb.h * scale)) : ((vb.x * scale) + ' 0 ' + (vb.w * scale) + ' ' + (24 * scale))" class="content" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <pattern id="rullerSmallLines" :width="gridSize" :height="gridSize" patternUnits="userSpaceOnUse">
-                <path :d="'M '+ gridSize + ' 0 L 0 0 0 ' + gridSize" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 5" />
+            <pattern id="rullerSmallLines" :width="vertical ? gridSize * 4 : gridSize" :height="vertical ? gridSize : gridSize * 4" patternUnits="userSpaceOnUse">
+                <path :d="'M '+ gridSize + ' 0 L 0 0 0 ' + gridSize" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 3" />
             </pattern>
-            <pattern id="rullerBigLines" :width="bigGridSize" :height="bigGridSize" patternUnits="userSpaceOnUse">
+            <pattern id="rullerBigLines" :width="vertical ? bigGridSize * 4 : bigGridSize" :height="vertical ? bigGridSize : bigGridSize * 4" patternUnits="userSpaceOnUse">
                 <rect :width="bigGridSize" :height="bigGridSize" fill="url(#rullerSmallLines)" />
-                <path :d="'M '+ bigGridSize + ' 0 L 0 0 0 ' + bigGridSize" fill="none" stroke="gray" :stroke-width="bigGridStrokeWidth * step / 5" />
+                <path :d="'M '+ bigGridSize + ' 0 L 0 0 0 ' + bigGridSize" fill="none" stroke="gray" :stroke-width="bigGridStrokeWidth * step / 3" />
             </pattern>
         </defs>
 
-        <rect ~if="showGrid" :x="vb.x * scale" :y="vb.y * scale" :width="vb.w * scale" :height="vb.h * scale" fill="url(#rullerBigLines)" />
-    </svg> -->
-    <svg class="content" xmlns="http://www.w3.org/2000/svg" :view-box="(vertical?('0 '+(vb.y+vb.h)):((vb.x+vb.w+34)+' 0 '))+(vertical?(' 24 '+vb.h):(vb.w+' 24'))">
-        <!-- <pattern id="rullerBigLines" :width="!vertical?bigGridSize / scale:1" :height="vertical?bigGridSize / scale:1" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" stroke="gray" stroke-width="1"></line>
-        </pattern>
-        <pattern id="rullerSmallLines" :width="!vertical?gridSize / scale:1" :height="vertical?gridSize / scale:1" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical?0:1" stroke="gray" stroke-width="0.5"></line>
-        </pattern>
-        <rect fill="url(#rullerBigLines)" :width="(vb.w * scale)" :height="(vb.h * scale)"></rect>
-        <rect fill="url(#rullerSmallLines)" :width="(vb.w * scale)" :height="(vb.h * scale)"></rect> -->
-        <defs>
-            <pattern id="rullerSmallLines" :width="gridSize" :height="gridSize" patternUnits="userSpaceOnUse">
-                <path :d="'M '+ gridSize + ' 0 L 0 0 0 ' + gridSize" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 4" />
-            </pattern>
-            <pattern id="rullerBigLines" :width="bigGridSize" :height="bigGridSize" patternUnits="userSpaceOnUse">
-                <rect :width="bigGridSize" :height="bigGridSize" fill="url(#rullerSmallLines)" />
-                <path :d="'M '+ bigGridSize + ' 0 L 0 0 0 ' + bigGridSize" fill="none" stroke="gray" :stroke-width="bigGridStrokeWidth * step / 4" />
-            </pattern>
-        </defs>
-
-        <rect ~if="showGrid" :x="vb.x * scale" :y="vb.y * scale" :width="vb.w * scale" :height="vb.h * scale" fill="url(#rullerBigLines)" />
+        <rect ~if="showGrid" :x="vertical ? 0 : vb.x * scale" :y="!vertical ? 0 : vb.y * scale" :width="(vertical ? 24 : vb.w) * scale" :height="(vertical ? vb.h : 24) * scale" fill="url(#rullerBigLines)" />
     </svg>
     `,
     props: {

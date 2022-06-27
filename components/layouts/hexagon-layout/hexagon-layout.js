@@ -213,20 +213,30 @@ ODA({is: 'oda-hexagon',
           }
           :host(:hover)>.block:after{
                 transform: scale(2) !important;
-                top: {{size}}px !important;
+                top: {{size/4*3}}px !important;
+          }
+          :host(:hover)>.block{
+                transform: scale(1.5) !important;
+          }
+          :host>.block{
+                transform: scale(1);
+                transition: top .5s, transform  .5s;
           }
           :host([label])>.block:after{
+            white-space: normal;
+            overflow: hidden;
             transform: scale(1);
             transition: top .5s, transform  .5s;
-            left: -{{size/4}}px;
+            left: -{{size * .25}}px;
             max-height: {{size}}px;
+            
             /*color: white;*/
             text-align: center;
             position: absolute;
             content: "{{label}}";
             top: {{size/2 * 1.3}}px;
             font-size: x-small;
-            width: {{size*1.5}}px;
+            width: {{size * 1.5}}px;
             @apply --text-shadow;
             background-color: transparent;
           }
