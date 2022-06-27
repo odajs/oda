@@ -59,12 +59,12 @@ ODA({is: 'oda-dialog-footer',
             @apply --focused;
         }
     </style>
-    <div class="flex horizontal">
-        <slot></slot>
-        <slot name="footer"></slot>
-        <oda-button ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
+    <div class="flex horizontal" style="justify-content: space-around">
+        <slot class="flex"></slot>
+        <slot class="flex" name="footer"></slot>
+        <oda-button class="flex" ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
     </div>
-    <div class="no-flex horizontal">
+    <div class="no-flex horizontal" style="margin-left: 16px">
         <oda-button hide-icon ~if="!hideOkButton" @tap="ok" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">OK</oda-button>
         <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">Cancel</oda-button>
     </div>
