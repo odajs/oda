@@ -7,7 +7,7 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
                 @apply --vertical;
             }
         </style>
-        <oda-layout-designer-structure class="flex content" :layout style="padding-top: 16px;" :root_savekey="rootSaveKey"></oda-layout-designer-structure>
+        <oda-layout-designer-structure class="flex content" :layout style="padding-top: 16px;" :is-root="true"></oda-layout-designer-structure>
         <div class="flex"></div>
     `,
     data: null,
@@ -24,9 +24,9 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
         keys: '',
         iconSize: 24
     },
-    get rootSaveKey() {
-        return (this.saveKey ? this.saveKey + '_' : '') + 'root';
-    },
+    // get rootSaveKey() {
+    //     return (this.saveKey ? this.saveKey + '_' : '') + 'root';
+    // },
     get layout() {
         return this.data && new this.layoutCtor(this.data, this.keys);
     },
@@ -39,10 +39,10 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
     scripts: null,
     async makeScript(layout, action) {
         this.scripts ||= new Map();
-        const actions = this.scripts.get(layout.root) || [];
+        const actions = this.scripts.get(layout.root._id) || [];
         actions.push(action);
-        this.scripts.set(layout.root, actions);
-        this.lays.add(layout);
+        this.scripts.set(layout.root._id, actions);
+        this.lays.add(layout._id);
     },
     saveScripts() {
         this.scripts ||= new Map();
@@ -56,13 +56,14 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
         this.scripts = null;
         this.lays.forEach(i => {
             i.str?.actions && (i.str.actions = []);
-            i.root.str.actions = [];
+            i.root?.str && (i.root.str.actions = []);
         })
         this.lays = new Set();
         this.selection = [];
         this.hiddenLayouts = [];
         this.layout = undefined;
-    }
+    },
+    loadScripts: null
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -102,31 +103,55 @@ ODA({ is: 'oda-layout-designer-structure',
     props: {
         layout: {
             default: null,
-            set(n) {
-                if (n)
+            async set(n) {
+                if (n) {
+                    n.isRoot = this.isRoot;
                     n.str = this;
-            }
-        },
-        root_savekey: '',
-        actions: {
-            default: [],
-            save: true
-        },
-        saveKey: ''
-    },
-    observers: [
-        function execute(layout, actions) {
-            if (layout) {
-                this.saveKey = layout.saveKey = this.root_savekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
-                this.lays ||= new Set();
-                if (actions?.length && !this.lays.has(this.layout)) {
-                    this.layout.execute(actions).then(res=>{
-                        this.lays.add(this.layout); // for single execution - to remove looping
-                    });
+                    this.lays ||= new Set();
+                    let _scripts = {};
+                    if (!this.scripts && this.loadScripts) {
+                        this.scripts ||= new Map();
+                        _scripts = await this.loadScripts();
+                        Object.keys(_scripts || {}).forEach(key => {
+                            let actions = this.scripts.get(key) || [];
+                            actions = [...actions, ..._scripts[key]];
+                            this.scripts.set(key, actions);
+                        })
+                    }
+                    if (!this.lays.has(this.layout._id)) {
+                        let actions = this.scripts.get(this.layout._id) 
+                        this.layout.execute(actions).then(res => {
+                            this.lays.add(this.layout._id); // for single execution - to remove looping
+                        });
+                    }
                 }
             }
-        }
-    ]
+        },
+        // root_savekey: '',
+        // actions: {
+        //     default: [],
+        //     save: true
+        // },
+        // saveKey: '',
+    },
+    isRoot: false
+    // observers: [
+    //     async function execute(layout, actions) {
+    //         if (layout) {
+    //             this.saveKey = layout.saveKey = this.root_savekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
+    //             this.lays ||= new Set();
+    //             if (this.loadScripts) {
+    //                 actions = await this.loadScripts();
+    //                 console.log(actions)
+    //             } 
+    //             if (actions?.length && !this.lays.has(this.layout.id)) {
+    //                 this.layout.execute(actions).then(res => {
+    //                     this.lays.add(this.layout.id); // for single execution - to remove looping
+    //                 });
+    //             }
+    //         }
+    //     }
+    // ]
 })
 
 // ODA({ is: 'oda-layout-designer-block',
@@ -663,6 +688,9 @@ export const Layout = CLASS({ is: 'Layout',
     },
     set title(n) {
         this._label = n;
+    },
+    get _id() {
+        return this.isRoot ? 'root' : this.id;
     },
     get id() {
         return this.data?.id || this.data?.name || 'root';
