@@ -577,28 +577,24 @@ if (!globalThis.KERNEL) {
     String:{
         const kebabGlossary = Object.create(null);
         function toKebab(str) {
-            return (kebabGlossary[str] = str.replace(/\B([A-Z])/g, '-$1').toLowerCase());
+            return kebabGlossary[str] ??= str.replace(/\B([A-Z])/g, '-$1').toLowerCase();
         }
         if (!String.toKebabCase) {
             Object.defineProperty(String.prototype, 'toKebabCase', {
                 enumerable: false, value: function () {
-                    const s = this.toString();
-                    const str = kebabGlossary[s];
-                    return str ? str : toKebab(s);
+                    return toKebab(this.toString());
                 }
             });
         }
         const camelGlossary = Object.create(null);
         function toCamel(str) {
-            return (camelGlossary[str] = str.replace(/-(\w)/g, function (_, c) { return c ? c.toUpperCase() : '' }))
+            return camelGlossary[str] ??= str.replace(/-(\w)/g, function (_, c) { return c ? c.toUpperCase() : '' })
         }
 
         if (!String.toCamelCase) {
             Object.defineProperty(String.prototype, 'toCamelCase', {
                 enumerable: false, value: function () {
-                    const s = this.toString();
-                    const str = camelGlossary[s];
-                    return str ? str : toCamel(s);
+                    return toCamel(this.toString());
                 }
             });
         }
@@ -606,15 +602,13 @@ if (!globalThis.KERNEL) {
         const capitalGlossary = Object.create(null);
         function toCapital(str) {
             if (!str) return '';
-            return (capitalGlossary[str] = str[0].toUpperCase() + str.slice(1));
+            return capitalGlossary[str] ??= str[0].toUpperCase() + str.slice(1);
         }
 
         if (!String.toCapitalCase) {
             Object.defineProperty(String.prototype, 'toCapitalCase', {
                 enumerable: false, value: function () {
-                    const s = this.toString();
-                    const str = capitalGlossary[s];
-                    return str ? str : toCapital(s);
+                    return toCapital(this.toString());
                 }
             });
         }
