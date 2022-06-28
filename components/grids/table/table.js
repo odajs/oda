@@ -1540,7 +1540,7 @@ cells: {
                 <div class="end-step" ~style="endStepStyle"></div>
             </div>
             <oda-table-expand class="no-flex" :item></oda-table-expand>
-            <oda-table-check class="no-flex" ~if="(item?.allowCheck && item.allowCheck !== 'none') || (allowCheck && allowCheck !== 'none' && !item.hideCheckbox)" :column="column" :item="item"></oda-table-check>
+            <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
             <div ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'span'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
@@ -1552,6 +1552,9 @@ cells: {
                     width: this.stepWidth - Math.round((this.iconSize + thickness) / 2) + 'px',
                     background: `linear-gradient(0deg, transparent 0, transparent calc(${pre}), ${color} calc(${pre}), ${color} calc(${post}), transparent calc(${post}))`
                 }
+            },
+            get _showCheckBox(){
+                return (this.allowCheck && this.allowCheck !== 'none' && !this.item?.disabled && !this.item.hideCheckbox) || (this.item?.allowCheck && this.item?.allowCheck !== 'none');
             },
             get stepStyle() {
                 if (!this.showTreeLines || !this.iconSize) return {}
