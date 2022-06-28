@@ -111,7 +111,7 @@ CLASS({is: 'PropertyGridDataSet',
                         name === '__op__' || name === '$$savePath'
                     ) continue
 
-                    let d = descriptors[name]
+                    const d = descriptors[name]
                     const p = props[name]
                     const node = {name: (p?.label || name), category: proto.constructor.name, ro: typeof d.value === 'object', list: p?.list}
                     if (p) {
@@ -119,7 +119,9 @@ CLASS({is: 'PropertyGridDataSet',
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
                         if (p.category) node.category = p.category
                         if (p.readOnly) node.ro = p.readOnly
-                        let editor = p.editor
+                        if (!p.set) node.ro = true
+
+                        const editor = p.editor
                         if (editor?.includes('/')) {
                             ODA.import(editor).then(async imp => {
                                 node.editor = (await imp?.default)?.is || getTypeEditor(p.type || typeof d.value || typeof p.default)
@@ -282,19 +284,27 @@ ODA({ is: 'oda-pg-object',
 ODA({ is: 'oda-pg-string',
     template: /*html*/`
         <style>
-            input{
+            :host > input {
                 font-size: medium;
                 padding: 0px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+            :host > input[readonly] {
+                @apply --dimmed;
+            }
         </style>
-        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" @tap.stop.prevent @keydown.stop>
+        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
     `,
 })
 ODA({ is: 'oda-pg-number',
     template: /*html*/`
-        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" @tap.stop.prevent @keydown.stop>
+        <style>
+            :host > input[readonly] {
+                @apply --dimmed;
+            }
+        </style>
+        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
     `,
 })
 
@@ -307,7 +317,7 @@ ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
                 align-items: center;
             }
         </style>
-        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" @tap.stop.prevent></oda-checkbox>
+        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true" @tap.stop.prevent></oda-checkbox>
     `,
 })
 
@@ -317,7 +327,7 @@ ODA({ is: 'oda-property-grid-cell',
         :host{
             padding-left: 4px;
         }
-        :host>span[disabled]{
+        :host > span[disabled]{
             pointer-events: auto;
             user-select: text;
         }
@@ -333,14 +343,14 @@ ODA({ is: 'oda-property-grid-cell',
 })
 
 ODA({ is: 'oda-property-header-cell-label',
-    template: `
+    template: /* html */`
         <label style="text-align: center;" class="flex">{{inspectedObject?.constructor?.name}}</label>
     `,
     item: null
 })
 
 ODA({ is: 'oda-property-grid-header-cell',
-    template: `
+    template: /* html */`
         <style>
             :host{
                 @apply --horizontal;
