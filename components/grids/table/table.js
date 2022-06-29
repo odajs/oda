@@ -1128,7 +1128,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         })
     },
     deleteItems(callback, once = false) {
-        const items = once ? [this.find(callback)] : this.filter(callback);
+        const items = once ? [this._find(callback)] : this._filter(callback);
         items.forEach(i => {
             const array = i.$parent && i.$parent.items || this.dataSet;
             const idx = array.indexOf(i);
@@ -1259,7 +1259,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             }
         }
     },
-    find(callback) {
+    _find(callback) {
         const find = (items) => {
             let res = items.find(callback);
             if (!res) {
@@ -1273,7 +1273,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         };
         return find(this.dataSet);
     },
-    filter(callback) {
+    _filter(callback) {
         const find = (items) => {
             const res = items.filter(i => i.items).reduce((res, item) => {
                 res.push(...find(item.items));
