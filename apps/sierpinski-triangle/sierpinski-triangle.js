@@ -81,21 +81,24 @@ ODA({
         return Math.sqrt( Math.pow(start.x-stop.x, 2) + Math.pow(start.y-stop.y, 2) );
     },
     createPoint() {
-        const randomVertex = this.randomInteger(0, 2);
-        //Рассчитываем цвет точки используя идеальный треугольник    
-        this.color_currentPoint.x = (this.color_currentPoint.x + this.color_triangleVertices[randomVertex].x) / 2.0;
-        this.color_currentPoint.y = (this.color_currentPoint.y + this.color_triangleVertices[randomVertex].y) / 2.0;    
-        const red = 255 * (1 - this.distance(this.color_triangleVertices[0], this.color_currentPoint));
-        const green = 255 * (1 - this.distance(this.color_triangleVertices[1], this.color_currentPoint));
-        const blue = 255 * (1 - this.distance(this.color_triangleVertices[2], this.color_currentPoint));        
-        const color = "rgb(" + red + "," + green + "," + blue  + ")";
-        //Рассчитываем координаты реальной точки   
-        var point = {};
-        point.x = (this.dots[this.dots.length-1].x + this.triangleVertices[randomVertex].x) / 2.0;
-        point.y = (this.dots[this.dots.length-1].y + this.triangleVertices[randomVertex].y) / 2.0;
-        point.color = color;
-        point.associatedVertex = this.triangleVertices[randomVertex];
-        this.dots.push(point);
+        const quantity = 3;
+        for( let i=0 ; i<quantity ; ++i ) {
+            const randomVertex = this.randomInteger(0, 2);
+            //Рассчитываем цвет точки используя идеальный треугольник    
+            this.color_currentPoint.x = (this.color_currentPoint.x + this.color_triangleVertices[randomVertex].x) / 2.0;
+            this.color_currentPoint.y = (this.color_currentPoint.y + this.color_triangleVertices[randomVertex].y) / 2.0;    
+            const red = 255 * (1 - this.distance(this.color_triangleVertices[0], this.color_currentPoint));
+            const green = 255 * (1 - this.distance(this.color_triangleVertices[1], this.color_currentPoint));
+            const blue = 255 * (1 - this.distance(this.color_triangleVertices[2], this.color_currentPoint));        
+            const color = "rgb(" + red + "," + green + "," + blue  + ")";
+            //Рассчитываем координаты реальной точки   
+            var point = {};
+            point.x = (this.dots[this.dots.length-1].x + this.triangleVertices[randomVertex].x) / 2.0;
+            point.y = (this.dots[this.dots.length-1].y + this.triangleVertices[randomVertex].y) / 2.0;
+            point.color = color;
+            point.associatedVertex = this.triangleVertices[randomVertex];
+            this.dots.push(point);
+        }
     },
     drawTriangleVertices() { 
         const maxX = this.$refs.svg?.viewBox.baseVal.width;
