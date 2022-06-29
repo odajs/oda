@@ -42,8 +42,8 @@ ODA({
         radiusVertex: 5,
     },
 
-    triangleVertices: [{},{},{}], //Вершины треугольника. Вершина описывается экранными координатами "x", "y" и цветом "color".
-    color_triangleVertices: [{},{},{}], //Вершины абстрактного равностороннего треугольника. Длина стороны 1. Используется для расчета цвета точек. Вершина описывается координатами "x", "y".
+    triangleVertices: [], //Вершины треугольника. Вершина описывается экранными координатами "x", "y" и цветом "color".
+    color_triangleVertices: [], //Вершины абстрактного равностороннего треугольника. Длина стороны 1. Используется для расчета цвета точек. Вершина описывается координатами "x", "y".
     color_currentPoint: {},  //Координаты последней рассчитанной точки абстрактного равностороннего треугольника.
     dots: [], //Рассчитанные точки треугольника. Точка описывается координатами "x", "y", цветом "color" и вершиной "associatedVertex", относительно которой она рассчитана.
     previousQuantityOfDots: [0],
@@ -61,8 +61,13 @@ ODA({
     start() {
         this.showButton = false;
         this.drawTriangleVertices();
-        setInterval(this.createPoint.bind(this), 0);
+//        setInterval(this.createPoint.bind(this), 0);
+        this.loop();
         setInterval(this.measurement.bind(this), 1000);
+    },
+    loop() {
+            this.createPoint();
+            requestAnimationFrame(this.loop.bind(this));
     },
     measurement() { //Расчет текущей скорости построения
         if( this.previousQuantityOfDots.length == 10 ) 
