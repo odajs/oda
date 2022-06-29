@@ -40,7 +40,7 @@ export class NeuralNetwork
 }
 ```
 
-В этом классе для создания нейросети используется конструктор.
+Нейросеть в этом классе создается с помощью конструктора.
 
 ```javascript
 constructor (topology, clone)
