@@ -136,13 +136,13 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
 
 ODANT({is: 'odant-field-item',
     template: /*html*/`
-    <style>
-        :host {
-            @apply --horizontal;
-        }
-    </style>
-    <label class="flex">{{item?.label}}</label>
-    <span>[{{item?.name}}]</span>
+        <style>
+            :host {
+                @apply --horizontal;
+            }
+        </style>
+        <label class="flex">{{item?.label}}</label>
+        <span>[{{item?.name}}]</span>
     `,
     item: {}
 })
