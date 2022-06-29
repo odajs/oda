@@ -213,7 +213,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </div>`,
     get _bodyHeight() {
         return this.lazy
-            ? ((this.size || ((this.items?.length || 0) + ((+this.items?.length) > 0 ? 3 : 0) /*+ (this.screen.length - 1)*/)) * this._rowHeight + this.raisedRows.length * this._rowHeight)
+            ? (this.size + this.raisedRows.length + 3) * this._rowHeight
             : 0;
     },
     get screenFrom() {
@@ -346,7 +346,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         expandLevel: -1,
         expandAll: false
     },
-    size: 0,
+    get size(){
+        return this.items?.length || 0;
+    },
     _height: 0,
     _scrollTop: 0,
     _scrollWidth: 0,
