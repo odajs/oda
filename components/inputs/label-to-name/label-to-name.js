@@ -61,7 +61,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         name: {
             type: String,
             set(name, o) {
-                name = labelToName(name);
+                name = name.toQName();
                 let last = name[name.length - 1];
                 if (last !== ' ' && last !== '-')
                     last = '';
@@ -146,19 +146,3 @@ ODANT({is: 'odant-field-item',
     `,
     item: {}
 })
-
-function labelToName(label) {
-    return label.toLowerCase()
-        .split(' ')
-        .map((s, i) => {
-            if (i === 0) return (s === 'the') ? '' : s;
-
-            if (s.length < 7) return s;
-
-            return s.substring(0, 7);
-        })
-        .join('-')
-        .replace(/-{2,}/g, '-')
-        .replace(/(^\d)/, '_$1')
-        .replace(/\./g, '');
-}

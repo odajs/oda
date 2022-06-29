@@ -575,6 +575,8 @@ if (!globalThis.KERNEL) {
         return obj && typeof obj === 'object';
     }
     String:{
+
+
         const kebabGlossary = Object.create(null);
         function toKebab(str) {
             return kebabGlossary[str] ??= str.replace(/\B([A-Z])/g, '-$1').toLowerCase();
@@ -611,6 +613,23 @@ if (!globalThis.KERNEL) {
                     return toCapital(this.toString());
                 }
             });
+        }
+
+        if (!String.toQName) {
+            Object.defineProperty(String.prototype, 'toQName', {
+                enumerable: false, value: function () {
+                    return this.toLowerCase().split(' ')
+                    .map((s, i) => {
+                        if (i === 0) return (s === 'the') ? '' : s;
+                        if (s.length < 5) return s;
+                        return s.substring(0, 5);
+                    })
+                    .join('-')
+                    .replace(/-{2,}/g, '-')
+                    .replace(/(^\d)/, '_$1')
+                    .replace(/\./g, '');
+                }
+            })
         }
     }
     Object:{
