@@ -394,7 +394,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <div class="horizontal flex">
                 <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
                 <div class="flex"></div>
-                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack" @mousedown.stop.prev></oda-icon>
+                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack"></oda-icon>
             </div>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
@@ -489,15 +489,18 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
 
     },
     ondragstart(e) {
+        if (!this.designMode) return;
         e.stopPropagation();
         this.dragInfo.isMoveTab = false;
         this.dragInfo.dragItem = this.layout;
         e.dataTransfer.setDragImage((this.selection && this.selection.includes(this.dragInfo.dragItem) && this.selection.length) > 1 ? img3 : img, -20, 7);
     },
     ondragend(e) {
+        if (!this.designMode || !this.dragInfo.dragItem) return;
         this.clearDragTo();
     },
     ondragover(e) {
+        if (!this.designMode || !this.dragInfo.dragItem) return;
         e.stopPropagation();
         this.clearDragTo();
         if (this.dragInfo?.dragItem && !this.dragInfo.isMoveTab) {
@@ -522,9 +525,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
     },
     ondragleave(e) {
+        if (!this.designMode || !this.dragInfo.dragItem) return;
         this.clearDragTo();
     },
     ondragdrop(e) {
+        if (!this.designMode || !this.dragInfo.dragItem) return;
         e.stopPropagation();
         this.dragInfo._action = { id: getUUID(), action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo);
@@ -532,6 +537,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.clearDragTo();
     },
     clearDragTo() {
+        this.dragInfo.dragItem = undefined;
         this.capture = this.layout.dragTo = '';
         let owner = this.layout.owner;
         while (owner) {

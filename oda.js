@@ -2046,7 +2046,6 @@ if (!window.ODA) {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
             this.addSubEvent('mousedown', (e) => {
-                return;
                 odaEventTrack.handler = odaEventTrack.handler || handler;
                 odaEventTrack.detail =  odaEventTrack.detail || {
                     start: {
@@ -2058,38 +2057,41 @@ if (!window.ODA) {
                 };
                 window.addEventListener('mousemove', moveHandler);
                 window.addEventListener('mouseup', upHandler);
-                target.addEventListener('mouseleave', moveHandler, {once: true});
+                target.addEventListener('mouseleave', leaveHandler, {once: true});
             });
+            const leaveHandler = (e) =>{
+                if (!odaEventTrack.back){
+                    odaEventTrack.back = document.createElement('div');
+                    odaEventTrack.back.style.setProperty('width', '100%');
+                    odaEventTrack.back.style.setProperty('height', '100%');
+                    odaEventTrack.back.style.setProperty('position', 'fixed');
+                    odaEventTrack.back.classList.add('odaTrackBack');
+                    odaEventTrack.back.addEventListener('mousedown', () => {
+                        odaEventTrack.removeBack()
+                    }, {once: true});
+                    odaEventTrack.back.addEventListener('mouseup', upHandler, {once: true});
+                    odaEventTrack.back.style.setProperty('z-index', '1000000');
+                }
+                if (!odaEventTrack.back.isConnected)
+                    document.body.appendChild(odaEventTrack.back);
+            }
+
             const moveHandler = (e) => {
                 if (odaEventTrack.detail && !odaEventTrack.detail.state) {
                     const x = Math.abs(odaEventTrack.detail.start.x - e.clientX);
                     const y = Math.abs(odaEventTrack.detail.start.y - e.clientY)
                     if (Math.max(x,y)>2 || e.type === 'mouseleave') {
-                        target.removeEventListener('mouseleave', moveHandler);
-                        if (!odaEventTrack.back){
-                            odaEventTrack.back = document.createElement('div');
-                            odaEventTrack.back.style.setProperty('width', '100%');
-                            odaEventTrack.back.style.setProperty('height', '100%');
-                            odaEventTrack.back.style.setProperty('position', 'fixed');
-                            odaEventTrack.back.classList.add('odaTrackBack');
-                            odaEventTrack.back.addEventListener('mousedown', () => {
-                                odaEventTrack.removeBack()
-                            }, {once: true});
-                            odaEventTrack.back.addEventListener('mouseup', upHandler, {once: true});
-                            odaEventTrack.back.style.setProperty('z-index', '1000000');
-                        }
-
-                        document.body.appendChild(odaEventTrack.back);
+                        // target.removeEventListener('mouseleave', moveHandler);
                         odaEventTrack.detail.state = 'start'
                         let ce = new odaCustomEvent("track", {detail: Object.assign({}, odaEventTrack.detail)}, e);
                         odaEventTrack.handler (ce, ce.detail);
-
                     }
                 }
                 else if (odaEventTrack.detail) {
                     odaEventTrack.detail.state = 'track';
                     // console.log(target, this.detail.state, e.clientX, e.clientY)
-                    odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor || 'pointer';
+                    if (odaEventTrack.back)
+                        odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor || 'pointer';
                     // console.log('back', target.style.cursor)
                     odaEventTrack.detail.x = e.clientX;
                     odaEventTrack.detail.y = e.clientY;
@@ -2104,7 +2106,7 @@ if (!window.ODA) {
             const upHandler = (e) => {
                 window.removeEventListener('mousemove', moveHandler);
                 window.removeEventListener('mouseup', upHandler);
-                target.removeEventListener('mouseleave', moveHandler);
+                target.removeEventListener('mouseleave', leaveHandler);
                 if (odaEventTrack.detail?.state){
                     odaEventTrack.detail.ddx = 0;
                     odaEventTrack.detail.ddy = 0;
