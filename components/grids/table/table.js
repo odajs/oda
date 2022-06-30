@@ -676,6 +676,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     listeners: {
         dragend: '_onDragEnd',
+        dragleave: '_onDragEnd',
         resize: '_scroll',
         scrollToUp() {
             if (this.$refs?.body) {
@@ -1385,6 +1386,7 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
     },
     attached() {
         this.listen('mousedown', '_leave', { target: window });
+        this.listen('dragend', '_onDragEnd', { target: window });
     },
     _tap(e) {
         this.opened = !this.opened;
@@ -1398,6 +1400,7 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
     },
     detached() {
         this.unlisten('mousedown', '_leave', { target: window });
+        this.unlisten('dragend', '_onDragEnd', { target: window });
     }
 });
 
