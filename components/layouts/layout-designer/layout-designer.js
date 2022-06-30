@@ -270,20 +270,24 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
         this.render();
     },
     ondragstart(e, item) {
+        if (!this.designMode) return;
         e.stopPropagation();
         this.dragInfo.dragItem = item;
         this.dragInfo.isMoveTab = true;
     },
     ondragover(e, item) {
+        if (!this.designMode) return;
         e.stopPropagation();
         if (this.dragInfo.dragItem.root !== item.root || !this.dragInfo.isMoveTab) return;
         e.preventDefault();
         this.hoverItem = item;
     },
     ondragleave(e) {
+        if (!this.designMode) return;
         this.hoverItem = undefined;
     },
     ondrop(e, item) {
+        if (!this.designMode) return;
         e.stopPropagation();
         this.dragInfo.targetItem = item;
         this.dragInfo._action = { action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: 'left' } };
@@ -496,11 +500,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         e.dataTransfer.setDragImage((this.selection && this.selection.includes(this.dragInfo.dragItem) && this.selection.length) > 1 ? img3 : img, -20, 7);
     },
     ondragend(e) {
-        if (!this.designMode || !this.dragInfo.dragItem) return;
+        if (!this.designMode) return;
         this.clearDragTo();
     },
     ondragover(e) {
-        if (!this.designMode || !this.dragInfo.dragItem) return;
+        if (!this.designMode) return;
         e.stopPropagation();
         this.clearDragTo();
         if (this.dragInfo?.dragItem && !this.dragInfo.isMoveTab) {
@@ -525,11 +529,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         }
     },
     ondragleave(e) {
-        if (!this.designMode || !this.dragInfo.dragItem) return;
+        if (!this.designMode) return;
         this.clearDragTo();
     },
     ondragdrop(e) {
-        if (!this.designMode || !this.dragInfo.dragItem) return;
+        if (!this.designMode) return;
         e.stopPropagation();
         this.dragInfo._action = { id: getUUID(), action: 'move', props: { item: this.dragInfo.dragItem.id, target: this.dragInfo.targetItem.id, to: this.dragInfo.to } };
         this.layout.move(this.dragInfo);
@@ -537,7 +541,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         this.clearDragTo();
     },
     clearDragTo() {
-        this.dragInfo.dragItem = undefined;
         this.capture = this.layout.dragTo = '';
         let owner = this.layout.owner;
         while (owner) {
