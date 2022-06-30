@@ -681,6 +681,23 @@ if (!globalThis.KERNEL) {
                     return res;
                 }
             });
+            const pop = Array.prototype.pop;
+            Object.defineProperty(Array.prototype, 'pop', {enumerable: false, configurable: true,
+                value: function (...args) {
+                    const old_length = this.length;
+                    const res = pop.call(this, ...args);
+                    if (this.__op__){
+                        for (let i = old_length; i<this.length; i++){
+                            this[i] = makeReactive.call(this, this[i]);
+                        }
+
+                        // this[]
+                        this.__op__.proxy.length = this.length;
+                    }
+
+                    return res;
+                }
+            });
 
             const unshift = Array.prototype.unshift;
             Object.defineProperty(Array.prototype, 'unshift', {enumerable: false, configurable: true,

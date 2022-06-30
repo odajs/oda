@@ -57,9 +57,9 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         }
     },
     attached() {
-        this.focus();
+        this._focus();
     },
-    focus() {
+    _focus() {
         this.async(() => {
             const element = this.$('input');
             element.focus();
@@ -80,7 +80,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             }
             if (!this._list) {
                 this._list = document.createElement('oda-list');
-                this._list.itemTemplate = 'oda-label-to-name-default-item';
+                this._list.itemTemplate = 'oda-label-to-name-item';
                 this._list.items = list;
                 this._list.focusedItem = list?.[0];
                 this.async(() => this.$('input')?.focus());
@@ -106,7 +106,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
     },
 })
 
-ODA({is: 'oda-label-to-name-default-item',
+ODA({is: 'oda-label-to-name-item',
     template: /*html*/`
         <style>
             :host {

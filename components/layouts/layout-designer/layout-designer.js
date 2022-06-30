@@ -391,7 +391,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             }
         </style>
         <div class="vertical flex" style="overflow: hidden;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
-            <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
+            <div class="horizontal flex">
+                <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
+                <div class="flex"></div>
+                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack"></oda-icon>
+            </div>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup"
@@ -554,6 +558,30 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         const action = { action: "deleteGroup", props: { target: this.layout.id } };
         layout.deleteGroup(action, layout);
         this.makeScript(layout, action);
+    },
+    resizeTrack(e){
+        switch(e.detail.state){
+            case 'start':{
+                this._prevX = e.sourceEvent.clientX;
+                const rect = this.getBoundingClientRect();
+                this._prevWidth = rect.width;
+            } break;
+            case 'track':{
+                let w = this._prevWidth + e.sourceEvent.clientX - this._prevX;
+                this.style.minWidth = '100%';
+                w = (w * 100) / this.getBoundingClientRect().width;
+                this.async(() => {
+                    this.layout.minWidth = '';
+                    this.style.minWidth = '0px';
+                    this.style.maxWidth = `${w}%`;
+                    this.style.width = `${w}%`;
+                })
+            } break;
+            case 'end': {
+                const action = { action: "setWidth", props: { target: this.layout.id, width: this.style.width } };
+                this.makeScript(this.layout, action);
+            } break;
+        }
     }
 })
 
@@ -687,7 +715,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         this.fire('ok');
     },
     _setWidth(e) {
-        this.layout.minWidth = this.layout.minWidth === '100%' ? '' : '100%';
+        this.lay.style.width = this.lay.style.maxWidth = this.layout.minWidth = this.layout.minWidth === '100%' ? '' : '100%';
         this.lay.render();
         const action = { action: "setMinWidth", props: { target: this.layout.id, width: this.layout.minWidth } };
         this.lay.makeScript(this.layout, action);
@@ -911,6 +939,18 @@ export const Layout = CLASS({ is: 'Layout',
         const item = layout || await this.find(action.props.target);
         if (!item) return;
         item.minWidth = action.props.width;
+        this.async(() => {
+            item.cnt.style.minWidth = item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
+        }, 300)
+    },
+    async setWidth(action, layout) {
+        const item = layout || await this.find(action.props.target);
+        if (!item) return;
+        this.async(() => {
+            item.minWidth = '';
+            item.cnt.style.minWidth = '0px';
+            item.cnt.style.width = item.cnt.style.maxWidth = action.props.width;
+        }, 300)
     },
     async execute(actions) {
         if (!actions || !Array.isArray(actions)) return;
