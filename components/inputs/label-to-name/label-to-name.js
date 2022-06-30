@@ -14,12 +14,12 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         </style>
         <label for="label">Input label:</label>
         <div class="horizontal">
-            <input id="label" class="flex" ::value="label">
+            <input class="flex" ::value="label" style="outline: none; padding: 4px;">
             <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
         </div>
         <div ~if="showName" class="horizontal name">
             <label>name:</label>
-            <input tabindex="-1" id="name" class="flex" ::value="name" style="border: none; outline: none; font-size: x-small; font-weight: bold;">
+            <input tabindex="-1" class="flex" ::value="name" style="border: none; outline: none; font-size: x-small; font-weight: bold;">
         </div>
     `,
     defaultList: Array,
