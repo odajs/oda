@@ -14,7 +14,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         </style>
         <label for="label">Input label:</label>
         <div class="horizontal">
-            <input class="flex" ::value="label" style="outline: none; padding: 4px;">
+            <input class="flex" ::value="label" style="outline: none; padding: 4px;" @mousedown="md">
             <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
         </div>
         <div ~if="showName" class="horizontal name">
@@ -22,6 +22,9 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             <input tabindex="-1" class="flex" ::value="name" style="border: none; outline: none; font-size: x-small; font-weight: bold;">
         </div>
     `,
+    md(e){
+        e.stopPropagation();
+    },
     defaultList: Array,
     props: {
         label: {

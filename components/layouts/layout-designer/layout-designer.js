@@ -394,7 +394,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <div class="horizontal flex">
                 <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
                 <div class="flex"></div>
-                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack"></oda-icon>
+                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack" @mousedown.stop.prev></oda-icon>
             </div>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
