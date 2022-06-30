@@ -394,11 +394,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 outline: 0px solid transparent;
             }
         </style>
-        <div class="vertical flex" style="overflow: hidden;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''" @mousedown.stop.prev>
+        <div class="vertical flex" style="overflow: hidden;" :draggable ~class="{'drag-to':layout?.dragTo, [layout?.dragTo]:layout?.dragTo}" ~style="layout?.style || ''">
             <div class="horizontal flex">
                 <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
                 <div class="flex"></div>
-                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16"  @track="resizeTrack"></oda-icon>
+                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16" @track="resizeTrack"></oda-icon>
             </div>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
@@ -463,23 +463,11 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         const parent = e.target.id === 'settings' ? e.target : undefined;
         await ODA.showDropdown('oda-layout-designer-contextMenu', { layout: this.layout, lay: this }, { parent, title: e.target.layout?.label });
     },
-    labelPos: 'top',
-    layout: null,
+    set layout(v) {
+        this.layout.cnt = this;
+    },
     get draggable() {
         return this.layout && this.designMode && !this.layout.isVirtual ? 'true' : 'false';
-    },
-    attached() {
-        this.async(() => {
-            this.layout.cnt = this;
-            (this.layout.styles || []).forEach(i => {
-                if (i.type === 'cnt')
-                    this.style[i.key] = i.value;
-                (this.layout.owner?.styles || []).forEach(i => {
-                    if (i.type === 'str')
-                        this.layout.owner.str.style[i.key] = i.value;
-                })
-            })
-        }, 100);
     },
     selectLabel() {
         document.execCommand('selectAll', false, null);
@@ -568,7 +556,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         layout.deleteGroup(action, layout);
         this.makeScript(layout, action);
     },
-    resizeTrack(e){
+    resizeTrack(e) {
         switch(e.detail.state){
             case 'start':{
                 this._prevX = e.sourceEvent.clientX;
