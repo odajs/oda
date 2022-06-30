@@ -1,54 +1,27 @@
 ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
     template: /*html*/`
-    <style>
-        :host {
-            @apply --vertical;
-            min-width: 100px;
-            padding: 8px;
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            align-items: center;
-        }
-        :host > label {
-            grid-column-start: 1;
-        }
-        :host > div {
-            grid-column-start: 2;
-            grid-column-end: 7;
-        }
-        .input-container {
-            align-items: center;
-            border: 1px inset gray;
-            margin: 2px;
-            min-height: 34px;
-        }
-        .input-container input {
-            font-family: inherit;
-            font-size: inherit;
-            outline: none;
-            margin: 1px;
-            padding: 2px 4px;
-            min-height: 24px;
-            max-height: 24px;
-            border: none;
-            width: 100%;
-        }
-        oda-button {
-            padding: 0;
-        }
-    </style>
-    <label for="label">Метка:</label>
-    <div class="horizontal input-container">
-        <input id="label" class="flex" ::value="label" :placeholder="placeholderLabel" >
-        <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
-    </div>
-    <label ~if="!hideName" for="name" class="horizontal">Имя:</label>
-    <div ~if="!hideName" class="horizontal input-container">
-        <input ~if="!hideName" id="name" class="flex" ::value="name" :placeholder="placeholderName">
-    </div>
+        <style>
+            :host {
+                @apply --vertical;
+            }
+            oda-button {
+                padding: 0;
+            }
+            .name{
+                font-size: x-small;
+                color: var(--header-background);
+            }
+        </style>
+        <label for="label">Input label:</label>
+        <div class="horizontal">
+            <input id="label" class="flex" ::value="label">
+            <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
+        </div>
+        <div ~if="showName" class="horizontal name">
+            <label>name:</label>
+            <input tabindex="-1" id="name" class="flex" ::value="name" style="border: none; outline: none; font-size: x-small; font-weight: bold;">
+        </div>
     `,
-    placeholderLabel: 'метка',
-    placeholderName: 'имя',
     defaultList: Array,
     props: {
         label: {
@@ -57,7 +30,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 this.name = label ? label.trim() : null;
             }
         },
-        hideName: false,
+        showName: false,
         name: {
             type: String,
             set(name, o) {
@@ -107,7 +80,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             }
             if (!this._list) {
                 this._list = document.createElement('oda-list');
-                this._list.itemTemplate = 'odant-field-item';
+                this._list.itemTemplate = 'oda-label-to-name-default-item';
                 this._list.items = list;
                 this._list.focusedItem = list?.[0];
                 this.async(() => this.$('input')?.focus());
@@ -123,7 +96,6 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 this._list.items = list;
                 this._list.focusedItem = list?.[0];
                 this._list?.domHost?.setSize();
-                return;
             }
         }
         catch {
@@ -134,7 +106,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
     },
 })
 
-ODANT({is: 'odant-field-item',
+ODA({is: 'oda-label-to-name-default-item',
     template: /*html*/`
         <style>
             :host {
