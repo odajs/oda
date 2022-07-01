@@ -2047,7 +2047,7 @@ if (!window.ODA) {
             super(target, handler, ...args);
             this.addSubEvent('mousedown', (e) => {
                 odaEventTrack.handler = odaEventTrack.handler || handler;
-                odaEventTrack.detail =  odaEventTrack.detail || {
+                odaEventTrack.detail =  /*odaEventTrack.detail ||*/ {
                     start: {
                         x: e.clientX,
                         y: e.clientY
