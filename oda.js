@@ -982,38 +982,38 @@ if (!window.ODA) {
             })
         }
 
-        prototype.listeners = prototype.listeners || {};
-        if (prototype.keyBindings) {
-            prototype.listeners.keydown = function (e) {
-                const e_key = e.key.toLowerCase();
-                const e_code = e.code.toLowerCase();
-                const key = Object.keys(prototype.keyBindings).find(key => {
-                    return key.toLowerCase().split(',').some(v => {
-                        return v.split('+').every(s => {
-                            if (!s) return false;
-                            const k = s.trim() || ' ';
-                            switch (k) {
-                                case 'ctrl':
-                                    return e.ctrlKey;
-                                case 'shift':
-                                    return e.shiftKey;
-                                case 'alt':
-                                    return e.altKey;
-                                default:
-                                    return k === e_key || k === e_code || `key${k}` === e_code;
-                            }
-                        })
-                    });
+        prototype.listeners ??= {};
+        prototype.keyBindings ??= {};
+        prototype.listeners.keydown = function (e) {
+            const e_key = e.key.toLowerCase();
+            const e_code = e.code.toLowerCase();
+            const key = Object.keys(prototype.keyBindings).find(key => {
+                return key.toLowerCase().split(',').some(v => {
+                    return v.split('+').every(s => {
+                        if (!s) return false;
+                        const k = s.trim() || ' ';
+                        switch (k) {
+                            case 'ctrl':
+                                return e.ctrlKey;
+                            case 'shift':
+                                return e.shiftKey;
+                            case 'alt':
+                                return e.altKey;
+                            default:
+                                return k === e_key || k === e_code || `key${k}` === e_code;
+                        }
+                    })
                 });
-                if (key) {
-                    // e.preventDefault();
-                    let handler = prototype.keyBindings[key];
-                    if (typeof handler === 'string')
-                        handler = prototype[handler];
-                    handler.call(this, e);
-                }
+            });
+            if (key) {
+                // e.preventDefault();
+                let handler = prototype.keyBindings[key];
+                if (typeof handler === 'string')
+                    handler = prototype[handler];
+                handler.call(this, e);
             }
         }
+            
         for (let event in prototype.listeners) {
             const handler = prototype.listeners[event];
             prototype.listeners[event] = (typeof handler === 'string') ? prototype[handler] : handler;
@@ -1049,6 +1049,12 @@ if (!window.ODA) {
                             me.extends = parent.prototype.is;
                         else
                             me.extends = me.extends + ', ' + parent.prototype.is;
+                    }
+                }
+                for (let key in parent.prototype.keyBindings) {
+                    if (!Object.getOwnPropertyDescriptor(prototype.keyBindings, key)) {
+                        const par = Object.getOwnPropertyDescriptor(parent.prototype.keyBindings, key);
+                        prototype.keyBindings[key] = par.value;
                     }
                 }
                 for (let key in parent.prototype.listeners) {
