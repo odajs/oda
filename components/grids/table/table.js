@@ -184,7 +184,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: _rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
             <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
         </div>
-        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky;" ~style="{width: _scrollWidth + 'px', height: _bodyHeight+'px'}">
+        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky;" ~style="{height: _bodyHeight+'px'}">
             <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick"
             @tap="_tapRows"
             @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
