@@ -39,9 +39,8 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 if (last !== ' ' && last !== '-')
                     last = '';
                 if (this.transliteration)
-                    this.name = this.transliteration.slugify?.(name) + last;
-                else
-                    this.name = name;
+                    return this.transliteration.slugify?.(name) + last;
+                return name;
             }
         }
     },
