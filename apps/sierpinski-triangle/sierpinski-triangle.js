@@ -40,14 +40,15 @@ ODA({
     props: { 
         radiusDot: 1,
         radiusVertex: 5,
+        maxQuantityDots: 30000,
     },
 
     triangleVertices: [], //Вершины треугольника. Вершина описывается экранными координатами "x", "y" и цветом "color".
     color_triangleVertices: [], //Вершины абстрактного равностороннего треугольника. Длина стороны 1. Используется для расчета цвета точек. Вершина описывается координатами "x", "y".
     color_currentPoint: {},  //Координаты последней рассчитанной точки абстрактного равностороннего треугольника.
     dots: [], //Рассчитанные точки треугольника. Точка описывается координатами "x", "y", цветом "color" и вершиной "associatedVertex", относительно которой она рассчитана.
-              //Координаты первой точки совпадают с координатами одной из вершин.
-    previousQuantityOfDots: [0],
+              //Координаты первой точки совпадают с координатами одной из вершин, выбранной случайным образом.
+    previousQuantityOfDots: 0,
     dotsPerSecond: undefined,
     showButton: true,
     fontSize: undefined,
@@ -61,19 +62,23 @@ ODA({
         },
     start() {
         this.showButton = false;
+        this.dots = [];
         this.drawTriangleVertices();
-//        setInterval(this.createPoint.bind(this), 0);
         this.loop();
         setInterval(this.measurement.bind(this), 1000);
     },
     loop() {
+        if( this.dots.length < this.maxQuantityDots) {
             this.createPoint();
             requestAnimationFrame(this.loop.bind(this));
+        }
+        else {
+            this.showButton = true;
+        }
     },
     measurement() { //Расчет текущей скорости построения
-        if( this.previousQuantityOfDots.length == 10 ) 
-            this.dotsPerSecond = (this.dots.length - this.previousQuantityOfDots.shift()) / 10;
-        this.previousQuantityOfDots.push( this.dots.length );
+        this.dotsPerSecond = this.dots.length - this.previousQuantityOfDots;
+        this.previousQuantityOfDots = this.dots.length;
     },
     randomInteger(min, max) {
         return Math.floor(min + Math.random() * (max + 1 - min));
@@ -82,7 +87,7 @@ ODA({
         return Math.sqrt( Math.pow(start.x-stop.x, 2) + Math.pow(start.y-stop.y, 2) );
     },
     createPoint() {
-        const quantity = 3;
+        const quantity = 7;
         for( let i=0 ; i<quantity ; ++i ) {
             const randomVertex = this.randomInteger(0, 2);
             //Рассчитываем цвет точки используя идеальный треугольник    
