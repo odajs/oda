@@ -2037,17 +2037,17 @@ if (!window.ODA) {
     class odaEventTrack extends odaEvent {
         static removeBack(){
             if (odaEventTrack.back){
-                odaEventTrack.handler = undefined;
-                odaEventTrack.detail = undefined;
                 odaEventTrack.back.style.cursor = ''
                 odaEventTrack.back?.remove();
             }
+            odaEventTrack.handler = undefined;
+            odaEventTrack.detail = undefined;
         }
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
             this.addSubEvent('mousedown', (e) => {
                 odaEventTrack.handler = odaEventTrack.handler || handler;
-                odaEventTrack.detail =  /*odaEventTrack.detail ||*/ {
+                odaEventTrack.detail =  odaEventTrack.detail || {
                     start: {
                         x: e.clientX,
                         y: e.clientY
