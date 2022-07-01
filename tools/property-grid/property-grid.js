@@ -123,7 +123,8 @@ CLASS({is: 'PropertyGridDataSet',
 
                         const editor = p.editor
                         if (editor?.includes('/')) {
-                            ODA.import(editor).then(async imp => {
+                            let url = this.inspectedObjects[0]?.url || '';
+                            ODA.import((url?(url+'/~/'):'') + editor).then(async imp => {
                                 node.editor = (await imp?.default)?.is || getTypeEditor(p.type || typeof d.value || typeof p.default)
                                 this.render?.()
                             })
@@ -161,7 +162,7 @@ ODA({ is: 'oda-pg-cell-value',
                 user-select: text;
             }
         </style>
-        <span :disabled="item?.ro" style="align-self: center; padding-left: 6px;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
+        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
 <!--        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="icons:autorenew"></oda-button>-->
     `,
