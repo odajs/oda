@@ -79,12 +79,15 @@ window.addEventListener('keydown', async e => {
     }
 })
 
-ODA({is:'oda-localisation-tree',imports:'@oda/tree', extends:'oda-tree',
+ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
     props:{
-        showHeader:true, colLines: true, rowLines: true, allowSort: true, sortGroups: true, //sort: [[letter]],
+        showHeader:true, colLines: true, rowLines: true, allowSort: true,  //sort: [[letter]],
+        // dataSet:[],
         dataSet() {
+            // return [{words: 'phraze', transletes: '', letter: 'p', items: Array(0)}]
             const words = sumObAB(Localization.words, Localization.dictionary.words)
             const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
+            console.log(phraze)
             let ds = {}
             Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
             Object.keys(phraze).map(k => {
@@ -96,13 +99,33 @@ ODA({is:'oda-localisation-tree',imports:'@oda/tree', extends:'oda-tree',
                     else { ds[w].items.push({words: k, transletes: new TRANSLATE(k,'phraze') }) }
                 })
             })
-            return Object.values(ds) // Object.keys(words).map((k,i) => { return { words: k, transletes: i, letter: k[0].toLocaleLowerCase() } }) 
+            return Object.values(ds)
+            //Promise.all(Object.values(ds)).then(value =>  {return value} ); // Object.keys(words).map((k,i) => { return { words: k, transletes: i, letter: k[0].toLocaleLowerCase() } }) 
         }   
     },
     columns: [{name:'words',treeMode:true,template:'oda-localization-words', $sort: 1},
                 {name:'transletes',template:'oda-localization-transletes'},{name:'letter', hidden:true }],
-    ready() {
+    async ready() {
         this.groups = [this.columns.find(c => c.name === 'letter')];
+
+        // const words = sumObAB(Localization.words, Localization.dictionary.words)
+        // const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
+        // // console.log(phraze)
+        // let ds = {}
+        // Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
+        // Object.keys(phraze).map(k => {
+        //     const testLeter = new RegExp('[a-z].*?', 'gi')
+        //     // let trob = new TRANSLATE(k,'phraze')
+        //     k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
+        //         if (ds[w] == undefined) ds[w] = { words: w, transletes: new TRANSLATE(w,'words'), letter: w[0].toLocaleLowerCase(), 
+        //                                             items:[{ words: k, transletes:  new TRANSLATE(k,'phraze') }] } 
+        //         else { ds[w].items.push({words: k, transletes: new TRANSLATE(k,'phraze') }) }
+        //     })
+        // })
+        // console.log('ss:')
+        // console.log(Object.values(ds))
+        // this.dataSet =  Object.values(ds)
+
     },
    
 })
@@ -121,7 +144,7 @@ ODA({
     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
     template: /*html*/ `
         <style>
-            :host {@apply --vertical;}
+            :host {@apply --vertical; height: 100%; min-height:300px;}
             #battons-row {display: flex;}
             .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
             .label {line-height:34px;}
