@@ -161,8 +161,11 @@ ODA({ is: 'oda-pg-cell-value',
                 @apply --dimmed;
                 user-select: text;
             }
+            .editor{
+                border: none !important;
+            }
         </style>
-        <span :disabled="item?.ro" style="align-self: center;" class="flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
+        <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
 <!--        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="icons:autorenew"></oda-button>-->
     `,
@@ -290,6 +293,7 @@ ODA({ is: 'oda-pg-string',
                 padding: 0px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                padding: 4px;
             }
             :host > input[readonly] {
                 @apply --dimmed;
@@ -332,8 +336,12 @@ ODA({ is: 'oda-property-grid-cell',
             pointer-events: auto;
             user-select: text;
         }
+        .editor{
+            align-self: center;
+            border: none !important;
+        }
     </style>
-    <span :disabled="item?.ro || item?.editor === 'span'" style="align-self: center;" class="flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
+    <span  :disabled="item?.ro || item?.editor === 'span'" class="editor flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
     <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
     `,
     item: null,
