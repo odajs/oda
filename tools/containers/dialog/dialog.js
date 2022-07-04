@@ -38,6 +38,8 @@ ODA({is: 'oda-dialog-footer',
         :host{
             @apply --horizontal;
             @apply --header;
+            @apply --shadow;
+            padding: 4px;
         }
         oda-button{
             margin: 4px;
