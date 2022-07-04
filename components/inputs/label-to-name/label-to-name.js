@@ -25,7 +25,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             }
         </style>
         <label for="label">Input label:</label>
-        <div class="horizontal">
+        <div class="horizontal content">
             <input class="flex" ::value="label" style="outline: none; padding: 4px; margin: 1px;">
             <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
         </div>
