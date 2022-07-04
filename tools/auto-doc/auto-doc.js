@@ -14,7 +14,7 @@ ODA({is: 'oda-auto-doc', imports: '@oda/button, @oda/md-viewer',
                 <b><span>{{description.component}}</span></b>
                 <span>{{description.mission}}</span>
             </div>
-            <div>supported by - \' <a :href="'mailto:' + description.emailSupport">{{description.support}}</a>\ ', author - \' <a :href="'mailto:' + description.emailAuthor">{{description.author}}</a> \'</div>
+            <div>supported by -  <a :href="'mailto:' + description.emailSupport">{{description.support}}</a>, author -  <a :href="'mailto:' + description.emailAuthor">{{description.author}}</a></div>
             <div>{{description.licence}}</div>
             <div>{{description.copyright}}</div>
             <div><a target="_blank" :href="description.site">{{description.site}}</a></div>
@@ -32,8 +32,8 @@ ODA({is: 'oda-auto-doc', imports: '@oda/button, @oda/md-viewer',
     `,
     props: {
         description: {
-            component: "This component",
-            mission: " - is ODA component.",
+            component: 'This component',
+            mission: ' - is ODA component.',
             author: 'ODA',
             emailAuthor: 'support@odajs.org',
             support: 'ODA',

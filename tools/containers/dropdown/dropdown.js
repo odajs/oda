@@ -1,40 +1,21 @@
 ODA({is: 'oda-dropdown', imports: '@oda/title',
     template: /*html*/`
         <style>
-            @keyframes fadeIn {
-                from {
-                    background-color: rgba(0,0,0,0);
-                }
-                to {
-                    background-color: rgba(0,0,0,.2);
-                }
-            }
+
             :host {
-                /*pointer-events: none;*/
-                z-index: 100;
-                animation: fadeIn 5s forwards;
-                background-color: rgba(0,0,0,0);
-                /*transition: background-color 5s;*/
+                pointer-events: none;
             }
-            /*:host([is-ready]){*/
-            /*    background-color: rgba(0,0,0,.1);*/
-            /*}*/
             :host>div{
-                /*visibility: hidden;*/
                 pointer-events: auto;
                 position: fixed;
                 overflow: hidden;
             }
-            /*:host([is-ready]) div{*/
-            /*    visibility: visible;*/
-            /*    overflow: hidden;*/
-            /*}*/
             oda-title {
                 min-height: 34px;
                 max-height: 34px;
             }
         </style>
-        <div class="vertical shadow content" ~style="_style" id="main">
+        <div class="vertical shadow content" ~style="_style">
             <div @resize="setSize" class="vertical flex" style="overflow: hidden">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
@@ -52,9 +33,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         if (this.focused && this.controls?.length) {
             this.controls[0].setAttribute('tabindex', 0);
             this.controls[0].setAttribute('autofocus', true);
-            // this.async(() => {
-                this.controls?.[0]?.focus();
-            // }, 100);
+            this.controls?.[0]?.focus();
         }
     },
     controls: undefined,
@@ -68,17 +47,16 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         this.windows.push(win);
         this.async(() => {
             this.windows.forEach(w => {
-                this.listen('scroll', '_close', { target: w, useCapture: true });
-                //this.listen('resize', '_close', { target: w, useCapture: true });
-                window.addEventListener('resize', this.__close ||= this._close.bind(this));
+                w.addEventListener('mousedown', this.__closeHandler);
             });
         }, 500)
     },
+    get __closeHandler(){
+        return this._close.bind(this);
+    },
     detached() {
         this.windows.forEach(w => {
-            window.removeEventListener('resize', this.__close);
-            //this.unlisten('resize', '_close', { target: w, useCapture: true });
-            this.unlisten('scroll', '_close', { target: w, useCapture: true });
+            w.removeEventListener('mousedown', this.__closeHandler);
         });
     },
     resolveEvent: 'ok',
@@ -92,11 +70,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
             }
         }
     ],
-    // listeners: {
-    //     pointerleave: function cancel() {
-    //          if (this.cancelAfterLeave) this.fire('cancel');
-    //     }
-    // },
     props: {
         parent: { type: [HTMLElement, Object] },
         intersect: false,
@@ -111,12 +84,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         iconSize: 24,
         minWidth: 100,
         minHeight: 0,
-        // isReady: {
-        //     default: false,
-        //     reflectToAttribute: true,
-        // },
-        // cancelAfterLeave: false,
-        // pointerEvents: 'unset'
     },
     contentRect: null,
     get _style() {
@@ -202,29 +169,14 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
             } break;
         }
 
-        //if (!this.parent) {
-            top = top < 0 ? 0 : top;
-            left = left < 0 ? 0 : left;
-            if (bottom > winHeight) size.bottom = 0
-            if (right > winWidth) size.right = 0;
-        // } else {
-        //     if (this.align === 'left' || this.align === 'right') {
-            if (this.parent && this.useParentWidth) minWidth = maxWidth = parentWidth;
-        //         if ((height && top) > winHeight - top) {
-        //             top = rect.bottom - height;
-        //             top = top < 0 ? 0 : top;
-        //             maxHeight = winHeight - top;
-        //         } else if (bottom >= winHeight) size.bottom = 0;
-        //     } else if (this.align === 'top' || this.align === 'bottom') {
-        //         if (this.useParentWidth) minWidth = maxWidth = parentWidth;
-        //         else {
-        //             if (width < parentWidth) minWidth = parentWidth;
-        //             if (right > winWidth) size.right = 0;
-        //         }
-        //         left = left < 0 ? 0 : left;
-        //         if (bottom > winHeight) size.bottom = 0;
-        //     }
-        // }
+        top = top < 0 ? 0 : top;
+        left = left < 0 ? 0 : left;
+        if (bottom > winHeight) size.bottom = 0
+        if (right > winWidth) size.right = 0;
+
+        if (this.parent && this.useParentWidth)
+            minWidth = maxWidth = parentWidth;
+
         minWidth = minWidth > maxWidth ? maxWidth : minWidth;
         minHeight = minHeight > maxHeight ? maxHeight : minHeight;
 
@@ -235,30 +187,27 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         this._steps = [];
 
         this.async(() => {
-            const main = this.$('#main');
-            if (main.style.bottom === '0px')
-                main.style.top = 'unset';
-            if (main.style.right === '0px')
-                main.style.left = 'unset';
+            if (this.block.style.bottom === '0px')
+                this.block.style.top = 'unset';
+            if (this.block.style.right === '0px')
+                this.block.style.left = 'unset';
         }, 10)
         return size;
+    },
+    get block(){
+        return this.$('div');
     },
     get control(){
         return this.controls?.[0];
     },
     setSize(e) {
+        if (!this.control) return;
         this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
-        // this.interval('set-size', () => {
-        //     this.isReady = true;
-        // })
     },
     _close(event) {
-        switch (event.type) {
-            case 'scroll': if (event.path.includes(this)) return;
-            case 'click':
-            case 'tap': if (this.$('#main').getBoundingClientRect().includesPoint(event)) return;
-        }
+        if (event?.path.includes(this)) return;
+        if (event?.path.includes(this.parent)) return;
         const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
         for (const dd of dropDowns) {
             if (dd.control.getBoundingClientRect().includesPoint(event)) break

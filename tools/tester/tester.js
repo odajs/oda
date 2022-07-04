@@ -1,12 +1,12 @@
 ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/containers', extends: 'oda-app-layout',
     template: /*html*/`
     <app-layout-toolbar slot="header">
-        <div class="horizontal" slot="header-left" style="align-items:center; width: 100%">
+        <div class="horizontal" slot="left" style="align-items:center; width: 100%">
             <oda-button class="no-flex" ~for="views.filter(i=>i.slot === 'left')" :icon="item.icon" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
         </div>
-        <span class="flex" slot="header-center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
+        <span class="flex" slot="center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
         <slot name="buttons" slot="header-right" style="display:flex;"></slot>
-        <oda-button slot="header-right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
+        <oda-button slot="right" ~if="!item.if || _info[item.if]" ~for="views.filter(i=>i.slot === 'right')" :icon="item.icon" :label="item.label" :title="item.label" allow-toggle :toggled="focused===item" @tap="focused=item"></oda-button>
     </app-layout-toolbar>
     <slot @slotchange="onSlot" class="flex"></slot>           
     `,
@@ -17,7 +17,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
             type: Object,
             default: undefined,
             async set(n) {
-                if (n) await this._componentAnalysis();
+                if (n) await this._componentAnalysis(n);
             }
         },
         views: [
@@ -36,7 +36,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
                 for (let v of this.views) {
                     for (let slot of v.slots) {
                         if (slot.target) {
-                            slot.target[slot.component || 'component'] = null;
+                            // slot.target[slot.component || 'component'] = null;
                             slot.target.setAttribute('slot', '?')
                         }
                     }
@@ -55,7 +55,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
                             }
                             slot.target.setAttribute('slot', slot.slot)
                             this.appendChild(slot.target);
-                            slot.target[slot.component || 'component'] = this.component;
+                            slot.target[slot.component || 'component'] ||= this.component;
 
                             if (slot.id === 'oda-tester-info') {
                                 slot.target.focused = this.focused;
