@@ -66,12 +66,20 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
                 this.listen(resolveEvent, (e) => {
                     this.fire('ok');
                 }, { target: el })
-
             }
         }
     ],
     props: {
-        parent: { type: [HTMLElement, Object] },
+        parent: {
+            type: [HTMLElement, Object],
+            set(n){
+                if (n){
+                    n.addEventListener('resize', ()=>{
+                        this.setSize();
+                    })
+                }
+            }
+        },
         intersect: false,
         cascade: false,
         align: {
@@ -198,7 +206,12 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         return this.$('div');
     },
     get control(){
-        return this.controls?.[0];
+        const ctrl = this.controls?.[0];
+        ctrl.addEventListener('resize', e=>{
+            console.log('resize')
+            this.setSize();
+        })
+        return ctrl;
     },
     setSize(e) {
         if (!this.control) return;

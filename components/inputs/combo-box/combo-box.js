@@ -86,7 +86,9 @@ ODA({is: 'oda-combo-box-panel',
     template:`
         <style>
             :host{
+                @apply --border;
                 @apply --vertical;
+                background-color: red;
             }
             label{
                 padding: 4px;
