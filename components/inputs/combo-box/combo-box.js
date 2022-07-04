@@ -16,14 +16,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 background-color: transparent;
             }
         </style>
-        <input class="flex" type="text" @input="input" :value="text">
+        <input class="flex" type="text" @input="input" :value="text" :placeholder>
         <oda-button ~if="!hideButton" :icon="value?'icons:close':icon" @tap="_dd?closeDown():dropDown()"></oda-button>
     `,
-    get _items() {
-        return typeof this.items === 'function'
-            ? this.items()
-            : this.items;
-    },
+    placeholder: '',
     props: {
         icon: 'icons:chevron-right:90',
         value: Object,
@@ -33,16 +29,26 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         }
     },
     set dropDownControl(n){
+        n.tabindex = 0;
         this._panel.dropDownControl = n;
     },
     get text(){
+        switch (typeof this.value){
+            case 'string':
+                return this.value;
+            case 'object':{
+                return this.value?.label || this.value?.name || this.value?.key;
+            }
+        }
         return this.value?.toString() || '';
     },
     iconSize: 24,
     _dd: null,
     async input(e) {
         this.text = e.target.value;
-        if (e.target.value)
+        this._lastValue = e.target.value;
+        e.target.value = undefined;
+        if (this.text)
             this.dropDown();
         else
             this.closeDown();
@@ -55,11 +61,15 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     dropDown() {
         this._panel.filter = this.text;
         this._dd = this._dd || ODA.showDropdown(this._panel, {}, { parent: this, useParentWidth: true}).then(res=>{
-            this.value = res;
+            this._lastValue = undefined;
+            this.value = res.result;
         }).catch(()=>{
+            if (this._lastValue)
+                this.value = this._lastValue;
             this.text = undefined;
         }).finally(()=>{
             this._dd = null;
+            this._lastValue = undefined;
         })
     },
     closeDown(){
@@ -68,13 +78,16 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     keyBindings: {
         ArrowDown(e) {
             this.dropDown();
-            this._panel.down(e)
+            this.async(()=>{
+                this._panel._down(e);
+            })
+
         },
         ArrowUp(e) {
-            this._panel.up(e)
+            this._panel._up(e)
         },
         enter(e) {
-
+            this._panel.ok(e)
         },
         space(e){
             if (!e.ctrlKey) return;
@@ -88,7 +101,6 @@ ODA({is: 'oda-combo-box-panel',
             :host{
                 @apply --border;
                 @apply --vertical;
-                background-color: red;
             }
             label{
                 padding: 4px;
@@ -113,11 +125,12 @@ ODA({is: 'oda-combo-box-panel',
         })
 
     },
-    up(e){
-        this.dropDownControl?.up(e);
+    result: undefined,
+    _up(e){
+        this.dropDownControl?.moveUp?.(e);
     },
-    down(e){
-        this.dropDownControl?.down(e);
+    _down(e){
+        this.dropDownControl?.moveDown?.(e);
     },
     pgUp(e){
         this.dropDownControl?.up(e);
@@ -130,7 +143,8 @@ ODA({is: 'oda-combo-box-panel',
     },
     ok(e){
         if (this.dropDownControl.result){
-            this.fire(ok, this.dropDownControl.result);
+            this.result = this.dropDownControl.result;
+            this.fire('ok');
         }
     }
 })
@@ -143,8 +157,20 @@ ODA({is: 'oda-combo-list',
                 overflow-x: hidden;
                 padding: 0px 8px;
             }
+            [focused]{
+                @apply --focused;
+            }
+            label:hover{
+               @apply --selected;
+            }
+            label{
+                @apply --content;
+                min-height: 24px; 
+                align-content: center;
+                cursor: pointer;
+            }
         </style>
-        <label style="min-height: 24px; align-content: center;" ~for="rows" :focused="item === focusedItem" @tap="focusedItem = item; fire('ok')">{{item?.label || item}}</label>
+        <label ~for="rows" :focused="item === focusedItem" @tap="focusedItem = item">{{item?.label || item}}</label>
     `,
     filter: '',
     get hasData(){
@@ -156,20 +182,24 @@ ODA({is: 'oda-combo-list',
     },
     keyBindings: {
         ArrowDown(e) {
-            const idx = this.items.indexOf(this.focusedItem);
-            if (idx < this.items.length - 1)
-                this.focusedItem = this.items[idx + 1];
+            this.moveDown(e);
         },
         ArrowUp(e) {
-            const idx = this.items.indexOf(this.focusedItem);
-            if (idx > 0)
-                this.focusedItem = this.items[idx - 1];
-            else
-                this.domHost.fire('cancel');
+            this.moveUp(e);
         },
         enter(e) {
             this.fire('ok');
         }
+    },
+    moveUp(e){
+        const idx = this.items.indexOf(this.focusedItem);
+        if (idx > 0)
+            this.focusedItem = this.items[idx - 1];
+    },
+    moveDown(e){
+        const idx = this.rows.indexOf(this.focusedItem);
+        if (idx < this.rows.length - 1)
+            this.focusedItem = this.rows[idx + 1];
     },
     focusedItem: null,
     items: [],
@@ -188,5 +218,8 @@ ODA({is: 'oda-combo-list',
             })
         }
         return this.items;
+    },
+    get result(){
+        return this.focusedItem;
     }
 })
