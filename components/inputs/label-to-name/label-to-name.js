@@ -11,6 +11,18 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 font-size: x-small;
                 color: var(--header-background);
             }
+            :host input{
+                border: 1px solid rgb(118, 118, 118);
+                border-radius: 3px;
+                outline: none;
+                padding: 4px;
+                min-width: 0;
+                background-color: transparent;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-family: inherit;
+                font-size: inherit;
+            }
         </style>
         <label for="label">Input label:</label>
         <div class="horizontal">
@@ -19,7 +31,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         </div>
         <div ~if="showName" class="horizontal name">
             <label>name:</label>
-            <input tabindex="-1" class="flex" ::value="name" style="border: none; outline: none; font-size: x-small; font-weight: bold;">
+            <input tabindex="-1" class="flex" ::value="name" style="border: none; font-size: x-small; font-weight: bold;">
         </div>
     `,
     defaultList: Array,
