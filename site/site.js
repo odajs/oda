@@ -90,7 +90,7 @@ site: {
                 <div class="vertical" style="padding: 10px;">
                     <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
                     <div class="horizontal" style="align-items:center; justify-content: flex-end;">
-                        <a ~if="location.href.includes('components/') || location.href.includes('benchmarks/') || location.href.includes('apps/')" class="no-flex" :href="location.href.replace('index.html', '').replace('#', '')" target="_blank">
+                        <a ~if="location?.href?.includes('components/') || location?.href?.includes('benchmarks/') || location?.href?.includes('apps/')" class="no-flex" :href="location.href.replace('index.html', '').replace('#', '')" target="_blank">
                             <oda-icon icon="icons:open-in-new" :icon-size="25" title="open in new window"></oda-icon>
                         </a>
                         <div class="flex"></div>
@@ -135,26 +135,11 @@ site: {
             this.left.smartClose();
         },
         _activate(ctrl) {
-            if (!this.hash.includes(ctrl._path))
+            if (!this.hash?.includes(ctrl._path))
                 route(ctrl._path);
         },
         selectedSiteHeaderMenu: '',
         ddMenuIndex: -1,
-        listeners: {
-            pointermove() {
-                // this.debounce('_pointermove', () => this.closeDropdown(), 50);
-                this.closeDropdown();
-            }
-        },
-        closeDropdown() {
-            const dd = document.body.getElementsByTagName('oda-dropdown')
-            this.ddMenuIndex = -1;
-            if (dd.length)
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    elm.fire('cancel');
-                }
-        },
         setLeftDrawerFocus(item) {
             const title = item?.label || item;
             let hash = location.hash;
@@ -683,7 +668,6 @@ header: {
             index: 0
         },
         listeners: {
-            pointerleave: '_showDropdown',
             tap: '_tap',
         },
         async _showDropdown() {
@@ -695,6 +679,17 @@ header: {
                     const elm = dd[i];
                     elm.fire('cancel');
                 }
+            this.async(() => {
+                const dd = document.body.getElementsByTagName('oda-dropdown');
+                if (dd.length)
+                    for (let i = 0; i < dd.length; i++) {
+                        const elm = dd[i];
+                        elm.style.pointerEvents = 'none';
+                        elm.addEventListener('pointerleave', () => {
+                            elm.fire('cancel');
+                        })
+                    }
+            }, 300)
             let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none', cancelAfterLeave: true });
             if (res) {
                 this.ddMenuIndex = -1;
