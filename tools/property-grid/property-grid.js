@@ -119,7 +119,7 @@ CLASS({is: 'PropertyGridDataSet',
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
                         if (p.category) node.category = p.category
                         if (p.readOnly) node.ro = p.readOnly
-                        if (!p.set) node.ro = true
+                        // if (!p.set) node.ro = true
 
                         const editor = p.editor
                         if (editor?.includes('/')) {

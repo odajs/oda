@@ -38,9 +38,18 @@ ODA({
         </div>
         `,
     props: { 
-        radiusDot: 1,
-        radiusVertex: 5,
-        maxQuantityDots: 30000,
+        radiusDot: {
+            default: 1,
+            save: true
+        },
+        radiusVertex: {
+            default: 5,
+            save: true
+        },
+        maxQuantityDots: {
+            default: 30000,
+            save: true
+        }
     },
 
     triangleVertices: [], //Вершины треугольника. Вершина описывается экранными координатами "x", "y" и цветом "color".

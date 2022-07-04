@@ -684,7 +684,7 @@ header: {
                 if (dd.length)
                     for (let i = 0; i < dd.length; i++) {
                         const elm = dd[i];
-                        elm.style.pointerEvents = 'none';
+                        // elm.style.pointerEvents = 'none';
                         elm.addEventListener('pointerleave', () => {
                             elm.fire('cancel');
                         })
