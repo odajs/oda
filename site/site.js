@@ -434,6 +434,9 @@ content: {
     });
     ODA({ is: 'oda-nav', template: /*html*/ `
             <style>
+                :host {
+                    max-height: 2px;
+                }
                 oda-nav-btn {
                     position: absolute;
                     bottom: 0;
