@@ -83,11 +83,25 @@
       "link": "index.html"
     }
   },
+    {
+    "name": "flips",
+    "label": "Перевёртыши",
+    "content": {
+      "link": "index.html"
+    }
+  },
   {
     "name": "credit-calculator",
     "label": "Кредитный калькулятор",
     "content": {
       "link": "index.html"
+    }
+  },
+  {
+    "name": "date-timer",
+    "label": "oda-date-timer",
+    "content": {
+      "link": "index-tester.html"
     }
   }
 ]

@@ -58,8 +58,24 @@ ODA({ is: 'oda-date-timer',
         </div>
     `,
     props: {
-        txt: '', txt2: '', date: '', time: '', s: 0, mn: 0, h: 0, d: 0, w: 0, m: 0, y: 0, end: 0, today: 0
+        txt: {
+            default: '',
+            save: true
+        }, 
+        txt2: {
+            default: '',
+            save: true
+        }, 
+        date: {
+            default: '',
+            save: true
+        }, 
+        time: {
+            default: '',
+            save: true
+        }
     },
+    s: 0, mn: 0, h: 0, d: 0, w: 0, m: 0, y: 0, end: 0, today: 0,
     toUpdate: false,
     attached() {
         // this.style.visibility = 'visible'
@@ -88,7 +104,7 @@ ODA({ is: 'oda-date-timer',
             this.d = (diff / 1000 / 60 / 60 / 24).toFixed(2);
             this.w = (diff / 1000 / 60 / 60 / 24 / 7).toFixed(2);
             this.m = (diff / 1000 / 60 / 60 / 24 / 30.5).toFixed(2);
-            this.y = (diff / 1000 / 60 / 60 / 24 / 365).toFixed(2);
+            this.y = (diff / 1000 / 60 / 60 / 24 / 365.25).toFixed(2);
             this.toUpdate = !this.toUpdate;
         }, 16)
     },
@@ -146,7 +162,7 @@ ODA({ is: 'oda-date-timer-circle',
             },
             day: (t, al, div) => {
                 al = Math.floor(t / (1000 * 60 * 60 * 24));
-                div = 365;
+                div = 365.25;
                 return { t, al, div };
             }
         }
