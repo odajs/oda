@@ -37,11 +37,11 @@
             <oda-button icon="icons:refresh" @pointerdown="left=10;top=50;_lastX=_lastY=undefined" title="reset position" style="width:24px;margin: 10px; z-index: 1;"></oda-button>
             <div class="box vertical" dragable style="border: 1px solid red; padding: 8px; background: lightyellow;
                 cursor: move; position: absolute" @pointerdown="_down">
-                <oda-button @pointerdown.stop="run">top</oda-button>
-                <oda-button @pointerdown.stop="run">left</oda-button>
-                <oda-button @pointerdown.stop="run">right</oda-button>
-                <oda-button @pointerdown.stop="run">bottom</oda-button>
-                <oda-button @pointerdown.stop="run">modal</oda-button>
+                <oda-button @down.stop="run">top</oda-button>
+                <oda-button @down.stop="run">left</oda-button>
+                <oda-button @down.stop="run">right</oda-button>
+                <oda-button @down.stop="run">bottom</oda-button>
+                <oda-button @down.stop="run">modal</oda-button>
                 <div class="vertical" style="margin-top: 10px; align-items: left;justify-content: center;">
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>

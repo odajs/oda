@@ -4,7 +4,6 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <style>
         :host {
             max-height: 100%;
-            /*height: 100vh;*/
             border: 1px solid gray;
         }
     </style>
@@ -30,10 +29,6 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         rowLines: true,
         allowSort: true,
         groupExpandingMode: 'first',
-
-        // dataSet() {
-        //     return parseInspectedObject.call(this, this.inspectedObject, this.expertMode, this.onlySave);
-        // },
         dataSet(){
             return this.PropertyGridDataSet.items;
         },
@@ -53,7 +48,6 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         if (!force && node?.items?.length)
            return node?.items || [];
         return (node.items = new PropertyGridDataSet(node.value, this.expertMode, false, false).items);
-        // return (node.items = parseInspectedObject.call(this, node.value, this.expertMode, this.onlySave));
     },
     _sort(array = []) {
         if (!this.sorts.length) return;
@@ -97,7 +91,6 @@ CLASS({is: 'PropertyGridDataSet',
             while (proto) {
                 const descriptors = Object.getOwnPropertyDescriptors(proto)
                 for (let name in descriptors) {
-
                     if (!this.expert) {
                         // исключение свойств не описанных в props, вне экспертного режима
                         const idx = propsNames.indexOf(name)
@@ -112,15 +105,13 @@ CLASS({is: 'PropertyGridDataSet',
                         name === '__op__' || name === '$$savePath'
                     ) continue
 
-                    const d = descriptors[name]
+                    const d = descriptors[name];
+                    if (!d.enumerable) continue;
+                    if (typeof d?.value === 'function') continue;
                     const p = props[name]
-                    const node = {name: (p?.label || name), category: proto.constructor.name, ro: typeof d.value === 'object', list: p?.list}
+                    const node = {label: p?.label, name, category: p?.category || ((p?'!':'') + (proto.constructor?.name || '')), ro: p?.readOnly || typeof d.value === 'object', list: p?.list}
                     if (p) {
-                        // исключение свойств помеченных как приватные
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
-                        if (p.category) node.category = p.category
-                        if (p.readOnly) node.ro = p.readOnly
-
                         const editor = p.editor
                         if (editor?.includes('/')) {
                             let url = this.inspectedObjects[0]?.url || '';
@@ -186,75 +177,11 @@ ODA({ is: 'oda-pg-cell-name', extends: 'oda-table-cell',
     `,
     resetValue() {
         this.item.value = this.item.default;
+    },
+    get value(){
+        return this.item?.label?this.item?.label:this.item?.name;
     }
 })
-function parseInspectedObject(io, expertMode, onlySave) {
-    const result = [];
-    if (typeof io === 'object') {
-        if (!io?.props)
-            expertMode = true;
-        const props = io?.props || {};
-        let proto = io;
-        while (proto) {
-            const descriptors = Object.getOwnPropertyDescriptors(proto);
-            for (let name in descriptors) {
-                if (!expertMode && (name.startsWith('$obs$') || name === '$$savePath')) continue; //todo: найти другое решение
-                const p = props[name];
-                if (!expertMode && (!p || p.private || (onlySave && p && !p.save))) continue;
-                let d = descriptors[name];
-                if (typeof d.value === 'function') continue;
-                if (name.startsWith('#') || name === 'props' || name === '__proto__' || name === '__op__') continue;
-                if (result.some(i => i.name === name)) continue;
-                const row = {name, category: p?.category || proto?.constructor?.name, ro: p?.readOnly || typeof d.value === 'object', list: p?.list };
-
-                let editor = p?.editor;
-                if (editor?.includes('/')){
-                    ODA.import(editor).then(async imp=>{
-                        row.editor =  (await imp?.default)?.is || getTypeEditor(p?.type || typeof d.value || typeof p.default);
-                        this.render();
-                    })
-                }
-                else{
-                    row.editor = editor || getTypeEditor(p?.type || typeof d.value || typeof p.default)
-                }
-                const handler = {}
-
-                Object.defineProperty(row, 'value', {
-                    get(){
-                        return io[name];
-                    },
-                    set(n){
-                        io[name] = n;
-                    }
-                })
-                // d = Object.assign({}, d)
-
-                // if (d.get || d.set) {
-                //     if (d.set) {
-                //         d.set = function (value) {
-                //             row.ro = row.ro || (typeof value === 'object');
-                //             io[name] = value;
-                //         }
-                //     }
-                //     else {
-                //         row.ro = true;
-                //     }
-                //     d.get = function () {
-                //         const value = io[name];
-                //         row.ro = row.ro || (typeof value === 'object');
-                //         return value || '';
-                //     }
-                // }
-                // Object.defineProperty(row, 'value', d)
-                result.push(row);
-            }
-            if (!expertMode && result.length)
-                break;
-            proto = proto.__proto__;
-        }
-    }
-    return result;
-}
 
 function getTypeEditor(type) {
     switch (type) {
@@ -279,7 +206,7 @@ ODA({ is: 'oda-pg-object',
     template: `
         <style>
             :host{
-                /*@apply --disabled;*/
+                @apply --disabled;
                 padding: 4px;
             }
         </style>
@@ -287,9 +214,13 @@ ODA({ is: 'oda-pg-object',
     `,
     value: null,
     get text() {
+        if (!this.value)
+            return '[Object: udefined]';
         if (Array.isArray(this.value))
-            return `Array (${this.value.length})`
-        return this.value?.constructor?.name || this.value
+            return `[Array (${this.value.length})]`
+        if (typeof this.value === 'object')
+            return '[' + (this.value?.constructor?.name || typeof this.value) + ']';
+        return this.value;
     }
 })
 
@@ -327,7 +258,6 @@ ODA({ is: 'oda-pg-number',
     }
 
 })
-
 ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
     template: /*html*/`
         <style>
@@ -340,7 +270,6 @@ ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
         <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true" @tap.stop.prevent></oda-checkbox>
     `,
 })
-
 ODA({ is: 'oda-property-grid-cell',
     template: /* html */`
     <style>
@@ -365,14 +294,12 @@ ODA({ is: 'oda-property-grid-cell',
         this.item.value = res.focusedItem.value;
     }
 })
-
 ODA({ is: 'oda-property-header-cell-label',
     template: /* html */`
         <label style="text-align: center;" class="flex">{{inspectedObject?.constructor?.name}}</label>
     `,
     item: null
 })
-
 ODA({ is: 'oda-property-grid-header-cell',
     template: /* html */`
         <style>
