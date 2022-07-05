@@ -16,9 +16,17 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 background-color: transparent;
             }
         </style>
-        <input :readonly="value" class="flex" type="text" @input="input" :value="text" :placeholder>
+        <input :readonly="value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
         <oda-button ~if="!hideButton" :icon="value?'icons:close':icon" @tap="_tap"></oda-button>
     `,
+    get input(){
+        return this.$('input');
+    },
+    _setFocus(){
+        this.async(()=>{
+            this.input.focus();
+        })
+    },
     _tap(e){
         if (this._dd)
             this.closeDown();
@@ -52,7 +60,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     },
     iconSize: 24,
     _dd: null,
-    async input(e) {
+    async onInput(e) {
         this.text = e.target.value;
         if (this.text)
             this.dropDown();
@@ -65,17 +73,15 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         return panel;
     },
     dropDown() {
+        this._setFocus();
         this._panel.filter = this.text;
         this._dd = this._dd || ODA.showDropdown(this._panel, {}, { parent: this, useParentWidth: true}).then(res=>{
-            this._lastValue = undefined;
             this.value = res.result;
         }).catch(()=>{
-            if (this._lastValue)
-                this.value = this._lastValue;
             this.text = undefined;
         }).finally(()=>{
             this._dd = null;
-            this._lastValue = undefined;
+            this._setFocus();
         })
     },
     closeDown(){
@@ -115,6 +121,20 @@ ODA({is: 'oda-combo-box-panel',
         <label ~if="!dropDownControl?.hasData" class="header disabled" ~html="text"></label>
         <slot>
     `,
+    hostAttributes:{
+        tabindex: 0
+    },
+    keyBindings: {
+        ArrowDown(e) {
+            this._down(e);
+        },
+        ArrowUp(e) {
+            this._up(e)
+        },
+        enter(e) {
+            this.ok(e)
+        }
+    },
     get text(){
         return `no data to select <b>${this.filter || ''}</b>...`
     },
@@ -198,9 +218,9 @@ ODA({is: 'oda-combo-list',
         }
     },
     moveUp(e){
-        const idx = this.items.indexOf(this.focusedItem);
+        const idx = this.rows.indexOf(this.focusedItem);
         if (idx > 0)
-            this.focusedItem = this.items[idx - 1];
+            this.focusedItem = this.rows[idx - 1];
     },
     moveDown(e){
         const idx = this.rows.indexOf(this.focusedItem);

@@ -710,7 +710,7 @@ this.getAnimations().forEach((anim, i, arr) => {
 [![Начало игры](https://img.youtube.com/vi/QSZdWDoyork/0.jpg)](https://www.youtube.com/watch?v=QSZdWDoyork)
 
 
-На первых этапах игры все динозавры будут разбиваться об кактусы, не совершая никаких прыжков.
+На первых этапах игры все динозавры будут разбиваться об кактусы, не совершая никаких прыжков1.
 
 [![Без прыжков](https://img.youtube.com/vi/w9Ih1AET3nA/0.jpg)](https://www.youtube.com/watch?v=w9Ih1AET3nA)
 

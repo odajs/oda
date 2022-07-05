@@ -207,7 +207,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     get control(){
         const ctrl = this.controls?.[0];
-        ctrl.addEventListener('resize', e=>{
+        ctrl?.addEventListener('resize', e=>{
             console.log('resize')
             this.setSize();
         })
