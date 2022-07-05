@@ -211,10 +211,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     get control(){
         const ctrl = this.controls?.[0];
-        // ctrl.addEventListener('resize', e=>{
-        //     console.log('resize')
-        //     this.setSize();
-        // })
+        ctrl.addEventListener('resize', e=>{
+            console.log('resize')
+            this.setSize();
+        })
         return ctrl;
     },
     setSize(e) {

@@ -16,9 +16,17 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 background-color: transparent;
             }
         </style>
-        <input class="flex" type="text" @input="input" :value="text" :placeholder>
-        <oda-button ~if="!hideButton" :icon="value?'icons:close':icon" @tap="_dd?closeDown():dropDown()"></oda-button>
+        <input :readonly="value" class="flex" type="text" @input="input" :value="text" :placeholder>
+        <oda-button ~if="!hideButton" :icon="value?'icons:close':icon" @tap="_tap"></oda-button>
     `,
+    _tap(e){
+        if (this._dd)
+            this.closeDown();
+        else if (this.value)
+            this.value = undefined;
+        else
+            this.dropDown();
+    },
     placeholder: '',
     props: {
         icon: 'icons:chevron-right:90',
@@ -46,8 +54,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     _dd: null,
     async input(e) {
         this.text = e.target.value;
-        this._lastValue = e.target.value;
-        e.target.value = undefined;
         if (this.text)
             this.dropDown();
         else
