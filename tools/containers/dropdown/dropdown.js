@@ -1,4 +1,4 @@
-ODA({is: 'oda-dropdown', imports: '@oda/title',
+ODA({ is: 'oda-dropdown', imports: '@oda/title',
     template: /*html*/`
         <style>
             :host {
@@ -48,14 +48,16 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         this.async(() => {
             this.windows.forEach(w => {
                 w.addEventListener('mousedown', this.__closeHandler);
+                w.addEventListener('pointerdown', this.__closeHandler);
             });
         }, 500)
     },
-    get __closeHandler(){
+    get __closeHandler() {
         return this._close.bind(this);
     },
     detached() {
         this.windows.forEach(w => {
+            w.removeEventListener('pointerdown', this.__closeHandler);
             w.removeEventListener('mousedown', this.__closeHandler);
         });
     },
@@ -72,9 +74,9 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     props: {
         parent: {
             type: [HTMLElement, Object],
-            set(n){
-                if (n){
-                    n.addEventListener('resize', ()=>{
+            set(n) {
+                if (n) {
+                    n.addEventListener('resize', () => {
                         this.setSize();
                     })
                 }
@@ -84,7 +86,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         cascade: false,
         align: {
             default: 'bottom',
-            list: ['bottom', 'top', 'left', 'right']
+            list: ['bottom', 'top', 'left', 'right', 'modal']
         },
         useParentWidth: false,
         title: '',
@@ -95,8 +97,6 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
-        this.block.style.bottom  = this.block.style.bottom === '0px' ? 'unset' : this.block.style.bottom ;
-        this.block.style.right = this.block.style.right === '0px' ? 'unset' : this.block.style.right;
         const rect = new ODARect(this.parent);
         // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
@@ -149,7 +149,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
             } break;
             case 'top': {
                 bottom = this.intersect ? rect.bottom : rect.top;
-                top = bottom - height; // - (this.title ? 34 : 0);
+                top = bottom - height;
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = bottom - top;
@@ -164,7 +164,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
             } break;
             case 'bottom': {
                 top = this.intersect ? rect.top : rect.bottom;
-                bottom = top + height; // + (this.title ? 34 : 0);
+                bottom = top + height;
                 if (this.parent) {
                     top = top < 0 ? 0 : top;
                     maxHeight = winHeight - top;
@@ -181,7 +181,7 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
 
         top = top < 0 ? 0 : top;
         left = left < 0 ? 0 : left;
-        if (bottom > winHeight) size.bottom = 0
+        if (bottom > winHeight) size.bottom = 0;
         if (right > winWidth) size.right = 0;
 
         if (this.parent && this.useParentWidth)
@@ -191,24 +191,16 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         minHeight = minHeight > maxHeight ? maxHeight : minHeight;
 
         size = { ...size, ...{ maxWidth, minWidth, minHeight, maxHeight } };
-        if (!size.hasOwnProperty('bottom')) size.top = top;
-        if (!size.hasOwnProperty('right')) size.left = left;
         Object.keys(size).forEach(k => size[k] += 'px');
+        size.top = size.hasOwnProperty('bottom') ? 'unset' : top + 'px';
+        size.left = size.hasOwnProperty('right') ? 'unset' : left + 'px';
         this._steps = [];
-
-        this.async(() => {
-            this.block.style.top = this.block.style.bottom === '0px' ? 'unset' : this.block.style.top;
-            this.block.style.left = this.block.style.right === '0px' ? 'unset' : this.block.style.left;
-        }, 10)
         return size;
     },
-    get block(){
-        return this.$('div');
-    },
-    get control(){
+    get control() {
         const ctrl = this.controls?.[0];
-        ctrl?.addEventListener('resize', e=>{
-            console.log('resize')
+        ctrl?.addEventListener('resize', e => {
+            // console.log('resize')
             this.setSize();
         })
         return ctrl;

@@ -164,6 +164,9 @@ ODA({ is: 'oda-pg-cell-value',
             .editor{
                 border: none !important;
             }
+            [disabled]{
+                @apply --disabled;
+            }
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
@@ -277,7 +280,7 @@ ODA({ is: 'oda-pg-object',
     template: `
         <style>
             :host{
-                @apply --disabled;
+                /*@apply --disabled;*/
                 padding: 4px;
             }
         </style>
@@ -315,8 +318,15 @@ ODA({ is: 'oda-pg-number',
                 @apply --dimmed;
             }
         </style>
-        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
+        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
     `,
+    get value(){
+        return +this.item.value;
+    },
+    set(n){
+        this.item.value = +n;
+    }
+
 })
 
 ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',

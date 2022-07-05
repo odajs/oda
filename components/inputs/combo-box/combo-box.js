@@ -5,7 +5,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             :host {
                 @apply --horizontal;
                 @apply --no-flex;
-                min-height: {{iconSize + 2}}px;
                 background-color: var(--content-background);
                 border-radius: 0px !important;
                 border: 1px solid var(--header-background);
@@ -15,6 +14,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 border: none;
                 outline: none;
                 background-color: transparent;
+            }
+            input{
+                width: 0px;
             }
         </style>
         <input :readonly="value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
