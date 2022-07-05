@@ -290,7 +290,7 @@ mutate (mutationProbability, mutationAmount) {
 import {NeuralNetwork} from './neural-net.js';
 ```
 
-В шаблоне компонента игры «**oda-game**» зададим не одного динозавра, а целую их популяцию.
+В шаблоне компонента игры «**oda-game**» зададим не одного, а целую популяцию динозавров.
 
 ```javascript
     <h1>Счет игры</h1>

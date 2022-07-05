@@ -95,6 +95,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
+        if (this.block.style.bottom === '0px')
+            this.block.style.bottom = '';
+        if (this.block.style.right === '0px')
+            this.block.style.right = '';
         const rect = new ODARect(this.parent);
         // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
@@ -196,9 +200,9 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
 
         this.async(() => {
             if (this.block.style.bottom === '0px')
-                this.block.style.top = 'unset';
+                this.block.style.top = '';
             if (this.block.style.right === '0px')
-                this.block.style.left = 'unset';
+                this.block.style.left = '';
         }, 10)
         return size;
     },
@@ -207,10 +211,10 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     get control(){
         const ctrl = this.controls?.[0];
-        ctrl.addEventListener('resize', e=>{
-            console.log('resize')
-            this.setSize();
-        })
+        // ctrl.addEventListener('resize', e=>{
+        //     console.log('resize')
+        //     this.setSize();
+        // })
         return ctrl;
     },
     setSize(e) {
