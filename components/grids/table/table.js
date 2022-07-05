@@ -958,13 +958,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
 
                 if ( scrollWidth && height ) {
-                    this._scrollTop = scrollTop
-                    this._scrollWidth = scrollWidth
+                    this._scrollTop = scrollTop;
+                    this._scrollWidth = scrollWidth-1;
                     this._height = height
                     this._scrollbarWidth = scrollbarWidth
                 }
             }
-        }, 16)
+        })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
