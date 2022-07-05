@@ -1,9 +1,9 @@
 ODA({is: 'oda-dropdown', imports: '@oda/title',
     template: /*html*/`
         <style>
-
             :host {
                 pointer-events: none;
+                z-index: 1000;
             }
             :host>div{
                 pointer-events: auto;
@@ -95,10 +95,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
-        if (this.block.style.bottom === '0px')
-            this.block.style.bottom = '';
-        if (this.block.style.right === '0px')
-            this.block.style.right = '';
+        this.block.style.bottom  = this.block.style.bottom === '0px' ? 'unset' : this.block.style.bottom ;
+        this.block.style.right = this.block.style.right === '0px' ? 'unset' : this.block.style.right;
         const rect = new ODARect(this.parent);
         // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
@@ -199,10 +197,8 @@ ODA({is: 'oda-dropdown', imports: '@oda/title',
         this._steps = [];
 
         this.async(() => {
-            if (this.block.style.bottom === '0px')
-                this.block.style.top = '';
-            if (this.block.style.right === '0px')
-                this.block.style.left = '';
+            this.block.style.top = this.block.style.bottom === '0px' ? 'unset' : this.block.style.top;
+            this.block.style.left = this.block.style.right === '0px' ? 'unset' : this.block.style.left;
         }, 10)
         return size;
     },
