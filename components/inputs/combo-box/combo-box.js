@@ -5,6 +5,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             :host {
                 @apply --horizontal;
                 @apply --no-flex;
+                min-height: {{iconSize + 12}}px;
                 background-color: var(--content-background);
                 border-radius: 0px !important;
                 border: 1px solid var(--header-background);

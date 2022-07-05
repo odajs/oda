@@ -97,6 +97,7 @@ CLASS({is: 'PropertyGridDataSet',
             while (proto) {
                 const descriptors = Object.getOwnPropertyDescriptors(proto)
                 for (let name in descriptors) {
+
                     if (!this.expert) {
                         // исключение свойств не описанных в props, вне экспертного режима
                         const idx = propsNames.indexOf(name)
@@ -119,7 +120,6 @@ CLASS({is: 'PropertyGridDataSet',
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
                         if (p.category) node.category = p.category
                         if (p.readOnly) node.ro = p.readOnly
-                        // if (!p.set) node.ro = true
 
                         const editor = p.editor
                         if (editor?.includes('/')) {
