@@ -275,6 +275,12 @@ function getTypeEditor(type) {
 
 ODA({ is: 'oda-pg-object',
     template: `
+        <style>
+            :host{
+                @apply --disabled;
+                padding: 4px;
+            }
+        </style>
         {{text}}
     `,
     value: null,

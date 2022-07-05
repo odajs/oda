@@ -4,6 +4,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         <style>
             :host {
                 @apply --horizontal;
+                @apply --no-flex;
                 min-height: {{iconSize + 2}}px;
                 background-color: var(--content-background);
                 border-radius: 0px !important;
@@ -17,7 +18,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             }
         </style>
         <input :readonly="value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
-        <oda-button ~if="!hideButton" :icon="value?'icons:close':icon" @tap="_tap"></oda-button>
+        <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(allowClear && value)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
     get input(){
         return this.$('input');
@@ -30,13 +31,16 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     _tap(e){
         if (this._dd)
             this.closeDown();
-        else if (this.value)
+        else if (this.allowClear && this.value)
             this.value = undefined;
         else
             this.dropDown();
     },
-    placeholder: '',
+
     props: {
+        placeholder: '',
+        allowClear: false,
+        iconSize: 24,
         icon: 'icons:chevron-right:90',
         value: Object,
         hideButton:{
@@ -139,6 +143,8 @@ ODA({is: 'oda-combo-box-panel',
         return `no data to select <b>${this.filter || ''}</b>...`
     },
     set filter(n){
+        if (!this.dropDownControl)
+            return;
         this.dropDownControl.filter = n;
     },
     set dropDownControl(n){
@@ -181,7 +187,6 @@ ODA({is: 'oda-combo-list',
                 @apply --vertical;
                 overflow-y: auto;
                 overflow-x: hidden;
-                padding: 0px 8px;
             }
             [focused]{
                 @apply --focused;
@@ -194,6 +199,7 @@ ODA({is: 'oda-combo-list',
                 min-height: 24px; 
                 align-content: center;
                 cursor: pointer;
+                padding: 2px 4px;
             }
         </style>
         <label ~for="rows" :focused="item === focusedItem" @tap="focusedItem = item">{{item?.label || item}}</label>
@@ -201,10 +207,6 @@ ODA({is: 'oda-combo-list',
     filter: '',
     get hasData(){
         return this.rows?.length;
-    },
-    attached() {
-        if (!this.focusedItem)
-            this.focusedItem = this.items?.[0];
     },
     keyBindings: {
         ArrowDown(e) {
