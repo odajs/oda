@@ -86,6 +86,7 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         this.control.style.setProperty('overflow', 'hidden');
     },
     _close(event) {
+        if (event.path.length === 1) return;
         for (let element of event.path){
             if (!(element instanceof Node)) continue;
             if (this.contains(element)) return;
