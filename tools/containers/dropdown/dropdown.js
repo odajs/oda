@@ -212,16 +212,12 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.contentRect = this.control.getBoundingClientRect();
     },
     _close(event) {
-        if (event?.path.includes(this)) return;
+        if (event?.path.includes(this.control)) return;
         if (event?.path.includes(this.parent)) return;
-
         const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
         for (const dd of dropDowns) {
-            if (dd === this) break;
-            if (event?.path.includes(dd)) continue;
-            if (event?.path.includes(dd.parent)) continue;
+            if (event?.path.includes(dd.control)) break;
             dd.fire('cancel');
         }
-        this.fire('cancel');
     }
 })
