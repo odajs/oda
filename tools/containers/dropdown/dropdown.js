@@ -1,9 +1,16 @@
 ODA({ is: 'oda-dropdown', imports: '@oda/title',
     template: /*html*/`
         <style>
+            @keyframes fadin {
+                from {background-color: rgba(0, 0, 0, 0)}
+                to {background-color: rgba(0, 0, 0, 0.4)}
+                
+            }
             :host {
                 pointer-events: none;
                 z-index: 1000;
+                animation: fadin 5s ease-in-out;
+                background-color: rgba(0, 0, 0, 0.4);
             }
             :host>div{
                 pointer-events: auto;
@@ -212,11 +219,17 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.contentRect = this.control.getBoundingClientRect();
     },
     _close(event) {
-        if (event?.path.includes(this.control)) return;
         if (event?.path.includes(this.parent)) return;
+        for (let element of event.path){
+            if (!(element instanceof Node)) continue;
+            if (this.contains(element)) return;
+        }
         const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
         for (const dd of dropDowns) {
-            if (event?.path.includes(dd.control)) break;
+            for (let element of event.path){
+                if (!(element instanceof Node)) continue;
+                if (dd.contains(element)) return;
+            }
             dd.fire('cancel');
         }
     }
