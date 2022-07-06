@@ -121,6 +121,7 @@ ODA({is: 'oda-combo-box-panel',
             :host{
                 @apply --border;
                 @apply --vertical;
+                border-radius: 0px !important;
             }
             label{
                 padding: 4px;
