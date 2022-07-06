@@ -38,19 +38,20 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     controls: undefined,
     attached() {
-        let win = window;
-        this.windows = [];
-        while (win.window !== win) {
-            this.windows.push(win)
-            win = win.window;
-        }
-        this.windows.push(win);
+        this.windows = this.getWindows();
         this.async(() => {
             this.windows.forEach(w => {
                 w.addEventListener('mousedown', this.__closeHandler);
                 w.addEventListener('pointerdown', this.__closeHandler);
             });
         }, 500)
+    },
+    getWindows(win = window, list = []){
+        do{
+            list.add(win);
+            win = win.window;
+        } while (win !== win.window)
+        return list;
     },
     get __closeHandler() {
         return this._close.bind(this);

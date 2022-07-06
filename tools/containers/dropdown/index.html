@@ -10,21 +10,28 @@
 <oda-dropdown-tester></oda-dropdown-tester>
 <script type="module">
 
-   ODA({is:'oda-dropdown-tester',
+    ODA({is:'oda-dropdown-tester',
         template:`
             <style>
                 :host{
-                    @apply --horizontal;
+                    @apply --vertical;
                     @apply --flex;
                 }
             </style>
-            <div ~for="type" class="flex vertical shadow" style="margin: 12px; border: 1px solid transparent; border-radius: 4px; align-items: center;">
-                <h3>{{item}}</h3>
-                <div class="flex vertical" style=" justify-content: space-around;">
-                    <button ~for="align" style="width: 60px; margin: 20px;" @tap="run($event, item, item1)">{{item1}}</button>
-                </div>
+            <div class="flex horizontal">
+                <div ~for="type" class="flex vertical shadow" style="margin: 12px; border: 1px solid transparent; border-radius: 4px; align-items: center;">
+                    <h3>{{item}}</h3>
+                    <div class="flex vertical" style=" justify-content: space-around;">
+                        <button ~for="align" style="width: 60px; margin: 20px;" @tap="run($event, item, item1)">{{item1}}</button>
+                    </div>
 
+                </div>
             </div>
+            <div style="height: 50%" class="flex horizontal">
+                <iframe class="flex" src="http://localhost:63342/web/oda/tools/containers/dropdown/index.html"></iframe>
+                <iframe  class="flex" src="http://localhost:63342/web/oda/tools/containers/dropdown/index-2.html"></iframe>
+            </div>
+
         `,
         type: ['No parent', 'Parent', 'Parent + intersect'],
         align: ['top', 'bottom', 'left', 'right'],
@@ -39,8 +46,8 @@
             }
         }
     })
-   ODA({is: 'oda-test',
-       template:`
+    ODA({is: 'oda-test',
+        template:`
             <style>
                 :host{
                     @apply --vertical;
@@ -53,7 +60,7 @@
             </div>
 
        `,
-       iconSize: 24,
-       icon: ''
-   })
+        iconSize: 24,
+        icon: ''
+    })
 </script>

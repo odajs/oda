@@ -100,14 +100,11 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         document.documentElement.removeEventListener("pointercancel", this.__stopMove, false);
     },
     async run(e) {
-        let type = this.parent ? (this.intersect ? 'par___int' : 'parent___') : 'no_parent';
         try {
-            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 },
-                { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count, pointerEvents: 'none' });
+            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count, pointerEvents: 'none' });
+            console.log(res);
         }
-        catch (e) {
-            console.log(e);
-        }
+        catch (e) { console.log(e); }
     }
 })
 ODA({ is: 'oda-test-menu', imports: '@oda/button',
@@ -119,12 +116,16 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
                     border: 4px solid red;
                     overflow: auto;
                 }
-                * {
-                    margin: 0 16px;
+                h4 {
+                    padding: 0 16px;
+                    margin: 0;
+                }
+                .lbl:hover {
+                    background-color: silver;
                 }
             </style>
             <oda-button :icon-size :icon></oda-button>
-            <h4 ~for="5" class="horizontal center">
+            <h4 ~for="5" class="horizontal center lbl" style="cursor: pointer" @tap.stop="_isOk(index)">
                 Запись № {{item}}
                 <oda-button :id="'Title № ' + item" @tap.stop="ontap" icon="icons:add" icon-size="48"></oda-button>
             </h4>
@@ -137,8 +138,12 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
             count = +count + 1;
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 },
                 { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count, pointerEvents: 'none' });
+            console.log(res);
         }
-        catch (e) { }
+        catch (e) { console.log(e) }
+    },
+    _isOk(e) {
+        this.fire('ok', { detail: { index: e, el: this } });
     }
 })
 
