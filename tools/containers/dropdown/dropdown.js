@@ -214,10 +214,14 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     _close(event) {
         if (event?.path.includes(this)) return;
         if (event?.path.includes(this.parent)) return;
+
         const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
         for (const dd of dropDowns) {
-            if (dd.control.getBoundingClientRect().includesPoint(event)) break
-            dd.fire('cancel')
+            if (dd === this) break;
+            if (event?.path.includes(dd)) continue;
+            if (event?.path.includes(dd.parent)) continue;
+            dd.fire('cancel');
         }
+        this.fire('cancel');
     }
 })
