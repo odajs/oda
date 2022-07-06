@@ -4,13 +4,12 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             @keyframes fadin {
                 from {background-color: rgba(0, 0, 0, 0)}
                 to {background-color: rgba(0, 0, 0, 0.4)}
-                
             }
             :host {
                 pointer-events: none;
                 z-index: 1000;
-                animation: fadin 5s ease-in-out;
-                background-color: rgba(0, 0, 0, 0.4);
+                /*animation: fadin 5s ease-in-out;*/
+                /*background-color: rgba(0, 0, 0, 0.4);*/
             }
             :host>div{
                 pointer-events: auto;

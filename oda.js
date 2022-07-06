@@ -496,6 +496,9 @@ if (!window.ODA) {
                     }
                 }
             }
+            createElement(tagName, props = {}, inner) {
+                return this.create(...arguments);
+            }
             create(tagName, props = {}, inner) {
                 const el = document.createElement(tagName);
                 for (let p in props)
