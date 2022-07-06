@@ -68,7 +68,7 @@ window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey) {
         var table = await ODA.createComponent("oda-localization-table");
         ODA.showDialog(table, {}, {
-            icon: 'icons:flag', title: 'Dictionaries',
+            icon: 'icons:flag', title: 'Dictionaries', autosize:false,
             buttons: [{ label: 'Download', icon: 'icons:file-download' }]
         })
             .then(ok => {
@@ -81,7 +81,7 @@ window.addEventListener('keydown', async e => {
 
 ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
     props:{
-        showHeader:true, colLines: true, rowLines: true, allowSort: true,  //sort: [[letter]],
+        showHeader:true, colLines: true, rowLines: true, allowSort: true, lazy: false, //sort: [[letter]],
         // dataSet:[],
         dataSet() {
             // return [{words: 'phraze', transletes: '', letter: 'p', items: Array(0)}]
@@ -144,7 +144,7 @@ ODA({
     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
     template: /*html*/ `
         <style>
-            :host {@apply --vertical; height: 100%; min-height:300px;}
+            :host {@apply --vertical; /*height: 100%; ;*/}
             #battons-row {display: flex;}
             .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
             .label {line-height:34px;}
