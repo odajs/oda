@@ -78,7 +78,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
     async showSubMenu(e) {
         e.stopPropagation();
         this.parentElement.close(false, true);
-        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, pointerEvents: 'none', align: 'right', title: e.target.item.label });
+        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, align: 'right', title: e.target.item.label });
         this.parentElement.close(true);
     },
     _tap(e) {
