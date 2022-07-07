@@ -1473,6 +1473,9 @@ cells: {
             .expander {
                 cursor: pointer;
             }
+            [disabled]{
+                fill: var(--header-background);
+            }
         </style>`,
         props: {
             isFooter: false,
@@ -1494,7 +1497,7 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <oda-icon ~if="item.$level !== -1" :icon :disabled="hideIcon" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
+        <oda-icon ~if="item.$level !== -1" :icon  :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
