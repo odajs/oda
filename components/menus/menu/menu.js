@@ -82,7 +82,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
     },
     _tap(e) {
         this.focusedItem = e.currentTarget.item;
-        this.parentElement.close(true);
+        this.async(() => this.parentElement.close(true), 50);
     }
 });
 
