@@ -101,11 +101,11 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         arrowDown(e) {
             this.dropDown();
             this.async(()=>{
-                this.dropDownControl.$keys.arrowDown(e);
+                this.dropDownControl.$keys?.arrowDown?.(e);
             })
         },
         arrowUp(e) {
-            this.dropDownControl.$keys.arrowUp(e);
+            this.dropDownControl.$keys?.arrowUp?.(e);
         },
         enter(e) {
             this._panel.$keys.enter(e);
@@ -113,6 +113,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         space(e){
             if (!e.ctrlKey) return;
             this.dropDown();
+            this.async(()=>{
+                this.dropDownControl.$keys?.space?.(e);
+            })
         }
     },
 })
