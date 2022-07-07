@@ -35,6 +35,12 @@ if (!window.ODA) {
             }
         }
     }
+    document.addEventListener('pointerdown', (e) => {
+        const mousePos = new DOMRect(e.pageX, e.pageY);
+        window.top.dispatchEvent(new CustomEvent("_pointerdown", {
+            detail: { target: e.target, pos: mousePos, path: e.path, e }
+        }));
+    });
     window.addEventListener('mousedown', e => {
         if (e.use) return;
         e.use = true;

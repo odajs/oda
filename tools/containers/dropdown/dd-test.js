@@ -31,15 +31,15 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
                 }
             </style>
             <label>{{label}}</label>
-            <oda-button class="clear" @pointerdown="left=clientWidth/2-140;top=20;_lastX=_lastY=undefined">Clear position</oda-button>
+            <oda-button class="clear" @tap="left=clientWidth/2-140;top=20;_lastX=_lastY=undefined">Clear position</oda-button>
             <div class="box vertical" dragable style="border: 1px solid red; padding: 8px; background: lightyellow;
                 cursor: move; position: absolute" @pointerdown="_down">
                 <label>{{label}}</label>
-                <oda-button @down.stop="run">top</oda-button>
-                <oda-button @down.stop="run">left</oda-button>
-                <oda-button @down.stop="run">right</oda-button>
-                <oda-button @down.stop="run">bottom</oda-button>
-                <oda-button @down.stop="run">modal</oda-button>
+                <oda-button @mousedown="run">top</oda-button>
+                <oda-button @mousedown="run">left</oda-button>
+                <oda-button @mousedown="run">right</oda-button>
+                <oda-button @mousedown="run">bottom</oda-button>
+                <oda-button @mousedown="run">modal</oda-button>
                 <div class="vertical" style="margin-top: 10px; align-items: left;justify-content: center;">
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
                     <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>
@@ -100,6 +100,8 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         document.documentElement.removeEventListener("pointercancel", this.__stopMove, false);
     },
     async run(e) {
+        e.stopPropagation();
+        e.preventDefault();
         try {
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count, pointerEvents: 'none' });
             console.log(res);
@@ -133,8 +135,10 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
     iconSize: 24,
     icon: '',
     async ontap(e) {
+        e.stopPropagation();
         try {
-            count || 0;
+            this.parentElement.close(false, true);
+            count ||= 0;
             count = +count + 1;
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 },
                 { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count, pointerEvents: 'none' });
@@ -146,4 +150,3 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
         this.fire('ok', { detail: { index: e, el: this } });
     }
 })
-

@@ -9,7 +9,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 pointer-events: none;
                 z-index: 1000;
                 /*animation: fadin 5s ease-in-out;*/
-                /*background-color: rgba(0, 0, 0, 0.4);*/
+                background-color: {{align === 'modal' ? 'rgba(0, 0, 0, 0.1)' : ''}};
             }
             :host>div{
                 pointer-events: auto;
@@ -34,50 +34,6 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             </div>
         </div>
     `,
-    onSlot(e) {
-        this.controls = e.target.assignedNodes();
-        if (this.focused && this.controls?.length) {
-            this.controls[0].setAttribute('tabindex', 0);
-            this.controls[0].setAttribute('autofocus', true);
-            this.controls?.[0]?.focus();
-        }
-    },
-    controls: undefined,
-    attached() {
-        this.windows = this.getWindows();
-        this.async(() => {
-            this.windows.forEach(w => {
-                w.addEventListener('mousedown', this.__closeHandler);
-                w.addEventListener('pointerdown', this.__closeHandler);
-            });
-        }, 500)
-    },
-    getWindows(win = window, list = []){
-        do{
-            list.add(win);
-            win = win.window;
-        } while (win !== win.window)
-        return list;
-    },
-    get __closeHandler() {
-        return this._close.bind(this);
-    },
-    detached() {
-        this.windows.forEach(w => {
-            w.removeEventListener('pointerdown', this.__closeHandler);
-            w.removeEventListener('mousedown', this.__closeHandler);
-        });
-    },
-    resolveEvent: 'ok',
-    observers: [
-        function setEvent(controls, resolveEvent) {
-            for (let el of controls) {
-                this.listen(resolveEvent, (e) => {
-                    this.fire('ok');
-                }, { target: el })
-            }
-        }
-    ],
     props: {
         parent: {
             type: [HTMLElement, Object],
@@ -90,7 +46,6 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             }
         },
         intersect: false,
-        cascade: false,
         align: {
             default: 'bottom',
             list: ['bottom', 'top', 'left', 'right', 'modal']
@@ -102,11 +57,50 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         minWidth: 100,
         minHeight: 0,
     },
+    controls: undefined,
     contentRect: null,
+    resolveEvent: 'ok',
+    attached() {
+        this.addEventListener('pointerdown', this._pd1 ||= e => this._pointerdown(e, 'local'));
+        window.top.addEventListener('_pointerdown', this._pd2 ||= e => this._pointerdown(e, 'global'));
+        window.top.addEventListener('resize', this._pd2);
+    },
+    detached() {
+        this.removeEventListener('pointerdown', this._pd1);
+        window.top.removeEventListener('_pointerdown', this._pd2);
+        window.top.removeEventListener('_pointerdown', this._pd2);
+    },
+    observers: [
+        function setEvent(controls, resolveEvent) {
+            for (let el of controls) {
+                this.listen(resolveEvent, (e) => {
+                    this.fire('ok');
+                }, { target: el })
+            }
+        }
+    ],
+    onSlot(e) {
+        this.controls = e.target.assignedNodes();
+        if (this.focused && this.controls?.length) {
+            this.controls[0].setAttribute('tabindex', 0);
+            this.controls[0].setAttribute('autofocus', true);
+            this.controls?.[0]?.focus();
+        }
+    },
+    get control() {
+        const ctrl = this.controls?.[0];
+        ctrl?.addEventListener('resize', e => {
+            this.setSize();
+        })
+        return ctrl;
+    },
+    setSize(e) {
+        if (!this.control) return;
+        this['#_style'] = undefined;
+        this.contentRect = this.control.getBoundingClientRect();
+    },
     get _style() {
         const rect = new ODARect(this.parent);
-        // this.contentRect = this.control?.getBoundingClientRect()
-        // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
         let winWidth = window.innerWidth;
@@ -204,32 +198,35 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this._steps = [];
         return size;
     },
-    get control() {
-        const ctrl = this.controls?.[0];
-        ctrl?.addEventListener('resize', e => {
-            // console.log('resize')
-            this.setSize();
-        })
-        return ctrl;
-    },
-    setSize(e) {
-        if (!this.control) return;
-        this['#_style'] = undefined;
-        this.contentRect = this.control.getBoundingClientRect();
-    },
-    _close(event) {
-        if (event?.path.includes(this.parent)) return;
-        for (let element of event.path){
-            if (!(element instanceof Node)) continue;
-            if (this.contains(element)) return;
+    _pointerdown(e, type) {
+        if (type === 'local') {
+            e.stopPropagation();
+            return;
         }
-        const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
-        for (const dd of dropDowns) {
-            for (let element of event.path){
-                if (!(element instanceof Node)) continue;
-                if (dd.contains(element)) return;
+        this.close(true);
+    },
+    close(closeAll = false, skipCurrent = false) {
+        const list = [];
+        const fn = (win = window.top) => {
+            if (win?.document?.body) {
+                list.add(win);
+                for (var i = 0; i < win.frames.length; i++) fn(win.frames[i]);
             }
-            dd.fire('cancel');
+        }
+        let win = window.frames.length ? window : window.parent !== window ? window.parent : window.top;
+        fn(win);
+        const dds = [];
+        list.forEach(i => {
+            const arr = [...i.document.body.getElementsByTagName('oda-dropdown')].reverse();
+            if (arr.length) dds.push(...arr);
+        })
+        for (let i = 0; i < dds.length; i++) {
+            const dd = dds[i];
+            if (closeAll || dd !== this) dd.fire('cancel');
+            else {
+                if (!skipCurrent) dd.fire('cancel');
+                return;
+            }
         }
     }
 })
