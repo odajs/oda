@@ -17,6 +17,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
             min-width: 100px;
             @apply --vertical;
             overflow: hidden;
+            @apply --shadow;
         }
         :host > div {
             overflow-y: auto;
@@ -29,7 +30,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
         }
     </style>
     <div class="vertical flex">
-        <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
+        <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)" style="border-bottom: 1px solid lightgray">
             <div class="flex horizontal row" ~class="item.group?'header':'content'">
                 <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
                 <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
@@ -77,7 +78,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
     async showSubMenu(e) {
         e.stopPropagation();
         this.parentElement.close(false, true);
-        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, pointerEvents: 'none', align: 'right' });
+        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, pointerEvents: 'none', align: 'right', title: e.target.item.label });
         this.parentElement.close(true);
     },
     _tap(e) {
