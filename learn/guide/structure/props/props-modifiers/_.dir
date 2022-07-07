@@ -48,5 +48,10 @@
         "name": "shared-modifier.md",
         "label": "<b style='color: brown'>shared</b>: Модификатор сквозного биндинга",
         "status": "check"
+    },
+    {
+        "name": "../../template/jsx/directives/~save-key.md",
+        "label": "<b style='color: brown'>save</b>: Модификатор сохранения",
+        "status": "check"
     }
 ]

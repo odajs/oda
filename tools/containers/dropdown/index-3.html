@@ -1,0 +1,27 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="../../../components/buttons/button/button.js"></script>
+<script type="module" src="../containers.js"></script>
+<style>
+    body{
+        overflow: hidden;
+    }
+</style>
+<oda-dropdown-tester></oda-dropdown-tester>
+<script type="module">
+
+    ODA({is:'oda-dropdown-tester',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                    @apply --flex;
+                }
+            </style>
+            <div style="height: 50%" class="flex vertical">
+                <iframe class="flex" src="./index-2.html"></iframe>
+                <iframe class="flex" src="./index-2.html"></iframe>
+            </div>
+        `,
+    })
+</script>

@@ -23,6 +23,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         <input :readonly="value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
         <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(allowClear && value)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
+    get hasData(){
+        return this.dropDownControl?.hasData;
+    },
     get input(){
         return this.$('input');
     },
@@ -39,7 +42,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         else
             this.dropDown();
     },
-
     props: {
         placeholder: '',
         allowClear: false,
@@ -96,18 +98,17 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         ODA.closeDropdown();
     },
     keyBindings: {
-        ArrowDown(e) {
+        arrowDown(e) {
             this.dropDown();
             this.async(()=>{
-                this._panel._down(e);
+                this.dropDownControl.$keys.arrowDown(e);
             })
-
         },
-        ArrowUp(e) {
-            this._panel._up(e)
+        arrowUp(e) {
+            this.dropDownControl.$keys.arrowUp(e);
         },
         enter(e) {
-            this._panel.ok(e)
+            this._panel.$keys.enter(e);
         },
         space(e){
             if (!e.ctrlKey) return;
@@ -119,6 +120,7 @@ ODA({is: 'oda-combo-box-panel',
     template:`
         <style>
             :host{
+                overflow: hidden;
                 @apply --border;
                 @apply --vertical;
                 border-radius: 0px !important;
@@ -127,22 +129,14 @@ ODA({is: 'oda-combo-box-panel',
                 padding: 4px;
             }
         </style>
-        <label ~if="!dropDownControl?.hasData" class="header disabled" ~html="text"></label>
-        <slot>
+        <label ~if="!hasData" class="header disabled" ~html="text"></label>
+        <slot ~show="hasData"></slot>
     `,
+    get hasData(){
+        return this.domHost.parent.hasData;
+    },
     hostAttributes:{
         tabindex: 0
-    },
-    keyBindings: {
-        ArrowDown(e) {
-            this._down(e);
-        },
-        ArrowUp(e) {
-            this._up(e)
-        },
-        enter(e) {
-            this.ok(e)
-        }
     },
     get text(){
         return `no data to select <b>${this.filter || ''}</b>...`
@@ -160,24 +154,13 @@ ODA({is: 'oda-combo-box-panel',
                 this.fire(ok, n.result)
             });
         })
-
+    },
+    keyBindings:{
+        enter(e) {
+            this.fire('ok');
+        }
     },
     result: undefined,
-    _up(e){
-        this.dropDownControl?.moveUp?.(e);
-    },
-    _down(e){
-        this.dropDownControl?.moveDown?.(e);
-    },
-    pgUp(e){
-        this.dropDownControl?.up(e);
-    },
-    pgDown(e){
-        this.dropDownControl?.down(e);
-    },
-    home(e){
-        this.dropDownControl?.home(e);
-    },
     ok(e){
         if (this.dropDownControl.result){
             this.result = this.dropDownControl.result;
@@ -214,25 +197,16 @@ ODA({is: 'oda-combo-list',
         return this.rows?.length;
     },
     keyBindings: {
-        ArrowDown(e) {
-            this.moveDown(e);
+        arrowDown(e) {
+            const idx = this.rows.indexOf(this.focusedItem);
+            if (idx < this.rows.length - 1)
+                this.focusedItem = this.rows[idx + 1];
         },
-        ArrowUp(e) {
-            this.moveUp(e);
-        },
-        enter(e) {
-            this.fire('ok');
+        arrowUp(e) {
+            const idx = this.rows.indexOf(this.focusedItem);
+            if (idx > 0)
+                this.focusedItem = this.rows[idx - 1];
         }
-    },
-    moveUp(e){
-        const idx = this.rows.indexOf(this.focusedItem);
-        if (idx > 0)
-            this.focusedItem = this.rows[idx - 1];
-    },
-    moveDown(e){
-        const idx = this.rows.indexOf(this.focusedItem);
-        if (idx < this.rows.length - 1)
-            this.focusedItem = this.rows[idx + 1];
     },
     focusedItem: null,
     items: [],

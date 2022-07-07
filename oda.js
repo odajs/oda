@@ -514,6 +514,15 @@ if (!window.ODA) {
             $addClass(cls){
                 this.classList.add(cls)
             }
+            get $keys(){
+                if (!this['#$keys']){
+                    this['#$keys'] = {};
+                    for (let i in prototype.keyBindings || {}){
+                        this['#$keys'][i] = prototype.keyBindings[i].bind(this);
+                    }
+                }
+                return this['#$keys'];
+            }
             get $body(){
                 return this.domHost?.body || this.parentNode?.body || this.parentElement;
             }
