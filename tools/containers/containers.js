@@ -47,8 +47,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             const result = new Promise((resolve, reject) => {
                 onMouseDown = (e) => {
                     if (host ===  e.target){
-                        if (host._close)
-                            host._close(e);
+                        if (host.close)
+                            host.close();
                         else
                             host.fire('cancel');
                     }
