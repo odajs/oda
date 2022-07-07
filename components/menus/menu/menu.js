@@ -75,10 +75,14 @@ ODA({is: 'oda-menu', imports: '@oda/button',
         return item.is || item.template || (!item.group && this.template) || 'oda-menu-template';
     },
     async showSubMenu(e) {
-        await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, pointerEvents: 'none', align: 'right' });
+        e.stopPropagation();
+        this.parentElement.close(false, true);
+        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, pointerEvents: 'none', align: 'right' });
+        this.parentElement.close(true);
     },
     _tap(e) {
         this.focusedItem = e.currentTarget.item;
+        this.parentElement.close(true);
     }
 });
 
