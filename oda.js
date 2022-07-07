@@ -702,22 +702,13 @@ if (!window.ODA) {
                 throw new Error(`Not found super method: "${name}" `);*/
             }
         }
+        Object.defineProperty(odaComponent, 'name', {value: 'odaComponent'})
         odaComponent.__model__ = prototype;
         for(const name in prototype.props){
             const prop = prototype.props[name];
             if (prop.save) {
                 core.saveProps =  core.saveProps || {};
                 core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
-                // const fn = new Function(name, `this.saveSettings('${name}', ${name})`);
-                // Object.defineProperties(fn, {
-                //     name: { value: `$save$${name}` },
-                //     toString: {
-                //         value: function () {
-                //             return Function.prototype.toString.call(this).replace('anonymous', this.name);
-                //         }
-                //     }
-                // });
-                // prototype.observers.push(fn);
             }
         }
         while (prototype.observers.length > 0) {
@@ -807,9 +798,6 @@ if (!window.ODA) {
                             this.removeAttribute(prop.attrName);
                     })
                 }
-                // this.interval('updated', ()=>{
-                //     callHook.call(this, 'updated', []);
-                // })
             }
             Object.defineProperty(odaComponent.prototype, name, desc);
             Object.defineProperty(core.defaults, name, {
@@ -871,12 +859,9 @@ if (!window.ODA) {
                     else if (KERNEL.dpTarget) {
                         const block = this.__op__.blocks[key];
                         if (!block?.deps.includes(KERNEL.dpTarget)) {
-                            val = this.$proxy[key];// || this.getAttribute(name);
+                            val = this.$proxy[key];
                         }
                     }
-                    // this.interval('updated', ()=>{
-                    //     callHook.call(this, 'updated');
-                    // })
                     return val;
                 }
                 desc.set = function (v) {

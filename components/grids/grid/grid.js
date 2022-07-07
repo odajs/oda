@@ -152,8 +152,13 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         },
         sizer:{
             default:{
-                width: 1,
-                color: 'red'
+                props:{
+                    width: 1,
+                    color: {
+                        default: 'var(--border-color)',
+                        editor: '@oda/color-picker'
+                    }
+                }
             },
             save: true
         },
@@ -330,7 +335,8 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree, @oda/spl
                 @apply --horizontal;
                 width: 300px;
                 @apply --flex;
-                height: 100vh;
+                bottom: 0px;
+                height: 90vh;
             }
             div>div{
                 align-items: center;
@@ -348,8 +354,8 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree, @oda/spl
                 background-color: var(--content-background) !important;
             }
         </style>
-        <oda-splitter align="vertical"></oda-splitter>
-        <div class="content flex vertical" style="padding: 4px; overflow: hidden;">
+<!--        <oda-splitter align="vertical"></oda-splitter>-->
+        <div class="content flex vertical" style="overflow: hidden;">
             <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" allow-drag allow-drop :data-set="table.metadata"></oda-tree>
             <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
         </div>

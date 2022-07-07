@@ -52,6 +52,9 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     _sort(array = []) {
         if (!this.sorts.length) return;
         array.sort((a, b) => {
+            if (!a.prop !== !b.prop){
+                return a.prop?-1:1;
+            }
             let res = 0;
             this.sorts.some(col => {
                 const _a = a[col[this.columnId]];
@@ -66,6 +69,18 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
             return res;
         });
     },
+})
+CLASS({is: 'PropertyGridDataRow',
+    ctor(inspectedObject, expert, onlySave, isArray) {
+
+    },
+    get editor(){
+
+    },
+    get items(){
+
+    }
+
 })
 CLASS({is: 'PropertyGridDataSet',
     ctor(inspectedObject, expert, onlySave, isArray){
@@ -103,13 +118,14 @@ CLASS({is: 'PropertyGridDataSet',
                         name.startsWith('$obs$') ||
                         name === 'props' || name === '__proto__' ||
                         name === '__op__' || name === '$$savePath'
-                    ) continue
+                    )
+                        continue
 
                     const d = descriptors[name];
                     if (!d.enumerable) continue;
                     if (typeof d?.value === 'function') continue;
                     const p = props[name]
-                    const node = {label: p?.label, name, category: p?.category || ((p?'!':'') + (proto.constructor?.name || '')), ro: p?.readOnly || typeof d.value === 'object', list: p?.list}
+                    const node = {prop: p, label: p?.label, name, category: p?.category || (proto.constructor?.name || ''), ro: p?.readOnly || typeof d.value === 'object', list: p?.list}
                     if (p) {
                         if (!this.expert && (p.private || (this.onlySave && !p.save))) continue
                         const editor = p.editor
@@ -145,44 +161,6 @@ CLASS({is: 'PropertyGridDataSet',
         return items;
     }
 })
-ODA({ is: 'oda-pg-cell-value',
-    template: /* html */`
-        <style>
-            :host>span{
-                @apply --dimmed;
-                user-select: text;
-            }
-            .editor{
-                border: none !important;
-            }
-            [disabled]{
-                @apply --disabled;
-            }
-        </style>
-        <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
-        <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
-    `,
-    item: null,
-    async showDD(e){
-        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
-        this.item.value = res.focusedItem.value;
-    },
-    resetValue() {
-        this.item.value = this.item.default;
-    }
-})
-ODA({ is: 'oda-pg-cell-name', extends: 'oda-table-cell',
-    template: /* html */`
-        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
-    `,
-    resetValue() {
-        this.item.value = this.item.default;
-    },
-    get value(){
-        return this.item?.label?this.item?.label:this.item?.name;
-    }
-})
-
 function getTypeEditor(type) {
     switch (type) {
         case Array:
@@ -201,77 +179,55 @@ function getTypeEditor(type) {
             return 'oda-pg-string';
     }
 }
-
-ODA({ is: 'oda-pg-object',
-    template: `
+cells:{
+    ODA({ is: 'oda-pg-cell-value',
+        template: /* html */`
         <style>
-            :host{
+            :host>span{
+                @apply --dimmed;
+                user-select: text;
+            }
+            .editor{
+                border: none !important;
+            }
+            [disabled]{
                 @apply --disabled;
-                padding: 4px;
             }
         </style>
-        {{text}}
+        <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value || ''" @value-changed=" item.value = $event.detail.value || undefined">{{item?.value}}</span>
+        <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
     `,
-    value: null,
-    get text() {
-        if (!this.value)
-            return '[Object: udefined]';
-        if (Array.isArray(this.value))
-            return `[Array (${this.value.length})]`
-        if (typeof this.value === 'object')
-            return '[' + (this.value?.constructor?.name || typeof this.value) + ']';
-        return this.value;
-    }
-})
-
-ODA({ is: 'oda-pg-string',
-    template: /*html*/`
-        <style>
-            :host > input {
-                font-size: medium;
-                padding: 0px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                padding: 4px;
-            }
-            :host > input[readonly] {
-                @apply --dimmed;
-            }
-        </style>
-        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
-    `,
-})
-ODA({ is: 'oda-pg-number',
-    template: /*html*/`
-        <style>
-            :host > input[readonly] {
-                @apply --dimmed;
-            }
-        </style>
-        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
-    `,
-    get value(){
-        return +this.item.value;
-    },
-    set(n){
-        this.item.value = +n;
-    }
-
-})
-ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
-    template: /*html*/`
+        item: null,
+        async showDD(e){
+            const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
+            this.item.value = res.focusedItem.value;
+        },
+        resetValue() {
+            this.item.value = this.item.default;
+        }
+    })
+    ODA({ is: 'oda-pg-cell-name', extends: 'oda-table-cell',
+        template: /* html */`
         <style>
             :host{
-                @apply --horizontal;
-                @apply --flex
-                align-items: center;
+                font-weight: {{(item?.prop)?'bold':'normal'}};
             }
         </style>
-        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true" @tap.stop.prevent></oda-checkbox>
+        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
     `,
-})
-ODA({ is: 'oda-property-grid-cell',
-    template: /* html */`
+        resetValue() {
+            if (typeof this.item.default === 'function')
+                this.item.value = this.item.default();
+            else
+                this.item.value = this.item.default;
+        },
+        get value(){
+            return this.item?.label?this.item?.label:this.item?.name;
+        }
+    })
+
+    ODA({ is: 'oda-property-grid-cell',
+        template: /* html */`
     <style>
         :host{
             padding-left: 4px;
@@ -288,20 +244,20 @@ ODA({ is: 'oda-property-grid-cell',
     <span  :disabled="item?.ro || item?.editor === 'span'" class="editor flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
     <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
     `,
-    item: null,
-    async showDD(e){
-        const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
-        this.item.value = res.focusedItem.value;
-    }
-})
-ODA({ is: 'oda-property-header-cell-label',
-    template: /* html */`
+        item: null,
+        async showDD(e){
+            const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
+            this.item.value = res.focusedItem.value;
+        }
+    })
+    ODA({ is: 'oda-property-header-cell-label',
+        template: /* html */`
         <label style="text-align: center;" class="flex">{{inspectedObject?.constructor?.name}}</label>
     `,
-    item: null
-})
-ODA({ is: 'oda-property-grid-header-cell',
-    template: /* html */`
+        item: null
+    })
+    ODA({ is: 'oda-property-grid-header-cell',
+        template: /* html */`
         <style>
             :host{
                 @apply --horizontal;
@@ -312,4 +268,76 @@ ODA({ is: 'oda-property-grid-header-cell',
         </style>
         <oda-button class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
     `
-})
+    })
+}
+editors:{
+
+    ODA({ is: 'oda-pg-object',
+        template: `
+        <style>
+            :host{
+                @apply --disabled;
+                padding: 4px;
+            }
+        </style>
+        {{text}}
+    `,
+        value: null,
+        get text() {
+            if (!this.value)
+                return '[Object: udefined]';
+            if (Array.isArray(this.value))
+                return `[Array (${this.value.length})]`
+            if (typeof this.value === 'object')
+                return '[' + (this.value?.constructor?.name || typeof this.value) + ']';
+            return this.value;
+        }
+    })
+
+    ODA({ is: 'oda-pg-string',
+        template: /*html*/`
+        <style>
+            :host > input {
+                font-size: medium;
+                padding: 0px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding: 4px;
+            }
+            :host > input[readonly] {
+                @apply --dimmed;
+            }
+        </style>
+        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
+    `,
+    })
+    ODA({ is: 'oda-pg-number',
+        template: /*html*/`
+        <style>
+            :host > input[readonly] {
+                @apply --dimmed;
+            }
+        </style>
+        <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
+    `,
+        get value(){
+            return +this.item.value;
+        },
+        set(n){
+            this.item.value = +n;
+        }
+
+    })
+    ODA({ is: 'oda-pg-bool', imports: '@oda/checkbox',
+        template: /*html*/`
+        <style>
+            :host{
+                @apply --horizontal;
+                @apply --flex
+                align-items: center;
+            }
+        </style>
+        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true" @tap.stop.prevent></oda-checkbox>
+    `,
+    })
+}

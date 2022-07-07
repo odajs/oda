@@ -40,10 +40,14 @@ if (!globalThis.KERNEL) {
                 if (!key) return;
                 let val = options.target[key];
                 if (val !== undefined){
-                    if (options === val || options.target === val || typeof key === 'symbol' || regExpCheck.test(key))
+                    if (options === val || options.target === val || typeof key === 'symbol' || regExpCheck.test(key) )
                         return val;
-                    if (typeof val === 'function')
+                    if (typeof val === 'function'){
+                        if (key === 'constructor')
+                            return val;
                         return (...args) => val.apply(options.target, args);
+                    }
+
                     if (options.target.$proxy && KERNEL.reservedWords.includes(key))
                         return val;
 
