@@ -103,7 +103,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         e.stopPropagation();
         e.preventDefault();
         try {
-            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: this.title, id: count, pointerEvents: 'none' });
+            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: 'Block - 0', id: count });
             console.log(res);
         }
         catch (e) { console.log(e); }
@@ -126,11 +126,11 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
                     background-color: silver;
                 }
             </style>
-            <oda-button :icon-size :icon></oda-button>
-            <h4 ~for="5" class="horizontal center lbl" style="cursor: pointer" @tap.stop="_isOk(index)">
-                Запись № {{item}}
-                <oda-button :id="'Title № ' + item" @tap.stop="ontap" icon="icons:add" icon-size="48"></oda-button>
+            <h4 ~for="6" class="horizontal center lbl" style="cursor: pointer" @tap.stop="_isOk(index)">
+                Запись - {{item}}
+                <oda-button :id="'Title - ' + item" @tap.stop="ontap" icon="icons:add" icon-size="32" fill="gray"></oda-button>
             </h4>
+            <oda-button :icon-size :icon fill="red"></oda-button>
        `,
     iconSize: 24,
     icon: '',
@@ -140,8 +140,8 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
             this.parentElement.close(false, true);
             count ||= 0;
             count = +count + 1;
-            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 100 },
-                { parent: e.target, animation: 500, align: 'right', title: e.target.id, icon: 'icons:info', id: count, pointerEvents: 'none' });
+            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 },
+                { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count });
             console.log(res);
         }
         catch (e) { console.log(e) }
