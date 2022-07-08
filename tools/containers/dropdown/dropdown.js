@@ -76,7 +76,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             for (let el of controls) {
                 this.listen(resolveEvent, (e) => {
                     this.fire('ok');
-                    this.close(true);
+                    this.async(() => this.close(true), 50);
                 }, { target: el });
             }
         }

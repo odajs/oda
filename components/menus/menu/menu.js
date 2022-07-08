@@ -51,7 +51,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
             set(n) {
                 if (n) {
                     if (this.root) this.root.focusedItem = n;
-                    this.parentElement.fire('ok');
+                    this.fire('ok');
                 }
             }
         }
@@ -80,11 +80,9 @@ ODA({is: 'oda-menu', imports: '@oda/button',
         e.stopPropagation();
         this.parentElement.close(false, true);
         let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template, showSubTitle: this.showSubTitle }, { parent: e.target, align: 'right', title: (this.showSubTitle ? e.target.item.label : undefined) });
-        this.parentElement.close(true);
     },
     _tap(e) {
         this.focusedItem = e.currentTarget.item;
-        this.async(() => this.parentElement.close(true), 50);
     }
 });
 
