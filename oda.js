@@ -1236,6 +1236,7 @@ if (!window.ODA) {
                 src.text = src.text || [];
                 src.text.push(function textContent($el) {
                     let val = exec.call(this, fn, $el.$for);
+                    if (typeof val === 'object') return;
                     //todo  localization
                     if (src.translate && /*ODA.localization?.dictionary &&*/ val) {
                         //console.log('!!')

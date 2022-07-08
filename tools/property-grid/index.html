@@ -2,15 +2,19 @@
 <!--<oda-tester>-->
     <oda-property-grid>
         <oda-array-test></oda-array-test>
-        <!-- <oda-array-test></oda-array-test> -->
+        <oda-array-test num="300"></oda-array-test>
+        <oda-array-test num="100"></oda-array-test>
+        <oda-array-test num="400"></oda-array-test>
     </oda-property-grid>
 <!--</oda-tester>-->
 <script type="module">
     import '../../oda.js';
     import '../styles/styles.js';
     import './property-grid.js';
-    ODA({
-        is: 'oda-array-test',
+    ODA({is: 'oda-array-test',
+        template:`
+            TEST
+        `,
         props: {
             bb: Boolean,
             num: 100,
@@ -36,6 +40,10 @@
             myProp:{
                 label: 'Мое свойство',
                 default: 100
+            },
+            color:{
+                default: 'red',
+                editor: '@oda/color-picker'
             }
         }
     });

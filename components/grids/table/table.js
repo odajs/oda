@@ -1497,7 +1497,7 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <oda-icon ~if="item.$level !== -1" :icon  :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
+        <oda-icon ~if="item.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -1512,10 +1512,12 @@ cells: {
             return this.iconCollapsed;
         },
         _toggleExpand(e, d) {
-            if (!this.item.hideExpander) {
-                this.item.$expanded = !this.item.$expanded;
-                this.fire('expanded-changed', this.item.$expanded);
-            }
+            this.async (()=>{
+                if (!this.item.hideExpander) {
+                    this.item.$expanded = !this.item.$expanded;
+                    this.fire('expanded-changed', this.item.$expanded);
+                }
+            })
         }
     });
 
