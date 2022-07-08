@@ -43,6 +43,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
         allowClose: false,
         icon: '',
         title: '',
+        showSubTitle: false,
         template: '',
         items: [],
         iconSize: 24,
@@ -78,7 +79,7 @@ ODA({is: 'oda-menu', imports: '@oda/button',
     async showSubMenu(e) {
         e.stopPropagation();
         this.parentElement.close(false, true);
-        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template }, { parent: e.target, align: 'right', title: e.target.item.label });
+        let res = await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template, showSubTitle: this.showSubTitle }, { parent: e.target, align: 'right', title: (this.showSubTitle ? e.target.item.label : undefined) });
         this.parentElement.close(true);
     },
     _tap(e) {

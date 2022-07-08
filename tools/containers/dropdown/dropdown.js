@@ -24,7 +24,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         </style>
         <div class="vertical shadow content" ~style="_style">
             <div @resize="setSize" class="vertical flex" style="overflow: hidden">
-                <oda-title ~if="title" allow-close :icon :title @pointerdown.stop="close(false, true)" @cancel.stop="close(false, false)">
+                <oda-title ~if="title && title !== 'undefined'" allow-close :icon :title @pointerdown.stop="close(false, true)" @cancel.stop="close(false, false)">
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
