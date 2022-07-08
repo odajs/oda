@@ -163,7 +163,7 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
             else if (value !== io[this.name])
                 return value;
         }
-        return value;
+        return (value || '');
     },
     set value(n){
         if (n === undefined) return;
