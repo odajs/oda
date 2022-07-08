@@ -207,26 +207,12 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         }
         this.close(true);
     },
-    close(closeAll = false, skipCurrent = false) {
-        const list = [];
-        const fn = (win = window.top) => {
-            if (win?.document?.body) {
-                list.add(win);
-                for (var i = 0; i < win.frames.length; i++) fn(win.frames[i]);
-            }
-        }
-        let win = window.frames.length ? window : window.parent !== window ? window.parent : window.top;
-        fn(win);
-        const dds = [];
-        list.forEach(i => {
-            const arr = [...i.document.body.getElementsByTagName('oda-dropdown')].reverse();
-            if (arr.length) dds.push(...arr);
-        })
-        for (let i = 0; i < dds.length; i++) {
-            const dd = dds[i];
+    close(closeAll = false, keepThis = false) {
+        const dds = [...document.body.getElementsByTagName('oda-dropdown')].reverse();
+        for (const dd of dds) {
             if (closeAll || dd !== this) dd.fire('cancel');
             else {
-                if (!skipCurrent) dd.fire('cancel');
+                if (!keepThis) dd.fire('cancel');
                 return;
             }
         }
