@@ -806,8 +806,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _beforeExpand(item) {
         return item.items;
     },
-    async __checkChildren(node) {
-        const items = await this._beforeExpand(node);
+    __checkChildren(node) {
+        const items = this._beforeExpand(node);
+        if (items?.then){
+            return items.then(res=>{
+                return res;
+            })
+        }
         return (items?.length > 0) || false;
     },
     _useColumnFilters(array) {
@@ -977,7 +982,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         const item = d?.value || e.target.item;
         this.highlightedRow = item;
     },
-    async _select(e, d) {
+    _select(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
             if(!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);

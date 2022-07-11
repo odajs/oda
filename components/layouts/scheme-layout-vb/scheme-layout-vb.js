@@ -57,7 +57,7 @@ ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @to
     },
     iconSize: 12,
     props: {
-        linkColor:{
+        linkColor: {
             default: 'blue',
             save: true,
             editor: '@oda/color-picker'
@@ -111,6 +111,8 @@ ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @to
             console.log('context menu in oda-scheme-layout: ', e);
         },
         resize(e) {
+            this.vb.w = this.svg.clientWidth;
+            this.vb.h = this.svg.clientHeight;
             this.links = undefined;
         },
         tap(e) {
