@@ -47,7 +47,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         allowClear: false,
         iconSize: 24,
         icon: 'icons:chevron-right:90',
-        value: Object,
+        value: undefined,
         hideButton:{
             label: 'Скрыть кнопку',
             default: false,

@@ -40,7 +40,7 @@ ODA({is: "oda-checkbox", extends: 'oda-icon',
     },
     listeners: {
         tap(e) {
-            e.stopPropagation();
+            // e.stopPropagation();
             if (this.threeStates) {
                 let newStateIndex = (this.states.indexOf(this.state) + 1) % 3;
                 this.state = this.states[newStateIndex];

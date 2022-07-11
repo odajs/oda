@@ -321,7 +321,7 @@ editors:{
                 padding: 4px;
             }
         </style>
-        <input :placeholder="'mixed: [' + item.value+']'" class="error flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" :readonly="item.ro === true"  @input="_input" @tap.stop.prevent @keydown.stop>
+        <input :placeholder="'mixed: [' + item.value+']'" class="error flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" :readonly="item.ro === true"  @input="_input" @keydown.stop>
         `,
         _input(e){
             this.item.value = e.target.value;
@@ -342,7 +342,7 @@ editors:{
                 @apply --dimmed;
             }
         </style>
-        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
+        <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true" @keydown.stop>
     `,
     })
     ODA({ is: 'oda-pg-number',
@@ -352,7 +352,7 @@ editors:{
                     @apply --dimmed;
                 }
             </style>
-            <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="vv" :readonly="item.ro === true" @tap.stop.prevent @keydown.stop>
+            <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value="vv" :readonly="item.ro === true" @keydown.stop>
         `,
         set vv(n){
             this.value = +n;
@@ -377,7 +377,7 @@ editors:{
                 align-items: center;
             }
         </style>
-        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true" @tap.stop.prevent></oda-checkbox>
+        <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true"></oda-checkbox>
     `,
     })
 }
