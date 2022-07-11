@@ -72,6 +72,7 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
 
 CLASS({is: 'PropertyGridDataRowOwner',
     get items(){
+        if (this.mixed) return [];
         if (!this.$expanded) return (this.value && typeof this.value === 'object')?[{}]:[];
         const items = {}
         for (let obj of this.inspectedObjects || []) {
@@ -127,7 +128,10 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get category(){
         return this.prop?.category || this.prototype.constructor?.name;
     },
+    mixed: false,
     get editor(){
+        if (this.mixed)
+            return 'oda-pg-mixed';
         if (this.prop?.editor?.includes('/')) {
             let url = this.dataSet.inspectedObjects[0]?.url || '';
             ODA.import((url?(url+'/~/'):'') + this.prop.editor).then(async imp=>{
@@ -154,18 +158,21 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         }
     },
     get value(){
-        let value, io;
-        for (let i = 0; i<this.inspectedObjects.length; i++){
-            io = this.inspectedObjects[i];
-            if (!io) continue;
-            if (!i)
-                value = io[this.name];
-            else if (value !== io[this.name])
-                return value;
+        const list = this.inspectedObjects.map(io=>{
+            return io[this.name];
+        })
+        const value = list[0];
+        if (typeof value !== 'object' && list.find(v=>{
+            return v !== value;
+        })) {
+            this.mixed = true;
+            return list;
         }
-        return (value || '');
+        this.mixed = false;
+        return value;
     },
     set value(n){
+        this.mixed = false;
         if (n === undefined) return;
         for (let io of this.inspectedObjects){
             io[this.name] = n;
@@ -285,7 +292,6 @@ cells:{
     })
 }
 editors:{
-
     ODA({ is: 'oda-pg-object',
         template: `
         <style>
@@ -305,6 +311,20 @@ editors:{
             if (typeof this.value === 'object')
                 return '[' + (this.value?.constructor?.name || typeof this.value) + ']';
             return this.value;
+        }
+    })
+
+    ODA({ is: 'oda-pg-mixed',
+        template: `
+        <style>
+            :host{
+                padding: 4px;
+            }
+        </style>
+        <input :placeholder="'mixed: [' + item.value+']'" class="error flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" :readonly="item.ro === true"  @input="_input" @tap.stop.prevent @keydown.stop>
+        `,
+        _input(e){
+            this.item.value = e.target.value;
         }
     })
 

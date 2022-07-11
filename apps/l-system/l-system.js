@@ -4,42 +4,33 @@ import { data } from './data.js';
 
 let url = import.meta.url;
 
-ODA({ is: 'oda-l-system',
+ODA({ is: 'oda-l-system', extends: 'oda-app-layout',
     template: `
         <style>
             :host {
                 height: 100%;
             }
-            img {
-                max-width: 42px;
-                max-height: 42px;
-                padding: 4px;
-                cursor: pointer;
-            }
         </style>
-        <oda-app-layout>
-            <div slot="title" class="horizontal no-flex header border" style="width:100%">
-                <img :src="_icon" @tap="_refreshPage(true)" title="reload page">
-                <div class="flex"></div>
-                <div>
-                    <a target="_blank" href="https://ru.wikipedia.org/wiki/L-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0" style="margin: 4px; font-size: x-large; font-weight: 600">L-System</a>
-                    <div style="text-align:center;color:gray">[{{_lenght}}]</div>
-                </div>
-                <div class="flex"></div>
-                <oda-button icon="av:play-arrow:180" @tap="animation=!animation;_sign=-1;loop(true)"></oda-button>
-                <oda-button icon="av:play-arrow" @tap="animation=!animation;_sign=1;loop(true)"></oda-button>
-                <oda-button icon="icons:chevron-left" @tap="rotate -= speed;loop()"></oda-button>
-                <oda-button icon="icons:chevron-right" @tap="rotate += speed;loop()"></oda-button>
-                <oda-button icon="icons:refresh" @tap="getCommands(name, true)" title="refresh params"></oda-button>
-                <oda-button icon="icons:launch" @tap="toUrl()" title="open in new window"></oda-button>
+        <div slot="title" class="horizontal no-flex header border" style="width:100%">
+            <div class="flex"></div>
+            <div>
+                <a target="_blank" href="https://ru.wikipedia.org/wiki/L-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0" style="margin: 4px; font-size: x-large; font-weight: 600">L-System</a>
+                <div style="text-align:center;color:gray">[{{_lenght}}]</div>
             </div>
-            <div slot="left-panel" class="vertical flex border" style="overflow: auto;">
-                <oda-button ~for="_data" @tap="name=item" ~class="{header:item===name}">{{item}}</oda-button>
-            </div>
-            <canvas :canvas slot="main" :width="innerWidth" :height="innerHeight" @down="this.animation=true" @up="animation=false"
-                    @touchstart="animation=true" @touchend="animation=false" style="cursor: pointer" @resize="_resizeCanvas"></canvas>
-            <oda-property-grid slot="right-panel" class="vertical flex border" label="l-system" :inspected-object="this" style="padding:0" :categories :show-buttons="showButtons"></oda-property-grid>
-        </oda-app-layout>
+            <div class="flex"></div>
+            <oda-button icon="av:play-arrow:180" @tap="animation=!animation;_sign=-1;loop(true)"></oda-button>
+            <oda-button icon="av:play-arrow" @tap="animation=!animation;_sign=1;loop(true)"></oda-button>
+            <oda-button icon="icons:chevron-left" @tap="rotate -= speed;loop()"></oda-button>
+            <oda-button icon="icons:chevron-right" @tap="rotate += speed;loop()"></oda-button>
+            <oda-button icon="icons:refresh" @tap="getCommands(name, true)" title="refresh params"></oda-button>
+            <oda-button icon="icons:launch" @tap="toUrl()" title="open in new window"></oda-button>
+        </div>
+        <div slot="left-panel" class="vertical flex border" style="overflow: auto;">
+            <oda-button ~for="_data" @tap="name=item" ~class="{header:item===name}">{{item}}</oda-button>
+        </div>
+        <canvas :canvas slot="main" :width="innerWidth" :height="innerHeight" @down="this.animation=true" @up="animation=false"
+                @touchstart="animation=true" @touchend="animation=false" style="cursor: pointer" @resize="_resizeCanvas"></canvas>
+        <oda-property-grid slot="right-panel" class="vertical flex border" label="l-system" :inspected-object="this" style="padding:0" :categories :show-buttons="showButtons"></oda-property-grid>
     `,
     props: {
         name: {

@@ -1,24 +1,23 @@
-ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/table, @tools/property-grid',
+ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/table, @tools/property-grid', extends: 'oda-app-layout',
     template: /*html*/`
-    <style>
-        :host {
-            height: 100%;
-            filter: {{filter}};
-        }
-        ._header {
-            width: 100%;
-            height: 32px;
-            margin-bottom: 4px;
-        }
-        ._label {
-            font-size: large;
-            text-decoration: underline;
-            margin: 8px;
-            color: {{contentColor}};
-        }
-    </style>
-    <oda-app-layout>
-        <div slot="title" class="horizontal no-flex header border">
+        <style>
+            :host {
+                height: 100%;
+                filter: {{filter}};
+            }
+            ._header {
+                width: 100%;
+                height: 32px;
+                margin-bottom: 4px;
+            }
+            ._label {
+                font-size: large;
+                text-decoration: underline;
+                margin: 8px;
+                color: {{contentColor}};
+            }
+        </style>
+        <div slot="title" class="horizontal flex header border">
             <div class="flex"></div>
             <div>
                 <div style="font-size:x-large">oda-theme-editor-000</div>
@@ -28,12 +27,12 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         <div slot="left-panel" class="vertical flex border" style="overflow: auto;">
             <oda-button ~for="themes" @tap="theme = item">{{item}}</oda-button>
         </div>
-        <div slot="main" class="vertical" style="margin:10px; border: 1px solid lightgray">
-            <div class="_header horizontal center header border">Header</div>
+        <div slot="main" class="vertical flex" style="margin:10px; border: 1px solid lightgray; position: relative; width: 100%;">
+            <div class="_header horizontal header border" style="justify-content: center">Header</div>
             <div class="flex _main vertical">
                 <div class="center no-flex _label">Main</div>
                 <div class="flex horizontal">
-                    <div class="vertical flex">
+                    <div class="vertical flex shadow border" style="margin: 12px; padding: 4px;">
                         <div class="_label">Icons:</div>
                         <div class="buttons horizontal">
                             <oda-icon icon="icons:search" class="content" style="margin: 4px"></oda-icon>
@@ -78,15 +77,14 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
                             <oda-button class="info info-invert" style="margin: 4px; width: 62px;">Info</oda-button>
                         </div>
                     </div>
-                    <div class="vertical flex" style="overflow:hidden">
+                    <div class="vertical flex shadow border" style="overflow:hidden; margin: 12px 18px 12px 0px;">
                         <oda-table ref="table" allow-check="double" lazy col-lines row-lines show-footer show-group-footer show-header allow-focus allow-selection allow-sort even-odd style="height: 100px"></oda-table>
                     </div>
                 </div>
             </div>
-            <div class="_header horizontal center header border">Footer</div>
+            <div class="_header horizontal header border" style="justify-content: center">Footer</div>
         </div>
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings" :inspected-object="this" style="padding:0"></oda-property-grid>
-    </oda-app-layout>
     `,
     props: {
         themes: Array,
