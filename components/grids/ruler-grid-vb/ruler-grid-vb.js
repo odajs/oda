@@ -178,14 +178,14 @@ ODA({ is: 'oda-ruler-vb', template: /*template*/`
         }
     </style>
     <div style="font-size: xx-small; width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
-    <svg :view-box="vertical ? ('0 ' + (vb.y * scale) + ' ' + (24 * scale) + ' ' + (vb.h * scale)) : ((vb.x * scale) + ' 0 ' + (vb.w * scale) + ' ' + (24 * scale))" class="content" xmlns="http://www.w3.org/2000/svg">
+    <svg :view-box="vertical ? ('0 ' + ((vb.y-1) * scale) + ' ' + (24 * scale) + ' ' + (vb.h * scale)) : (((vb.x-1) * scale) + ' 0 ' + (vb.w * scale) + ' ' + (24 * scale))" class="content" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <pattern id="rullerSmallLines" :width="vertical ? gridSize * 4 : gridSize" :height="vertical ? gridSize : gridSize * 4" patternUnits="userSpaceOnUse">
-                <path :d="'M '+ gridSize + ' 0 L 0 0 0 ' + gridSize" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 3" />
+            <pattern id="rullerSmallLines" :width="!vertical ? gridSize : gridSize / 2" :height="vertical ? gridSize : gridSize / 2" patternUnits="userSpaceOnUse">
+                <path :d="!vertical ? ('M ' + gridSize + ' ' + (12 * scale) + ' L ' + gridSize + ' 0') : ('M ' + (12 * scale) + ' ' + gridSize + ' L 0 ' + gridSize)" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 5" />
             </pattern>
-            <pattern id="rullerBigLines" :width="vertical ? bigGridSize * 4 : bigGridSize" :height="vertical ? bigGridSize : bigGridSize * 4" patternUnits="userSpaceOnUse">
+            <pattern id="rullerBigLines" :width="bigGridSize" :height="bigGridSize" patternUnits="userSpaceOnUse">
                 <rect :width="bigGridSize" :height="bigGridSize" fill="url(#rullerSmallLines)" />
-                <path :d="'M '+ bigGridSize + ' 0 L 0 0 0 ' + bigGridSize" fill="none" stroke="gray" :stroke-width="bigGridStrokeWidth * step / 3" />
+                <path :d="!vertical ? ('M ' + bigGridSize + ' ' + (24 * scale) + ' L ' + bigGridSize + ' 0') : ('M ' + (24 * scale) + ' ' + bigGridSize + ' L 0 ' + bigGridSize)" fill="none" stroke="black" :stroke-width="bigGridStrokeWidth * step / 5" />
             </pattern>
         </defs>
 
