@@ -1953,7 +1953,7 @@ cells: {
             }
         </style>
         <oda-table-expand :item ~style="{marginLeft: item.$level * iconSize + 'px'}" @expanded-changed="expandedChanged"></oda-table-expand>
-        <span :text="\`\${item.name}:\`" style="font-size: small; margin-right: 4px;" class="no-flex"></span>
+        <span ~if="item.label" :text="\`\${item.label}:\`" style="font-size: small; margin-right: 4px;" class="no-flex"></span>
         <span :text="item.value" style="font-weight: bold; margin-right: 4px;" class="no-flex"></span>
         <span ~if="item.items" :text="\`[\${item.items?.length}]\`" class="no-flex"></span>`,
         expandedChanged() {

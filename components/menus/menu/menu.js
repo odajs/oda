@@ -1,46 +1,33 @@
-ODA({is: 'oda-menu', imports: '@oda/button',
+ODA({ is: 'oda-menu', imports: '@oda/button',
     template: /*html*/`
-    <style>
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-        }
-        ::-webkit-scrollbar-thumb {
-            border-radius: 2px;
-            background: var(--body-background);
-            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-        }
-        :host {
-            min-width: 100px;
-            @apply --vertical;
-            overflow: hidden;
-            @apply --shadow;
-        }
-        :host > div {
-            overflow-y: auto;
-        }
-        .row {
-            align-items: center;
-        }
-        .header {
-            @apply --header;
-        }
-    </style>
-    <div class="vertical flex">
-        <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)" style="border-bottom: 1px solid lightgray">
-            <div class="flex horizontal row" ~class="item.group?'header':'content'">
-                <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
-                <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
+        <style>
+            :host {
+                min-width: 100px;
+                @apply --vertical;
+                overflow: hidden;
+                @apply --shadow;
+            }
+            :host > div {
+                overflow-y: auto;
+            }
+            .row {
+                align-items: center;
+            }
+            .header {
+                @apply --header;
+            }
+        </style>
+        <div class="vertical flex">
+            <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)" style="border-bottom: 1px solid lightgray">
+                <div class="flex horizontal row" ~class="item.group?'header':'content'">
+                    <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
+                    <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
+                </div>
             </div>
         </div>
-    </div>
     `,
     top: 0,
     props: {
-        allowClose: false,
         icon: '',
         title: '',
         showSubTitle: false,
@@ -78,42 +65,42 @@ ODA({is: 'oda-menu', imports: '@oda/button',
     },
     async showSubMenu(e) {
         e.stopPropagation();
-        this.parentElement.localName === 'drop-down' && this.parentElement.close(false, true);
+        this.parentElement.localName === 'oda-dropdown' && this.parentElement.close(false, true);
         await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template, showSubTitle: this.showSubTitle }, { parent: e.target, align: 'right', title: (this.showSubTitle ? e.target.item.label : undefined) });
     },
     _tap(e) {
         this.focusedItem = e.currentTarget.item;
     }
-});
+})
 
-ODA({is: 'oda-menu-template', imports: '@oda/icon',
+ODA({ is: 'oda-menu-template', imports: '@oda/icon',
     template: /*html*/`
-    <style>
-        :host([focused]){
-            @apply --focused;
-            @apply --active;
-        }
-        :host(:hover) {
-            @apply --active;
-        }
-        div > oda-icon {
-            opacity: .5;
-            align-items: center;
-            padding: 9px 4px;
-            filter: invert(1);
-        }
-        span {
-            padding: 4px 8px;
-        }
-        .icon-box {
-            min-width: {{iconSize}}px;
-            max-width: {{iconSize}}px;
-        }
-    </style>
-    <div ~if="!item?.group" class="no-flex icon-box">
-        <oda-icon class="header" :icon-size="Math.floor(iconSize * .7)" :icon="item?.icon" :sub-icon="item?.subIcon"></oda-icon>
-    </div>
-    <span class="flex" :title="item?.label">{{item.label}}</span>
+        <style>
+            :host([focused]){
+                @apply --focused;
+                @apply --active;
+            }
+            :host(:hover) {
+                @apply --active;
+            }
+            div > oda-icon {
+                opacity: .5;
+                align-items: center;
+                padding: 9px 4px;
+                filter: invert(1);
+            }
+            span {
+                padding: 4px 8px;
+            }
+            .icon-box {
+                min-width: {{iconSize}}px;
+                max-width: {{iconSize}}px;
+            }
+        </style>
+        <div ~if="!item?.group" class="no-flex icon-box">
+            <oda-icon class="header" :icon-size="Math.floor(iconSize * .7)" :icon="item?.icon" :sub-icon="item?.subIcon"></oda-icon>
+        </div>
+        <span class="flex" :title="item?.label">{{item.label}}</span>
     `,
     item: {},
-});
+})
