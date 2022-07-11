@@ -24,7 +24,7 @@ ODA({
             <div slot="main" id="render-box">
                 <canvas ref="canvas" :width="innerWidth" :height="innerHeight" @tap="setCurrentPoint" style="display:block; margin:0 auto; border:1px solid black" @resize="refreshCanvas()"></canvas>
             </div>
-            <oda-property-grid2 slot="right-panel" class="vertical flex border" label="Intersection ellipse" :io="this" style="padding:0" show-buttons="false" :categories></oda-property-grid2>
+            <oda-property-grid slot="right-panel" class="vertical flex border" label="Intersection ellipse" :inspected-object="this" style="padding:0" show-buttons="false" :categories></oda-property-grid>
             <div slot="bottom">
                 <a target="_blank" style="margin: 4px; font-size: medium; font-weight: 600">Min distance: {{minDistance.toFixed(2)}} </a>
             </div>

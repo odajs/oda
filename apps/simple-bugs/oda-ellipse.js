@@ -37,7 +37,7 @@ ODA({
                     <line id="line4" :x1="line4.coords.x1" :y1="line4.coords.y1" :x2="line4.coords.x2" :y2="line4.coords.y2" :stroke="line4.color" ~show="line4.isShow" :stroke-width="line4.borderWidth"/>
                 </svg>
             </div>
-            <oda-property-grid2 slot="right-panel" class="vertical flex border" label="Intersection ellipse" :io="this" style="padding:0" show-buttons="false" :categories></oda-property-grid2>
+            <oda-property-grid slot="right-panel" class="vertical flex border" label="Intersection ellipse" :inspected-object="this" style="padding:0" show-buttons="false" :categories></oda-property-grid>
             <div slot="bottom">
                 <a target="_blank" style="margin: 4px; font-size: medium; font-weight: 600">Min distance: {{minDistance}}</a>
             </div>

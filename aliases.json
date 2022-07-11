@@ -37,7 +37,6 @@
 
     "@tools/containers": "tools/containers/containers.js",
     "@tools/property-grid": "tools/property-grid/property-grid.js",
-    "@tools/property-grid2": "tools/property-grid/test/new/property-grid.js",
     "@tools/styles": "tools/styles/styles.js",
     "@tools/theme-editor": "tools/styles/theme-editor.js",
     "@tools/modal": "tools/containers/modal/modal.js",

@@ -1,12 +1,10 @@
 import '../../components/layouts/app-layout/app-layout.js';
-//import '../../tools/property-grid/property-grid.js';
-import '../../tools/property-grid/test/new/property-grid.js';
+import '../../tools/property-grid/property-grid.js';
 import { data } from './data.js';
 
 let url = import.meta.url;
 
-ODA({
-    is: 'oda-l-system',
+ODA({ is: 'oda-l-system',
     template: `
         <style>
             :host {
@@ -40,7 +38,7 @@ ODA({
             </div>
             <canvas :canvas slot="main" :width="innerWidth" :height="innerHeight" @down="this.animation=true" @up="animation=false"
                     @touchstart="animation=true" @touchend="animation=false" style="cursor: pointer" @resize="_resizeCanvas"></canvas>
-            <oda-property-grid2 slot="right-panel" class="vertical flex border" label="l-system" :io="this" style="padding:0" :categories :show-buttons="showButtons"></oda-property-grid2>
+            <oda-property-grid slot="right-panel" class="vertical flex border" label="l-system" :inspected-object="this" style="padding:0" :categories :show-buttons="showButtons"></oda-property-grid>
         </oda-app-layout>
     `,
     props: {
@@ -146,6 +144,7 @@ ODA({
     //     this.getCommands(this.name, true);
     // },
     getCommands(name = this.name, refreshData = false) {
+        if (!this.ctx) return;
         this._isReady = false;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         if (this._isGetCommands) return;

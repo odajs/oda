@@ -39,7 +39,7 @@ ODA({
                     <circle id="circle2" :cx="line.coords.x2" :cy="line.coords.y2" :r="4" :stroke="line.color" :fill="line.color" ~show="line.isShow"></circle>
                 </svg>
             </div>
-            <oda-property-grid2 slot="right-panel" class="vertical flex border" label="Intersection ellipse" :io="this" style="padding:0" show-buttons="false"></oda-property-grid2>
+            <oda-property-grid slot="right-panel" class="vertical flex border" label="Intersection ellipse" :inspected-object="this" style="padding:0" show-buttons="false"></oda-property-grid>
             <div slot="bottom">
                 <a target="_blank" style="margin: 4px; font-size: medium; font-weight: 600">Min distance:  </a>
             </div>
