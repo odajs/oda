@@ -126,7 +126,7 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     },
     $expanded: false,
     get category(){
-        return this.prop?.category || this.prototype.constructor?.name;
+        return this.prototype.constructor?.name + (this.prop?.category?(` - ${this.prop?.category.toLowerCase()}`):'');
     },
     mixed: false,
     get editor(){
