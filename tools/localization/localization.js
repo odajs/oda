@@ -81,7 +81,7 @@ window.addEventListener('keydown', async e => {
 
 ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
     props:{
-        showHeader:true, colLines: true, rowLines: true, allowSort: true, lazy: false, //sort: [[letter]],
+        showHeader:true, colLines: true, rowLines: true, allowSort: true, lazy: true, avtoSize:true,  //sort: [[letter]],
         // dataSet:[],
         dataSet() {
             // return [{words: 'phraze', transletes: '', letter: 'p', items: Array(0)}]
@@ -106,7 +106,7 @@ ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
     columns: [{name:'words',treeMode:true,template:'oda-localization-words', $sort: 1},
                 {name:'transletes',template:'oda-localization-transletes'},{name:'letter', hidden:true }],
     async ready() {
-        this.groups = [this.columns.find(c => c.name === 'letter')];
+       // this.groups = [this.columns.find(c => c.name === 'letter')];
 
         // const words = sumObAB(Localization.words, Localization.dictionary.words)
         // const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
@@ -144,7 +144,7 @@ ODA({
     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
     template: /*html*/ `
         <style>
-            :host {@apply --vertical; /*height: 100%; ;*/}
+            :host {@apply --vertical; /*height: 300px; */}
             #battons-row {display: flex;}
             .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
             .label {line-height:34px;}
