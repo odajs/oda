@@ -10,10 +10,19 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <slot ~show="!inspectedObject"  @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', width: 200, template: 'oda-pg-cell-name', label: this.inspectedObject?.constructor?.name, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'name', width: 200, template: 'oda-pg-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
             { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell', width: 'auto' },
             { name: 'category', hidden: true, $sortGroups: 0 },
         ]
+    },
+    get label(){
+        if (!this.inspectedObject) return;
+        if(Array.isArray(this.inspectedObject)){
+            if (this.inspectedObject.length>1)
+                return this.inspectedObject[0]?.constructor?.name + ` [${this.inspectedObject.length}]`
+            return this.inspectedObject[0]?.constructor?.name;
+        }
+        return this.inspectedObject?.constructor?.name
     },
     props: {
         inspectedObject: Object,
@@ -247,36 +256,6 @@ cells:{
         }
     })
 
-    ODA({ is: 'oda-property-grid-cell',
-        template: /* html */`
-    <style>
-        :host{
-            padding-left: 4px;
-        }
-        :host > span[disabled]{
-            pointer-events: auto;
-            user-select: text;
-        }
-        .editor{
-            align-self: center;
-            border: none !important;
-        }
-    </style>
-    <span  :disabled="item?.ro || item?.editor === 'span'" class="editor flex horizontal" ~is="item?.editor" ::value="item.value">{{item?.value}}</span>
-    <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
-    `,
-        item: null,
-        async showDD(e){
-            const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
-            this.item.value = res.focusedItem.value;
-        }
-    })
-    ODA({ is: 'oda-property-header-cell-label',
-        template: /* html */`
-        <label style="text-align: center;" class="flex">{{inspectedObject?.constructor?.name}}</label>
-    `,
-        item: null
-    })
     ODA({ is: 'oda-property-grid-header-cell',
         template: /* html */`
         <style>
