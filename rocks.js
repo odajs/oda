@@ -240,8 +240,9 @@ if (!globalThis.KERNEL) {
                         this['#' + def] = this.constructor.defaults[def];
                     }
                     this.$proxy = makeReactive.call(this, this);
-                    cls.ctor?.call(this, ...arguments);
+
                 }
+                cls.ctor?.call(this, ...arguments);
                 if (this.constructor.__model__ !== model) return;
                 this.__id__ = nextId();
                 this.__customCache__ = {};
