@@ -20,7 +20,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
                 width: 0px;
             }
         </style>
-        <input :readonly="value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
+        <input :readonly="!!value" class="flex" type="text" @input="onInput" :value="text" :placeholder>
         <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(allowClear && value)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
     get hasData(){
@@ -37,8 +37,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     _tap(e){
         if (this._dd)
             this.closeDown();
-        else if (this.allowClear && this.value)
-            this.value = undefined;
+        else if (this.allowClear && this.value){
+            this.value = '';
+            this.input.value = '';
+        }
         else
             this.dropDown();
     },
@@ -47,7 +49,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         allowClear: false,
         iconSize: 24,
         icon: 'icons:chevron-right:90',
-        value: undefined,
+        value: '',
         hideButton:{
             label: 'Скрыть кнопку',
             default: false,
@@ -108,7 +110,11 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
             this.dropDownControl.$keys?.arrowUp?.(e);
         },
         enter(e) {
-            this._panel.$keys.enter(e);
+            if (this.hasData)
+                this._panel.$keys.enter(e);
+            else{
+                this.value = this.text;
+            }
         },
         space(e){
             if (!e.ctrlKey) return;

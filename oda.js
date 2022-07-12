@@ -892,6 +892,7 @@ if (!window.ODA) {
 
         for (let key in prototype.props) {
             let prop = prototype.props[key];
+            // if (prop === undefined) continue;
             let getter = prop && (prop.get || (typeof prop === 'function' && !prop.prototype && prop));
             if (getter) {
                 if (typeof prop === 'function')
