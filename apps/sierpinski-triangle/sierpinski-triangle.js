@@ -28,9 +28,10 @@ ODA({
         <div class="outerDiv" ref="outerDiv">
             <button @tap="start" ~if="showButton"> <b>Start</b> </button>
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <text x="10" :y="fontSize" ~show="!showButton">Drag some vertex</text>
-                <text x="10" :y="2.5*fontSize" ~show="!showButton" fill="#fff">Dots: {{dots.length}}</text>
+                <text x="10" :y="fontSize" ~show="dots.length">Drag some vertex</text>
+                <text x="10" :y="2.5*fontSize" ~show="dots.length" fill="#fff">Dots: {{dots.length}}</text>
                 <text x="10" :y="4*fontSize" ~show="dotsPerSecond" fill="#fff">Dots per second: {{dotsPerSecond}}</text>
+                <text x="10" :y="5.5*fontSize" ~show="dotsPerSecond" fill="#fff">Seconds: {{Math.round((Date.now()-startTime)/1000)}}</text>
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="radiusDot" :style="'fill:'+dots[index].color"></circle>
                 <circle ~for="triangleVertices.length" :id="index" :cx="triangleVertices[index].x" :cy="triangleVertices[index].y" :r="radiusVertex" 
                         :style="'fill:'+triangleVertices[index].color" @track="move" class="vertex"></circle>
@@ -38,18 +39,10 @@ ODA({
         </div>
         `,
     props: { 
-        radiusDot: {
-            default: 1,
-            save: true
-        },
-        radiusVertex: {
-            default: 5,
-            save: true
-        },
-        maxQuantityDots: {
-            default: 30000,
-            save: true
-        }
+        radiusDot: 1,
+        radiusVertex: 5,
+        maxQuantityDots: 30000,
+        quantityDotsPerTurn: 7,
     },
 
     triangleVertices: [], //Вершины треугольника. Вершина описывается экранными координатами "x", "y" и цветом "color".
@@ -61,6 +54,7 @@ ODA({
     dotsPerSecond: undefined,
     showButton: true,
     fontSize: undefined,
+    startTime: 0,
 
     attached() {
         const resizeObserver = new ResizeObserver( this.onSizeChanged.bind(this) );
@@ -72,9 +66,12 @@ ODA({
     start() {
         this.showButton = false;
         this.dots = [];
+        this.previousQuantityOfDots = 0;
+        this.dotsPerSecond = 0;
         this.drawTriangleVertices();
         this.loop();
-        setInterval(this.measurement.bind(this), 1000);
+        this.timerId = setInterval(this.measurement.bind(this), 1000);
+        this.startTime = Date.now();
     },
     loop() {
         if( this.dots.length < this.maxQuantityDots) {
@@ -83,6 +80,7 @@ ODA({
         }
         else {
             this.showButton = true;
+            clearTimeout( this.timerId );
         }
     },
     measurement() { //Расчет текущей скорости построения
@@ -96,8 +94,7 @@ ODA({
         return Math.sqrt( Math.pow(start.x-stop.x, 2) + Math.pow(start.y-stop.y, 2) );
     },
     createPoint() {
-        const quantity = 7;
-        for( let i=0 ; i<quantity ; ++i ) {
+        for( let i=0 ; i<this.quantityDotsPerTurn ; ++i ) {
             const randomVertex = this.randomInteger(0, 2);
             //Рассчитываем цвет точки используя идеальный треугольник    
             this.color_currentPoint.x = (this.color_currentPoint.x + this.color_triangleVertices[randomVertex].x) / 2.0;
