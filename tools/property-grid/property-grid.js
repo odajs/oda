@@ -86,17 +86,11 @@ CLASS({is: 'PropertyGridDataRowOwner',
         const items = {}
         for (let obj of this.inspectedObjects || []) {
             if (typeof obj !== 'object') continue;
-            if (this.name){
+            if (!this.isRevoked && this.name){
                 obj = obj[this.name];
                 if (!obj) continue;
             }
             if (typeof obj !== 'object') continue;
-            if (obj.then){
-                obj.then(res=>{
-
-                });
-                return [obj];
-            }
             const props =  obj.props || Object.getOwnPropertyNames(obj).reduce((res, k, idx, keys) => {
                 res[k] = { type: obj[k]?.constructor || res[keys[idx-1]] || String}
                 return res
@@ -189,6 +183,19 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     },
     get ro(){
 
+    },
+    set $expanded(n){
+        if (this.value?.then){
+            this.value?.then(obj=>{
+                const row = new PropertyGridDataRow('RESULT', this.dataSet)
+                row.isRevoked = true;
+                row.value = obj;
+                row.ro = true;
+                if (typeof obj === 'object')
+                    row.inspectedObjects = [obj];
+                this.items = [row];
+            })
+        }
     }
 })
 CLASS({is: 'PropertyGridDataSet', extends: 'PropertyGridDataRowOwner',

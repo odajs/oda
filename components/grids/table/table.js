@@ -763,8 +763,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     _getRowStyle(row) {
         const style = row?.$group ? { width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px', position: 'sticky', left: '0px' } : { width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px') };
-        // if (this.autoRowHeight) style.minHeight = this.rowHeight + 'px';
-        // else style.height = this.rowHeight + 'px';
+        if (this.autoRowHeight) style.minHeight = this.rowHeight + 'px';
+        else style.height = this.rowHeight + 'px';
         return style;
     },
     expand(row, force, old) {
