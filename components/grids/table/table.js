@@ -950,7 +950,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        // this.interval('scroll', () => {
+        this.debounce('scroll', () => {
             this.headerHeight = this.showHeader && this.$refs.header?.offsetHeight || 0;
             this.footerHeight = this.showFooter && this.$refs.footer?.offsetHeight || 0;
             if (this.$refs.body) {
@@ -966,7 +966,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     this._scrollbarWidth = scrollbarWidth
                 }
             }
-        // })
+        })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;

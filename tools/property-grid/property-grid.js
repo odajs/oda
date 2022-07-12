@@ -124,6 +124,9 @@ CLASS({is: 'PropertyGridDataRowOwner',
         return Object.values(items);
     }
 })
+class MixedArray extends Array{
+
+}
 
 CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     ctor(name, dataSet, prototype, prop) {
@@ -137,7 +140,9 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get category(){
         return this.prototype.constructor?.name + (this.prop?.category?(` - ${this.prop?.category.toLowerCase()}`):'');
     },
-    mixed: false,
+    get mixed(){
+        return this.value instanceof MixedArray;
+    },
     get editor(){
         if (this.mixed)
             return 'oda-pg-mixed';
@@ -173,15 +178,10 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         const value = list[0];
         if (typeof value !== 'object' && list.find(v=>{
             return v !== value;
-        })) {
-            this.mixed = true;
-            return list;
-        }
-        this.mixed = false;
+        })) return new MixedArray(...list);
         return value;
     },
     set value(n){
-        this.mixed = false;
         if (n === undefined) return;
         for (let io of this.inspectedObjects){
             io[this.name] = n;
