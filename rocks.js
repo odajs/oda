@@ -242,7 +242,9 @@ if (!globalThis.KERNEL) {
                     this.$proxy = makeReactive.call(this, this);
 
                 }
+
                 cls.ctor?.call(this, ...arguments);
+
                 if (this.constructor.__model__ !== model) return;
                 this.__id__ = nextId();
                 this.__customCache__ = {};
@@ -374,7 +376,7 @@ if (!globalThis.KERNEL) {
                 model.listeners[key] = model.listeners[key] || parent.__model__.listeners[key];
             }
             for (let key in parent.__model__) {
-                if (key in model) continue;
+                if (key in model || key === 'ctor') continue;
                 Object.defineProperty(model, key, Object.getOwnPropertyDescriptor(parent.__model__, key));
             }
             for (let s in parent.__statics__){
@@ -568,7 +570,7 @@ if (!globalThis.KERNEL) {
     let obj_counter = 0;
     let cls_counter = 0;
     KERNEL.reservedWords = [
-        '__proto__', 'is', 'template', 'props', 'extends', 'keys', 'observers', 'listeners', 'hostAttributes', 'keyBindings', 'imports', '$system', '$core', '$proxy'
+        '__proto__', 'is', 'template', 'props', 'extends', 'keys', 'observers', 'listeners', 'hostAttributes', 'keyBindings', 'imports', '$system', '$core', '$proxy', 'ctor'
     ]
     function nextId() {
         return ++obj_counter;
