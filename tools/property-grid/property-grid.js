@@ -38,7 +38,10 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
         allowSort: true,
         groupExpandingMode: 'first',
         dataSet(){
-            return this.PropertyGridDataSet.items;
+            const items = this.PropertyGridDataSet.items;
+            if (this.onlySave)
+                return items.filter(i=>i.prop?.save);
+            return items;
         },
         onlySave: false,
     },
@@ -51,12 +54,6 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     onSlot(e) {
         this.inspectedObject = e.target.assignedElements();
     },
-    // _beforeExpand(node, force) {
-    //     if (typeof node.value !== 'object') return;
-    //     if (!force && node?.items?.length)
-    //        return node?.items || [];
-    //     return (node.items = new PropertyGridDataSet(node.value, this.expertMode, false, false).items);
-    // },
     _sort(array = []) {
         if (!this.sorts.length) return;
         array.sort((a, b) => {
@@ -250,13 +247,20 @@ cells:{
                 font-weight: {{(item?.prop)?'bold':'normal'}};
             }
         </style>
-        <oda-button ~if="item.default !== undefined && item.value !== item.default" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
+        <oda-button :title="defaultValue" ~if="showDefault" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
     `,
+        get defaultValue(){
+            if (typeof this.item.prop?.default === 'function')
+                return this.item.prop.default();
+            return this.item.prop?.default;
+        },
+        get showDefault(){
+            if (this.defaultValue !== undefined) {
+                return !Object.equal(this.item.value, this.defaultValue);
+            }
+        },
         resetValue() {
-            if (typeof this.item.default === 'function')
-                this.item.value = this.item.default();
-            else
-                this.item.value = this.item.default;
+            this.item.value = this.defaultValue;
         },
         get value(){
             return this.item?.label?this.item?.label:this.item?.name;
