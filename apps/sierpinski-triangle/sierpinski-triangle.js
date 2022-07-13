@@ -31,7 +31,7 @@ ODA({
                 <text x="10" :y="fontSize" ~show="dots.length">Drag some vertex</text>
                 <text x="10" :y="2.5*fontSize" ~show="dots.length" fill="#fff">Dots: {{dots.length}}</text>
                 <text x="10" :y="4*fontSize" ~show="dotsPerSecond" fill="#fff">Dots per second: {{dotsPerSecond}}</text>
-                <text x="10" :y="5.5*fontSize" ~show="dots.length" fill="#fff">Seconds: {{Math.round((Date.now()-startTime)/1000)}}</text>
+                <text x="10" :y="5.5*fontSize" ~show="dots.length" fill="#fff">Seconds: {{Math.round((currentTime-startTime)/1000)}}</text>
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="radiusDot" :style="'fill:'+dots[index].color"></circle>
                 <circle ~for="triangleVertices.length" :id="index" :cx="triangleVertices[index].x" :cy="triangleVertices[index].y" :r="radiusVertex" 
                         :style="'fill:'+triangleVertices[index].color" @track="move" class="vertex"></circle>
@@ -55,6 +55,7 @@ ODA({
     showButton: true,
     fontSize: undefined,
     startTime: 0,
+    currentTime: 0,
 
     attached() {
         const resizeObserver = new ResizeObserver( this.onSizeChanged.bind(this) );
@@ -82,6 +83,7 @@ ODA({
             this.showButton = true;
             clearTimeout( this.timerId );
         }
+        this.currentTime = Date.now();
     },
     measurement() { //Расчет текущей скорости построения
         this.dotsPerSecond = this.dots.length - this.previousQuantityOfDots;
