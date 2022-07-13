@@ -345,7 +345,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         expandLevel: -1,
         expandAll: false
     },
-    get size(){
+    get size() {
         return this.items?.length || 0;
     },
     _height: 0,
@@ -807,8 +807,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     __checkChildren(node) {
         const items = this._beforeExpand(node);
-        if (items?.then){
-            return items.then(res=>{
+        if (items?.then) {
+            return items.then(res => {
                 return res;
             })
         }
@@ -959,9 +959,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 const height = this.$refs.body.offsetHeight - this.headerHeight - this.footerHeight;
                 const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
 
-                if ( scrollWidth && height ) {
+                if (scrollWidth && height) {
                     this._scrollTop = scrollTop;
-                    this._scrollWidth = scrollWidth-1;
+                    this._scrollWidth = scrollWidth - 1;
                     this._height = height
                     this._scrollbarWidth = scrollbarWidth
                 }
@@ -974,7 +974,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
             if (item.disabled) {
                 item.$expanded = !item.$expanded;
-            } else  {
+            } else {
                 this.focusedRow = item;
             }
         }
@@ -988,7 +988,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _select(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
-            if(!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);
+            if (!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);
             if (e.shiftKey) {
                 let from = this.selectionStartIndex;
                 let to = this.rows.indexOf(item);
@@ -1011,11 +1011,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     this._addSelection(item);
                 else {
                     this.selectedRows.splice(idx, 1);
+                    this.fire('selected-rows-changed', this.selectedRows);
                     if (item === this.selectionStartRow) {
                         this.selectionStartRow = this.selectedRows[0] || null;
                     }
                 }
-            } else {
+            } else if (!item.disabled) {
                 this.selectionStartIndex = -1;
                 this.clearSelection()
                 this._addSelection(item);
@@ -1067,8 +1068,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         if (item && items) {
             if (item.disabled) {
                 item.$expanded = !item.$expanded;
-            } else  {
+            } else {
                 this.selectedRows.push(item);
+                this.fire('selected-rows-changed', this.selectedRows);
                 this.focusedRow = item;
                 // this.scrollToItem(item);
             }
@@ -1522,7 +1524,7 @@ cells: {
             return this.iconCollapsed;
         },
         _toggleExpand(e, d) {
-            this.async (()=>{
+            this.async(() => {
                 if (!this.item.hideExpander) {
                     this.item.$expanded = !this.item.$expanded;
                     this.fire('expanded-changed', this.item.$expanded);
@@ -1575,7 +1577,7 @@ cells: {
                     background: `linear-gradient(0deg, transparent 0, transparent calc(${pre}), ${color} calc(${pre}), ${color} calc(${post}), transparent calc(${post}))`
                 }
             },
-            get _showCheckBox(){
+            get _showCheckBox() {
                 return (this.allowCheck && this.allowCheck !== 'none' && !this.item?.disabled && !this.item.hideCheckbox) || (this.item?.allowCheck && this.item?.allowCheck !== 'none');
             },
             get stepStyle() {

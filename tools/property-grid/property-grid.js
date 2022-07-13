@@ -10,8 +10,8 @@ ODA({ is: "oda-property-grid", extends: 'this, oda-table',
     <slot ~show="!inspectedObject"  @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', width: 200, template: 'oda-pg-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
-            { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell', width: 'auto' },
+            { name: 'name', template: 'oda-pg-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell'},
             { name: 'category', hidden: true, $sortGroups: 0 },
         ]
     },
@@ -184,12 +184,19 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     set $expanded(n){
         if (this.value?.then){
             this.value?.then(obj=>{
-                const row = new PropertyGridDataRow('RESULT', this.dataSet)
+                const row = new PropertyGridDataRow('Resolve', this.dataSet)
                 row.isRevoked = true;
                 row.value = obj;
                 row.ro = true;
                 if (typeof obj === 'object')
                     row.inspectedObjects = [obj];
+                this.items = [row];
+            }).catch(e=>{
+                const row = new PropertyGridDataRow('Reject', this.dataSet)
+                row.isRevoked = true;
+                row.value = e;
+                row.ro = true;
+                row.inspectedObjects = [e];
                 this.items = [row];
             })
         }
@@ -249,6 +256,14 @@ cells:{
         </style>
         <oda-button :title="defaultValue" ~if="showDefault" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
     `,
+        props:{
+            title:{
+                get(){
+                    return this.item.name;
+                },
+                reflectToAttribute: true,
+            }
+        },
         get defaultValue(){
             if (typeof this.item.prop?.default === 'function')
                 return this.item.prop.default();
@@ -263,7 +278,7 @@ cells:{
             this.item.value = this.defaultValue;
         },
         get value(){
-            return this.item?.label?this.item?.label:this.item?.name;
+            return this.item?.label?this.item?.label:this.item?.name?.toKebabCase();
         }
     })
 
