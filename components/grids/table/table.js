@@ -180,7 +180,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <div ref="body" tabindex="0" class="flex vertical" style="overflow: auto; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
+    <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto'}" style="overflow-y: auto; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
         <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
             <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
         </div>
@@ -972,7 +972,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         if (e.ctrlKey || e.shiftKey) return;
         const item = d?.value || e.target.item;
         if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
-            this.focusedRow = item;
+            if (item.disabled) {
+                item.$expanded = !item.$expanded;
+            } else  {
+                this.focusedRow = item;
+            }
         }
     },
     _highlight(e, d) {
@@ -1061,9 +1065,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         this.clearSelection();
         const items = this.items;
         if (item && items) {
-            this.selectedRows.push(item);
-            this.focusedRow = item;
-            // this.scrollToItem(item);
+            if (item.disabled) {
+                item.$expanded = !item.$expanded;
+            } else  {
+                this.selectedRows.push(item);
+                this.focusedRow = item;
+                // this.scrollToItem(item);
+            }
         }
     },
 

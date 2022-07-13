@@ -247,7 +247,9 @@ if (!globalThis.KERNEL) {
 
                 if (this.constructor.__model__ !== model) return;
                 this.__id__ = nextId();
-                this.__customCache__ = {};
+                Object.defineProperty(this, '__customCache__', {
+                    value: {}
+                })
                 this.created?.();
             }
         };

@@ -218,16 +218,24 @@ if (!window.ODA) {
         class odaComponent extends proto {
             constructor() {
                 super();
-                this.$$id = nextId();
-                this.$proxy = makeReactive.call(this, this);
-                this.$core = Object.assign({}, core);
+                Object.defineProperty(this, '$$id', {
+                    value: nextId()
+                })
+                Object.defineProperty(this, '$proxy', {
+                    value: makeReactive.call(this, this)
+                })
+                Object.defineProperty(this, '$core', {
+                    value: Object.assign({}, core)
+                })
                 this.$core.slotted = [];
                 this.$core.slotRefs = Object.create(null);
                 this.$core.events = Object.create(null);
                 this.$core.debounces = new Map();
                 this.$core.intervals = Object.create(null);
                 this.$core.listeners = Object.create(null);
-                this.props = prototype.props;
+                Object.defineProperty(this, 'props', {
+                    value: prototype.props
+                })
                 const defs = Object.create(null);
                 for (let i in core.defaults) {
                     const desc = Object.getOwnPropertyDescriptor(this, i);
@@ -274,6 +282,9 @@ if (!window.ODA) {
 
                     callHook.call(this, 'ready');
                 }
+                // Object.defineProperty(this, '$wake', {
+                //     value: false
+                // })
             }
             connectedCallback() {
                 if (!this.domHost){
@@ -751,6 +762,9 @@ if (!window.ODA) {
                 return true;
             }
             if (!fName) throw new Error('ERROR: no function name!');
+            // Object.defineProperty(prototype.props, obsName, {
+            //     get: funcObserver
+            // })
             prototype.props[obsName] = {
                 get: funcObserver
             };
@@ -2357,7 +2371,11 @@ if (!window.ODA) {
                         event = func.call(this, name, handler, ...args);
                         break;
                 }
-                this.__events = this.__events || new Map();
+                if (!this.__events){
+                    Object.defineProperty(this, '__events', {
+                        value: new Map()
+                    })
+                }
                 let array = this.__events.get(name);
                 if (!array) {
                     array = [];

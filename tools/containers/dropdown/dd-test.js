@@ -103,7 +103,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         e.stopPropagation();
         e.preventDefault();
         try {
-            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: 'Block - 0', id: count });
+            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: 'Block - 0', id: count, closeAfterOk: true });
             console.log(res);
         }
         catch (e) { console.log(e); }
@@ -141,7 +141,7 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
             count ||= 0;
             count = +count + 1;
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 },
-                { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count });
+                { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count, closeAfterOk: true });
             console.log(res);
         }
         catch (e) { console.log(e) }

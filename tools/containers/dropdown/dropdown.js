@@ -57,6 +57,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         iconSize: 24,
         minWidth: 100,
         minHeight: 0,
+        closeAfterOk: false
     },
     controls: undefined,
     contentRect: null,
@@ -76,7 +77,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             for (let el of controls) {
                 this.listen(resolveEvent, (e) => {
                     this.fire('ok');
-                    // this.async(() => this.close(true), 50);
+                    if (this.closeAfterOk)
+                        this.async(() => this.close(true));
                 }, { target: el });
             }
         }
