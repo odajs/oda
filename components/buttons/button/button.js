@@ -33,7 +33,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             white-space: nowrap;
             overflow-x: hidden;
             text-overflow: ellipsis;
-            margin: 0px 4px;
+            margin: 4px;
         }
         :host(:active), :host([toggled]) {
             @apply --content;
@@ -47,7 +47,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             display: {{icon?'block':'none'}};
         }
     </style>
-    <span class="label" ~if="label">{{label}}</span><slot></slot>`,
+    <span ~if="label">{{label}}</span><slot></slot>`,
     props: {
         iconPos: {
             default: 'left',

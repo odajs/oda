@@ -400,7 +400,7 @@ ODA({is: 'app-layout-drawer',
             opacity: 1 !important;
         }
         .bt > oda-button {
-            border-radius: 15%;
+            border-radius: {{iconSize/4}}px;
         }
         .pin {
             transform: scale(.5);
@@ -434,7 +434,9 @@ ODA({is: 'app-layout-drawer',
     </style>
     <div @touchmove="hideTabs=false"  ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
-            <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" class="tab" default="icons:help" ~for="controls" @down.stop="setFocus(item)" :title="item?.getAttribute('bar-title') || item?.title || item?.getAttribute('title')" :icon="item?.getAttribute('bar-icon') || item?.icon || item?.getAttribute('icon') || 'icons:menu'"  :sub-icon="item?.getAttribute('sub-icon')" :toggled="focused === item" :bubble="item.bubble" ~class="{outline: lastFocused === item}"></oda-button>
+            <div class="no-flex vertical">
+                <oda-button :label="ctrl?.label || ctrl?.getAttribute?.('label')" style="padding: 4px; margin: 2px; writing-mode: tb;" :icon-size="iconSize*1.2" class="no-flex tab" default="icons:help" :item="ctrl" ~style="getStyle(ctrl)" ~for="ctrl in controls" @down.stop="setFocus(ctrl)" :title="ctrl?.getAttribute('bar-title') || ctrl?.title || ctrl?.getAttribute('title')" :icon="ctrl?.getAttribute('bar-icon') || ctrl?.icon || ctrl?.getAttribute('icon') || 'icons:menu'"  :sub-icon="ctrl?.getAttribute('sub-icon')" :toggled="focused === ctrl" :bubble="ctrl.bubble" ~class="{outline: lastFocused === ctrl}"></oda-button>
+            </div>
             <div  class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" ></div>
             <oda-button style="padding: 4px; margin: 2px" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
@@ -462,6 +464,14 @@ ODA({is: 'app-layout-drawer',
         <oda-splitter :sign="pos==='left'?-1:1" :max="allowCompact && compact?max:0" ~if="!hideResize" ::width></oda-splitter>
     </div>
     `,
+    getStyle(ctrl){
+        const label = ctrl?.label || ctrl.getAttribute('label');
+        const order = ctrl?.order || ctrl.getAttribute('order') || 0;
+        const res = {order}
+        if (label)
+            res.transform = `rotate(180deg)`;
+        return res;
+    },
     buttons: [],
     delta: 0,
     swipe: 0,
