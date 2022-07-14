@@ -42,6 +42,13 @@ if (!window.ODA) {
     //         detail: { target: e.target, pos: mousePos, path: e.path, e }
     //     }));
     // });
+    
+    (Array.from(frames) || []).forEach(f => {
+        window.top._windows ||= [];
+        window.top._windows.add(f);
+    })
+    console.log('...........iframes - ', window.top._windows);
+
     window.addEventListener('pointerdown', e => {
         if (e.use) return;
         e.use = true;
@@ -1626,10 +1633,6 @@ if (!window.ODA) {
                     src.listeners[e].call(this, ev);
                 }
                 $el.addEventListener(e, event);
-            }
-            if (tag === 'IFRAME'){
-                window.top.iframes ??= [];
-                window.top.iframes.add($el);
             }
         }
         $el.$node = src;

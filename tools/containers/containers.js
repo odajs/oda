@@ -19,20 +19,20 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             if (typeof ctrl === 'string')
                 ctrl = await ODA.createComponent(ctrl);
             else { //todo Поверить режим для готовых компонентов
-                // if (ctrl.parentElement) {
-                //     if (ctrl.containerHost)
-                //         ctrl.containerHost.fire('cancel');
-                //     const comment = document.createComment(ctrl.innerHTML);
-                //     comment.slotTarget = ctrl;
-                //     ctrl.slotProxy = comment;
-                //     ctrl.containerHost = host;
-                //     comment.$slot = ctrl.slot;
-                //     delete ctrl.slot;
-                //     ctrl.parentElement.replaceChild(comment, ctrl);
-                // }
-                // for (let i in props) {
-                //     ctrl[i] = props[i];
-                // }
+                if (ctrl.parentElement) {
+                    if (ctrl.containerHost)
+                        ctrl.containerHost.fire('cancel');
+                    const comment = document.createComment(ctrl.innerHTML);
+                    comment.slotTarget = ctrl;
+                    ctrl.slotProxy = comment;
+                    ctrl.containerHost = host;
+                    comment.$slot = ctrl.slot;
+                    delete ctrl.slot;
+                    ctrl.parentElement.replaceChild(comment, ctrl);
+                }
+                for (let i in props) {
+                    ctrl[i] = props[i];
+                }
             }
             for (let i in props) {
                 ctrl[i] = props[i];

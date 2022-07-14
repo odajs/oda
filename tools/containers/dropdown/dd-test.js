@@ -30,7 +30,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
                 background: white;
             }
         </style>
-        <label>{{label}}</label>
+        <button style="width: 100px; margin-left: 12px">{{label}}</-button>
         <oda-button class="clear" @tap="left=clientWidth/2-140;top=20;_lastX=_lastY=undefined">Clear position</oda-button>
         <div class="box vertical" dragable style="border: 1px solid red; padding: 8px; background: lightyellow;
             cursor: move; position: absolute" @pointerdown="_down">
@@ -104,9 +104,11 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         e.preventDefault();
         try {
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: 'Block - 0', id: count });
-            console.log(res);
+            // console.log(res);
         }
-        catch (e) { console.log(e); }
+        catch (e) { 
+            // console.log(e); 
+        }
     }
 })
 ODA({ is: 'oda-test-menu', imports: '@oda/button',
@@ -138,14 +140,15 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
     async ontap(e) {
         e.stopPropagation();
         try {
-            // this.parentElement.close(false, true);
             count ||= 0;
             count = +count + 1;
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 },
                 { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count });
-            console.log(res);
+            // console.log(res);
         }
-        catch (e) { console.log(e) }
+        catch (e) { 
+            // console.log(e) 
+        }
     },
     _isOk(e) {
         this.fire('ok', { detail: { index: e, el: this } });
