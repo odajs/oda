@@ -30,12 +30,14 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     delete ctrl.slot;
                     ctrl.parentElement.replaceChild(comment, ctrl);
                 }
-                for (let i in props) {
-                    ctrl[i] = props[i];
-                }
             }
             for (let i in props) {
-                ctrl[i] = props[i];
+                const prop = props[i];
+                if (typeof prop === 'function'){
+                    ctrl.addEventListener(i, prop.bind(ctrl), true)
+                }
+                else
+                    ctrl[i] = prop
             }
             host.isContainer = true;
             host.style.position = 'fixed';

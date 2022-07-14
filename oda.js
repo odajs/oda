@@ -797,7 +797,7 @@ if (!window.ODA) {
                 if (val === old) return;
 
                 this.$proxy[key] = val;
-
+                this.fire(prop.attrName+'-changed', val);
                 if (prop.reflectToAttribute){
                     this.interval(key+'-attr', ()=>{
                         if (val || val === 0)
@@ -806,6 +806,7 @@ if (!window.ODA) {
                             this.removeAttribute(prop.attrName);
                     })
                 }
+
             }
             Object.defineProperty(odaComponent.prototype, name, desc);
             Object.defineProperty(core.defaults, name, {
@@ -2415,7 +2416,11 @@ if (!window.ODA) {
             ODA.tryReg(id);
             let el = document.createElement(id);
             for (let p in props) {
-                el[p] = props[p];
+                const prop = props[p];
+                if (typeof prop === 'function')
+                    el.addEventListener(p, prop.bind(el), true)
+                else
+                    el[p] = prop;
             }
             return el;
         }

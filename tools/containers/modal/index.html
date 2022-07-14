@@ -4,7 +4,9 @@
 <script type="module">
     import "../containers.js"
     btn1.onclick = e => {
-        ODA.showModal('oda-button', {icon: 'icons:warning', iconSize: 100, allowToggle: true}, {animation: 500, title: 'ЗАГОЛОВОК', help:'sjdkafkjhfkjhasfdk'})
+        ODA.showModal('oda-button', {icon: 'icons:warning', iconSize: 100, allowToggle: true}, {animation: 500, title: 'ЗАГОЛОВОК', help:'sjdkafkjhfkjhasfdk', dblclick:(e)=>{
+                alert(e);
+            }})
     }
     btn2.onclick = e => {
         ODA.showModal('iframe', {src:'https://current.odant.org/api/~/client/pages/navigator/index.html'}, {animation: 500, title: 'ЗАГОЛОВОК', fullSize: true})
