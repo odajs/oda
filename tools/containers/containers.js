@@ -56,7 +56,6 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
             }).filter(i=>i) || [];
 
-            // const windows = Array.from(window.top.iframes);
             windows.add(window.top);
             if (window !== window.top)
                 windows.add(window);
