@@ -35,20 +35,6 @@ if (!window.ODA) {
             }
         }
     }
-    // document.addEventListener('pointerdown', (e) => {
-    //     const mousePos = new DOMRect(e.pageX, e.pageY);
-    //     console.log(mousePos)
-    //     window.top.dispatchEvent(new CustomEvent("_pointerdown", {
-    //         detail: { target: e.target, pos: mousePos, path: e.path, e }
-    //     }));
-    // });
-    
-    (Array.from(frames) || []).forEach(f => {
-        window.top._windows ||= [];
-        window.top._windows.add(f);
-    })
-    console.log('...........iframes - ', window.top._windows);
-
     window.addEventListener('pointerdown', e => {
         if (e.use) return;
         e.use = true;
@@ -2190,9 +2176,6 @@ if (!window.ODA) {
             this.height = pos.height;
         }
     };
-    window.addEventListener('pointerdown', e => {
-        ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-    });
     const keyPressMap = {}
     window.addEventListener('keypress', (e) => {
         const e_key = e.key.toLowerCase();

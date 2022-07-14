@@ -8,8 +8,11 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             :host {
                 pointer-events: none;
                 z-index: 1000;
-                /*animation: fadin 5s ease-in-out;*/
-                /*background-color: rgba(0, 0, 0, 0.4);*/
+ 
+            }
+            :host([fadein]){
+                animation: fadin 5s ease-in-out;
+                background-color: rgba(0, 0, 0, 0.4);
             }
             :host>div{
                 pointer-events: auto;
@@ -81,6 +84,10 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     //     }
     // ],
     props: {
+        fadein: {
+            default: false,
+            reflectToAttribute: true
+        },
         parent: {
             type: [HTMLElement, Object],
             set(n) {

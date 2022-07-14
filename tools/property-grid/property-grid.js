@@ -240,7 +240,7 @@ cells:{
     `,
         item: null,
         async showDD(e){
-            const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, pointerEvents: 'none' });
+            const res = await ODA.showDropdown('oda-menu', {items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i , value: i}))}, {parent: e.target.domHost, fadein: true, pointerEvents: 'none' });
             this.item.value = res.focusedItem.value;
         },
         resetValue() {
