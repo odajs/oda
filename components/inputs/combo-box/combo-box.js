@@ -87,9 +87,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
     dropDown() {
         this._setFocus();
         this._panel.filter = this.text;
-        this._dd = this._dd || ODA.showDropdown(this._panel, {}, { parent: this, useParentWidth: true}).then(res=>{
+        this._dd ??= ODA.showDropdown(this._panel, {}, { parent: this, useParentWidth: true});
+        this._dd?.then(res=>{
             this.value = res.result;
-        }).catch(()=>{
+        }).catch(e=>{
             this.text = undefined;
         }).finally(()=>{
             this._dd = null;
@@ -97,7 +98,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button',
         })
     },
     closeDown(){
-        ODA.closeDropdown();
+        ODA.closeDropdown(this._dd);
     },
     keyBindings: {
         arrowDown(e) {
@@ -142,7 +143,7 @@ ODA({is: 'oda-combo-box-panel',
         <slot ~show="hasData"></slot>
     `,
     get hasData(){
-        return this.domHost.parent.hasData;
+        return this.containerHost?.parent?.hasData;
     },
     hostAttributes:{
         tabindex: 0
@@ -160,7 +161,7 @@ ODA({is: 'oda-combo-box-panel',
         this.appendChild(n);
         this.async(()=>{
             n.addEventListener('result', e=>{
-                this.fire(ok, n.result)
+                this.fire('ok', n.result)
             });
         })
     },

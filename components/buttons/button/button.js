@@ -4,7 +4,6 @@ ODA({is: 'oda-button', extends: 'oda-icon',
     template: /*html*/`
     <style>
         :host {
-            border: 1px solid transparent;
             @apply --horizontal;
             opacity: 0.8;
             padding: 4px;
@@ -38,7 +37,6 @@ ODA({is: 'oda-button', extends: 'oda-icon',
         :host(:active), :host([toggled]) {
             @apply --content;
             opacity: 0.999;
-            border: 1px solid rgba(0,0,0,0.5) !important;
         }
         :host([disabled]) { /* todo: должно работать от глобального стиля */
             @apply --disabled;

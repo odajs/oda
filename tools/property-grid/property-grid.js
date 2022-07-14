@@ -292,7 +292,7 @@ cells:{
                 justify-content: flex-end;
             }
         </style>
-        <oda-button class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
+        <oda-button ~if="!onlySave" class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
     `
     })
 }

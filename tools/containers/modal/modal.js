@@ -55,44 +55,44 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
         borderWidth: 4,
         allowClose: true,
     },
-    attached() {
-        this.windows = this.getWindows();
-        this.async(() => {
-            this.windows.forEach(w => {
-                w.addEventListener('mousedown', this.__closeHandler);
-                w.addEventListener('pointerdown', this.__closeHandler);
-            });
-        }, 500)
-    },
-    getWindows(win = window, list = []){
-        do{
-            list.add(win);
-            win = win.window;
-        } while (win !== win.window)
-        return list;
-    },
-    get __closeHandler() {
-        return this._close.bind(this);
-    },
-    detached() {
-        this.windows.forEach(w => {
-            w.removeEventListener('pointerdown', this.__closeHandler);
-            w.removeEventListener('mousedown', this.__closeHandler);
-        });
-    },
+    // attached() {
+    //     this.windows = this.getWindows();
+    //     this.async(() => {
+    //         this.windows.forEach(w => {
+    //             w.addEventListener('mousedown', this.__closeHandler);
+    //             w.addEventListener('pointerdown', this.__closeHandler);
+    //         });
+    //     }, 500)
+    // },
+    // getWindows(win = window, list = []){
+    //     do{
+    //         list.add(win);
+    //         win = win.window;
+    //     } while (win !== win.window)
+    //     return list;
+    // },
+    // get __closeHandler() {
+    //     return this._close.bind(this);
+    // },
+    // detached() {
+    //     this.windows.forEach(w => {
+    //         w.removeEventListener('pointerdown', this.__closeHandler);
+    //         w.removeEventListener('mousedown', this.__closeHandler);
+    //     });
+    // },
     control: null,
     _slot(e) {
         this.control = this.control || e.target.assignedNodes()?.[0]
         this.control.style.setProperty('overflow', 'hidden');
     },
-    _close(event) {
-        if (event.path.length === 1) return;
-        for (let element of event.path){
-            if (!(element instanceof Node)) continue;
-            if (this.contains(element)) return;
-        }
-        this.fire('cancel');
-    }
+    // _close(event) {
+    //     if (event.path.length === 1) return;
+    //     for (let element of event.path){
+    //         if (!(element instanceof Node)) continue;
+    //         if (this.contains(element)) return;
+    //     }
+    //     this.fire('cancel');
+    // }
 })
 ODA({is: 'oda-modal-content', extends: 'oda-form-layout', imports: '@oda/form-layout',
     template: /*html*/`

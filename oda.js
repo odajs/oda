@@ -35,24 +35,25 @@ if (!window.ODA) {
             }
         }
     }
-    document.addEventListener('pointerdown', (e) => {
-        const mousePos = new DOMRect(e.pageX, e.pageY);
-        window.top.dispatchEvent(new CustomEvent("_pointerdown", {
-            detail: { target: e.target, pos: mousePos, path: e.path, e }
-        }));
-    });
-    window.addEventListener('mousedown', e => {
+    // document.addEventListener('pointerdown', (e) => {
+    //     const mousePos = new DOMRect(e.pageX, e.pageY);
+    //     console.log(mousePos)
+    //     window.top.dispatchEvent(new CustomEvent("_pointerdown", {
+    //         detail: { target: e.target, pos: mousePos, path: e.path, e }
+    //     }));
+    // });
+    window.addEventListener('pointerdown', e => {
         if (e.use) return;
         e.use = true;
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
         try{
             if (window.parent !== window)
-                window.parent?.dispatchEvent?.(new MouseEvent('mousedown', e));
+                window.parent?.dispatchEvent?.(new MouseEvent('pointerdown', e));
             let i = 0;
             let w;
             while (w = window[i]) {
                 if (w) {
-                    const ev = new MouseEvent('mousedown', e);
+                    const ev = new MouseEvent('pointerdown', e);
                     ev.use = true;
                     w.dispatchEvent?.(ev);
                 }
@@ -1154,7 +1155,6 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
-
     Object.defineProperty(ODA, 'cssRules', {
         get(){
             let rules = ODA['#cssRules'];
@@ -1627,6 +1627,10 @@ if (!window.ODA) {
                 }
                 $el.addEventListener(e, event);
             }
+            if (tag === 'IFRAME'){
+                window.top.iframes ??= [];
+                window.top.iframes.add($el);
+            }
         }
         $el.$node = src;
         $el.domHost = this;
@@ -2038,7 +2042,7 @@ if (!window.ODA) {
     class odaEventDown extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            this.addSubEvent('mousedown', (e) => {
+            this.addSubEvent('pointerdown', (e) => {
                 const ce = new odaCustomEvent("down", { detail: { sourceEvent: e } }, e);
                 this.handler(ce, ce.detail);
             });
@@ -2050,7 +2054,7 @@ if (!window.ODA) {
     class odaEventUp extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            this.addSubEvent('mouseup', (e) => {
+            this.addSubEvent('pointerup', (e) => {
                 const ce = new odaCustomEvent("up", { detail: { sourceEvent: e } }, e);
                 this.handler(ce, ce.detail);
             });
@@ -2168,7 +2172,7 @@ if (!window.ODA) {
         }
         return res;
     }
-    window.ODARect = window.ODARect || class ODARect {
+    window.ODARect ??= class ODARect {
         constructor(element) {
             if (element?.host)
                 element = element.host;
@@ -2183,7 +2187,7 @@ if (!window.ODA) {
             this.height = pos.height;
         }
     };
-    document.addEventListener('mousedown', e => {
+    window.addEventListener('pointerdown', e => {
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
     });
     const keyPressMap = {}

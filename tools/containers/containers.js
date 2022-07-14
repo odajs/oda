@@ -17,57 +17,86 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             const host = await ODA.createComponent('oda-' + id, hostProps);
             let ctrl = component;
             if (typeof ctrl === 'string')
-                ctrl = await ODA.createComponent(ctrl, props);
-            else {
-                if (ctrl.parentElement) {
-                    if (ctrl.containerHost)
-                        ctrl.containerHost.fire('cancel');
-                    const comment = document.createComment(ctrl.innerHTML);
-                    comment.slotTarget = ctrl;
-                    ctrl.slotProxy = comment;
-                    ctrl.containerHost = host;
-                    comment.$slot = ctrl.slot;
-                    delete ctrl.slot;
-                    ctrl.parentElement.replaceChild(comment, ctrl);
-                }
-                for (let i in props) {
-                    ctrl[i] = props[i];
-                }
+                ctrl = await ODA.createComponent(ctrl);
+            else { //todo Поверить режим для готовых компонентов
+                // if (ctrl.parentElement) {
+                //     if (ctrl.containerHost)
+                //         ctrl.containerHost.fire('cancel');
+                //     const comment = document.createComment(ctrl.innerHTML);
+                //     comment.slotTarget = ctrl;
+                //     ctrl.slotProxy = comment;
+                //     ctrl.containerHost = host;
+                //     comment.$slot = ctrl.slot;
+                //     delete ctrl.slot;
+                //     ctrl.parentElement.replaceChild(comment, ctrl);
+                // }
+                // for (let i in props) {
+                //     ctrl[i] = props[i];
+                // }
             }
+            for (let i in props) {
+                ctrl[i] = props[i];
+            }
+            host.isContainer = true;
             host.style.position = 'fixed';
             host.style.width = '100%';
             host.style.height = '100%';
-            ctrl.domHost = host;
+            ctrl.containerHost = host;
             host.appendChild(ctrl);
             document.body.appendChild(host);
-            let close, onMouseDown, onKeyDown, onCancel, onOk;
-            const windows = [...Array.prototype.map.call(window.top, w => w), window];
-            windows.add(window.top);
 
+            const windows = window.top.iframes?.filter(i=>i.isConnected).map(f=>{
+                try{
+                    return f.contentWindow;
+                }
+                catch (e){
+
+                }
+            }).filter(i=>i) || [];
+
+            // const windows = Array.from(window.top.iframes);
+            windows.add(window.top);
+            if (window !== window.top)
+                windows.add(window);
+
+            let onMouseDown, onKeyDown, onCancel, onOk;
             const result = new Promise((resolve, reject) => {
-                onMouseDown = (e) => {
-                    if (host ===  e.target){
-                        if (host.close)
-                            host.close();
-                        else
-                            host.fire('cancel');
+                onMouseDown = (e) => { //todo надо отработать общее закрытие
+                    if (hostProps?.parent?.contains(e.target)) //todo parent надо проверят по координатам
+                        return;
+                    if (host.contains(e.target)) {
+                        let last = document.body.lastChild;
+                        while (last && last.isContainer && last !== host){
+                            last.fire('cancel');
+                            last = last.previousSibling;
+                        }
+                        return;
                     }
+                    if (ctrl.contains(e.target)) return;
+                    if (host !== document.body.lastChild)
+                        return;
+
+                    onCancel(e);
                 }
                 onKeyDown = (e) => {
-                    if (e.keyCode === 27) onCancel(e);
+                    if (e.keyCode === 27)
+                        onCancel(e);
                 }
                 onCancel = (e) => {
-                    reject()
+                    reject(e)
                 }
                 onOk = (e) => {
                     setTimeout(() => resolve(ctrl));
                 }
+                ctrl.addEventListener('cancel', onCancel);
+                ctrl.addEventListener('ok', onOk);
                 host.addEventListener('cancel', onCancel);
                 host.addEventListener('ok', onOk);
 
                 windows.forEach(w => {
                     w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('pointerdown', onMouseDown);
+                    w.addEventListener('pointerdown', onMouseDown, true);
+                    w.addEventListener('resize', onCancel);
                 });
             });
             result.finally(() => {
@@ -77,10 +106,12 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
                 host.removeEventListener('cancel', onCancel);
                 host.removeEventListener('ok', onOk);
-
+                ctrl.removeEventListener('cancel', onCancel);
+                ctrl.removeEventListener('ok', onOk);
                 windows.forEach(w => {
                     w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('pointerdown', onMouseDown);
+                    w.removeEventListener('pointerdown', onMouseDown, true);
+                    w.removeEventListener('resize', onCancel);
                 });
 
                 setTimeout(() => host.remove());

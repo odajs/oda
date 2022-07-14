@@ -43,43 +43,43 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         }
     },
     controls: undefined,
-    attached() {
-        this.windows = this.getWindows();
-        this.async(() => {
-            this.windows.forEach(w => {
-                w.addEventListener('mousedown', this.__closeHandler);
-                w.addEventListener('pointerdown', this.__closeHandler);
-                w.addEventListener('resize', this.__closeHandler);
-            });
-        }, 500)
-    },
-    getWindows(win = window, list = []){
-        do{
-            list.add(win);
-            win = win.window;
-        } while (win !== win.window)
-        return list;
-    },
-    get __closeHandler() {
-        return this._close.bind(this);
-    },
-    detached() {
-        this.windows.forEach(w => {
-            w.removeEventListener('pointerdown', this.__closeHandler);
-            w.removeEventListener('mousedown', this.__closeHandler);
-            w.removeEventListener('resize', this.__closeHandler);
-        });
-    },
-    resolveEvent: 'ok',
-    observers: [
-        function setEvent(controls, resolveEvent) {
-            for (let el of controls) {
-                this.listen(resolveEvent, (e) => {
-                    this.fire('ok');
-                }, { target: el })
-            }
-        }
-    ],
+    // attached() {
+    //     this.windows = this.getWindows();
+    //     this.async(() => {
+    //         this.windows.forEach(w => {
+    //             w.addEventListener('mousedown', this.__closeHandler);
+    //             w.addEventListener('pointerdown', this.__closeHandler);
+    //             w.addEventListener('resize', this.__closeHandler);
+    //         });
+    //     }, 500)
+    // },
+    // getWindows(win = window, list = []){
+    //     do{
+    //         list.add(win);
+    //         win = win.window;
+    //     } while (win !== win.window)
+    //     return list;
+    // },
+    // get __closeHandler() {
+    //     return this._close.bind(this);
+    // },
+    // detached() {
+    //     this.windows.forEach(w => {
+    //         w.removeEventListener('pointerdown', this.__closeHandler);
+    //         w.removeEventListener('mousedown', this.__closeHandler);
+    //         w.removeEventListener('resize', this.__closeHandler);
+    //     });
+    // },
+    // resolveEvent: 'ok',
+    // observers: [
+    //     function setEvent(controls, resolveEvent) {
+    //         for (let el of controls) {
+    //             this.listen(resolveEvent, (e) => {
+    //                 this.fire('ok');
+    //             }, { target: el })
+    //         }
+    //     }
+    // ],
     props: {
         parent: {
             type: [HTMLElement, Object],
@@ -219,19 +219,19 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this['#_style'] = undefined;
         this.contentRect = this.control.getBoundingClientRect();
     },
-    _close(event) {
-        if (event?.path.includes(this.parent)) return;
-        for (let element of event.path){
-            if (!(element instanceof Node)) continue;
-            if (this.contains(element)) return;
-        }
-        const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
-        for (const dd of dropDowns) {
-            for (let element of event.path){
-                if (!(element instanceof Node)) continue;
-                if (dd.contains(element)) return;
-            }
-            dd.fire('cancel');
-        }
-    }
+    // _close(event) {
+    //     if (event?.path.includes(this.parent)) return;
+    //     for (let element of event.path){
+    //         if (!(element instanceof Node)) continue;
+    //         if (this.contains(element)) return;
+    //     }
+    //     const dropDowns = [...document.body.querySelectorAll(this.localName)].reverse()
+    //     for (const dd of dropDowns) {
+    //         for (let element of event.path){
+    //             if (!(element instanceof Node)) continue;
+    //             if (dd.contains(element)) return;
+    //         }
+    //         dd.fire('cancel');
+    //     }
+    // }
 })

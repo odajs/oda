@@ -138,7 +138,7 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
     async ontap(e) {
         e.stopPropagation();
         try {
-            this.parentElement.close(false, true);
+            // this.parentElement.close(false, true);
             count ||= 0;
             count = +count + 1;
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 },
