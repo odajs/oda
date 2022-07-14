@@ -75,7 +75,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
-        <div ~if="title" ~text="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
+        <div ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
         <div class="flex"></div>
         <slot class="horizontal no-flex" name="title-buttons"></slot>
         <div ~if="modal && !hideMinMax" class="horizontal no-flex">
