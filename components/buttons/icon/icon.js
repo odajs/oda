@@ -27,6 +27,7 @@ ODA({is: 'oda-icon',
             padding: 1px;
             font-size: {{iconSize/3}}px;
             z-index: 1;
+            writing-mode: initial;
         }
         :host > div {
             position: relative;

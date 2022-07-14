@@ -73,15 +73,18 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         if (pos.left < e.pageX && pos.right > e.pageX && pos.top < e.pageY && pos.bottom > e.pageY)
                             return;
                     }
-                    if (host.contains(e.target)) {
-                        let last = document.body.lastChild;
-                        while (last && last.isContainer && last !== host){
-                            last.fire('cancel');
-                            last = last.previousSibling;
-                        }
-                        return;
-                    }
-                    if (ctrl.contains(e.target)) return;
+                     if (e.target instanceof Node){
+                         if (host.contains(e.target)) {
+                             let last = document.body.lastChild;
+                             while (last && last.isContainer && last !== host){
+                                 last.fire('cancel');
+                                 last = last.previousSibling;
+                             }
+                             return;
+                         }
+                         if (ctrl.contains(e.target)) return;
+                     }
+
                     if (host !== document.body.lastChild)
                         return;
 
