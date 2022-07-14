@@ -62,13 +62,13 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             let onMouseDown, onKeyDown, onCancel, onOk;
             const result = new Promise((resolve, reject) => {
                 onMouseDown = (e) => { //todo надо отработать общее закрытие
-                     if (hostProps?.parent){
-                         if (e.path.includes(hostProps?.parent))
+                     if (hostProps.parent){
+                         if (e.path.includes(hostProps.parent))
                              return;
-                         if (hostProps?.parent.contains(e.target))
+                         if (e.target instanceof Node && hostProps.parent.contains(e.target))
                              return;
-                        const pos = hostProps?.parent.getBoundingClientRect();
-                        if (pos.left < e.offsetX && pos.right > e.offsetX && pos.top < e.offsetY && pos.bottom > e.offsetY)
+                        const pos = hostProps.parent.getBoundingClientRect();
+                        if (pos.left < e.pageX && pos.right > e.pageX && pos.top < e.pageY && pos.bottom > e.pageY)
                             return;
                     }
                     if (host.contains(e.target)) {

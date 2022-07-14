@@ -66,7 +66,7 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
     },
     async showSubMenu(e) {
         e.stopPropagation();
-        this.parentElement.localName === 'oda-dropdown' && this.parentElement.close(false, true);
+        // this.parentElement.localName === 'oda-dropdown' && this.parentElement.close(false, true);
         await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template, showSubTitle: this.showSubTitle }, { parent: e.target, align: 'right', title: (this.showSubTitle ? e.target.item.label : undefined) });
     },
     _tap(e) {
