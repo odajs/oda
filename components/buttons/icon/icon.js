@@ -34,11 +34,11 @@ ODA({is: 'oda-icon',
         }
         .subicon {
             position: absolute;
-            top: {{iconSize/2}}px;
+            top: {{iconSize/2-1}}px;
             left: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
             @apply --content;
-            @apply --shadow;
+            @apply --raised;
             margin: {{getComputedStyle(this)['padding']?.toString() || 'unset'}};
         }
         svg {
@@ -59,8 +59,11 @@ ODA({is: 'oda-icon',
             <g ~html="_icon?.body"></g>
         </svg>
     </div>
-    <oda-icon class="subicon" ~if="subIcon" :icon="subIcon" :icon-size="iconSize/2"></oda-icon>
+    <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/2"></oda-icon>
     `,
+    get sub(){
+        return this.$('.subicon');
+    },
     get _icon() {
         return this._obj?.body || this._def?.body;
     },
