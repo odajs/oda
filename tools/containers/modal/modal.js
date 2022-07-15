@@ -14,7 +14,6 @@ ODA({is: 'oda-modal', imports: '@oda/button, @oda/title',
             @apply --vertical;
             animation: fadin 5s ease-in-out;
             background-color: rgba(0, 0, 0, 0.4);
-            
         }
         ::slotted(*) {
             @apply --flex;

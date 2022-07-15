@@ -86,5 +86,10 @@ ODA({is: 'oda-dialog-footer',
         hideCancelButton: false,
     },
     onFocusIn(e) { this.focusedButton = e.target },
-    onBlur(e) { this.focusedButton = null }
+    onBlur(e) { this.focusedButton = null },
+    listeners:{
+        pointerdown(e){
+            e.stopPropagation();
+        }
+    }
 })

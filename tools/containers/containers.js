@@ -72,7 +72,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         if (pos.left < e.pageX && pos.right > e.pageX && pos.top < e.pageY && pos.bottom > e.pageY)
                             return;
                     }
-                     if (e.target instanceof Node){
+                    if (e.target instanceof Node){
                          if (host.contains(e.target)) {
                              let last = document.body.lastChild;
                              while (last && last.isContainer && last !== host){
@@ -82,12 +82,14 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                              return;
                          }
                          if (ctrl.contains(e.target)) return;
-                     }
+                    }
 
                     if (host !== document.body.lastChild)
                         return;
-
-                    onCancel(e);
+                    reject(e);
+                    setTimeout(()=>{
+                        window.dispatchEvent(new PointerEvent('pointerdown', e));
+                    })
                 }
                 onKeyDown = (e) => {
                     if (e.keyCode === 27)
@@ -124,8 +126,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     w.removeEventListener('pointerdown', onMouseDown, true);
                     w.removeEventListener('resize', onCancel);
                 });
-
-                setTimeout(() => host.remove());
+                host.remove();
+                // setTimeout(() => host.remove());
             })
             return result;
         }
