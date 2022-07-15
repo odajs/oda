@@ -35,33 +35,51 @@ if (!window.ODA) {
             }
         }
     }
-    window.addEventListener('pointerdown', e => {
-        if (e.use) return;
-        e.use = true;
-        ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-        try{
-            if (window.top !== window){
-                const ev = new PointerEvent('pointerdown', e);
-                ev.use = true;
-                window.top?.dispatchEvent?.(ev);
-            }
+    // window.addEventListener('pointerdown', e => {
+    //     if (e.use) return;
+    //     e.use = true;
+    //     window.top._windows ||= [];
+    //     ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+    //     try{
+    //         if (window.top !== window){
+    //             window.top._windows.add(window)
+    //             const ev = new PointerEvent('pointerdown', e);
+    //             ev.use = true;
+    //             window.top?.dispatchEvent?.(ev);
+    //         }
 
-            let i = 0;
-            let w;
-            while (w = window[i]) {
-                if (w) {
-                    const ev = new PointerEvent('pointerdown', e);
-                    ev.use = true;
-                    w.dispatchEvent?.(ev);
-                }
-                i++;
-            }
-        }
-        catch (e){
-            console.error(e)
-        }
+    //         let i = 0;
+    //         let w;
+    //         while (w = window[i]) {
+    //             if (w) {
+    //                 window.top._windows.add(w)
+    //                 const ev = new PointerEvent('pointerdown', e);
+    //                 ev.use = true;
+    //                 w.dispatchEvent?.(ev);
+    //             }
+    //             i++;
+    //         }
+    //         console.log(window.top._windows)
+    //     }
+    //     catch (e){
+    //         console.error(e)
+    //     }
 
-    }, true);
+    // }, true);
+
+    if (!document._iframes) {
+        const fn = (d = document) => d.addEventListener('pointerdown', (e) => {
+            ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+            // console.log(e.target, ODA.mousePos, e.composedPath);
+            window.top.dispatchEvent(new CustomEvent("pointerdown", { 
+                detail: { target: e.target, pos: ODA.mousePos, path: e.path, e }
+            }))
+        })
+        fn();
+        document._iframes = Array.from(frames) || [];
+        document._iframes.forEach(w => fn(w.document));
+    }
+
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
