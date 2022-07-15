@@ -34,7 +34,7 @@ ODA({is: 'oda-icon',
         }
         .subicon {
             position: absolute;
-            top: {{2*iconSize/3}}px;
+            top: {{iconSize/2}}px;
             left: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
             @apply --content;
