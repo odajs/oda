@@ -47,19 +47,6 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.appendChild(ctrl);
             document.body.appendChild(host);
 
-            const windows = window.top.iframes?.filter(i=>i.isConnected).map(f=>{
-                try{
-                    return f.contentWindow;
-                }
-                catch (e){
-
-                }
-            }).filter(i=>i) || [];
-
-            // windows.add(window.top);
-            // if (window !== window.top)
-                windows.add(window);
-
             let onMouseDown, onKeyDown, onCancel, onOk;
             const result = new Promise((resolve, reject) => {
                 onMouseDown = (e) => { //todo надо отработать общее закрытие
@@ -109,11 +96,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.style.zIndex = 10000;
                 host.addEventListener('pointerdown', onMouseDown);
 
-                windows.forEach(w => {
-                    w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('pointerdown', onMouseDown, true);
-                    w.addEventListener('resize', onCancel);
-                });
+                window.addEventListener('keydown', onKeyDown, true);
+                window.addEventListener('pointerdown', onMouseDown, true);
+                window.addEventListener('resize', onCancel);
+
 
             });
             result.finally(() => {
@@ -125,11 +111,9 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.removeEventListener('ok', onOk);
                 ctrl.removeEventListener('cancel', onCancel);
                 ctrl.removeEventListener('ok', onOk);
-                windows.forEach(w => {
-                    w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('pointerdown', onMouseDown, true);
-                    w.removeEventListener('resize', onCancel);
-                });
+                window.removeEventListener('keydown', onKeyDown, true);
+                window.removeEventListener('pointerdown', onMouseDown, true);
+                window.removeEventListener('resize', onCancel);
                 host.removeEventListener('pointerdown', onMouseDown);
                 host.remove();
             })

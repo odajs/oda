@@ -40,8 +40,12 @@ if (!window.ODA) {
         e.use = true;
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
         try{
-            if (window.parent !== window)
-                window.parent?.dispatchEvent?.(new PointerEvent('pointerdown', e));
+            if (window.top !== window){
+                const ev = new PointerEvent('pointerdown', e);
+                ev.use = true;
+                window.top?.dispatchEvent?.(ev);
+            }
+
             let i = 0;
             let w;
             while (w = window[i]) {
