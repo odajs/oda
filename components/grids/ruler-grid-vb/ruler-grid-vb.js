@@ -180,11 +180,11 @@ ODA({ is: 'oda-ruler-vb', template: /*template*/`
     <div style="font-size: xx-small; width: 24px; text-align: center; align-self: center;" class="no-flex" ~if="!vertical">{{unit}}</div>
     <svg :view-box="vertical ? ('0 ' + ((vb.y-1) * scale) + ' ' + (24 * scale) + ' ' + (vb.h * scale)) : (((vb.x-1) * scale) + ' 0 ' + (vb.w * scale) + ' ' + (24 * scale))" class="content" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <pattern id="rullerSmallLines" :width="!vertical ? gridSize : gridSize / 2" :height="vertical ? gridSize : gridSize / 2" patternUnits="userSpaceOnUse">
+            <pattern id="rullerSmallLines" :width="gridSize" :height="gridSize" patternUnits="userSpaceOnUse">
                 <path :d="!vertical ? ('M ' + gridSize + ' ' + (12 * scale) + ' L ' + gridSize + ' 0') : ('M ' + (12 * scale) + ' ' + gridSize + ' L 0 ' + gridSize)" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 5" />
             </pattern>
             <pattern id="rullerBigLines" :width="bigGridSize" :height="bigGridSize" patternUnits="userSpaceOnUse">
-                <rect :width="bigGridSize" :height="bigGridSize" fill="url(#rullerSmallLines)" />
+                <rect :x="vertical ? (14 * scale) : 0" :y="!vertical ? (14 * scale) : 0" :width="!vertical ? bigGridSize : gridSize" :height="vertical ? bigGridSize : gridSize" fill="url(#rullerSmallLines)" />
                 <path :d="!vertical ? ('M ' + bigGridSize + ' ' + (24 * scale) + ' L ' + bigGridSize + ' 0') : ('M ' + (24 * scale) + ' ' + bigGridSize + ' L 0 ' + bigGridSize)" fill="none" stroke="black" :stroke-width="bigGridStrokeWidth * step / 5" />
             </pattern>
         </defs>

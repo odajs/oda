@@ -971,12 +971,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
         const item = d?.value || e.target.item;
-        if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
-            if (item.disabled) {
-                item.$expanded = !item.$expanded;
-            } else {
-                this.focusedRow = item;
-            }
+        if (item.disabled) {
+            item.$expanded = !item.$expanded;
+        } else if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
+            this.focusedRow = item;
         }
     },
     _highlight(e, d) {
@@ -1578,7 +1576,7 @@ cells: {
                 }
             },
             get _showCheckBox() {
-                return (this.allowCheck && this.allowCheck !== 'none' && !this.item?.disabled && !this.item.hideCheckbox) || (this.item?.allowCheck && this.item?.allowCheck !== 'none');
+                return ((this.allowCheck && this.allowCheck !== 'none' && !this.item.hideCheckbox) || (this.item?.allowCheck && this.item?.allowCheck !== 'none')) && !this.item?.disabled;
             },
             get stepStyle() {
                 if (!this.showTreeLines || !this.iconSize) return {}
