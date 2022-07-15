@@ -60,8 +60,12 @@ if (!window.ODA) {
         catch (e){
             console.error(e)
         }
-
     }, true);
+    // Array.from(window).forEach(w=>{
+    //     w.addEventListener('pointerdown', e=>{
+    //         window.dispatchEvent?.(new PointerEvent('pointerdown', e));
+    //     }, true);
+    // })
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
@@ -1612,9 +1616,23 @@ if (!window.ODA) {
             else {
                 $el = document.createElement(tag);
             }
-            if (tag !== 'STYLE') {
-                this.$core.resize.observe($el);
-                this.$core.intersect.observe($el);
+            switch (tag){
+                case 'STYLE':{
+                    this.$core.resize.observe($el);
+                    this.$core.intersect.observe($el);
+                } break;
+                case 'IFRAME':{
+                    $el.addEventListener('load', e=>{
+                        e.target.contentDocument.addEventListener('pointerdown', e=>{
+                            window.dispatchEvent?.(new PointerEvent('pointerdown', e));
+                        }, true);
+                        Array.from(e.target.contentWindow).forEach(w=>{
+                            w.addEventListener('pointerdown', e=>{
+                                window.dispatchEvent?.(new PointerEvent('pointerdown', e));
+                            }, true);
+                        })
+                    })
+                }
             }
             if (src.attrs)
                 for (let i in src.attrs)
