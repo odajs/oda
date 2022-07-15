@@ -28,9 +28,6 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
             save: true
         }
     },
-    // get rootSaveKey() {
-    //     return (this.saveKey ? this.saveKey + '_' : '') + 'root';
-    // },
     get layout() {
         return this.data && new this.layoutCtor(this.data, this.keys);
     },
@@ -51,12 +48,6 @@ ODA({ is: 'oda-layout-designer', imports: '@tools/containers',
         this.needSave = true;
     },
     saveScripts() {
-        // this.scripts ||= new Map();
-        // for (const [root, actions] of this.scripts) {
-        //     root.str.actions ||= [];
-        //     root.str.actions.push(...actions);
-        // }
-        // this.scripts = null;
         let obj = {};
         this.scripts.forEach((value, id) => {
             obj[id] = value;
@@ -89,6 +80,7 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
+                margin-right: 4px;
                 position: relative;
                 align-items: {{layout?.align ==='vertical' ? 'normal' : 'flex-end'}};
                 @apply --horizontal;
@@ -101,7 +93,7 @@ ODA({ is: 'oda-layout-designer-structure',
             }
             [selected] {
                 background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
-                box-shadow: inset 0 0 0 1px blue;
+                box-shadow: inset 0 0 0 1px var(--focused-color);
             }
         </style>
         <div ~if="!hiddenLayouts.includes(next)" @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-container':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
@@ -148,47 +140,10 @@ ODA({ is: 'oda-layout-designer-structure',
                     }
                 }
             }
-        },
-        // root_savekey: '',
-        // actions: {
-        //     default: [],
-        //     save: true
-        // },
-        // saveKey: '',
+        }
     },
     isRoot: false
-    // observers: [
-    //     async function execute(layout, actions) {
-    //         if (layout) {
-    //             this.saveKey = layout.saveKey = this.root_savekey || (this.rootSaveKey + '_' + layout.id || layout.name || layout.showLabel);
-    //             this.lays ||= new Set();
-    //             if (this.loadScripts) {
-    //                 actions = await this.loadScripts();
-    //                 console.log(actions)
-    //             } 
-    //             if (actions?.length && !this.lays.has(this.layout.id)) {
-    //                 this.layout.execute(actions).then(res => {
-    //                     this.lays.add(this.layout.id); // for single execution - to remove looping
-    //                 });
-    //             }
-    //         }
-    //     }
-    // ]
 })
-
-// ODA({ is: 'oda-layout-designer-block',
-//     template: /*html*/`
-//         <style>
-//             :host{
-//                 @apply --flex;
-//                 @apply --horizontal;
-//                 flex: {{width?'0 0 auto':'1000000000000000000000000000000 1 auto'}};
-//             }
-//         </style>
-//         <oda-layout-designer-structure class="flex content" :layout></oda-layout-designer-structure>
-//     `,
-//     width: 0,
-// })
 
 ODA({ is: 'oda-layout-designer-pages',
     template: /*html*/`
@@ -333,7 +288,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 /* min-height: {{iconSize + 4}}px; */
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
                 min-width: {{layout?.minWidth ? layout?.minWidth : isChildren ? '100%' : '32px'}};
-                max-width: {{layout.maxWidth ? layout.maxWidth : 'unset'}};
+                max-width: {{layout.maxWidth ? layout.maxWidth : isChildren ? '100%' : 'unset'}};
                 width: {{layout.width ? layout.width : 'unset'}};
             }
             :host([is-group]) {

@@ -2065,8 +2065,9 @@ if (!window.ODA) {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
             this.addSubEvent('mousedown', (e) => {
-                odaEventTrack.handler = odaEventTrack.handler || handler;
-                odaEventTrack.detail =  odaEventTrack.detail || {
+                if(e.buttons !== 1) return;
+                odaEventTrack.handler ??= handler;
+                odaEventTrack.detail ??= {
                     start: {
                         x: e.clientX,
                         y: e.clientY
@@ -2079,6 +2080,10 @@ if (!window.ODA) {
                 target.addEventListener('mouseleave', leaveHandler, {once: true});
             });
             const leaveHandler = (e) =>{
+                if(e.buttons !== 1) {
+                    upHandler(e);
+                    return;
+                }
                 if (!odaEventTrack.back){
                     odaEventTrack.back = document.createElement('div');
                     odaEventTrack.back.style.setProperty('width', '100%');

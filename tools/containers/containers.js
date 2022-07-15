@@ -56,8 +56,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
             }).filter(i=>i) || [];
 
-            windows.add(window.top);
-            if (window !== window.top)
+            // windows.add(window.top);
+            // if (window !== window.top)
                 windows.add(window);
 
             let onMouseDown, onKeyDown, onCancel, onOk;
@@ -88,6 +88,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         return;
                     reject(e);
                     setTimeout(()=>{
+                        if(!document.body.lastChild?.isContainer) return;
                         window.dispatchEvent(new PointerEvent('pointerdown', e));
                     })
                 }
@@ -108,7 +109,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
 
                 windows.forEach(w => {
                     w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('pointerdown', onMouseDown, true);
+                    w.addEventListener('pointerdown', onMouseDown);
                     w.addEventListener('resize', onCancel);
                 });
             });
@@ -123,11 +124,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 ctrl.removeEventListener('ok', onOk);
                 windows.forEach(w => {
                     w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('pointerdown', onMouseDown, true);
+                    w.removeEventListener('pointerdown', onMouseDown);
                     w.removeEventListener('resize', onCancel);
                 });
                 host.remove();
-                // setTimeout(() => host.remove());
             })
             return result;
         }
