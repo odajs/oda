@@ -97,7 +97,8 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
         track(e) {
             this.onTrack?.(e);
             e.preventDefault();
-            if (e.sourceEvent.which !== 2) return;
+            // if (e.sourceEvent.which !== 2) return;
+            if (e.sourceEvent.ctrlKey !== true) return;
             switch (e.detail.state) {
                 case 'start': {
                     this.svg.style.setProperty('cursor', 'grabbing');
