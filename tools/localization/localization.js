@@ -105,28 +105,28 @@ ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
     },
     columns: [{name:'words',treeMode:true,template:'oda-localization-words', $sort: 1},
                 {name:'transletes',template:'oda-localization-transletes'},{name:'letter', hidden:true }],
-    async ready() {
-       // this.groups = [this.columns.find(c => c.name === 'letter')];
+    // async ready() {
+    //    // this.groups = [this.columns.find(c => c.name === 'letter')];
 
-        // const words = sumObAB(Localization.words, Localization.dictionary.words)
-        // const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
-        // // console.log(phraze)
-        // let ds = {}
-        // Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
-        // Object.keys(phraze).map(k => {
-        //     const testLeter = new RegExp('[a-z].*?', 'gi')
-        //     // let trob = new TRANSLATE(k,'phraze')
-        //     k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
-        //         if (ds[w] == undefined) ds[w] = { words: w, transletes: new TRANSLATE(w,'words'), letter: w[0].toLocaleLowerCase(), 
-        //                                             items:[{ words: k, transletes:  new TRANSLATE(k,'phraze') }] } 
-        //         else { ds[w].items.push({words: k, transletes: new TRANSLATE(k,'phraze') }) }
-        //     })
-        // })
-        // console.log('ss:')
-        // console.log(Object.values(ds))
-        // this.dataSet =  Object.values(ds)
+    //     // const words = sumObAB(Localization.words, Localization.dictionary.words)
+    //     // const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
+    //     // // console.log(phraze)
+    //     // let ds = {}
+    //     // Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
+    //     // Object.keys(phraze).map(k => {
+    //     //     const testLeter = new RegExp('[a-z].*?', 'gi')
+    //     //     // let trob = new TRANSLATE(k,'phraze')
+    //     //     k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
+    //     //         if (ds[w] == undefined) ds[w] = { words: w, transletes: new TRANSLATE(w,'words'), letter: w[0].toLocaleLowerCase(), 
+    //     //                                             items:[{ words: k, transletes:  new TRANSLATE(k,'phraze') }] } 
+    //     //         else { ds[w].items.push({words: k, transletes: new TRANSLATE(k,'phraze') }) }
+    //     //     })
+    //     // })
+    //     // console.log('ss:')
+    //     // console.log(Object.values(ds))
+    //     // this.dataSet =  Object.values(ds)
 
-    },
+    // },
    
 })
 

@@ -5,6 +5,8 @@ ODA({
     <style>
         table {max-width:900px; width:100%; margin:auto;border-collapse: collapse;border: 2px solid #25a0db;}
         th,td {border: 1px solid #25a0db; padding:2px 3px;}
+        th {cursor: pointer;}
+        th.act{background: #25a0db33}
         tr:nth-child(even) {background: #25a0db22}
         tr:nth-child(odd) {background: #25a0db33}
         th:nth-child(n+4),th:nth-child(n+5) {min-width:85px}
@@ -18,8 +20,8 @@ ODA({
         
     </div>
     <table>
-        <tr><th ~for="names">{{item}}</th></tr>
-        <tr ~if='showRows[i]' ~for="row,i in raws"> <td ~for="row">{{item}}</td> </tr>
+        <tr><th ~class="(index==sortI)?'act':''" @tap="_chSort(index)" ~for="names">{{item}}</th></tr>
+        <tr ~for="row in area"> <td ~for="row">{{item}}</td> </tr>
     </table>
     `,
     async attached() {
@@ -34,19 +36,17 @@ ODA({
         )
         this.raws = rows
         this.search = ''
+        this.sortI = this.names.length - 1
     },
-    // observers: ['_obrRows(raws,tTab,search)'],
+    observers: ['_screenSet(sortI,search)'],
     props: {
+        sortI:1,
         raws: [],
         tTab: 0, // 0 -- организации, 1 -- люди
         finrows: {},
         names: [],
-        showRows: [],
-        search: {
-            default: 'sssssssssssssssssssыыыыыыыыыыыыыыыыыыыыыыы',
-            set(s) { this.showRows = this.raws.map(r => r.join(' ').toLowerCase().includes(s.toLowerCase())) }
-        },
-
+        area:[],
+        search: '0'
     },
     async _dlRaw() { // 1D839FFCCA3D6FF -- организации, 1D839FFD97FF621 -- люди
         const url = 'https://business.odant.org/api/H:1CC832F557A4600/P:WORK/B:1D7472723D6F2CD/C:' +
@@ -55,5 +55,9 @@ ODA({
         return raw
     },
     _hData(s) { return ('' + s).slice(0, 10) },
-
+    _chSort(index) { this.sortI = index },
+    _screenSet(sortI,search) {
+        let area = this.raws.filter(r => r.join(' ').toLowerCase().includes(search.toLowerCase()))
+        this.area = area.sort( (x,y) => x[sortI].localeCompare(y[sortI]) )
+    }
 });

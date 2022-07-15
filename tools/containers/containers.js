@@ -106,12 +106,15 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 ctrl.addEventListener('ok', onOk);
                 host.addEventListener('cancel', onCancel);
                 host.addEventListener('ok', onOk);
+                host.style.zIndex = 10000;
+                host.addEventListener('pointerdown', onMouseDown);
 
                 windows.forEach(w => {
                     w.addEventListener('keydown', onKeyDown, true);
-                    w.addEventListener('pointerdown', onMouseDown);
+                    w.addEventListener('pointerdown', onMouseDown, true);
                     w.addEventListener('resize', onCancel);
                 });
+
             });
             result.finally(() => {
                 if (ctrl.slotProxy) {
@@ -124,9 +127,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 ctrl.removeEventListener('ok', onOk);
                 windows.forEach(w => {
                     w.removeEventListener('keydown', onKeyDown, true);
-                    w.removeEventListener('pointerdown', onMouseDown);
+                    w.removeEventListener('pointerdown', onMouseDown, true);
                     w.removeEventListener('resize', onCancel);
                 });
+                host.removeEventListener('pointerdown', onMouseDown);
                 host.remove();
             })
             return result;
