@@ -77,7 +77,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     contentRect: null,
     get _style() {
         const rect = new ODARect(this.parent);
-        // this.contentRect = this.control?.getBoundingClientRect()
+        this.contentRect ||= this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;

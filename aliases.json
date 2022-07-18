@@ -50,7 +50,7 @@
 
     "@lib/item-menu": "../core/item/lib/item-menu/item-menu.js",
     "@lib/item-tree": "../core/item/lib/item-tree/item-tree.js",
-    "@components/file-tree": "../core/item/components/trees/file-tree/file-tree.js",
+    "@lib/file-tree": "../core/item/components/trees/file-tree/file-tree.js",
 
 
 
