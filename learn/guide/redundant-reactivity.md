@@ -14,7 +14,7 @@
 
 Для наглядности примера расчет осуществляется блоками по 50 точек между операциями рендеринга компонента. Координаты рассчитанных точек и их цвет хранятся в массиве **dots** явно объявленном в разделе **props**. Благодаря явному объявлению массив **dots** обернут в **Proxy**-объект.
 
-```javascript run_edit_[my-component.js]_eh=250_
+```javascript run_edit_[my-component.js]_eh=250_h=110
 ODA({
     is: 'my-component',
     template: `
@@ -26,7 +26,7 @@ ODA({
         <div class="divInRow">
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
-        <div id="outerDiv" class="divInRow" ref="outerDiv" style="width: 100px; height: 100px;">
+        <div class="divInRow" ref="outerDiv" style="width: 100px; height: 100px;">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
             </svg>
@@ -95,7 +95,7 @@ ODA({
 
 Изменим наш пример. Уберем объявление массива **dots** из раздела **props**. Теперь массив будет создаваться динамически в методе **Start**, который выполняется при нажатии на кнопку **Start**. Динамически создаваемые массивы не оборачиваются в объект **Proxy**.
 
-```javascript run_edit_[my-component.js]_eh=250_
+```javascript run_edit_[my-component.js]_eh=250_h=110
 ODA({
     is: 'my-component',
     template: `
@@ -107,7 +107,7 @@ ODA({
         <div class="divInRow">
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
-        <div id="outerDiv" class="divInRow" ref="outerDiv" style="width: 100px; height: 100px;">
+        <div class="divInRow" ref="outerDiv" style="width: 100px; height: 100px;">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
             </svg>
