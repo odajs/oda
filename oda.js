@@ -37,36 +37,35 @@ if (!window.ODA) {
     }
     window.addEventListener('pointerdown', e => {
         console.log(e)
-        if (e.usable === window)
-            return;
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-        // try{
-        //     let ww = window;
-        //     do {
-        //         const ev = new PointerEvent('pointerdown', e);
-        //         ev.usable = ww;
-        //         ww.dispatchEvent(ev);
-        //         ww = ww.parent;
-        //     }
-        //     while (ww !== ww.top)
-        //     const ev = new PointerEvent('pointerdown', e);
-        //     ev.usable = ww;
-        //     ww.dispatchEvent(ev);
-        //
-        //     let i = 0;
-        //     let w;
-        //     while (w = window[i]) {
-        //         if (w) {
-        //             const ev = new PointerEvent('pointerdown', e);
-        //             ev.usable = w;
-        //             w.dispatchEvent?.(ev);
-        //         }
-        //         i++;
-        //     }
-        // }
-        // catch (e){
-        //     console.error(e)
-        // }
+        try {
+            ({
+                undefined() {
+                    this.up();
+                    this.down();
+                },
+                up() {
+                    if(window !== window.parent){
+                        const ev = new PointerEvent('pointerdown', e);
+                        ev.direction = 'up';
+                        window.parent.dispatchEvent(ev);
+                    }
+                },
+                down(){
+                    let i = 0;
+                    let w;
+                    while (w = window[i]) {
+                        const ev = new PointerEvent('pointerdown', e);
+                        ev.direction = 'down';
+                        w.dispatchEvent?.(ev);
+                        i++;
+                    }
+                }
+            })[e.direction]();
+        }
+        catch (e){
+            console.error(e);
+        }
     }, true);
     function pointerDownListen(win = window){
         Array.from(win).forEach(w=>{
