@@ -108,7 +108,7 @@ feedForward(input)
 Метод  «**mutate**» позволяет изменить веса нейронов текущей сети с заданной вероятностью. По умолчанию мутация нейронов в нем происходит с вероятностью 20 процентов.
 
 ```javascript
-mutate (mutationProbability = 0.2, mutationAmount = 1.0) {
+mutate (mutationProbability = 0.2, mutationAmount = 2.0) {
     for (let i = 0; i < this.sections.length; i++) {
         this.sections[i].mutate(mutationProbability, mutationAmount);
     )
