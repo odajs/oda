@@ -1,5 +1,5 @@
 ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @tools/containers', extends: 'oda-ruler-grid-vb', template: /*template*/`
-        <oda-scheme-container slot="content" ~wake="true" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{left: \`\${itm?.x}px\`, top: \`\${itm?.y}px\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
+        <oda-scheme-container slot="content" @tap.stop="select" ~for="itm in items" :item="itm" ~props="itm?.props" @down="onDown" @up="onUp" ~style="{left: \`\${itm?.x}px\`, top: \`\${itm?.y}px\`, zIndex:selection.has(itm)?1:0}" :selected="selection.has(itm)"></oda-scheme-container>
         <oda-scheme-link slot="content" ~for="link in filteredLinks" :link ~style="{
             left: ((link?.rect.x + vb.x) * scale + (link?.pos === 'left'?-(iconSize * 1.3 + link.pin.size):link?.pos === 'right'?(iconSize * 1.3 + link.pin.size):0)) + 'px',
             top: ((link?.rect.y + vb.y) * scale + (link?.pos === 'top'?-(iconSize * 1.3 + link.pin.size):link?.pos === 'bottom'?(iconSize * 1.3 + link.pin.size):0)) + 'px'
@@ -237,9 +237,6 @@ ODA({ is: 'oda-scheme-container', template: /*template*/`
             min-width: 8px;
             min-height: 8px;
             @apply --vertical;
-            /*@apply --content;*/
-            left: {{-left}}px;
-            top: {{-top}}px;
         }
         :host([selected]) .block {
             outline: 1px dotted gray !important;
@@ -252,9 +249,9 @@ ODA({ is: 'oda-scheme-container', template: /*template*/`
     </style>
     <oda-scheme-container-toolbar ~if="editMode && selection.last === item"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal" ::height="top"></oda-scheme-interface>
+        <oda-scheme-interface ~if="item?.interfaces?.$top?.length" pos="top" :interface="item?.interfaces?.$top" class="horizontal"></oda-scheme-interface>
         <div class="flex horizontal">
-            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left" ::width="left"></oda-scheme-interface>
+            <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left"></oda-scheme-interface>
             <div class="flex shadow vertical content">
                 <div @attached="blockReady" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
             </div>
@@ -278,8 +275,6 @@ ODA({ is: 'oda-scheme-container', template: /*template*/`
     get container() {
         return this;
     },
-    left: 0,
-    top: 0,
     set item(n) {
         if (n && typeof n === 'object') {
             Object.defineProperty(n, '$$container', {
@@ -314,7 +309,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*template*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pinObj in interface" ~props="pinObj?.props" :draggable="editMode?'true':'false'"   :pin="pinObj"  ~style="{visibility: (editMode || pinObj?.reserved || pinObj?.link) && hasBlock?'visible':'hidden'}"   @down.stop :index :focused="pinObj === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pinObj in interface" ~props="pinObj?.props" :draggable="editMode?'true':'false'" :pin="pinObj" ~style="{visibility: (editMode || pinObj?.reserved || pinObj?.link) && hasBlock?'visible':'hidden'}" @down.stop :index :focused="pinObj === focusedPin?.pin"></oda-scheme-pin>
     `,
     pos: '',
     attached() {
@@ -333,19 +328,7 @@ ODA({ is: 'oda-scheme-interface', imports: '@oda/icon', template: /*template*/`
             i.link = undefined;
         });
     },
-    interface: [],
-    listeners: {
-        resize(e) {
-            this.width = undefined;
-            this.height = undefined;
-        }
-    },
-    get width() {
-        return this.offsetWidth;
-    },
-    get height() {
-        return this.offsetHeight;
-    }
+    interface: []
 });
 ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*template*/`
     <style>

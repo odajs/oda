@@ -36,22 +36,26 @@ if (!window.ODA) {
         }
     }
     window.addEventListener('pointerdown', e => {
-        if (e.use) return;
-        e.use = true;
+        console.log(e)
+        if (e.useble === window)
+            return;
+        e.useble = window;
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
         try{
-            if (window.top !== window){
-                const ev = new PointerEvent('pointerdown', e);
-                ev.use = true;
-                window.top?.dispatchEvent?.(ev);
+            let ww = window;
+            do {
+                ww.dispatchEvent(ev);
+                ww = ww.parent;
             }
+            while (ww !== ww.top)
+            ww.dispatchEvent(ev);
 
             let i = 0;
             let w;
             while (w = window[i]) {
                 if (w) {
                     const ev = new PointerEvent('pointerdown', e);
-                    ev.use = true;
+                    ev.useble = w;
                     w.dispatchEvent?.(ev);
                 }
                 i++;
@@ -61,11 +65,26 @@ if (!window.ODA) {
             console.error(e)
         }
     }, true);
-    // Array.from(window).forEach(w=>{
-    //     w.addEventListener('pointerdown', e=>{
-    //         window.dispatchEvent?.(new PointerEvent('pointerdown', e));
-    //     }, true);
-    // })
+    function pointerDownListen(win = window){
+        Array.from(win).forEach(w=>{
+            pointerDownListen(w);
+            w.addEventListener('pointerdown', e=> {
+                if (e.useble === w)
+                    return;
+                const ev = new PointerEvent('pointerdown', e);
+                ev.useble = w;
+                let ww = win;
+                do {
+                    ww.dispatchEvent(ev);
+                    ww = ww.parent;
+                }
+                while (ww !== ww.top)
+                ww.dispatchEvent(ev);
+            }, true);
+
+        })
+    }
+
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
@@ -1623,14 +1642,14 @@ if (!window.ODA) {
                 } break;
                 case 'IFRAME':{
                     $el.addEventListener('load', e=>{
-                        e.target.contentDocument.addEventListener('pointerdown', e=>{
-                            window.dispatchEvent?.(new PointerEvent('pointerdown', e));
-                        }, true);
-                        Array.from(e.target.contentWindow).forEach(w=>{
-                            w.addEventListener('pointerdown', e=>{
-                                window.dispatchEvent?.(new PointerEvent('pointerdown', e));
-                            }, true);
-                        })
+                        try{
+                            if (!e.target.contentDocument.ODA){
+                                pointerDownListen(e.target.contentWindow);
+                            }
+                        }
+                        catch (e){
+                            console.warn(e)
+                        }
                     })
                 }
             }
@@ -2232,6 +2251,7 @@ if (!window.ODA) {
         }
     }, true)
     window.addEventListener('load', async () => {
+        pointerDownListen();
         document.oncontextmenu = (e) => {
             e.target.dispatchEvent(new MouseEvent('menu', e));
             return false;
