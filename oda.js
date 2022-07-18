@@ -108,7 +108,7 @@ if (!window.ODA) {
         try {
             if (prototype.imports){
                 if (typeof prototype.imports === 'string')
-                    prototype.imports = prototype.imports.split(',');
+                    prototype.imports = prototype.imports.split(',').map(i=>i.trim());
                 await Promise.allSettled((prototype.imports).map( i => {
                     return ODA.import(i, context, prototype);
                 }));
