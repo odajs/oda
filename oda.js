@@ -37,17 +37,20 @@ if (!window.ODA) {
     }
     window.addEventListener('pointerdown', e => {
         console.log(e)
-        if (e.useble === window)
+        if (e.usable === window)
             return;
-        e.useble = window;
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
         try{
             let ww = window;
             do {
+                const ev = new PointerEvent('pointerdown', e);
+                ev.usable = ww;
                 ww.dispatchEvent(ev);
                 ww = ww.parent;
             }
             while (ww !== ww.top)
+            const ev = new PointerEvent('pointerdown', e);
+            ev.usable = ww;
             ww.dispatchEvent(ev);
 
             let i = 0;
@@ -55,7 +58,7 @@ if (!window.ODA) {
             while (w = window[i]) {
                 if (w) {
                     const ev = new PointerEvent('pointerdown', e);
-                    ev.useble = w;
+                    ev.usable = w;
                     w.dispatchEvent?.(ev);
                 }
                 i++;
@@ -69,10 +72,10 @@ if (!window.ODA) {
         Array.from(win).forEach(w=>{
             pointerDownListen(w);
             w.addEventListener('pointerdown', e=> {
-                if (e.useble === w)
+                if (e.usable === w)
                     return;
                 const ev = new PointerEvent('pointerdown', e);
-                ev.useble = w;
+                ev.usable = w;
                 let ww = win;
                 do {
                     ww.dispatchEvent(ev);
@@ -1053,7 +1056,7 @@ if (!window.ODA) {
                 handler.call(this, e);
             }
         }
-            
+
         for (let event in prototype.listeners) {
             const handler = prototype.listeners[event];
             prototype.listeners[event] = (typeof handler === 'string') ? prototype[handler] : handler;
