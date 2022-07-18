@@ -115,6 +115,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 window.removeEventListener('pointerdown', onMouseDown, true);
                 window.removeEventListener('resize', onCancel);
                 host.removeEventListener('pointerdown', onMouseDown);
+                //todo removeEvents для ctrl
                 host.remove();
             })
             return result;
