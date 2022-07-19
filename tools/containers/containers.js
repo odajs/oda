@@ -82,7 +82,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     //     window.dispatchEvent(new PointerEvent('pointerdown', e));
                     // })
                 }
-                onKeyDown = () => {
+                onKeyDown = (e) => {
                     if (e.keyCode === 27)
                         onCancel();
                 }
@@ -100,7 +100,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.addEventListener('pointerdown', onMouseDown);
 
                 window.addEventListener('keydown', onKeyDown, true);
-                top.addEventListener('pointerdown', onCancel, true);
+                top.addEventListener('_pointerdown', onCancel, true);
                 if (hostProps.parent)
                     hostProps.parent.addEventListener('pointerdown', onMouseDown);
                 window.addEventListener('resize', onCancel);
@@ -117,7 +117,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 ctrl.removeEventListener('cancel', onCancel);
                 ctrl.removeEventListener('ok', onOk);
                 window.removeEventListener('keydown', onKeyDown, true);
-                top.removeEventListener('pointerdown', onCancel, true);
+                top.removeEventListener('_pointerdown', onCancel, true);
                 if (hostProps.parent) {
                     hostProps.parent._isShow = false
                     hostProps.parent.removeEventListener('pointerdown', onMouseDown);
