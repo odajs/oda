@@ -99,8 +99,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.style.zIndex = 10000;
                 host.addEventListener('pointerdown', onMouseDown);
 
-                window.addEventListener('keydown', onKeyDown, true);
-                top.addEventListener('_pointerdown', onCancel, true);
+                window.addEventListener('keydown', onKeyDown);
+                top.addEventListener('pointerdown', onCancel);
                 if (hostProps.parent)
                     hostProps.parent.addEventListener('pointerdown', onMouseDown);
                 window.addEventListener('resize', onCancel);
@@ -116,8 +116,8 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.removeEventListener('ok', onOk);
                 ctrl.removeEventListener('cancel', onCancel);
                 ctrl.removeEventListener('ok', onOk);
-                window.removeEventListener('keydown', onKeyDown, true);
-                top.removeEventListener('_pointerdown', onCancel, true);
+                window.removeEventListener('keydown', onKeyDown);
+                top.removeEventListener('pointerdown', onCancel);
                 if (hostProps.parent) {
                     hostProps.parent._isShow = false
                     hostProps.parent.removeEventListener('pointerdown', onMouseDown);

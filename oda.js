@@ -91,7 +91,7 @@ if (!window.ODA) {
     const pointerDownListen = (win = window) => {
         win.addEventListener('pointerdown', (e) => {
             ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-            top.dispatchEvent(new CustomEvent("_pointerdown", e));
+            if (win !== top) top.dispatchEvent(new PointerEvent("pointerdown", e));
         })
         Array.from(win).forEach(w => pointerDownListen(w));
     }
