@@ -18,7 +18,7 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
             }
         </style>
         <div class="vertical flex">
-            <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)" style="border-bottom: 1px solid lightgray">
+            <div ~for="items" ~if="!item.hidden" class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
                 <div class="flex horizontal row" ~class="item.group?'header':'content'">
                     <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
                     <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
@@ -50,8 +50,9 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
             s.position = 'sticky';
             s.top = '0px';
             s.zIndex = 1;
-            s.fontSize = 'x-small';
-            s.filter = 'invert(.7)';
+            s.fontSize = 'small';
+            s.filter = 'invert(1)';
+            s.opacity = '.8';
         }
         else {
             s.position = 'relative';
