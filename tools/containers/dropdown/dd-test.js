@@ -35,11 +35,11 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         <div class="box vertical" dragable style="border: 1px solid red; padding: 8px; background: lightyellow;
             cursor: move; position: absolute" @pointerdown="_down">
             <label>{{label}}</label>
-            <oda-button @mousedown="run">top</oda-button>
-            <oda-button @mousedown="run">left</oda-button>
-            <oda-button @mousedown="run">right</oda-button>
-            <oda-button @mousedown="run">bottom</oda-button>
-            <oda-button @mousedown="run">modal</oda-button>
+            <oda-button @tap="run">top</oda-button>
+            <oda-button @tap="run">left</oda-button>
+            <oda-button @tap="run">right</oda-button>
+            <oda-button @tap="run">bottom</oda-button>
+            <oda-button @tap="run">modal</oda-button>
             <div class="vertical" style="margin-top: 10px; align-items: left;justify-content: center;">
                 <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
                 <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>
@@ -82,11 +82,9 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
     _down(e) {
         this._lastX = e.pageX;
         this._lastY = e.pageY;
-        this.__doMove = this.__doMove = this._doMove.bind(this);
-        this.__stopMove = this.__stopMove = this._stopMove.bind(this);
-        document.documentElement.addEventListener("pointermove", this.__doMove, false);
-        document.documentElement.addEventListener("pointerup", this.__stopMove, false);
-        document.documentElement.addEventListener("pointercancel", this.__stopMove, false);
+        document.addEventListener("pointermove", this.__doMove ||= this._doMove.bind(this));
+        document.addEventListener("pointerup", this.__stopMove ||= this._stopMove.bind(this));
+        document.addEventListener("pointercancel", this.__stopMove);
     },
     _doMove(e) {
         this.left += e.pageX - this._lastX;
@@ -95,20 +93,16 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         this._lastY = e.pageY;
     },
     _stopMove() {
-        document.documentElement.removeEventListener("pointermove", this.__doMove, false);
-        document.documentElement.removeEventListener("pointerup", this.__stopMove, false);
-        document.documentElement.removeEventListener("pointercancel", this.__stopMove, false);
+        document.removeEventListener("pointermove", this.__doMove);
+        document.removeEventListener("pointerup", this.__stopMove);
+        document.removeEventListener("pointercancel", this.__stopMove);
     },
     async run(e) {
         e.stopPropagation();
-        e.preventDefault();
         try {
             const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { animation: 500, parent: this.parent ? e.target : null, intersect: this.intersect, useParentWidth: this.useParentWidth, align: e.target.innerText, icon: 'icons:info', title: 'Block - 0', id: count });
-            // console.log(res);
         }
-        catch (e) { 
-            // console.log(e); 
-        }
+        catch (e) { }
     }
 })
 ODA({ is: 'oda-test-menu', imports: '@oda/button',
@@ -142,13 +136,9 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
         try {
             count ||= 0;
             count = +count + 1;
-            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 },
-                { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count });
-            // console.log(res);
+            const res = await ODA.showDropdown('oda-test-menu', { icon: 'icons:warning', iconSize: 60 }, { parent: e.target, animation: 500, align: 'right', title: 'Block - ' + count, icon: 'icons:info', id: count });
         }
-        catch (e) { 
-            // console.log(e) 
-        }
+        catch (e) { }
     },
     _isOk(e) {
         this.fire('ok', { detail: { index: e, el: this } });
