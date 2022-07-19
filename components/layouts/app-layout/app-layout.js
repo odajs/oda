@@ -73,12 +73,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         rightTitle: false,
         leftHidden: false,
         rightHidden: false,
-        max: {
-            type: Number,
-            get() {
-                return ~~(window.innerWidth * 0.938);
-            }
-        },
         hideToolbar: true,
         hideOnScroll: {
             default: false,
@@ -93,28 +87,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         leftWidth: {
             type: Number,
             default: 300,
-            save: true,
-            set(n) {
-                const max = Math.max((this.offsetWidth || 0) * .8, 270)
-                if (this.offsetWidth && n > max) {
-                    this.leftWidth = max;
-                }
-                else if (n < 270)
-                    this.leftWidth = 270;
-            }
+            save: true
         },
         rightWidth: {
             type: Number,
             default: 300,
-            save: true,
-            set(n) {
-                const max = Math.max((this.offsetWidth || 0) * .8, 270)
-                if (this.offsetWidth && n > max) {
-                    this.rightWidth = max;
-                }
-                else if (n < 270)
-                    this.rightWidth = 270;
-            }
+            save: true
         },
         compact: false,
         allowCompact: true,
@@ -370,6 +348,8 @@ ODA({is: 'app-layout-drawer',
             height: 100%;
             position: relative;
             overflow: hidden;
+            min-width: 270px;
+            max-width: 80vw;
         }
         .buttons {
             /*@apply --header; */
@@ -454,14 +434,7 @@ ODA({is: 'app-layout-drawer',
 
     </div>
     <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal content drawer no-flex"
-        ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
-                maxWidth: allowCompact && compact?'70vw':(width + 'px'),
-                minWidth: width + 'px',
-                display: (hideTabs || !focused) ? 'none' : '',
-                position: allowCompact && compact?'absolute':'relative',
-                left: (allowCompact && compact && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
-                right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
-                transform: \`translateX(\${-sign*swipe}px)\`}">
+        ~style="_styles">
 
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
@@ -472,7 +445,7 @@ ODA({is: 'app-layout-drawer',
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
-        <oda-splitter :sign="({left: -1, right: 1})[pos]" :max="allowCompact && compact?max:0" ~if="!hideResize" ::width></oda-splitter>
+        <oda-splitter :sign="({left: -1, right: 1})[pos]" ~if="!hideResize" ::width></oda-splitter>
     </div>
     `,
     getStyle(ctrl){
@@ -506,14 +479,7 @@ ODA({is: 'app-layout-drawer',
         },
         showTitle: false,
         hideResize: false,
-        width: {
-            type: Number,
-            set(n) {
-                if (this.max && n > this.max) {
-                    this.width = this.max;
-                }
-            },
-        },
+        width: Number,
         hidden: {
             get() {
                 return !this.controls?.length
@@ -542,6 +508,29 @@ ODA({is: 'app-layout-drawer',
             }
         },
         lastFocused: null
+    },
+    get _styles() {
+        const cpt = this.allowCompact && this.compact;
+        const panelW = `${this.$refs.panel?.offsetWidth || 0}px`;
+        return {
+            flexDirection: `row${({ right: '-reverse', left: '' })[this.pos]}`,
+            // maxWidth: cpt ? '70vw' : `${this.width||0}px`,
+            // minWidth: `${this.width||0}px`,
+            width: `${this.width||0}px`,
+            display: (this.hideTabs || !this.focused) ? 'none' : '',
+            position: cpt ? 'absolute' : 'relative',
+            left:  cpt && this.pos === 'left' ? panelW : 'unset',
+            right: cpt && this.pos === 'right' ? panelW : 'unset',
+            transform: `translateX(${-this.sign*this.swipe}px)`
+        };
+        /* {flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
+                maxWidth: allowCompact && compact?'70vw':(width + 'px'),
+                minWidth: width + 'px',
+                display: (hideTabs || !focused) ? 'none' : '',
+                position: allowCompact && compact?'absolute':'relative',
+                left: (allowCompact && compact && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
+                right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
+                transform: \`translateX(\${-sign*swipe}px)\`} */
     },
     get sign() {
         return this.pos === "left" ? 1 : -1;
