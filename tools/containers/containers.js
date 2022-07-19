@@ -13,6 +13,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
         }
         ODA[('show-' + id).toCamelCase()] = async function (component, props = {}, hostProps = {}, onVisible) {
+            if (hostProps?.parent?._isShow) return;
             await import(path + '/' + id + '/' + id + '.js');
             const host = await ODA.createComponent('oda-' + id, hostProps);
             let ctrl = component;
@@ -39,6 +40,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 else
                     ctrl[i] = prop
             }
+            hostProps?.parent && (hostProps.parent._isShow = true);
             host.isContainer = true;
             host.style.position = 'fixed';
             host.style.width = '100%';
@@ -50,14 +52,15 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             let onMouseDown, onKeyDown, onCancel, onOk;
             const result = new Promise((resolve, reject) => {
                 onMouseDown = (e) => { //todo надо отработать общее закрытие
-                     if (hostProps.parent){
-                         if (e.path.includes(hostProps.parent))
-                             return;
-                         if (e.target instanceof Node && hostProps.parent.contains(e.target))
-                             return;
-                        const pos = hostProps.parent.getBoundingClientRect();
-                        if (pos.left < e.pageX && pos.right > e.pageX && pos.top < e.pageY && pos.bottom > e.pageY)
+                    e.stopPropagation();
+                    if (hostProps.parent){
+                        if (e.path.includes(hostProps.parent))
                             return;
+                        // if (e.target instanceof Node && hostProps.parent.contains(e.target))
+                        //     return;
+                        // const pos = hostProps.parent.getBoundingClientRect();
+                        // if (pos.left < e.pageX && pos.right > e.pageX && pos.top < e.pageY && pos.bottom > e.pageY)
+                        //     return;
                     }
                     if (e.target instanceof Node){
                          if (host.contains(e.target)) {
@@ -68,23 +71,23 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                              }
                              return;
                          }
-                         if (ctrl.contains(e.target)) return;
+                        //  if (ctrl.contains(e.target)) return;
                     }
 
-                    if (host !== document.body.lastChild)
-                        return;
+                    // if (host !== document.body.lastChild)
+                    //     return;
                     reject(e);
-                    setTimeout(()=>{
-                        if(!document.body.lastChild?.isContainer) return;
-                        window.dispatchEvent(new PointerEvent('pointerdown', e));
-                    })
+                    // setTimeout(()=>{
+                    //     if(!document.body.lastChild?.isContainer) return;
+                    //     window.dispatchEvent(new PointerEvent('pointerdown', e));
+                    // })
                 }
-                onKeyDown = (e) => {
+                onKeyDown = () => {
                     if (e.keyCode === 27)
-                        onCancel(e);
+                        onCancel();
                 }
-                onCancel = (e) => {
-                    reject(e)
+                onCancel = () => {
+                    reject();
                 }
                 onOk = (e) => {
                     setTimeout(() => resolve(ctrl));
@@ -97,7 +100,9 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 host.addEventListener('pointerdown', onMouseDown);
 
                 window.addEventListener('keydown', onKeyDown, true);
-                window.addEventListener('pointerdown', onMouseDown, true);
+                top.addEventListener('pointerdown', onCancel, true);
+                if (hostProps.parent)
+                    hostProps.parent.addEventListener('pointerdown', onMouseDown);
                 window.addEventListener('resize', onCancel);
 
 
@@ -112,7 +117,11 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 ctrl.removeEventListener('cancel', onCancel);
                 ctrl.removeEventListener('ok', onOk);
                 window.removeEventListener('keydown', onKeyDown, true);
-                window.removeEventListener('pointerdown', onMouseDown, true);
+                top.removeEventListener('pointerdown', onCancel, true);
+                if (hostProps.parent) {
+                    hostProps.parent._isShow = false
+                    hostProps.parent.removeEventListener('pointerdown', onMouseDown);
+                }
                 window.removeEventListener('resize', onCancel);
                 host.removeEventListener('pointerdown', onMouseDown);
                 //todo removeEvents для ctrl

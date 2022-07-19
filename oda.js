@@ -35,9 +35,9 @@ if (!window.ODA) {
             }
         }
     }
-    window.addEventListener('pointerdown', e => {
-        console.log(e)
-        ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+    //window.addEventListener('pointerdown', e => {
+        // console.log(e)
+        // ODA.mousePos = new DOMRect(e.pageX, e.pageY);
         // try {
         //     ({
         //         undefined() {
@@ -66,37 +66,39 @@ if (!window.ODA) {
         // catch (e){
         //     console.error(e);
         // }
-    }, true);
-    function pointerDownListen(win = window){
-        // getWins(win);
-        Array.from(win).forEach(w=>{
-            pointerDownListen(w);
-            w.addEventListener('pointerdown', e=> {
-                if (e.usable === w)
-                    return;
-                const ev = new PointerEvent('pointerdown', e);
-                ev.usable = w;
-                let ww = win;
-                do {
-                    ww.dispatchEvent(ev);
-                    ww = ww.parent;
-                }
-                while (ww !== ww.top)
-                ww.dispatchEvent(ev);
-            }, true);
+    //}, true);
+    // function pointerDownListen(win = window){
+    //     // getWins(win);
+    //     Array.from(win).forEach(w=>{
+    //         pointerDownListen(w);
+    //         w.addEventListener('pointerdown', e=> {
+    //             if (e.usable === w)
+    //                 return;
+    //             const ev = new PointerEvent('pointerdown', e);
+    //             ev.usable = w;
+    //             let ww = win;
+    //             do {
+    //                 ww.dispatchEvent(ev);
+    //                 ww = ww.parent;
+    //             }
+    //             while (ww !== ww.top)
+    //             ww.dispatchEvent(ev);
+    //         }, true);
 
-        })
-    }
-
-    // get all win
-    // top._windows ||= [];
-    // const getWins = (win = window) => {
-    //     top._windows.add(win);
-    //     const wins = Array.from(win);
-    //     top._windows.add(...wins);
-    //     wins.forEach(w => getWins(w));
+    //     })
     // }
-    // console.log('..... _windows - ', top._windows);
+
+    const pointerDownListen = (win = window) => {
+        win.addEventListener('pointerdown', (e) => {
+            ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+            if (win !== top) {
+                top.dispatchEvent(new CustomEvent("pointerdown", e));
+                // console.log('..... pointerdown - ', e);
+            }
+        })
+        const wins = Array.from(win);
+        wins.forEach(w => pointerDownListen(w));
+    }
 
     function isObject(obj) {
         return obj && typeof obj === 'object';
@@ -2086,7 +2088,7 @@ if (!window.ODA) {
     class odaEventDown extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            this.addSubEvent('pointerdown', (e) => {
+            this.addSubEvent('mousedown', (e) => {
                 const ce = new odaCustomEvent("down", { detail: { sourceEvent: e } }, e);
                 this.handler(ce, ce.detail);
             });
@@ -2098,7 +2100,7 @@ if (!window.ODA) {
     class odaEventUp extends odaEvent {
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            this.addSubEvent('pointerup', (e) => {
+            this.addSubEvent('mouseup', (e) => {
                 const ce = new odaCustomEvent("up", { detail: { sourceEvent: e } }, e);
                 this.handler(ce, ce.detail);
             });
