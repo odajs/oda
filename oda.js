@@ -38,36 +38,37 @@ if (!window.ODA) {
     window.addEventListener('pointerdown', e => {
         console.log(e)
         ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-        try {
-            ({
-                undefined() {
-                    this.up();
-                    this.down();
-                },
-                up() {
-                    if(window !== window.parent){
-                        const ev = new PointerEvent('pointerdown', e);
-                        ev.direction = 'up';
-                        window.parent.dispatchEvent(ev);
-                    }
-                },
-                down(){
-                    let i = 0;
-                    let w;
-                    while (w = window[i]) {
-                        const ev = new PointerEvent('pointerdown', e);
-                        ev.direction = 'down';
-                        w.dispatchEvent?.(ev);
-                        i++;
-                    }
-                }
-            })[e.direction]();
-        }
-        catch (e){
-            console.error(e);
-        }
+        // try {
+        //     ({
+        //         undefined() {
+        //             this.up();
+        //             this.down();
+        //         },
+        //         up() {
+        //             if(window !== window.parent){
+        //                 const ev = new PointerEvent('pointerdown', e);
+        //                 ev.direction = 'up';
+        //                 window.parent.dispatchEvent(ev);
+        //             }
+        //         },
+        //         down(){
+        //             let i = 0;
+        //             let w;
+        //             while (w = window[i]) {
+        //                 const ev = new PointerEvent('pointerdown', e);
+        //                 ev.direction = 'down';
+        //                 w.dispatchEvent?.(ev);
+        //                 i++;
+        //             }
+        //         }
+        //     })[e.direction]();
+        // }
+        // catch (e){
+        //     console.error(e);
+        // }
     }, true);
     function pointerDownListen(win = window){
+        // getWins(win);
         Array.from(win).forEach(w=>{
             pointerDownListen(w);
             w.addEventListener('pointerdown', e=> {
@@ -86,6 +87,16 @@ if (!window.ODA) {
 
         })
     }
+
+    // get all win
+    // top._windows ||= [];
+    // const getWins = (win = window) => {
+    //     top._windows.add(win);
+    //     const wins = Array.from(win);
+    //     top._windows.add(...wins);
+    //     wins.forEach(w => getWins(w));
+    // }
+    // console.log('..... _windows - ', top._windows);
 
     function isObject(obj) {
         return obj && typeof obj === 'object';
