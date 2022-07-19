@@ -315,6 +315,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 this.isTopModal = true;
                 this.style.zIndex = z + 1;
             }
+            this.isMinimized = false;
         }
     },
     _getModals() {
