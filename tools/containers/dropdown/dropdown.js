@@ -44,6 +44,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             this.controls[0].setAttribute('autofocus', true);
             this.controls?.[0]?.focus();
         }
+        this.setSize();
     },
     controls: undefined,
     props: {
@@ -77,7 +78,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     contentRect: null,
     get _style() {
         const rect = new ODARect(this.parent);
-        this.contentRect ||= this.control?.getBoundingClientRect()
+        // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
@@ -187,6 +188,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     setSize(e) {
         if (!this.control) return;
         this['#_style'] = undefined;
-        this.contentRect = this.control.getBoundingClientRect();
+        this.async(() => {
+            this.contentRect = this.control.getBoundingClientRect();
+        }, 20)
     }
 })
