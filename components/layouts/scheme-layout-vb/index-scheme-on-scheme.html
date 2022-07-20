@@ -1,0 +1,60 @@
+<meta charset="utf-8">
+<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+<!-- <oda-tester> -->
+    <oda-scheme-layout-vb edit-mode id="layout"></oda-scheme-layout-vb>
+<!-- </oda-tester> -->
+
+<script type="module">
+    import '/web/oda/oda.js'
+    import './scheme-layout-vb.js'
+    layout.items = [
+            {
+                is: 'oda-scheme-layout-vb', block: 1, x: 380, y: 180,
+                props: {
+                    // items: [
+                    //     {
+                    //         is: 'oda-button', block: 1, x: 30, y: 30,
+                    //         props: {
+                    //             label: '1:oda-button-in-children-scheme', icon: 'icons:android', fill: 'green', iconSize: 64
+                    //         },
+                    //         interfaces: {
+                    //             $top: [{}],
+                    //             $left: [{}],
+                    //             $right: [{}, {}],
+                    //             $bottom: [{}, {link: 3, pin: 1}]
+                    //         }
+                    //     }
+                    // ],
+                    style: 'width: 500px; height: 500px'
+                }
+            },
+            {
+                is: 'oda-button', block: 2, x: 100, y: 30,
+                props: {
+                    label: '2:oda-button', icon: 'icons:android', fill: 'green', iconSize: 64
+                },
+                interfaces: {
+                    $top: [{}],
+                    $left: [{}],
+                    $right: [{}, {}],
+                    $bottom: [{}, {link: 3, pin: 1}]
+                }
+            }, {
+                is: 'oda-button', block: 3, x: 100, y: 360,
+                props: {
+                    label: '3:oda-button', iconSize: 30
+                },
+                interfaces: {
+                    $top: [
+                        {}
+                    ],
+                    $left: [
+                        {}
+                    ],
+                    $right: [
+                        {},{}
+                    ]
+                }
+            }
+    ]
+</script>
