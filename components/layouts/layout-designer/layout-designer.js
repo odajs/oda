@@ -133,7 +133,7 @@ ODA({ is: 'oda-layout-designer-structure',
                         }
                     }
                     if (!this.lays.has(this.layout._id)) {
-                        let actions = this.scripts.get(this.layout._id) 
+                        let actions = this.scripts.get(this.layout._id)
                         this.layout.execute(actions).then(res => {
                             this.lays.add(this.layout._id); // for single execution - to remove looping
                         });
@@ -675,7 +675,7 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
     }
 })
 
-export const Layout = CLASS({ is: 'Layout',
+export const Layout = CLASS({
     ctor(data, key = 'items', owner, root, order) {
         this.data = data || {};
         // this.saveKey = data.saveKey || data.$class?.id || undefined;

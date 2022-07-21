@@ -180,10 +180,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
+    <div  ref="header" :scroll-left="_scrollWidth" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
+        <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
+    </div>
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto'}" style="overflow-y: auto; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
-        <div  ref="header" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
-            <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
-        </div>
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky;" ~style="{height: _bodyHeight+'px'}">
             <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick"
             @tap="_tapRows"
@@ -207,10 +207,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             </div>
         </div>
         <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; clearSelection()"></div>
-        <div ref="footer" class="no-flex horizontal header sticky" style="bottom: 0px;" ~show="showFooter" ~style="{maxHeight: rowHeight+'px',  minHeight: rowHeight+'px',  width:(autoWidth?'auto':(_scrollWidth + 'px'))}">
-            <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
-        </div>
-    </div>`,
+    </div>
+    <div ref="footer" :scroll-left="_scrollWidth" class="no-flex horizontal header" style="bottom: 0px;" ~show="showFooter" ~style="{maxHeight: rowHeight+'px',  minHeight: rowHeight+'px',  width:(autoWidth?'auto':(_scrollWidth + 'px'))}">
+        <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
+    </div>
+    `,
     get _bodyHeight() {
         return this.lazy
             ? (this.size + this.raisedRows.length /*+ 3*/) * this.rowHeight
@@ -577,7 +578,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
 
     created() {
         this.settingsId = this.localName;
-        this._scroll();
+        // this._scroll();
     },
 
     focus() { this.$refs.body.focus?.() },
@@ -950,23 +951,18 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        // this.debounce('scroll', () => {
-            this.headerHeight = this.showHeader && this.$refs.header?.offsetHeight || 0;
-            this.footerHeight = this.showFooter && this.$refs.footer?.offsetHeight || 0;
-            if (this.$refs.body) {
-                const scrollTop = Math.round(this.$refs.body.scrollTop / this.rowHeight) * this.rowHeight;
-                const scrollWidth = this.$refs.body.scrollWidth;
-                const height = this.$refs.body.offsetHeight - this.headerHeight - this.footerHeight;
-                const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
+        if (!this.$refs.body) return;
+        const scrollTop = Math.round(this.$refs.body.scrollTop / this.rowHeight) * this.rowHeight;
+        const scrollWidth = this.$refs.body.scrollWidth;
+        const height = this.$refs.body.offsetHeight;// - this.headerHeight - this.footerHeight;
+        const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
 
-                if (scrollWidth && height) {
-                    this._scrollTop = scrollTop;
-                    this._scrollWidth = scrollWidth - 1;
-                    this._height = height
-                    this._scrollbarWidth = scrollbarWidth
-                }
-            }
-        // })
+        if (scrollWidth && height) {
+            this._scrollTop = scrollTop;
+            this._scrollWidth = scrollWidth;
+            this._height = height
+            this._scrollbarWidth = scrollbarWidth
+        }
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
