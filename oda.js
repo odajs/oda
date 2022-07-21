@@ -319,7 +319,7 @@ if (!window.ODA) {
                 // })
             }
             connectedCallback() {
-                if (!this.domHost){
+                if (!this.domHost && this.parentElement !== document.body){
                     this.$wake = true;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
@@ -1643,8 +1643,7 @@ if (!window.ODA) {
             }
             switch (tag){
                 case 'STYLE':{
-                    this.$core.resize.observe($el);
-                    this.$core.intersect.observe($el);
+
                 } break;
                 case 'IFRAME':{
                     $el.addEventListener('load', e=>{
@@ -1657,8 +1656,13 @@ if (!window.ODA) {
                             console.warn(e)
                         }
                     })
+                } break;
+                default:{
+                    this.$core.resize.observe($el);
+                    this.$core.intersect.observe($el);
                 }
             }
+
             if (src.attrs)
                 for (let i in src.attrs)
                     $el.setAttribute(i, src.attrs[i]);
