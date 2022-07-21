@@ -463,9 +463,7 @@ if (!window.ODA) {
                 if (block?.options.target === this) {
                     const prop = block.prop;
                     if (prop){
-                        if (this.__events?.has(prop.attrName + "-changed") || this.$node?.listeners[prop.attrName + "-changed"]) {
-                            this.dispatchEvent(new CustomEvent(prop.attrName + '-changed', { detail: { value, src: this }, bubbles: true, cancelable: true }));
-                        }
+                        this.fire(prop.attrName + '-changed', value);
                     }
                 }
 
@@ -514,7 +512,7 @@ if (!window.ODA) {
                 return prototype.$system.path + path;
             }
             fire(event, detail) {
-                event = new odaCustomEvent(event, { detail: { value: detail }, composed: true });
+                event = new odaCustomEvent(event, { detail: { value: detail, src: this }, composed: true });
                 this.dispatchEvent(event);
             }
             listen(event = '', callback, props = { target: this, once: false, useCapture: false }) {
@@ -833,7 +831,6 @@ if (!window.ODA) {
                 if (val === old) return;
 
                 this.$proxy[key] = val;
-                this.fire(prop.attrName+'-changed', val);
                 if (prop.reflectToAttribute){
                     this.interval(key+'-attr', ()=>{
                         if (val || val === 0)
