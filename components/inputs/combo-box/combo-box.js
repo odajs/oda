@@ -1,5 +1,4 @@
-import '/web/oda/tools/containers/containers.js';
-ODA({is: 'oda-combo-box', imports: '@oda/button',
+ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     template: /*html*/`
         <style>
             :host {

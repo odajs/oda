@@ -549,9 +549,7 @@ if (!window.ODA) {
                 return this.create(...arguments);
             }
             create(tagName, props = {}, inner) {
-                const el = document.createElement(tagName);
-                for (let p in props)
-                    el[p] = props[p];
+                const el = ODA.createElement(tagName, props);
                 if (inner) {
                     if (inner instanceof HTMLElement)
                         el.appendChild(inner);
