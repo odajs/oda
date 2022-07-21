@@ -854,7 +854,7 @@ if (!window.ODA) {
                         return Array.from(prop.default);
                     else if (isObject(prop.default))
                         return Object.assign({}, prop.default);
-                    return prop.default;
+                    return toType(prop.type, prop.default);
                 }
             })
         }
@@ -2465,7 +2465,7 @@ if (!window.ODA) {
         return import(url);
     }
     Qarantine:{
-        ODA.createComponent = (id, props = {}) => {
+        ODA.createComponent = ODA.createElement = (id, props = {}) => {
             ODA.tryReg(id);
             let el = document.createElement(id);
             for (let p in props) {

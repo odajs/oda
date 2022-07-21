@@ -92,8 +92,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 onOk = (e) => {
                     setTimeout(() => resolve(ctrl));
                 }
+                ctrl.addEventListener('close', onCancel);
                 ctrl.addEventListener('cancel', onCancel);
                 ctrl.addEventListener('ok', onOk);
+                host.addEventListener('close', onCancel);
                 host.addEventListener('cancel', onCancel);
                 host.addEventListener('ok', onOk);
                 host.style.zIndex = 10000;
@@ -112,8 +114,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     ctrl.slot = ctrl.slotProxy.$slot;
                     ctrl.slotProxy.parentElement.replaceChild(ctrl, ctrl.slotProxy);
                 }
+                host.removeEventListener('close', onCancel);
                 host.removeEventListener('cancel', onCancel);
                 host.removeEventListener('ok', onOk);
+                ctrl.removeEventListener('close', onCancel);
                 ctrl.removeEventListener('cancel', onCancel);
                 ctrl.removeEventListener('ok', onOk);
                 window.removeEventListener('keydown', onKeyDown);

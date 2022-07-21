@@ -493,7 +493,7 @@ if (!globalThis.KERNEL) {
                         return Array.from(prop.default);
                     else if (isObject(prop.default))
                         return Object.assign({}, prop.default);
-                    return prop.default;
+                    return toType(prop.type, prop.default);
                 }
             });
         }

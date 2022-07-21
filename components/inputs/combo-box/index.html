@@ -4,19 +4,19 @@
 </oda-tester>
 
 <script type="module">
-
     import '/web/oda/oda.js';
     import '/web/oda/tools/styles/styles.js';
     import './combo-box.js';
-    const el = document.createElement('oda-combo-list');
-    setTimeout(()=>{
-        el.items = [
+    const el = ODA.createElement('oda-combo-list', {
+        items: [
             {label: 'label 1'}, {label: 'label 2'}, {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
             {label: 'label 2'}, {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
             {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
             {label: 'label 4'}, {label: 'label 5'},
             {label: 'label 5'}
-        ];
+        ]
+    });
+    setTimeout(()=>{
         box.dropDownControl = el;
     }, 10)
 
