@@ -27,8 +27,8 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     },
     attached() { this.listen('keydown', '_onKeyDown', { target: window}) },
     detached() { this.unlisten('keydown', '_onKeyDown', { target: window}) },
-    ok(item = this.focusedButton) {
-        if (typeof item?.execute === 'function') item?.execute();
+    async ok(item = this.focusedButton) {
+        if (typeof item?.execute === 'function') await item?.execute();
         (this.domHost || this).fire('ok', item)
     },
     cancel() { (this.domHost || this).fire('cancel') }
