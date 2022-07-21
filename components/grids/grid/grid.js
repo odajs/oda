@@ -19,7 +19,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                 <oda-grid-part fix="right" style="filter: brightness(0.9);"></oda-grid-part>
             </div>
         </div>
-        
+
     `,
     _resize(e, d){
         // this.interval('screenHeight', ()=>{
@@ -211,7 +211,7 @@ ODA({is: 'oda-grid-part',
                 width: {{!nextElementSibling?6:0}}px;
                 height: 0px;
             }
-            ::-webkit-scrollbar-thumb {          
+            ::-webkit-scrollbar-thumb {
                 background: var(--header-background);
                 -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
             }
@@ -289,7 +289,7 @@ ODA({is: 'oda-grid-body',
                 @apply --no-flex;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                border-right: {{colLines?'1px solid var(--border-color)':'none'}}; 
+                border-right: {{colLines?'1px solid var(--border-color)':'none'}};
             }
             [focused]{
                 @apply --focused;
@@ -322,10 +322,10 @@ ODA({is: 'oda-grid-body',
     },
     listeners:{
         scroll(e){
-            this.interval('scroll', ()=>{
+            // this.interval('scroll', ()=>{
                 this.rowsScrollTop = this.scrollTop;
                 this.colsScrollLeft = this.scrollLeft;
-            })
+            // })
         }
     }
 })
@@ -720,7 +720,7 @@ groups:{
         <style>
             :host{
                 @apply --horizontal;
-                opacity: .8; 
+                opacity: .8;
             }
             :host>div>div{
                 /*margin: 2px;*/
@@ -750,8 +750,8 @@ groups:{
             <div id="labels" ~if="pivotMode" class="flex content" ~class="{success: dragMode === 'drag-to-group-panel', header: !dragMode}" @resize="_resize" style="border-left: 1px solid var(--border-color); min-width: 50%;">
                 <oda-icon icon="device:storage:90"></oda-icon>
                 <oda-group-item ~for="labels" :item="item"></oda-group-item>
-                <label ~if="!labels?.length">Drag here to set column labels</label>   
-            </div>    
+                <label ~if="!labels?.length">Drag here to set column labels</label>
+            </div>
         </div>
 
         <oda-button :icon-size icon="icons:settings" @tap="showSettings" style="border-radius: 50%;"></oda-button>
@@ -774,7 +774,7 @@ groups:{
             }
             label{
                 margin: 2px 0px 2px 8px;
-            }           
+            }
         </style>
         <label>{{title}}</label>
         <oda-button :icon-size="iconSize/2" icon="icons:close" @tap="_delete"></oda-button>
@@ -872,7 +872,7 @@ footer:{
             </style>
             <div class="flex">
                 footer {{column?.name}}
-            </div> 
+            </div>
         `
     })
 }
