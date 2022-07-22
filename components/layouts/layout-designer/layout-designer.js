@@ -280,7 +280,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 /* flex-basis: auto; */
                 cursor: {{designMode ? 'pointer' : ''}};
                 position: relative;
-                /* min-height: {{iconSize + 4}}px; */
+                min-height: {{iconSize + 4}}px;
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
                 min-width: {{layout?.minWidth ? layout?.minWidth : isChildren ? '100%' : '32px'}};
                 max-width: {{layout.maxWidth ? layout.maxWidth : isChildren ? '100%' : 'unset'}};
@@ -531,107 +531,46 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
     // }
 })
 
-ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-editor',
-    template: /*html*/`
-        <style>
-            :host {
-                @apply --vertical;
-                background-color: white;
-                border: 1px solid gray;
-                margin: 2px;
-                padding: 4px;
-                min-width: 180px;
-            }
-            oda-icon {
-                transform: scale(.8);
-                padding: 0 4px 0 0;
-            }
-            label {
-                cursor: pointer;
-                margin-right: auto;
-            }
-            .row {
-                padding: 1px 0;
-            }
-            .row:hover {
-                background: lightgray;
-            }
-            span {
-                font-size: small;
-                color: gray;
-                border-bottom: 1px solid lightgray;
-            }
-        </style>
-
-        <span>Group</span>
-        <div class="horizontal row" style="align-items: center" @tap="_createGroup">
-            <oda-icon icon="av:library-add"></oda-icon>
-            <label>create group</label>
-        </div>
-        <div ~if="layout.owner.isBlock" class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="_deleteGroup">
-                <oda-icon icon="icons:delete"></oda-icon>
-                <label>ungroup</label>
-            </div>
-        </div>
-        <span>Label</span>
-        <div ~if="!layout.title" class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="_restoreLabel">
-                <oda-icon icon="material:format-text"></oda-icon>
-                <label>restore label</label>
-            </div>
-        </div>
-        <div class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="_editLabel">
-                <oda-icon icon="image:edit"></oda-icon>
-                <label>edit {{isTab ? 'tab ' : ''}}label</label>
-            </div>
-        </div>
-        <span>Layout</span>
-        <div class="vertical">
-        <div class="horizontal row" style="align-items: center" @tap="_setWidth">
-                <oda-icon icon="icons:aspect-ratio"></oda-icon>
-                <label>{{layout.minWidth === '100%' ? 'unset' : 'set'}} width 100%</label>
-            </div>
-        </div>
-        <div class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="_hideLayout">
-                <oda-icon icon="icons:close"></oda-icon>
-                <label>hide layout</label>
-            </div>
-        </div>
-        <span ~if="lay?.hiddenLayouts?.length">unhide Layouts</span>
-        <div ~if="lay?.hiddenLayouts?.length" class="vertical">
-            <div class="horizontal row" style="align-items: center" @tap="_unhideAllLayout()">
-                <oda-icon icon="icons:more-horiz"></oda-icon>
-                <label>unhide All layouts</label>
-            </div>
-            <div ~for="lay?.hiddenLayouts" class="horizontal row" style="align-items: center" @tap="_unhideLayout(item)">
-                <oda-icon icon="image:remove-red-eye"></oda-icon>
-                <label>{{item.label}}</label>
-            </div>
-        </div>
-    `,
+ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-editor, @oda-menu', extends: 'oda-menu',
+    attached() {
+        let items = [
+            { label: 'Group', group: true },
+            { icon: 'av:library-add', label: 'create group', execute: () => { this._createGroup() } }
+        ]
+        if (this.layout.owner?.isBlock) items.push({ icon: 'icons:delete', label: 'ungroup layout', execute: () => { this._deleteGroup() } });
+        if (!this.layout.title) items.push({ icon: 'material:format-text', label: 'restore label', execute: () => { this._restoreLabel() } });
+        items.push(
+            { label: 'Label', group: true },
+            { icon: 'image:edit', label: 'edit ' + (this.isTab ? 'tab ' : '') + 'label', execute: () => { this._editLabel() } },
+            { label: 'Layout', group: true },
+            { icon: 'icons:aspect-ratio', label: (this.layout.minWidth === '100%' ? 'unset' : 'set') + ' width 100%', execute: () => { this._setWidth() } },
+            { icon: 'icons:close', label: 'hide layout', execute: () => { this._hideLayout() } }
+        )
+        if (this.lay?.hiddenLayouts.length) {
+            items.push(
+                { label: 'unhide Layouts', group: true },
+                { icon: 'icons:more-horiz', label: 'unhide All layouts', execute: () => { this._unhideAllLayout(this.layout) } }
+            )
+            this.lay.hiddenLayouts.forEach(i => items.push({ icon: 'image:remove-red-eye', label: 'unhide ' + i.label, execute: () => { this._unhideLayout(i) } }));
+        }
+        this.items = items;
+    },
     layout: null,
     lay: null,
     isTab: false,
     _createGroup() {
         this.lay.createGroup();
-        this.fire('ok');
     },
     _deleteGroup() {
         if (this.layout.owner?.isBlock) {
             this.lay.deleteGroup(this.layout.owner);
         }
         this.lay.deleteGroup();
-        this.fire('ok');
     },
     _restoreLabel() {
         this.layout.title = this.layout.label || 'label';
-        this.fire('ok');
     },
     async _editLabel() {
-        this.fire('ok');
         const res = await ODA.showDialog('oda-pell-editor', { src: this.layout.title }, { title: this.layout.label });
         if (res !== undefined) {
             this.layout.title = res.editor?.content?.innerHTML || '';
@@ -646,26 +585,22 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
         this.lay.hiddenLayouts.add(this.layout);
         const action = { action: "hideLayout", hideLayout: true, props: { target: this.layout.id } };
         this.lay.makeScript(this.layout, action);
-        this.fire('ok');
     },
     _unhideLayout(item) {
         this.lay.hiddenLayouts.remove(item);
         const action = { action: "hideLayout", hideLayout: false, props: { target: item.id } };
         this.lay.makeScript(this.layout, action);
-        this.fire('ok');
     },
     _unhideAllLayout() {
         this.lay.hiddenLayouts = [];
         const action = { action: "unhideAllLayout", props: { target: this.layout.id } };
         this.lay.makeScript(this.layout, action);
-        this.fire('ok');
     },
-    _setWidth(e) {
+    _setWidth() {
         this.lay.style.width = this.lay.style.maxWidth = this.layout.minWidth = this.layout.minWidth === '100%' ? '' : '100%';
         this.lay.render();
         const action = { action: "setMinWidth", props: { target: this.layout.id, width: this.layout.minWidth } };
         this.lay.makeScript(this.layout, action);
-        this.fire('ok');
     }
 })
 

@@ -70,7 +70,9 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
         await ODA.showDropdown('oda-menu', { items: e.target.item.items, root: this, template: this.template, showSubTitle: this.showSubTitle }, {fadein: true, parent: e.target, align: 'right', title: (this.showSubTitle ? e.target.item.label : undefined) });
     },
     _tap(e) {
-        this.focusedItem = e.currentTarget.item;
+        let res = e.currentTarget.item;
+        res?.execute && res.execute();
+        this.focusedItem = res;
     }
 })
 
