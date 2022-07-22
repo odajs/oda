@@ -319,7 +319,7 @@ if (!window.ODA) {
                 // })
             }
             connectedCallback() {
-                if (!this.domHost && this.parentElement !== document.body){
+                if (!this.domHost/* && this.parentElement !== document.body*/){
                     this.$wake = true;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
