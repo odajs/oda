@@ -80,7 +80,6 @@ ODA({ is: 'oda-layout-designer-structure',
     template: /*html*/`
         <style>
             :host {
-                margin-right: 4px;
                 position: relative;
                 align-items: {{layout?.align ==='vertical' ? 'normal' : 'flex-end'}};
                 @apply --horizontal;
@@ -188,12 +187,11 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                     @dragleave.stop="ondragleave" @drop.stop="ondrop($event, item)" @contextmenu="showContextMenu($event, item)">
                 <label class="tab" :contenteditable="designMode" @blur="tabRename($event, item)" @tap="selectLabel" ~html="item.title"></label>
                 <div class="vertical">
-                    <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)" :icon-size="iconSize/2"></oda-button>
-                    <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1 && layout?.$focused === item" icon="icons:pin" title="pin current tab" :icon-size="iconSize/2"></oda-button>
+                    <oda-button ~if="designMode" icon="icons:close" @tap.stop="removeTab($event, item)" :icon-size="iconSize"></oda-button>
                 </div>
             </div>
-            <oda-button class="btn" @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab" :icon-size="iconSize/1.2"></oda-button>
-            <oda-button ~if="designMode && !layout?.title" @tap.stop="restoreGroupLabel" icon="material:format-text" title="restore Group label" :icon-size="iconSize/1.2"></oda-button>
+            <oda-button class="btn" @tap.stop="addTab" ~if="designMode" icon="icons:add" title="add tab" :icon-size="iconSize"></oda-button>
+            <oda-button @tap.stop="selectTab(layout.$focused, true)" ~if="designMode && layout?.items?.length > 1 && layout.$focused" icon="icons:pin" title="pin current tab" :icon-size="iconSize / 1.2"></oda-button>
         </div>
     `,
     props: {
@@ -259,9 +257,6 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
             this.makeScript(this.layout, action)
         }
     },
-    restoreGroupLabel() {
-        this.layout.title = 'Group-label';
-    },
     async showContextMenu(e, tab) {
         if (!this.designMode || !tab) return;
         e.preventDefault();
@@ -295,14 +290,13 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 @apply --border;
                 @apply --header;
                 /* @apply --shadow; */
-                border-radius: 4px;
                 padding: 4px;
                 margin: 2px;
             }
             :host([is-children]) .str {
                 border-left: 1px dashed var(--border-color, silver);
                 margin-left: {{iconSize / 2}}px;
-                padding-left: {{iconSize / 2}}px;
+                padding-left: {{iconSize / 2 - 1}}px;
             }
             [disabled] {
                 pointer-events: none;
@@ -353,7 +347,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
             <div class="horizontal flex">
                 <label class="lbl" ~if="layout?.title && !layout?.isBlock" :contenteditable="designMode" @blur="setLabel" @tap="selectLabel" ~html="layout?.title"></label>
                 <div class="flex"></div>
-                <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16" @track="resizeTrack"></oda-icon>
+                <!-- <oda-icon ~if="designMode && selection.has(layout)" icon="editor:vertical-align-center:90" icon-size="16" @track="resizeTrack"></oda-icon> -->
             </div>
             <div ~if="!layout?.isBlock" class="horizontal flex" style="align-items: center;">
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
@@ -511,30 +505,30 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
         layout.deleteGroup(action, layout);
         this.makeScript(layout, action);
     },
-    resizeTrack(e) {
-        switch(e.detail.state){
-            case 'start':{
-                this._prevX = e.sourceEvent.clientX;
-                const rect = this.getBoundingClientRect();
-                this._prevWidth = rect.width;
-            } break;
-            case 'track':{
-                let w = this._prevWidth + e.sourceEvent.clientX - this._prevX;
-                this.style.minWidth = '100%';
-                w = (w * 100) / this.getBoundingClientRect().width;
-                this.async(() => {
-                    this.layout.minWidth = '';
-                    this.style.minWidth = '0px';
-                    this.style.maxWidth = `${w}%`;
-                    this.style.width = `${w}%`;
-                })
-            } break;
-            case 'end': {
-                const action = { action: "setWidth", props: { target: this.layout.id, width: this.style.width } };
-                this.makeScript(this.layout, action);
-            } break;
-        }
-    }
+    // resizeTrack(e) {
+    //     switch(e.detail.state){
+    //         case 'start':{
+    //             this._prevX = e.sourceEvent.clientX;
+    //             const rect = this.getBoundingClientRect();
+    //             this._prevWidth = rect.width;
+    //         } break;
+    //         case 'track':{
+    //             let w = this._prevWidth + e.sourceEvent.clientX - this._prevX;
+    //             this.style.minWidth = '100%';
+    //             w = (w * 100) / this.getBoundingClientRect().width;
+    //             this.async(() => {
+    //                 this.layout.minWidth = '';
+    //                 this.style.minWidth = '0px';
+    //                 this.style.maxWidth = `${w}%`;
+    //                 this.style.width = `${w}%`;
+    //             })
+    //         } break;
+    //         case 'end': {
+    //             const action = { action: "setWidth", props: { target: this.layout.id, width: this.style.width } };
+    //             this.makeScript(this.layout, action);
+    //         } break;
+    //     }
+    // }
 })
 
 ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-editor',
