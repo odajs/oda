@@ -111,6 +111,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     keyBindings: {
         arrowDown(e) {
+            e.preventDefault();
             this.dropDown(this.text);
             this.async(()=>{
                 this.dropDownControl.$keys?.arrowDown?.(e);
@@ -118,10 +119,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             })
         },
         arrowUp(e) {
+            e.preventDefault();
             this.dropDownControl.$keys?.arrowUp?.(e);
             this._setFocus();
         },
         enter(e) {
+            e.preventDefault();
             if (this.value) return;
             if(!this.result) return;
             this.value = this.result || this.text;
@@ -136,62 +139,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         }
     },
 })
-// ODA({is: 'oda-combo-box-panel',
-//     template:`
-//         <style>
-//             :host{
-//                 overflow: hidden;
-//                 @apply --border;
-//                 @apply --vertical;
-//                 border-radius: 0px !important;
-//             }
-//             label{
-//                 padding: 4px;
-//             }
-//         </style>
-//         <label ~if="!hasData" class="header disabled" ~html="text"></label>
-//         <slot ~show="hasData"></slot>
-//     `,
-//     get hasData(){
-//         return this.containerHost?.parent?.hasData;
-//     },
-//     hostAttributes:{
-//         tabindex: 0
-//     },
-//     get text(){
-//         return `no data to select <b>${this.filter || ''}</b>...`
-//     },
-//     set filter(n){
-//         if (!this.dropDownControl)
-//             return;
-//         this.dropDownControl.filter = n;
-//     },
-//     set dropDownControl(n){
-//         if (!n) return;
-//         this.appendChild(n);
-//         this.async(()=>{
-//             n.addEventListener('result', e=>{
-//                 this.fire('ok', n.result)
-//             });
-//         })
-//     },
-//     keyBindings:{
-//         enter(e) {
-//             if (this.dropDownControl.result){
-//                 this.result = this.dropDownControl.result;
-//                 this.fire('ok');
-//             }
-//             // this.fire('ok');
-//         }
-//     },
-//     result: undefined,
-//     ok(e){
-//         if (this.dropDownControl.result){
-//             this.result = this.dropDownControl.result;
-//             this.fire('ok');
-//         }
-//     }
-// })
 ODA({is: 'oda-combo-list',
     template: /*html*/`
         <style>
