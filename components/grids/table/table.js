@@ -52,10 +52,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             border-right: 1px solid var(--dark-background);
             box-sizing: border-box;
         }
-        :host([col-lines]) .cell[fix=right] {
-            border-left: 2px solid var(--dark-background);
-            box-sizing: border-box;
-        }
+        /*:host([col-lines]) .cell[fix=right] {*/
+        /*    border-left: 2px solid var(--dark-background);*/
+        /*    box-sizing: border-box;*/
+        /*}*/
         .body{
             /*scroll-behavior: smooth;*/
         }
