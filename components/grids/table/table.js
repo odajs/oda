@@ -2,8 +2,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     template: /*html*/`
     <style>
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
@@ -43,7 +43,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         :host([auto-width]) .cell {
             @apply --flex;
         }
-        :host([row-lines]) .row {
+        :host([row-lines]) .cell {
             border-bottom: 1px  solid var(--dark-background);
             box-sizing: border-box;
         }
@@ -63,6 +63,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             border-top: 1px  solid var(--dark-background);
             box-sizing: border-box;
             @apply --header;
+            border-right: none !important;
         }
         .foot {
             border-top: 2px  solid var(--dark-background);
@@ -166,6 +167,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         }
         .row {
             position: relative;
+            /*width: fit-content;*/
             @apply --content;
             @apply --horizontal;
         }
@@ -174,17 +176,18 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         }
         .header {
             @apply --shadow;
-            margin-bottom: 1px;
-            z-index: 1;
+            overflow: hidden;
+            /*margin-bottom: 1px;*/
+            /*z-index: 1;*/
         }
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <div  ref="header" :scroll-left="_scrollWidth" class="no-flex row header" style="top: 0px; border-bottom-width: 2px; height: auto; position: sticky;" ~style="{minHeight: rowHeight+'px', width: autoWidth?'auto':(_scrollWidth + 'px')}" ~if="showHeader">
+    <div  ref="header" :scroll-left="_scrollLeft" class="no-flex row header" ~if="showHeader" style="overflow-y: scroll; border-bottom: 1px solid var(--dark-background);">
         <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
     </div>
-    <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto'}" style="overflow-y: auto; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
-        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky;" ~style="{height: _bodyHeight+'px'}">
+    <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto'}" style="overflow-y: scroll; min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
+        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px'}">
             <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick"
             @tap="_tapRows"
             @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
@@ -208,7 +211,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         </div>
         <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; clearSelection()"></div>
     </div>
-    <div ref="footer" :scroll-left="_scrollWidth" class="no-flex horizontal header" style="bottom: 0px;" ~show="showFooter" ~style="{maxHeight: rowHeight+'px',  minHeight: rowHeight+'px',  width:(autoWidth?'auto':(_scrollWidth + 'px'))}">
+    <div ref="footer" :scroll-left="_scrollLeft" class="no-flex horizontal header" ~show="showFooter" style="overflow-y: scroll;">
         <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
     </div>
     `,
@@ -353,7 +356,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _scrollTop: 0,
     _scrollWidth: 0,
     _selectedAll: false,
-
+    _scrollLeft: 0,
     checkedRows: [],
     draggedRows: [],
     get filters() {
@@ -763,7 +766,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
     _getRowStyle(row) {
-        const style = row?.$group ? { width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px', position: 'sticky', left: '0px' } : { width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px') };
+        const style = row?.$group ? { /*width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px',*/ position: 'sticky', left: '0px' } : { /*width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px')*/ };
         if (this.autoRowHeight) style.minHeight = this.rowHeight + 'px';
         else style.height = this.rowHeight + 'px';
         return style;
@@ -951,16 +954,16 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        if (!this.$refs.body) return;
-        const scrollTop = Math.round(this.$refs.body.scrollTop / this.rowHeight) * this.rowHeight;
-        const scrollWidth = this.$refs.body.scrollWidth;
-        const height = this.$refs.body.offsetHeight;// - this.headerHeight - this.footerHeight;
-        const scrollbarWidth = this.$refs.body.offsetWidth - this.$refs.body.clientWidth;
-
+        const body = e.target;
+        const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
+        const scrollWidth = body.scrollWidth;
+        const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
+        const scrollbarWidth = body.offsetWidth - body.clientWidth;
+        this._scrollLeft = body.scrollLeft;
         if (scrollWidth && height) {
             this._scrollTop = scrollTop;
-            this._scrollWidth = scrollWidth;
-            this._height = height
+            this._scrollWidth = body.scrollWidth;
+            this._height = body.offsetHeight;
             this._scrollbarWidth = scrollbarWidth
         }
     },
@@ -1689,9 +1692,8 @@ cells: {
             }
             .split {
                 cursor: col-resize;
-                border: 2px solid transparent;
+                border-right: 1px solid black;
                 transition: border-color .5s;
-                /*border-color: silver;*/
             }
             .split:hover {
                 border-color: silver;
