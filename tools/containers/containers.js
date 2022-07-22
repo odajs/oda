@@ -49,6 +49,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             host.appendChild(ctrl);
             document.body.appendChild(host);
 
+            const resolveEvent = hostProps?.resolveEvent || 'ok'
             let onMouseDown, onKeyDown, onCancel, onOk;
             const result = new Promise((resolve, reject) => {
                 onMouseDown = (e) => { //todo надо отработать общее закрытие
@@ -94,10 +95,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
                 ctrl.addEventListener('close', onCancel);
                 ctrl.addEventListener('cancel', onCancel);
-                ctrl.addEventListener('ok', onOk);
+                ctrl.addEventListener(resolveEvent, onOk);
                 host.addEventListener('close', onCancel);
                 host.addEventListener('cancel', onCancel);
-                host.addEventListener('ok', onOk);
+                host.addEventListener(resolveEvent, onOk);
                 host.style.zIndex = 10000;
                 host.addEventListener('pointerdown', onMouseDown);
 
@@ -116,10 +117,10 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
                 host.removeEventListener('close', onCancel);
                 host.removeEventListener('cancel', onCancel);
-                host.removeEventListener('ok', onOk);
+                host.removeEventListener(resolveEvent, onOk);
                 ctrl.removeEventListener('close', onCancel);
                 ctrl.removeEventListener('cancel', onCancel);
-                ctrl.removeEventListener('ok', onOk);
+                ctrl.removeEventListener(resolveEvent, onOk);
                 window.removeEventListener('keydown', onKeyDown);
                 top.removeEventListener('pointerdown', onCancel);
                 if (hostProps.parent) {
