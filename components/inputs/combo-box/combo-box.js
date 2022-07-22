@@ -99,8 +99,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         this._dd?.then(res=>{
             this.value = this.result;
         }).catch(e=>{
-            // this.text = undefined;
+
         }).finally(()=>{
+            this.result = null;
             this._dd = null;
             this.text = undefined;
             this._setFocus();
