@@ -34,10 +34,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             background-color: {{isTopModal ? 'var(--focused-color) !important' : ''}};
         }
         :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
-            min-height: {{iconSize + iconSize / 8 + 5}}px;
-            max-height: {{iconSize + iconSize / 8 + 5}}px;
-        }
-        :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
+            min-height: {{iconSize + iconSize / 8 + 4}}px;
+            max-height: {{iconSize + iconSize / 8 + 4}}px;
             line-height: {{iconSize + iconSize / 8}}px;
         }
         :host([modal]) .title-bar oda-button, :host([show-close-btn]) .title-bar oda-button {
@@ -61,11 +59,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             box-sizing: border-box;
             box-shadow: var(--box-shadow);
             max-width: 400px;
-            height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
-            max-height: {{($refs.titleBar?.offsetHeight || 0) + 6}}px;
-            border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
-            left: {{_getPosition('left')}};
-            top: {{_getPosition('top')}};
+            height: {{($refs.titleBar?.offsetHeight || 0)}}px;
+            max-height: {{($refs.titleBar?.offsetHeight || 0)}}px;
+            border: none;
+            left: initial;
+            top: initial;
             {{hideMinMode ? 'visibility: hidden;' : ''}}
         }
         :host([autosize]) {
