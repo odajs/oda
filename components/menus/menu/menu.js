@@ -71,7 +71,7 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
     },
     _tap(e) {
         let res = e.currentTarget.item;
-        res?.execute && res.execute();
+        res?.tap && res.tap();
         this.focusedItem = res;
     }
 })

@@ -535,23 +535,23 @@ ODA({ is: 'oda-layout-designer-contextMenu', imports: '@oda/icon, @oda/pell-edit
     attached() {
         let items = [
             { label: 'Group', group: true },
-            { icon: 'av:library-add', label: 'create group', execute: () => { this._createGroup() } }
+            { icon: 'av:library-add', label: 'create group', tap: () => { this._createGroup() } }
         ]
-        if (this.layout.owner?.isBlock) items.push({ icon: 'icons:delete', label: 'ungroup layout', execute: () => { this._deleteGroup() } });
-        if (!this.layout.title) items.push({ icon: 'material:format-text', label: 'restore label', execute: () => { this._restoreLabel() } });
+        if (this.layout.owner?.isBlock) items.push({ icon: 'icons:delete', label: 'ungroup layout', tap: () => { this._deleteGroup() } });
+        if (!this.layout.title) items.push({ icon: 'material:format-text', label: 'restore label', tap: () => { this._restoreLabel() } });
         items.push(
             { label: 'Label', group: true },
-            { icon: 'image:edit', label: 'edit ' + (this.isTab ? 'tab ' : '') + 'label', execute: () => { this._editLabel() } },
+            { icon: 'image:edit', label: 'edit ' + (this.isTab ? 'tab ' : '') + 'label', tap: () => { this._editLabel() } },
             { label: 'Layout', group: true },
-            { icon: 'icons:aspect-ratio', label: (this.layout.minWidth === '100%' ? 'unset' : 'set') + ' width 100%', execute: () => { this._setWidth() } },
-            { icon: 'icons:close', label: 'hide layout', execute: () => { this._hideLayout() } }
+            { icon: 'icons:aspect-ratio', label: (this.layout.minWidth === '100%' ? 'unset' : 'set') + ' width 100%', tap: () => { this._setWidth() } },
+            { icon: 'icons:close', label: 'hide layout', tap: () => { this._hideLayout() } }
         )
         if (this.lay?.hiddenLayouts.length) {
             items.push(
                 { label: 'unhide Layouts', group: true },
-                { icon: 'icons:more-horiz', label: 'unhide All layouts', execute: () => { this._unhideAllLayout(this.layout) } }
+                { icon: 'icons:more-horiz', label: 'unhide All layouts', tap: () => { this._unhideAllLayout(this.layout) } }
             )
-            this.lay.hiddenLayouts.forEach(i => items.push({ icon: 'image:remove-red-eye', label: 'unhide ' + i.label, execute: () => { this._unhideLayout(i) } }));
+            this.lay.hiddenLayouts.forEach(i => items.push({ icon: 'image:remove-red-eye', label: 'unhide ' + i.label, tap: () => { this._unhideLayout(i) } }));
         }
         this.items = items;
     },
