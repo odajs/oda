@@ -16,6 +16,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         :host([modal]) {
             position: absolute;
         }
+        :host([modal][is-minimized]:not([hide-min-mode])) {
+            position: initial;
+        }
         form-status-bar{
             position: absolute;
             width: 100%;
@@ -77,9 +80,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
         <div ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
         <div class="flex"></div>
-        <slot class="horizontal no-flex" name="title-buttons"></slot>
+        <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
         <div ~if="modal && !hideMinMax" class="horizontal no-flex">
-            <oda-button ~if="modal" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
             <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
         </div>
         <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
@@ -105,12 +108,20 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         },
         isMinimized: {
             default: false,
-            set() {
-                this._fixPos();
+            set(n) {
+                if (n) {
+                    this._minimizedFormPlace.appendChild(this);
+                } else {
+                    this.show();
+                }
             },
             reflectToAttribute: true
         },
-        hideMinMode: false,
+        hideMinMode: {
+            type: Boolean,
+            default: null,
+            reflectToAttribute: true
+        },
         allowClose: {
             type: Boolean,
             default: null,
@@ -286,13 +297,15 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         else return 0;
     },
     attached() {
-        this._setTransform();
-        const prop = this.style.getPropertyValue('--bw');
-        this._bw = prop ? Number(prop.replace('px', '')) : this._bw;
-        window.addEventListener('resize', () => {
-            this._resize();
-        });
-        this._top();
+        if (!this.isMinimized) {
+            this._setTransform();
+            const prop = this.style.getPropertyValue('--bw');
+            this._bw = prop ? Number(prop.replace('px', '')) : this._bw;
+            window.addEventListener('resize', () => {
+                this._resize();
+            });
+            this._top();
+        }
     },
     show() {
 
@@ -319,7 +332,18 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         }
     },
     _getModals() {
-        return Array.from(document.body.querySelectorAll('odant-form')).filter(e => e.modal);
+        return [...document.body.querySelectorAll('odant-form'), ...this._minimizedFormPlace.querySelectorAll('odant-form')].filter(e => e.modal);
+    },
+    get _minimizedFormPlace() {
+        let place = this.hideMinMode ? document.body : document.querySelector('.minimized-form-place');
+        if (!place) {
+            place = document.createElement('div');
+            place.style.setProperty('position', 'relative');
+            place.classList.add('minimized-form-place');
+            place.classList.add('horizontal');
+            document.body.appendChild(place);
+        }
+        return place;
     },
     _toggleSize([state1, state2]) {
         this.size = this.size === state1 ? state2 : state1;
