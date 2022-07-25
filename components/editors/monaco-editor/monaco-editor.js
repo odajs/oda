@@ -54,6 +54,10 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
         }
     },
     editor: null,
+    detached() {
+        const monacoAriaContainer = document.body.querySelector('.monaco-aria-container');
+        monacoAriaContainer?.remove();
+    },
     _loaderReady() {
         require.config({ paths: { vs: '/web/oda/ext/monaco-editor/min/vs' } });
         require(['vs/editor/editor.main'], async () => {
