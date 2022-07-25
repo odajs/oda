@@ -9,7 +9,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
     </style>
     <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
     <div ~for="(i, index) in notebook?.cells" class="vertical no-flex">
-        <oda-jupyter-cell :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
+        <oda-jupyter-cell ~class="{border: showBorder}" :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
         <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
     </div>
     `,
@@ -24,7 +24,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
                 return this.notebook?.readOnly;
             }
         },
-        collapsedMode: false
+        collapsedMode: false,
+        showBorder: {
+            default: false,
+            save: true
+        }
     },
     get editors() {
         // if (this.focusedIndex >= 0 && !this.notebook?.cells?.[this.focusedIndex]?.items) return ['html', 'code', 'markdown', 'jupyter'];
