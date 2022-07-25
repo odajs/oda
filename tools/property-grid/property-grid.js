@@ -123,6 +123,7 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     ctor(name, dataSet, prototype, prop) {
         this.prototype = prototype;
         this.prop = prop;
+        this.list = prop?.list;
         this.name = name;
         this.dataSet = dataSet;
         this.inspectedObjects = [];

@@ -13,7 +13,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco-editor
         <div style="display: flex; flex: 1; overflow: hidden;" ~style="{height: editMode ? '80vh' : '100%', padding: editMode? '4px' : 0 }" >
             <div ~if="preview==='none' || showCode || editMode" style="overflow: hidden; position: relative" ~style="{width: preview!=='none' ? '50%' : '100%'}">
                 <oda-ace-editor ~if="type==='ace'" :src @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="cobalt" mode="html" min-lines=1></oda-ace-editor></oda-ace-editor>
-                <oda-monaco-editor ~if="type==='monaco'" :value="src" @change="onchange" class="flex" theme="vs-dark" mode="html"></oda-monaco-editor>
+                <oda-monaco-editor ~if="type==='monaco'" ::value="src" @change="onchange" class="flex" theme="vs-dark" mode="html"></oda-monaco-editor>
             </div>
             <oda-splitter2 ~if="editMode && preview!=='none'" size="3"></oda-splitter2>
             <div ~if="preview!=='none'" class="flex" style="overflow: auto; flex: 1">
@@ -47,6 +47,7 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco-editor
     },
     editMode: false,
     onchange(e) {
+        console.log(e)
         this.source = e.detail.value;
     },
     attached() {
