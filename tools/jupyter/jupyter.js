@@ -27,7 +27,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
         collapsedMode: false
     },
     get editors() {
-        if (this.focusedIndex >= 0 && !this.notebook?.cells?.[this.focusedIndex]?.items) return ['html', 'code', 'markdown', 'jupyter'];
+        // if (this.focusedIndex >= 0 && !this.notebook?.cells?.[this.focusedIndex]?.items) return ['html', 'code', 'markdown', 'jupyter'];
         return ['html', 'code', 'markdown'];
     },
     focusedIndex: -1,
@@ -137,7 +137,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
         <div ~if="cell?.items" class="vertical flex">
             <oda-icon :icon="cell.expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon>
             <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
-            <oda-jupyter ~if="cell.expanded" ::items="cell.items" style="border-left: 1px dashed darkgray; margin-left: 12px; padding-left: 4px;"></oda-jupyter>
+            <oda-jupyter ~if="cell.expanded" :items="cell.items" style="border-left: 1px dashed darkgray; margin-left: 12px; padding-left: 4px;"></oda-jupyter>
             <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
             <!-- <oda-icon :icon="cell.expanded?'icons:chevron-left:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon> -->
         </div>
