@@ -9,7 +9,6 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
     <script @load="_loaderReady" src="/web/oda/ext/monaco-editor/min/vs/loader.js"></script>
     `,
     props: {
-        _editor: Object,
         theme: {
             type: String,
             list: [
@@ -18,7 +17,7 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
                 'hc-black',
             ],
             set(n, o) {
-                if (this._editor) monaco.editor.setTheme(n);
+                if (this.editor) monaco.editor.setTheme(n);
             },
             default: 'vs',
         },
@@ -32,21 +31,21 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
                 'sql', 'st', 'swift', 'typescript', 'vb', 'xml', 'yaml'
             ],
             set(n, o) {
-                if (this._editor) monaco.editor.setModelLanguage(this._editor.getModel(), n);
+                if (this.editor) monaco.editor.setModelLanguage(this.editor.getModel(), n);
             },
             default: 'javascript',
         },
         readOnly: {
             type: Boolean,
             set(n, o) {
-                if (this._editor) this._editor.updateOptions({ readOnly: n });
+                if (this.editor) this.editor.updateOptions({ readOnly: n });
             },
             default: false,
         },
         value: {
             type: String,
             set(n) {
-                if (this._editor && n !== this._editor.getValue()) this._editor.setValue(n);
+                if (this.editor && n !== this.editor.getValue()) this.editor.setValue(n);
             }
         },
         externalLibrary: {
@@ -54,6 +53,7 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
             default: ['oda.d.ts']
         }
     },
+    editor: null,
     _loaderReady() {
         require.config({ paths: { vs: '/web/oda/ext/monaco-editor/min/vs' } });
         require(['vs/editor/editor.main'], async () => {
@@ -83,7 +83,8 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
         return definitions.map((def, idx) => (monaco.languages.typescript.javascriptDefaults.addExtraLib(def, `${this.externalLibrary[idx]}`)));
     },
     _setEditor() {
-        this._editor = monaco.editor.create(this.$refs.editor, {
+        this.editor = monaco.editor.create(this.$refs.editor, {
+            automaticLayout: true,
             value: this.value || '',
             language: this.language,
             // folding: false,
@@ -91,8 +92,8 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
             theme: this.theme,
             readOnly: this.readOnly
         });
-        this._editor.getModel().onDidChangeContent((event) => {
-            this.value = this._editor.getValue();
+        this.editor.getModel().onDidChangeContent((event) => {
+            this.value = this.editor.getValue();
         });
     }
 });

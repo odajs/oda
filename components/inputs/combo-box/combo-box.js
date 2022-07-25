@@ -103,7 +103,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         }).finally(()=>{
             this.result = null;
             this._dd = null;
-            this.text = undefined;
+            this.text = '';
             this._setFocus();
         })
     },
@@ -112,6 +112,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     keyBindings: {
         arrowDown(e) {
+            e.stopPropagation();
             e.preventDefault();
             this.dropDown(this.text);
             this.async(()=>{
@@ -120,24 +121,30 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             })
         },
         arrowUp(e) {
+            e.stopPropagation();
             e.preventDefault();
             this.dropDownControl.$keys?.arrowUp?.(e);
             this._setFocus();
         },
         enter(e) {
+            e.stopPropagation();
             e.preventDefault();
+            this.async(()=>{
+                this.dropDownControl.$keys?.enter?.(e);
+            })
             if (this.value) return;
             if(!this.result) return;
             this.value = this.result || this.text;
             this.dropDownControl?.fire?.('ok');
         },
-        space(e){
+        space(e) {
+            e.stopPropagation();
             if (!e.ctrlKey) return;
             this.dropDown(this.text);
             this.async(()=>{
                 this.dropDownControl.$keys?.space?.(e);
             })
-        }
+        },
     },
 })
 ODA({is: 'oda-combo-list',
@@ -156,7 +163,7 @@ ODA({is: 'oda-combo-list',
             }
             label{
                 @apply --content;
-                min-height: 24px; 
+                min-height: 24px;
                 align-content: center;
                 cursor: pointer;
                 padding: 2px 4px;

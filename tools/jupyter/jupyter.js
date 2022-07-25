@@ -1,23 +1,20 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
-ODA({
-    is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
-    template: `
-        <style>
-            :host{
-                @apply --vertical;
-                @apply --flex;
-            }
-        </style>
-        <oda-jupyter-divider ~if="!readOnly" index="-1" :notebook></oda-jupyter-divider>
-        <div ~for="(i, index) in notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)" :notebook></oda-jupyter-cell>
-            <oda-jupyter-divider ~if="!readOnly" :index :notebook></oda-jupyter-divider>
-        </div>
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers', template: /*template*/`
+    <style>
+        :host{
+            @apply --vertical;
+            @apply --flex;
+            padding: 25px;
+        }
+    </style>
+    <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
+    <div ~for="(i, index) in notebook?.cells" class="vertical no-flex">
+        <oda-jupyter-cell :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
+        <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
+    </div>
     `,
     listeners: {
-        tap(e) {
-            this.focusedIndex = -1;
-        }
+        tap(e) { this.focusedIndex = -1; }
     },
     props: {
         iconSize: 16,
@@ -50,41 +47,39 @@ ODA({
         this.notebook.cells = n;
     }
 })
-ODA({
-    is: 'oda-jupyter-divider',
-    template: `
-        <style>
-            :host{
-                @apply --vertical;
-                height: 16px;
-                justify-content: center;
-            }
-            :host>div{
-                transition: opacity ease-out .5s;
-            }
-            :host(:hover)>div{
-                opacity: 1;
-            }
-            oda-button{
-                font-size: x-small;
-                margin: 0px 8px;
-                @apply --content;
-                @apply --border;
-                padding: 0px 4px 0px 0px;
-                border-radius: 4px;
-            }
-            div{
-                opacity: 0;    
-                height: 2px;
-                align-items: center;
-                justify-content: center;
-            }
-        </style>
-        <div class="horizontal header">
-            <oda-button :icon-size icon="icons:add" ~for="editor in editors" @tap.stop="addCell(editor)">{{editor}}</oda-button>
-        </div>
+ODA({ is: 'oda-jupyter-divider', template: /*template*/`
+    <style>
+        :host{
+            @apply --vertical;
+            height: 16px;
+            justify-content: center;
+        }
+        :host>div{
+            transition: opacity ease-out .5s;
+        }
+        :host(:hover)>div{
+            opacity: 1;
+        }
+        oda-button{
+            font-size: x-small;
+            margin: 0px 8px;
+            @apply --content;
+            @apply --border;
+            padding: 0px 4px 0px 0px;
+            border-radius: 4px;
+        }
+        div{
+            opacity: 0;    
+            height: 2px;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    <div class="horizontal header">
+        <oda-button :icon-size icon="icons:add" ~for="editor in editors" @tap.stop="addCell(editor)">{{editor}}</oda-button>
+    </div>
     `,
-    notebook: {},
+    // notebook: {},
     index: -1,
     addCell(cell_type) {
         if (cell_type === 'jupyter') {
@@ -104,55 +99,53 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-jupyter-cell', imports: '@oda/splitter2',
-    template: `
-        <style>
-            :host {
-                position: relative;
-                @apply --no-flex;
-                padding: 1px;
-                height: {{editMode ? '80vh' : 'unset'}};
-                margin: 0 2px;
-            }
-            .main {
-                min-height: 22px;
-            }
-            .editor{
-                padding: 4px;
-                height: {{editMode ? '80vh' : ((cell?.enableResize || control?.enableResize) && cell?.cell_h) ? cell.cell_h + 'px' : '100%'}}
-            }
-            oda-splitter2 {
-                opacity: 0;
-            }
-            oda-splitter2:hover {
-                opacity: .7;
-            }
-            .row {
-                cursor: pointer;
-                padding: 5px;
-                color: gray;
-                font-size: 12px;
-                border: 1px solid lightgray;
-            }
-        </style>
-        <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
-            <div class="vertical flex main">
-                <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
-                <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
-            </div>
-            <div ~if="cell?.items" class="vertical flex">
-                <oda-icon :icon="cell.expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon>
-                <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
-                <oda-jupyter ~if="cell.expanded" ::items="cell.items" style="border-left: 1px dashed darkgray; margin-left: 12px; padding-left: 4px;"></oda-jupyter>
-                <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
-                <!-- <oda-icon :icon="cell.expanded?'icons:chevron-left:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon> -->
-            </div>
+ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
+    <style>
+        :host {
+            position: relative;
+            @apply --no-flex;
+            padding: 1px;
+            height: {{editMode ? '80vh' : 'unset'}};
+            margin: 0 2px;
+        }
+        .main {
+            min-height: 22px;
+        }
+        .editor{
+            padding: 4px;
+            height: {{editMode ? '80vh' : ((cell?.enableResize || control?.enableResize) && cell?.cell_h) ? cell.cell_h + 'px' : '100%'}}
+        }
+        oda-splitter2 {
+            opacity: 0;
+        }
+        oda-splitter2:hover {
+            opacity: .7;
+        }
+        .row {
+            cursor: pointer;
+            padding: 5px;
+            color: gray;
+            font-size: 12px;
+            border: 1px solid lightgray;
+        }
+    </style>
+    <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
+        <div class="vertical flex main">
+            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
+            <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
         </div>
-        <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{this.cell?.label || this.cell?.cell_type || ''}}</div>
-        <oda-jupyter-toolbar ~if="!readOnly && focused" :notebook></oda-jupyter-toolbar>
+        <div ~if="cell?.items" class="vertical flex">
+            <oda-icon :icon="cell.expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon>
+            <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
+            <oda-jupyter ~if="cell.expanded" ::items="cell.items" style="border-left: 1px dashed darkgray; margin-left: 12px; padding-left: 4px;"></oda-jupyter>
+            <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
+            <!-- <oda-icon :icon="cell.expanded?'icons:chevron-left:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon> -->
+        </div>
+    </div>
+    <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{cell?.label || cell?.cell_type || ''}}</div>
+    <oda-jupyter-toolbar ~if="!readOnly && focused" ~style="{top: '-' + iconSize + 'px'}"></oda-jupyter-toolbar>
     `,
-    notebook: {},
+    // notebook: {},
     set cell(n) {
         if (n) {
             this.src = n.cell_type;
@@ -186,34 +179,32 @@ ODA({
                 }
             }
         }
-    },
+    }
 })
 
-ODA({
-    is: 'oda-jupyter-toolbar',
-    template: `
-        <style>
-            :host{
-                position: absolute;
-                top: -{{iconSize}}px;
-                right: 8px;
-                @apply --horizontal;
-                @apply --no-flex;
-                padding: 1px;
-                @apply --content;
-                @apply --shadow;
-                border-radius: 2px;
-            }
-        </style>
-        <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
-        <oda-button :disabled="focusedIndex >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
-        <span style="width: 8px"></span>
-        <oda-button :icon-size icon="icons:settings" ~show="enableSettings" @tap="showSettings"></oda-button>
-        <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
-        <span style="width: 8px"></span>
-        <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
+ODA({ is: 'oda-jupyter-toolbar', template: /*template*/`
+    <style>
+        :host {
+            @apply --horizontal;
+            @apply --no-flex;
+            @apply --content;
+            @apply --shadow;
+            position: absolute;
+            top: 0;
+            right: 8px;
+            padding: 1px;
+            border-radius: 2px;
+        }
+    </style>
+    <oda-button :disabled="focusedIndex === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
+    <oda-button :disabled="focusedIndex >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+    <span style="width: 8px"></span>
+    <oda-button :icon-size icon="icons:settings" ~show="enableSettings" @tap="showSettings"></oda-button>
+    <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
+    <span style="width: 8px"></span>
+    <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
-    notebook: {},
+    // notebook: {},
     enableSettings() {
         return Object.keys(this.control?.props || {}).length > 0;
     },

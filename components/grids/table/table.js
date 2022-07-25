@@ -625,6 +625,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             let idx = rows.findIndex(r => this.compareRows(r, row));
             idx = idx > 0 ? idx - 1 : 0;
             this._highlight(e, { value: rows[idx] });
+            if (!e.ctrlKey) {
+                this._select(e, { value: rows[idx]})
+            }
             if (~~(this.screen.length / 2) > idx) {
                 this.$refs.body.scrollTop -= this.rowHeight;
             }
@@ -638,6 +641,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             const max = rows.length - 1;
             idx = idx < max ? idx + 1 : max;
             this._highlight(e, { value: rows[idx] });
+            if (!e.ctrlKey) {
+                this._select(e, { value: rows[idx]})
+            }
             if (~~(this.screen.length / 2) < idx) {
                 this.$refs.body.scrollTop += this.rowHeight;
             }
@@ -668,12 +674,28 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         },
         'ctrl+space'(e) {
             // e.preventDefault();
+            e.stopPropagation();
             this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         },
         'space'(e) {
             // e.preventDefault();
+            e.stopPropagation();
             this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
-        }
+        },
+        enter(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.ctrlKey) {
+                return this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+            }
+            if (this.allowHighlight && this.allowFocus) {
+                if (this.highlightedRow === this.focusedRow) {
+                    this._dblclick({ path: [{ row: this.focusedRow }] })
+                } else {
+                    this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+                }
+            }
+        },
     },
     listeners: {
         dragend: '_onDragEnd',
@@ -972,19 +994,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         const item = d?.value || e.target.item;
         if (item.disabled) {
             item.$expanded = !item.$expanded;
+        } else if (item.$hasChildren && !item.$expanded) {
+            item.$expanded = true;
         } else if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
             this.focusedRow = item;
         }
     },
     _highlight(e, d) {
-        if (!this.allowHighlight) return this._focus(e, d);
-        if (e.ctrlKey || e.shiftKey) return;
+        if (!this.allowHighlight) return;
         const item = d?.value || e.target.item;
         this.highlightedRow = item;
     },
     _select(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
+            if (!item) return;
             if (!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);
             if (e.shiftKey) {
                 let from = this.selectionStartIndex;

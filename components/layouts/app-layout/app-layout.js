@@ -421,7 +421,7 @@ ODA({is: 'app-layout-drawer',
         }
 
     </style>
-    <div @touchmove="hideTabs=false"  ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
+    <div @touchmove="hideTabs=false" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
             <div class="no-flex vertical">
                 <oda-button :rotate="(ctrl?.label || ctrl.getAttribute('label'))?90:0" :label="ctrl?.label || ctrl?.getAttribute?.('label')" style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;" :icon-size="iconSize*1.2" class="no-flex tab" default="icons:help" :item="ctrl" ~style="getStyle(ctrl)" ~for="ctrl in controls" @down.stop="setFocus(ctrl)" :title="ctrl?.getAttribute('bar-title') || ctrl?.title || ctrl?.getAttribute('title')" :icon="ctrl?.getAttribute('bar-icon') || ctrl?.icon || ctrl?.getAttribute('icon') || 'icons:menu'"  :sub-icon="ctrl?.getAttribute('sub-icon')" :toggled="focused === ctrl" :bubble="ctrl.bubble" ~class="{outline: lastFocused === ctrl}"></oda-button>
@@ -429,7 +429,7 @@ ODA({is: 'app-layout-drawer',
             <div class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
                 <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
             </div>
-            <oda-button style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize*1.2" ~for="buttons"  @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
+            <oda-button style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize*1.2" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
         </div>
 
     </div>
@@ -508,6 +508,12 @@ ODA({is: 'app-layout-drawer',
             }
         },
         lastFocused: null
+    },
+    attached() {
+        this.listen('keydown', '_onKeyDown', { target: document });
+    },
+    detached() {
+        this.unlisten('keydown', '_onKeyDown', { target: document });
     },
     get _styles() {
         const cpt = this.allowCompact && this.compact;
@@ -617,6 +623,22 @@ ODA({is: 'app-layout-drawer',
     opening(pinned, controls, length) {
         if (pinned && !this.opened && !this.focused && length) {
             this.setFocus(controls[0]);
+        }
+    },
+    _onKeyDown(e) {
+        if (this.controls && e.ctrlKey && '123456789'.includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            const idx = parseInt(e.key) - 1;
+            if(e.altKey){
+                if (idx < this.buttons.sort((a, b) => parseInt(a.order || 0) < parseInt(b.order || 0) ? -1 : 1).length) {
+                    this.buttons[idx]?.tap()
+                }
+            }else{
+                if (idx < this.controls.sort((a, b) => parseInt(a.getAttribute('order') || 0) < parseInt(b.getAttribute('order') || 0) ? -1 : 1).length) {
+                    this.setFocus(this.controls[idx])
+                }
+            }
         }
     }
 });

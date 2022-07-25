@@ -5,26 +5,25 @@
 <script type="module">
     import '../../oda.js';
     import { LZString } from './lib/lz-string.js';
-    ODA({ is: 'oda-jupyter-app', imports: '@oda/button, ./jupyter.js',
-        template: `
-            <style>
-                oda-button {
-                    font-size: 12px;
-                    margin: 2px;
-                }
-            </style>
+    ODA({ is: 'oda-jupyter-app', imports: '@oda/button, ./jupyter.js', template: /*template*/`
+        <style>
+            oda-button {
+                font-size: 12px;
+                margin: 2px;
+            }
+        </style>
 
-            <div style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border: 1px solid gray; position: sticky; top: 0; background: white; z-index: 99; background: lightgray; margin: 1px">
-                <oda-button @pointerdown="share">share</oda-button>
-                <oda-button @tap="saveFile">save</oda-button>
-                <oda-button for="load" @tap="this.$('#load').click()">load</oda-button>
-                <input id="load" type="file" style="display: none" @change="loadFile($event)"/>
-                <oda-button @tap="jupyter.collapsedMode = !jupyter.collapsedMode" allow-toggle ::toggled="jupyter.collapsedMode">collapsedMode</oda-button>
-                <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
-                <oda-button @tap="clear">clear</oda-button>
-                <oda-button @tap="document.location.reload()">reload</oda-button>
-            </div>
-            <oda-jupyter id="jupyter" :src show-border></oda-jupyter>
+        <div style="flex-wrap: wrap; display: flex; flex-direction: row-reverse; border: 1px solid gray; position: sticky; top: 0; background: white; z-index: 99; background: lightgray; margin: 1px">
+            <oda-button @pointerdown="share">share</oda-button>
+            <oda-button @tap="saveFile">save</oda-button>
+            <oda-button for="load" @tap="this.$('#load').click()">load</oda-button>
+            <input id="load" type="file" style="display: none" @change="loadFile($event)"/>
+            <oda-button @tap="jupyter.collapsedMode = !jupyter.collapsedMode" allow-toggle ::toggled="jupyter.collapsedMode">collapsedMode</oda-button>
+            <oda-button @tap="jupyter.readOnly = !jupyter.readOnly" allow-toggle ::toggled="jupyter.readOnly">readOnly</oda-button>
+            <oda-button @tap="clear">clear</oda-button>
+            <oda-button @tap="document.location.reload()">reload</oda-button>
+        </div>
+        <oda-jupyter id="jupyter" :src show-border></oda-jupyter>
         `,
         src: './jupyter-2.json',
         lzs: '',

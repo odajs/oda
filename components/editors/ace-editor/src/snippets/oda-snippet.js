@@ -1,7 +1,7 @@
 const snippet = `
 # oda
 snippet oda
-	ODA({ is: 'oda-', imports: '@/oda/icon',
+	ODA({ is: 'oda-', imports: '@oda/icon',
 		template: ${'`'}
 		
 		${'`'},
@@ -12,7 +12,7 @@ snippet oda
 
 # oda-demo
 snippet oda-demo
-	ODA({ is: 'oda-', imports: '@/oda/icon',
+	ODA({ is: 'oda-', imports: '@oda/icon',
 		template: ${'`'}
 		
 		${'`'},
