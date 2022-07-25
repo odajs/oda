@@ -59,20 +59,25 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
         monacoAriaContainer?.remove();
     },
     _loaderReady() {
-        require.config({ paths: { vs: '/web/oda/ext/monaco-editor/min/vs' } });
-        require(['vs/editor/editor.main'], async () => {
-            // monaco.languages.registerCompletionItemProvider('javascript', {
-            //     provideCompletionItems: async function(model, position) {
-            //         const createDependencyProposals = (await import('./lib/monaco-oda.js')).default;
-            //         return {
-            //             suggestions: createDependencyProposals()
-            //         };
-            //     }
-            // });
-            // monaco.languages.typescript.javascriptDefaults.addExtraLib(libSource, libUri);
-            await this._getExternalLibraryDefinitions();
+        const cnfg = require.getConfig();
+        if(!cnfg.paths.vs) {
+            require.config({ paths: { vs: '/web/oda/ext/monaco-editor/min/vs' } });
+            require(['vs/editor/editor.main'], async () => {
+                // monaco.languages.registerCompletionItemProvider('javascript', {
+                //     provideCompletionItems: async function(model, position) {
+                //         const createDependencyProposals = (await import('./lib/monaco-oda.js')).default;
+                //         return {
+                //             suggestions: createDependencyProposals()
+                //         };
+                //     }
+                // });
+                // monaco.languages.typescript.javascriptDefaults.addExtraLib(libSource, libUri);
+                await this._getExternalLibraryDefinitions();
+                this._setEditor();
+            });
+        } else {
             this._setEditor();
-        });
+        }
     },
     async _getExternalLibraryDefinitions() {
         if (this.externalLibrary.length === 0) {
