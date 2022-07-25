@@ -245,20 +245,20 @@ ODA({ is: 'oda-jupyter-toolbar', template: /*template*/`
                 if (target.props[key].category === 'cell - ' + control.localName) {
                     control[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: true });
-                    if (key === 'type') {
-                        const dd = document.body.getElementsByTagName('oda-dropdown')
-                        this.ddMenuIndex = -1;
-                        if (dd.length) {
-                            for (let i = 0; i < dd.length; i++) {
-                                const elm = dd[i];
-                                elm.fire('cancel');
-                            }
-                        }
-                        if (this.editMode) {
-                            this.editMode = false;
-                            this.async(() => this.editMode = true);
-                        }
-                    }
+                    // if (key === 'type') {
+                    //     const dd = document.body.getElementsByTagName('oda-dropdown')
+                    //     this.ddMenuIndex = -1;
+                    //     if (dd.length) {
+                    //         for (let i = 0; i < dd.length; i++) {
+                    //             const elm = dd[i];
+                    //             elm.fire('cancel');
+                    //         }
+                    //     }
+                    //     if (this.editMode) {
+                    //         this.editMode = false;
+                    //         this.async(() => this.editMode = true);
+                    //     }
+                    // }
                 } else if (target.props[key].category === 'editor - ' + control2.localName) {
                     control2[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: false });
