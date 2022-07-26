@@ -55,7 +55,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 onMouseDown = (e) => { //todo надо отработать общее закрытие
                     e.stopPropagation();
                     if (hostProps.parent){
-                        if (e.path.includes(hostProps.parent))
+                        if (e.composedPath().includes(hostProps.parent))
                             return;
                         // if (e.target instanceof Node && hostProps.parent.contains(e.target))
                         //     return;
