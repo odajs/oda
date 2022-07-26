@@ -1,4 +1,4 @@
-ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.js',
+ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.js, @oda/palette, @tools/containers',
     template: `
         <style>
             .pell { border: 1px solid rgba(10, 10, 10, 0.1); box-sizing: border-box; }
@@ -11,22 +11,9 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
                 @aplly --vertical;
                 position: relative;
             }
-            .inp-box {
-                @apply --horizontal
-                position: absolute;
-                z-index: 31;
-                border: 1px solid lightgray;
-                background-color: white;
-                top: {{_y}}px;
-                left: {{_x}}px;
-            }
         </style>
-        <div ~if="!_showAce && _inputColor" class="inp-box">
-            <input id="inp" type="color" @change="setColor" @blur="setColor">
-            <oda-button @click="setColor">ok</oda-button>
-        </div>
         <div ~show="!_showAce" id="editor" @keydown.stop></div>
-        <oda-button ~if="_showAce" icon="icons:close" icon-size="10" @click="closeAce" style="position: absolute; z-index: 31; fill: red"></oda-button>
+        <oda-button ~if="_showAce" icon="icons:close" @click="closeAce" style="position: absolute; z-index: 31; fill: red; right: 0"></oda-button>
         <oda-ace-editor ~if="_showAce" id="ace" mode="html" wrap="true" font-size="16"></oda-ace-editor>
     `,
     props: {
@@ -35,21 +22,11 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
     },
     get value() { return this.editor?.content?.innerHTML || '' },
     set value(v) { if (this.editor) this.editor.content.innerHTML = v },
-    _inputColor: '',
-    _x: 0,
-    _y: 0,
     _showAce: false,
     attached() {
         this.async(() => {
             this._update();
         }, 300);
-    },
-    listeners: {
-        pointerdown: function(e) {
-            if (this.readOnly || this._inputColor) return;
-            this._x = e.offsetX;
-            this._y = e.offsetY;
-        }
     },
     _update() {
         this.editor = pell.init({
@@ -70,13 +47,23 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
                     name: 'foreColor',
                     icon: '&#9734;',
                     title: 'foreColor',
-                    result: () => this._inputColor = 'foreColor'
+                    result: async () => {
+                        try {
+                            let res = await ODA.showDropdown('oda-palette', { gradientMode: false }, { resolveEvent: 'value-changed' });
+                            if (res) pell.exec('foreColor', res.value);
+                        } catch (error) { }
+                    }
                 },
                 {
                     name: 'backColor',
                     icon: '&#9733',
                     title: 'backColor',
-                    result: () => this._inputColor = 'backColor'
+                    result: async () => {
+                        try {
+                            let res = await ODA.showDropdown('oda-palette', { gradientMode: false }, { resolveEvent: 'value-changed' });
+                            if (res) pell.exec('backColor', res.value);
+                        } catch (error) { }
+                    }
                 },
                 'olist',
                 'ulist',
@@ -137,10 +124,6 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
         });
         this.editor.content.contentEditable = !this.readOnly;
         this.value = this.src || '';
-    },
-    setColor(e) {
-        pell.exec(this._inputColor, this.$('#inp').value);
-        this._inputColor = '';
     },
     closeAce(e) {
         const value = this.$('#ace').value;
