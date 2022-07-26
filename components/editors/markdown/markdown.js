@@ -41,7 +41,8 @@ ODA({is: 'oda-markdown', imports: '../simplemde/simplemde.js, @oda/splitter2, @o
         editHeight: {
             default: '80vh',
             save: true
-        }
+        },
+        readOnly: false
     },
     src: '',
     fount: '',
