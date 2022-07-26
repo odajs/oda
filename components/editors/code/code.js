@@ -47,7 +47,6 @@ ODA({is: 'oda-code', imports: '@oda/splitter2, @oda/ace-editor, ../monaco-editor
     },
     editMode: false,
     onchange(e) {
-        console.log(e)
         this.source = e.detail.value;
     },
     attached() {
