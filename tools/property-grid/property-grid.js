@@ -140,8 +140,11 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
             return 'oda-pg-mixed';
         if (this.prop?.editor?.includes('/')) {
             let url = this.dataSet.inspectedObjects[0]?.url || '';
-            ODA.import((url?(url+'/~/'):'') + this.prop.editor).then(async imp=>{
-                this.editor = (await imp?.default)?.is;
+            const [key, path] = this.prop.editor.includes(':')
+                    ? this.prop.editor.split(':')
+                    : ['default', this.prop.editor];
+            ODA.import((url ? (url + '/~/') : '') + path).then(async imp => {
+                this.editor = (await imp?.[key])?.is;
             }).catch(e=>{
                 console.error(`Type editor module ${url} not found.`, e);
             })
