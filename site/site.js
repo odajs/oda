@@ -684,13 +684,12 @@ header: {
                 if (dd.length)
                     for (let i = 0; i < dd.length; i++) {
                         const elm = dd[i];
-                        // elm.style.pointerEvents = 'none';
                         elm.addEventListener('pointerleave', () => {
                             elm.fire('cancel');
                         })
                     }
             }, 300)
-            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, pointerEvents: 'none', cancelAfterLeave: true });
+            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, cancelAfterLeave: true });
             if (res) {
                 this.ddMenuIndex = -1;
                 this.setLeftDrawerFocus(res.item);
