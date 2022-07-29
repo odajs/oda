@@ -31,7 +31,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
         }
     },
     get editors() {
-        // if (this.focusedIndex >= 0 && !this.notebook?.cells?.[this.focusedIndex]?.items) return ['html', 'code', 'markdown', 'jupyter'];
         return ['html', 'code', 'markdown'];
     },
     focusedIndex: -1,
@@ -45,11 +44,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
             })
         }
     },
-    notebook: {},
-    set items(n) {
-        this.notebook ||= {};
-        this.notebook.cells = n;
-    }
+    notebook: {}
 })
 ODA({ is: 'oda-jupyter-divider', template: /*template*/`
     <style>
@@ -83,16 +78,8 @@ ODA({ is: 'oda-jupyter-divider', template: /*template*/`
         <oda-button :icon-size icon="icons:add" ~for="editor in editors" @tap.stop="addCell(editor)">{{editor}}</oda-button>
     </div>
     `,
-    // notebook: {},
     index: -1,
     addCell(cell_type) {
-        if (cell_type === 'jupyter') {
-            if (this.focusedIndex >= 0 && !this.notebook?.cells?.[this.focusedIndex]?.items) {
-                this.notebook.cells[this.focusedIndex].items = [];
-                this.focusedIndex = -1;
-            }
-            return;
-        }
         this.focusedIndex = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
@@ -137,13 +124,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
         <div class="vertical flex main">
             <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
-        </div>
-        <div ~if="cell?.items" class="vertical flex">
-            <oda-icon :icon="cell.expanded?'icons:chevron-right:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon>
-            <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
-            <oda-jupyter ~if="cell.expanded" :items="cell.items" style="border-left: 1px dashed darkgray; margin-left: 12px; padding-left: 4px;"></oda-jupyter>
-            <div style="width: 100%; height: 1px; border-bottom: 1px dashed darkgray"></div>
-            <!-- <oda-icon :icon="cell.expanded?'icons:chevron-left:90':'icons:chevron-right'" @tap="cell.expanded = !cell.expanded" style="cursor: pointer"></oda-icon> -->
         </div>
     </div>
     <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{cell?.label || cell?.cell_type || ''}}</div>
@@ -249,20 +229,6 @@ ODA({ is: 'oda-jupyter-toolbar', template: /*template*/`
                 if (target.props[key].category === 'cell - ' + control.localName) {
                     control[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: true });
-                    // if (key === 'type') {
-                    //     const dd = document.body.getElementsByTagName('oda-dropdown')
-                    //     this.ddMenuIndex = -1;
-                    //     if (dd.length) {
-                    //         for (let i = 0; i < dd.length; i++) {
-                    //             const elm = dd[i];
-                    //             elm.fire('cancel');
-                    //         }
-                    //     }
-                    //     if (this.editMode) {
-                    //         this.editMode = false;
-                    //         this.async(() => this.editMode = true);
-                    //     }
-                    // }
                 } else if (target.props[key].category === 'editor - ' + control2.localName) {
                     control2[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: false });
