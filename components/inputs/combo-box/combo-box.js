@@ -57,6 +57,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         template: 'oda-combo-list',
         placeholder: '',
         allowClear: false,
+        clearTextAfterOk: false,
         iconSize: 24,
         icon: 'icons:chevron-right:90',
         value: '',
@@ -66,7 +67,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             reflectToAttribute: true
         }
     },
-    get dropDownControl(){
+    useParentWidth: true,
+    createDropDownControl() {
         const element =  this.createElement(this.template, this.props);
         element.setAttribute('tabIndex', 1);
         return element;
@@ -94,18 +96,21 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     dropDown(filter) {
         this._setFocus();
+        this.dropDownControl ??= this.createDropDownControl();
         this.dropDownControl.filter = filter;
-        this._dd ??= ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true});
-        this._dd?.then(res=>{
-            this.value = this.result;
-        }).catch(e=>{
+        if (!this._dd) {
+            this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true});
+            this._dd.then(res=>{
+                this.value = this.result;
+            }).catch(e=>{
 
-        }).finally(()=>{
-            this.result = null;
-            this._dd = null;
-            this.text = '';
-            this._setFocus();
-        })
+            }).finally(()=>{
+                this.result = null;
+                this._dd = null;
+                if(this.clearTextAfterOk) this.text = '';
+                this._setFocus();
+            })
+        }
     },
     closeDown(){
         this.dropDownControl?.fire?.('cancel')

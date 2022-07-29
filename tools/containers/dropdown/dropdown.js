@@ -8,7 +8,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             :host {
                 pointer-events: none;
                 z-index: 1000;
- 
+
             }
             :host([fadein]){
                 animation: fadin 5s ease-in-out;
@@ -165,7 +165,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         if (right > winWidth) size.right = 0;
 
         if (this.parent && this.useParentWidth)
-            minWidth = maxWidth = parentWidth;
+            minWidth /* = maxWidth */ = parentWidth;
 
         minWidth = minWidth > maxWidth ? maxWidth : minWidth;
         minHeight = minHeight > maxHeight ? maxHeight : minHeight;
