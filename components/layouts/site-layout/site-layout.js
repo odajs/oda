@@ -5,6 +5,7 @@ ODA({ is: 'oda-site-layout', extends: 'oda-app-layout', template: `
         <oda-site-footer slot="footer"></oda-site-footer>
     `
 });
+
 ODA({ is: 'oda-site-header', template: `
     <style>
         :host {
@@ -22,6 +23,7 @@ ODA({ is: 'oda-site-header', template: `
         ]
     }
 });
+
 ODA({ is: 'oda-site-footer', template: `
     <style>
         :host {
@@ -38,6 +40,7 @@ ODA({ is: 'oda-site-footer', template: `
         ]
     }
 });
+
 ODA({ is: 'oda-site-content', template: `
     <style>
         :host {

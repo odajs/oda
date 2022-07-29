@@ -1,1 +1,39 @@
-'ГЛАВНАЯ УЧЕБНЫЙ ЦЕНТР ДОКУМЕНТАЦИЯ БЛОГ ПАРТНЕРАМ ЦЕНЫ РЕЕСТР ЛИЦЕНЗИЙ ОНАС'
+// 'ГЛАВНАЯ УЧЕБНЫЙ ЦЕНТР ДОКУМЕНТАЦИЯ БЛОГ ПАРТНЕРАМ ЦЕНЫ РЕЕСТР ЛИЦЕНЗИЙ ОНАС'
+
+ODA({ is: 'oda-site-footer', template: `
+    <style>
+        :host {
+            @apply --flex;
+            min-height: 400px;
+            @apply --header;
+        }    
+    </style>
+    <span ~for="menu">Menu {{item}}</span>
+    `,
+    props: {
+        menu: [
+            1, 2, 3, 4
+        ]
+    }
+});
+
+ODA({ is: 'oda-site-content', template: `
+    <style>
+        :host {
+            @apply --vertical;
+            @apply --flex;
+            overflow: auto;
+        }   
+        
+        span {
+            min-height: 100vh;
+        } 
+    </style>
+    <span ~for="pages">Page {{item}}</span>
+    `,
+    props: {
+        pages: [
+            1, 2, 3, 4
+        ]
+    }
+});
