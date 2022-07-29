@@ -68,10 +68,5 @@
         "name": "redundant-reactivity.md",
         "label": "Излишняя реактивность",
         "status": "check"
-    },
-    {
-        "name": "redundant-reactivity1.md",
-        "label": "Излишняя реактивность 1",
-        "status": "check"
     }
 ]
