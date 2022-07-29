@@ -1,5 +1,12 @@
 // 'ГЛАВНАЯ УЧЕБНЫЙ ЦЕНТР ДОКУМЕНТАЦИЯ БЛОГ ПАРТНЕРАМ ЦЕНЫ РЕЕСТР ЛИЦЕНЗИЙ ОНАС'
 
+import './site-template.js';
+ODA({ is: 'oda-site-test', extends: 'oda-site-template', template: `
+<oda-site-footer></oda-site-footer>
+`,
+});
+
+
 ODA({ is: 'oda-site-footer', template: `
     <style>
         :host {

@@ -18,8 +18,12 @@ ODA({is: 'oda-site-template', extends: 'oda-css', imports: '@oda/icon, ',
     </div>
 
     `,
+    props:{
+        css:'./default.css'
+    },
 
 })
 
 
 
+ODA({ is: 'oda-css', template: /*html*/ `<link rel="stylesheet" :href="css">` })
