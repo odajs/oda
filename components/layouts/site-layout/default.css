@@ -1,0 +1,18 @@
+body, oda-site-test {min-height: 100%;}
+#flogo {width: 20%;}
+
+oda-site-test {display: grid; align-content: space-between;}
+
+oda-site-footer {height: 350px; border-top:2px solid whitesmoke; box-shadow:  0 -2px 0 0 #007fc6;
+    background-image:url(svg/righ-top-ornament-min.svg), linear-gradient(to right, #042e6f, #007fc6)  ;
+    background-size: auto 100%; background-repeat: no-repeat; background-position: top right;  
+    display: grid; grid-template-columns:1fr 1fr; grid-column-gap: 10%;
+    grid-row-gap: 10%; justify-items: center; align-items: center;}
+
+#soc-menu {padding-top: 20% ;}
+#soc-menu a {border: 2px solid transparent; border-radius: 50%; margin: 0 10px; }
+#soc-menu a:hover {border-color: whitesmoke; transition: all 0.5s linear;}
+#soc-menu a img {border: 2px solid white;border-radius: 50%;}
+
+.fcontent {color: whitesmoke;}
+
