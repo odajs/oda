@@ -98,7 +98,7 @@ CLASS({is: 'PropertyGridDataRowOwner',
                 for (let name in descriptors) {
                     if (name.startsWith('#'))
                         continue;
-                    if (!this.dataSet.expert && !(name in props))
+                    if (!this.dataSet.expert && (!(name in props) || props[name]?.private))
                         continue;
                     const d = descriptors[name];
                     if (!d.enumerable)
