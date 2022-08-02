@@ -976,7 +976,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        const body = e.target;
+        const body = this.$refs.body;
         const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
         const scrollWidth = body.scrollWidth;
         const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
