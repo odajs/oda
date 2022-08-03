@@ -20,7 +20,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             padding: 4px;
         }
     </style>
-    <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
+    <input ~if="!hideInput" class="flex" type="text" @input="onInput" :value="text" :placeholder>
     <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(allowClear && value)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
     get params() {
@@ -49,8 +49,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         if (this._dd)
             this.closeDown();
         else if (this.allowClear && this.value) {
+            this.text = '';
             this.value = '';
-            this.input.value = '';
+            //if (this.input) this.input.value = '';
         }
         else
             this.dropDown();
@@ -62,6 +63,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         allowClear: false,
         allowTextResult: false,
         clearTextAfterOk: false,
+        hideInput: false,
         iconSize: 24,
         icon: 'icons:chevron-right:90',
         value: '',
