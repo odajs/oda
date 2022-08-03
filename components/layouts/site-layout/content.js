@@ -82,5 +82,8 @@ export let sectionsContent = [
      <div class="cell"><figure><img src="https://odant.org/img/certificate/kass.jpg"><figcaption> <div class="cert-header">Модуль управления кассовым аппаратом</div>
      <div>Свидетельство №2013618771</div></figcaption></figure></div></div>
     `
+    },
+    { inmenu: 'КАРТА',    
+    body: `<iframe src='https://yandex.ru/map-widget/v1/-/CCUIuURW8B' frameborder="0" width="100%" height="550"></iframe>`
     }
 ]

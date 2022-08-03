@@ -16,3 +16,7 @@ oda-site-footer {height: 350px; border-top:2px solid whitesmoke; box-shadow:  0 
 
 .fcontent {color: whitesmoke;}
 
+oda-site-header {padding: 2% 10% ; display: flex; grid-template-columns:1fr 1fr; 
+    border-bottom:2px solid #007fc6;
+}
+
