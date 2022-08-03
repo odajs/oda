@@ -56,6 +56,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this.dropDown();
     },
     props: {
+        fadein: false,
         template: 'oda-combo-list',
         placeholder: '',
         allowClear: false,
@@ -102,7 +103,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         this.dropDownControl ??= this.createDropDownControl();
         this.dropDownControl.filter = filter;
         if (!this._dd) {
-            this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true });
+            this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true, fadein: this.fadein });
             this._dd.then(res => {
                 this.value = this.result;
             }).catch(e => {
