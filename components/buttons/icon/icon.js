@@ -33,6 +33,7 @@ ODA({is: 'oda-icon',
             position: relative;
         }
         .subicon {
+            padding: {{iconSize/16}}px;
             position: absolute;
             top: {{iconSize/2-1}}px;
             left: {{iconSize/2}}px;
@@ -59,7 +60,7 @@ ODA({is: 'oda-icon',
             <g ~html="_icon?.body"></g>
         </svg>
     </div>
-    <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/2"></oda-icon>
+    <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/3"></oda-icon>
     `,
     get sub(){
         return this.$('.subicon');
