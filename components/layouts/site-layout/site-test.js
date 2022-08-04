@@ -7,17 +7,17 @@ ODA({
     <style>
         :host{width:100%; height: 100%; overflow: scroll;}
     </style>
-    <oda-site-header :css></oda-site-header>
+    <oda-site-header ></oda-site-header>
     <div ~for='sections' class='content'>
         <div ~if='item?.inmenu' class='menu' slot='mainmenu'><a :href='"#sec"+index'>{{item?.inmenu}}</a></div>
         <a ~if='item?.inmenu' :name='"#sec"+index'></a>
         <h2 ~if='item?.header' class='secname'>{{item?.header}}</h2>
         <div ~if='item?.body' class='secbody' ~html='item?.body'></div>
     </div>
-    <oda-site-footer :css></oda-site-footer>
+    <oda-site-footer ></oda-site-footer>
     `,
     props: {
-        css: './default.css',
+        // css: './default.css',
         sections: sectionsContent,
         // w:{ get() {return this.offsetWidth} }
     },
@@ -26,31 +26,10 @@ ODA({
         'scroll': '_scrol'
 
     },
-    // observers: ['_scrol(scrollTop)'],
-    // // attached() {
-    // //     this._resize();
-    // //     this.listen(window, 'resize', this._resize());
-    // // },
-    // // detached() {
-    // //     this.unlisten(window, 'resize', '_resize', true);
-    // // },
-    // // _resize() {
-    // //     console.log('s')
-    //     // console.log(window.offsetWidth, window.offsetHeight) 
-    // // },
     _resize() {
-        // console.log('s')
         console.log(this.offsetWidth, this.offsetHeight) 
     },
-    // listeners:{
-    //     resize(e) {
-    //         console.log('ss')
-    //         // this.width = this.offsetWidth;
-    //         // this.height = this.offsetHeight;
-    //         // this.top = this.getClientRect().top;
-    //         // this.left = this.getClientRect().left;
-    //     }
-    // }
+
     _scrol(){ console.log(this.scrollTop)}
 
 });
@@ -59,10 +38,14 @@ ODA({
 ODA({
     is: 'oda-site-header',/* extends: 'oda-css', */template: /*html*/ `
     <style>
+        :host {display:flex;padding:2% 10%;align-items: center; justify-content: space-between;}
         #flogo {width: 20%;}
+
+        .menu {padding:0 0 0 10px;}
     </style>
     <div id='flogo'><img src='svg/logo_platform-min.svg'/></div>
-    <slot name='mainmenu'></slot>
+
+    <slot name='mainmenu' class='mainmenu'></slot>
     `
 });
 

@@ -61,6 +61,7 @@ export let sectionsContent = [
     .grid {display:grid; grid-template-columns:1fr 1fr 1fr 1fr;}
     .cell {}
     .cell img {width:100%}
+    img {max-width:100% ;}
 </style>
 <div class="grid"><div class="cell"><img src="https://odant.org/img/certificate/tovarnyy-znak.jpg"> <div class="cert-header">Товарный знак</div>
     <div>Свидетельство № 491495</div></div><div class="cell"><img src="https://odant.org/img/certificate/webs-server-odant.jpg"> 
