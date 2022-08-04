@@ -17,6 +17,13 @@ oda-site-footer {height: 350px; border-top:2px solid whitesmoke; box-shadow:  0 
 .fcontent {color: whitesmoke;}
 
 oda-site-header {padding: 2% 10% ; display: flex; grid-template-columns:1fr 1fr; 
-    border-bottom:2px solid #007fc6;
+    border-bottom:2px solid #007fc6; display: block;
 }
 
+ .content {max-width: 100%; /*background:linear-gradient(#fff, #c8ebff); */
+    border-top:2px solid whitesmoke; box-shadow:  0 -2px 0 0 #007fc6;
+}
+.content img {max-width: 100%; height: auto 100%;}
+ .content .secname { background-image:url(svg/left-lower-ornament-min.svg); 
+    background-attachment: fixed;background-repeat: no-repeat; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000;
+    height: 30vh; color: #fff; font-size:10vh ; padding: 0; margin: 0; display: grid;align-content: center; justify-content: center; }

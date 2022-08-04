@@ -15,8 +15,34 @@ ODA({
     `,
     props: {
         css: './default.css',
-        sections: sectionsContent
+        sections: sectionsContent,
+        // w:{ get() {return this.offsetWidth} }
     },
+    // observers: ['_scrol(w)'],
+    // // attached() {
+    // //     this._resize();
+    // //     this.listen(window, 'resize', this._resize());
+    // // },
+    // // detached() {
+    // //     this.unlisten(window, 'resize', '_resize', true);
+    // // },
+    // // _resize() {
+    // //     console.log('s')
+    //     // console.log(window.offsetWidth, window.offsetHeight) 
+    // // },
+    // _scrol(w) {
+    //     console.log('s')
+    // }
+    // listeners:{
+    //     resize(e) {
+    //         console.log('ss')
+    //         // this.width = this.offsetWidth;
+    //         // this.height = this.offsetHeight;
+    //         // this.top = this.getClientRect().top;
+    //         // this.left = this.getClientRect().left;
+    //     }
+    // }
+
 });
 
 
@@ -42,3 +68,4 @@ ODA({
 
     }
 });
+
