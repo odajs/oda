@@ -3,7 +3,10 @@ import {sectionsContent} from './content.js';
 // Пока сделаю лендинг
 import './site-template.js';
 ODA({
-    is: 'oda-site-test', extends: 'oda-css', template: /*html*/ `
+    is: 'oda-site-test', /*extends: 'oda-css',*/ template: /*html*/ `
+    <style>
+        :host{width:100%; height: 100%; overflow: scroll;}
+    </style>
     <oda-site-header :css></oda-site-header>
     <div ~for='sections' class='content'>
         <div ~if='item?.inmenu' class='menu' slot='mainmenu'><a :href='"#sec"+index'>{{item?.inmenu}}</a></div>
@@ -18,7 +21,12 @@ ODA({
         sections: sectionsContent,
         // w:{ get() {return this.offsetWidth} }
     },
-    // observers: ['_scrol(w)'],
+    listeners: {
+        'resize': '_resize',
+        'scroll': '_scrol'
+
+    },
+    // observers: ['_scrol(scrollTop)'],
     // // attached() {
     // //     this._resize();
     // //     this.listen(window, 'resize', this._resize());
@@ -30,9 +38,10 @@ ODA({
     // //     console.log('s')
     //     // console.log(window.offsetWidth, window.offsetHeight) 
     // // },
-    // _scrol(w) {
-    //     console.log('s')
-    // }
+    _resize() {
+        // console.log('s')
+        console.log(this.offsetWidth, this.offsetHeight) 
+    },
     // listeners:{
     //     resize(e) {
     //         console.log('ss')
@@ -42,12 +51,13 @@ ODA({
     //         // this.left = this.getClientRect().left;
     //     }
     // }
+    _scrol(){ console.log(this.scrollTop)}
 
 });
 
 
 ODA({
-    is: 'oda-site-header', extends: 'oda-css', template: /*html*/ `
+    is: 'oda-site-header',/* extends: 'oda-css', */template: /*html*/ `
     <div id='flogo'><img src='svg/logo_platform-min.svg'/></div>
     <slot name='mainmenu'></slot>
     `
@@ -55,7 +65,7 @@ ODA({
 
 
 ODA({
-    is: 'oda-site-footer', extends: 'oda-css', template: /*html*/ `
+    is: 'oda-site-footer',/* extends: 'oda-css',*/ template: /*html*/ `
     <div class='fcontent' ~html='content'></div>
     <div id='soc-menu'>
         <a ~for='socLinck' :href='item?.linck' :title='item?.title'><img :src='item?.img' /></a>
