@@ -127,21 +127,21 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             e.preventDefault();
             this.dropDown(this.text);
             this.async(() => {
-                this.dropDownControl.$keys?.arrowDown?.(e);
+                this.dropDownControl?.$keys?.arrowDown?.(e);
                 this._setFocus();
             })
         },
         arrowUp(e) {
             e.stopPropagation();
             e.preventDefault();
-            this.dropDownControl.$keys?.arrowUp?.(e);
+            this.dropDownControl?.$keys?.arrowUp?.(e);
             this._setFocus();
         },
         enter(e) {
             e.stopPropagation();
             e.preventDefault();
             this.async(() => {
-                this.dropDownControl.$keys?.enter?.(e);
+                this.dropDownControl?.$keys?.enter?.(e);
             })
             if (this.value) return;
             if (!this.result) {
@@ -156,7 +156,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             if (!e.ctrlKey) return;
             this.dropDown(this.text);
             this.async(() => {
-                this.dropDownControl.$keys?.space?.(e);
+                this.dropDownControl?.$keys?.space?.(e);
             })
         },
     },
