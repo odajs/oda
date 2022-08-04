@@ -58,6 +58,9 @@ ODA({
 
 ODA({
     is: 'oda-site-header',/* extends: 'oda-css', */template: /*html*/ `
+    <style>
+        #flogo {width: 20%;}
+    </style>
     <div id='flogo'><img src='svg/logo_platform-min.svg'/></div>
     <slot name='mainmenu'></slot>
     `
