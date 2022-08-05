@@ -10,6 +10,8 @@ ODA({
         #header {width:100%; background:whitesmoke; border-bottom:2px solid #007fc6;}
         oda-site-header {padding:2% 10%;}
         .fix oda-site-header {padding:5px 10%;}
+        .content .secname {background-image:url(h.jpg);background-attachment: fixed;height: 30vh; color: #fff; font-size:10vh ; padding: 0; margin: 0;
+        display: grid;align-content: center; justify-content: center; text-shadow: 0 0 2px #000; text-align:center;}
     </style>
     <div id='header' :class='fixmenu'>
         <oda-site-header :fixmenu ></oda-site-header>
@@ -62,6 +64,18 @@ ODA({
 
 ODA({
     is: 'oda-site-footer',/* extends: 'oda-css',*/ template: /*html*/ `
+    <style>
+        :host {height: 350px; border-top:2px solid whitesmoke; box-shadow:  0 -2px 0 0 #007fc6;
+    background-image:url(svg/righ-top-ornament-min.svg), linear-gradient(to right, #042e6f, #007fc6)  ;
+    background-size: auto 100%; background-repeat: no-repeat; background-position: top right;  
+    display: grid; grid-template-columns:1fr 1fr; grid-column-gap: 10%;
+    grid-row-gap: 10%; align-items: center; padding: 0 10%; }
+        #soc-menu {padding-top: 20% ; text-align: right;}
+        #soc-menu a {border: 2px solid transparent; border-radius: 50%; margin-left: 10px; }
+        #soc-menu a:hover {border-color: whitesmoke; transition: all 0.5s linear;}
+        #soc-menu a img {border: 2px solid white;border-radius: 50%;}
+
+    </style>
     <div class='fcontent' ~html='content'></div>
     <div id='soc-menu'>
         <a ~for='socLinck' :href='item?.linck' :title='item?.title'><img :src='item?.img' /></a>
