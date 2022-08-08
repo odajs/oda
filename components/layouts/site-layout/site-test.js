@@ -12,12 +12,15 @@ ODA({
         .fix oda-site-header {padding:5px 10%;}
         .content .secname {background-image:url(h.jpg);background-attachment: fixed;height: 30vh; color: #fff; font-size:10vh ; padding: 0; margin: 0;
         display: grid;align-content: center; justify-content: center; text-shadow: 0 0 2px #000; text-align:center;}
+        .menu a {color:#000; text-decoration:none; border-bottom:2px solid #00a0dc; padding: 5px; transition: all 0.5s linear;}     
+        .menu a:hover {border-color:#052e70}
+        .sactive.menu a {background:#00a0dc; color:white;} 
     </style>
     <div id='header' :class='fixmenu'>
         <oda-site-header :fixmenu ></oda-site-header>
     </div>
-    <div ~for='sections' class='content' ~ref='"sec"+index'>
-        <div ~if='item?.inmenu' class='menu' slot='mainmenu'><a @tap='_go(index)' :href='"#sec"+index'>{{item?.inmenu}}</a></div>
+    <div ~for='sections' :class='"content "+sectionsActiv[index]' ~ref='"sec"+index'>
+        <div ~if='item?.inmenu' :class='"menu "+sectionsActiv[index]' slot='mainmenu'><a @tap='_go(index)' :href='"#sec"+index'>{{item?.inmenu}}</a></div>
         <h2 ~if='item?.header' class='secname'>{{item?.header}}</h2>
         <div ~if='item?.body' class='secbody' ~html='item?.body'></div>
     </div>
@@ -27,6 +30,7 @@ ODA({
         // css: './default.css',
         sections: sectionsContent,
         fixmenu: 'nofix',
+        sectionsActiv:[]
     },
     listeners: {
         'resize': '_resize',
@@ -37,11 +41,20 @@ ODA({
     },
 
     _scrol(){
-        this.fixmenu = (this.scrollTop > 10) ? 'fix' : 'nofix' 
+        this.fixmenu = (this.scrollTop > 10) ? 'fix' : 'nofix'
+        for (var i=0; i<this.sections.length;i++) {
+            let section = this.$refs['sec'+i][0], a = section.offsetTop, b = a + section.offsetHeight, x=this.scrollTop;
+            this.sectionsActiv[i] = ((x>a)&(x<b)) ? 'sactive' : ''
+            // console.log(((x>a)&(x<b)))
+        }
+        // this.$refs.forEach((e,i) => {
+        //     let a = e.offsetTop, b = a + e.offsetHeight, x=this.scrollTop
+        //     ((x>a)&(x<b))? this.sectionsActiv[i]            
+        // });
         // console.log(this.scrollTop)
     },
-    _go(i) {console.log(this.$refs['sec'+i][0])
-        this.scrollTop = this.$refs['sec'+i][0].offsetTop
+    _go(i) { //console.log(this.$refs)
+        this.scrollTop = this.$refs['sec'+i][0].offsetTop     
     }
 
 });
