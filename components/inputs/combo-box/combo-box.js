@@ -26,7 +26,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     get params() {
         return {
             "focused-item-changed": (e) => {
-                this.result = e.target.focusedItem?.label;
+                const item = e.target.focusedItem;
+                this.result = item?.label || item;
                 this._setFocus();
             },
             tap: (e) => {
@@ -34,7 +35,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                     if (!this.result) return;
                     this.dropDownControl?.fire('ok');
                 })
-            }
+            },
+            items: this.items
         }
     },
     get input() {
@@ -56,6 +58,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         else
             this.dropDown();
     },
+    items: [],
     props: {
         fadein: false,
         template: 'oda-combo-list',
