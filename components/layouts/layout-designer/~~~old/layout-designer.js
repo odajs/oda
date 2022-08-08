@@ -353,7 +353,7 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 <oda-icon ~if="hasChildren" style="cursor: pointer" :icon-size :icon="layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'" @pointerdown.stop @tap.stop="expand()"></oda-icon>
                 <div class="vertical flex" style="overflow: hidden;" :disabled="designMode && !isGroup"
                         ~style="{alignItems: (width && !layout?.type)?'center':''}">
-                    <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editTemplate)" :layout ::width></div>
+                    <div class="flex" ~is="layout?.$template || (layout?.isVirtual ? 'span' : editorTemplate)" :layout ::width></div>
                 </div>
             </div>
         </div>

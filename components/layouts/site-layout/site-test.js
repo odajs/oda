@@ -1,9 +1,9 @@
-
-import {sectionsContent} from './content.js';
+import '/web/oda/tools/router/router.js'
+import {sectionsContent} from './content.js'
 // Пока сделаю лендинг
 import './site-template.js';
 ODA({
-    is: 'oda-site-test', /*extends: 'oda-css',*/ template: /*html*/ `
+    is: 'oda-site-test', /*imports: '@tools/router',*/ template: /*html*/ `
     <style>
         :host{width:100%; height: 100%; overflow: scroll;scroll-behavior: smooth;}
         .fix {position:absolute; top:0%;}
@@ -23,18 +23,24 @@ ODA({
         <div id='progressbar'><div id='progress' :style='"width:"+ (progress) +"%"'> </div> </div>
     </div>
     <div ~for='sections' :class='"content "+sectionsActiv[index]' ~ref='"sec"+index'>
-        <div ~if='item?.inmenu' :class='"menu "+sectionsActiv[index]' slot='mainmenu'><a @tap='_go(index)' :href='"#sec"+index'>{{item?.inmenu}}</a></div>
+        <div ~if='item?.inmenu' :class='"menu "+sectionsActiv[index]' slot='mainmenu'><a :href='"#sec"+index'>{{item?.inmenu}}</a></div>
         <h2 ~if='item?.header' class='secname'>{{item?.header}}</h2>
         <div ~if='item?.body' class='secbody' ~html='item?.body'></div>
     </div>
     <oda-site-footer ></oda-site-footer>
     `,
+    attached() {
+        ODA.router.create(hash => this.hash = hash) 
+    },
     props: {
         // css: './default.css',
         sections: sectionsContent,
         fixmenu: 'nofix',
         sectionsActiv:[],
-        progress:0
+        progress:0,
+        hash:{ type: String,
+            set(v) { //console.log(v)
+                this.scrollTop = this.$refs[v.slice(1)][0].offsetTop}}
     },
     listeners: {
         'resize': '_resize',
@@ -52,9 +58,9 @@ ODA({
         this.progress = this.scrollTop/(this.scrollHeight-this.offsetHeight)*100
 
     },
-    _go(i) { //console.log(this.$refs)
-        this.scrollTop = this.$refs['sec'+i][0].offsetTop     
-    }
+    // _go(i) { //console.log(this.$refs)
+    //     this.scrollTop = this.$refs['sec'+i][0].offsetTop     
+    // }
 
 });
 
