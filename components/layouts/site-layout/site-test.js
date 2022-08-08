@@ -7,17 +7,20 @@ ODA({
     <style>
         :host{width:100%; height: 100%; overflow: scroll;scroll-behavior: smooth;}
         .fix {position:absolute; top:0%;}
-        #header {width:100%; background:whitesmoke; border-bottom:2px solid #007fc6;}
+        #header {width:100%; background:whitesmoke; }
         oda-site-header {padding:2% 10%;}
         .fix oda-site-header {padding:5px 10%;}
         .content .secname {background-image:url(h.jpg);background-attachment: fixed;height: 30vh; color: #fff; font-size:10vh ; padding: 0; margin: 0;
         display: grid;align-content: center; justify-content: center; text-shadow: 0 0 2px #000; text-align:center;}
         .menu a {color:#000; text-decoration:none; border-bottom:2px solid #00a0dc; padding: 5px; transition: all 0.5s linear;}     
-        .menu a:hover {border-color:#052e70}
+        .menu a:hover, .sactive.menu a {border-color:#052e70}
         .sactive.menu a {background:#00a0dc; color:white;} 
+        #progress {height:2px ; background:#052e70}
+        #progressbar {background:#00a0dc; border-bottom:1px solid #fff}
     </style>
     <div id='header' :class='fixmenu'>
         <oda-site-header :fixmenu ></oda-site-header>
+        <div id='progressbar'><div id='progress' :style='"width:"+ (progress) +"%"'> </div> </div>
     </div>
     <div ~for='sections' :class='"content "+sectionsActiv[index]' ~ref='"sec"+index'>
         <div ~if='item?.inmenu' :class='"menu "+sectionsActiv[index]' slot='mainmenu'><a @tap='_go(index)' :href='"#sec"+index'>{{item?.inmenu}}</a></div>
@@ -30,7 +33,8 @@ ODA({
         // css: './default.css',
         sections: sectionsContent,
         fixmenu: 'nofix',
-        sectionsActiv:[]
+        sectionsActiv:[],
+        progress:0
     },
     listeners: {
         'resize': '_resize',
@@ -44,14 +48,9 @@ ODA({
         this.fixmenu = (this.scrollTop > 10) ? 'fix' : 'nofix'
         for (var i=0; i<this.sections.length;i++) {
             let section = this.$refs['sec'+i][0], a = section.offsetTop, b = a + section.offsetHeight, x=this.scrollTop;
-            this.sectionsActiv[i] = ((x>a)&(x<b)) ? 'sactive' : ''
-            // console.log(((x>a)&(x<b)))
-        }
-        // this.$refs.forEach((e,i) => {
-        //     let a = e.offsetTop, b = a + e.offsetHeight, x=this.scrollTop
-        //     ((x>a)&(x<b))? this.sectionsActiv[i]            
-        // });
-        // console.log(this.scrollTop)
+            this.sectionsActiv[i] = ((x>a-10)&(x<b)) ? 'sactive' : ''     }
+        this.progress = this.scrollTop/(this.scrollHeight-this.offsetHeight)*100
+
     },
     _go(i) { //console.log(this.$refs)
         this.scrollTop = this.$refs['sec'+i][0].offsetTop     
