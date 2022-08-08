@@ -65,13 +65,15 @@ ODA({ is: 'oda-layout-designer-container',
                 font-weight: bold;
                 opacity: .5;
             }
-            
+            .editor{
+                min-height: {{iconSize*1.5}}px;
+            }
         </style>
         <div class="horizontal flex" style="align-items: end;" ~style="{minHeight: iconSize * 1.5}">
             <oda-icon style="cursor: pointer" :icon-size :icon="(layout?.items?.length)?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
                 <label ~html="layout?.title" ~style="{padding: label.align === 'left'?'4px':'4px 4px 0px 0px'}"></label>
-                <div ~is="layout?.editorTemplate || editorTemplate" class="flex">VALUE</div>
+                <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor"></div>
             </div>
         </div>
         <div ~if="layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout ~style="{marginLeft: iconSize/2}" style="border-left: 1px dashed; border-bottom: 1px dashed; padding-bottom: 4px; opacity: .9"></div>
