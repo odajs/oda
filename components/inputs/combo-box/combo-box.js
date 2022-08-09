@@ -73,10 +73,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             default: false,
             reflectToAttribute: true
         },
-        items: {
-            type: Array,
-            default: null
-        }
+        items: Array
     },
     useParentWidth: true,
     createDropDownControl() {
