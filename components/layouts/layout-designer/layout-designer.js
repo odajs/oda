@@ -44,7 +44,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 justify-content: space-around;
             }
         </style>
-        <oda-layout-designer-container ~for="layout?.items" :layout="item"></oda-layout-designer-container>
+        <oda-layout-designer-container ~for="lay in layout?.items" :layout="lay"></oda-layout-designer-container>
     `,
     layout: {}
 })
