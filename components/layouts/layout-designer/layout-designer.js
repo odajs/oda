@@ -4,7 +4,7 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
             :host {
                 overflow-x: hidden;
                 overflow-y: auto;
-                @apply --vertical;
+                /*@apply --vertical;*/
             }
         </style>
         <oda-layout-designer-structure class="flex content" :layout style="padding: 16px;"></oda-layout-designer-structure>
