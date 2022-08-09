@@ -52,6 +52,7 @@ ODA({ is: 'oda-layout-designer-container',
     template: /*html*/`
         <style>
             :host {
+                padding-top: 8px;
                 max-width: 100%;
                 min-width: {{layout?.items?.length?'100%':'auto'}};
                 position: relative;
@@ -69,11 +70,16 @@ ODA({ is: 'oda-layout-designer-container',
             .editor{
                 min-height: {{iconSize * 1.3}}px;
             }
+            oda-icon{
+                cursor: pointer; 
+                opacity: .5;
+                align-self: center;
+            }
         </style>
         <div class="horizontal flex" style="align-items: end;">
-            <oda-icon style="cursor: pointer; opacity: .5" :icon-size :icon="(layout?.items?.length)?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap.stop="expand"></oda-icon>
+            <oda-icon  :icon-size :icon="(layout?.items?.length)?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
-                <label ~html="layout?.title" ~style="{padding: label.align === 'left'?'4px':'4px 4px 0px 0px'}"></label>
+                <label ~html="layout?.title" style="padding-right: 4px;"></label>
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
         </div>

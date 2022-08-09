@@ -66,7 +66,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             border-right: none !important;
         }
         .foot {
-            border-top: 2px  solid var(--dark-background);
             box-sizing: border-box;
             @apply --header;
         }
@@ -212,7 +211,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; clearSelection()"></div>
     </div>
     <div ref="footer" :scroll-left="_scrollLeft" class="no-flex horizontal header" ~show="showFooter" style="overflow-y: scroll;">
-        <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot cell"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
+        <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
     </div>
     `,
     get _bodyHeight() {

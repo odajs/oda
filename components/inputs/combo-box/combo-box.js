@@ -35,8 +35,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                     if (!this.result) return;
                     this.dropDownControl?.fire('ok');
                 })
-            },
-            items: this.items
+            }
         }
     },
     get input() {
@@ -58,7 +57,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         else
             this.dropDown();
     },
-    items: [],
     props: {
         fadein: false,
         template: 'oda-combo-list',
@@ -74,6 +72,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             label: 'Скрыть кнопку',
             default: false,
             reflectToAttribute: true
+        },
+        items: {
+            type: Array,
+            default: null
         }
     },
     useParentWidth: true,
@@ -108,6 +110,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         this.dropDownControl ??= this.createDropDownControl();
         this.dropDownControl.filter = filter;
         if (!this._dd) {
+            if (this.items?.length) this.params.items = this.items;
             this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true, fadein: this.fadein });
             this._dd.then(res => {
                 this.value = this.result;
