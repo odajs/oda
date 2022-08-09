@@ -54,7 +54,7 @@ ODA({ is: 'oda-layout-designer-container',
             :host {
                 padding-top: 8px;
                 max-width: 100%;
-                min-width: {{layout?.items?.length?'100%':'auto'}};
+                min-width: {{layout?.items?.length?'100%':(layout?.width?layout?.width:320+'px')}};
                 position: relative;
                 box-sizing: border-box;
                 @apply --vertical;
@@ -73,7 +73,7 @@ ODA({ is: 'oda-layout-designer-container',
             oda-icon{
                 cursor: pointer; 
                 opacity: .5;
-                align-self: center;
+                padding-bottom: 4px;
             }
         </style>
         <div class="horizontal flex" style="align-items: end;">
