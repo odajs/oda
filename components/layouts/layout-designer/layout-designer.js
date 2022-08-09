@@ -41,7 +41,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 @apply --horizontal;
                 @apply --no-flex;
                 flex-wrap: wrap;
-                justify-content: space-around;
+                /*justify-content: space-around;*/
             }
         </style>
         <oda-layout-designer-container ~for="lay in layout?.items" :layout="lay"></oda-layout-designer-container>
