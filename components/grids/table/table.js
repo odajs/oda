@@ -991,6 +991,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
         const item = d?.value || e.target.item;
+        if (!item) return;
         if (item.disabled) {
             item.$expanded = !item.$expanded;
         } else if (item.$hasChildren && !item.$expanded) {

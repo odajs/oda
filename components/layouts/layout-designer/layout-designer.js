@@ -126,5 +126,6 @@ const Layout = CLASS({
     get name() {
         return this.data?.name;
     },
-    $expanded: false
+    $expanded: false,
+    width: undefined
 })
