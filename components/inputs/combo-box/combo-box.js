@@ -83,10 +83,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     set dropDownControl(n) {
         n?.setAttribute('tabIndex', 1);
-        n?.addEventListener('resize', e=>{
-            if (e.target.offsetHeight) return
-            this.closeDown();
-        })
+        // n?.addEventListener('resize', e=>{
+        //     if (e.target.offsetHeight) return
+        //     this.closeDown();
+        // })
     },
     get text() {
         switch (typeof this.value) {
@@ -152,8 +152,18 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         enter(e) {
             e.stopPropagation();
             e.preventDefault();
-            if (this._dd)
-                this.dropDownControl?.fire?.('ok');
+            if (this._dd){
+                this.dropDownControl?.$keys?.enter?.(e);
+                if (!this.result) {
+                    if (!this.strict) {
+                        this.result = this.text;
+                        this.dropDownControl?.fire?.('ok');
+                    }
+                }
+                else{
+                    this.dropDownControl?.fire?.('ok');
+                }
+            }
             else if (!this.strict){
                 this.value = this.text?.trim();
 
