@@ -456,19 +456,40 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 })
             }
             return items.reduce((res, i) => {
-                if (parent) {
-                    Object.defineProperty(i, '$parent', {
+
+                Object.defineProperties(i, {
+                    $parent: {
                         enumerable: false,
                         configurable: true,
                         writable: true,
-                        value: parent
-                    })
-                    // i.$parent = parent;
+                        value: i.$parent
+                    },
+                    $level: {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: i.$level
+                    },
+                    $expanded: {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: i.$expanded
+                    },
+                    $hasChildren: {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: i.$hasChildren
+                    },
+                })
+
+                if (parent) {
+                    i.$parent = parent;
                 }
                 else if (i.$parent) {
                     delete i.$parent;
                 }
-
                 i.$level = level;
                 if (!this.hideTop || level > -1) res.push(i);
 
