@@ -779,11 +779,14 @@ if (!window.ODA) {
             if (!func) throw new Error(`function "${fName}" for string observer not found!!`)
             const obsName = `$obs$${fName}`;
             function funcObserver() {
-                const params = vars.map(v => {
+                let params = vars.map(v => {
                     return v.func.call(this);
                 });
                 if (!params.includes(undefined)) {
                     this.async(() => {
+                        params = vars.map(v => {
+                            return v.func.call(this);
+                        });
                         func.call(this, ...params)
                     });
                 }

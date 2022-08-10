@@ -186,10 +186,10 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         return ctrl;
     },
     setSize(e) {
-        if (!this.control) return;
         this['#_style'] = undefined;
         this.async(() => {
-            this.contentRect = this.control.getBoundingClientRect();
-        }, 20)
+            if (!this.control) return;
+            this.contentRect = this.control?.getBoundingClientRect();
+        })
     }
 })

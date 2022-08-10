@@ -20,9 +20,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             padding: 4px;
         }
     </style>
-    <input ~if="!hideInput" class="flex" type="text" @input="onInput" :value="text" :placeholder>
-    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(allowClear && value)?'icons:close':icon" @tap="_tap"></oda-button>
+    <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
+    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(strict && value)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
+    get input(){
+        return this.$('input');
+    },
     get params() {
         return {
             "focused-item-changed": (e) => {
@@ -47,50 +50,50 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         })
     },
     _tap(e) {
-        if (this._dd)
+        if (this.strict && this.value)
+            this.value = undefined;
+        else if (this._dd)
             this.closeDown();
-        else if (this.allowClear && this.value) {
-            this.text = '';
-            this.value = '';
-            //if (this.input) this.input.value = '';
-        }
         else
             this.dropDown();
     },
+    set value(n){
+        this.text = undefined;
+        this.async(()=>{
+            this.input.select(0, 1000);
+        })
+    },
     props: {
+        strict: false,
         fadein: false,
         template: 'oda-combo-list',
         placeholder: '',
-        allowClear: false,
-        allowTextResult: false,
-        clearTextAfterOk: false,
-        hideInput: false,
         iconSize: 24,
         icon: 'icons:chevron-right:90',
-        value: '',
         hideButton: {
             label: 'Скрыть кнопку',
             default: false,
             reflectToAttribute: true
         },
-        items: Array
+        // items: Array
     },
     useParentWidth: true,
     createDropDownControl() {
-        const element = this.createElement(this.template, this.props);
-        element.setAttribute('tabIndex', 1);
-        return element;
+        return this.createElement(this.template, this.props);
     },
     set dropDownControl(n) {
         n?.setAttribute('tabIndex', 1);
+        n?.addEventListener('resize', e=>{
+            if (e.target.offsetHeight) return
+            this.closeDown();
+        })
     },
     get text() {
         switch (typeof this.value) {
             case 'string':
                 return this.value;
-            case 'object': {
+            case 'object':
                 return (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
-            }
         }
         return this.value?.toString() || '';
     },
@@ -107,22 +110,28 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         this.dropDownControl ??= this.createDropDownControl();
         this.dropDownControl.filter = filter;
         if (!this._dd) {
-            if (this.items?.length) this.params.items = this.items;
+            // if (this.items?.length)
+            //     this.params.items = this.items;
             this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true, fadein: this.fadein });
             this._dd.then(res => {
-                this.value = this.result;
+                this.value = this.result || (this.strict?this.value:this.text?.trim());
             }).catch(e => {
 
             }).finally(() => {
                 this.result = null;
                 this._dd = null;
-                if (this.clearTextAfterOk) this.text = '';
+                // if (this.strict)
+                //     this.text = undefined;
                 this._setFocus();
             })
         }
+        // if (!this.dropDownControl.offsetHeight)
+        //     this.closeDown();
     },
     closeDown() {
-        this.dropDownControl?.fire?.('cancel')
+        this.async(()=>{
+            this.dropDownControl?.fire?.('cancel')
+        })
     },
     keyBindings: {
         arrowDown(e) {
@@ -143,17 +152,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         enter(e) {
             e.stopPropagation();
             e.preventDefault();
-            this.async(() => {
-                this.dropDownControl?.$keys?.enter?.(e);
-            })
-            if (this.value) return;
-            if (!this.result) {
-                if (this.allowTextResult)
-                    this.result = this.text
-                return;
+            if (this._dd)
+                this.dropDownControl?.fire?.('ok');
+            else if (!this.strict){
+                this.value = this.text?.trim();
+
             }
-            this.value = this.result || this.text;
-            this.dropDownControl?.fire?.('ok');
         },
         space(e) {
             e.stopPropagation();

@@ -60,7 +60,7 @@ ODA({ is: 'oda-layout-designer-container',
                 @apply --vertical;
                 overflow: hidden;
                 @apply --flex;
-                flex: {{layout?.width ? '0 0 auto':'1000000000000000000000000000000 1 auto'}};  
+                flex: {{layout?.width ? '0 0 auto':'1000000000000000000000000000000 1 auto'}};
             }
             label{
                 font-size: small;
@@ -71,21 +71,25 @@ ODA({ is: 'oda-layout-designer-container',
                 min-height: {{iconSize * 1.3}}px;
             }
             oda-icon{
-                cursor: pointer; 
+                cursor: pointer;
                 opacity: .5;
                 padding-bottom: 4px;
             }
         </style>
         <div class="horizontal flex" style="align-items: end;">
-            <oda-icon  :icon-size :icon="(layout?.items?.length)?(layout?.$expanded?'icons:chevron-right:90':'icons:chevron-right'):''" @tap.stop="expand"></oda-icon>
+            <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
                 <label ~html="layout?.title" style="padding-right: 4px;"></label>
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
         </div>
-        <div ~if="layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9"></div>   
+        <div ~if="layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9"></div>
     `,
+    get expandIcon(){
+        return (this.layout?.items?.length) ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
+    },
     expand() {
+        if (!this.expandIcon) return;
         this.layout.$expanded = !this.layout.$expanded;
     },
     props: {
