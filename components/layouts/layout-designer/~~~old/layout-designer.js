@@ -282,8 +282,8 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 position: relative;
                 min-height: {{iconSize + 4}}px;
                 border: {{designMode ? '1px dashed lightblue' : '1px solid transparent'}};
-                min-width: {{layout?.minWidth ? layout?.minWidth : isChildren ? '100%' : '32px'}};
-                max-width: {{layout.maxWidth ? layout.maxWidth : isChildren ? '100%' : 'unset'}};
+                /*min-width: {{layout?.minWidth ? (layout?.minWidth+'px' : isChildren ? '100%' : '32px')}};*/
+                /*max-width: {{layout.maxWidth ? layout.maxWidth : isChildren ? '100%' : 'unset'}};*/
                 width: {{layout.width ? layout.width : 'unset'}};
             }
             :host([is-group]) {
