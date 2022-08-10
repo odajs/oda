@@ -88,6 +88,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         //     this.closeDown();
         // })
     },
+    result: null,
     get text() {
         switch (typeof this.value) {
             case 'string':
@@ -156,8 +157,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                 this.dropDownControl?.$keys?.enter?.(e);
                 if (!this.result) {
                     if (!this.strict) {
-                        this.result = this.text;
-                        this.dropDownControl?.fire?.('ok');
+                        this.value = this.text;
+                        this.closeDown();
+                        // this.dropDownControl?.fire?.('ok');
                     }
                 }
                 else{
