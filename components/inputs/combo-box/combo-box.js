@@ -148,7 +148,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             })
             if (this.value) return;
             if (!this.result) {
-                if (this.allowTextResult) this.result = this.text
+                if (this.allowTextResult)
+                    this.result = this.text
                 return;
             }
             this.value = this.result || this.text;
