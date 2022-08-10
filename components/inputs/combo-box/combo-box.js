@@ -21,11 +21,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         }
     </style>
     <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
-    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(strict && value)?'icons:close':icon" @tap="_tap"></oda-button>
+    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap="_tap"></oda-button>
     `,
-    get input(){
-        return this.$('input');
-    },
     get params() {
         return {
             "focused-item-changed": (e) => {
@@ -44,13 +41,15 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     get input() {
         return this.$('input');
     },
-    _setFocus() {
+    _setFocus(select) {
         this.async(() => {
             this.input.focus();
+            if (select)
+                this.input.select(0, 1000);
         })
     },
     _tap(e) {
-        if (this.strict && this.value)
+        if (this.allowClear && this.value)
             this.value = undefined;
         else if (this._dd)
             this.closeDown();
@@ -64,7 +63,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         })
     },
     props: {
-        strict: false,
+        allowClear: false,
         fadein: false,
         template: 'oda-combo-list',
         placeholder: '',
@@ -115,14 +114,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             //     this.params.items = this.items;
             this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true, fadein: this.fadein });
             this._dd.then(res => {
-                this.value = this.result || (this.strict?this.value:this.text?.trim());
+                this.value = this.result;
             }).catch(e => {
 
             }).finally(() => {
                 this.result = null;
                 this._dd = null;
-                // if (this.strict)
-                //     this.text = undefined;
                 this._setFocus();
             })
         }
@@ -136,7 +133,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     keyBindings: {
         escape(e){
-            if (this.strict){
+            if (!this._dd){
                 this.text = undefined;
             }
         },
@@ -160,26 +157,14 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             e.preventDefault();
             if (this._dd){
                 this.dropDownControl?.$keys?.enter?.(e);
-                if (!this.result) {
-                    if (!this.strict) {
-                        this.value = this.text;
-                        this.closeDown();
-                        // this.dropDownControl?.fire?.('ok');
-                    }
-                    else{
-                        this.onEnter();
-                    }
-                }
-                else{
+                if (this.result)
                     this.dropDownControl?.fire?.('ok');
-                }
             }
-            else if (!this.strict){
+            else{
                 this.value = this.text?.trim();
-
-            }else{
                 this.onEnter();
             }
+
         },
         space(e) {
             e.stopPropagation();
