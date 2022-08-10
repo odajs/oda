@@ -86,8 +86,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         let winHeight = window.innerHeight;
         let top = this.align === 'modal' ? winHeight / 2 - height / 2 : rect.top;
         let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
-        if (!height || !width)
-            return { top: top + 'px', left: left + 'px' };
+        // if (!height || !width)
+        //     return { top: top + 'px', left: left + 'px' };
         height = height + (this.title ? 34 : 0)
         let maxHeight = winHeight;
         let maxWidth = winWidth;
