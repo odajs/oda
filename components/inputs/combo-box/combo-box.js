@@ -135,6 +135,11 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         })
     },
     keyBindings: {
+        escape(e){
+            if (this.strict){
+                this.text = undefined;
+            }
+        },
         arrowDown(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -161,6 +166,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                         this.closeDown();
                         // this.dropDownControl?.fire?.('ok');
                     }
+                    else{
+                        this.onEnter();
+                    }
                 }
                 else{
                     this.dropDownControl?.fire?.('ok');
@@ -169,6 +177,8 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             else if (!this.strict){
                 this.value = this.text?.trim();
 
+            }else{
+                this.onEnter();
             }
         },
         space(e) {
@@ -180,7 +190,11 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             })
         },
     },
+    onEnter(){
+
+    }
 })
+
 ODA({is: 'oda-combo-list',
     template: /*html*/`
     <style>
