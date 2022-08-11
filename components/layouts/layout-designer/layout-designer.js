@@ -67,16 +67,17 @@ ODA({ is: 'oda-layout-designer-container',
                 font-weight: bold;
                 opacity: .5;
             }
-            .editor{
-                min-height: {{iconSize * 1.3}}px;
-            }
+            /*.editor{*/
+            /*    min-height: {{iconSize * 1.3}}px;*/
+            /*}*/
             oda-icon{
                 cursor: pointer;
                 opacity: .5;
-                padding-bottom: 4px;
+                padding-top: 8px;
+                align-self: center;
             }
         </style>
-        <div class="horizontal flex" style="align-items: end;">
+        <div class="horizontal flex" style="align-items: center;">
             <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
                 <label ~html="layout?.title" style="padding-right: 4px;"></label>
