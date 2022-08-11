@@ -38,7 +38,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             text-overflow: ellipsis;
             white-space: nowrap;
             box-sizing: border-box;
-            align-items: center;
+            /*align-items: center;*/
         }
         :host([auto-width]) .cell {
             @apply --flex;
