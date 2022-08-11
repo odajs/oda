@@ -446,7 +446,7 @@ for (const key in ODA.cssRules) {
     const rule = ODA.cssRules[key];
     if (rule.includes(';')) {
         style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-        // style2.textContent += `[${key.replace(/^--/, '')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
+        style2.textContent += `[${key.replace(/^--/, '')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
     }
 }
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
