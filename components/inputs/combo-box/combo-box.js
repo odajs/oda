@@ -50,8 +50,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     _tap(e) {
         if (this.allowClear && this.value){
-            this.text = ''
-            this.value = undefined;
+            this.text = '';
+            // this.async(()=>{
+                this.value = '';
+            // }, 100)
         }
         else if (this._dd)
             this.closeDown();
