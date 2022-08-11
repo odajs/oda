@@ -149,7 +149,6 @@ style.textContent = /*css*/`
         text-overflow: ellipsis;
         font-family: var(--font-family);
         overflow: hidden;
-        padding: 0px 4px;
     };
 
     --cover:{
