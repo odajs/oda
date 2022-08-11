@@ -54,7 +54,7 @@ ODA({ is: 'oda-layout-designer-container',
             :host {
                 padding-top: 8px;
                 max-width: 100%;
-                min-width: {{layout?.items?.length?'100%':(layout?.width?layout?.width:320+'px')}};
+                min-width: {{layout?.items?.length?'100%':(layout?.width?layout?.width:'')}};
                 position: relative;
                 box-sizing: border-box;
                 @apply --vertical;
