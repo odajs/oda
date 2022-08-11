@@ -235,9 +235,6 @@ cells:{
             .editor{
                 border: none !important;
             }
-            [disabled]{
-                @apply --disabled;
-            }
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value">{{item?.value}}</span>
         <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>

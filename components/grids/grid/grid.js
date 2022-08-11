@@ -207,18 +207,6 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
 ODA({is: 'oda-grid-part',
     template: `
         <style>
-            ::-webkit-scrollbar {
-                width: {{!nextElementSibling?6:0}}px;
-                height: 0px;
-            }
-            ::-webkit-scrollbar-thumb {
-                background: var(--header-background);
-                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-            }
-            ::-webkit-scrollbar-thumb:hover {
-                @apply --dark;
-                width: 16px;
-            }
             :host{
                 @apply --header;
                 @apply --vertical;
@@ -291,9 +279,6 @@ ODA({is: 'oda-grid-body',
                 text-overflow: ellipsis;
                 border-right: {{colLines?'1px solid var(--border-color)':'none'}};
             }
-            [focused]{
-                @apply --focused;
-            }
         </style>
         <style>
         {{cellsClasses}}
@@ -350,9 +335,6 @@ ODA({is:'oda-grid-settings', imports: '@tools/property-grid, @oda/tree, @oda/spl
             }
             oda-icon{
                 transform: scale(.7);
-            }
-            div>div[focused]{
-                background-color: var(--content-background) !important;
             }
         </style>
 <!--        <oda-splitter align="vertical"></oda-splitter>-->

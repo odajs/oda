@@ -6,7 +6,6 @@ style.textContent = /*css*/`
     width: 8px;
     height: 8px;
 }
-
 ::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 
@@ -14,9 +13,13 @@ style.textContent = /*css*/`
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
     background: var(--body-background);
-
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
 }
+::-webkit-scrollbar-thumb:hover {
+    @apply --dark;
+    width: 16px;
+}
+
 :root{
     --font-family: Roboto, Noto, sans-serif;
     --bar-background: white;
@@ -441,7 +444,7 @@ document.head.appendChild(style);
 
 const style2 = document.createElement('style');
 style2.setAttribute('scope', 'oda-styles');
-style2.textContent = '';
+style2.textContent = '::-webkit-scrollbar {\n    width: 8px;\n    height: 8px;\n}\n::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);\n\n}\n::-webkit-scrollbar-thumb {\n    border-radius: 10px;\n    background: var(--body-background);\n   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);\n}\n::-webkit-scrollbar-thumb:hover {\n    @apply --dark;\n    width: 16px;\n}';
 for (const key in ODA.cssRules) {
     const rule = ODA.cssRules[key];
     if (rule.includes(';')) {

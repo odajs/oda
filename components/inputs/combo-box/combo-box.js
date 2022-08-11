@@ -192,9 +192,6 @@ ODA({is: 'oda-combo-list',
             overflow-y: auto;
             overflow-x: hidden;
         }
-        [focused] {
-            @apply --focused;
-        }
         label:hover {
             @apply --selected;
         }

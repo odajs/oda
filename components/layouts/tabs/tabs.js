@@ -12,9 +12,6 @@ ODA({is: 'oda-tabs',
                 align-items: center;
                 padding: 2px 4px;
             }
-            .tab[focused]{
-                @apply --content;
-            }
         </style>
         <div class="no-flex horizontal">
             <div ~for="items" :focused="item === focusedItem" @tap="focusedItem = item" class="tab">

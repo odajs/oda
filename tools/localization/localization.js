@@ -148,10 +148,6 @@ ODA({
             #battons-row {display: flex;}
             .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
             .label {line-height:34px;}
-            ::-webkit-scrollbar {width: 6px; height: 6px;}
-            ::-webkit-scrollbar-track {-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);}
-            ::-webkit-scrollbar-thumb {border-radius: 3px; background: var(--header-background); -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);}
-            ::-webkit-scrollbar-thumb:hover {@apply --dark; width: 16px;}
         </style>
         <div ~if="!newVID" id='battons-row'>
             <div ~if="!newVID" class='selelem'>

@@ -38,9 +38,6 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             @apply --content;
             opacity: 0.999;
         }
-        :host([disabled]) { /* todo: должно работать от глобального стиля */
-            @apply --disabled;
-        }
         .icon {
             display: {{icon?'block':'none'}};
         }

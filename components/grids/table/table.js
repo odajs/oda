@@ -1,22 +1,6 @@
 ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     template: /*html*/`
     <style>
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-        }
-        ::-webkit-scrollbar-thumb {
-            border-radius: 3px;
-            background: var(--header-background);
-            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            @apply --dark;
-            width: 16px;
-        }
         :host {
             @apply --flex;
             @apply --vertical;
@@ -1523,9 +1507,6 @@ cells: {
             }
             .expander {
                 cursor: pointer;
-            }
-            [disabled]{
-                fill: var(--header-background);
             }
         </style>`,
         props: {

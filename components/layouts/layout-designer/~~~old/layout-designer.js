@@ -163,9 +163,6 @@ ODA({ is: 'oda-layout-designer-tabs', imports: '@oda/button',
                 @apply --flex;
                 margin: 4px 0px;
             }
-            [focused] {
-                @apply --content;
-            }
             .tab {
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -297,10 +294,6 @@ ODA({ is: 'oda-layout-designer-container', imports: '@oda/icon, @oda/menu, @tool
                 border-left: 1px dashed var(--border-color, silver);
                 margin-left: {{iconSize / 2}}px;
                 padding-left: {{iconSize / 2 - 1}}px;
-            }
-            [disabled] {
-                pointer-events: none;
-                opacity: .5;
             }
             .drag-to-left:after {
                 box-shadow: inset 4px 0 0 0 var(--success-color);

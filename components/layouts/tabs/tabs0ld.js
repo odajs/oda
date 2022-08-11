@@ -19,10 +19,6 @@ ODA({ is: 'oda-tabs', template: /*html*/`
         .tabs:hover {
             cursor: pointer;
         }
-        oda-tabs-tab[focused] {
-            background-color: var(--content-background);
-
-        }
         .list {
             @apply --vertical;
             display: none;

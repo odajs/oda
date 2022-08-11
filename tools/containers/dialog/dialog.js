@@ -58,12 +58,6 @@ ODA({is: 'oda-dialog-footer',
         :host>div{
             flex-wrap: wrap;
         }
-        [focused]{
-            @apply --focused;
-        }
-        [disabled]{
-            @apply --disabled;
-        }
     </style>
     <div class="flex horizontal" style="justify-content: space-around">
         <slot class="flex"></slot>
