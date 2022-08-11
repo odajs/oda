@@ -9,6 +9,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             height: 100%;
             touch-action: manipulation;
             white-space: nowrap;
+            --button-size: {{iconSize + 8}}px;
         }
         :host(:not([modal])) {
             position: relative;
@@ -72,6 +73,12 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             margin: 0 0 0 50%;
             transform: translate3d(-50%, 0, 0);
         }
+        :host(:not([autosize]):not([is-minimized])[modal][size=max]){
+            padding: 8px;
+            padding-top: var(--button-size);
+            background-color: rgba(0,0,0,.5);
+            padding-bottom: var(--button-size);
+        }
     </style>
     <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
@@ -129,6 +136,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             list: ['normal', 'max'],
             default: 'normal',
             save: true,
+            reflectToAttribute: true
         },
         pos: {
             default: {
@@ -337,6 +345,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         if (!place) {
             place = document.createElement('div');
             place.style.setProperty('position', 'relative');
+            place.style.setProperty('z-index', '100000');
             place.classList.add('minimized-form-place');
             place.classList.add('horizontal');
             document.body.appendChild(place);
