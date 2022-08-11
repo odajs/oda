@@ -187,11 +187,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </div>
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px'}">
-            <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick"
-            @tap="_tapRows"
-            @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
+            <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows"
-                    :disabled="row.disabled"
                     ~style="_getRowStyle(row)" :row="row" :role="row.$role"
                     ~class="['row', row.$group?'group-row':'']"
                     :drop-mode="row.$dropMode"
