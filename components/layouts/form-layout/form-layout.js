@@ -30,9 +30,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             @apply --flex;
         }
         :host .title-bar {
-            @apply --heading;
             align-items: center;
-            background-color: {{isTopModal ? 'var(--focused-color) !important' : ''}};
+            background-color: {{isTopModal ? '#feff05 !important' : 'var(--content-background)'}};
         }
         :host([modal]) .title-bar, :host([show-close-btn]) .title-bar {
             min-height: {{iconSize + iconSize / 8 + 4}}px;
@@ -80,7 +79,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             padding-bottom: var(--button-size);
         }
     </style>
-    <div class="title-bar horizontal" @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
+    <div class="title-bar horizontal" invert @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
         <div ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
@@ -90,7 +89,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
             <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
         </div>
-        <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red"></oda-button>
+        <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: #00f4e1"></oda-button>
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
     _flags: {

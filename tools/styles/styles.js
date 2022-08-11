@@ -46,9 +46,9 @@ style.textContent = /*css*/`
     --font-150:{
         font-size: 150%;
     };
-    --boxed: { 
+    --boxed: {
         border: 1px solid darkgray;
-        margin: 4px; 
+        margin: 4px;
         padding: 4px;
     };
     --horizontal: {
@@ -248,7 +248,7 @@ body[context-menu-show] *:not(oda-context-menu){
         background-color: var(--error-background);
 
     };
-    --error-before: {       
+    --error-before: {
         content: attr(error);
         background-image: url("/web/oda/tools/styles/error.png");
         background-size: contain;
@@ -264,8 +264,8 @@ body[context-menu-show] *:not(oda-context-menu){
         padding: 2px 2px 2px 16px;
         z-index: 1;
         @apply --border;
-        border-radius: 6px; 
-        min-height: 10px;     
+        border-radius: 6px;
+        min-height: 10px;
     };
     --error-invert: {
         background-color: var(--error-color) !important;
@@ -319,7 +319,7 @@ body[context-menu-show] *:not(oda-context-menu){
     };
     --help: {
     };
-    --help-after: {       
+    --help-after: {
         content: attr(help);
         background-image: url("/web/oda/tools/styles/help.png");
         background-size: contain;
@@ -335,8 +335,8 @@ body[context-menu-show] *:not(oda-context-menu){
         padding: 2px 2px 2px 16px;
         z-index: 1;
         @apply --border;
-        border-radius: 6px; 
-        min-height: 10px;     
+        border-radius: 6px;
+        min-height: 10px;
     };
 }
 :root{
