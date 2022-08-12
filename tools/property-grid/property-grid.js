@@ -294,6 +294,7 @@ cells:{
             }
         </style>
         <oda-button ~if="!onlySave" class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
+        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay"></oda-button>
     `
     })
 }

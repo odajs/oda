@@ -24,6 +24,7 @@
     "@oda/ruler-grid-vb": "components/grids/ruler-grid-vb/ruler-grid-vb.js",
     "@oda/leaflet": "components/viewers/leaflet/leaflet.js",
     "@oda/calculator": "components/tools/calculator/calculator.js",
+    "@oda/loader": "components/tools/loader/loader.js",
     "@oda/md-viewer": "components/viewers/md-viewer/md-viewer.js",
     "@oda/html": "components/editors/html/html.js",
     "@oda/code": "components/editors/code/code.js",
