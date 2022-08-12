@@ -90,7 +90,7 @@ ODA({ is: 'oda-layout-designer-container',
         return this.extendedMode ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
     },
     get extendedMode(){
-        return this.layout?.extendedView;
+        return this.layout?.items?.length;
     },
     expand() {
         if (!this.expandIcon) return;
