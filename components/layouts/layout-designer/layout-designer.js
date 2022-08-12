@@ -66,6 +66,9 @@ ODA({ is: 'oda-layout-designer-container',
                 font-size: small;
                 font-weight: bold;
                 opacity: .5;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             oda-icon{
                 cursor: pointer;
@@ -77,7 +80,7 @@ ODA({ is: 'oda-layout-designer-container',
         <div class="horizontal flex" style="align-items: center;">
             <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
-                <label ~html="layout?.title" style="padding-right: 4px;"></label>
+                <label ~html="layout?.title" style="padding-right: 4px;" :title="layout?.title"></label>
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
         </div>
@@ -87,7 +90,7 @@ ODA({ is: 'oda-layout-designer-container',
         return this.extendedMode ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
     },
     get extendedMode(){
-        return this.layout?.items?.length;
+        return this.layout?.extendedView;
     },
     expand() {
         if (!this.expandIcon) return;
