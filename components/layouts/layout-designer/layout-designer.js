@@ -54,7 +54,7 @@ ODA({ is: 'oda-layout-designer-container',
             :host {
                 padding-top: 8px;
                 max-width: 100%;
-                min-width: {{layout?.items?.length?'100%':(layout?.width?layout?.width:'')}};
+                min-width: {{extendedMode?'100%':(layout?.width?layout?.width:'')}};
                 position: relative;
                 box-sizing: border-box;
                 @apply --vertical;
@@ -67,9 +67,6 @@ ODA({ is: 'oda-layout-designer-container',
                 font-weight: bold;
                 opacity: .5;
             }
-            /*.editor{*/
-            /*    min-height: {{iconSize * 1.3}}px;*/
-            /*}*/
             oda-icon{
                 cursor: pointer;
                 opacity: .5;
@@ -84,10 +81,13 @@ ODA({ is: 'oda-layout-designer-container',
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
         </div>
-        <div ~if="layout?.$expanded" ~is="layout?.$structure || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9"></div>
+        <div ~if="layout?.$expanded" ~is="layout?.structureTemplate || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9;"></div>
     `,
     get expandIcon(){
-        return (this.layout?.items?.length) ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
+        return this.extendedMode ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
+    },
+    get extendedMode(){
+        return this.layout?.items?.length;
     },
     expand() {
         if (!this.expandIcon) return;
