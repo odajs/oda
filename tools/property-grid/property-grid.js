@@ -285,17 +285,23 @@ cells:{
 
     ODA({ is: 'oda-property-grid-header-cell',
         template: /* html */`
-        <style>
-            :host{
-                @apply --horizontal;
-                align-items: center;
-                @apply --flex;
-                justify-content: flex-end;
-            }
-        </style>
-        <oda-button ~if="!onlySave" class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
-        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay"></oda-button>
-    `
+            <style>
+                :host{
+                    @apply --horizontal;
+                    align-items: center;
+                    @apply --flex;
+                    justify-content: flex-end;
+                }
+            </style>
+            <oda-button ~if="!onlySave" class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
+            <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay"></oda-button>
+        `,
+        resetValue(){
+            this.items.forEach(item=>{
+                if (!item.prop?.default) return;
+                item.value = (typeof item.prop.default === 'function')?item.prop.default():item.prop.default;
+            })
+        }
     })
 }
 editors:{
