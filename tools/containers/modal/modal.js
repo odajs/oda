@@ -98,10 +98,13 @@ ODA({is: 'oda-dialog-message', imports: '@oda/icon',
             align-items: center;
             padding: 16px;
             font-size: x-large;
+            max-width: 320px;
+
         }
         label {
             padding-left: 16px;
             word-wrap: break-word;
+            white-space: pre-line;
         }
     </style>
     <oda-icon :icon :icon-size></oda-icon>
@@ -109,7 +112,8 @@ ODA({is: 'oda-dialog-message', imports: '@oda/icon',
     `,
     message: '',
     icon: 'icons:info',
-    iconSize: 48
+    iconSize: 48,
+    title: 'Message'
 })
 ODA({is: 'oda-dialog-input',
     template: /*html*/`
