@@ -35,12 +35,12 @@ ODA({is: 'oda-icon',
         .subicon {
             padding: {{iconSize/16}}px;
             position: absolute;
-            top: {{iconSize/2-1}}px;
             left: {{iconSize/2}}px;
             border-radius: {{iconSize/16}}px;
             @apply --content;
             @apply --raised;
             margin: {{getComputedStyle(this)['padding']?.toString() || 'unset'}};
+            bottom: 0px;
         }
         svg {
             top: 0px;

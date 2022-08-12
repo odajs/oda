@@ -125,6 +125,10 @@ ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
         oda-icon {
             filter: invert(1);
         }
+        label{
+            align-self: center;
+            padding-left: 4px;
+        }
     </style>
     <oda-icon ~if="item?.subIcon" :icon="item.subIcon" :icon-size="iconSize*.4" style="position: absolute; transform: skew(340deg, 360deg); filter: invert(1)" ~style="{left: iconSize/3+'px'}"></oda-icon>
     <label class="label flex">{{item.label}}</label>
