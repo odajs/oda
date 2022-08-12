@@ -64,9 +64,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             z-index: 1;
             pointer-events: none;
         }
-        .row[selected]{
-            @apply --selected;
-        }
         .row[highlighted]::before {
             content: '';
             position: absolute;

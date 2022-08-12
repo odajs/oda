@@ -334,13 +334,6 @@ ODA({is: 'oda-list-box-item', extends: 'oda-icon', imports: '@oda/icon',
             outline-offset: -1px;
             opacity: 0.9;
         }
-        :host([selected]) {
-            filter: brightness(0.9);
-        }
-        :host([focused]) {
-            opacity: 1;
-            color: blue;
-        }
         :host([focused])::after {
             content: '';
             box-shadow: 0px 2px 0px blue;

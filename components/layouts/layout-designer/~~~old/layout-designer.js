@@ -90,10 +90,6 @@ ODA({ is: 'oda-layout-designer-structure',
                 align-content: {{layout?.isBlock ? '' : 'flex-start'}};
                 flex-direction: {{layout?.align === 'vertical' ? 'column' : 'row'}};
             }
-            [selected] {
-                background-color: var(--selection-background, hsla(192, 100%, 50%, 0.1));
-                box-shadow: inset 0 0 0 1px var(--focused-color);
-            }
         </style>
         <div ~if="!hiddenLayouts.includes(next)" @tap.stop="_select" ~is="next.isBlock?'oda-layout-designer-container':'oda-layout-designer-container'" ~for="next in layout?.items" :layout="next" :icon-size :selected="designMode && selection.has(next)" ~style="{order: next._order ?? 'unset'}"></div>
     `,
