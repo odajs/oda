@@ -20,15 +20,10 @@
 ODA({
     is: 'my-component',
     template: `
-        <style>
-            .divInRow {
-                float: left;
-            }
-        </style>
         <div style="float:left">
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
-        <div style="width: 100px; height: 100px; float:left">
+        <div style="width:100px; height:100px; float:left">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
             </svg>
@@ -113,15 +108,10 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <style>
-            .divInRow {
-                float: left;
-            }
-        </style>
         <div style="float:left">
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
-        <div style="width: 100px; height: 100px; float:left">
+        <div style="width:100px; height:100px; float:left">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
                 <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
             </svg>
