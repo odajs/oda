@@ -812,7 +812,7 @@ if (!globalThis.KERNEL) {
         return obj && (obj.constructor === Object);//toString.call(obj) === '[object Object]';
     }
     globalThis.toBool =  globalThis.toBool || function toBool(v, def = false) {
-        if (!v)
+        if (v === undefined || v === null)
             return def;
         switch (typeof v) {
             case 'object': return true;
