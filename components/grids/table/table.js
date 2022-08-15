@@ -974,18 +974,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        const body = this.$refs.body;
-        const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
-        const scrollWidth = body.scrollWidth;
-        const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
-        const scrollbarWidth = body.offsetWidth - body.clientWidth;
-        this._scrollLeft = body.scrollLeft;
-        if (scrollWidth && height) {
-            this._scrollTop = scrollTop;
-            this._scrollWidth = body.scrollWidth;
-            this._height = body.offsetHeight;
-            this._scrollbarWidth = scrollbarWidth
-        }
+        this.interval('_scroll', ()=>{
+            const body = this.$refs.body;
+            const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
+            const scrollWidth = body.scrollWidth;
+            const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
+            const scrollbarWidth = body.offsetWidth - body.clientWidth;
+            this._scrollLeft = body.scrollLeft;
+            if (scrollWidth && height) {
+                this._scrollTop = scrollTop;
+                this._scrollWidth = body.scrollWidth;
+                this._height = body.offsetHeight;
+                this._scrollbarWidth = scrollbarWidth
+            }
+            console.log('scroll')
+        })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
