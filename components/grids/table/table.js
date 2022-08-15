@@ -1993,6 +1993,7 @@ cells: {
         template: /*html*/`
         <style>
             :host {
+                @apply --flex;
                 justify-content: flex-end;
                 padding: 4px;
                 @apply --dark;

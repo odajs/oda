@@ -5,7 +5,7 @@ ODA({
     <style>:host{visibility: {{show ? 'visible' : 'hidden'}};}</style>
     `,
     iconSize: 128,
-    icon: 'loaders:spinning-circles',
+    icon: 'odant:spin',
     fill: 'var(--focused-color)',
     tasks: [],
     _show: false,
