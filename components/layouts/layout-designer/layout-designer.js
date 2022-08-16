@@ -77,9 +77,9 @@ ODA({ is: 'oda-layout-designer-container',
                 align-self: center;
             }
         </style>
-        <div class="horizontal flex" style="align-items: center;">
+        <div class="horizontal flex" style="align-items: center;" >
             <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
-            <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':''}">
+            <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':'', maxWidth: (layout.width && label.align === 'top')?(layout.width + 'px'):'100%'}">
                 <label ~html="layout?.title" style="padding-right: 4px;" :title="layout?.title"></label>
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
