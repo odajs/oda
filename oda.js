@@ -89,11 +89,15 @@ if (!window.ODA) {
     // }
 
     const pointerDownListen = (win = window) => {
-        win.addEventListener('pointerdown', (e) => {
-            ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-            if (win !== top) top.dispatchEvent(new PointerEvent("pointerdown", e));
-        })
-        Array.from(win).forEach(w => pointerDownListen(w));
+        try { //cross-origin
+            win.addEventListener('pointerdown', (e) => {
+                ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+                if (win !== top) top.dispatchEvent(new PointerEvent("pointerdown", e));
+            })
+            Array.from(win).forEach(w => pointerDownListen(w));
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     function isObject(obj) {
