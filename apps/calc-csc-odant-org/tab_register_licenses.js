@@ -27,12 +27,12 @@ ODA({
     async attached() {
         this.names = this.tTab  ? ['№ сертификата', 'ФИО Слушателя', 'Компания Партнер',
                                     'Дата начала сертификата', 'Дата окончания сертификата']
-                                : ['№ лицензии', 'Владелец Лицензии', 'Модель расчетаип', 'Тип лицензии',
+                                : ['№ лицензии', 'Владелец Лицензии', 'Тип лицензии',
                                     'Дата выдачи лицензии', 'Дата окончания лицензии']
         let row = await this._dlRaw()
         let rows = row.$rows.map(o => this.tTab
             ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
-            : [o.ID, o.OwnerLicense, o.Calc, o.Type, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
+            : [o.ID, o.OwnerLicense, o.Type, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
         )
         this.raws = rows
         this.search = ''
