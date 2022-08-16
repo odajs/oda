@@ -79,7 +79,7 @@ ODA({ is: 'oda-layout-designer-container',
         </style>
         <div class="horizontal flex" style="align-items: center;" >
             <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
-            <div class="horizontal flex" ~style="{flexDirection: label.align === 'left'?'row':'column', alignItems: label.align === 'left'?'center':'', maxWidth: (layout.width && label.align === 'top')?(layout.width + 'px'):'100%'}">
+            <div class="horizontal flex" ~style="{flexDirection: _top?'column':'row', alignItems: _top?'':'center', maxWidth: _top?(layout.width + 'px'):'100%'}">
                 <label ~html="layout?.title" style="padding-right: 4px;" :title="layout?.title"></label>
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
@@ -95,6 +95,9 @@ ODA({ is: 'oda-layout-designer-container',
     expand() {
         if (!this.expandIcon) return;
         this.layout.$expanded = !this.layout.$expanded;
+    },
+    get _top(){
+        return (this.label?.align === 'top' &&  (!this.layout?.width || +(this.layout?.width) > this.iconSize));
     },
     props: {
         label: {
