@@ -29,7 +29,7 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
         return new Layout(this.data, undefined, this.dataKeys);
     },
     structureTemplate: 'oda-layout-designer-structure',
-    // containerTemplate: 'oda-layout-designer-container',
+    containerTemplate: 'oda-layout-designer-container',
 })
 
 ODA({ is: 'oda-layout-designer-structure',
@@ -44,7 +44,7 @@ ODA({ is: 'oda-layout-designer-structure',
                 flex-wrap: wrap;
             }
         </style>
-        <oda-layout-designer-container  ~for="lay in layout?.items" :layout="lay"></oda-layout-designer-container>
+        <div ~is="containerTemplate" ~for="lay in layout?.items" :layout="lay"></div>
     `,
     layout: {}
 })
