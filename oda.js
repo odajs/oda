@@ -220,7 +220,11 @@ if (!window.ODA) {
     function ComponentFactory(prototype, proto = HTMLElement) {
         function callHook(hook, ...args) {
             this.fire(hook, ...args);
-            prototype[hook]?.call(this, ...args);
+            try {
+                prototype[hook]?.call(this, ...args);
+            } catch (err) {
+                console.warn(err);
+            }
         }
         const core = {
             // saveProps: {},
