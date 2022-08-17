@@ -47,11 +47,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             filter: opacity(1);
             min-width: {{minWidth}}px;
             min-height: {{minHeight}}px;
-            border: {{size === 'normal' ? '4px solid var(--border-color)' : 'none'}};
+            border: {{sizeMode === 'normal' ? '4px solid var(--border-color)' : 'none'}};
             padding-bottom: {{statusBar.show ? iconSize : 0}}px;
             width: {{_getSize('width')}};
             height: {{_getSize('height')}};
-            flex: {{size === 'normal' ? '0 0 auto' : '1 0 auto'}};
+            flex: {{sizeMode === 'normal' ? '0 0 auto' : '1 0 auto'}};
             left: {{_getPosition('left')}};
             top: {{_getPosition('top')}};
         }
@@ -72,7 +72,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             margin: 0 0 0 50%;
             transform: translate3d(-50%, 0, 0);
         }
-        :host(:not([autosize]):not([is-minimized])[modal][size=max]){
+        :host(:not([autosize]):not([is-minimized])[modal][size-mode=max]){
             padding: 8px;
             padding-top: var(--button-size);
             background-color: rgba(0,0,0,.5);
@@ -87,7 +87,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
         <div ~if="modal && !hideMinMax" class="horizontal no-flex">
             <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="size === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="size === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="sizeMode === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
         </div>
         <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: #00f4e1"></oda-button>
     </div>
@@ -131,7 +131,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             default: null,
             reflectToAttribute: true
         },
-        size: {
+        sizeMode: {
             list: ['normal', 'max'],
             default: 'normal',
             save: true,
@@ -169,7 +169,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     },
     listeners: {
         mousemove(e) {
-            if (this.autosize || e.buttons || !this.modal || this.size !== 'normal' || this.isMinimized)
+            if (this.autosize || e.buttons || !this.modal || this.sizeMode !== 'normal' || this.isMinimized)
                 return;
             const bw = this._bw;
             const bw2 = bw * 2;
@@ -272,8 +272,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     _resize() {
         if (this.autosize) return;
         // this.interval('resize', ()=>{
-        if (this.modal && this.size !== 'max' && window.innerWidth < this.maxWidth) {
-            this.size = 'max';
+        if (this.modal && this.sizeMode !== 'max' && window.innerWidth < this.maxWidth) {
+            this.sizeMode = 'max';
         }
         const parent = this.parentElement;
         if (!parent) return;
@@ -294,11 +294,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
 
     },
     _getSize(dir = 'width') {
-        if (this.modal && this.size === 'normal') return `${this.pos[dir]}px`;
+        if (this.modal && this.sizeMode === 'normal') return `${this.pos[dir]}px`;
         else return '100%';
     },
     _getPosition(dir = 'left') {
-        if (this.modal && this.size === 'normal') return `${this.pos[{ left: 'x', top: 'y' }[dir]]}px`;
+        if (this.modal && this.sizeMode === 'normal') return `${this.pos[{ left: 'x', top: 'y' }[dir]]}px`;
         else return 0;
     },
     attached() {
@@ -352,7 +352,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         return place;
     },
     _toggleSize([state1, state2]) {
-        this.size = this.size === state1 ? state2 : state1;
+        this.sizeMode = this.sizeMode === state1 ? state2 : state1;
     },
 });
 ODA({is: 'form-status-bar',
