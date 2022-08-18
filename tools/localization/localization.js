@@ -23,7 +23,7 @@ function getFirstBrowserLanguage() {
 // console.log(getFirstBrowserLanguage());
 
 Localization.currentLocal = getFirstBrowserLanguage()
-console.log(Localization.currentLocal)
+// console.log(Localization.currentLocal)
 
 // Localization.currentLocal = /* odaUserLocal || */ window.navigator.userLanguage || window.navigator.language || window.navigator.systemLanguage
 Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/../../locales/'; // locales path
@@ -53,7 +53,7 @@ ODA.loadJSON(Localization.path + '_.dir').then(res => {
     Localization.localesAvailable = res
     Localization.lidx = res.findIndex(l => (l.name == Localization.currentLocal))
     if ((res.find(l => (l.name == Localization.currentLocal))) != undefined)
-        ODA.loadJSON(Localization.path + Localization.currentLocal + '.json').then(res => { Localization.dictionary = res; console.log(res) })
+        ODA.loadJSON(Localization.path + Localization.currentLocal + '.json').then(res => { Localization.dictionary = res;/* console.log(res)*/ })
             .catch(error => { console.log("Errol load dictionary: " + error) })
 }).catch(error => { console.log("Errol load locales available: " + error) })
 
@@ -87,7 +87,7 @@ ODA({is:'oda-localisation-tree', imports:'@oda/table', extends:'oda-table',
             // return [{words: 'phraze', transletes: '', letter: 'p', items: Array(0)}]
             const words = sumObAB(Localization.words, Localization.dictionary.words)
             const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
-            console.log(phraze)
+            // console.log(phraze)
             let ds = {}
             Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
             Object.keys(phraze).map(k => {
