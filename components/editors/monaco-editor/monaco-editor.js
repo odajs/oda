@@ -1,4 +1,4 @@
-ODA({ is: 'oda-monaco-editor', template: /*html*/`
+ODA({ is: 'oda-monaco-editor', import: '@oda/splitter', template: /*html*/`
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="/web/oda/ext/monaco-editor/min/vs/editor/editor.main.css" />
     <style>
         :host, :host > div {
@@ -6,6 +6,19 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
         }
     </style>
     <div ref="editor"></div>
+    <!--<style>
+        :host > div {
+            @apply --horizontal;
+        }
+        :host, :host > div, :host > div > div {
+            height: 100%;
+        }
+    </style>
+    <div>
+        <div class="flex" ref="editor"></div>
+        <oda-splitter ~if="preview" ::width></oda-splitter>
+        <div class="flex monaco-editor monaco-editor-background" ~if="preview" ~html="value"></div>
+    </div>-->
     <script @load="_loaderReady" src="/web/oda/ext/monaco-editor/min/vs/loader.js"></script>
     `,
     props: {
@@ -51,8 +64,10 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
         externalLibrary: {
             type: Array,
             default: ['oda.d.ts']
-        }
+        },
+        preview: false
     },
+    width: Number,
     editor: null,
     detached() {
         const monacoAriaContainer = document.body.querySelector('.monaco-aria-container');
@@ -74,6 +89,12 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
                 // monaco.languages.typescript.javascriptDefaults.addExtraLib(libSource, libUri);
                 await this._getExternalLibraryDefinitions();
                 this._setEditor();
+                
+                require(['vs/base/browser/markdownRenderer'], async ({renderMarkdown}) => {
+                    // const htmlResult = renderMarkdown({
+                    //     value: samplemarkdownData
+                    // }).innerHTML;
+                });
             });
         } else {
             this._setEditor();
@@ -84,8 +105,7 @@ ODA({ is: 'oda-monaco-editor', template: /*html*/`
             return;
         }
         const _getDTSContent = async (name) => {
-            const result = await (await fetch(`/web/oda/ext/monaco-editor/types/${name}`)).text();
-            return result;
+            return await (await fetch(`/web/oda/ext/monaco-editor/types/${name}`)).text();
         };
         const promises = this.externalLibrary.map(libraryName => _getDTSContent(libraryName));
         const definitions = await Promise.all(promises);

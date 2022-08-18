@@ -10,7 +10,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
     <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>
     <div ~for="(i, index) in notebook?.cells" class="vertical no-flex">
         <oda-jupyter-cell ~class="{border: showBorder}" :cell="i" :focused="focusedIndex === index" @tap.stop="focusedIndex = (readOnly ? -1 : index)"></oda-jupyter-cell>
-        <oda-jupyter-divider ~if="!readOnly" :index></oda-jupyter-divider>
+        <oda-jupyter-divider ~if="!readOnly" :focused="focusedIndex === index" :index></oda-jupyter-divider>
     </div>
     `,
     listeners: {
@@ -44,7 +44,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
             })
         }
     },
-    notebook: {}
+    notebook: null
 })
 ODA({ is: 'oda-jupyter-divider', template: /*template*/`
     <style>
@@ -55,6 +55,12 @@ ODA({ is: 'oda-jupyter-divider', template: /*template*/`
         }
         :host>div{
             transition: opacity ease-out .5s;
+        }
+        :host([focused]) {
+            box-shadow: none !important;
+        }
+        :host([focused])>div{
+            opacity: 1;
         }
         :host(:hover)>div{
             opacity: 1;
@@ -68,7 +74,7 @@ ODA({ is: 'oda-jupyter-divider', template: /*template*/`
             border-radius: 4px;
         }
         div{
-            opacity: 0;    
+            opacity: 0;
             height: 2px;
             align-items: center;
             justify-content: center;
@@ -122,7 +128,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
     </style>
     <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
         <div class="vertical flex main">
-            <div class="editor" ~is="cell?.cell_extType || cellType" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
+            <label>{{cell?.structure?.label}}</label>
+            <div ~is="cell?.cell_extType || cellType" class="editor" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ~html="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
         </div>
     </div>
