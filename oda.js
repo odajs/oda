@@ -791,12 +791,12 @@ if (!window.ODA) {
                     return v.func.call(this);
                 });
                 if (!params.includes(undefined)) {
-                    // this.async(() => {
-                    //     params = vars.map(v => {
-                    //         return v.func.call(this);
-                    //     });
+                    this.async(() => {
+                        params = vars.map(v => {
+                            return v.func.call(this);
+                        });
                         func.call(this, ...params)
-                    // });
+                    });
                 }
                 return true;
             }
