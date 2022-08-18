@@ -61,6 +61,7 @@ ODA({ is: 'oda-layout-designer-container',
                 overflow: hidden;
                 @apply --flex;
                 flex: {{layout?.width ? '0 0 auto':'1000000000000000000000000000000 1 auto'}};
+                display: {{hidden && !designMode?'hidden':'flex'}};
             }
             label{
                 font-size: small;
