@@ -135,20 +135,12 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get mixed(){
         return this.value instanceof MixedArray;
     },
-    get editor(){
-        if (this.mixed)
-            return 'oda-pg-mixed';
-        if (this.prop?.editor?.includes('/')) {
-            let url = this.dataSet.inspectedObjects[0]?.url || '';
-            const [key, path] = this.prop.editor.includes(':')
-                    ? this.prop.editor.split(':')
-                    : ['default', this.prop.editor];
-            ODA.import((url ? (url + '/~/') : '') + path).then(async imp => {
-                this.editor = (await imp?.[key])?.is;
-            }).catch(e=>{
-                console.error(`Type editor module ${url} not found.`, e);
-            })
-        }
+    _extractEditor(s) { // @path/path[component-name]
+        const parts = s.split('[');
+        if (!parts[1]) throw new Error('Component name not specified!');
+        return { path: parts[0], tag: parts[1].slice(0, -1) };
+    },
+    _getDefaultEditor() {
         switch (this.prop?.type || (this.prop?.default !== undefined && typeof this.prop?.default) || typeof this.value) {
             case Array:
             case Object:
@@ -165,6 +157,25 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
             default:
                 return 'oda-pg-string';
         }
+    },
+    get editor() {
+        if (this.mixed)
+            return 'oda-pg-mixed';
+        if (this.prop?.editor?.includes('/')) {
+            let url = this.dataSet.inspectedObjects[0]?.url || '';
+            const onError = (err) => {
+                console.error(`Type editor to "${this.prop.name}" prop not loaded.\n`, err);
+                this.editor = this._getDefaultEditor();
+            }
+            try {
+                const { path, tag } = this._extractEditor(this.prop.editor);
+                ODA.import((url ? (url + '/~/') : '') + path).catch(onError);
+                return tag;
+            } catch (err) {
+                onError(err);
+            }
+        }
+        return this._getDefaultEditor();
     },
     get value(){
         const list = this.inspectedObjects.map(io=>{
