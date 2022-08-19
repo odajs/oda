@@ -165,7 +165,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </div>
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px'}">
-            <div  ref="rows-container" is-data class="sticky" ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
+            <div  ref="rows-container" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows"
                     ~style="_getRowStyle(row)" :row="row" :role="row.$role"
                     ~class="['row', row.$group?'group-row':'']"
@@ -971,21 +971,23 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        this.interval('_scroll', ()=>{
+        // this.interval('_scroll', ()=>{
             const body = this.$refs.body;
             const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
             const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
             const scrollbarWidth = body.offsetWidth - body.clientWidth;
-            this._scrollLeft = body.scrollLeft;
+            if (this.$refs?.header)
+                this.$refs.header.scrollLeft = this._scrollLeft = body.scrollLeft;
+
             if (scrollWidth && height) {
                 this._scrollTop = scrollTop;
                 this._scrollWidth = body.scrollWidth;
                 this._height = body.offsetHeight;
                 this._scrollbarWidth = scrollbarWidth
             }
-            console.log('scroll')
-        })
+        //     console.log('scroll')
+        // })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
