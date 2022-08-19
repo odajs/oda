@@ -155,10 +155,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             border-color: white !important;
         }
         .header {
-            @apply --shadow;
             overflow: hidden;
-            /*margin-bottom: 1px;*/
-            /*z-index: 1;*/
         }
     </style>
     <style ~text="_styles"></style>
