@@ -126,7 +126,7 @@ if (!window.ODA) {
                     return ODA.import(i, context, prototype);
                 }));
             }
-
+            clearExtends(prototype);
             let parents = await Promise.all(prototype.extends.filter(ext => {
                 ext = ext.trim();
                 return ext === 'this' || ext.includes('-');
@@ -1146,9 +1146,33 @@ if (!window.ODA) {
     }
     const regExImport = /import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?<name>(?:".*?")|(?:'.*?'))[\s]*?(?:;|$|)/g;
     const regexUrl = /https?:\/\/(?:.+\/)[^:?#&]+/g
+    const clearExtends = (proto, exts) => {
+        const toRemove = [];
+        if (!exts) {
+            for (const ext of proto.extends) {
+                const parentExtends = ODA.telemetry.prototypes[ext]?.extends;
+                if(parentExtends?.length) toRemove.add(...clearExtends(proto, parentExtends));
+            }
+            for(const rm of toRemove){
+                const idx = proto.extends.indexOf(rm);
+                if(~idx){
+                    proto.extends.splice(idx, 1);
+                }
+            }
+            return toRemove;
+        }
+        for(const ext of exts){
+            if(proto.extends.includes(ext)){
+                toRemove.add(ext);
+            }
+            const parentExtends = ODA.telemetry.prototypes[ext]?.extends;
+            if(parentExtends?.length) clearExtends(proto, parentExtends);
+        }
+        return toRemove;
+    }
     async function ODA(prototype = {}) {
         prototype.is = prototype.is.toLowerCase();
-        const proto = ODA.telemetry.components[prototype.is];
+        const proto = ODA.telemetry.prototypes[prototype.is];
         if (proto)
             return proto.prototype;
         if(!prototype.$system){
@@ -1157,10 +1181,11 @@ if (!window.ODA) {
             prototype.$system.url = matches[matches.length - 1];
             prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
             prototype.extends = Array.isArray(prototype.extends) ? prototype.extends : prototype.extends?.split(',') || [];
+            ODA.telemetry.prototypes[prototype.is] = prototype;
             ODA.deferred[prototype.is] = {
                 url: prototype.$system.url,
                 is: prototype.is,
-                reg: async (context)=>{
+                reg: async (context) => {
                     prototype.$system.reg = prototype.$system.reg || regComponent(prototype, context);
                     await prototype.$system.reg;
                     return ODA.telemetry.components[prototype.is];
@@ -1950,7 +1975,7 @@ if (!window.ODA) {
         }
     }
     ODA.telemetry = {
-        proxy: 0, modules: {}, imports: {}, regs: {}, components: { count: 0 }, clear: () => {
+        proxy: 0, modules: {}, imports: {}, regs: {}, components: { count: 0 }, prototypes: {}, clear: () => {
             for (const i of Object.keys(ODA.telemetry)) {
                 if (typeof ODA.telemetry[i] === 'number')
                     ODA.telemetry[i] = 0;
