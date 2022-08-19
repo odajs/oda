@@ -85,7 +85,7 @@ ODA({ is: 'oda-layout-designer-container',
                 <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
             </div>
         </div>
-        <div ~if="layout?.$expanded" ~is="layout?.structureTemplate || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9;"></div>
+        <div refs="extend" ~if="layout?.$expanded" ~is="layout?.structureTemplate || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9;"></div>
     `,
     get expandIcon(){
         return this.extendedMode ? (this.layout?.$expanded ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
