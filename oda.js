@@ -1151,28 +1151,28 @@ if (!window.ODA) {
         if (!exts) {
             for (const ext of proto.extends) {
                 const parentExtends = ODA.telemetry.prototypes[ext]?.extends;
-                if(parentExtends?.length) toRemove.add(...clearExtends(proto, parentExtends));
+                if (parentExtends?.length) toRemove.add(...clearExtends(proto, parentExtends));
             }
-            for(const rm of toRemove){
+            for (const rm of toRemove) {
                 const idx = proto.extends.indexOf(rm);
-                if(~idx){
+                if (~idx) {
                     proto.extends.splice(idx, 1);
                 }
             }
             return toRemove;
         }
-        for(const ext of exts){
-            if(proto.extends.includes(ext)){
+        for (const ext of exts) {
+            if (proto.extends.includes(ext)) {
                 toRemove.add(ext);
             }
             const parentExtends = ODA.telemetry.prototypes[ext]?.extends;
-            if(parentExtends?.length) clearExtends(proto, parentExtends);
+            if (parentExtends?.length) clearExtends(proto, parentExtends);
         }
         return toRemove;
     }
     async function ODA(prototype = {}) {
         prototype.is = prototype.is.toLowerCase();
-        const proto = ODA.telemetry.prototypes[prototype.is];
+        const proto = ODA.telemetry.components[prototype.is];
         if (proto)
             return proto.prototype;
         if(!prototype.$system){
@@ -1185,7 +1185,7 @@ if (!window.ODA) {
             ODA.deferred[prototype.is] = {
                 url: prototype.$system.url,
                 is: prototype.is,
-                reg: async (context) => {
+                reg: async (context)=>{
                     prototype.$system.reg = prototype.$system.reg || regComponent(prototype, context);
                     await prototype.$system.reg;
                     return ODA.telemetry.components[prototype.is];
