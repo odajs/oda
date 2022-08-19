@@ -61,7 +61,7 @@ ODA({ is: 'oda-layout-designer-container',
                 overflow: hidden;
                 @apply --flex;
                 flex: {{layout?.width ? '0 0 auto':'1000000000000000000000000000000 1 auto'}};
-                display: {{hidden && !designMode?'hidden':'flex'}};
+                display: {{hidden && !designMode?'none':'flex'}};
             }
             label{
                 font-size: small;
@@ -110,6 +110,9 @@ ODA({ is: 'oda-layout-designer-container',
         },
     },
     layout: {},
+    get hidden(){
+        this.layout?.hidden;
+    }
 })
 const Layout = CLASS({
     ctor(data = {}, owner, dataKeys = 'items') {
