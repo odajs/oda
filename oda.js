@@ -2367,7 +2367,7 @@ if (!window.ODA) {
                 }
             }
             // понаблюдать 👀
-            if (typeof v === 'object' || (typeof v === 'function') || this.nodeType !== 1 || this.$node?.vars.has(name)) {
+            if (['function', 'object'].includes(typeof v) || this.nodeType !== 1 || this.$node?.vars.includes(name)) {
                 if (this[name] != v)
                     this[name] = v;
             }
