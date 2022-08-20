@@ -32,14 +32,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                     ctrl.parentElement.replaceChild(comment, ctrl);
                 }
             }
-            for (let i in props) {
-                const prop = props[i];
-                if (typeof prop === 'function'){
-                    ctrl.addEventListener(i, prop.bind(ctrl), true)
-                }
-                else
-                    ctrl[i] = prop
-            }
+            ctrl.assignProps(props);
             hostProps?.parent && (hostProps.parent._isShow = true);
             host.isContainer = true;
             host.style.position = 'fixed';

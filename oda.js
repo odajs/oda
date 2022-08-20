@@ -322,25 +322,12 @@ if (!window.ODA) {
 
                     callHook.call(this, 'ready');
                 }
-                // Object.defineProperty(this, '$wake', {
-                //     value: false
-                // })
             }
             connectedCallback() {
                 if (!this.domHost/* && this.parentElement !== document.body*/){
                     this.$wake = true;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
-
-                // if(!this.domHost){
-                //     let parent = this.parentNode;
-                //     let dh = parent.$core ? parent : null;
-                //     while(!dh && parent){
-                //         dh = parent.$core ? parent : null;
-                //         parent = parent.parentNode;
-                //     }
-                //     this.domHost = dh;
-                // }
                 const parentElement =  this.domHost || this.parentNode
                 if (parentElement?.$core) {
                     if (!parentElement.$core.$pdp){
@@ -349,7 +336,6 @@ if (!window.ODA) {
                         for (let key in pdp) {
                             //todo: исключить все системные свойства и методы
                             if (hooks.includes(key)) continue;
-                            // if (key in this.__proto__) continue;
                             if (key.startsWith('_')) continue;
                             if (key.startsWith('$obs$')) continue;
                             const d = pdp[key];
@@ -415,9 +401,6 @@ if (!window.ODA) {
             get rootHost(){
                 return this.domHost?.rootHost || (this.parentElement?.$core?this.parentElement.rootHost:this.domHost || this);
             }
-            // get $$savePath() {
-            //     return `${this.localName}/${(this.$core.saveKey || this.saveKey || '')}`;
-            // }
             static get observedAttributes() {
                 if (!prototype.$system.observedAttributes) {
                     prototype.$system.observedAttributes = Object.keys(prototype.props).map(key => prototype.props[key].attrName);
@@ -1288,24 +1271,6 @@ if (!window.ODA) {
             let value = el.textContent.trim();
             if (!value) return;
             src.translate = (el.parentElement?.nodeName === 'STYLE' || el.parentElement?.getAttribute('is') === 'style') ? false : true;
-            // function translateVal (val) {
-            //     if (typeof val !== 'string') return val;
-            //     const testLeter =  new RegExp('[a-z].*?','gi')
-            //     //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
-            //     const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-            //     const words = val.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-            //     //
-            //     phraze.forEach(v => ODA.localization.phraze[v]='')
-            //     words.forEach(v => ODA.localization.words[v]='')
-
-            //     const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi");
-            //     const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi");
-            //     //console.log(reWords)
-            //     var newVal = val.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
-            //                     .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
-            //     //console.log(val, newVal)
-            //     return newVal
-            // }
             if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value)) || ( src.translate /*&& ODA.localization*/ ) ) {
                 let expr = value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
@@ -1652,13 +1617,6 @@ if (!window.ODA) {
         h.src = child;
         return h;
     }
-
-
-    // const  _appendChild = HTMLElement.prototype.appendChild;
-    // HTMLElement.prototype.appendChild = function (tag, ...args){
-    //     ODA.tryReg(tag.localName);
-    //     return _appendChild.call(this, tag, ...args);
-    // }
     const  _createElement = document.createElement;
     document.createElement = function (tag, ...args){
         ODA.tryReg(tag.toLowerCase());
@@ -2415,6 +2373,18 @@ if (!window.ODA) {
         };
     }
     Element:{
+        Element.prototype.assignProps = function (props = {}){
+            for (let i in props){
+                const p = props[i];
+                if (typeof p === 'function')
+                    this.addEventListener(i, p[i].bind(this), true)
+            }
+            for (let i in props){
+                const p = props[i];
+                if (typeof p !== 'function')
+                    this[i] = p;
+            }
+        }
         Element.prototype.getClientRect = function (host) {
             let rect = this.getBoundingClientRect.call(this);
             if (host) {
@@ -2508,13 +2478,7 @@ if (!window.ODA) {
         ODA.createComponent = ODA.createElement = (id, props = {}) => {
             ODA.tryReg(id);
             let el = document.createElement(id);
-            for (let p in props) {
-                const prop = props[p];
-                if (typeof prop === 'function')
-                    el.addEventListener(p, prop.bind(el), true)
-                else
-                    el[p] = prop;
-            }
+            el.assignProps(props);
             return el;
         }
         ODA.loadComponent = async (comp, props = {}, folder = 'components') => {
