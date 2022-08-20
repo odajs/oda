@@ -265,7 +265,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         },
         focusedRow: {
             type: Object,
-            freeze: true
+            freeze: true,
+            set(n) {
+                if (n){
+                    this.debounce('focusedRow', ()=>{
+                        this.scrollToItem(n);
+                    })
+                }
+            }
         },
         highlightedRow: Object,
         groupExpandingMode: {
