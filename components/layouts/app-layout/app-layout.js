@@ -389,8 +389,6 @@ ODA({is: 'app-layout-drawer',
             opacity: .5;
             height: 194px;
             border-radius: 8px !important;
-            margin-left: {{(pos === 'left')?(8 * (hideTabs?-1:1)):0}}px;
-            margin-right: {{(pos === 'right')?(8 * (hideTabs?-1:1)):0}}px;
             padding: 0px !important;
             cursor: pointer;
         }
@@ -400,11 +398,11 @@ ODA({is: 'app-layout-drawer',
         }
         :host([hide-tabs]) .hider{
             position: absolute;
-            {{pos}}: {{iconSize/2}}px;
+            {{pos}}: {{iconSize/3}}px;
             bottom: 50%;
         }
         .hider > * {
-            opacity: .1;
+            opacity: .2;
             cursor: pointer;
             transition: opacity ease-in-out .3s;
         }

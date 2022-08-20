@@ -87,7 +87,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
         <div ~if="modal && !hideMinMax" class="horizontal no-flex">
             <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" :active="sizeMode === 'max'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+            <oda-button ~if="modal && !isMinimized" :size="iconSize/2" :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
         </div>
         <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: #00f4e1"></oda-button>
     </div>
