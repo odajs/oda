@@ -4,7 +4,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         :host {
             @apply --horizontal;
             @apply --no-flex;
-            min-height: {{iconSize + 12}}px;
+            min-height: {{iconSize}}px;
             background-color: var(--content-background);
             border-radius: 0px !important;
             border: 1px solid var(--header-background);
@@ -21,7 +21,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         }
     </style>
     <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
-    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap="_tap"></oda-button>
+    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
     `,
     get params() {
         return {

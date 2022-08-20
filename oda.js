@@ -2377,7 +2377,7 @@ if (!window.ODA) {
             for (let i in props){
                 const p = props[i];
                 if (typeof p === 'function')
-                    this.addEventListener(i, p[i].bind(this), true)
+                    this.addEventListener(i, p.bind(this), true)
             }
             for (let i in props){
                 const p = props[i];
