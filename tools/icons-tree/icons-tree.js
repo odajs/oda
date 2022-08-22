@@ -48,7 +48,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
             padding-left: 4px;
         }
     </style>
-    <div class="horizontal">
+    <div class="horizontal" ~style="{height: filterHeight}">
         <input class="flex" type="search" ::value="filterVal">
         <oda-button :icon-size icon="icons:search"></oda-button>
     </div>
@@ -73,6 +73,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
                 }, 150);
             }
         },
+        filterHeight: '',
         defaultTemplate: 'oda-icons-icon',
         rootPath: '/',
     },
