@@ -60,7 +60,7 @@ ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @to
         linkColor: {
             default: 'blue',
             save: true,
-            editor: '@oda/color-picker'
+            editor: '@oda/color-picker[oda-color-picker]'
         },
         inputs: {
             top: true,
@@ -103,7 +103,7 @@ ODA({ is: 'oda-scheme-layout-vb', imports: '@oda/ruler-grid-vb, @oda/button, @to
 
 				// this.dashedLine = `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
             }
-            
+
             e.preventDefault();
         },
         contextmenu(e) {

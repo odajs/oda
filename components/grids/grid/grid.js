@@ -156,7 +156,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
                     width: 1,
                     color: {
                         default: 'var(--border-color)',
-                        editor: '@oda/color-picker',
+                        editor: '@oda/color-picker[oda-color-picker]',
                         save: true
                     }
                 }
@@ -166,7 +166,7 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
         sizerColor:{
             default: 'var(--border-color)',
             save: true,
-            editor: '@oda/color-picker'
+            editor: '@oda/color-picker[oda-color-picker]'
         },
         sizerWidth:{
             default: 1,

@@ -30,9 +30,9 @@ ODA({is: 'oda-hexagon-layout',
                 }
           </style>
           <div class="flex vertical">
-            <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - index}"></oda-hexagon-row>          
+            <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="index" ~style="{marginLeft: \`\${index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - index}"></oda-hexagon-row>
           </div>
-          <oda-icon class="error shadow" ~show="showTrash" :icon-size="size" icon="icons:delete" ~style="{right: size + 'px', bottom: size+'px'}" style="position: absolute; z-index: 10000; border-radius: 25%" ></oda-icon>   
+          <oda-icon class="error shadow" ~show="showTrash" :icon-size="size" icon="icons:delete" ~style="{right: size + 'px', bottom: size+'px'}" style="position: absolute; z-index: 10000; border-radius: 25%" ></oda-icon>
       `,
     width: 5,
     height: 5,
@@ -51,17 +51,17 @@ ODA({is: 'oda-hexagon-layout',
         color1: {
             default: 'whitesmoke',
             save: true,
-            editor: '@oda/color-picker'
+            editor: '@oda/color-picker[oda-color-picker]'
         },
         color2: {
             default: 'silver',
             save: true,
-            editor: '@oda/color-picker'
+            editor: '@oda/color-picker[oda-color-picker]'
         },
         background: {
             default: 'var(--header-background)',
             save: true,
-            editor: '@oda/color-picker'
+            editor: '@oda/color-picker[oda-color-picker]'
         },
         full: true,
         distance: 1,
@@ -192,7 +192,7 @@ ODA({is: 'oda-hexagon',
         }
         :host([active]):after {
             border-top: {{h/4}}px solid {{background}};
-            
+
              z-index: -1;
         }
         :host:after {
@@ -230,7 +230,7 @@ ODA({is: 'oda-hexagon',
             transition: top .5s, transform  .5s;
             left: -{{size * .25}}px;
             max-height: {{size}}px;
-            
+
             /*color: white;*/
             text-align: center;
             position: absolute;
@@ -245,7 +245,7 @@ ODA({is: 'oda-hexagon',
         <div class="flex vertical container" style="overflow: visible; align-items: center; align-self: center;">
             <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" :icon-size style="position: initial;"></div>
         </div>
-        
+
       `,
     get allowDrop(){
         return (this.x && this.y && (!this.active || this?.item?.allowDrop));

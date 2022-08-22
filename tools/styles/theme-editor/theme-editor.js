@@ -1,4 +1,4 @@
-ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/table, @tools/property-grid', extends: 'oda-app-layout',
+ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker[oda-color-picker], @oda/table, @tools/property-grid', extends: 'oda-app-layout',
     template: /*html*/`
         <style>
             :host {
@@ -160,7 +160,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--content-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#0F0F0F',
             set(v) {
                 if (v) ODA.updateStyle({ '--content-color': v });
@@ -170,7 +170,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--content-background',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#F0F0F0',
             set(v) {
                 if (v) ODA.updateStyle({ '--content-background': v });
@@ -180,7 +180,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--accent-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#0000FF',
             set(v) {
                 if (v) ODA.updateStyle({ '--accent-color': v });
@@ -190,7 +190,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--success-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#00FF00',
             set(v) {
                 if (v) ODA.updateStyle({ '--success-color': v });
@@ -200,7 +200,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--warning-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#FFA500',
             set(v) {
                 if (v) ODA.updateStyle({ '--warning-color': v });
@@ -210,7 +210,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--error-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#FF0000',
             set(v) {
                 if (v) ODA.updateStyle({ '--error-color': v });
@@ -220,7 +220,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--info-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#8A2BE2',
             set(v) {
                 if (v) ODA.updateStyle({ '--info-color': v });
@@ -230,7 +230,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--border-color',
             category: 'Basic settings',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#808080',
             set(v) {
                 if (v) ODA.updateStyle({ '--border-color': v });
@@ -250,7 +250,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--header-color',
             category: 'colors',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#0F0F0F',
             set(v) {
                 if (v) ODA.updateStyle({ '--header-color': v });
@@ -260,7 +260,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
             label: '--header-background',
             category: 'colors',
             type: String,
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             default: '#C0C0C0',
             set(v) {
                 if (v) ODA.updateStyle({ '--header-background': v });
@@ -269,7 +269,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         darkColor: {
             label: '--dark-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#FFFFFF',
             set(v) {
@@ -279,7 +279,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         darkBackground: {
             label: '--dark-background',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#808080',
             set(v) {
@@ -289,7 +289,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         focusedColor: {
             label: '--focused-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#0000FF',
             set(v) {
@@ -299,7 +299,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         selectedColor: {
             label: '--selected-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#000080',
             set(v) {
@@ -309,7 +309,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         selectedBackground: {
             label: '--selected-background',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#C0C0C0',
             set(v) {
@@ -319,7 +319,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         bodyColor: {
             label: '--body-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#555555',
             set(v) {
@@ -329,7 +329,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         bodyBackground: {
             label: '--body-background',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#C0C0C0',
             set(v) {
@@ -339,7 +339,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         sectionColor: {
             label: '--section-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#D3D3D3',
             set(v) {
@@ -349,7 +349,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         sectionBackground: {
             label: '--section-background',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#000000',
             set(v) {
@@ -359,7 +359,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         layoutColor: {
             label: '--layout-color',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#f5f5f5',
             set(v) {
@@ -369,7 +369,7 @@ ODA({is: 'oda-theme-editor', imports: '@oda/app-layout, @oda/color-picker, @oda/
         layoutBackground: {
             label: '--layout-background',
             category: 'colors',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             type: String,
             default: '#000000',
             set(v) {

@@ -48,7 +48,7 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
         maxScale: 20,
         backgroundColor: {
             default: 'white',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             save: true
         },
         showGrid: {

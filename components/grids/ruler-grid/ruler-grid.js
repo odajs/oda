@@ -64,7 +64,7 @@ ODA({ is: "oda-ruler-grid", template: /*html*/`
     props: {
         backgroundColor: {
             default: 'white',
-            editor: '@oda/color-picker',
+            editor: '@oda/color-picker[oda-color-picker]',
             save: true,
         },
         showGrid: {
