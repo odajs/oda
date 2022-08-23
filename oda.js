@@ -1748,7 +1748,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, renderId, $el, pars);
+                    /* await */ updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }
