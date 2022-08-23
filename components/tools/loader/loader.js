@@ -2,7 +2,10 @@ ODA({
     is: 'oda-loader',
     extends: 'oda-icon', imports: '@oda/icon',
     template: /*html*/`
-    <style>:host{visibility: {{show ? 'visible' : 'hidden'}};}</style>
+    <style>
+        :host{visibility: {{show ? 'visible' : 'hidden'}};}
+        .icon{display: {{show ? '' : 'none'}};}
+    </style>
     `,
     iconSize: 128,
     icon: 'odant:spin',
