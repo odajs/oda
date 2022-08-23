@@ -271,6 +271,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     this.debounce('focusedRow', ()=>{
                         this.scrollToItem(n);
                     })
+                    this.fire('focused-row-changed', n); // ToDo - temporary solution
                 }
             }
         },
