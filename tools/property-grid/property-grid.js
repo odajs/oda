@@ -239,6 +239,9 @@ cells: {
     ODA({is: 'oda-pg-cell-value',
         template: /*html*/`
         <style>
+            :host {
+                @apply --horizontal;
+            }
             :host > span {
                 @apply --dimmed;
                 user-select: text;
