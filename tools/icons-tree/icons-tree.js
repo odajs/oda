@@ -12,9 +12,9 @@ function getIconItem(el, group) {
 }
 function getIconFolder(template) {
     const content = template.content;
-    const obj = {};
+    const obj = { disabled: true };
     obj.name = template.getAttribute('name');
-    obj.label = obj.name
+    obj.label = obj.name;
     obj.icon = 'odant:folder';
     obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`;
     obj.search = [obj.name, obj.label, ...[...content.children].map(c => ` ${c.name || ''} ${c.label || ''}`)].join(' ');
