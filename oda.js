@@ -1588,10 +1588,11 @@ if (!window.ODA) {
         src.el.removeAttribute(attrName);
         const child = parseJSX(prototype, src.el, src.vars);
         const fn = createFunc(src.vars.join(','), expr, prototype);
-        const h = async function (p = []) {
+        const h = function (p = []) {
             let items = exec.call(this, fn, p);
-            if (items instanceof Promise)
-                items = await items;
+            if (items instanceof Promise){
+                // items = await items;
+            }
             else if (typeof items === 'string')
                 items = items.split('');
             else if (isObject(items) && !Array.isArray(items)){
@@ -1672,14 +1673,15 @@ if (!window.ODA) {
         return $el;
     }
     let inRender = false;
-    async function render(renderId) {
+    /*async*/ function render(renderId) {
         if (!inRender) {
             inRender = true;
-            await updateDom.call(this, this.$core.node, this.$core.shadowRoot, renderId);
+            updateDom.call(this, this.$core.node, this.$core.shadowRoot, renderId);
             inRender = false;
         }
     }
-    async function updateDom(src, $el, renderId, $parent, pars) {
+    function updateDom(src, $el, renderId, $parent, pars) {
+
         if (renderId !== renderCounter)
             return;
         if ($parent) {
@@ -1723,7 +1725,7 @@ if (!window.ODA) {
             for (let i = 0, l = src.children.length; i < l; i++) {
                 let h = src.children[i];
                 if (typeof h === "function") {
-                    const items = await h.call(this, pars)
+                    const items = /*await*/ h.call(this, pars)
                     const children = $el.childNodes;
                     const list = [];
                     for(let j = 0; j<items.length; j++){
@@ -1731,7 +1733,7 @@ if (!window.ODA) {
                         const node = items[j]
                         list.push(updateDom.call(this, node.child, elem, renderId, $el, node.params))
                     }
-                    await Promise.all(list);
+                    // await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];
                     while (el && el.$node === h.src) {
@@ -1745,7 +1747,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, renderId, $el, pars);
+                    /*await*/ updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }
@@ -1868,10 +1870,10 @@ if (!window.ODA) {
         if(rid) return
         rid = requestAnimationFrame(raf);
     }
-    async function raf() {
+    /*async*/ function raf() {
         renderCounter = rid
         while (renderQueue.length){
-            await renderQueue.shift()?.(renderCounter);
+            /*await*/ renderQueue.shift()?.(renderCounter);
         }
         rid = 0;
     }
