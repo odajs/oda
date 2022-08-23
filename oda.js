@@ -1661,6 +1661,7 @@ if (!window.ODA) {
             if (src.attrs)
                 for (let i in src.attrs)
                     $el.setAttribute(i, src.attrs[i]);
+
             for (const e in src.listeners || {}) {
                 const event = (ev) => {
                     src.listeners[e].call(this, ev);
