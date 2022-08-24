@@ -1255,7 +1255,7 @@ if (!window.ODA) {
             if (el.nodeName === 'svg' || (el.parentNode && el.parentNode.$node && el.parentNode.$node.svg))
                 this.svg = true;
             this.listeners = {};
-            this.cache = new WeakMap();
+            this.cache = {};
         }
     }
     VNode.sid = 0
@@ -1625,28 +1625,19 @@ if (!window.ODA) {
         ODA.tryReg(tag.toLowerCase());
         return _createElement.call(this, tag, ...args);
     }
-    function createElement(src, { tag, $for }, old) {
-        if (!src.cache.has(this)) src.cache.set(this, {});
-        const cache = src.cache.get(this);
-        let $el
-        let key = tag;
-        if ($for) key = `${tag}[${$for[1]}]`;
-        if (tag === '#comment'){
-            cache[key] ??= document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
-            $el = $for ? cache[key].cloneNode() : cache[key];
-        }
-        else if (tag === '#text'){
-            cache[key] ??= document.createTextNode(src.textContent || '');
-            $el = $for ? cache[key].cloneNode() : cache[key];
-        }
+    function createElement(src, tag, old) {
+
+        // console.log(src, tag);
+        let $el;
+        if (tag === '#comment')
+            $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
+        else if (tag === '#text')
+            $el = /*src.cache[tag] ??=*/ document.createTextNode(src.textContent || '');
         else {
-            if (src.svg) {
-                cache[key] ??= document.createElementNS(svgNS, tag.toLowerCase());
-                $el = $for ? cache[key].cloneNode() : cache[key];
-            }
+            if (src.svg)
+                $el = document.createElementNS(svgNS, tag.toLowerCase());
             else {
-                cache[key] ??= document.createElement(tag);
-                $el = $for ? cache[key].cloneNode() : cache[key];
+                $el = document.createElement(tag);
             }
             switch (tag){
                 case 'STYLE':{
@@ -1693,7 +1684,7 @@ if (!window.ODA) {
             inRender = false;
         }
     }
-    async function updateDom(src, $el, renderId, $parent, $for) {
+    async function updateDom(src, $el, renderId, $parent, pars) {
         if (this.$sleep && !this.$wake) return;
         if (renderId !== renderCounter)
             return;
@@ -1701,14 +1692,14 @@ if (!window.ODA) {
             let tag = src.tag;
             if (src.tags) {
                 for (let h of src.tags)
-                    tag = h.call(this, tag, src.fn[h.name], $for, $el);
+                    tag = h.call(this, tag, src.fn[h.name], pars, $el);
             }
             if (!$el) {
-                $el = createElement.call(this, src, {tag, $for});
+                $el = createElement.call(this, src, tag);
                 $parent.appendChild($el);
             }
             else if ($el.$node && $el.$node.id !== src.id) {
-                const el = createElement.call(this, src, {tag});
+                const el = createElement.call(this, src, tag);
                 if ($parent.contains($el)){
                     $parent.insertBefore(el, $el);
 
@@ -1721,7 +1712,8 @@ if (!window.ODA) {
                 $el = $el.slotTarget;
             }
             else if ($el.nodeName !== tag) {
-                const el = createElement.call(this, src, {tag}, $el);
+                const before = $el.__before ??= Object.create(null);
+                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
@@ -1730,14 +1722,14 @@ if (!window.ODA) {
         if ($el.localName in ODA.deferred)
             return;
 
-        $el.$for = $for;
+        $el.$for = pars;
         const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
         if (ch) {
             let idx = 0;
             for (let i = 0, l = src.children.length; i < l; i++) {
                 let h = src.children[i];
                 if (typeof h === "function") {
-                    const items = await h.call(this, $for)
+                    const items = await h.call(this, pars)
                     const children = $el.childNodes;
                     const list = [];
                     for(let j = 0; j<items.length; j++){
@@ -1759,7 +1751,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    /* await */ updateDom.call(this, h, el, renderId, $el, $for);
+                    /* await */ updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }
@@ -1775,10 +1767,10 @@ if (!window.ODA) {
 
         if (src.dirs)
             for (let h of src.dirs)
-                h.call(this, $el, src.fn[h.name], $for);
+                h.call(this, $el, src.fn[h.name], pars);
         if (src.bind)
             for (let i in src.bind) {
-                const b = src.bind[i].call(this, $for, $el);
+                const b = src.bind[i].call(this, pars, $el);
                 const listener = src.listeners[i.toKebabCase() + '-changed'];
                 if (i.includes('.') && listener) {
                     const pathToObj = i.slice(0, i.lastIndexOf('.'));
@@ -1827,7 +1819,7 @@ if (!window.ODA) {
         // console.warn('SLOT', this.$$id, $el.$$id)
         this.$core.slotted.add($el);
         this.$core.intersect.unobserve($el);
-        const el = $el.slotProxy || createElement.call(this, src, { tag: '#comment' });
+        const el = $el.slotProxy || createElement.call(this, src, '#comment');
         el.slotTarget = $el;
         $el.slotProxy = el;
         el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
