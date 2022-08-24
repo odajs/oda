@@ -1714,6 +1714,8 @@ if (!window.ODA) {
             else if ($el.nodeName !== tag) {
                 const before = $el.__before ??= Object.create(null);
                 const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                el.__before ??= Object.create(null);
+                el.__before[$el.nodeName] = $el;
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
@@ -1751,7 +1753,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    /* await */ updateDom.call(this, h, el, renderId, $el, pars);
+                     await  updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }
