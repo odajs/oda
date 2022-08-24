@@ -239,6 +239,12 @@ if (!globalThis.KERNEL) {
                     for (let def in this.constructor.defaults) {
                         this['#' + def] = this.constructor.defaults[def];
                     }
+                    if (this.constructor?.lists?.length) {
+                        for (let l in this.constructor.lists) {
+                            // TODO: кеширование?
+                            this.lists[l] = this.constructor.lists[l].bind(this);
+                        }
+                    }
                     this.$proxy = makeReactive.call(this, this);
 
                 }
@@ -365,14 +371,16 @@ if (!globalThis.KERNEL) {
         }
         for (let parent of parents) {
             descriptors = Object.getOwnPropertyDescriptors(model.props);
-            const parentdDescrs = Object.getOwnPropertyDescriptors(parent.__model__.props);
-            for (let key in parentdDescrs) {
-                const parentProp = parentdDescrs[key].value;
+            const parentDescrs = Object.getOwnPropertyDescriptors(parent.__model__.props);
+            for (let key in parentDescrs) {
+                const parentProp = parentDescrs[key].value;
                 const targetProp = descriptors[key]?.value;
                 if (targetProp) {
-                    for (let k in parentProp) {
-                        if (['get', 'default'].includes(k) && ('get' in targetProp || 'default' in targetProp)) continue;
-                        targetProp[k] = targetProp[k] || parentProp[k];
+                    const p_attrDescrs = Object.getOwnPropertyDescriptors(parentProp);
+                    const t_attrDescrs = Object.getOwnPropertyDescriptors(targetProp);
+                    for (const k in p_attrDescrs) {
+                        if (['get', 'default'].includes(k) && ('get' in t_attrDescrs || 'default' in t_attrDescrs)) continue;
+                        if(!(k in t_attrDescrs)) Object.defineProperty(targetProp, k, p_attrDescrs[k]);
                     }
                 }
                 model.props[key] = targetProp || parentProp;
@@ -456,6 +464,7 @@ if (!globalThis.KERNEL) {
             globalThis[model.is] = cls;
         }
         cls.defaults = {};
+        cls.lists = {};
         descriptors = Object.getOwnPropertyDescriptors(model.props);
         for (let name in descriptors) {
             const prop = descriptors[name].value;
@@ -485,20 +494,27 @@ if (!globalThis.KERNEL) {
             }
             desc.set.set = prop.set;
             Object.defineProperty(cls.prototype, name, desc);
-            if (prop.default === undefined) continue;
-            Object.defineProperty(cls.defaults, name, {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    if (typeof prop.default === "function")
-                        return prop.default.call(this);
-                    else if (Array.isArray(prop.default))
-                        return Array.from(prop.default);
-                    else if (isObject(prop.default))
-                        return Object.assign({}, prop.default);
-                    return toType(prop.type, prop.default);
+            if ('list' in prop) {
+                const desc = Object.getOwnPropertyDescriptor(prop, 'list');
+                if (desc?.get) {
+                    cls.lists[name] = desc.get;
                 }
-            });
+            }
+            if (prop.default) {
+                Object.defineProperty(cls.defaults, name, {
+                    configurable: true,
+                    enumerable: true,
+                    get() {
+                        if (typeof prop.default === "function")
+                            return prop.default.call(this);
+                        else if (Array.isArray(prop.default))
+                            return Array.from(prop.default);
+                        else if (isObject(prop.default))
+                            return Object.assign({}, prop.default);
+                        return toType(prop.type, prop.default);
+                    }
+                });
+            }
         }
         descriptors = Object.getOwnPropertyDescriptors(model)
         for (let name in descriptors) {
