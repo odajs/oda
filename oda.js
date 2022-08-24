@@ -1627,12 +1627,12 @@ if (!window.ODA) {
     }
     function createElement(src, tag, old) {
 
-        console.log(src, tag);
+        // console.log(src, tag);
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
         else if (tag === '#text')
-            $el = ddocument.createTextNode(src.textContent || '');
+            $el = /*src.cache[tag] ??=*/ document.createTextNode(src.textContent || '');
         else {
             if (src.svg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
