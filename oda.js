@@ -1255,6 +1255,7 @@ if (!window.ODA) {
             if (el.nodeName === 'svg' || (el.parentNode && el.parentNode.$node && el.parentNode.$node.svg))
                 this.svg = true;
             this.listeners = {};
+            this.cache = {};
         }
     }
     VNode.sid = 0
@@ -1625,12 +1626,13 @@ if (!window.ODA) {
         return _createElement.call(this, tag, ...args);
     }
     function createElement(src, tag, old) {
+
+        console.log(src, tag);
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
         else if (tag === '#text')
-            $el = document.createTextNode(src.textContent || '');
-
+            $el = ddocument.createTextNode(src.textContent || '');
         else {
             if (src.svg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
@@ -1683,7 +1685,7 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, renderId, $parent, pars) {
-
+        if (this.$sleep && !this.$wake) return;
         if (renderId !== renderCounter)
             return;
         if ($parent) {
@@ -1719,9 +1721,8 @@ if (!window.ODA) {
         if ($el.localName in ODA.deferred)
             return;
 
-        // $el.$wake = $el.$wake || this.$wake;
         $el.$for = pars;
-        const ch = src.children.length && $el.children && (!$el.$sleep || ($el.$wake || this.$wake) || src.svg || $el.localName === 'slot')
+        const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
         if (ch) {
             let idx = 0;
             for (let i = 0, l = src.children.length; i < l; i++) {
