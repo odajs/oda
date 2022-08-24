@@ -121,12 +121,23 @@ class MixedArray extends Array {
 
 CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     ctor(name, dataSet, prototype, prop) {
+        this.dataSet = dataSet;
         this.prototype = prototype;
         this.prop = prop;
-        this.list = prop?.list;
+        if (this.io.lists?.[name]){
+            Object.defineProperty(this, 'list', {
+                get() {
+                    return this.io.lists?.[name]();
+                }
+            })
+        }else{
+            this.list = prop?.list;
+        }
         this.name = name;
-        this.dataSet = dataSet;
         this.inspectedObjects = [];
+    },
+    get io(){
+        return this.dataSet.inspectedObjects[0];
     },
     $expanded: false,
     get category() {

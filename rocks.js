@@ -239,7 +239,8 @@ if (!globalThis.KERNEL) {
                     for (let def in this.constructor.defaults) {
                         this['#' + def] = this.constructor.defaults[def];
                     }
-                    if (this.constructor?.lists?.length) {
+                    if (Object.keys(this.constructor?.lists||{}).length) {
+                        this.lists = {};
                         for (let l in this.constructor.lists) {
                             // TODO: кеширование?
                             this.lists[l] = this.constructor.lists[l].bind(this);
