@@ -49,10 +49,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         })
     },
     _tap(e) {
-        if (this.allowClear && this.value){
+        if (this.allowClear && this.value) {
             this.text = '';
             // this.async(()=>{
-                this.value = '';
+            this.value = '';
             // }, 100)
         }
         else if (this._dd)
@@ -60,9 +60,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         else
             this.dropDown();
     },
-    set value(n){
+    set value(n) {
         this.text = undefined;
-        this.async(()=>{
+        this.async(() => {
             this.input.select(0, 1000);
         })
     },
@@ -120,8 +120,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this._dd.then(res => {
                 this.value = this.result;
             }).catch(e => {
-
+                this.arrowMoveDone = false;
             }).finally(() => {
+                this.arrowMoveDone = false;
                 this.result = null;
                 this._dd = null;
                 this._setFocus();
@@ -131,13 +132,15 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         //     this.closeDown();
     },
     closeDown() {
-        this.async(()=>{
+        this.arrowMoveDone = false;
+        this.async(() => {
             this.dropDownControl?.fire?.('cancel')
         })
     },
+    arrowMoveDone: false,
     keyBindings: {
-        escape(e){
-            if (!this._dd){
+        escape(e) {
+            if (!this._dd) {
                 this.text = undefined;
             }
         },
@@ -149,22 +152,24 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                 this.dropDownControl?.$keys?.arrowDown?.(e);
                 this._setFocus();
             })
+            this.arrowMoveDone = true;
         },
         arrowUp(e) {
             e.stopPropagation();
             e.preventDefault();
             this.dropDownControl?.$keys?.arrowUp?.(e);
             this._setFocus();
+            this.arrowMoveDone = true;
         },
         enter(e) {
             e.stopPropagation();
             e.preventDefault();
-            if (this._dd){
+            if (this._dd && this.arrowMoveDone) {
                 this.dropDownControl?.$keys?.enter?.(e);
                 if (this.result)
                     this.dropDownControl?.fire?.('ok');
             }
-            else{
+            else {
                 this.value = this.text?.trim();
                 this.onEnter();
             }
@@ -179,7 +184,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             })
         },
     },
-    onEnter(){
+    onEnter() {
 
     }
 })
