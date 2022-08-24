@@ -171,6 +171,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             }
             else {
                 this.value = this.text?.trim();
+                this.closeDown();
                 this.onEnter();
             }
 
