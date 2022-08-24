@@ -75,14 +75,14 @@ ODA({ is: 'oda-layout-designer-container',
                 cursor: pointer;
                 opacity: .5;
                 padding-top: 8px;
-                align-self: center;
+                align-self: end;
             }
         </style>
         <div class="horizontal flex" style="align-items: center;" >
             <oda-icon :icon-size ~style="{cursor: expandIcon ? 'pointer' : 'auto'}" :icon="expandIcon" @tap.stop="expand"></oda-icon>
             <div class="horizontal flex" ~style="{flexDirection: _top?'column':'row', alignItems: _top?'':'center', maxWidth: _top?(layout.width + 'px'):'100%'}" style="align-self: end;">
                 <label ~html="layout?.title" style="padding-right: 4px;" :title="layout?.title"></label>
-                <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout></div>
+                <div ~is="layout?.editorTemplate || editorTemplate" class="flex editor" :layout ~style="{minHeight: iconSize +'px'}"></div>
             </div>
         </div>
         <div refs="extend" ~if="layout?.$expanded" ~is="layout?.structureTemplate || structureTemplate" :layout ~style="{marginLeft: iconSize/2 +'px'}" style="padding-bottom: 4px; opacity: .9;"></div>
