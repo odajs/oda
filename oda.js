@@ -326,6 +326,7 @@ if (!window.ODA) {
             connectedCallback() {
                 if (!this.domHost/* && this.parentElement !== document.body*/){
                     this.$wake = true;
+                    // this.$sleep = false;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
                 const parentElement =  this.domHost || this.parentNode
@@ -1718,9 +1719,9 @@ if (!window.ODA) {
         if ($el.localName in ODA.deferred)
             return;
 
-        $el.$wake = $el.$wake || this.$wake;
+        // $el.$wake = $el.$wake || this.$wake;
         $el.$for = pars;
-        const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
+        const ch = src.children.length && $el.children && (!$el.$sleep || ($el.$wake || this.$wake) || src.svg || $el.localName === 'slot')
         if (ch) {
             let idx = 0;
             for (let i = 0, l = src.children.length; i < l; i++) {
