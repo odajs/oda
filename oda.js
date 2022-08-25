@@ -1712,6 +1712,7 @@ if (!window.ODA) {
                 $el = $el.slotTarget;
             }
             else if ($el.nodeName !== tag) {
+                console.log('replace', $el.nodeName, tag);
                 const before = $el.__before ??= Object.create(null);
                 const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
                 el.__before ??= Object.create(null);
@@ -1719,6 +1720,7 @@ if (!window.ODA) {
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
+
             }
         }
         if ($el.localName in ODA.deferred)
