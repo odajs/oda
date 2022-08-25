@@ -2,8 +2,6 @@ ODA({is: 'oda-number',
     template: /*html*/`
     <style>
         :host {
-            /*@apply --vertical;*/
-            /*align-items: center;*/
             overflow: hidden;
             text-overflow: ellipsis;
             display: flex;
