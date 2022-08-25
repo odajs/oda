@@ -1257,7 +1257,6 @@ if (!window.ODA) {
             if (el.nodeName === 'svg' || (el.parentNode && el.parentNode.$node && el.parentNode.$node.svg))
                 this.svg = true;
             this.listeners = {};
-            this.cache = {};
         }
     }
     VNode.sid = 0
@@ -1618,7 +1617,7 @@ if (!window.ODA) {
             const forFunc = (item, index)=>{
                 return { child, params: [...p, item, index, items, index] }
             }
-            console.log('forDirective', expr, items.length);
+            console.log('forDirective', expr, items.length, renderCounter);
             return items.map(forFunc);
         };
         h.src = child;
@@ -1630,8 +1629,7 @@ if (!window.ODA) {
         return _createElement.call(this, tag, ...args);
     }
     function createElement(src, tag, old) {
-
-        // console.log(src, tag);
+        // console.log('createElement', tag);
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
