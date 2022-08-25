@@ -324,9 +324,8 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                if (!this.domHost/* && this.parentElement !== document.body*/){
+                if (!this.domHost && this.parentElement !== document.body){
                     this.$wake = true;
-                    // this.$sleep = false;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
                 const parentElement =  this.domHost || this.parentNode
@@ -492,12 +491,12 @@ if (!window.ODA) {
                         this.style.removeProperty?.('visibility');
                         callHook.call(this, 'onVisible');
                         // console.log(this,  'visibility')
-                    }, 200)
+                    }, 100)
                     this.interval('force-show', ()=>{
                         this.$wake = false;
                         this.style.removeProperty?.('visibility');
                         callHook.call(this, 'onVisible');
-                    }, 1000)
+                    }, 500)
                 }
             }
             resolveUrl(path) {
@@ -1687,11 +1686,6 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, renderId, $parent, pars) {
-        if (this.$sleep && !this.$wake) return;
-        if (renderId !== renderCounter){
-            console.warn('отмена 1')
-            return;
-        }
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1745,11 +1739,6 @@ if (!window.ODA) {
                         const node = items[j]
                         list.push(updateDom.call(this, node.child, elem, renderId, $el, node.params))
                     }
-                    if (renderId !== renderCounter){
-                        console.warn('отмена')
-                        return;
-                    }
-
                     await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];
@@ -1764,7 +1753,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                     await  updateDom.call(this, h, el, renderId, $el, pars);
+                    await updateDom.call(this, h, el, renderId, $el, pars);
                     idx++;
                 }
             }

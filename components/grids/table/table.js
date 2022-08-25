@@ -164,7 +164,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
     </div>
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
-        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 8))+'px'}">
+        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 100))+'px'}">
             <div  ref="rows-container" class="sticky" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows"
                     ~style="_getRowStyle(row)" :row="row" :role="row.$role"
@@ -979,7 +979,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
-        // this.interval('_scroll', ()=>{
+        this.interval('_scroll', ()=>{
             const body = this.$refs.body;
             const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
@@ -995,7 +995,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 this._scrollbarWidth = scrollbarWidth
             }
         //     console.log('scroll')
-        // })
+        })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
