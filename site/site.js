@@ -112,7 +112,7 @@ site: {
             <video ~if="!hash && _srcIframe==='video'" @pause="_stop" ref="video" :slot="!focusedItem || part === null?'main':'?'" style="background-color: black; height: 100vh" src="./site/intro.mp4" @tap="_playVideo" poster="site/intro.webp"></video>
             <iframe ~if="_srcIframe!=='video'" :slot="!focusedItem || part === null?'main':'?'" :src="_srcIframe" style="width:100%;height:100vh;border:none;"></iframe>
             <div ~show="_showTester" slot="main" class="flex" style='position:relative'>
-                <oda-site-iframe ~if="_showTester" :src="src" style="width:100%; height:100%"></oda-site-iframe>
+                <iframe ~if="_showTester" :src="src" style="width:100%; height:100%; border: none"></iframe>
                 <oda-nav :focused-item=focusedItem></oda-nav>
                 <oda-modal ~if='modalwin.is' >
                     <oda-button icon='icons:close' style='justify-content: right;' icon-pos="right" @tap="{this.modalwin.is=false}"></oda-button>
@@ -304,36 +304,6 @@ site: {
     });
 }
 
-customElements.define('oda-site-iframe', class OdaSiteIframe extends HTMLElement {
-    constructor() {
-        super();
-        this.shadow = this.attachShadow({ mode: 'closed' });
-    }
-    static get observedAttributes() {return ['src']; }
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (name === 'src') {
-            if (this.iframe) this.shadow.removeChild(this.iframe);
-            this.iframe = document.createElement("iframe");
-            this.iframe.src = newValue;
-            this.iframe.style.border = 'none';
-            this.iframe.style.width = '100%';
-            this.iframe.style.height = '100%';
-            this.shadow.appendChild(this.iframe);
-
-            let existingOnMouseWheel = this.iframe.contentWindow.onwheel;
-            this.iframe.contentWindow.onwheel = (e) => {
-                if (existingOnMouseWheel) existingOnMouseWheel(e);
-                this.iframe.dispatchEvent(new MouseEvent('wheel', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': false,
-                    'detail': e.wheelDelta
-                }));
-            };
-        }
-    }
-})
-
 content: {
     ODA({ is: 'oda-site-content-tree', extends: 'oda-tree', imports: '@oda/tree',
         props: {
@@ -378,7 +348,7 @@ content: {
             </style>
             <div class="vertical flex" style="padding: 2px 2px;">
                 <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
-                <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode"></oda-jupyter>
+                <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode" show-border="none"></oda-jupyter>
             </div>
         `,
         props: {
