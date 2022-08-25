@@ -4,11 +4,17 @@
     <head>
         <meta name="description" content="Repaint rate oda" />
         <title>Repaint rate test</title>
+        <style>
+            html, body {
+                padding: 0;
+                margin: 0;
+                overflow: hidden
+            }
+        </style>
     </head>
-    <body  style="height:100%;">
-        <iframe src="https://odajs.github.io/js-repaint-perfs/" width="100%" height="100%" align="left">
+    <body style="height:100%;">
+        <iframe src="https://odajs.github.io/js-repaint-perfs/" width="100%" height="100%" align="left" onload="_onload">
             Ваш браузер не поддерживает плавающие фреймы!
         </iframe>
     </body>
-
 </html>

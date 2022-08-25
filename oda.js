@@ -1685,7 +1685,7 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, renderId, $parent, pars) {
-        if (this.$sleep && !this.$wake) return;
+        // if (this.$sleep && !this.$wake) return;
         if (renderId !== renderCounter)
             return;
         if ($parent) {
@@ -1712,11 +1712,12 @@ if (!window.ODA) {
                 $el = $el.slotTarget;
             }
             else if ($el.nodeName !== tag) {
-                console.log('replace', $el.nodeName, tag);
-                const before = $el.__before ??= Object.create(null);
-                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
-                el.__before ??= Object.create(null);
-                el.__before[$el.nodeName] = $el;
+                // console.log('replace', $el.nodeName, tag);
+                // const before = $el.__before ??= Object.create(null);
+                // const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                // el.__before ??= Object.create(null);
+                // el.__before[$el.nodeName] = $el;
+                const el = createElement.call(this, src, tag, $el);
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
