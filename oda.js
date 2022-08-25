@@ -1594,6 +1594,7 @@ if (!window.ODA) {
             let items = exec.call(this, fn, p);
             if (items instanceof Promise){
                 items = await items;
+                console.log('items instanceof Promise', items)
             }
             else if (typeof items === 'string')
                 items = items.split('');
@@ -1615,7 +1616,7 @@ if (!window.ODA) {
             const forFunc = (item, index)=>{
                 return { child, params: [...p, item, index, items, index] }
             }
-            console.log('forDirective', items.length);
+            console.log('forDirective', expr, items.length);
             return items.map(forFunc);
         };
         h.src = child;
@@ -1713,12 +1714,11 @@ if (!window.ODA) {
                 $el = $el.slotTarget;
             }
             else if ($el.nodeName !== tag) {
-                // console.log('replace', $el.nodeName, tag);
-                // const before = $el.__before ??= Object.create(null);
-                // const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
-                // el.__before ??= Object.create(null);
-                // el.__before[$el.nodeName] = $el;
-                const el = createElement.call(this, src, tag, $el);
+                console.log('replace', $el.nodeName, tag);
+                const before = $el.__before ??= Object.create(null);
+                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                el.__before ??= Object.create(null);
+                el.__before[$el.nodeName] = $el;
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
