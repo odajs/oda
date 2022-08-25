@@ -1688,8 +1688,10 @@ if (!window.ODA) {
     }
     async function updateDom(src, $el, renderId, $parent, pars) {
         if (this.$sleep && !this.$wake) return;
-        // if (renderId !== renderCounter)
-        //     return;
+        if (renderId !== renderCounter){
+            console.warn('отмена 1')
+            return;
+        }
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1743,6 +1745,11 @@ if (!window.ODA) {
                         const node = items[j]
                         list.push(updateDom.call(this, node.child, elem, renderId, $el, node.params))
                     }
+                    if (renderId !== renderCounter){
+                        console.warn('отмена')
+                        return;
+                    }
+
                     await Promise.all(list);
                     idx += items.length;
                     let el = $el.childNodes[idx];

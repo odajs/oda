@@ -129,7 +129,11 @@ ODA({is: 'oda-number',
                     value = value.slice(0, start) + value.slice(end);
                 }
                 const curPrec = value.length - value.indexOf(this.decimalSeparator) - this.decimalSeparator.length;
-                if (curPrec < this.precision) offset -= (this.precision - curPrec);
+                if (curPrec < this.precision) {
+                    offset -= (this.precision - curPrec);
+                    if (start < decimalPos)
+                        offset -= this.decimalSeparator.length;
+                }
                 this.selectionFromEnd = length - end - offset;
                 value = value.replace(/\s/g, '');//value.replaceAll(this.thousandSeparator, '');
                 this.value = (+value / (this.percent ? 100 : 1));
