@@ -324,7 +324,7 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                if (!this.domHost && this.parentElement !== document.body){
+                if (!this.domHost/* && this.parentElement !== document.body*/){
                     this.$wake = true;
                     this.style.setProperty?.('visibility', 'hidden');
                 }
@@ -467,16 +467,16 @@ if (!window.ODA) {
                     }
                 }
                 // else {
-                    this.interval('render-interval', ()=>{
-                        for (const prop of this.$core.reflects) {
-                            const val = this[prop.name]
-                            if (val || val === 0)
-                                this.setAttribute(prop.attrName, val === true ? '' : val);
-                            else
-                                this.removeAttribute(prop.attrName);
-                        }
-                        this.render();
-                    })
+                this.debounce('render-interval', ()=>{
+                    for (const prop of this.$core.reflects) {
+                        const val = this[prop.name]
+                        if (val || val === 0)
+                            this.setAttribute(prop.attrName, val === true ? '' : val);
+                        else
+                            this.removeAttribute(prop.attrName);
+                    }
+                    this.render();
+                })
 
                 // }
 
@@ -487,16 +487,19 @@ if (!window.ODA) {
                 callHook.call(this, 'onRender');
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
-                        this.$wake = false;
-                        this.style.removeProperty?.('visibility');
-                        callHook.call(this, 'onVisible');
-                        // console.log(this,  'visibility')
+                        if (this.$wake){
+                            this.$wake = false;
+                            this.style.removeProperty?.('visibility');
+                            callHook.call(this, 'onVisible');
+                        }
                     }, 100)
-                    this.interval('force-show', ()=>{
-                        this.$wake = false;
-                        this.style.removeProperty?.('visibility');
-                        callHook.call(this, 'onVisible');
-                    }, 500)
+                    this.async(()=>{
+                        if (this.$wake){
+                            this.$wake = false;
+                            this.style.removeProperty?.('visibility');
+                            callHook.call(this, 'onVisible');
+                        }
+                    }, 1000)
                 }
             }
             resolveUrl(path) {
