@@ -1687,9 +1687,9 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, renderId, $parent, pars) {
-        // if (this.$sleep && !this.$wake) return;
-        if (renderId !== renderCounter)
-            return;
+        if (this.$sleep && !this.$wake) return;
+        // if (renderId !== renderCounter)
+        //     return;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1881,7 +1881,8 @@ if (!window.ODA) {
         rid = requestAnimationFrame(raf);
     }
     async function raf() {
-        renderCounter = rid
+        renderCounter = rid;
+        console.log(renderCounter)
         while (renderQueue.length){
             await renderQueue.shift()?.(renderCounter);
         }
