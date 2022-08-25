@@ -1679,14 +1679,14 @@ if (!window.ODA) {
         return $el;
     }
     let inRender = false;
-    async function render(renderId) {
+    async function render() {
         if (!inRender) {
             inRender = true;
-            await updateDom.call(this, this.$core.node, this.$core.shadowRoot, renderId);
+            await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
             inRender = false;
         }
     }
-    async function updateDom(src, $el, renderId, $parent, pars) {
+    async function updateDom(src, $el, $parent, pars) {
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1738,7 +1738,7 @@ if (!window.ODA) {
                     for(let j = 0; j<items.length; j++){
                         const elem = children[idx + j];
                         const node = items[j]
-                        list.push(updateDom.call(this, node.child, elem, renderId, $el, node.params))
+                        list.push(updateDom.call(this, node.child, elem, $el, node.params))
                     }
                     await Promise.all(list);
                     idx += items.length;
@@ -1754,7 +1754,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, renderId, $el, pars);
+                    await updateDom.call(this, h, el, $el, pars);
                     idx++;
                 }
             }
@@ -1804,13 +1804,13 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, renderId);
+                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot);
             }
             else if ($el.localName === 'slot') {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
                     if (el.$core && !el.$sleep) {
-                        updateDom.call(el, el.$core.node, el.$core.shadowRoot, renderId);
+                        updateDom.call(el, el.$core.node, el.$core.shadowRoot);
                     }
                 }
             }
@@ -1879,9 +1879,8 @@ if (!window.ODA) {
     }
     async function raf() {
         renderCounter = rid;
-        console.log(renderCounter)
         while (renderQueue.length){
-            await renderQueue.shift()?.(renderCounter);
+            await renderQueue.shift()?.();
         }
         rid = 0;
     }
