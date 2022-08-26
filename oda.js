@@ -499,7 +499,7 @@ if (!window.ODA) {
                             this.style.removeProperty?.('visibility');
                             callHook.call(this, 'onVisible');
                         }
-                    }, 1000)
+                    }, 500)
                 }
             }
             resolveUrl(path) {
