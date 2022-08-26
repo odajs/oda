@@ -19,7 +19,7 @@ ODA({ is: 'oda-html', imports: '@oda/pell-editor, @oda/splitter2',
             list: ['pell', 'ace'],
             save: true,
             set(v) {
-                this.isReady = false,
+                this.isReady = false;
                 this.src = this.source;
                 this.async(() => this.isReady = true, 100);
             }

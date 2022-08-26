@@ -128,7 +128,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
     </style>
     <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
         <div class="vertical flex main">
-            <label>{{cell?.structure?.label}}</label>
+            <h3>{{cell?.structure?.label}}</h3>
             <div ~is="cell?.cell_extType || cellType" class="editor" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ~html="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
         </div>
@@ -136,7 +136,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
     <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{cell?.label || cell?.cell_type || ''}}</div>
     <oda-jupyter-toolbar ~if="!readOnly && focused" ~style="{top: '-' + iconSize + 'px'}"></oda-jupyter-toolbar>
     `,
-    // notebook: {},
     set cell(n) {
         if (n) {
             this.src = n.cell_type;
@@ -157,7 +156,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
     cellType: 'div',
     observers: [
         function _focused(focused) {
-            if (!focused) this.editMode = false; 
+            if(focused) {
+                this.focusedNode = this.cell.structure;
+            }
+            if (!focused) this.editMode = false;
         }
     ],
     listeners: {
@@ -195,7 +197,6 @@ ODA({ is: 'oda-jupyter-toolbar', template: /*template*/`
     <span style="width: 8px"></span>
     <oda-button allow-toggle ::toggled="editMode" :icon-size :icon="editMode?'icons:close':'editor:mode-edit'" @tap="editMode = !editMode"></oda-button>
     `,
-    // notebook: {},
     enableSettings() {
         return Object.keys(this.control?.props || {}).length > 0;
     },
