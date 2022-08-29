@@ -13,8 +13,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             :host {
                 display: block;
                 position: relative;
-                height: 100%;
-                overflow: auto;
+                @apply --flex;
             }
             .ace_content{
                 min-height: 100%;
@@ -80,7 +79,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                         try {
                             let s = n.replace('ace/mode/', '');
                             await import(`./src/snippets/${s}.js`);
-                        } catch (e) { 
+                        } catch (e) {
                             console.error(e)
                         }
                         this.editor?.session?.setMode('ace/mode/' + n);
@@ -128,7 +127,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             default: 16,
             save: true
         },
-        maxLines: Infinity,
+        maxLines: 0,
         minLines: 3,
         fixedWidthGutter: false,
         firstLineNumber: 1,
@@ -202,7 +201,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             bindKey: {win: "Ctrl-Q", mac: "Cmd-Q"},
             exec: () => {
                 // https://github.com/beautify-web/js-beautify
-                const 
+                const
                     mode = this.editor.session.getMode().$id,
                     fn = mode.includes('html') ? html_beautify : js_beautify,
                     // fn = mode.includes('html') ? html_beautify : mode.includes('css') ? css_beautify : js_beautify,
