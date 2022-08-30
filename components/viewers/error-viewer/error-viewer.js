@@ -2,12 +2,15 @@ ODA({
     is: 'oda-error-viewer', imports: '@oda/ace-editor',
     template: /*html*/`
     <style>:host{@apply --vertical; }</style>
-    <div ~for="messages" style="margin-bottom: 8px;align-items: center;" horizontal>{{item}}<oda-button @tap="_gotoError(item)" icon="enterprise:target"></oda-button> </div>
+    <div style="margin-bottom: 8px;align-items: center;" horizontal>
+        <div>{{message}}</div>
+        <oda-button @tap="_gotoError(message)" icon="enterprise:target"></oda-button>
+    </div>
     <oda-ace-editor :value="code" :mode></oda-ace-editor>
     `,
-    messages: [],
+    message: '',
     set code(code) {
-        this.async(() => this._gotoError(this.messages?.[0]), 100)
+        this.async(() => this._gotoError(this.message), 100)
     },
     mode: 'xquery',
     _gotoError(message) {
