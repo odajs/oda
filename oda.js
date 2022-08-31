@@ -466,20 +466,18 @@ if (!window.ODA) {
                         }, 100)
                     }
                 }
-                // else {
-                this.debounce('render-interval', ()=>{
-                    for (const prop of this.$core.reflects) {
-                        const val = this[prop.name]
-                        if (val || val === 0)
-                            this.setAttribute(prop.attrName, val === true ? '' : val);
-                        else
-                            this.removeAttribute(prop.attrName);
-                    }
-                    this.render();
-                })
-
-                // }
-
+                else {
+                    this.interval('render-interval', () => {
+                        for (const prop of this.$core.reflects) {
+                            const val = this[prop.name]
+                            if (val || val === 0)
+                                this.setAttribute(prop.attrName, val === true ? '' : val);
+                            else
+                                this.removeAttribute(prop.attrName);
+                        }
+                        this.render();
+                    })
+                }
             }
             render() {
                 if (!this.$core.shadowRoot) return;
@@ -1617,7 +1615,7 @@ if (!window.ODA) {
             const forFunc = (item, index)=>{
                 return { child, params: [...p, item, index, items, index] }
             }
-            console.log('forDirective', expr, items.length, renderCounter);
+            console.log('forDirective', this, expr, items.length, renderCounter);
             return items.map(forFunc);
         };
         h.src = child;
