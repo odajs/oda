@@ -10,7 +10,7 @@
     "name": "spike-net",
     "label": "Импульсная нейронная сеть (модель Ижикевича)",
     "content": {
-      "link": "index.html"
+      "link": "../../neuronet/spike-net/index.html"
     }
   },
   {

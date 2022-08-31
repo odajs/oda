@@ -6,16 +6,16 @@
       "link": "index.html"
     }
   },
-  {
-    "name": "sierpinski",
-    "label": "Sierpinski triangle animation test",
+    {
+    "name": "performance",
+    "label": "Repaint rate test",
     "content": {
       "link": "index.html"
     }
   },
   {
-    "name": "performance",
-    "label": "Repaint rate test",
+    "name": "sierpinski",
+    "label": "Sierpinski triangle animation test",
     "content": {
       "link": "index.html"
     }
