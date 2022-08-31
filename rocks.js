@@ -123,7 +123,7 @@ if (!globalThis.KERNEL) {
     function getBlockId(){
         return ++_blockId;
     }
-    let _currentBlock = 0;
+
     function getBlock(options, key) {
         let block = options.blocks[key];
         if (!block){
@@ -157,9 +157,14 @@ if (!globalThis.KERNEL) {
         }
         return val;
     }
+    let _currentBlock = 0;
+    let _beforeBlock = 0;
     function resetDeps(block, stack = [], recurse) {
         if (_currentBlock === block.id)
             return false;
+        if (_beforeBlock === block.id)
+            return false;
+        _beforeBlock = _currentBlock;
         _currentBlock = block.id;
         if (!block.deps?.length)
             return false;

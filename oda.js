@@ -1752,7 +1752,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars);
+                    /*await */updateDom.call(this, h, el, $el, pars);
                     idx++;
                 }
             }
