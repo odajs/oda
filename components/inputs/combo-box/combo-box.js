@@ -21,7 +21,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         }
     </style>
     <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
-    <oda-button class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
+    <oda-button id="combo-btn" class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
     `,
     get params() {
         return {
@@ -112,6 +112,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     dropDown(filter) {
         this._setFocus();
         this.dropDownControl ??= this.createDropDownControl();
+        if (!this.dropDownControl) return;
         this.dropDownControl.filter = filter;
         if (!this._dd) {
             // if (this.items?.length)
@@ -227,7 +228,9 @@ ODA({is: 'oda-combo-list',
                 this.focusedItem = this.rows[idx - 1];
         }
     },
-    focusedItem: null,
+    set focusedItem(v) {
+        this.fire('focused-item-changed', v); // ToDo - temporary solution, doesn't always work
+    },
     items: [],
     get rows() {
         if (this.filter) {
