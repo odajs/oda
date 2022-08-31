@@ -243,7 +243,7 @@ ODA({is: 'oda-hexagon',
           }
         </style>
         <div class="flex vertical container" style="overflow: visible; align-items: center; align-self: center;">
-            <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" :icon-size style="position: initial;"></div>
+            <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
         </div>
 
       `,
