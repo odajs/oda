@@ -2459,6 +2459,14 @@ if (!window.ODA) {
             };
         }
     }
+    Object.defineProperty(ODA, 'language', {
+        get() {
+            return globalThis.localStorage.getItem('oda-language') || navigator.language;
+        },
+        set(v) {
+            globalThis.localStorage.setItem('oda-language', v);
+        }
+    });
     ODA.translate = (val)=>{
         return val;
     }
