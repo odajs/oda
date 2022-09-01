@@ -90,7 +90,6 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
                 opacity: .5;
                 align-items: center;
                 padding: 9px 4px;
-                filter: invert(1);
             }
             span {
                 padding: 4px 8px;
