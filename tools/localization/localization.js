@@ -1,4 +1,3 @@
-import ODA from '../../oda.js';
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
 
