@@ -1271,8 +1271,7 @@ if (!window.ODA) {
         if (el.nodeType === 3) {
             let value = el.textContent.trim();
             if (!value) return;
-            src.translate = (el.parentElement?.nodeName === 'STYLE' || el.parentElement?.getAttribute('is') === 'style') ? false : true;
-            if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value)) || ( src.translate /*&& ODA.localization*/ ) ) {
+            if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value))){
                 let expr = value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
                     expr += '()';
@@ -1280,14 +1279,8 @@ if (!window.ODA) {
                 src.text = src.text || [];
                 src.text.push(function textContent($el) {
                     let val = exec.call(this, fn, $el.$for);
-                    if (typeof val === 'object') return;
-                    //todo  localization
-                    if (src.translate && /*ODA.localization?.dictionary &&*/ val) {
-                        //console.log('!!')
-                        val = ODA.translate(val) //translateVal(val)
-                    }
-                    if ($el.textContent == val) return
-                    $el.textContent = val;
+                    if ($el.textContent != val/* && typeof val !== 'object'*/)
+                        $el.textContent = val;
                 });
             }
             else {
