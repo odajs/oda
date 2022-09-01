@@ -43,9 +43,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     _setFocus(select) {
         this.async(() => {
-            this.input.focus();
+            this.input?.focus();
             if (select)
-                this.input.select(0, 1000);
+                this.input?.select(0, 1000);
         })
     },
     _tap(e) {
@@ -63,7 +63,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     set value(n) {
         this.text = undefined;
         this.async(() => {
-            this.input.select(0, 1000);
+            this.input?.select(0, 1000);
         })
     },
     props: {
