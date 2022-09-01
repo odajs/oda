@@ -81,7 +81,7 @@ ODA({ is: 'oda-splitter2', template: `
                 nextSibling.style.pointerEvents = 'none';
             }
 
-            window.dispatchEvent(new Event('resize'));
+            // window.dispatchEvent(new Event('resize'));
         }
         const upHandler = (e) => {
             splitter.style.removeProperty('cursor');
