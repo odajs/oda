@@ -1615,7 +1615,7 @@ if (!window.ODA) {
             const forFunc = (item, index)=>{
                 return { child, params: [...p, item, index, items, index] }
             }
-            console.log('forDirective', this, expr, items.length, renderCounter);
+            // console.log('forDirective', this, expr, items.length, renderCounter);
             return items.map(forFunc);
         };
         h.src = child;

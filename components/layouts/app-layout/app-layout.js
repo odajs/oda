@@ -1,5 +1,5 @@
-import '../form-layout/form-layout.js';
-import '../splitter/splitter.js';
+// import '../form-layout/form-layout.js';
+// import '../splitter/splitter.js';
 // const DEFAULT_DRAWER_WIDTH = 300;
 ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/touch-router', extends: 'oda-form-layout, oda-touch-router',
     template: /*html*/`
@@ -436,7 +436,8 @@ ODA({is: 'app-layout-drawer',
 
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
-            <div ~if="showTitle || focused?.title" invert class="horizontal shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="align-items: center; padding: 1px; background-color: var(--content-background);" @tap.stop>
+            <div ~if="showTitle || focused?.title" invert class="horizontal content shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="align-items: center; padding: 1px" @tap.stop>
+                <oda-icon :icon-size ~if="focused?.titleIcon" :icon="focused?.titleIcon"></oda-icon>
                 <div ~if="focused?.title || allowPin" style="line-height: 2em; padding: 0 8px; align-self: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" class="flex">{{focused?.title}}</div>
                 <oda-button ~if="allowPin &&  domHost.offsetWidth > domHost.offsetHeight" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size style="transform: scale(.5)"></oda-button>
 <!--                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="focused = null"></oda-button>-->
@@ -493,6 +494,7 @@ ODA({is: 'app-layout-drawer',
                     // this.last = n; // swipeX
                     // this.reduceSomeDrawers();
                     this.lastFocused = null;
+                    n.titleIcon = n.getAttribute('title-icon')
                     n.hidden = false;
                 } else {
                     this.lastFocused = o;
