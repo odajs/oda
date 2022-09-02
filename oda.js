@@ -409,12 +409,14 @@ if (!window.ODA) {
                 return prototype.$system.observedAttributes;
             }
             _retractSlots() {
-                this.$core.slotted.forEach(el => {
-                    el.slotProxy?.parentNode?.replaceChild(el, el.slotProxy);
-                    el._slotProxy = el.slotProxy;
-                    el.slotProxy = undefined;
-                });
-                this.$core.slotted.splice(0, this.$core.slotted.length);
+                this.debounce('_retractSlots', () => {
+                    this.$core.slotted.forEach(el => {
+                        el.slotProxy?.parentNode?.replaceChild(el, el.slotProxy);
+                        el._slotProxy = el.slotProxy;
+                        el.slotProxy = undefined;
+                    });
+                    this.$core.slotted.splice(0, this.$core.slotted.length);
+                }, 50);
             }
             attributeChangedCallback(name, o, n) {
                 if (o === n) return;
