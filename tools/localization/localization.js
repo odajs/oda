@@ -1,5 +1,8 @@
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
+Text.textContent = function (n){
+
+}
 
 function getFirstBrowserLanguage() {
     let nav = window.navigator, i, language,
