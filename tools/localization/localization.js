@@ -1,30 +1,41 @@
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
-Text.textContent = function (n){
 
+const textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
+const textGet = textContent.get
+textContent.get = function() { 
+
+    return textGet.call(this)
 }
+const textSet = textContent.set
+textContent.set = function(c) {
 
-function getFirstBrowserLanguage() {
-    let nav = window.navigator, i, language,
-        browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'];
+    textSet.call(this,c)
+}
+Object.defineProperty(Node.prototype,'textContent',textContent)
 
-    if (Array.isArray(nav.languages)) {  // support for HTML 5.1 "navigator.languages"
-        for (i = 0; i < nav.languages.length; i++) {
-            language = nav.languages[i];
-            if (language && language.length) { return language; }
-        }
-    }
 
-    for (i = 0; i < browserLanguagePropertyKeys.length; i++) {  // support for other well known properties in browsers
-        language = nav[browserLanguagePropertyKeys[i]];
-        if (language && language.length) { return language; }
-    }
-    return null;
-};
+// function getFirstBrowserLanguage() {
+//     let nav = window.navigator, i, language,
+//         browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'];
+
+//     if (Array.isArray(nav.languages)) {  // support for HTML 5.1 "navigator.languages"
+//         for (i = 0; i < nav.languages.length; i++) {
+//             language = nav.languages[i];
+//             if (language && language.length) { return language; }
+//         }
+//     }
+
+//     for (i = 0; i < browserLanguagePropertyKeys.length; i++) {  // support for other well known properties in browsers
+//         language = nav[browserLanguagePropertyKeys[i]];
+//         if (language && language.length) { return language; }
+//     }
+//     return null;
+// };
 
 // console.log(getFirstBrowserLanguage());
 
-Localization.currentLocal = getFirstBrowserLanguage()
+Localization.currentLocal = ODA.language // getFirstBrowserLanguage()
 // console.log(Localization.currentLocal)
 
 // Localization.currentLocal = /* odaUserLocal || */ window.navigator.userLanguage || window.navigator.language || window.navigator.systemLanguage
