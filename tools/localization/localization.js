@@ -7,15 +7,15 @@ textContent.get = function() {
     
     if (this.nodeType === 3) {
         const test = (this.__CurTranslate == undefined) || (this.__CurLocal == undefined) || (this.__CurTranslate == '') || (this.__CurLocal != ODA.language)
-        // console.log (test)
+        //console.log ((this.__CurTranslate == undefined) , (this.__CurLocal == undefined) , (this.__CurTranslate == '') , (this.__CurLocal != ODA.language))
         if (test) {
             this.__CurLocal = ODA.language         // Хорошо бы проверять текущий язык не на каждой опреции.   
             const defVal =  textGet.call(this)
             // const tranletable = !(this.parentElement?.nodeName === 'STYLE' || this.parentElement?.getAttribute('is') === 'style') || (/\{\{((?:.|\n)+?)\}\}/g.test(defVal))
-            const tranletable = false // (new RegExp("^[A-Za-z-.?!)(,:\s ]+$")).test(defVal)
+            const tranletable = (new RegExp("^[A-Za-z-.?!)(,:\s ]+$")).test(defVal)
             // console.log ('sss')
             if (tranletable) {
-                console.log(this.nodeType,defVal)
+                // console.log(this.nodeType,defVal)
                 const testLeter =  new RegExp('[a-z].*?','gi')
 
                 const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
@@ -24,18 +24,22 @@ textContent.get = function() {
                 phraze.forEach(v => ODA.localization.phraze[v]='')
                 words.forEach(v => ODA.localization.words[v]='')
 
-                const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi");
-                const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi");
-
+                const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi")
+                const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi")
+                
                 var newVal = defVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
                                     .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
 
                 this.__CurTranslate = newVal
+                return newVal
                 // console.log (newVal)
-            } else this.__CurTranslate = defVal
+            } else this.__CurTranslate = defVal; return this.__CurTranslate
         } else return this.__CurTranslate
     }
-    return textGet.call(this)
+    // const rez1 = textGet.call(this)
+    // const rez2 = this.__CurTranslate
+    // console.log (this.__CurTranslate,rez1==rez2 )
+    else return textGet.call(this)
 }
 // const textSet = textContent.set
 // textContent.set = function(val) {
