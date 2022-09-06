@@ -1,10 +1,8 @@
 ODA({ is: 'oda-splitter2', template: `
         <style>
             :host {
-                height: {{direction === 'vertical' ? '100%' : (size ? size + 'px' : '2px')}};
-                min-height: {{(size ? size + 'px' : '2px')}};
-                width: {{direction === 'vertical' ? (size ? size + 'px' : '2px') : '100%'}};
-                min-width: {{(size ? size + 'px' : '2px')}};
+                height: {{direction === 'vertical' ? '100%' : (size + 'px')}};
+                width: {{direction === 'vertical' ? (size + 'px') : '100%'}};
                 cursor: {{direction === 'vertical' ? 'ew-resize' : 'ns-resize'}};
                 background-color: {{color || 'lightgray'}};
                 z-index: 11;

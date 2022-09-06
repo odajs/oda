@@ -1,58 +1,78 @@
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
 
-const textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
-const textGet = textContent.get
-textContent.get = function() { 
+function translate(defVal) {
+    const testLeter =  new RegExp('[a-z].*?','gi')
+
+    const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+    const words = defVal.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
+
+    phraze.forEach(v => ODA.localization.phraze[v]='')
+    words.forEach(v => ODA.localization.words[v]='')
+
+    const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi")
+    const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi")
     
-    if (this.nodeType === 3) {
-        const test = (this.__CurTranslate == undefined) || (this.__CurLocal == undefined) || (this.__CurTranslate == '') || (this.__CurLocal != ODA.language)
-        //console.log ((this.__CurTranslate == undefined) , (this.__CurLocal == undefined) , (this.__CurTranslate == '') , (this.__CurLocal != ODA.language))
-        if (test) {
-            this.__CurLocal = ODA.language         // Хорошо бы проверять текущий язык не на каждой опреции.   
-            const defVal =  textGet.call(this)
-            // const tranletable = !(this.parentElement?.nodeName === 'STYLE' || this.parentElement?.getAttribute('is') === 'style') || (/\{\{((?:.|\n)+?)\}\}/g.test(defVal))
-            const tranletable = (new RegExp("^[A-Za-z-.?!)(,:\s ]+$")).test(defVal)
-            // console.log ('sss')
-            if (tranletable) {
-                // console.log(this.nodeType,defVal)
-                const testLeter =  new RegExp('[a-z].*?','gi')
+    var newVal = defVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
+                        .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
 
-                const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-                const words = defVal.split(/\s+/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
-
-                phraze.forEach(v => ODA.localization.phraze[v]='')
-                words.forEach(v => ODA.localization.words[v]='')
-
-                const rePhraze = new RegExp('\\b' + Object.keys( ODA.localization.dictionary.phraze ).join('\\b|\\b') + '\\b',"gi")
-                const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b',"gi")
-                
-                var newVal = defVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md] )
-                                    .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
-
-                this.__CurTranslate = newVal
-                return newVal
-                // console.log (newVal)
-            } else this.__CurTranslate = defVal; return this.__CurTranslate
-        } else return this.__CurTranslate
-    }
-    // const rez1 = textGet.call(this)
-    // const rez2 = this.__CurTranslate
-    // console.log (this.__CurTranslate,rez1==rez2 )
-    else return textGet.call(this)
+    //this.__CurTranslate = newVal
+    console.log(newVal)
+    return newVal || ''
 }
+
+let textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
+let textGet = textContent.get
+textContent.get = function() { 
+    if (this.nodeType != 3) 
+        return textGet.call(this)
+    let tr = this.__translate;
+    if (tr === undefined) { 
+        tr = textGet.call(this)
+        if (tr?.trim()) {
+            const parent = this.parentElement?.$node;
+            if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
+                tr = translate(tr) 
+        }
+
+        this.__translate = tr;
+    
+    }
+
+
+    return tr // translate(textGet.call(this))
+
+}
+Object.defineProperty(Node.prototype,'textContent',textContent)
+
+// textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
 // const textSet = textContent.set
 // textContent.set = function(val) {
-//     if (!this.__alowtranslate) {}
-//     console.log(this.nodeType)
-//     if (this.nodeType === 3) {
-//         this.__tranletable = 1// !(this.parentElement?.nodeName === 'STYLE' || this.parentElement?.getAttribute('is') === 'style') 
-//                               //  || (/\{\{((?:.|\n)+?)\}\}/g.test(val))
-//         console.log(this.tranletable)
+//     // this.__translate = undefined;
+
+
+//     if (this.nodeType != 3) 
+//         textSet.call(this, val)
+//        // return textGet.call(this)
+//     let tr = this.__translate;
+//     if (tr === undefined) { 
+//         tr = textGet.call(this)
+//         if (tr?.trim()) {
+//             const parent = this.parentElement?.$node;
+//             if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
+//                 tr = translate(tr) 
+//         }
+
+//         this.__translate = tr;
+    
 //     }
-//     textSet.call(this,val)
+
+//     textSet.call(this, tr)
+
+
+    
 // }
-Object.defineProperty(Node.prototype,'textContent',textContent)
+// Object.defineProperty(Node.prototype,'textContent',textContent)
 
 
 // function getFirstBrowserLanguage() {
