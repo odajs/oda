@@ -1,7 +1,10 @@
 import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
+// ODA.textProcessors ??= []
+// ODA.textProcessors.push(translate)
 
-function translate(defVal) {
+function translate(defVal = '') {
+    // console.log(typeof defVal)
     const testLeter =  new RegExp('[a-z].*?','gi')
 
     const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a =>  testLeter.test(a) )
@@ -17,14 +20,28 @@ function translate(defVal) {
                         .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
 
     //this.__CurTranslate = newVal
-    console.log(newVal)
+    // console.log(newVal)
     return newVal || ''
 }
 
-let textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
-let textGet = textContent.get
+
+const textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
+const textSet = textContent.set;
+let textGet = textContent.get;
+textContent.set = function(val) {
+    let s = val;
+    // if(this._originalText !== val){
+        if(this.isConnected && this.nodeType === 3){
+            const parent = this.parentElement?.$node;
+                if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
+                    s = translate(val)
+        }
+        // this._originalText = val;
+    // }
+    textSet.call(this, s)
+}
 textContent.get = function() { 
-    if (this.nodeType != 3) 
+    if (!this.isConnected || this.nodeType != 3) 
         return textGet.call(this)
     let tr = this.__translate;
     if (tr === undefined) { 
@@ -39,40 +56,46 @@ textContent.get = function() {
     
     }
 
-
+    // this.innerText = tr;
     return tr // translate(textGet.call(this))
 
 }
 Object.defineProperty(Node.prototype,'textContent',textContent)
 
-// textContent = Object.getOwnPropertyDescriptor(Node.prototype,'textContent') //Node.textContent
-// const textSet = textContent.set
-// textContent.set = function(val) {
-//     // this.__translate = undefined;
 
 
-//     if (this.nodeType != 3) 
-//         textSet.call(this, val)
-//        // return textGet.call(this)
-//     let tr = this.__translate;
-//     if (tr === undefined) { 
-//         tr = textGet.call(this)
-//         if (tr?.trim()) {
-//             const parent = this.parentElement?.$node;
-//             if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
-//                 tr = translate(tr) 
-//         }
+    // if (this.nodeType != 3) 
+    //     textSet.call(this, val)
+    //    // return textGet.call(this)
+    // let tr = this.__translate;
+    // if (tr === undefined) { 
+    //     tr = textGet.call(this)
+    //     if (tr?.trim()) {
+    //         const parent = this.parentElement?.$node;
+    //         if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
+    //             tr = translate(tr) 
+    //     }
 
-//         this.__translate = tr;
+    //     this.__translate = tr;
     
-//     }
+    // }
 
-//     textSet.call(this, tr)
+    // textSet.call(this, val)
 
 
     
 // }
-// Object.defineProperty(Node.prototype,'textContent',textContent)
+// Object.defineProperty(Text.prototype,'data',textContent)
+// Object.defineProperty(Node.prototype,'textContent', {
+//     get(){
+//         return [...this.childNodes].filter(i => i.nodeType === 3).map(i => i.data).join('');
+//     },
+//     set(v){
+//         this.innerText = v;
+//     }
+// })
+// const def = Object.defineProperty
+
 
 
 // function getFirstBrowserLanguage() {
@@ -104,6 +127,7 @@ Localization.phraze = {}
 Localization.words = {}
 Localization.dictionary = { phraze: { '_': '_' }, words: { '_': '_' } }
 ODA.translate = (val) => {
+    
     if (typeof val !== 'string') return val;
     const testLeter = new RegExp('[a-z].*?', 'gi')
     //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }

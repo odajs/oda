@@ -4,9 +4,17 @@
     import "../../oda.js"
     import "./localization.js"
 
-    ODA({is:'oda-localisation-test', template: `this is english text` }) 
-
-
+    ODA({is:'oda-localisation-test', imports:'@oda/button', template: `
+        this is english text<br>
+        FAQ
+        <oda-button :label='test1'></oda-button>
+        <oda-button :label='"New Watchers"'></oda-button>
+        `,
+        props: {
+            test1:'test button'
+        }
+    }) 
 </script>
+<!-- <script src="./test.js"></script> -->
 
 <oda-localisation-test></oda-localisation-test>
