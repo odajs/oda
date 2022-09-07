@@ -38,14 +38,14 @@ ODA({is: 'oda-hexagon-layout',
     height: 5,
     tr: {},
     get size(){
-        return Math.max(this.iconSize, 32) * 2;
+        return Math.min(48, Math.max(this.iconSize, 24)) * 3;
     },
     get h(){
         return (this.size / (Math.sqrt(3)/2));
     },
     props:{
         iconSize: {
-            default: 48,
+            default: 24,
             save: true,
         },
         color1: {
@@ -112,6 +112,10 @@ ODA({is: 'oda-hexagon-layout',
     },
     __drop(e, hex){
         console.warn('method __drop not implemented!');
+    },
+    afterLoadSettings() {
+        // временно, что бы очистить iconsSize у уже сохранённых иконок
+        this.data.forEach(i => delete i.props.iconSize) //todo: убрать
     }
 })
 

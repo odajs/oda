@@ -1081,6 +1081,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         this.render();
     },
     scrollToItem(item) {
+        if (this.style.getPropertyValue('visibility') === 'hidden') {
+            return this.async(() => this.scrollToItem(item), 100)
+        }
         item ??= this.focusedRow;
         const idx = this.items.indexOf(item);
         if (idx > -1) {
