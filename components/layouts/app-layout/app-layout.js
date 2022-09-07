@@ -427,7 +427,7 @@ ODA({is: 'app-layout-drawer',
             <div class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
                 <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
             </div>
-            <oda-button style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help"></oda-button>
+            <oda-button ~is="item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help" ~text="item.is && item.text"></oda-button>
         </div>
 
     </div>
