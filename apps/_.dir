@@ -83,9 +83,16 @@
       "link": "index.html"
     }
   },
-    {
+  {
     "name": "flips",
     "label": "Перевёртыши",
+    "content": {
+      "link": "index.html"
+    }
+  },
+    {
+    "name": "raccoon",
+    "label": "Raccoon",
     "content": {
       "link": "index.html"
     }
