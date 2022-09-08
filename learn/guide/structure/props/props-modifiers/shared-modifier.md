@@ -35,12 +35,12 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            div {
+            #div {
                 border-radius: 50%;
                 background: bisque;
             }
         </style>
-        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 50
@@ -89,13 +89,13 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            div {
+            #div {
                 border-radius: 50%;
                 background: bisque;
                 position: relative;
             }
         </style>
-        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 100
@@ -145,13 +145,13 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            div {
+            #div {
                 border-radius: 50%;
                 background: bisque;
                 position: relative;
             }
         </style>
-        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 100
