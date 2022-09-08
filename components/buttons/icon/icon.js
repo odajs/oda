@@ -28,6 +28,7 @@ ODA({is: 'oda-icon',
             font-size: {{iconSize/3}}px;
             z-index: 1;
             writing-mode: initial;
+            transform: rotate(-{{rotate*2}}deg);
         }
         :host > div {
             position: relative;
