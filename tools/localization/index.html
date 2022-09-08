@@ -6,12 +6,15 @@
 
     ODA({is:'oda-localisation-test', imports:'@oda/button', template: `
         this is english text<br>
-        FAQ
+        
+        {{FAQ}}
         <oda-button :label='test1'></oda-button>
         <oda-button :label='"New Watchers"'></oda-button>
+        <oda-button :label='FAQ'></oda-button>
         `,
         props: {
-            test1:'test button'
+            test1:'test button',
+            FAQ:'FaQ'
         }
     }) 
 </script>
