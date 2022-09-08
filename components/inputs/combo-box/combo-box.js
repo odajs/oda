@@ -19,6 +19,9 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             width: 0px;
             padding: 4px;
         }
+        #combo-btn {
+            margin-left: auto;
+        }
     </style>
     <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
     <oda-button id="combo-btn" class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
