@@ -86,13 +86,17 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
             :host(:hover) {
                 @apply --active;
             }
+            :host(:hover) div > oda-icon {
+                opacity: 1;
+            }
             div > oda-icon {
-                opacity: .5;
+                opacity: .8;
                 align-items: center;
                 padding: 9px 4px;
             }
             span {
                 padding: 4px 8px;
+                white-space: nowrap;
             }
             .icon-box {
                 min-width: {{iconSize}}px;
