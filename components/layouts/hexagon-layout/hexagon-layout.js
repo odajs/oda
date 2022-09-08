@@ -46,7 +46,7 @@ ODA({is: 'oda-hexagon-layout',
     props:{
         iconSize: {
             default: 24,
-            save: true,
+            // save: true,
         },
         color1: {
             default: 'whitesmoke',
@@ -221,10 +221,10 @@ ODA({is: 'oda-hexagon',
                 top: {{size}}px !important;
           }
           :host(:hover) .block{
-                transform: scale(1.25) !important;
+                transform: scale(2) !important;
           }
           :host .block{
-                transform: scale(1);
+                transform: scale(1.5);
                 transition: top .5s, transform  .5s;
           }
           :host([label])>.container:after{
