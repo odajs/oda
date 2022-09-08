@@ -35,12 +35,12 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            #div {
+            div {
                 border-radius: 50%;
                 background: bisque;
             }
         </style>
-        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 50
@@ -89,13 +89,13 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            #div {
+            div {
                 border-radius: 50%;
                 background: bisque;
                 position: relative;
             }
         </style>
-        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 100
@@ -114,7 +114,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <label>Разрешить сквозной биндинг <input type="checkbox" ::value="properties.size.shared"></label>
+        <label>Разрешить сквозной биндинг <input type="checkbox" ::value="props.size.shared"></label>
         <label>Задайте размер фигуры <input type="range" max="200" min="50" style="width: 25vw" ::value="size"> </label>
         <my-square></my-square>
     `,
@@ -145,13 +145,13 @@ ODA({
     is: 'my-circle',
     template: `
         <style>
-            #div {
+            div {
                 border-radius: 50%;
                 background: bisque;
                 position: relative;
             }
         </style>
-        <div id="div" ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
+        <div ~style="{width: \`\${size}px\`, height: \`\${size}px\`}"></div>
     `,
     props: {
         size: 100

@@ -129,7 +129,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/splitter2', template: /*template*/`
     <div class="vertical flex main" ~if="!collapsedMode || (collapsedMode && editMode)">
         <div class="vertical flex main">
             <h3>{{cell?.structure?.label}}</h3>
-            <div ~is="cell?.cell_extType || cellType" class="editor" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ~html="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
+            <div ~is="cell?.cell_extType || cellType" class="editor" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" ::source="cell.source" ::args="cell.args" ::enable-resize="cell.enableResize" ::fount="cell.fount" ::label="cell.label"></div>
             <oda-splitter2 ~if="control?.enableResize && !editMode" direction="horizontal" size="3" color="gray" style="margin-top: -3px; z-index: 9" resize use_px></oda-splitter2>
         </div>
     </div>
