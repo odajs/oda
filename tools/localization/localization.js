@@ -4,15 +4,45 @@ import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
 Localization.currentLocal = ODA.language  // под вопросом
 
-Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/../../locales/'; // locales path
+Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/locales/'; // locales path
 Localization.inPage = { phraze: {}, words: {} }
 Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
 
-ODA.loadJSON(Localization.path + ODA.language + '.json').then(res => {
-    Localization.dictionary = res
-    Localization.available = true
-}).catch(error => { console.log("no file with correct locale " + ODA.language + '.json') })
+Localization.setLocale = async (rfc_locale) => {
+    let paths = rfc_locale.split('-').map((_,i,ar) => Localization.path + ar.slice(0,i+1).join('-') + '.json')
+    const localesAvailable = await ODA.loadJSON(Localization.path + '_.dir')
+    console.log(localesAvailable)
+        //     Localization.localesAvailable = res
+    // paths.forEach(  (p) => {
+    //     fetch(p,{ method:'HEAD'}).then(response => console.log (response) ).catch(error => console.log(error.message));
+        // fetch(p)
+        //     .then(response => console.log (response) )
+        //     // .then(dictionary =>  console.log (dictionary))
+        //     .catch(error => {
+        //         console.log('!!!!')
+        //     })
+        //     // .catch(error => console.log(error.message));
+        
+
+    // })
+
+    console.log('Localization.setLocale', 'dictionarys')
+}
+// globalThis.top.addEventListener('language-changed', function(){console.log("ss")})
+// language-changed
+// listen('language-changed', 'console.log("ss")', { target: window.top }) 
+// Localization.attached = () => { 
+//     this.listen('language-changed', 'console.log("ss")', { target: window.top }) 
+// },
+// Localization.detached = () => { this.unlisten('language-changed', 'console.log("ss")', { target: window.top }) },
+
+Localization.setLocale(ODA.language)
+
+// ODA.loadJSON(Localization.path + ODA.language + '.json').then(res => {
+//     Localization.dictionary = res
+//     Localization.available = true
+// }).catch(error => { console.log("no file with correct locale " + ODA.language + '.json') })
 
 // ODA.loadJSON(Localization.path + '_.dir').then(res => {
 //     Localization.localesAvailable = res
