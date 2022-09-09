@@ -5,6 +5,15 @@
     import "./localization.js"
 
     ODA({is:'oda-localisation-test', imports:'@oda/button', template: `
+        <style> 
+            .control {display: flex; justify-content: space-evenly; padding:3px;}
+            .btn {border:1px solid grey; border-radius:5px}
+            .btn.true {border-color:green;}
+        </style>
+        <div class='control' > 
+            <oda-button :class='"btn " + isActive(item)' ~for='navigator.languages' :label='item' :icon='flag(item)' @tap='chengeL(item)'></oda-button>
+        </div>
+        {{ODA.language}}
         this is english text<br>
         
         {{FAQ}}
@@ -14,8 +23,22 @@
         `,
         props: {
             test1:'test button',
-            FAQ:'FaQ'
-        }
+            FAQ:'FaQ',
+            aLocale:''
+        },
+        flag(s) {
+            const exclusions = {'en': 'gb','zh': 'cn','uk': 'ua', 'be': 'by',}
+            for (const k in exclusions)  s = s.replace(k, exclusions[k])        
+            s = `flags:${s.slice(0,2).toUpperCase()}`
+            return s;
+        },
+        chengeL(s) { 
+            // console.log(s)
+            ODA.language = s 
+            this.aLocale = s
+        },
+        isActive(a) { return (a==ODA.language || a==  this.aLocale) }
+
     }) 
 </script>
 <!-- <script src="./test.js"></script> -->
