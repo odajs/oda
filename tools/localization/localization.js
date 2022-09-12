@@ -10,24 +10,15 @@ Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
 
 Localization.setLocale = async (rfc_locale) => {
-    let paths = rfc_locale.split('-').map((_,i,ar) => Localization.path + ar.slice(0,i+1).join('-') + '.json')
+    Localization.available = false
+    const paths = rfc_locale.split('-').map((_,i,ar) => ar.slice(0, i+1).join('-') + '.json')
     const localesAvailable = await ODA.loadJSON(Localization.path + '_.dir')
-    console.log(localesAvailable)
-        //     Localization.localesAvailable = res
-    // paths.forEach(  (p) => {
-    //     fetch(p,{ method:'HEAD'}).then(response => console.log (response) ).catch(error => console.log(error.message));
-        // fetch(p)
-        //     .then(response => console.log (response) )
-        //     // .then(dictionary =>  console.log (dictionary))
-        //     .catch(error => {
-        //         console.log('!!!!')
-        //     })
-        //     // .catch(error => console.log(error.message));
-        
-
-    // })
-
-    console.log('Localization.setLocale', 'dictionarys')
+    const availablePaths = paths.filter(p => localesAvailable.includes(p))
+    const dictList = await Promise.all(availablePaths.map( (p) =>   ODA.loadJSON(Localization.path + p)  ))
+    Object.assign(Localization.dictionary.phraze, ...dictList.map(d=>d.phraze))
+    Object.assign(Localization.dictionary.words, ...dictList.map(d=>d.words))
+    if (dictList.length>0) Localization.available = true
+    else console.log('Localization: ','No available dictionary')
 }
 // globalThis.top.addEventListener('language-changed', function(){console.log("ss")})
 // language-changed
@@ -38,20 +29,6 @@ Localization.setLocale = async (rfc_locale) => {
 // Localization.detached = () => { this.unlisten('language-changed', 'console.log("ss")', { target: window.top }) },
 
 Localization.setLocale(ODA.language)
-
-// ODA.loadJSON(Localization.path + ODA.language + '.json').then(res => {
-//     Localization.dictionary = res
-//     Localization.available = true
-// }).catch(error => { console.log("no file with correct locale " + ODA.language + '.json') })
-
-// ODA.loadJSON(Localization.path + '_.dir').then(res => {
-//     Localization.localesAvailable = res
-//     console.log(res)
-//     Localization.lidx = res.findIndex(l => (l.name == Localization.currentLocal))
-//     if ((res.find(l => (l.name == Localization.currentLocal))) != undefined)
-//         ODA.loadJSON(Localization.path + Localization.currentLocal + '.json').then(res => { Localization.dictionary = res;/* console.log(res)*/ })
-//             .catch(error => { console.log("Errol load dictionary: " + error) })
-// }).catch(error => { console.log("Errol load locales available: " + error) })
 
 
 /* Ф-я перевода */
