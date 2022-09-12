@@ -10,9 +10,9 @@
             .btn {border:1px solid grey; border-radius:5px}
             .btn.true {border-color:green;}
         </style>
-        <div class='control' > 
+        <!-- <div class='control' > 
             <oda-button :class='"btn " + isActive(item)' ~for='navigator.languages' :label='item' :icon='flag(item)' @tap='chengeL(item)'></oda-button>
-        </div>
+        </div> -->
         {{ODA.language}}
         this is english text<br>
         
@@ -20,6 +20,10 @@
         <oda-button :label='test1'></oda-button>
         <oda-button :label='"New Watchers"'></oda-button>
         <oda-button :label='FAQ'></oda-button>
+        <oda-button notranslete :label='"ggg"'></oda-button>
+        <div :notranslete='true'>Watchers</div>
+        <div >Watchers</div>
+        Watchers
         `,
         props: {
             test1:'test button',

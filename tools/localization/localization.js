@@ -42,8 +42,8 @@ function translate(defVal = '') {
     phraze.forEach(v => ODA.localization.inPage.phraze[v] = '')
     words.forEach(v => ODA.localization.inPage.words[v] = '')
 
-    const rePhraze = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.phraze).join('\\b|\\b') + '\\b', "gi")
-    const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b', "gi")
+    const rePhraze = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.phraze).join('\\b|\\b') + '\\b', "g")
+    const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b', "g")
 
     var newVal = defVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
         .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
@@ -57,11 +57,17 @@ function translate(defVal = '') {
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent
 const textSet = textContent.set;
 const textGet = textContent.get;
+// let conditionTranslete1 = (el) => Localization.available && !(el.isConnected===false) && el.nodeType === 3
+let conditionTranslete2 = (el) => {
+    const parent = el.parentElement?.$node;
+    console.log(parent?.attributes)
+    return !parent || (!parent?.svg && parent.tag !== 'STYLE' && !parent?.attributes?.notranslete)
+}
 textContent.set = function (val) {
-    // if (!Localization.available) {textSet.call(this, val); break;}
+
     let s = val;
     // if(this._originalText !== val){
-    if ( Localization.available && this.isConnected && this.nodeType === 3) {
+    if ( Localization.available && this.isConnected && this.nodeType === 3 ) {
         const parent = this.parentElement?.$node;
         if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
             s = translate(val)
@@ -71,24 +77,16 @@ textContent.set = function (val) {
     textSet.call(this, s)
 }
 textContent.get = function () {
-    if (!this.isConnected || this.nodeType != 3 || !Localization.available)
-        return textGet.call(this)
+    if ( !(Localization?.available && this.isConnected &&  this.nodeType === 3)) return textGet.call(this)
     let tr = this.__translate;
-    if (tr === undefined) {
+    if (tr === undefined) { 
         tr = textGet.call(this)
-        if (tr?.trim()) {
-            const parent = this.parentElement?.$node;
-            if (!parent || (!parent?.svg && parent.tag !== 'STYLE'))
+            // const parent = this.parentElement?.$node;
+            if (conditionTranslete2(this))
                 tr = translate(tr)
-        }
-
         this.__translate = tr;
-
     }
-
-    // this.innerText = tr;
     return tr // translate(textGet.call(this))
-
 }
 Object.defineProperty(Node.prototype, 'textContent', textContent)
 
