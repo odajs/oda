@@ -6,6 +6,13 @@
       "link": "index.html"
     }
   },
+{
+    "name": "bugs2",
+    "label": "Жуки-2",
+    "content": {
+      "link": "../../neuronet/bugs/index.html"
+    }
+  },
   {
     "name": "spike-net",
     "label": "Импульсная нейронная сеть (модель Ижикевича)",
