@@ -4,15 +4,17 @@
     import "../../oda.js"
     import "./localization.js"
 
-    ODA({is:'oda-localisation-test', imports:'@oda/button', template: `
+    ODA({is:'oda-localisation-test', imports:'@oda/icon, @oda/button', template: `
         <style> 
             .control {display: flex; justify-content: space-evenly; padding:3px;}
-            .btn {border:1px solid grey; border-radius:5px}
+            .btn {border:1px solid grey; border-radius:5px; display: flex;padding:0 3px; align-items: center;}
             .btn.true {border-color:green;}
+            
         </style>
-        <!-- <div class='control' > 
-            <oda-button :class='"btn " + isActive(item)' ~for='navigator.languages' :label='item' :icon='flag(item)' @tap='chengeL(item)'></oda-button>
-        </div> -->
+        <div class='control' > 
+            <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslete>
+                <oda-icon :icon='flag(item)'></oda-icon>{{item}}</div>
+        </div>
         {{ODA.language}}
         this is english text<br>
         
@@ -22,6 +24,7 @@
         <oda-button :label='FAQ'></oda-button>
         <oda-button notranslete :label='"ggg"'></oda-button>
         <div :notranslete='true'>Watchers</div>
+        <div notranslete >Watchers</div>
         <div >Watchers</div>
         Watchers
         `,

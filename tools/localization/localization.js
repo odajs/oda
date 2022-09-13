@@ -32,7 +32,8 @@ Localization.setLocale(ODA.language)
 
 
 /* Ф-я перевода */
-function translate(defVal = '') {
+ODA.translate = (defVal = '') => {
+    if (ODA.language=='en') return defVal // Английский язык мы не переводим совсем. 
     const testLeter = new RegExp('[a-z].*?', 'gi')
 
     const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a => testLeter.test(a))
@@ -41,11 +42,19 @@ function translate(defVal = '') {
     phraze.forEach(v => ODA.localization.inPage.phraze[v] = '')
     words.forEach(v => ODA.localization.inPage.words[v] = '')
 
-    const rePhraze = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.phraze).join('\\b|\\b') + '\\b', "g")
-    const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b', "g")
+    const phrazeK = Object.keys(ODA.localization.dictionary.phraze)
+    const wordsK = Object.keys(ODA.localization.dictionary.words)
 
-    var newVal = defVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
-        .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
+    let newVal = defVal
+
+    if (phrazeK.length>0) {
+        const rePhraze = new RegExp('\\b' + phrazeK.join('\\b|\\b') + '\\b', "g")
+        newVal = newVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
+    }
+    if (wordsK.length>0) {
+        const reWords = new RegExp('\\b' + wordsK.join('\\b|\\b') + '\\b', "g")
+        newVal = newVal.replaceAll(reWords, md => ODA.localization.dictionary.words[md])
+    }
 
     return newVal || ''
 }
@@ -56,15 +65,14 @@ const textSet = textContent.set;
 const textGet = textContent.get;
 let condNoTranslete = (el) => {
     const parent = el.parentElement?.$node;
-    if (parent?.tag == 'DIV') console.log(parent,el)
     return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslete || parent.attrs?.notranslete != undefined)
 }
 textContent.set = function (val) {
     let newVal = val;
-    if(this.__translate == val) {}
-    else if  ( !(Localization.available && this.isConnected && this.nodeType === 3) ) {}
+    if  ( !(Localization.available && this.isConnected && this.nodeType === 3) ) {}
+    else if(this.__translate == val) {}    
     else if ( condNoTranslete(this) ) {}
-    else { newVal = translate(val)}
+    else { newVal = ODA.translate(val) }
     this.__translate = newVal;
     textSet.call(this, newVal)
 }
@@ -74,61 +82,32 @@ textContent.get = function () {
     if (this.__translate != undefined) return this.__translate                                      // перевод уже есть
     if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value)) ) {this.__translate = value; return value}           // нужно обрабатывать без перевода
     if ( condNoTranslete(this) ) {this.__translate = value; return value}                           // стили и svg
-    const translates = translate(value)
+    const translates = ODA.translate(value)
     this.__translate = translates
     return translates
 }
 Object.defineProperty(Node.prototype, 'textContent', textContent)
 
-
-// ODA.translate = (val) => {
-
-//     if (typeof val !== 'string') return val;
-//     const testLeter = new RegExp('[a-z].*?', 'gi')
-//     //const sMF = (v,sp) => { retutn v.split(sp).map(a => a.trim()).filter(a =>  testLeter.test(a) ) }
-//     const phraze = val.split(/\r?\n/).map(a => a.trim()).filter(a => testLeter.test(a))
-//     const words = val.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a))
-//     //
-//     phraze.forEach(v => ODA.localization.phraze[v] = '')
-//     words.forEach(v => ODA.localization.words[v] = '')
-
-//     const rePhraze = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.phraze).join('\\b|\\b') + '\\b', "gi");
-//     const reWords = new RegExp('\\b' + Object.keys(ODA.localization.dictionary.words).join('\\b|\\b') + '\\b', "gi");
-//     //console.log(reWords)
-//     var newVal = val.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
-//         .replaceAll(reWords, md => ODA.localization.dictionary.words[md]);
-//     //console.log(val, newVal)
-//     return newVal
-// }
-
-
-
-// Localization._setDictionary = function (number) {
-//     //let nn = Localization.localesAvailable[number].name
-//     ODA.loadJSON(Localization.path + Localization.localesAvailable[number].name + '.json').then(res => { Localization.dictionary = res })
-//         .catch(error => { console.log("Errol load dictionary: " + error) })
-//     //console.log('dd',nn)
-// }
-
+/* Нажатие клавиши */
 window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey) {
         var table = await ODA.createComponent("oda-localization-table");
         ODA.showDialog(table, {}, {
             icon: 'icons:flag', title: 'Dictionaries', autosize: false,
             buttons: [{ label: 'Download', icon: 'icons:file-download' }]
-        })
-            .then(ok => {
-                ok.setNewDict()
-                if (ok.focusedButton.label == 'Download') { ok.dlDict() }
-            })
-            .catch(err => { });
+        }).then(ok => {
+            ok.setNewDict()
+            if (ok.focusedButton.label == 'Download') { ok.dlDict() }
+        }).catch(err => { });
     }
 })
 
+
+/*  */
 ODA({
     is: 'oda-localisation-tree', imports: '@oda/table', extends: 'oda-table',
     props: {
-        showHeader: true, colLines: true, rowLines: true, allowSort: true, lazy: true, avtoSize: true,  //sort: [[letter]],
+        showHeader: true, colLines: true, rowLines: true, allowSort: true, lazy: true, avtoSize: true, autoWidth: true, //sort: [[letter]],
         // dataSet:[],
         dataSet() {
             // return [{words: 'phraze', transletes: '', letter: 'p', items: Array(0)}]
@@ -221,7 +200,7 @@ ODA({
     `,
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
-        newVID: 1,
+        newVID: 0,
         dataSet: [],
         eyeAll: true, tDict: false,
         currentLocal: 'forInit', // {get() {return ODA.localization.currentLocal}},
