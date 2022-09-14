@@ -20,6 +20,16 @@ Localization.setLocale = async (rfc_locale) => {
     if (dictList.length>0) Localization.available = true
     else console.log('Localization: ','No available dictionary')
 }
+
+// Object.defineProperty(ODA, 'language', {
+//     get() {
+//         return globalThis.localStorage.getItem('oda-language') || navigator.language;
+//     },
+//     set(v) {
+//         globalThis.localStorage.setItem('oda-language', v);
+//     }
+// });
+
 // globalThis.top.addEventListener('language-changed', function(){console.log("ss")})
 // language-changed
 // listen('language-changed', 'console.log("ss")', { target: window.top }) 
@@ -67,13 +77,15 @@ let condNoTranslete = (el) => {
     const parent = el.parentElement?.$node;
     return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslete || parent.attrs?.notranslete != undefined)
 }
-textContent.set = function (val) {
+textContent.set = function (val) {    
     let newVal = val;
-    if  ( !(Localization.available && this.isConnected && this.nodeType === 3) ) {}
-    else if(this.__translate == val) {}    
+    if  ( !(Localization.available && this.isConnected && (this.nodeType === 3 ||  this.nodeType === 1)) ) {}
+    else if(this.__translate == val) {} 
+    else if  ( (/\{\{((?:.|\n)+?)\}\}/g.test(val)) ) {}
     else if ( condNoTranslete(this) ) {}
     else { newVal = ODA.translate(val) }
     this.__translate = newVal;
+    if ( /Dictionaries/g.test(val) ) console.log(val,newVal,this, Localization.available , this.isConnected , this.nodeType )
     textSet.call(this, newVal)
 }
 textContent.get = function () {
@@ -84,6 +96,7 @@ textContent.get = function () {
     if ( condNoTranslete(this) ) {this.__translate = value; return value}                           // стили и svg
     const translates = ODA.translate(value)
     this.__translate = translates
+    if ( /Dictionaries/g.test(value) ) console.log(value,this )
     return translates
 }
 Object.defineProperty(Node.prototype, 'textContent', textContent)
@@ -200,7 +213,7 @@ ODA({
     `,
     observers: ['_dataset( currentLocal, lidx)'],
     props: {
-        newVID: 0,
+        newVID: 1,
         dataSet: [],
         eyeAll: true, tDict: false,
         currentLocal: 'forInit', // {get() {return ODA.localization.currentLocal}},

@@ -26,12 +26,14 @@
         <div :notranslete='true'>Watchers</div>
         <div notranslete >Watchers</div>
         <div >Watchers</div>
-        Watchers
+        <div ~html='"Watchers"'></div>
+        
         `,
         props: {
             test1:'test button',
             FAQ:'FaQ',
-            aLocale:''
+            aLocale:'',
+            watchers:'Watchers'
         },
         flag(s) {
             const exclusions = {'en': 'gb','zh': 'cn','uk': 'ua', 'be': 'by',}
