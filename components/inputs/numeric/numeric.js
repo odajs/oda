@@ -11,41 +11,44 @@ ODA({is: 'oda-numeric-input',
         </style>
         <input type="text" :value="text" @keydown="onKeypress">
     `,
+    get input(){
+        return this.$('input')
+    },
     props:{
         currency:{
             default: 'RUB',
             list: ['RUB', 'USD']
         },
-        accuracy: 2,
-        value: 46346.435665,
-        mask: '',
-        format:{
+        accuracy: {
+            default: 2,
+            set(n){
+                if (n<0)
+                    this.accuracy = 0;
+            }
+        },
+        value: {
+            type: Number,
+            // set(n) {
+            //     const selectionStart = this.input.selectionStart;
+            //     const selectionEnd = this.input.selectionEnd;
+            //     this.text = n.toLocaleString('ru-RU', {style: this.style, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+            //     this.input.selectionStart = selectionStart;
+            //     this.input.selectionEnd = selectionEnd;
+            // }
+        },
+        style:{
             default: 'decimal',
-            list: ['decimal', 'integer', 'currency', 'percent']
+            list: ['decimal', 'currency', 'percent']
         }
     },
     get text(){
-        let text;
-        switch (this.format){
-            case 'integer':{
-                text = Math.floor(this.value).toLocaleString(this.accuracy);
-            } break;
-            case 'percent':{
-                text = (this.value * 100).toLocaleString(this.accuracy)+'%';
-            } break;
-            case 'currency':{
-                text = this.value.toLocaleString(this.accuracy) + ' '+ currencyList[this.currency];
-            } break;
-            default:{
-                text = this.value.toLocaleString(this.accuracy);
-            } break;
-        }
-
-        return text;
+        return this.value.toLocaleString('ru-RU', {style: this.style, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
     },
     isFocused: false,
     onKeypress(e){
-        // e.preventDefault();
+        let text = this.text;
+        const pos = e.target.selectionStart - text.indexOf(',');
+        console.log('pos', pos)
         switch (e.key){
             case '0':
             case '1':
@@ -57,17 +60,74 @@ ODA({is: 'oda-numeric-input',
             case '7':
             case '8':
             case '9':{
-
+                e.preventDefault();
+                if (pos>0 && Number.parseInt(text[e.target.selectionStart]) !== Number.NaN){
+                    text= text.substring(0, e.target.selectionStart) + e.key + text.substring(e.target.selectionStart + 1);
+                    // e.target.selectionStart++;
+                    // e.target.selectionEnd = e.target.selectionStart;
+                }
+                this.value = textToNumber(text);
             } break;
             case 'Backspace':{
                 e.preventDefault();
-            }
+                if (e.target.selectionStart>0){
+                    e.target.selectionStart--;
+                    e.target.selectionEnd = e.target.selectionStart;
+                }
+                this.value = textToNumber(text);
+            } break;
+            case 'ArrowLeft':{
+                // if (e.target.selectionStart>0){
+                //     e.target.selectionStart--;
+                //     if (!e.shiftKey)
+                //         e.target.selectionEnd = e.target.selectionStart;
+                // }
 
+            } break;
+            case 'ArrowRight':{
+                // if (e.target.selectionStart<e.target.value.length){
+                //     e.target.selectionStart++;
+                //     if (!e.shiftKey)
+                //         e.target.selectionEnd = e.target.selectionStart;
+                // }
+
+            } break;
         }
-        console.log(e)
     }
 })
-const currencyList = {
-    RUB: '₽',
-    USD: '$'
+function textToNumber(text){
+    let value = '';
+    let divider = 1;
+    for (let ch of text){
+        switch (ch){
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case '.':
+            case '-':
+            case 'e':
+            case 'E': break;
+            case ',':{
+                ch = '.'
+            } break;
+            case '%':{
+                divider = 100;
+                continue;
+            }
+            default:
+                continue;
+        }
+        value +=ch;
+
+    }
+    if (value.endsWith('.'))
+        value.substring(0, value.length-1);
+    return Number.parseFloat(value)/divider;
 }
