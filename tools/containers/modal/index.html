@@ -19,7 +19,7 @@
     btn3.onclick = e => {
         ODA.showModal('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true }, {
             animation: 500, title: 'click me for showDropdown ', help: 'sjdkafkjhfkjhasfdk', click: async (e) => {
-                ODA.mousePos = new DOMRect(e.pageX, e.pageY); // for correct display of dropdown in modal
+                ODA.mousePos = new DOMRect(e.pageX, e.pageY); // for correct display of dropdown in modal - ToDo: how to fix ?
                 await ODA.showDropdown('oda-button', { icon: 'icons:android', iconSize: 60, fill: 'green' }, { align: 'bottom' });
             }
         })
