@@ -72,15 +72,22 @@ ODA({is: 'oda-numeric-input',
                     this.ss = text.length - fracPos;
                     slice = ',';
                 }
-                else
+                else{
                     slice = '';
+                    this.ss = this.se;
+                }
+
                 text = text.substring(0, e.target.selectionStart) + e.key + slice + text.substring(end);
                 if (pos>0){
                     e.target.selectionStart++;
                     e.target.selectionEnd = e.target.selectionStart;
                     this.se--;
+                    this.ss--;
                 }
-                this.ss = this.se;
+                else{
+                    this.se = this.ss;
+                }
+
                 this.value = textToNumber(text);
             } break;
             case '.':
@@ -89,9 +96,33 @@ ODA({is: 'oda-numeric-input',
                 e.target.selectionStart = e.target.selectionEnd = text.indexOf(',') + 1;
             } break;
             case '-':{
-                this.ss = e.target.selectionStart;
-                this.se = e.target.selectionEnd;
+                e.preventDefault();
                 this.value = this.value * -1
+            } break;
+            case 'Delete':{
+                e.preventDefault();
+                if (pos > this.accuracy) return;
+                const end = e.target.selectionEnd>e.target.selectionStart?e.target.selectionEnd:e.target.selectionStart+1;
+                let slice = text.slice(e.target.selectionStart, end);
+                if (slice.includes(',')){
+                    this.ss = text.length - fracPos;
+                    slice = ',';
+                }
+                else{
+                    slice = '';
+                    this.ss = this.se;
+                }
+
+                text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
+                if (pos>0){
+                    this.se = this.ss;
+                }
+                else{
+                    this.ss--;
+                    this.se = this.ss;
+                }
+
+                this.value = textToNumber(text);
             } break;
             case 'Backspace':{
                 e.preventDefault();
