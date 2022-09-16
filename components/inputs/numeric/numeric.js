@@ -12,13 +12,13 @@ ODA({is: 'oda-numeric-input',
         <input type="text" :value="text" @keydown="onKeypress" @value-changed="_ccc">
     `,
     _ccc(e){
-        if (this.selectionStart !== undefined){
-            this.input.selectionStart = this.selectionStart;
-            this.selectionStart = undefined
+        if (this.ss !== undefined){
+            this.input.selectionStart = this.text.length - this.ss;
+            this.ss = undefined;
         }
-        if (this.selectionEnd !== undefined){
-            this.input.selectionEnd = this.selectionEnd;
-            this.selectionEnd = undefined
+        if (this.se !== undefined){
+            this.input.selectionEnd = this.text.length - this.se;
+            this.se = undefined;
         }
     },
     get input(){
@@ -48,8 +48,11 @@ ODA({is: 'oda-numeric-input',
     isFocused: false,
     onKeypress(e){
         let text = this.text;
-        const pos = e.target.selectionStart - text.indexOf(',');
-        console.log('pos', pos)
+        let fracPos = text.indexOf(',');
+        let pos = e.target.selectionStart - fracPos;
+        this.se = text.length - e.target.selectionEnd;
+        this.ss = text.length - e.target.selectionStart;
+        console.log(String.fromCharCode(e.keyCode))
         switch (e.key){
             case '0':
             case '1':
@@ -62,37 +65,48 @@ ODA({is: 'oda-numeric-input',
             case '8':
             case '9':{
                 e.preventDefault();
-                if (pos>0 && Number.parseInt(text[e.target.selectionStart]) !== Number.NaN){
-                    text= text.substring(0, e.target.selectionStart) + e.key + text.substring(e.target.selectionStart + 1);
-                    this.selectionEnd = this.selectionStart = e.target.selectionStart+1;
-                    // e.target.selectionStart++;
-                    // e.target.selectionEnd = e.target.selectionStart;
+                if (pos > this.accuracy) return;
+                const end = e.target.selectionEnd>e.target.selectionStart?e.target.selectionEnd:(pos>0?e.target.selectionStart+1:e.target.selectionStart)
+                let slice = text.slice(e.target.selectionStart, end);
+                if (slice.includes(',')){
+                    this.ss = text.length - fracPos;
+                    slice = ',';
                 }
+                else
+                    slice = '';
+                text = text.substring(0, e.target.selectionStart) + e.key + slice + text.substring(end);
+                if (pos>0){
+                    e.target.selectionStart++;
+                    e.target.selectionEnd = e.target.selectionStart;
+                    this.se--;
+                }
+                this.ss = this.se;
                 this.value = textToNumber(text);
+            } break;
+            case '.':
+            case ',':{
+                e.preventDefault();
+                e.target.selectionStart = e.target.selectionEnd = text.indexOf(',') + 1;
+            } break;
+            case '-':{
+                this.ss = e.target.selectionStart;
+                this.se = e.target.selectionEnd;
+                this.value = this.value * -1
             } break;
             case 'Backspace':{
                 e.preventDefault();
-                if (e.target.selectionStart>0){
-                    e.target.selectionStart--;
-                    e.target.selectionEnd = e.target.selectionStart;
-                }
-                this.value = textToNumber(text);
-            } break;
-            case 'ArrowLeft':{
                 // if (e.target.selectionStart>0){
                 //     e.target.selectionStart--;
-                //     if (!e.shiftKey)
-                //         e.target.selectionEnd = e.target.selectionStart;
+                //     e.target.selectionEnd = e.target.selectionStart;
                 // }
-
+                this.value = textToNumber(e.target.value);
             } break;
-            case 'ArrowRight':{
-                // if (e.target.selectionStart<e.target.value.length){
-                //     e.target.selectionStart++;
-                //     if (!e.shiftKey)
-                //         e.target.selectionEnd = e.target.selectionStart;
-                // }
-
+            case 'Home':
+            case 'End':
+            case 'ArrowRight':
+            case 'ArrowLeft': break;
+            default:{
+                e.preventDefault();
             } break;
         }
     }
