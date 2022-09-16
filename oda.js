@@ -91,9 +91,12 @@ if (!window.ODA) {
     const pointerDownListen = (win = window) => {
         try { //cross-origin
             win.addEventListener('pointerdown', (e) => {
-                ODA.mousePos = new DOMRect(e.pageX, e.pageY);
                 if (win !== top) top.dispatchEvent(new PointerEvent("pointerdown", e));
             })
+            // ToDo: not works dropdown (without parent) in modal:
+            win.addEventListener('pointerdown', (e) => {
+                ODA.mousePos = new DOMRect(e.pageX, e.pageY);
+            }, true)
             Array.from(win).forEach(w => pointerDownListen(w));
         } catch (err) {
             console.error(err);
