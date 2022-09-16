@@ -9,8 +9,18 @@ ODA({is: 'oda-numeric-input',
                 text-align: right;
             }
         </style>
-        <input type="text" :value="text" @keydown="onKeypress">
+        <input type="text" :value="text" @keydown="onKeypress" @value-changed="_ccc">
     `,
+    _ccc(e){
+        if (this.selectionStart !== undefined){
+            this.input.selectionStart = this.selectionStart;
+            this.selectionStart = undefined
+        }
+        if (this.selectionEnd !== undefined){
+            this.input.selectionEnd = this.selectionEnd;
+            this.selectionEnd = undefined
+        }
+    },
     get input(){
         return this.$('input')
     },
@@ -26,16 +36,7 @@ ODA({is: 'oda-numeric-input',
                     this.accuracy = 0;
             }
         },
-        value: {
-            type: Number,
-            // set(n) {
-            //     const selectionStart = this.input.selectionStart;
-            //     const selectionEnd = this.input.selectionEnd;
-            //     this.text = n.toLocaleString('ru-RU', {style: this.style, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
-            //     this.input.selectionStart = selectionStart;
-            //     this.input.selectionEnd = selectionEnd;
-            // }
-        },
+        value: 0,
         style:{
             default: 'decimal',
             list: ['decimal', 'currency', 'percent']
@@ -63,6 +64,7 @@ ODA({is: 'oda-numeric-input',
                 e.preventDefault();
                 if (pos>0 && Number.parseInt(text[e.target.selectionStart]) !== Number.NaN){
                     text= text.substring(0, e.target.selectionStart) + e.key + text.substring(e.target.selectionStart + 1);
+                    this.selectionEnd = this.selectionStart = e.target.selectionStart+1;
                     // e.target.selectionStart++;
                     // e.target.selectionEnd = e.target.selectionStart;
                 }

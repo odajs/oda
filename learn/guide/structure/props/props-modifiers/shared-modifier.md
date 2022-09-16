@@ -1,4 +1,4 @@
-Модификатор **shared** используется для включение механизма сквозного биндинга.
+﻿Модификатор **shared** используется для включение механизма сквозного биндинга.
 
 Если у свойства задать этот модификатор со значением **true**, то любое изменение этого свойства внутри компонента будет приводить к автоматическому изменению значений одноименных свойств у всех вложенных в него компонентов.
 
@@ -114,14 +114,15 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <label>Разрешить сквозной биндинг <input type="checkbox" ::value="props.size.shared"></label>
+        <label>Разрешить сквозной биндинг <input type="checkbox" ::checked="props.size.shared" @tap="render"></label>
+        <span>shared: {{props.size.shared}}</span><br>
         <label>Задайте размер фигуры <input type="range" max="200" min="50" style="width: 25vw" ::value="size"> </label>
         <my-square></my-square>
     `,
     props: {
         size: {
             default: 100,
-            shared: true,
+            shared: false,
         }
     }
 });
@@ -160,7 +161,7 @@ ODA({
 });
 ```
 
-Изначально модификатор **shared** не включен, поэтому по умолчанию механизм сквозного биндинга ни у каких свойств работать не будет.
+Изначально модификатор **shared** не включен, поэтому механизм сквозного биндинга ни работать не будет. Используя **checkbox** можно присвоить модификатору значение **true**, но это не активирует сквозной биндинг.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/u_XcFE-K8bM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
