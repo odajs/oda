@@ -13,11 +13,11 @@ ODA({is: 'oda-numeric-input',
     `,
     _ccc(e){
         if (this.ss !== undefined){
-            this.input.selectionStart = this.text.length - this.ss;
+            this.input.selectionStart = this.text.length - Math.min(this.text.length, this.ss);
             this.ss = undefined;
         }
         if (this.se !== undefined){
-            this.input.selectionEnd = this.text.length - this.se;
+            this.input.selectionEnd = this.text.length - Math.min(this.text.length, this.se);
             this.se = undefined;
         }
     },
@@ -102,24 +102,42 @@ ODA({is: 'oda-numeric-input',
             case 'Delete':{
                 e.preventDefault();
                 if (pos > this.accuracy) return;
-                const end = e.target.selectionEnd>e.target.selectionStart?e.target.selectionEnd:e.target.selectionStart+1;
-                let slice = text.slice(e.target.selectionStart, end);
-                if (slice.includes(',')){
-                    this.ss = text.length - fracPos;
-                    slice = ',';
+                if (e.target.selectionEnd>e.target.selectionStart){
+                    const end = e.target.selectionEnd;
+                    let slice = text.slice(e.target.selectionStart, end);
+                    if (slice.includes(',')){
+                        this.ss = text.length - fracPos;
+                        slice = ',';
+                    }
+                    else{
+                        slice = '';
+                    }
+                    text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
+                    if (pos>0){
+                        this.se = this.ss;
+                    }
+                    else{
+                        this.ss = this.se;
+                    }
                 }
                 else{
-                    slice = '';
-                    this.ss = this.se;
-                }
-
-                text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
-                if (pos>0){
+                    let end;
+                    let start = end = e.target.selectionStart;
+                    let ch = '';
+                    while (!isDigit(ch)){
+                        ch = text[end];
+                        if (ch === ',' || ch === '.'){
+                            this.ss++;
+                            start++;
+                        }
+                        this.ss--;
+                        end++;
+                    }
+                    if (pos>0){
+                        this.ss++;
+                    }
                     this.se = this.ss;
-                }
-                else{
-                    this.ss--;
-                    this.se = this.ss;
+                    text = text.substring(0, start) + text.substring(end);
                 }
 
                 this.value = textToNumber(text);
@@ -177,4 +195,20 @@ function textToNumber(text){
     if (value.endsWith('.'))
         value.substring(0, value.length-1);
     return Number.parseFloat(value)/divider;
+}
+function isDigit(ch){
+    switch (ch){
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            return true;
+    }
+    return false;
 }
