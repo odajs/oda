@@ -12,6 +12,11 @@ ODA({is: 'oda-numeric-input',
         <input type="text" :value="text" @keydown="onKeypress" @value-changed="_ccc">
     `,
     _ccc(e){
+        if (this.value === 0){
+            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',')
+            this.ss = undefined;
+            this.se = undefined;
+        }
         if (this.ss !== undefined){
             this.input.selectionStart = this.text.length - Math.min(this.text.length, this.ss);
             this.ss = undefined;
@@ -20,6 +25,7 @@ ODA({is: 'oda-numeric-input',
             this.input.selectionEnd = this.text.length - Math.min(this.text.length, this.se);
             this.se = undefined;
         }
+        e.target.scrollLeft = 10000;
     },
     get input(){
         return this.$('input')
@@ -36,7 +42,9 @@ ODA({is: 'oda-numeric-input',
                     this.accuracy = 0;
             }
         },
-        value: 0,
+        value: {
+            default: 0,
+        },
         style:{
             default: 'decimal',
             list: ['decimal', 'currency', 'percent']
@@ -52,7 +60,6 @@ ODA({is: 'oda-numeric-input',
         let pos = e.target.selectionStart - fracPos;
         this.se = text.length - e.target.selectionEnd;
         this.ss = text.length - e.target.selectionStart;
-        console.log(String.fromCharCode(e.keyCode))
         switch (e.key){
             case '0':
             case '1':
@@ -66,6 +73,8 @@ ODA({is: 'oda-numeric-input',
             case '9':{
                 e.preventDefault();
                 if (pos > this.accuracy) return;
+
+                console.log(text, e.key, e.target.selectionStart, e.target.selectionEnd);
                 const end = e.target.selectionEnd>e.target.selectionStart?e.target.selectionEnd:(pos>0?e.target.selectionStart+1:e.target.selectionStart)
                 let slice = text.slice(e.target.selectionStart, end);
                 if (slice.includes(',')){
@@ -111,14 +120,10 @@ ODA({is: 'oda-numeric-input',
                     }
                     else{
                         slice = '';
-                    }
-                    text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
-                    if (pos>0){
-                        this.se = this.ss;
-                    }
-                    else{
                         this.ss = this.se;
                     }
+                    text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
+                    this.se = this.ss;
                 }
                 else{
                     let end;
@@ -144,11 +149,38 @@ ODA({is: 'oda-numeric-input',
             } break;
             case 'Backspace':{
                 e.preventDefault();
-                // if (e.target.selectionStart>0){
-                //     e.target.selectionStart--;
-                //     e.target.selectionEnd = e.target.selectionStart;
-                // }
-                this.value = textToNumber(e.target.value);
+                if (e.target.selectionEnd>e.target.selectionStart){
+                    const end = e.target.selectionEnd;
+                    let slice = text.slice(e.target.selectionStart, end);
+                    if (slice.includes(',')){
+                        this.ss = text.length - fracPos;
+                        slice = ',';
+                    }
+                    else{
+                        slice = '';
+                        if (pos>0)
+                            this.se = this.ss;
+                        else
+                            this.ss = this.se;
+                    }
+                    text = text.substring(0, e.target.selectionStart) + slice + text.substring(end);
+                    this.se = this.ss;
+                }
+                else {
+
+                    if (e.target.selectionStart > 0) {
+                        e.target.selectionStart--;
+                        e.target.selectionEnd = e.target.selectionStart;
+                    }
+                    if (isDigit(text[e.target.selectionStart])){
+                        text = text.substring(0, e.target.selectionStart) + text.substring(e.target.selectionStart+1);
+                        if (pos>0)
+                            this.se = this.ss = text.length - e.target.selectionStart + 1;
+                        else
+                            this.se = this.ss = text.length - e.target.selectionStart ;
+                    }
+                }
+                this.value = textToNumber(text);
             } break;
             case 'Home':
             case 'End':
