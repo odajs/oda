@@ -18,15 +18,16 @@ ODA({is: 'oda-numeric-input',
     onValueChanged(e){
         let ss = e.target.selectionStart;
         let se = e.target.selectionEnd;
+
         this.value = textToNumber(e.target.value);
         this.text = this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+
         if (Math.abs(this.value) < 10){
             if (Math.floor(this.value) === this.value)
                 ss = se = this.text.indexOf(',');
             else if (Math.abs(this.value) < 1)
                 ss = se = this.text.indexOf(',') + 1;
         }
-
 
         this.render();
         this.async(()=>{
@@ -86,10 +87,28 @@ ODA({is: 'oda-numeric-input',
                     e.preventDefault();
                     text = text.substring(0, e.target.selectionStart) +',' + text.substring(end);
                     this.value = textToNumber(text);
+                    if (this.value === Math.floor(this.value)) return;
                     this.$next(()=>{
                         this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',')+1;
                     },2)
                 }
+                else if (!isDigit(slice)){
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.input.selectionStart + 1;
+                    },2)
+                }
+                else if ((text.indexOf(',')-1) > e.target.selectionStart){
+                    const se = text.length - e.target.selectionStart;
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, se - 1);
+                    },2)
+                }
+                // else if (text.indexOf(',')>e.target.selectionStart){
+                //     const se = text.length - e.target.selectionStart;
+                //     this.$next(()=>{
+                //         this.input.selectionStart = this.input.selectionEnd = this.text.length - (se+1);
+                //     },2)
+
             } break;
             case 'Backspace':{
                 let text = this.text;
@@ -103,6 +122,13 @@ ODA({is: 'oda-numeric-input',
                         this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',')
                     },2)
                 }
+                else if (text.indexOf(',')>start){
+                    const se = text.length - e.target.selectionStart;
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.text.length - se;
+                    },2)
+                }
+
             } break;
         }
         switch (e.keyCode){
