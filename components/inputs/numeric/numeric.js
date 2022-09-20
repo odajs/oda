@@ -122,10 +122,15 @@ ODA({is: 'oda-numeric-input',
                         this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',')
                     },2)
                 }
+                else if (!isDigit(slice)){
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.input.selectionStart;
+                    },2)
+                }
                 else if (text.indexOf(',')>start){
                     const se = text.length - e.target.selectionStart;
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.length - se;
+                        this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, se);
                     },2)
                 }
 
