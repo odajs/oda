@@ -1,8 +1,8 @@
 ODA({is: 'oda-numeric-input',
     template:`
         <style>
-            :host{
-       
+            :host([overload])>input{
+                @apply --error;
             }
             input{
                 outline: none;
@@ -16,7 +16,7 @@ ODA({is: 'oda-numeric-input',
         this.input.scrollLeft = 10000;
     },
     onValueChanged(e){
-        console.log(e.inputType, e.target.value, e.target.selectionStart, e.target.selectionEnd, e.data);
+        // console.log(e.inputType, e.target.value, e.target.selectionStart, e.target.selectionEnd, e.data);
 
         let ss = e.target.value.length - e.target.selectionStart;
         let se = e.target.value.length - e.target.selectionEnd;
@@ -24,7 +24,8 @@ ODA({is: 'oda-numeric-input',
         let value = this.value;
         switch (e.inputType){
             case 'insertText':{
-                value = textToNumber(e.target.value);
+                if (isDigit(e.data))
+                    value = textToNumber(e.target.value);
             } break;
             case 'deleteContentBackward':{
                 value = textToNumber(e.target.value);
@@ -45,31 +46,15 @@ ODA({is: 'oda-numeric-input',
             }
 
         }
-        const text = value.toLocaleString('ru-RU', {useGrouping: false, style: 'decimal', minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy});
+        this.overload = false;
+        const text = Math.abs(value).toLocaleString('ru-RU', {useGrouping: false, style: 'decimal', minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy});
         if (text.length<17){
             this.value = value;
             this.text = this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
         }
-
-        // if(isDigit(e.data)){
-        //     if (e.target.value.indexOf(',')<e.target.selectionStart){
-        //         console.log('дробная часть', e.target.selectionStart, e.target.selectionEnd)
-        //     }
-        //     this.value = textToNumber(e.target.value);
-        //     this.text = this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
-        //
-        //
-        //     if (Math.abs(this.value) < 10){
-        //         if (Math.floor(this.value) === this.value)
-        //             ss = se = this.text.length - this.text.indexOf(',');
-        //         else if (Math.abs(this.value) < 1)
-        //             ss = se = this.text.length - this.text.indexOf(',') + 1;
-        //     }
-        // }
-        // if (e.target.value.indexOf(',')>e.target.selectionStart)
-        //     ss--;
-        // if (e.target.value.indexOf(',')>e.target.selectionEnd)
-        //     se--;
+        else{
+            this.overload = true;
+        }
 
         this.render();
         this.$next(()=>{
@@ -80,10 +65,23 @@ ODA({is: 'oda-numeric-input',
             this.input.scrollLeft = 10000;
         })
     },
+
     get input(){
         return this.$('input')
     },
     props:{
+        overload: {
+            default: false,
+            private: true,
+            reflectToAttribute: true,
+            set(n) {
+                if (n){
+                    this.async(()=>{
+                        this.overload = false;
+                    }, 100)
+                }
+            }
+        },
         currency:{
             default: 'RUB',
             list: ['RUB', 'USD', 'EUR', 'GBP', 'CNY']
