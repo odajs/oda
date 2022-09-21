@@ -95,6 +95,9 @@ ODA({is: 'oda-numeric-input',
         },
         value: {
             default: 0,
+            set(n){
+                this.text = n.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+            }
         },
         format:{
             default: 'decimal',
@@ -159,10 +162,13 @@ ODA({is: 'oda-numeric-input',
             } break;
             case '-':{
                 e.preventDefault();
+                const se = e.target.value.length - e.target.selectionEnd;
+                const ss = e.target.value.length - e.target.selectionEnd;
                 this.value = this.value * -1
                 this.$next(()=>{
-                    this.input.selectionStart = this.input.selectionEnd = this.value>0?0:1;
-                },2)
+                    this.input.selectionStart = this.text.length - ss;
+                    this.input.selectionEnd = this.text.length - se;
+                },1)
             } break;
             case 'Delete':{
                 let text = this.text;
@@ -222,6 +228,7 @@ ODA({is: 'oda-numeric-input',
                 },1)
             } break;
         }
+
     }
 })
 function textToNumber(text){
