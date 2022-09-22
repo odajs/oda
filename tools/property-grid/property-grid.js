@@ -266,8 +266,13 @@ cells: {
     `,
         item: null,
         async showDD(e) {
-            const res = await ODA.showDropdown('oda-menu', { items: this.item.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i })) }, { parent: e.target.domHost, fadein: true });
-            this.item.value = res.focusedItem.value;
+            try{
+                const res = await ODA.showDropdown('oda-menu', { items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i, value: i })) }, {useParentWidth: true, parent: e.target.domHost, fadein: true });
+                this.item.value = res.focusedItem.value;
+            }
+            catch (e){
+
+            }
         },
         resetValue() {
             this.item.value = this.item.default;

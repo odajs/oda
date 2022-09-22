@@ -77,6 +77,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
+        if (!this.isConnected)
+            return {};
         const rect = new ODARect(this.parent);
         // this.contentRect = this.control?.getBoundingClientRect()
         // this.contentRect = e.target.getBoundingClientRect();
