@@ -4,6 +4,15 @@ ODA({is: 'oda-numeric-input',
             :host([overload])>input{
                 @apply --error;
             }
+            :host([calculate])::before{
+                content: attr(calculate);
+                position: absolute;
+                font-size: xx-small;
+                @apply --raised;
+                @apply --dark;
+                opacity: .5;
+                padding: 2px 4px;
+            }
             input{
                 outline: none;
                 text-align: right;
@@ -15,6 +24,7 @@ ODA({is: 'oda-numeric-input',
     onScroll(e){
         this.input.scrollLeft = 10000;
     },
+
     onValueChanged(e){
         let ss = e.target.value.length - e.target.selectionStart;
         let fraqPos = e.target.value.indexOf(',');
@@ -22,7 +32,7 @@ ODA({is: 'oda-numeric-input',
         switch (e.inputType){
             case 'insertText':{
                 if (isDigit(e.data)){
-                    if (Math.abs(this.value)<1){
+                    if (Math.abs(this.value)<1 && e.target.value.startsWith(e.data)){
                         e.target.value = e.target.value.replace('0,', ',');
                         ss--;
                     }
@@ -75,7 +85,23 @@ ODA({is: 'oda-numeric-input',
     get input(){
         return this.$('input')
     },
+    memory: 0,
+    set memory(n){
+        if (n){
+            this.value = 0;
+        }
+    },
+    action: '',
     props:{
+        calculate:{
+            default: '',
+            get (){
+                if (this.memory){
+                    return this.memory.toLocaleString('ru-RU', {minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy}) + ' ' + this.action + ' ';
+                }
+            },
+            reflectToAttribute: true
+        },
         overload: {
             default: false,
             private: true,
@@ -100,7 +126,15 @@ ODA({is: 'oda-numeric-input',
             }
         },
         value: {
-            type: Number
+            type: Number,
+            set(n){
+                if (!n){
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = 1;
+                    }, 3)
+
+                }
+            }
         },
         format:{
             default: 'decimal',
@@ -110,11 +144,67 @@ ODA({is: 'oda-numeric-input',
     get text(){
         return this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
     },
+    calc(){
+        if (!this.memory) return
+        switch (this.action){
+            case "+":{
+                this.value = this.memory + this.value;
+            } break;
+            case "-":{
+                this.value = this.memory - this.value;
+            } break;
+            case "*":{
+                this.value = this.memory * this.value;
+            } break;
+            case "/":{
+                this.value = this.memory / this.value;
+            } break;
+            case "^":{
+                this.value = Math.pow(this.memory, this.value);
+            } break;
+            case "%":{
+                this.value = this.value / this.memory;
+            } break;
+        }
+        this.action = '';
+        this.memory = 0;
+    },
     isFocused: false,
     onKeyDown(e){
         const fraqPos = e.target.value.indexOf(',');
         console.log('fraqPos', fraqPos, 'selectionStart', e.target.selectionStart, 'selectionEnd', e.target.selectionEnd);
         switch (e.key){
+            case 'Escape':{
+                if (this.memory){
+                    e.preventDefault();
+                    this.value = this.memory;
+                    this.memory = 0;
+                    this.$next(()=>{
+                        this.input.selectionStart = 0;
+                        this.input.selectionEnd = this.text.length;
+                    },1);
+                }
+                else if (e.target.selectionStart !== this.input.selectionEnd){
+                    e.preventDefault();
+                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',');
+                }
+            } break;
+            case '=':
+            case 'Enter':{
+                if (!this.memory) return;
+                e.preventDefault();
+                this.calc();
+            } break;
+            case '/':
+            case '*':
+            case '%':
+            case '^':
+            case '+':{
+                if (this.memory)
+                    this.calc();
+                this.memory = this.value;
+                this.action = e.key;
+            } break;
             case '0':
             case '1':
             case '2':
