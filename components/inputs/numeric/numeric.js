@@ -16,22 +16,28 @@ ODA({is: 'oda-numeric-input',
         this.input.scrollLeft = 10000;
     },
     onValueChanged(e){
-        // console.log(e.inputType, e.target.value, e.target.selectionStart, e.target.selectionEnd, e.data);
-
         let ss = e.target.value.length - e.target.selectionStart;
-        let se = e.target.value.length - e.target.selectionEnd;
         let fraqPos = e.target.value.indexOf(',');
         let value = this.value;
         switch (e.inputType){
             case 'insertText':{
-                if (isDigit(e.data))
-                    value = textToNumber(e.target.value);
+                if (isDigit(e.data)){
+                    if (Math.abs(this.value)<1){
+                        e.target.value = e.target.value.replace('0,', ',');
+                        ss--;
+                    }
+                    if (e.target.value.indexOf('-')>0){
+                        // отмена вставки числа перед минусом
+                    }
+                    else
+                        value = textToNumber(e.target.value);
+                }
+
             } break;
             case 'deleteContentBackward':{
                 value = textToNumber(e.target.value);
                 if (value === this.value){
                     ss++;
-                    se++;
                 }
             } break;
             case 'deleteContentForward':{
@@ -59,7 +65,7 @@ ODA({is: 'oda-numeric-input',
         this.render();
         this.$next(()=>{
             fraqPos = this.text.indexOf(',');
-            this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, se);
+            this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, ss);
             if (fraqPos>0 && this.input.selectionStart - fraqPos > this.accuracy)
                 this.input.selectionStart = this.input.selectionEnd = fraqPos + this.accuracy + 1;
             this.input.scrollLeft = 10000;
@@ -94,13 +100,7 @@ ODA({is: 'oda-numeric-input',
             }
         },
         value: {
-            default: 0,
-            // set(n){
-            //     this.async(()=>{
-            //         this.text = n?.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
-            //     })
-            //
-            // }
+            type: Number
         },
         format:{
             default: 'decimal',
@@ -159,6 +159,19 @@ ODA({is: 'oda-numeric-input',
             case ',':{
                 e.preventDefault();
                 if (fraqPos<0) return;
+                let text = this.text;
+                let slice = text.slice(e.target.selectionStart, e.target.selectionEnd);
+                if (slice.length){
+                    if (slice.includes(',')){
+                        slice = ',';
+                    }
+                    else{
+                        slice = ''
+                    }
+
+                    text = text.substring(0, e.target.selectionStart) + slice + text.substring(e.target.selectionEnd);
+                    this.value = textToNumber(text);
+                }
                 this.$next(()=>{
                     this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + 1;
                 },1)
@@ -166,7 +179,7 @@ ODA({is: 'oda-numeric-input',
             case '-':{
                 e.preventDefault();
                 const se = e.target.value.length - e.target.selectionEnd;
-                const ss = e.target.value.length - e.target.selectionEnd;
+                const ss = e.target.value.length - e.target.selectionStart;
                 this.value = this.value * -1
                 this.$next(()=>{
                     this.input.selectionStart = this.text.length - ss;
@@ -223,7 +236,7 @@ ODA({is: 'oda-numeric-input',
             } break;
         }
         switch (e.keyCode){
-            case 189:
+            case 188:
             case 190:{
                 e.preventDefault();
                 this.$next(()=>{
