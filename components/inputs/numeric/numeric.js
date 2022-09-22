@@ -63,10 +63,10 @@ ODA({is: 'oda-numeric-input',
 
         }
         this.overload = false;
-        const text = Math.abs(value).toLocaleString('ru-RU', {useGrouping: false, style: 'decimal', minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy});
+        const text = Math.abs(value).toLocaleString(this.locale, {useGrouping: false, style: 'decimal', minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy});
         if (text.length<17){
             this.value = value;
-            this.text = this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+            this.text = this.value.toLocaleString(this.locale, {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
         }
         else{
             this.overload = true;
@@ -93,11 +93,12 @@ ODA({is: 'oda-numeric-input',
     },
     action: '',
     props:{
+        locale: 'ru-RU',
         calculate:{
             default: '',
             get (){
                 if (this.memory){
-                    return this.memory.toLocaleString('ru-RU', {minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy}) + ' ' + this.action + ' ';
+                    return this.memory.toLocaleString(this.locale, {minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy}) + ' ' + this.action + ' ';
                 }
             },
             reflectToAttribute: true
@@ -142,7 +143,7 @@ ODA({is: 'oda-numeric-input',
         }
     },
     get text(){
-        return this.value.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+        return this.value.toLocaleString(this.locale, {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
     },
     calc(){
         if (!this.memory) return
