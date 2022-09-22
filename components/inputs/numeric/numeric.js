@@ -95,9 +95,12 @@ ODA({is: 'oda-numeric-input',
         },
         value: {
             default: 0,
-            set(n){
-                this.text = n.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
-            }
+            // set(n){
+            //     this.async(()=>{
+            //         this.text = n?.toLocaleString('ru-RU', {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+            //     })
+            //
+            // }
         },
         format:{
             default: 'decimal',
