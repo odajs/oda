@@ -50,15 +50,14 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 let last = name[name.length - 1];
                 if (last !== ' ' && last !== '-')
                     last = '';
-                if (this.transliteration)
-                    return this.transliteration.slugify?.(name) + last;
-                return name;
+                    this.name = this.transliteration ? this.transliteration.slugify?.(name) + last : name;
             }
         }
     },
-    get transliteration() {
-        ODA.import("@ext/transliteration").then(i => this.transliteration = i)
-    },
+    // get transliteration() {
+    //     ODA.import("@ext/transliteration").then(i => this.transliteration = i)
+    // },
+    transliteration: null,
     set _list(n) {
         ODA.closeDropdown();
     },
@@ -67,7 +66,8 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
             e.stopPropagation();
         }
     },
-    attached() {
+    async attached() {
+        this.transliteration = await ODA.import("@ext/transliteration")
         this._focus();
     },
     _focus() {
