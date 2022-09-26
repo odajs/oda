@@ -95,34 +95,15 @@ ODA({is: 'oda-numeric-input',
     props:{
         locale: { //todo надо заполнить все локали
             default: 'ru-RU',
-            list: ['ru-RU',
-                'tt-RU',
-                'en-GB',
-                'en-US',
-                'en-AU',
-                'es-ES',
-                'es-MX',
-                'es-AR',
-                'es-CO',
-                'pt-PT',
-                'pt-BR',
-                'zh-CN',
-                'zh-TW',
-                'zh-HK',
-                'ar-AA',
-                'pl-PL',
-                'ko-KR',
-                'cs-CZ',
-                'da-DK',
-                'nl-NL',
-                'nl-BE',
-                'fr-BE',
-                'fr-FR',
-                'ka-GE',
-                'de-DE',
-                'de-CH',
-                'hi-IN'
-            ]
+            get list(){
+                return ODA.loadJSON("@tools/localization/locales.json").then(list =>{
+                    const result = [];
+                    for (let key in list){
+                        result.push({label: key+': '+list[key], value: key})
+                    }
+                    return result;
+                })
+            }
         },
         calculate:{
             default: '',

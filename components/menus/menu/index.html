@@ -6,6 +6,7 @@
     <oda-menu id="menu" style="flex: 1" show-sub-title></oda-menu>
 </oda-tester>
 <script type="module">
+    const selectedItem = { label: "4 строка" };
     menu.title="asfasfasdf"
     menu.items = [
         {
@@ -69,7 +70,7 @@
                 { label: "3.10 строка" }
             ]
         },
-        { label: "4 строка" },
+        selectedItem,
         {
             label: "5 строка",
             items: [
@@ -110,6 +111,7 @@
         { label: "9 строка", group: true},
         { label: "10 строка" }
     ]
+    menu.selectedItem = selectedItem;
     ODA({ is: 'red-item', template: `
         <style>
             :host{

@@ -241,10 +241,11 @@ if (!globalThis.KERNEL) {
                         this['#' + def] = this.constructor.defaults[def];
                     }
                     if (Object.keys(this.constructor?.lists||{}).length) {
-                        this.lists = {};
+                        this.$system ??= {};
+                        this.$system.lists = {};
                         for (let l in this.constructor.lists) {
                             // TODO: кеширование?
-                            this.lists[l] = this.constructor.lists[l].bind(this);
+                            this.$system.lists[l] = this.constructor.lists[l].bind(this);
                         }
                     }
                     this.$proxy = makeReactive.call(this, this);

@@ -35,58 +35,6 @@ if (!window.ODA) {
             }
         }
     }
-    //window.addEventListener('pointerdown', e => {
-        // console.log(e)
-        // ODA.mousePos = new DOMRect(e.pageX, e.pageY);
-        // try {
-        //     ({
-        //         undefined() {
-        //             this.up();
-        //             this.down();
-        //         },
-        //         up() {
-        //             if(window !== window.parent){
-        //                 const ev = new PointerEvent('pointerdown', e);
-        //                 ev.direction = 'up';
-        //                 window.parent.dispatchEvent(ev);
-        //             }
-        //         },
-        //         down(){
-        //             let i = 0;
-        //             let w;
-        //             while (w = window[i]) {
-        //                 const ev = new PointerEvent('pointerdown', e);
-        //                 ev.direction = 'down';
-        //                 w.dispatchEvent?.(ev);
-        //                 i++;
-        //             }
-        //         }
-        //     })[e.direction]();
-        // }
-        // catch (e){
-        //     console.error(e);
-        // }
-    //}, true);
-    // function pointerDownListen(win = window){
-    //     // getWins(win);
-    //     Array.from(win).forEach(w=>{
-    //         pointerDownListen(w);
-    //         w.addEventListener('pointerdown', e=> {
-    //             if (e.usable === w)
-    //                 return;
-    //             const ev = new PointerEvent('pointerdown', e);
-    //             ev.usable = w;
-    //             let ww = win;
-    //             do {
-    //                 ww.dispatchEvent(ev);
-    //                 ww = ww.parent;
-    //             }
-    //             while (ww !== ww.top)
-    //             ww.dispatchEvent(ev);
-    //         }, true);
-
-    //     })
-    // }
 
     const pointerDownListen = (win = window) => {
         try { //cross-origin
@@ -279,6 +227,12 @@ if (!window.ODA) {
                 Object.defineProperty(this, 'props', {
                     value: prototype.props
                 })
+                for (let list in prototype.$system.lists){
+                    this.$system ??= {};
+                    this.$system.lists ??={};
+                    this.$system.lists[list] = prototype.$system.lists[list].bind(this)
+                }
+
                 const defs = Object.create(null);
                 for (let i in core.defaults) {
                     const desc = Object.getOwnPropertyDescriptor(this, i);
@@ -713,29 +667,7 @@ if (!window.ODA) {
                     // const method = proto[name];
                     // if (typeof method === 'function') return method.call(this, ...args);
                 }
-               /* const getIds = (p) => {
-                    const res = [];
-                    let id = p.extends;
-                    if (id) {
-                        const ids = id.split(/, *!/).filter(i => i !== 'this');
-                        for (const id of ids) {
-                            res.push(id);
-                            res.push(...getIds(components[id].prototype));
-                        }
-                    }
-                    return res;
-                };
-                const curId = prototype.is;
-                const curMethod = components[curId].prototype.methods[name] || components[curId].prototype[name];
-                const ids = getIds(components[curId].prototype);
-                for (const id of ids) {
-                    const proto = components[id].prototype;
-                    const method = proto.methods[name] || proto[name];
-                    if (curMethod !== method && typeof method === 'function') {
-                        return method.call(this, ...args);
-                    }
-                }
-                throw new Error(`Not found super method: "${name}" `);*/
+
             }
         }
         Object.defineProperty(odaComponent, 'name', {value: 'odaComponent'})
@@ -842,6 +774,7 @@ if (!window.ODA) {
 
             }
             Object.defineProperty(odaComponent.prototype, name, desc);
+
             Object.defineProperty(core.defaults, name, {
                 configurable: true,
                 enumerable: true,
@@ -910,6 +843,7 @@ if (!window.ODA) {
                     this.$proxy[key] = v;
                 }
                 Object.defineProperty(odaComponent.prototype, name, desc);
+
                 if(name in core.prototype){
                     // console.log(name);
                     Object.defineProperty(core.defaults, name, {
@@ -928,6 +862,7 @@ if (!window.ODA) {
     function convertPrototype(prototype, parents) {
         prototype.$system.parents = parents;
         prototype.$system.blocks = Object.create(null);
+        prototype.$system.lists = {};
         prototype.props = prototype.props || {};
         prototype.observers = prototype.observers || [];
         prototype.$system.observers = prototype.$system.observers || [];
@@ -1008,6 +943,13 @@ if (!window.ODA) {
                         const array = Array.from(prop.default);
                         prop.default = function () { return Array.from(array) };
                     } break;
+                }
+            }
+
+            if ('list' in prop) {
+                const desc = Object.getOwnPropertyDescriptor(prop, 'list');
+                if (desc?.get) {
+                    prototype.$system.lists[key] = desc.get;
                 }
             }
             prototype.props[key] = prop;
@@ -1159,7 +1101,7 @@ if (!window.ODA) {
         }
         return toRemove;
     }
-    async function ODA(prototype = {}) {
+    async function ODA(prototype = {}, stat = {}) {
         prototype.is = prototype.is.toLowerCase();
         const proto = ODA.telemetry.components[prototype.is];
         if (proto)
@@ -1948,8 +1890,18 @@ if (!window.ODA) {
         fetch: {},
         file: {}
     };
-    ODA.loadURL = async function (url) {
+    ODA.loadURL = async function (url, context, prototype) {
         try{
+            url = url.trim();
+            if (ODA.aliases && url in ODA.aliases)
+                url = ODA.rootPath + '/' + ODA.aliases[url];
+            else if (prototype){
+                if (url.startsWith('./'))
+                    url = prototype.$system.dir + url.substring(1);
+                else if (url.startsWith('../'))
+                    url = prototype.$system.dir +'/'+url;
+            }
+            url = url.replace(/\/\//g, '/');
             url = (new URL(url)).href;
         }
         catch (e){
@@ -1959,11 +1911,11 @@ if (!window.ODA) {
             cache.fetch[url] = fetch(url);
         return cache.fetch[url];
     };
-    ODA.loadJSON = async function (url) {
+    ODA.loadJSON = async function (url, context, prototype) {
         if (!cache.file[url]) {
             cache.file[url] = new Promise(async (resolve, reject) => {
                 try {
-                    const file = await ODA.loadURL(url);
+                    const file = await ODA.loadURL(url, context, prototype);
                     const text = await file.json();
                     resolve(text)
                 }

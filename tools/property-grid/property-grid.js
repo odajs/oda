@@ -124,10 +124,10 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         this.dataSet = dataSet;
         this.prototype = prototype;
         this.prop = prop;
-        if (this.io.lists?.[name]){
+        if (this.io.$system?.lists?.[name]){
             Object.defineProperty(this, 'list', {
                 get() {
-                    return this.io.lists?.[name]();
+                    return this.io.$system?.lists?.[name]();
                 }
             })
         }else{
@@ -262,15 +262,24 @@ cells: {
             }
         </style>
         <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value">{{item?.value}}</span>
-        <oda-button ~if="item.list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
-    `,
+        <oda-button ~if="list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
+        `,
         item: null,
+        get list(){
+            if (this.item?.list?.then){
+                this.item.list.then(list=>{
+                    this.list = list;
+                })
+                return undefined;
+            }
+            return this.item?.list;
+        },
         async showDD(e) {
-            try{
-                const res = await ODA.showDropdown('oda-menu', { items: this.item.list.map(i => ({label: i?.label ?? i?.name ?? i, value: i })) }, {useParentWidth: true, parent: e.target.domHost, fadein: true });
+            try {
+                const res = await ODA.showDropdown('oda-menu', { items: this.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i.value || i })), selectedItem: this.item.value }, { useParentWidth: true, parent: e.target.domHost, fadein: true });
                 this.item.value = res.focusedItem.value;
             }
-            catch (e){
+            catch (e) {
 
             }
         },
