@@ -44,27 +44,29 @@ ODA({is: 'oda-numeric-input',
         }
         return undefined;
     },
+    get separator(){
+        return (1.1).toLocaleString(this.locale)[1]
+    },
     onValueChanged(e){
         let ss = e.target.value.length - e.target.selectionStart;
-        let fraqPos = e.target.value.indexOf(',');
+        let fraqPos = e.target.value.indexOf(this.separator);
         let value = this.value;
         switch (e.inputType){
             case 'insertText':{
                 if (isDigit(e.data)){
                     if (Math.abs(this.value)<1 && e.target.value.startsWith(e.data)){
-                        e.target.value = e.target.value.replace('0,', ',');
+                        e.target.value = e.target.value.replace('0'+this.selector, this.selector);
                         ss--;
                     }
-                    if (e.target.value.indexOf('-')>0){
-                        // отмена вставки числа перед минусом
-                    }
-                    else
-                        value = textToNumber(e.target.value);
+                    value = textToNumber(e.target.value, this.separator);
+                }
+                else if (e.data === '-'){
+                    value = value * -1;
                 }
 
             } break;
             case 'deleteContentBackward':{
-                value = textToNumber(e.target.value);
+                value = textToNumber(e.target.value, this.separator);
                 if (value === this.value){
                     ss++;
                 }
@@ -73,7 +75,7 @@ ODA({is: 'oda-numeric-input',
                 if (fraqPos>0 && fraqPos < e.target.selectionStart){
                     e.target.value = e.target.value.slice(0, e.target.selectionStart) + '0' + (e.target.value).slice(e.target.selectionStart);
                 }
-                value = textToNumber(e.target.value);
+                value = textToNumber(e.target.value, this.separator);
             } break;
             default:{
                 this.render();
@@ -93,10 +95,11 @@ ODA({is: 'oda-numeric-input',
 
         this.render();
         this.$next(()=>{
-            fraqPos = this.text.indexOf(',');
             this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, ss);
-            if (fraqPos>0 && this.input.selectionStart - fraqPos > this.accuracy)
-                this.input.selectionStart = this.input.selectionEnd = fraqPos + this.accuracy + 1;
+            if (this.input.selectionStart<this.beginInt)
+                this.input.selectionStart = this.input.selectionEnd = this.beginInt;
+            else if (this.input.selectionEnd>this.endFrac)
+                this.input.selectionStart = this.input.selectionEnd = this.endFrac;
             this.input.scrollLeft = 10000;
         })
     },
@@ -204,7 +207,7 @@ ODA({is: 'oda-numeric-input',
     },
     isFocused: false,
     onKeyDown(e){
-        const fraqPos = e.target.value.indexOf(',');
+        const fraqPos = e.target.value.indexOf(this.separator);
         console.log('fraqPos', fraqPos, 'selectionStart', e.target.selectionStart, 'selectionEnd', e.target.selectionEnd);
         switch (e.key){
             case 'Escape':{
@@ -219,7 +222,7 @@ ODA({is: 'oda-numeric-input',
                 }
                 else if (e.target.selectionStart !== this.input.selectionEnd){
                     e.preventDefault();
-                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',');
+                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator);
                 }
             } break;
             case '=':
@@ -256,25 +259,25 @@ ODA({is: 'oda-numeric-input',
                     if (fraqPos <= e.target.selectionStart){
                         text = text.substring(0, e.target.selectionStart) +',' + e.key + text.substring(e.target.selectionEnd);
                         this.$next(()=>{
-                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + 2;
+                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 2;
                         },2)
                     }
                     else{
                         text = text.substring(0, e.target.selectionStart) + e.key + ',' + text.substring(e.target.selectionEnd);
                         this.$next(()=>{
-                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',');
+                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator);
                         },2)
                     }
-                    this.value = textToNumber(text);
+                    this.value = textToNumber(text, this.separator);
                 }
                 else if (fraqPos>0 && fraqPos < e.target.selectionStart){
                     e.preventDefault();
                     if (e.target.selectionStart - fraqPos>this.accuracy) return;
                     text = text.substring(0, e.target.selectionStart) + e.key + text.substring((e.target.selectionEnd - e.target.selectionStart)?e.target.selectionEnd:(e.target.selectionEnd + 1));
-                    this.value = textToNumber(text);
+                    this.value = textToNumber(text, this.separator);
                     const start = e.target.selectionStart;
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + start - fraqPos + 1;
+                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + start - fraqPos + 1;
                     },2)
                 }
             } break;
@@ -285,60 +288,75 @@ ODA({is: 'oda-numeric-input',
                 let text = this.text;
                 let slice = text.slice(e.target.selectionStart, e.target.selectionEnd);
                 if (slice.length){
-                    if (slice.includes(',')){
-                        slice = ',';
+                    if (slice.includes(this.separator)){
+                        slice = this.separator;
                     }
                     else{
                         slice = ''
                     }
 
                     text = text.substring(0, e.target.selectionStart) + slice + text.substring(e.target.selectionEnd);
-                    this.value = textToNumber(text);
+                    this.value = textToNumber(text, this.separator);
                 }
                 this.$next(()=>{
-                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + 1;
+                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
                 },1)
             } break;
-            case '-':{
-                e.preventDefault();
-                const se = e.target.value.length - e.target.selectionEnd;
-                const ss = e.target.value.length - e.target.selectionStart;
-                this.value = this.value * -1
-                this.$next(()=>{
-                    this.input.selectionStart = this.text.length - ss;
-                    this.input.selectionEnd = this.text.length - se;
-                },1)
-            } break;
+            // case '-':{
+            //     e.preventDefault();
+            //     const se = e.target.value.length - e.target.selectionEnd;
+            //     const ss = e.target.value.length - e.target.selectionStart;
+            //     this.value = this.value * -1
+            //     this.$next(()=>{
+            //         this.input.selectionStart = this.text.length - ss;
+            //         this.input.selectionEnd = this.text.length - se;
+            //     },1)
+            // } break;
             case 'Delete':{
+                if (e.target.selectionEnd < this.beginInt){
+                    e.preventDefault();
+                    e.target.selectionStart = e.target.selectionEnd = this.beginInt;
+                    return;
+                }
                 let text = this.text;
                 const end = e.target.selectionEnd - e.target.selectionStart === 0?e.target.selectionEnd+1:e.target.selectionEnd;
                 let slice = text.slice(e.target.selectionStart, end);
-                if (slice.includes(',')){
+                if (slice.includes(this.separator)){
                     e.preventDefault();
-                    text = text.substring(0, e.target.selectionStart) +',' + text.substring(end);
-                    this.value = textToNumber(text);
+                    text = text.substring(0, e.target.selectionStart) +this.separator + text.substring(end);
+                    this.value = textToNumber(text, this.separator);
                     if (this.value === Math.floor(this.value)) return;
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + 1;
+                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
                     },1)
                 }
             } break;
             case 'Backspace':{
+                if (e.target.selectionEnd <= this.beginInt){
+                    e.target.selectionStart = e.target.selectionEnd = this.beginInt;
+                    return;
+                }
+                else if (e.target.selectionStart > this.endFrac){
+                    e.preventDefault();
+                    e.target.selectionStart = e.target.selectionEnd = this.endFrac;
+                    return;
+                }
+
                 let text = this.text;
                 let start = e.target.selectionEnd - e.target.selectionStart === 0?e.target.selectionStart-1:e.target.selectionStart;
                 let slice = text.slice(start, e.target.selectionEnd);
-                if (slice.includes(',')){
+                if (slice.includes(this.separator)){
                     e.preventDefault();
-                    text = text.substring(0, start) +',' + text.substring(e.target.selectionEnd);
-                    this.value = textToNumber(text);
+                    text = text.substring(0, start) +this.separator + text.substring(e.target.selectionEnd);
+                    this.value = textToNumber(text, this.separator);
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',')
+                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator)
                     },1)
                 }
                 else if (fraqPos>0 && fraqPos < e.target.selectionEnd){
                     e.preventDefault();
                     text = text.substring(0, start) + text.substring(e.target.selectionEnd);
-                    this.value = textToNumber(text);
+                    this.value = textToNumber(text, this.separator);
                     start = e.target.value.length - start;
                     this.$next(()=>{
                         this.input.selectionStart = this.input.selectionEnd = this.text.length - start;
@@ -346,16 +364,26 @@ ODA({is: 'oda-numeric-input',
                 }
             } break;
             case 'ArrowRight':{
-                if (fraqPos>0 && this.input.selectionStart - fraqPos > this.accuracy){
-                    e.preventDefault();
-                    this.input.selectionStart = this.input.selectionEnd = fraqPos + this.accuracy + 1;
-                }
+                if (e.target.selectionEnd < this.beginInt)
+                    e.target.selectionStart = e.target.selectionEnd = this.beginInt - 1;
+                else if (e.target.selectionEnd >= this.endFrac)
+                    e.target.selectionStart = e.target.selectionEnd = this.endFrac - 1;
             } break;
             case 'ArrowLeft':{
-                if (fraqPos>0 && this.input.selectionStart - fraqPos - 1 > this.accuracy){
-                    e.preventDefault();
-                    this.input.selectionStart = this.input.selectionEnd = fraqPos + this.accuracy + 1;
-                }
+                if (e.target.selectionStart <= this.beginInt)
+                    e.target.selectionStart = e.target.selectionEnd = this.beginInt + 1;
+                else if (e.target.selectionStart > this.endFrac)
+                    e.target.selectionStart = e.target.selectionEnd = this.endFrac + 1;
+            } break;
+            case 'ArrowUp':
+            case 'Home':{
+                e.preventDefault();
+                e.target.selectionStart = e.target.selectionEnd = this.beginInt;
+            } break;
+            case 'ArrowDown':
+            case 'End':{
+                e.preventDefault();
+                e.target.selectionStart = e.target.selectionEnd = this.endFrac;
             } break;
         }
         switch (e.keyCode){
@@ -363,14 +391,14 @@ ODA({is: 'oda-numeric-input',
             case 190:{
                 e.preventDefault();
                 this.$next(()=>{
-                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(',') + 1;
+                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
                 },1)
             } break;
         }
 
     }
 })
-function textToNumber(text){
+function textToNumber(text, separator = ','){
     let value = '';
     let divider = 1;
     for (let ch of text){
@@ -389,7 +417,7 @@ function textToNumber(text){
             case '-':
             case 'e':
             case 'E': break;
-            case ',':{
+            case separator:{
                 ch = '.'
             } break;
             case '%':{
@@ -406,6 +434,7 @@ function textToNumber(text){
         value.substring(0, value.length-1);
     return Number.parseFloat(value)/divider;
 }
+
 function isDigit(ch){
     switch (ch){
         case '0':
