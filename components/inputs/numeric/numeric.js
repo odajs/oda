@@ -24,7 +24,26 @@ ODA({is: 'oda-numeric-input',
     onScroll(e){
         this.input.scrollLeft = 10000;
     },
-
+    get beginInt(){
+        for (let i = 0; i<this.text.length; i++){
+            if (isDigit(this.text[i]))
+                return i;
+        }
+        return undefined;
+    },
+    get endInt(){
+        return this.beginFrac - (this.accuracy>0?1:0);
+    },
+    get beginFrac(){
+        return this.endFrac - this.accuracy;
+    },
+    get endFrac(){
+        for (let i = this.text.length; i>0; i--){
+            if (isDigit(this.text[i]))
+                return i+1;
+        }
+        return undefined;
+    },
     onValueChanged(e){
         let ss = e.target.value.length - e.target.selectionStart;
         let fraqPos = e.target.value.indexOf(',');
@@ -101,7 +120,9 @@ ODA({is: 'oda-numeric-input',
                     for (let key in list){
                         result.push({label: key+': '+list[key], value: key})
                     }
-                    return result;
+                    return result.sort((a,b)=>{
+                        return a.value>b.value?1:-1
+                    });
                 })
             }
         },
