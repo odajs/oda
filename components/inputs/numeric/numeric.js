@@ -92,18 +92,22 @@ ODA({is: 'oda-numeric-input',
         else{
             this.overload = true;
         }
-
         this.render();
-        this.$next(()=>{
-            this.input.selectionStart = this.input.selectionEnd = this.text.length - Math.min(this.text.length, ss);
-            if (this.input.selectionStart<this.beginInt)
-                this.input.selectionStart = this.input.selectionEnd = this.beginInt;
-            else if (this.input.selectionEnd>this.endFrac)
-                this.input.selectionStart = this.input.selectionEnd = this.endFrac;
+        this.setPos(this.text.length - Math.min(this.text.length, ss));
+    },
+
+    setPos(start, end = start){
+        this.debounce('setPos', ()=>{
+            const minPosition = this.value<1?this.beginInt+1:this.beginInt;
+            if (start <= minPosition)
+                start = minPosition;
+            else if (start > this.endFrac)
+                start = this.endFrac;
+            console.log('setPos', start)
+            this.input.selectionStart = this.input.selectionEnd = start;
             this.input.scrollLeft = 10000;
         })
     },
-
     get input(){
         return this.$('input')
     },
@@ -165,10 +169,7 @@ ODA({is: 'oda-numeric-input',
             type: Number,
             set(n){
                 if (!n){
-                    this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = 1;
-                    }, 3)
-
+                    this.setPos(0);
                 }
             }
         },
@@ -208,7 +209,7 @@ ODA({is: 'oda-numeric-input',
     isFocused: false,
     onKeyDown(e){
         const fraqPos = e.target.value.indexOf(this.separator);
-        console.log('fraqPos', fraqPos, 'selectionStart', e.target.selectionStart, 'selectionEnd', e.target.selectionEnd);
+        // console.log('fraqPos', fraqPos, 'selectionStart', e.target.selectionStart, 'selectionEnd', e.target.selectionEnd);
         switch (e.key){
             case 'Escape':{
                 if (this.memory){
@@ -259,13 +260,13 @@ ODA({is: 'oda-numeric-input',
                     if (fraqPos <= e.target.selectionStart){
                         text = text.substring(0, e.target.selectionStart) +',' + e.key + text.substring(e.target.selectionEnd);
                         this.$next(()=>{
-                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 2;
+                            this.setPos(this.text.indexOf(this.separator) + 2);
                         },2)
                     }
                     else{
                         text = text.substring(0, e.target.selectionStart) + e.key + ',' + text.substring(e.target.selectionEnd);
                         this.$next(()=>{
-                            this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator);
+                            this.setPos(this.text.indexOf(this.separator));
                         },2)
                     }
                     this.value = textToNumber(text, this.separator);
@@ -277,7 +278,7 @@ ODA({is: 'oda-numeric-input',
                     this.value = textToNumber(text, this.separator);
                     const start = e.target.selectionStart;
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + start - fraqPos + 1;
+                        this.setPos(this.text.indexOf(this.separator) + start - fraqPos + 1);
                     },2)
                 }
             } break;
@@ -302,16 +303,6 @@ ODA({is: 'oda-numeric-input',
                     this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
                 },1)
             } break;
-            // case '-':{
-            //     e.preventDefault();
-            //     const se = e.target.value.length - e.target.selectionEnd;
-            //     const ss = e.target.value.length - e.target.selectionStart;
-            //     this.value = this.value * -1
-            //     this.$next(()=>{
-            //         this.input.selectionStart = this.text.length - ss;
-            //         this.input.selectionEnd = this.text.length - se;
-            //     },1)
-            // } break;
             case 'Delete':{
                 if (e.target.selectionEnd < this.beginInt){
                     e.preventDefault();
@@ -333,12 +324,12 @@ ODA({is: 'oda-numeric-input',
             } break;
             case 'Backspace':{
                 if (e.target.selectionEnd <= this.beginInt){
-                    e.target.selectionStart = e.target.selectionEnd = this.beginInt;
+                    this.setPos(this.beginInt);
                     return;
                 }
                 else if (e.target.selectionStart > this.endFrac){
                     e.preventDefault();
-                    e.target.selectionStart = e.target.selectionEnd = this.endFrac;
+                    this.setPos(this.endFrac);
                     return;
                 }
 
@@ -350,7 +341,7 @@ ODA({is: 'oda-numeric-input',
                     text = text.substring(0, start) +this.separator + text.substring(e.target.selectionEnd);
                     this.value = textToNumber(text, this.separator);
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator)
+                        this.setPos(this.text.indexOf(this.separator));
                     },1)
                 }
                 else if (fraqPos>0 && fraqPos < e.target.selectionEnd){
@@ -359,31 +350,35 @@ ODA({is: 'oda-numeric-input',
                     this.value = textToNumber(text, this.separator);
                     start = e.target.value.length - start;
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.length - start;
+                        this.setPos(this.text.length - start);
                     },1)
                 }
             } break;
             case 'ArrowRight':{
                 if (e.target.selectionEnd < this.beginInt)
-                    e.target.selectionStart = e.target.selectionEnd = this.beginInt - 1;
+                    this.setPos(this.beginInt - 1);
                 else if (e.target.selectionEnd >= this.endFrac)
-                    e.target.selectionStart = e.target.selectionEnd = this.endFrac - 1;
+                    this.setPos(this.endFrac - 1);
+                else
+                    this.setPos(e.target.selectionEnd+1);
             } break;
             case 'ArrowLeft':{
                 if (e.target.selectionStart <= this.beginInt)
-                    e.target.selectionStart = e.target.selectionEnd = this.beginInt + 1;
+                    this.setPos(this.beginInt);
                 else if (e.target.selectionStart > this.endFrac)
-                    e.target.selectionStart = e.target.selectionEnd = this.endFrac + 1;
+                    this.setPos(this.endFrac + 1);
+                else
+                    this.setPos(e.target.selectionStart-1);
             } break;
             case 'ArrowUp':
             case 'Home':{
-                e.preventDefault();
-                e.target.selectionStart = e.target.selectionEnd = this.beginInt;
+                // e.preventDefault();
+                this.setPos(this.beginInt);
             } break;
             case 'ArrowDown':
             case 'End':{
-                e.preventDefault();
-                e.target.selectionStart = e.target.selectionEnd = this.endFrac;
+                // e.preventDefault();
+                this.setPos(e.target.selectionStart, this.endFrac);
             } break;
         }
         switch (e.keyCode){
@@ -391,7 +386,7 @@ ODA({is: 'oda-numeric-input',
             case 190:{
                 e.preventDefault();
                 this.$next(()=>{
-                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
+                    this.setPos(this.text.indexOf(this.separator) + 1);
                 },1)
             } break;
         }

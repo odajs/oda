@@ -18,7 +18,7 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
         }
     </style>
     <div class="vertical flex">
-        <div ref="menuitems" ~for="items" ~if="!item.hidden" ~class="((item === selectedItem) || (item?.value === selectedItem)) ? 'selected' : ''"class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
+        <div ref="menuitems" ~for="items" ~if="!item.hidden" :selected="selectedItem && (item === selectedItem || item?.value === selectedItem)"  class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
             <div class="flex horizontal row" ~class="item.group?'header':'content'">
                 <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
                 <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
