@@ -821,7 +821,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 }
                 items = items.length ? row.items = items : row.items = undefined;
                 return items;
-            }).catch(() => {
+            }).catch((err) => {
                 clearTimeout(id)
                 row.$loading = false;
             });
