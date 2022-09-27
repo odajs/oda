@@ -97,14 +97,16 @@ ODA({is: 'oda-numeric-input',
     },
 
     setPos(start, end = start){
+
         this.debounce('setPos', ()=>{
-            const minPosition = this.value<1?this.beginInt+1:this.beginInt;
-            if (start <= minPosition)
-                start = minPosition;
-            else if (start > this.endFrac)
-                start = this.endFrac;
-            console.log('setPos', start)
-            this.input.selectionStart = this.input.selectionEnd = start;
+            console.log('setPos', this.input.selectionStart,  this.input.selectionEnd);
+            // const minPosition = this.value<1?this.beginInt+1:this.beginInt;
+            // if (start <= minPosition)
+            //     start = minPosition;
+            // else if (start > this.endFrac)
+            //     start = this.endFrac;
+            // // console.log('setPos', start)
+            // this.input.selectionStart = this.input.selectionEnd = start;
             this.input.scrollLeft = 10000;
         })
     },
@@ -363,12 +365,13 @@ ODA({is: 'oda-numeric-input',
                     this.setPos(e.target.selectionEnd+1);
             } break;
             case 'ArrowLeft':{
-                if (e.target.selectionStart <= this.beginInt)
-                    this.setPos(this.beginInt);
-                else if (e.target.selectionStart > this.endFrac)
-                    this.setPos(this.endFrac + 1);
-                else
-                    this.setPos(e.target.selectionStart-1);
+                this.setPos(e.target.selectionStart, e.target.selectionEnd);
+                // if (e.target.selectionStart <= this.beginInt)
+                //     this.setPos(this.beginInt);
+                // else if (e.target.selectionStart > this.endFrac)
+                //     this.setPos(this.endFrac + 1);
+                // else
+                //     this.setPos(e.target.selectionStart-1);
             } break;
             case 'ArrowUp':
             case 'Home':{

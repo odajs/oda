@@ -4,10 +4,7 @@ ODA({is: 'oda-number-input', imports: '@oda/button',
         :host {
             @apply --horizontal;
         }
-        :host([read-only]) {
-            opacity: .7;
-            pointer-events: none;
-        }
+
         input {
             border: none;
             background-color: transparent;
