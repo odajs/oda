@@ -1715,6 +1715,7 @@ cells: {
         <style>
             :host {
                 font-weight: bold;
+                font-size: small;
                 @apply --header;
                 @apply --flex;
                 @apply --horizontal;
