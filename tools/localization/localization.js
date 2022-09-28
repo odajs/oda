@@ -39,7 +39,7 @@ Localization.setLocale = async (rfc_locale) => {
 // Localization.detached = () => { this.unlisten('language-changed', 'console.log("ss")', { target: window.top }) },
 
 Localization.setLocale(ODA.language)
-
+// console.log('jj')
 
 /* Ф-я перевода */
 ODA.translate = (defVal = '') => {
@@ -100,6 +100,16 @@ textContent.get = function () {
     return translates
 }
 Object.defineProperty(Node.prototype, 'textContent', textContent)
+
+const innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')
+const innerSet = innerHTML.set;
+
+innerHTML.set = function (val) {
+    
+    innerSet.call(this, val)
+}
+
+console.log(innerHTML)
 
 /* Нажатие клавиши */
 window.addEventListener('keydown', async e => {
