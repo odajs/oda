@@ -46,7 +46,7 @@ ODA({is: 'oda-numeric-input',
         return this.endFrac - this.accuracy;
     },
     get endFrac(){
-        for (let i = this.text.length; i>0; i--){
+        for (let i = this.text.length-1; i>=0; i--){
             if (isDigit(this.text[i]))
                 return i+1;
         }
@@ -152,6 +152,7 @@ ODA({is: 'oda-numeric-input',
             type: Number,
             set(n){
                 if (n === 0){
+                    this.render();
                     this.$next(()=>{
                         this.input.selectionStart = this.input.selectionEnd = this.endInt;
                     })
@@ -187,10 +188,6 @@ ODA({is: 'oda-numeric-input',
             case "%":{
                 this.value = this.memory * (this.value / 100);
             } break;
-            case "!":{
-                const n = Math.floor(this.memory);
-                this.value = n * (n-1);
-            } break;
         }
         this.action = '';
         this.memory = 0;
@@ -200,6 +197,9 @@ ODA({is: 'oda-numeric-input',
         let ss = e.target.selectionStart;
         let se = e.target.selectionEnd;
         switch (e.key){
+            case 'Space':{
+                this.value = 0;
+            } return;
             case 'Escape':{
                 if (this.telp){
                     e.preventDefault();
@@ -228,13 +228,17 @@ ODA({is: 'oda-numeric-input',
             case '/':
             case '%':
             case '^':
-            case '+':
-            case '!':{
+            case '+':{
                 e.preventDefault();
                 if (this.memory)
                     this.calc();
                 this.memory = this.value;
                 this.action = e.key;
+            } break;
+            case '!':{
+                e.preventDefault();
+                const n = Math.floor(this.value);
+                this.value = n * (n-1);
             } break;
             case '*':{
                 e.preventDefault();
@@ -277,9 +281,9 @@ ODA({is: 'oda-numeric-input',
             case '8':
             case '9': {
                 e.preventDefault();
-                if (ss >= this.endFrac) return;
+                if (ss >= this.endFrac && this.endInt != this.endFrac) return;
                 let backSS = e.target.value.length - se;
-                if (ss >= this.beginFrac)
+                if (ss >= this.beginFrac && this.endInt != this.endFrac)
                     backSS = e.target.value.length - ss - 1;
                 else if (se > this.endInt)
                     backSS = e.target.value.length - this.endInt;
