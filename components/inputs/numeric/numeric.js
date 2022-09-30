@@ -4,13 +4,19 @@ ODA({is: 'oda-numeric-input',
             :host([overload])>input{
                 @apply --error;
             }
+            :host([calculate]){
+                @apply --invert;
+            }
+            :host([calculate])>input{
+                font-size: x-small !important;
+                min-width: {{minW}}px;
+                min-height: {{minH}}px;
+            }
             :host([calculate])::before{
                 content: attr(calculate);
                 position: absolute;
                 font-size: xx-small;
-                @apply --raised;
-                @apply --dark;
-                opacity: .5;
+                @apply --info;
                 padding: 2px 4px;
             }
             input{
@@ -24,6 +30,8 @@ ODA({is: 'oda-numeric-input',
     onScroll(e){
         this.input.scrollLeft = 10000;
     },
+    minW: 0,
+    minH:0,
     get beginInt(){
         for (let i = 0; i<this.text.length; i++){
             if (isDigit(this.text[i]))
@@ -47,78 +55,48 @@ ODA({is: 'oda-numeric-input',
     get separator(){
         return (1.1).toLocaleString(this.locale)[1]
     },
-    onValueChanged(e){
+    onValueChanged(e) {
         console.log('onValueChanged', e.target.value);
         let ss = this.text.length - e.target.selectionStart;
-        // let fraqPos = e.target.value.indexOf(this.separator);
+        switch (e.inputType){
+            case 'insertText':{
+                if (!isDigit(e.data)){
+                    e.preventDefault();
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.text.length - ss - 1;
+                    })
+                    return;
+                }
+            } break;
+        }
         this.value = textToNumber(e.target.value, this.separator);
-        // switch (e.inputType){
-        //     case 'insertText':{
-        //         if (isDigit(e.data)){
-        //             if (Math.abs(this.value)<1 && e.target.value.startsWith(e.data)){
-        //                 e.target.value = e.target.value.replace('0'+this.selector, this.selector);
-        //                 ss--;
-        //             }
-        //             value = textToNumber(e.target.value, this.separator);
-        //         }
-        //         else if (e.data === '-'){
-        //             value = value * -1;
-        //         }
-        //
-        //     } break;
-        //     case 'deleteContentBackward':{
-        //         value = textToNumber(e.target.value, this.separator);
-        //         if (value === this.value){
-        //             ss++;
-        //         }
-        //     } break;
-        //     case 'deleteContentForward':{
-        //         if (fraqPos>0 && fraqPos < e.target.selectionStart){
-        //             e.target.value = e.target.value.slice(0, e.target.selectionStart) + '0' + (e.target.value).slice(e.target.selectionStart);
-        //         }
-        //         value = textToNumber(e.target.value, this.separator);
-        //     } break;
-        //     default:{
-        //         this.render();
-        //         return;
-        //     }
-        //
-        // }
-        // this.overload = false;
-        // const text = Math.abs(value).toLocaleString(this.locale, {useGrouping: false, style: 'decimal', minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy});
-        // if (text.length<17){
-        //     this.value = value;
-        // }
-        // else{
-        //     this.overload = true;
-        // }
-        // e.target.selectionStart = e.target.selectionEnd = this.text.length - ss;
         this.setPos();
     },
-
     setPos(){
         this.render();
         this.$next(()=>{
             console.log('setPos', this.input.selectionStart,  this.input.selectionEnd);
             if (!this.value){
-                if (this.input.selectionStart < this.endInt || this.input.selectionEnd > this.beginFrac)
+                if (this.input.selectionStart < this.endInt)
                     this.input.selectionStart = this.input.selectionEnd = this.endInt;
+                if (this.accuracy && this.input.selectionEnd > this.endFrac-1)
+                    this.input.selectionEnd = this.endFrac - 1;
             }
-            else{
-                if (this.input.selectionStart < this.beginInt)
-                    this.input.selectionStart = this.beginInt;
-                if (this.input.selectionEnd > this.endFrac)
-                    this.input.selectionEnd = this.endFrac;
-            }
+            if (this.input.selectionStart < this.beginInt)
+                this.input.selectionStart = this.beginInt;
+            if (this.input.selectionEnd > this.endFrac)
+                this.input.selectionEnd = this.endFrac;
             this.input.scrollLeft = 10000;
         })
     },
     get input(){
         return this.$('input')
     },
-    memory: 0,
     set memory(n){
         if (n){
+            const r = this.input.getBoundingClientRect();
+            this.minW = r.width;
+            this.minH = r.height;
             this.value = 0;
         }
     },
@@ -142,7 +120,7 @@ ODA({is: 'oda-numeric-input',
             default: '',
             get (){
                 if (this.memory){
-                    return this.memory.toLocaleString(this.locale, {minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy}) + ' ' + this.action + ' ';
+                    return this.memory.toLocaleString(this.locale, {minimumFractionDigits: (this.action === '!'?0:this.accuracy), maximumFractionDigits: (this.action === '!'?0:this.accuracy)}) + ' ' + this.action + ' ';
                 }
             },
             reflectToAttribute: true
@@ -173,7 +151,11 @@ ODA({is: 'oda-numeric-input',
         value: {
             type: Number,
             set(n){
-                this.setPos();
+                if (n === 0){
+                    this.$next(()=>{
+                        this.input.selectionStart = this.input.selectionEnd = this.endInt;
+                    })
+                }
             }
         },
         format:{
@@ -182,7 +164,7 @@ ODA({is: 'oda-numeric-input',
         }
     },
     get text(){
-        return this.value.toLocaleString(this.locale, {style: this.format, 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})
+        return this.value.toLocaleString(this.locale, {style: (this.memory?'decimal':this.format), 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})+(this.memory?' = ':"");
     },
     calc(){
         if (!this.memory) return
@@ -203,7 +185,11 @@ ODA({is: 'oda-numeric-input',
                 this.value = Math.pow(this.memory, this.value);
             } break;
             case "%":{
-                this.value = this.value / this.memory;
+                this.value = this.memory * (this.value / 100);
+            } break;
+            case "!":{
+                const n = Math.floor(this.memory);
+                this.value = n * (n-1);
             } break;
         }
         this.action = '';
@@ -211,16 +197,16 @@ ODA({is: 'oda-numeric-input',
     },
     isFocused: false,
     onKeyDown(e){
-        this.setPos();
         let ss = e.target.selectionStart;
         let se = e.target.selectionEnd;
-        if (ss <= this.endInt && se >= this.beginFrac){
-            console.log()
-        }
         switch (e.key){
             case 'Escape':{
-                if (this.memory){
+                if (this.telp){
                     e.preventDefault();
+                    this.help = false;
+                }
+                else if (this.memory){
+
                     this.value = this.memory;
                     this.memory = 0;
                     this.$next(()=>{
@@ -235,26 +221,30 @@ ODA({is: 'oda-numeric-input',
             } break;
             case '=':
             case 'Enter':{
-                if (!this.memory) return;
                 e.preventDefault();
+                if (!this.memory) return;
                 this.calc();
             } break;
             case '/':
             case '%':
             case '^':
-            case '+':{
+            case '+':
+            case '!':{
+                e.preventDefault();
                 if (this.memory)
                     this.calc();
                 this.memory = this.value;
                 this.action = e.key;
             } break;
             case '*':{
+                e.preventDefault();
                 if (this.memory)
                     this.calc();
                 this.memory = this.value;
                 this.action = 'X';
             } break;
             case '_':{
+                e.preventDefault();
                 if (this.memory)
                     this.calc();
                 this.memory = this.value;
@@ -276,146 +266,78 @@ ODA({is: 'oda-numeric-input',
                 e.preventDefault();
                 e.target.selectionStart = e.target.selectionEnd = this.beginFrac;
             } break;
-        //
-        //     case '0':
-        //     case '1':
-        //     case '2':
-        //     case '3':
-        //     case '4':
-        //     case '5':
-        //     case '6':
-        //     case '7':
-        //     case '8':
-        //     case '9': {
-        //         if (fraqPos<0) return;
-        //         let text = this.text;
-        //         let slice = text.slice(e.target.selectionStart, e.target.selectionEnd);
-        //         if (slice.includes(',')){
-        //             e.preventDefault();
-        //             if (fraqPos <= e.target.selectionStart){
-        //                 text = text.substring(0, e.target.selectionStart) +',' + e.key + text.substring(e.target.selectionEnd);
-        //                 this.$next(()=>{
-        //                     this.setPos(this.text.indexOf(this.separator) + 2);
-        //                 },2)
-        //             }
-        //             else{
-        //                 text = text.substring(0, e.target.selectionStart) + e.key + ',' + text.substring(e.target.selectionEnd);
-        //                 this.$next(()=>{
-        //                     this.setPos(this.text.indexOf(this.separator));
-        //                 },2)
-        //             }
-        //             this.value = textToNumber(text, this.separator);
-        //         }
-        //         else if (fraqPos>0 && fraqPos < e.target.selectionStart){
-        //             e.preventDefault();
-        //             if (e.target.selectionStart - fraqPos>this.accuracy) return;
-        //             text = text.substring(0, e.target.selectionStart) + e.key + text.substring((e.target.selectionEnd - e.target.selectionStart)?e.target.selectionEnd:(e.target.selectionEnd + 1));
-        //             this.value = textToNumber(text, this.separator);
-        //             const start = e.target.selectionStart;
-        //             this.$next(()=>{
-        //                 this.setPos(this.text.indexOf(this.separator) + start - fraqPos + 1);
-        //             },2)
-        //         }
-        //     } break;
-        //     case '.':
-        //     case ',':{
-        //         e.preventDefault();
-        //         if (fraqPos<0) return;
-        //         let text = this.text;
-        //         let slice = text.slice(e.target.selectionStart, e.target.selectionEnd);
-        //         if (slice.length){
-        //             if (slice.includes(this.separator)){
-        //                 slice = this.separator;
-        //             }
-        //             else{
-        //                 slice = ''
-        //             }
-        //
-        //             text = text.substring(0, e.target.selectionStart) + slice + text.substring(e.target.selectionEnd);
-        //             this.value = textToNumber(text, this.separator);
-        //         }
-        //         this.$next(()=>{
-        //             this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
-        //         },1)
-        //     } break;
-        //     case 'Delete':{
-        //         if (e.target.selectionEnd < this.beginInt){
-        //             e.preventDefault();
-        //             e.target.selectionStart = e.target.selectionEnd = this.beginInt;
-        //             return;
-        //         }
-        //         let text = this.text;
-        //         const end = e.target.selectionEnd - e.target.selectionStart === 0?e.target.selectionEnd+1:e.target.selectionEnd;
-        //         let slice = text.slice(e.target.selectionStart, end);
-        //         if (slice.includes(this.separator)){
-        //             e.preventDefault();
-        //             text = text.substring(0, e.target.selectionStart) +this.separator + text.substring(end);
-        //             this.value = textToNumber(text, this.separator);
-        //             if (this.value === Math.floor(this.value)) return;
-        //             this.$next(()=>{
-        //                 this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator) + 1;
-        //             },1)
-        //         }
-        //     } break;
-        //     case 'Backspace':{
-        //         if (e.target.selectionEnd <= this.beginInt){
-        //             this.setPos(this.beginInt);
-        //             return;
-        //         }
-        //         else if (e.target.selectionStart > this.endFrac){
-        //             e.preventDefault();
-        //             this.setPos(this.endFrac);
-        //             return;
-        //         }
-        //
-        //         let text = this.text;
-        //         let start = e.target.selectionEnd - e.target.selectionStart === 0?e.target.selectionStart-1:e.target.selectionStart;
-        //         let slice = text.slice(start, e.target.selectionEnd);
-        //         if (slice.includes(this.separator)){
-        //             e.preventDefault();
-        //             text = text.substring(0, start) +this.separator + text.substring(e.target.selectionEnd);
-        //             this.value = textToNumber(text, this.separator);
-        //             this.$next(()=>{
-        //                 this.setPos(this.text.indexOf(this.separator));
-        //             },1)
-        //         }
-        //         else if (fraqPos>0 && fraqPos < e.target.selectionEnd){
-        //             e.preventDefault();
-        //             text = text.substring(0, start) + text.substring(e.target.selectionEnd);
-        //             this.value = textToNumber(text, this.separator);
-        //             start = e.target.value.length - start;
-        //             this.$next(()=>{
-        //                 this.setPos(this.text.length - start);
-        //             },1)
-        //         }
-        //     } break;
-        //     case 'ArrowRight':{
-        //         if (e.target.selectionEnd < this.beginInt)
-        //             this.setPos(this.beginInt - 1);
-        //         else if (e.target.selectionEnd >= this.endFrac)
-        //             this.setPos(this.endFrac - 1);
-        //         else
-        //             this.setPos(e.target.selectionEnd+1);
-        //     } break;
-        //     case 'ArrowLeft':{
-        //         this.setPos(e.target.selectionStart, e.target.selectionEnd);
-        //         // if (e.target.selectionStart <= this.beginInt)
-        //         //     this.setPos(this.beginInt);
-        //         // else if (e.target.selectionStart > this.endFrac)
-        //         //     this.setPos(this.endFrac + 1);
-        //         // else
-        //         //     this.setPos(e.target.selectionStart-1);
-        //     } break;
-        //     case 'ArrowUp':
-        //     case 'Home':{
-        //         // e.preventDefault();
-        //         this.setPos(this.beginInt);
-        //     } break;
-        //     case 'ArrowDown':
-        //     case 'End':{
-        //         // e.preventDefault();
-        //         this.setPos(e.target.selectionStart, this.endFrac);
-        //     } break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9': {
+                e.preventDefault();
+                if (ss >= this.endFrac) return;
+                let backSS = e.target.value.length - se;
+                if (ss >= this.beginFrac)
+                    backSS = e.target.value.length - ss - 1;
+                else if (se > this.endInt)
+                    backSS = e.target.value.length - this.endInt;
+                let slice = e.target.value.slice(ss, se);
+                slice = slice.includes(this.separator)?this.separator:'';
+                this.value = textToNumber(e.target.value.substring(0, ss) + e.key + slice + e.target.value.substring(se));
+                this.$next(()=>{
+                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - backSS;
+                },1)
+            } return;
+            case 'Delete':{
+                e.preventDefault();
+                if (ss >= this.endFrac) return;
+                if (ss === se){
+                    if (ss === this.endInt && this.endInt !== this.beginFrac)
+                        ss++;
+                    while (!isDigit(e.target.value[se]) && se<this.endFrac)
+                        se++;
+                    se++;
+                }
+                let backSS = e.target.value.length - se;
+                if (ss >= this.beginFrac)
+                    backSS = e.target.value.length - ss;
+                else if (se > this.endInt)
+                    backSS = e.target.value.length - this.endInt;
+                let slice = e.target.value.slice(ss, se);
+                slice = slice.includes(this.separator)?this.separator:'';
+                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
+                this.$next(()=>{
+                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
+                },1)
+            } return;
+            case 'Backspace':{
+                e.preventDefault();
+                if (ss < this.beginInt) return;
+                if (ss>this.endFrac)
+                    ss = this.endFrac;
+                if (se>this.endFrac)
+                    se = this.endFrac;
+                if (ss === se){
+                    if (se === this.beginFrac && this.endInt !== this.beginFrac)
+                        se--;
+                    ss--;
+                    while (!isDigit(e.target.value[ss]) && ss>this.beginInt)
+                        ss--;
+                }
+                let backSS = e.target.value.length - se;
+                if (ss >= this.beginFrac)
+                    backSS = e.target.value.length - ss;
+                else if (se > this.endInt)
+                    backSS = e.target.value.length - this.endInt;
+                let slice = e.target.value.slice(ss, se);
+                slice = slice.includes(this.separator)?this.separator:'';
+                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
+                this.$next(()=>{
+                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
+                },1)
+            } return;
         }
         switch (e.keyCode){
             case 188:
@@ -424,7 +346,7 @@ ODA({is: 'oda-numeric-input',
                 e.target.selectionStart = e.target.selectionEnd = this.beginFrac;
             } break;
         }
-
+        this.setPos();
     }
 })
 function textToNumber(text, separator = ','){
