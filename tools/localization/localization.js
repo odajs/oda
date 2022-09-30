@@ -156,28 +156,7 @@ ODA({
     },
     columns: [{ name: 'words', treeMode: true, template: 'oda-localization-words', $sort: 1 },
     { name: 'transletes', template: 'oda-localization-transletes' }, { name: 'letter', hidden: true }],
-    // async ready() {
-    //    // this.groups = [this.columns.find(c => c.name === 'letter')];
 
-    //     // const words = sumObAB(Localization.words, Localization.dictionary.words)
-    //     // const phraze  = subObAB(sumObAB(Localization.phraze, Localization.dictionary.phraze),words)
-    //     // // console.log(phraze)
-    //     // let ds = {}
-    //     // Object.keys(words).forEach(k => ds[k] = {words:k, transletes:(new TRANSLATE(k,'words')), letter: k[0].toLocaleLowerCase(), items:[]}  )
-    //     // Object.keys(phraze).map(k => {
-    //     //     const testLeter = new RegExp('[a-z].*?', 'gi')
-    //     //     // let trob = new TRANSLATE(k,'phraze')
-    //     //     k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
-    //     //         if (ds[w] == undefined) ds[w] = { words: w, transletes: new TRANSLATE(w,'words'), letter: w[0].toLocaleLowerCase(), 
-    //     //                                             items:[{ words: k, transletes:  new TRANSLATE(k,'phraze') }] } 
-    //     //         else { ds[w].items.push({words: k, transletes: new TRANSLATE(k,'phraze') }) }
-    //     //     })
-    //     // })
-    //     // console.log('ss:')
-    //     // console.log(Object.values(ds))
-    //     // this.dataSet =  Object.values(ds)
-
-    // },
 
 })
 
@@ -285,101 +264,6 @@ ODA({
 
 })
 
-
-// ODA({
-//     is: 'oda-localization-table', imports: '@oda/table, @oda/button, @oda/basic-input, @oda/toggle, @tools/dropdown, @oda/listbox, @oda/tree',
-//     showHeader: true, rowLines: true, colLines: true, evenOdd: true, allowFocus: true, allowSort: true,
-//     template: /*html*/ `
-//         <style>
-//             :host {@apply --vertical; /*height: 300px; */}
-//             #battons-row {display: flex;}
-//             .selelem {display: flex;/*border:1px solid #f0f0f0;*/ margin: 3px; align-items: center;}
-//             .label {line-height:34px;}
-//         </style>
-//         <div ~if="!newVID" id='battons-row'>
-//             <div ~if="!newVID" class='selelem'>
-//                 <div class='label' @tap="tDict=!tDict"  :selected='!tDict'>{{_nameDict(0)}}</div>
-//                 <oda-toggle ::toggled='tDict' ></oda-toggle>
-//                 <div class='label'  @tap="tDict=!tDict"  :selected='tDict'>{{_nameDict(1)}}</div></div>
-//             <div ~if="!newVID" class='selelem'>
-//                 <div class='label'  @tap="eyeAll=!eyeAll"  :selected='!eyeAll'>Only visible</div>
-//                 <oda-toggle ::toggled='eyeAll' ></oda-toggle>
-//                 <div class='label' @tap="eyeAll=!eyeAll" :selected='eyeAll'>All</div></div>
-//             <div class='selelem'>
-//                 <oda-selectbox :items="localesAvailable" ::sidx="lidx" ><oda-selectbox>
-//             </div>
-//         </div>
-//         <div ~if="!newVID" style="overflow: auto;">
-//             <oda-localization-grid ::content="phrazeBase" ~if="tDict" :header-names="['phraze','translate']" ></oda-localization-grid>
-//             <oda-localization-grid ::content="phrazeDop" ~if="tDict && eyeAll"></oda-localization-grid>
-//             <oda-localization-grid ::content="wordsBase" ~if="!tDict" :header-names="['words','translate']" ></oda-localization-grid>
-//             <oda-localization-grid ::content="wordsDop" ~if="!tDict && eyeAll"></oda-localization-grid>
-//         </div>
-//         <oda-localisation-tree ></oda-localisation-tree>
-//     `,
-//     observers: ['_dataset( currentLocal, lidx)'],
-//     props: {
-//         newVID: 1,
-//         dataSet: [],
-//         eyeAll: true, tDict: false,
-//         currentLocal: 'forInit', // {get() {return ODA.localization.currentLocal}},
-//         phrazeBase: [], phrazeDop: [], wordsBase: [], wordsDop: [],
-//         localesAvailable: [], lidx: {
-//             set(lidx) {
-//                 Localization.lidx = lidx
-//                 Localization._setDictionary(lidx)
-//             },
-//             get() { return Localization.lidx }
-//         },
-//     },
-//     currentDict() {
-//         let toObj = (arr, rez = {}) => { for (let n of arr) { rez[n.key] = n.val }; return rez }
-//         let extractObj = namE => toObj(this[namE].filter(el => el.val != ''))
-//         return {
-//             words: sumObAB(extractObj('wordsBase'), extractObj('wordsDop')),
-//             phraze: sumObAB(extractObj('phrazeBase'), extractObj('phrazeDop'))
-//         }
-//     },
-//     setNewDict() { Localization.dictionary = this.currentDict() },
-//     dlDict() {
-//         const downLoad = document.createElement('a');
-//         downLoad.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(this.currentDict(), null, '\t'));
-//         downLoad.setAttribute('download', 'ODA_dictionary.' + this.currentLocal + '.json');
-//         downLoad.click();
-//     },
-//     _nameDict(b) { return b ? 'phraze' : 'words' },
-//     _dataset(local, lidx) {
-//         const sPW = Localization.phraze, dP = Localization.dictionary.phraze,
-//             sW = Localization.words, dW = Localization.dictionary.words, sP = subObAB(sPW, sW);
-
-//         let toData = (ob, rez = []) => { for (let k in ob) { rez.push({ 'key': k, 'val': ob[k] }) }; return rez }
-
-//         this.wordsDop = toData(subObAB(dW, sW))
-//         this.wordsBase = toData(sumObAB(supObAB(dW, sW), sW))
-
-//         this.phrazeDop = toData(subObAB(dP, sP))
-//         this.phrazeBase = toData(sumObAB(supObAB(dP, sP), sP))
-
-//         let allWords = sumObAB(sW, dW), allPhraze = sumObAB(sPW, dP)
-//         let allPhrazeArr = Object.keys(allPhraze).map((key) => { return { col1: key, col2: allPhraze[key] } });
-//         Object.keys(allWords).map(k => allWords[k] = { col1: k, col2: allWords[k], items: [] })
-//         allPhrazeArr.forEach(o => {
-//             o.col1.split(/\s+/).forEach(w => {
-//                 if (allWords[w] != undefined) { allWords[w].items = (allWords[w].items) ? [o] : [o].concat(allWords[w].items) }
-//                 else { allWords[w] = { col1: w, items: [o] } }
-//             })
-//         })
-
-//         this.dataSet = Object.values(allWords)
-//         this.localesAvailable = Localization.localesAvailable
-//     },
-//     _lselect() {//<oda-selectbox :items="localesAvailable" ><oda-selectbox></oda-selectbox>
-//         const dropdown = document.createElement('oda-list-box');
-//         ODA.showDropdown(dropdown, { items: this.localesAvailable }, {}).then(resolve => {
-//         });
-//     },
-
-// })
 
 
 
