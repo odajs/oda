@@ -69,6 +69,33 @@ ODA.translate = (defVal = '') => {
     return newVal || ''
 }
 
+ODA.translateLite = (defVal = '') => {
+    if (ODA.language=='en') return defVal // Английский язык мы не переводим совсем. 
+    const testLeter = new RegExp('[a-z].*?', 'gi')
+
+    const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a => testLeter.test(a))
+    const words = defVal.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a))
+
+    phraze.forEach(v => ODA.localization.inPage.phraze[v] = '')
+    words.forEach(v => ODA.localization.inPage.words[v] = '')
+
+    const phrazeK = Object.keys(ODA.localization.dictionary.phraze)
+    const wordsK = Object.keys(ODA.localization.dictionary.words)
+
+    let newVal = defVal
+
+    if (phrazeK.length>0) {
+        const rePhraze = new RegExp('\\b' + phrazeK.join('\\b|\\b') + '\\b', "g")
+        newVal = newVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
+    }
+    if (wordsK.length>0) {
+        const reWords = new RegExp('\\b' + wordsK.join('\\b|\\b') + '\\b', "g")
+        newVal = newVal.replaceAll(reWords, md => ODA.localization.dictionary.words[md])
+    }
+
+    return newVal || ''
+}
+
 /* Переопределение Геттера и Сеттера */
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent
 const textSet = textContent.set;
@@ -189,10 +216,7 @@ ODA({
                 <oda-toggle ::toggled='eyeAll' ></oda-toggle>
                 <div class='label' @tap="eyeAll=!eyeAll" :selected='eyeAll'>All</div></div>
             <div class='selelem'>
-                <oda-selectbox :items="localesAvailable" ::sidx="lidx" ><oda-selectbox>
-            </div>
-        </div>
-        <div ~if="!newVID" style="overflow: auto;">
+                <oda-selectbox :items="localesAvailрусский язык
             <oda-localization-grid ::content="phrazeBase" ~if="tDict" :header-names="['phraze','translate']" ></oda-localization-grid>
             <oda-localization-grid ::content="phrazeDop" ~if="tDict && eyeAll"></oda-localization-grid>
             <oda-localization-grid ::content="wordsBase" ~if="!tDict" :header-names="['words','translate']" ></oda-localization-grid>

@@ -630,8 +630,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             if (!e.ctrlKey) {
                 this._select(e, { value: rows[idx]})
             }
-            if (~~(this.screen.length / 2) > idx) {
-                this.$refs.body.scrollTop -= this.rowHeight;
+            if (idx <= (rows.findIndex(r => r === this.raisedRows[0]) + 2)) {
+                this.$refs.body.scrollTop -= (~~(this.screen.length / 2)) * this.rowHeight;
             }
         },
         arrowDown(e) {
@@ -646,8 +646,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             if (!e.ctrlKey) {
                 this._select(e, { value: rows[idx]})
             }
-            if (~~(this.screen.length / 2) < idx) {
-                this.$refs.body.scrollTop += this.rowHeight;
+            if (idx >= (this.screen.length - 1)) {
+                this.$refs.body.scrollTop += (~~(this.screen.length / 2)) * this.rowHeight;
             }
         },
         arrowRight(e) {

@@ -25,7 +25,7 @@ ODA({is: 'oda-numeric-input',
                 text-overflow: ellipsis;
             }
         </style>
-        <input type="text" :value="text" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
+        <input type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
     `,
     onScroll(e){
         this.input.scrollLeft = 10000;
@@ -33,8 +33,8 @@ ODA({is: 'oda-numeric-input',
     minW: 0,
     minH:0,
     get beginInt(){
-        for (let i = 0; i<this.text.length; i++){
-            if (isDigit(this.text[i]))
+        for (let i = 0; i<this.valueText.length; i++){
+            if (isDigit(this.valueText[i]))
                 return i;
         }
         return undefined;
@@ -46,8 +46,8 @@ ODA({is: 'oda-numeric-input',
         return this.endFrac - this.accuracy;
     },
     get endFrac(){
-        for (let i = this.text.length-1; i>=0; i--){
-            if (isDigit(this.text[i]))
+        for (let i = this.valueText.length-1; i>=0; i--){
+            if (isDigit(this.valueText[i]))
                 return i+1;
         }
         return undefined;
@@ -57,13 +57,13 @@ ODA({is: 'oda-numeric-input',
     },
     onValueChanged(e) {
         console.log('onValueChanged', e.target.value);
-        let ss = this.text.length - e.target.selectionStart;
+        let ss = this.valueText.length - e.target.selectionStart;
         switch (e.inputType){
             case 'insertText':{
                 if (!isDigit(e.data)){
                     e.preventDefault();
                     this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.text.length - ss - 1;
+                        this.input.selectionStart = this.input.selectionEnd = this.valueText.length - ss - 1;
                     })
                     return;
                 }
@@ -97,11 +97,15 @@ ODA({is: 'oda-numeric-input',
             const r = this.input.getBoundingClientRect();
             this.minW = r.width;
             this.minH = r.height;
+            if (this.log.last !== this.value)
+                this.log.push(this.value);
             this.value = 0;
         }
     },
+    log: [],
     action: '',
     props:{
+        hideZero: false,
         locale: { //todo надо заполнить все локали
             default: 'ru-RU',
             get list(){
@@ -150,6 +154,7 @@ ODA({is: 'oda-numeric-input',
         },
         value: {
             type: Number,
+            default: 0,
             set(n){
                 if (n === 0){
                     this.render();
@@ -164,8 +169,15 @@ ODA({is: 'oda-numeric-input',
             list: ['decimal', 'currency', 'percent']
         }
     },
-    get text(){
-        return this.value.toLocaleString(this.locale, {style: (this.memory?'decimal':this.format), 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})+(this.memory?' = ':"");
+    get valueText(){
+        if (this.hideZero && !this.value)
+            return ''
+        return this.calcText(this.value);
+    },
+    calcText(value){
+        if (this.hideZero && !value)
+            return ''
+        return value.toLocaleString(this.locale, {style: (this.memory?'decimal':this.format), 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})+(this.memory?' = ':"");
     },
     calc(){
         if (!this.memory) return
@@ -191,17 +203,25 @@ ODA({is: 'oda-numeric-input',
         }
         this.action = '';
         this.memory = 0;
+        this.valueText = this.calcText(this.value)
+        this.$next(()=>{
+            this.input.selectionStart = 0;
+            this.input.selectionEnd = 100000;
+            this.setPos();
+        },1)
+
     },
     isFocused: false,
     onKeyDown(e){
         let ss = e.target.selectionStart;
         let se = e.target.selectionEnd;
+
         switch (e.key){
             case 'Space':{
                 this.value = 0;
             } return;
             case 'Escape':{
-                if (this.telp){
+                if (this.help){
                     e.preventDefault();
                     this.help = false;
                 }
@@ -211,19 +231,24 @@ ODA({is: 'oda-numeric-input',
                     this.memory = 0;
                     this.$next(()=>{
                         this.input.selectionStart = 0;
-                        this.input.selectionEnd = this.text.length;
+                        this.input.selectionEnd = this.valueText.length;
                     },1);
                 }
                 else if (e.target.selectionStart !== this.input.selectionEnd){
                     e.preventDefault();
-                    this.input.selectionStart = this.input.selectionEnd = this.text.indexOf(this.separator);
+                    this.input.selectionStart = this.input.selectionEnd = this.valueText.indexOf(this.separator);
                 }
             } break;
             case '=':
             case 'Enter':{
                 e.preventDefault();
-                if (!this.memory) return;
-                this.calc();
+                if (!this.memory) {
+                    if (e.target.selectionStart !== this.input.selectionEnd){
+                        this.input.selectionStart = this.input.selectionEnd = this.valueText.indexOf(this.separator);
+                    }
+                }
+                else
+                    this.calc();
             } break;
             case '/':
             case '%':
@@ -260,8 +285,8 @@ ODA({is: 'oda-numeric-input',
                 se = e.target.value.length - se;
                 this.value = -this.value;
                 this.$next(()=>{
-                    this.input.selectionStart = this.text.length - ss;
-                    this.input.selectionEnd = this.text.length - se;
+                    this.input.selectionStart = this.valueText.length - ss;
+                    this.input.selectionEnd = this.valueText.length - se;
                     this.setPos();
                 })
             } break;
@@ -281,18 +306,27 @@ ODA({is: 'oda-numeric-input',
             case '8':
             case '9': {
                 e.preventDefault();
-                if (ss >= this.endFrac && this.endInt != this.endFrac) return;
+                let text = this.valueText;
+                if (this.value && ss >= this.endFrac && this.endInt != this.endFrac) return;
                 let backSS = e.target.value.length - se;
                 if (ss >= this.beginFrac && this.endInt != this.endFrac)
-                    backSS = e.target.value.length - ss - 1;
+                    backSS = text.length - ss - 1;
                 else if (se > this.endInt)
-                    backSS = e.target.value.length - this.endInt;
-                let slice = e.target.value.slice(ss, se);
+                    backSS = text.length - this.endInt;
+                let slice = text.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
-                this.value = textToNumber(e.target.value.substring(0, ss) + e.key + slice + e.target.value.substring(se));
+                console.log('in', e.key);
+                if (!this.value)
+                    this.value = textToNumber(e.key);
+                else
+                    this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se));
+                this.valueText = this.calcText(this.value);
                 this.$next(()=>{
-                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - backSS;
-                },1)
+                    if(this.value < 10 && this.value === Math.floor(this.value))
+                        this.input.selectionEnd = this.input.selectionStart = this.endInt;
+                    else
+                        this.input.selectionEnd = this.input.selectionStart = this.valueText.length - backSS;
+                }, 1)
             } return;
             case 'Delete':{
                 e.preventDefault();
@@ -338,6 +372,7 @@ ODA({is: 'oda-numeric-input',
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
+
                 this.$next(()=>{
                     this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
                 },1)
