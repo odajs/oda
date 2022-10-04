@@ -335,7 +335,7 @@ if (!window.ODA) {
                 })
             }
             disconnectedCallback() {
-                console.log('disconnectedCallback', this)
+                // console.log('disconnectedCallback', this)
                 for (let event in prototype.listeners) {
                     this.removeEventListener(event, this.$core.listeners[event]);
                     delete this.$core.listeners[event];

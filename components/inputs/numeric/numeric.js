@@ -1,6 +1,9 @@
 ODA({is: 'oda-numeric-input',
     template:`
         <style>
+            :host{
+                @apply --vertical;
+            }
             :host([overload])>input{
                 @apply --error;
             }
@@ -25,7 +28,7 @@ ODA({is: 'oda-numeric-input',
                 text-overflow: ellipsis;
             }
         </style>
-        <input type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
+        <input class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
     `,
     onScroll(e){
         this.input.scrollLeft = 10000;
