@@ -2382,6 +2382,7 @@ if (!window.ODA) {
                         event = new odaEventTrack(this, handler, ...args);
                         break;
                     default:
+                        console.log('event', this, name, handler)
                         event = func.call(this, name, handler, ...args);
                         break;
                 }

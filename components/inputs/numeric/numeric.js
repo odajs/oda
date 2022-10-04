@@ -106,7 +106,7 @@ ODA({is: 'oda-numeric-input',
     action: '',
     props:{
         hideZero: false,
-        locale: { //todo надо заполнить все локали
+        locale: {
             default: 'ru-RU',
             get list(){
                 return ODA.loadJSON("@tools/localization/locales.json").then(list =>{
