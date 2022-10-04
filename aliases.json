@@ -33,6 +33,7 @@
     "@oda/color-input": "components/colors/color-input/color-input.js",
     "@oda/label-to-name": "components/inputs/label-to-name/label-to-name.js",
     "@oda/list": "components/grids/list/list.js",
+    "@oda/numeric/currency.json": "components/inputs/numeric/currency.json",
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 

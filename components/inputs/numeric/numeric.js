@@ -139,17 +139,19 @@ ODA({is: 'oda-numeric-input',
             get(){
                 return  (Math.abs(this.value * Math.pow(this.accuracy, 10))> Number.MAX_SAFE_INTEGER)
             }
-            // set(n) {
-            //     if (n){
-            //         this.async(()=>{
-            //             this.overload = false;
-            //         }, 100)
-            //     }
-            // }
         },
         currency:{
             default: 'RUB',
-            list: ['RUB', 'USD', 'EUR', 'GBP', 'CNY']
+            get list(){
+                return ODA.loadJSON("@oda/numeric/currency.json").then(list =>{
+                    const result = list.map(i=>{
+                        return {value: i.STRCODE, label: i.STRCODE + ': '+ i.NAME+` (${i.COUNTRY})`}
+                    })
+                    return result.sort((a,b)=>{
+                        return a.value>b.value?1:-1
+                    });
+                })
+            }
         },
         accuracy: {
             default: 2,

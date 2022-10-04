@@ -72,33 +72,12 @@ ODA.translate = (defVal = '') => {
 
 ODA.translateLite = (defVal = '') => {
     if (ODA.language=='en') return defVal // Английский язык мы не переводим совсем. 
-    // const testLeter = new RegExp('[a-z].*?', 'gi')
-
-    // const phraze = defVal.split(/\r?\n/).map(a => a.trim()).filter(a => testLeter.test(a))
-    // const words = defVal.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a))
-
-    // phraze.forEach(v => ODA.localization.inPage.phraze[v] = '')
-    // words.forEach(v => ODA.localization.inPage.words[v] = '')
-
-    // const phrazeK = Object.keys(ODA.localization.dictionary.phraze)
-    // const wordsK = Object.keys(ODA.localization.dictionary.words)
 
     const trPhraze = ODA.localization.dictionary.phraze[defVal]
     const trWords  = ODA.localization.dictionary.words[defVal]
 
     if (trPhraze != undefined) return trPhraze
     if (trWords != undefined) return trWords
-
-    // let newVal = defVal
-
-    // if (phrazeK.length>0) {
-    //     const rePhraze = new RegExp('\\b' + phrazeK.join('\\b|\\b') + '\\b', "g")
-    //     newVal = newVal.replaceAll(rePhraze, md => ODA.localization.dictionary.phraze[md])
-    // }
-    // if (wordsK.length>0) {
-    //     const reWords = new RegExp('\\b' + wordsK.join('\\b|\\b') + '\\b', "g")
-    //     newVal = newVal.replaceAll(reWords, md => ODA.localization.dictionary.words[md])
-    // }
 
     return defVal || ''
 }
@@ -149,7 +128,9 @@ Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
 /* Нажатие клавиши */
 window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey) {
+        
         var table = await ODA.createComponent("oda-localization-tree");
+        // window.top.document.body.appendChild(table);
         // table.columns = [{ name: 'words', treeMode: true, template: 'oda-localization-words', $sort: 1 }]
         // table.dataSet =  [{words: 'phraze'}]
  
