@@ -335,6 +335,7 @@ if (!window.ODA) {
                 })
             }
             disconnectedCallback() {
+                console.log('disconnectedCallback', this)
                 for (let event in prototype.listeners) {
                     this.removeEventListener(event, this.$core.listeners[event]);
                     delete this.$core.listeners[event];
@@ -2382,7 +2383,7 @@ if (!window.ODA) {
                         event = new odaEventTrack(this, handler, ...args);
                         break;
                     default:
-                        console.log('event', this, name, handler)
+                        // console.log('event', this, name, handler)
                         event = func.call(this, name, handler, ...args);
                         break;
                 }
