@@ -136,13 +136,16 @@ ODA({is: 'oda-numeric-input',
             default: false,
             private: true,
             reflectToAttribute: true,
-            set(n) {
-                if (n){
-                    this.async(()=>{
-                        this.overload = false;
-                    }, 100)
-                }
+            get(){
+                return  (Math.abs(this.value * Math.pow(this.accuracy, 10))> Number.MAX_SAFE_INTEGER)
             }
+            // set(n) {
+            //     if (n){
+            //         this.async(()=>{
+            //             this.overload = false;
+            //         }, 100)
+            //     }
+            // }
         },
         currency:{
             default: 'RUB',
@@ -158,7 +161,7 @@ ODA({is: 'oda-numeric-input',
         value: {
             type: Number,
             default: 0,
-            set(n){
+            set(n, o){
                 if (n === 0){
                     this.render();
                     this.$next(()=>{
@@ -298,6 +301,7 @@ ODA({is: 'oda-numeric-input',
                 e.preventDefault();
                 e.target.selectionStart = e.target.selectionEnd = this.beginFrac;
             } break;
+
             case '0':
             case '1':
             case '2':
@@ -318,7 +322,6 @@ ODA({is: 'oda-numeric-input',
                     backSS = text.length - this.endInt;
                 let slice = text.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
-                console.log('in', e.key);
                 if (!this.value)
                     this.value = textToNumber(e.key);
                 else
@@ -375,9 +378,10 @@ ODA({is: 'oda-numeric-input',
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
-
+                this.valueText = this.calcText(this.value);
+                this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
                 this.$next(()=>{
-                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
+                    this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
                 },1)
             } return;
         }
