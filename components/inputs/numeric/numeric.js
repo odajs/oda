@@ -93,7 +93,7 @@ ODA({is: 'oda-numeric-input',
     setPos(){
         this.render();
         this.$next(()=>{
-            console.log('setPos', this.input.selectionStart,  this.input.selectionEnd);
+            // console.log('setPos', this.input.selectionStart,  this.input.selectionEnd);
             if (!this.value){
                 if (this.input.selectionStart < this.endInt)
                     this.input.selectionStart = this.input.selectionEnd = this.endInt;

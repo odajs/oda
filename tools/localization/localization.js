@@ -71,13 +71,13 @@ ODA.translate = (defVal = '') => {
 }
 
 ODA.translateLite = (defVal = '') => {
-    if (ODA.language=='en') return defVal // Английский язык мы не переводим совсем. 
+    if (ODA.language === 'en') return defVal // Английский язык мы не переводим совсем.
 
     const trPhraze = ODA.localization.dictionary.phraze[defVal]
     const trWords  = ODA.localization.dictionary.words[defVal]
 
-    if (trPhraze != undefined) return trPhraze
-    if (trWords != undefined) return trWords
+    if (trPhraze !== undefined) return trPhraze
+    if (trWords !== undefined) return trWords
 
     return defVal || ''
 }
@@ -88,7 +88,7 @@ const textSet = textContent.set;
 const textGet = textContent.get;
 let condNoTranslete = (el) => {
     const parent = el.parentElement?.$node;
-    return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslete || parent.attrs?.notranslate != undefined)
+    return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslate || parent.attrs?.notranslate != undefined)
 }
 textContent.set = function (val) {    
     let newVal = val;
