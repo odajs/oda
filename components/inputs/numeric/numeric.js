@@ -319,13 +319,15 @@ ODA({is: 'oda-numeric-input',
                     this.input.selectionStart = this.valueText.length - ss;
                     this.input.selectionEnd = this.valueText.length - se;
                     this.setPos();
-                })
-            } break;
+                }, 1)
+            } return;
             case '.':
             case ',':{
                 e.preventDefault();
-                e.target.selectionStart = e.target.selectionEnd = this.beginFrac;
-            } break;
+                this.$next(()=>{
+                    this.input.selectionStart = this.input.selectionEnd = this.beginFrac;
+                },1)
+            } return;
 
             case '0':
             case '1':
