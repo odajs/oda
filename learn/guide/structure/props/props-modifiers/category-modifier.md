@@ -28,9 +28,9 @@ ODA({
 В данном примере свойства **value** и **caption** объявляются с модификаторами, которые имеют разные значения.
 
 ```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=200_
-import 'https://odajs.org/tools/property-grid/property-grid.js';
 ODA({
     is: 'my-view',
+    imports: '@tools/property-grid',
     template: `
         <oda-property-grid>
             <my-component></my-component>
@@ -67,9 +67,9 @@ ODA({
 В данном примере оба свойства: **value** и **caption** будут помещены в одну и ту же группу с именем **Мой редактор**.
 
 ```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=200_
-import 'https://odajs.org/tools/property-grid/property-grid.js';
 ODA({
     is: 'my-view',
+    imports: '@tools/property-grid',
     template: `
         <oda-property-grid>
             <my-component></my-component>

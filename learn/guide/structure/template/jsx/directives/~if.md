@@ -114,9 +114,9 @@ HTML-элемент, в котором указана директива **~else
 Пример 4
 
 ```javascript_run_edit_[my-component.js]_h=100_
-import 'https://odajs.org/components/buttons/icon/icon.js';
 ODA({
     is: 'my-icon',
+    imports: '@oda/icon',
     template: `
         <oda-icon icon='icons:android' icon-size='48' :fill='color'></oda-icon>
         <button @tap='_onTap'>Изменить цвет</button>

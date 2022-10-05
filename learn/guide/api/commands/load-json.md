@@ -13,9 +13,9 @@ ODA.loadJSON(url);
 Например,
 
 ```javascript run_edit_[my-component.js]_h=100_
-import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <label>URL-адрес: <input type="url" ::value></label><br>
         <textarea ::value="text" style="height: 100px; width: 300px" placeholder="Результат запроса"></textarea><br>

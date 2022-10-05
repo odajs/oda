@@ -75,9 +75,9 @@ ODA({
 Пример 4
 
 ```javascript_run_edit_[my-component.js]_h=200_
-import 'https://odajs.org/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <div ~for="items" ~is="item.tag" ~props="item"></div>
     `,

@@ -16,9 +16,9 @@ ODA.createComponent(id, props = {})
 Например,
 
 ```javascript run_edit_[my-component.js]_h=100_
-import '/components/buttons/icon/icon.js';
 ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <style>
             div {

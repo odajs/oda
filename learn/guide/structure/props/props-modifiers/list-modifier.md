@@ -26,7 +26,7 @@
 
 ```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=170_
 import 'https://odajs.org/tools/tester/tester.js';
- ODA({
+ODA({
     is: 'my-view',
     template: `
         <oda-tester :left.opened="true">

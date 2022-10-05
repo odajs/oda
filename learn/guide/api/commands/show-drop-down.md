@@ -15,9 +15,9 @@ ODA.showDropdown(component, props = {}, hostProps = {})
 Например,
 
 ```javascript run_edit_[my-component.js]_h=80_
-import '/components/buttons/icon/icon.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <button @tap="onTap">Нажми на меня</button>
     `,
@@ -32,9 +32,9 @@ import '/components/buttons/icon/icon.js';
 Например,
 
 ```javascript run_edit_[my-component.js]_h=80_
-import '/components/buttons/icon/icon.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <button @tap="onTap">Нажми на меня</button>
         <span>Вы щелкнули {{res}} окна</span>
@@ -53,9 +53,9 @@ import '/components/buttons/icon/icon.js';
 Например,
 
 ```javascript run_edit_[my-component.js]_h=150_
-import '/components/colors/palette/palette.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/palette',
     template: `
         <button @tap="onTap">Нажми на меня</button>
         <span>Возвращаемый результат: {{res}}</span>
@@ -76,9 +76,9 @@ import '/components/colors/palette/palette.js';
 Например,
 
 ```javascript run_edit_[my-component.js]_h=200_
-import '/components/buttons/button/button.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/button',
     template: `
         <oda-button ref="btn" label="Нажми на меня" icon="icons:favorite" icon-size="50" @tap="onTap" blink="1000"></oda-button>
     `,
@@ -96,9 +96,9 @@ import '/components/buttons/button/button.js';
 Например, в предыдущим примере во втором параметре можно указать неопределенное (**undefined**) или пустое (**null**) значение.
 
 ```javascript run_edit_[my-component.js]_h=200_
-import '/components/buttons/button/button.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/button',
     template: `
         <oda-button ref="btn" label="Нажми на меня" icon="icons:favorite" icon-size="50" @tap="onTap" blink="1000"></oda-button>
     `,
@@ -124,9 +124,9 @@ import '/components/buttons/button/button.js';
 Например,
 
 ```javascript run_edit_[my-component.js]_h=150_
-import '/components/buttons/icon/icon.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <label>Минимальная ширина <input type="number" ::value="minWidth" step="50"></label><br>
         <button @tap="onTap">Нажми на меня</button>

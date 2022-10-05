@@ -114,9 +114,9 @@ ODA({
 ```
 
 ```javascript run_edit_blob_[my-view.js]_{base-component2.js}_h=200_
-import 'https://odajs.org/tools/property-grid/property-grid.js';
 ODA({
     is: 'my-view',
+    imports: '@tools/property-grid',
     template: `
         <oda-property-grid>
             <my-component></my-component>

@@ -3,9 +3,9 @@
 С его помощью можно узнать по какому адресу располагается файл модуля. Например, компонента **oda-button**.
 
 ```javascript run_edit_[my-component.js]
-import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
+    imports: '@oda/button',
     template: `
         <oda-button ref="btn" label="Нажми на меня" icon="icons:android" @tap="onTap"></oda-button>
     `,
@@ -20,9 +20,9 @@ import '/components/buttons/button/button.js';
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/components/buttons/button/button.js';
  ODA({
     is: 'my-component',
+    imports: '@oda/icon',
     template: `
         <oda-button ref="btn" label="Нажми на меня" icon="icons:android" @tap="onTap"></oda-button>
     `,

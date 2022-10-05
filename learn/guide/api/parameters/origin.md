@@ -15,9 +15,9 @@
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/components/buttons/button/button.js';
- ODA({
+ODA({
     is: 'my-component',
+    imports: '@oda/button',
     template: `
             <oda-button ref="btn" :label icon="icons:android" @tap="onTap"></oda-button>
     `,

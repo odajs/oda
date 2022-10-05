@@ -23,9 +23,9 @@
 В данном примере объявлены два свойства: первое из них **value** с модификатором **label**, а второе **caption** — без него.
 
 ```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=200_
-import 'https://odajs.org/tools/property-grid/property-grid.js';
- ODA({
+ODA({
     is: 'my-view',
+    imports: '@tools/property-grid',
     template: `
         <oda-property-grid>
             <my-component></my-component>
