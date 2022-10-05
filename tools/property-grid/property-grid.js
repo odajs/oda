@@ -39,13 +39,10 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
         groupExpandingMode: 'first',
         dataSet() {
             const items = this.PropertyGridDataSet.items;
-            if (this.onlyFavorites)
-                return items.filter(i => i.prop?.favorites);
             if (this.onlySave)
                 return items.filter(i => i.prop?.save);
             return items;
         },
-        onlyFavorites: false,
         onlySave: false,
     },
     get PropertyGridDataSet() {

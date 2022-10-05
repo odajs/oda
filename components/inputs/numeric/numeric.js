@@ -3,6 +3,7 @@ ODA({is: 'oda-numeric-input',
         <style>
             :host{
                 @apply --vertical;
+                @apply --border;
             }
             :host([overload])>input{
                 @apply --error;
@@ -26,10 +27,24 @@ ODA({is: 'oda-numeric-input',
                 outline: none;
                 text-align: right;
                 text-overflow: ellipsis;
+                border: none;
             }
         </style>
-        <input class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
+        <input tabindex="0" @focus="_focus" @blur="_focus" class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
     `,
+    _focus(e){
+        this.__focused = (e.type === 'focus');
+
+    },
+    set __focused(n){
+        if (n){
+            this.$next(()=>{
+                this.input.selectionStart = 0;
+                this.input.selectionEnd = 100000;
+                this.setPos();
+            },1)
+        }
+    },
     onScroll(e){
         this.input.scrollLeft = 10000;
     },
@@ -56,7 +71,7 @@ ODA({is: 'oda-numeric-input',
         return undefined;
     },
     get separator(){
-        return (1.1).toLocaleString(this.locale)[1]
+        return (1.1).toLocaleString(this.locale || 'ru-RU')[1]
     },
     onValueChanged(e) {
         console.log('onValueChanged', e.target.value);
@@ -123,11 +138,15 @@ ODA({is: 'oda-numeric-input',
                 })
             }
         },
+        viewMode:{
+            default: 'Number',
+            list: ['Number', 'Text'],
+        },
         calculate:{
             default: '',
             get (){
                 if (this.memory){
-                    return this.memory.toLocaleString(this.locale, {minimumFractionDigits: (this.action === '!'?0:this.accuracy), maximumFractionDigits: (this.action === '!'?0:this.accuracy)}) + ' ' + this.action + ' ';
+                    return this.memory.toLocaleString(this.locale || 'ru-RU', {minimumFractionDigits: (this.action === '!'?0:this.accuracy), maximumFractionDigits: (this.action === '!'?0:this.accuracy)}) + ' ' + this.action + ' ';
                 }
             },
             reflectToAttribute: true
@@ -178,6 +197,7 @@ ODA({is: 'oda-numeric-input',
         }
     },
     get valueText(){
+        const a = this.__focused;
         if (this.hideZero && !this.value)
             return ''
         return this.calcText(this.value);
@@ -185,7 +205,9 @@ ODA({is: 'oda-numeric-input',
     calcText(value){
         if (this.hideZero && !value)
             return ''
-        return value.toLocaleString(this.locale, {style: (this.memory?'decimal':this.format), 'currency': this.currency, minimumFractionDigits: this.accuracy, maximumFractionDigits: this.accuracy})+(this.memory?' = ':"");
+        if (this.viewMode === 'Number' || this.__focused)
+            return value.toLocaleString(this.locale || 'ru-RU', {style: (this.memory?'decimal':(this.format || 'decimal')), 'currency': this.currency || 'RUB', minimumFractionDigits: this.accuracy || 0, maximumFractionDigits: this.accuracy || 0})+(this.memory?' = ':"");
+        return 'Текст';
     },
     calc(){
         if (!this.memory) return
@@ -360,7 +382,8 @@ ODA({is: 'oda-numeric-input',
             } return;
             case 'Backspace':{
                 e.preventDefault();
-                if (ss < this.beginInt) return;
+                if (ss < this.beginInt)
+                    return;
                 if (ss>this.endFrac)
                     ss = this.endFrac;
                 if (se>this.endFrac)
@@ -380,8 +403,9 @@ ODA({is: 'oda-numeric-input',
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
-                this.valueText = this.calcText(this.value);
-                this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
+                const valueText = this.calcText(this.value);
+                this.input.selectionEnd = this.input.selectionStart = valueText.length - Math.min(valueText.length, backSS);
+                this.render();
                 this.$next(()=>{
                     this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
                 },1)

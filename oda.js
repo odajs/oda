@@ -1534,7 +1534,7 @@ if (!window.ODA) {
             let items = exec.call(this, fn, p);
             if (items instanceof Promise){
                 items = await items;
-                console.log('items instanceof Promise', items)
+                // console.log('items instanceof Promise', items)
             }
             else if (typeof items === 'string')
                 items = items.split('');
