@@ -107,7 +107,7 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
             align-items: center;
             padding: 9px 4px;
         }
-        span {
+        label {
             padding: 4px 8px;
             white-space: nowrap;
         }
@@ -120,7 +120,7 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
     <div ~if="!item?.group" class="no-flex icon-box">
         <oda-icon class="header" :icon-size="Math.floor(iconSize * .7)" :icon="item?.icon" :sub-icon="item?.subIcon"></oda-icon>
     </div>
-    <span class="flex" :title="item?.label">{{item.label}}</span>
+    <label class="flex" :title="item?.label">{{item.label}}</label>
     `,
     item: {},
 })

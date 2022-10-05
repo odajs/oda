@@ -33,7 +33,7 @@
     "@oda/color-input": "components/colors/color-input/color-input.js",
     "@oda/label-to-name": "components/inputs/label-to-name/label-to-name.js",
     "@oda/list": "components/grids/list/list.js",
-    "@oda/numeric/currency.json": "components/inputs/numeric/currency.json",
+
 
     "@ext/transliteration": "ext/transliteration/transliteration.js",
 
@@ -49,7 +49,8 @@
     "@tools/matrix": "tools/utils/matrix/matrix.js",
     "@tools/activation": "tools/utils/activation/activation.js",
     "@tools/jupyter": "tools/jupyter/jupyter.js",
-    "@tools/localization/locales.json": "tools/localization/locales.json",
+    "@tools/localization/locales.json": "tools/localization/data/locales.json",
+    "@tools/localization/currency.json": "tools/localization/data/currency.json",
 
     "@lib/item-menu": "../core/item/lib/item-menu/item-menu.js",
     "@lib/item-tree": "../core/item/lib/item-tree/item-tree.js",

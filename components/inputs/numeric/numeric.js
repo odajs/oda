@@ -149,7 +149,8 @@ ODA({is: 'oda-numeric-input',
                     return this.memory.toLocaleString(this.locale || 'ru-RU', {minimumFractionDigits: (this.action === '!'?0:this.accuracy), maximumFractionDigits: (this.action === '!'?0:this.accuracy)}) + ' ' + this.action + ' ';
                 }
             },
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            readOnly: true
         },
         overload: {
             default: false,
@@ -162,7 +163,7 @@ ODA({is: 'oda-numeric-input',
         currency:{
             default: 'RUB',
             get list(){
-                return ODA.loadJSON("@oda/numeric/currency.json").then(list =>{
+                return ODA.loadJSON("@tools/localization/currency.json").then(list =>{
                     const result = list.map(i=>{
                         return {value: i.STRCODE, label: i.STRCODE + ': '+ i.NAME+` (${i.COUNTRY})`}
                     })
@@ -415,8 +416,10 @@ ODA({is: 'oda-numeric-input',
             case 188:
             case 190:{
                 e.preventDefault();
-                e.target.selectionStart = e.target.selectionEnd = this.beginFrac;
-            } break;
+                this.$next(()=>{
+                    this.input.selectionStart = this.input.selectionEnd = this.beginFrac;
+                },1)
+            } return;
         }
         this.setPos();
     }

@@ -26,7 +26,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
         :host(:hover) {
             opacity: 1;
         }
-        span {
+        label {
             display: block;
             align-self: center;
             white-space: nowrap;
@@ -42,7 +42,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             display: {{icon?'block':'none'}};
         }
     </style>
-    <span ~if="label">{{label}}</span><slot></slot>`,
+    <label ~if="label">{{label}}</label><slot></slot>`,
     props: {
         iconPos: {
             default: 'left',

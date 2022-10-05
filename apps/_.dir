@@ -97,9 +97,16 @@
       "link": "index.html"
     }
   },
-    {
+  {
     "name": "raccoon",
     "label": "Raccoon",
+    "content": {
+      "link": "index.html"
+    }
+  },
+  {
+    "name": "raccoon-ai",
+    "label": "Raccoon (+AI)",
     "content": {
       "link": "index.html"
     }

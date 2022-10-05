@@ -88,7 +88,7 @@ const textSet = textContent.set;
 const textGet = textContent.get;
 let condNoTranslete = (el) => {
     const parent = el.parentElement?.$node;
-    return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslete || parent.attrs?.notranslete != undefined)
+    return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslete || parent.attrs?.notranslate != undefined)
 }
 textContent.set = function (val) {    
     let newVal = val;
@@ -146,8 +146,7 @@ window.addEventListener('keydown', async e => {
 
 
 /*  */
-ODA({
-    is: 'oda-localisation-tree', imports: '@oda/table, @oda/basic-input,', extends: 'oda-table', 
+ODA({is: 'oda-localization-tree', imports: '@oda/table, @oda/basic-input,', extends: 'oda-table',
     props: {
         showHeader: true, colLines: true, rowLines: true, allowSort: true, lazy: true, avtoSize: true, autoWidth: true, //sort: [[letter]],
         dataSet() {
@@ -175,14 +174,12 @@ ODA({
               { name: 'letter', hidden: true }],
 })
 
-ODA({
-    is: 'oda-localization-words', imports: '@oda/basic-input',
+ODA({is: 'oda-localization-words', imports: '@oda/basic-input',
     template: /*html*/ `<oda-basic-input :value='value()' :read-only ></oda-basic-input>`,
     props: {readOnly:true}, value() {return this.item?.words}
 })
 
-ODA({
-    is: 'oda-localization-transletes', extends: 'oda-localization-words', 
+ODA({is: 'oda-localization-translates', extends: 'oda-localization-words',
     props: {readOnly:false}, value() {return this.item?.transletes?.t}
 })
 
