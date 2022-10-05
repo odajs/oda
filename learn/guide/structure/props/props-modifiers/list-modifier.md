@@ -25,9 +25,9 @@
 Этот список будет отображаться в инспекторе свойств компонента **property-grid** при нажатии на кнопку со стрелкой вниз с правой стороны от значения соответствующего свойства.
 
 ```javascript _run_edit_console_[my-view.js]_{my-component.js}_h=170_
-import 'https://odajs.org/tools/tester/tester.js';
 ODA({
     is: 'my-view',
+    imports: '/tools/tester/tester.js',
     template: `
         <oda-tester :left.opened="true">
             <my-component></my-component>

@@ -6,10 +6,11 @@
 
 ODA-фреймворк позволяет реализовать такую возможность с помощью специального объекта **ODA.router**, который создается на основе класса **odaRouter**. В результате этого можно имитировать работу многостраничного приложения, позволяя пользователю создавать разные состояния, используя хеш-составляющую URL-адреса HTML-страницы, и перемещаться по этим состояниям при помощи кнопок «**Вперед**» и «**Назад**» в истории сессий браузера, точно так же, как и при переходе на разные страницы при использовании многостраничных сайтов.
 
-Объект **ODA.router** объявлен в библиотеке **router.js**, которую необходимо подключить как JavaScript-модуль следующим образом:
+Объект **ODA.router** объявлен в библиотеке **router.js**, которую можно подключить, используя директиву
+**imports** следующим образом:
 
 ```javascript
-import '/tools/router/router.js';
+    imports: '/tools/router/router.js'
 ```
 
 Механизм SPA-роутинга достаточно простой. Он основан на использовании объекта истории переходов браузера **window.history**. В этот объект можно добавить новое состояние с помощью метода **pushState**, поменяв только хеш-составляющую URL-адреса текущей страницы.
@@ -17,9 +18,9 @@ import '/tools/router/router.js';
 Например,
 
 ```javascript run_edit_[my-component.js]_h=190_
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <style>
             #shape {
@@ -89,9 +90,9 @@ create(rule, callback);
 Например,
 
 ```javascript run_edit_[my-component.js]_h=190_
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <style>
             #shape {
@@ -171,9 +172,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]_h=200_
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <style>
             #shape {

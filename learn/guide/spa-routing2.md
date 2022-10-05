@@ -6,10 +6,11 @@
 
 ODA-фреймворк содержит специальный объект **ODA.router**, который позволяет имитировать работу многостраничного приложения и перемещаться в пределах одной страницы при помощи кнопок «**Вперед**» и «**Назад**» в истории сессий браузера, точно так же, как и при переходе на разные страницы при использовании многостраничных сайтов.
 
-Объект **ODA.router** объявлен в библиотеке **router.js**, которую необходимо подключить как JavaScript-модуль следующим образом:
+Объект **ODA.router** объявлен в библиотеке **router.js**, которую можно подключить, используя директиву
+**imports** следующим образом:
 
 ```javascript
-import '/tools/router/router.js';
+    imports: '/tools/router/router.js'
 ```
 
 Механизм SPA-роутинга достаточно простой. Каждому состоянию страницы соответствует уникальное имя, которое сохраняется при навигации по странице вместе с другими параметрами в объекте истории переходов браузера [**window.history**](https://developer.mozilla.org/en-US/docs/Web/API/Window/history). Каждому имени ставится в соответствие функция, преобразующая страницу к требуемому состоянию. Правила, связывающие имена состояний и функции, хранятся в объекте **ODA.router**. Также этот объект регистрирует обработчик события [**popstate**](https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event). В процессе навигации обработчик извлекает из свойств события [**popstate**](https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event) имя состояния страницы, к которому осуществляется переход, и вызывает функцию, преобразующую страницу к этому состоянию.
@@ -37,9 +38,9 @@ import '/tools/router/router.js';
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -108,9 +109,9 @@ window.history.pushState(state, title [, url]);
 Пример использования метода **ODA.router.go**:
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -165,9 +166,9 @@ ODA({
 Используя символы подстановки можно создать одно правило для всех состояний страницы из предыдущего примера:
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -213,9 +214,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -259,9 +260,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}} -- Счетчик: {{count}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -309,9 +310,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <div>Это пишет второй обработчик: {{note2}}</div>
@@ -357,9 +358,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash=='#state1'">&#9668;</button>
@@ -423,9 +424,9 @@ ODA({
 Например,
 
 ```javascript run_edit_[my-component.js]
-import '/tools/router/router.js';
 ODA({
     is: 'my-component',
+    imports: '/tools/router/router.js',
     template: `
         <div>Текущее состояние: {{note}}</div>
         <button @tap="onPrev" :disabled="window.location.hash==startState">&#9668;</button>

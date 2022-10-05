@@ -184,7 +184,7 @@ async function getIcon(n) {
             if (!n.includes('.'))
                 n += '.png';
             if (!n.includes('/'))
-                n = ODA.rootPath + '/icons/png/' + n;
+                n = ODA.rootPath + '/tools/icons/png/' + n;
             try {
                 let file = await fetch(n);
                 if (!file.ok)
