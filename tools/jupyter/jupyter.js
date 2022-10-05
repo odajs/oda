@@ -5,6 +5,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
             @apply --vertical;
             @apply --flex;
             padding: 25px;
+            overflow-y: auto;
         }
     </style>
     <oda-jupyter-divider ~if="!readOnly" index="-1"></oda-jupyter-divider>

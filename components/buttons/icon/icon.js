@@ -148,7 +148,7 @@ async function loadIcons(name) {
     let content = libs[name];
     if (!content) {
         try {
-            const doc = await ODA.loadHTML(ODA.rootPath + '/icons/svg/' + name + '.html');
+            const doc = await ODA.loadHTML(ODA.rootPath + '/tools/icons/svg/' + name + '.html');
             const tmp = doc.querySelector('template');
             libs[name] = content = tmp.content;
             content.size = +tmp.getAttribute('size') || 0;

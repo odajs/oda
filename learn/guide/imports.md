@@ -43,8 +43,7 @@ ODA({
 
 ```javascript run_edit_[my-component.js]_h=190_
 import '/components/buttons/button/button.js';
-ODA({
-    is: 'my-component',
+ODA({is: 'my-component',
     template: `
         <div>{{text}}</div>
         <oda-button label="Нажми на меня" @tap="onTap"></oda-button>
