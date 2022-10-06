@@ -25,7 +25,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
             { icon: 'device:devices', view: 'tester', slot: 'left', slots: [{ slot: 'main', id: 'oda-mobile', src: '../containers/mobile/mobile.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
             { icon: 'icons:settings-overscan', view: 'tester', slot: 'left', slots: [{ slot: 'main', id: 'oda-containers', src: '../containers/containers/containers.js' }, { slot: 'right-panel', id: 'oda-property-grid', component: 'inspectedObject' }] },
 
-            { label: 'API', view: 'api', slot: "right", slots: [{ slot: 'main', id: 'oda-auto-doc', src: '../auto-doc/auto-doc.js' }] },// { slot: 'right-panel', id: 'oda-property-grid' }] },
+            { label: 'API', view: 'api', slot: "right", slots: [{ slot: 'main', id: 'oda-auto-doc', src: './auto-doc/auto-doc.js' }] },// { slot: 'right-panel', id: 'oda-property-grid' }] },
             { icon: 'icons:code', view: 'source', slot: "right", slots: [{ slot: 'main', id: 'oda-code-viewer', src: '../../components/viewers/code-viewer/code-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }] },
             { icon: 'icons:check-circle', view: 'demo', slot: "right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }], if: 'demo' },
             { icon: 'icons:help', view: 'description', slot: "right", slots: [{ slot: 'main', id: 'oda-html-md-viewer', src: './html-md-viewer.js' }, { slot: 'right-panel', id: 'oda-tester-info' }], if: 'description' }
@@ -36,7 +36,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
                 for (let v of this.views) {
                     for (let slot of v.slots) {
                         if (slot.target) {
-                            // slot.target[slot.component || 'component'] = null;
+                            slot.target[slot.component || 'component'] = undefined;
                             slot.target.setAttribute('slot', '?')
                         }
                     }
@@ -164,6 +164,7 @@ ODA({is: 'oda-tester-container',
         :host {
             overflow: hidden;
             @apply --vertical;
+            padding: 16px;
         }
         /*::slotted(*) {*/
         /*    @apply --flex;*/

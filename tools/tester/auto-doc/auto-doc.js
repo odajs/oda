@@ -5,6 +5,7 @@ ODA({is: 'oda-auto-doc', imports: '@oda/button, @oda/md-viewer',
             @apply --vertical;
             overflow-y: auto;
             overflow-x: hidden;
+            padding: 16px;
         }
     </style>
     <div>
@@ -193,7 +194,8 @@ ODA({is: "oda-api-table", imports: '@oda/button',
                         tmp[key].defVal = String(tmp[key]['default']) || String(tmp[key]['value']);
                     }
                 }
-                if (type === 'methods' && typeof obj[key] === 'function') {
+                const description = Object.getOwnPropertyDescriptor(obj, key)
+                if (type === 'methods' && typeof description.value === 'function') {
                     tmp[key] = obj[key];
                     tmp[key].isPrivate = key.startsWith('_');
                     tmp[key].f = tmp[key].toString().substr(0, tmp[key].toString().indexOf(')') + 1).replace('(', '( ').replace(')', ' )');
