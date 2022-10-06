@@ -30,7 +30,7 @@ ODA({is: 'oda-numeric-input',
                 border: none;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll">
+        <input tabindex="0" @focus="_focus" @blur="_focus" class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
     `,
     _focus(e){
         this.__focused = (e.type === 'focus');
@@ -42,7 +42,7 @@ ODA({is: 'oda-numeric-input',
                 this.input.selectionStart = 0;
                 this.input.selectionEnd = 100000;
                 this.setPos();
-            },1)
+            })
         }
     },
     onScroll(e){

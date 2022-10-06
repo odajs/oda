@@ -51,7 +51,9 @@
     "@tools/jupyter": "tools/jupyter/jupyter.js",
     "@tools/localization/locales.json": "tools/localization/data/locales.json",
     "@tools/localization/currency.json": "tools/localization/data/currency.json",
-
+    "@tools/tester": "/tools/tester/tester.js",
+    "@tools/router": "/tools/router/router.js",
+    
     "@lib/item-menu": "../core/item/lib/item-menu/item-menu.js",
     "@lib/item-tree": "../core/item/lib/item-tree/item-tree.js",
     "@lib/file-tree": "../core/item/components/trees/file-tree/file-tree.js",

@@ -182,7 +182,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 </div>
             </div>
         </div>
-        <div class="flex content" @drop.stop.prevent @dragover.stop.prevent @down="focusedRow = null; clearSelection()"></div>
+        <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
     <div ref="footer" :scroll-left="_scrollLeft" class="no-flex horizontal header" ~show="showFooter" style="overflow-y: scroll;">
         <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
@@ -1350,6 +1350,17 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         if (el)
             this.fire('row-contextmenu', el.row);
     },
+    _onDropToEmptySpace() {
+
+    },
+    _onDragOverToEmptySpace() {
+
+    },
+    _onDownToEmptySpace() {
+        this.focusedRow = null
+        this.clearSelection()
+    }
+
 });
 
 ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
