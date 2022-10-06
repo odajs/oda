@@ -1608,6 +1608,7 @@ cells: {
             <oda-table-expand class="no-flex" :item></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
             <div ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'span'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
+            columnId: '',
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
                 const thickness = this.treeLineStyle.width || 1;
