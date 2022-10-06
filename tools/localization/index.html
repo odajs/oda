@@ -3,7 +3,6 @@
 <script type="module" >
     import "../../oda.js"
     import "./localization.js"
-    import "./bagtest.js"
 
     ODA({is:'oda-localisation-test', imports:'@oda/icon, @oda/button', template: `
         <style> 
@@ -27,10 +26,7 @@
         <div :notranslete='true'>Watchers</div>
         <div notranslete >Watchers</div>
         <div >Watchers</div>
-        <div ~html='"Watchers"'></div>
-        <oda-bagtest></oda-bagtest>
-        <oda-localization-tree></oda-localization-tree>
-        
+        <div ~html='"Watchers"'></div>    
         `,
         props: {
             test1:'test button',

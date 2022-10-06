@@ -5,7 +5,7 @@ import '../containers/containers.js'
 const Localization = ODA.regTool('localization');
 Localization.currentLocal = ODA.language  // под вопросом
 
-Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/locales/'; // locales path
+Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/dictionary/'; // locales path
 Localization.inPage = { phraze: {}, words: {} }
 Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
