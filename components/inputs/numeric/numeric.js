@@ -350,9 +350,9 @@ ODA({is: 'oda-numeric-input',
                 let slice = text.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 if (!this.value)
-                    this.value = textToNumber(e.key);
+                    this.value = textToNumber(e.key, this.separator);
                 else
-                    this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se));
+                    this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
                 this.valueText = this.calcText(this.value);
                 this.$next(()=>{
                     if(this.value < 10 && this.value === Math.floor(this.value))
@@ -378,7 +378,7 @@ ODA({is: 'oda-numeric-input',
                     backSS = e.target.value.length - this.endInt;
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
-                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
+                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
                 this.$next(()=>{
                     this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
                 },1)
@@ -405,7 +405,7 @@ ODA({is: 'oda-numeric-input',
                     backSS = e.target.value.length - this.endInt;
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
-                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se));
+                this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
                 const valueText = this.calcText(this.value);
                 this.input.selectionEnd = this.input.selectionStart = valueText.length - Math.min(valueText.length, backSS);
                 this.render();
