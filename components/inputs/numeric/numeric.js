@@ -355,7 +355,7 @@ ODA({is: 'oda-numeric-input',
                     this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
                 this.valueText = this.calcText(this.value);
                 this.$next(()=>{
-                    if(this.value < 10 && this.value === Math.floor(this.value))
+                    if(Math.abs(this.value) < 10 && this.value === Math.floor(this.value))
                         this.input.selectionEnd = this.input.selectionStart = this.endInt;
                     else
                         this.input.selectionEnd = this.input.selectionStart = this.valueText.length - backSS;
