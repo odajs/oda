@@ -431,6 +431,7 @@ function textToNumber(text, separator = ','){
     let divider = 1;
     for (let ch of text){
         switch (ch){
+            case '-':
             case '0':
             case '1':
             case '2':
