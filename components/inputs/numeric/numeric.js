@@ -157,7 +157,7 @@ ODA({is: 'oda-numeric-input',
             private: true,
             reflectToAttribute: true,
             get(){
-                return  (Math.abs(this.value * Math.pow(this.accuracy, 10))> Number.MAX_SAFE_INTEGER)
+                return  (Math.abs(this.value * (Math.pow(this.accuracy, 10) || 1))> Number.MAX_SAFE_INTEGER)
             }
         },
         currency:{
