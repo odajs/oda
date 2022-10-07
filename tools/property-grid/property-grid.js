@@ -189,13 +189,10 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         return this._getDefaultEditor();
     },
     get value() {
-        const list = this.inspectedObjects.map(io => {
-            return io[this.name];
-        })
+        const list = this.inspectedObjects.map(io => io[this.name])
         const value = list[0];
-        if (typeof value !== 'object' && list.find(v => {
-            return v !== value;
-        })) return new MixedArray(...list);
+        if (typeof value !== 'object' && list.some(v => v !== value))
+            return new MixedArray(...list);
         return value;
     },
     set value(n) {
@@ -205,7 +202,7 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         }
     },
     get ro() {
-
+        return !!this.prop.readOnly
     },
     set $expanded(n) {
         if (this.value?.then) {
@@ -261,7 +258,7 @@ cells: {
                 border: none !important;
             }
         </style>
-        <span :disabled="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value">{{item?.value}}</span>
+        <span :readonly="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value">{{item?.value}}</span>
         <oda-button ~if="list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
         `,
         item: null,
