@@ -81,9 +81,18 @@ ODA({
                 options.timeZoneName = this.timeZoneName;
             } break;
         }
-        return this.value?.toLocaleString(this.locale, options) || ''
+
+        let locale = this.locale
+        if (this.calendar && this.calendar !== 'none'){
+            locale += '-ca-'+this.calendar;
+        }
+        return this.value?.toLocaleString(locale, options) || ''
     },
     props:{
+        calendar:{
+            default: 'none',
+            list: ['none', "buddhist", "chinese", "coptic", "ethioaa", "ethiopic", "gregory", "hebrew", "indian", "islamic", "islamicc", "iso8601", "japanese", "persian", "roc"],
+        },
         hour12: false,
         timeZone: {
             default: 'none',
