@@ -12,9 +12,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 color: var(--header-background);
             }
             :host input{
-                border: 1px solid rgb(118, 118, 118);
-                border-radius: 3px;
-                outline: none;
+                border: none;
                 padding: 4px;
                 min-width: 0;
                 background-color: transparent;
@@ -26,7 +24,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         </style>
         <label for="label">Input label:</label>
         <div class="horizontal content">
-            <input class="flex" ::value="label" style="outline: none; padding: 4px; margin: 1px;">
+            <input class="flex" ::value="label">
             <oda-button ~if="defaultList?.length" icon="icons:chevron-right:90" @tap.stop="dropdown"></oda-button>
         </div>
         <div ~if="showName" class="horizontal name">
