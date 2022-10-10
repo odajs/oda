@@ -9,6 +9,7 @@ Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/dictio
 Localization.inPage = { phraze: {}, words: {} }
 Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
+Localization.translateTagList = ['LABEL']
 
 Localization.setLocale = async (rfc_locale) => {
     Localization.available = false
@@ -118,7 +119,12 @@ const innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML'
 const innerSet = innerHTML.set;
 
 innerHTML.set = function (val) {
-
+    if (val == "Watchers") console.log (val, this)
+    // if (!(Localization.available && this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) {console.log (val) }
+    // else if ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) { }
+    // else if (condNoTranslete(this)) { }
+    // else {console.log (val)}
+    
     innerSet.call(this, val)
 }
 Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
