@@ -82,6 +82,9 @@ ODA.translateLite = (defVal = '') => {
 
     return defVal || ''
 }
+// Пояснеия:  .__ft -- flag translate -- хранит нужен ли вообще перевод, .__t -- хранит актуальный перевод
+// Localization.available -- готов ли перевод
+
 
 /* Переопределение Геттера и Сеттера */
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent

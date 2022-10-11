@@ -14,21 +14,17 @@
             <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslete>
                 <oda-icon :icon='flag(item)'></oda-icon>{{item}}</div>
         </div>
-        {{ODA.language}}
-        this is english text<br>
-        
-        {{FAQ}}
-        <oda-button :label='test1'></oda-button>
-        <oda-button :label='"New Watchers"'></oda-button>
-        <oda-button :label='FAQ'></oda-button>
-        <oda-button notranslete :label='"ggg"'></oda-button>
-        <div :notranslete='true'>Watchers</div>
-        <div notranslete >Watchers</div>
-        <div >Watchers</div>
-        <div ~html='"Watchers"'></div>    
+        <h2>{{ODA.language}}</h2>
+        <label>{{watchers}}</label> -- прямая вставка внутри html (label)</br> 
+        <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
+        <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
+        <div ~html='"Watchers"'>  -- то же но div</div>    
+        <oda-button :label='test1'> (ода батон test1)</oda-button>
+        <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
+        <label notranslete>{{watchers}}</label> -- прямая вставка внутри html (label, но notranslete)</br> 
         `,
         props: {
-            test1:'test button',
+            test1:'test Watchers',
             FAQ:'FaQ',
             aLocale:'',
             watchers:'Watchers'
@@ -48,6 +44,6 @@
 
     }) 
 </script>
-<!-- <script src="./test.js"></script> -->
+
 
 <oda-localisation-test></oda-localisation-test>
