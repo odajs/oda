@@ -31,7 +31,7 @@ ODA({is: 'oda-numeric-input',
                 @apply --flex;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
+        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" :error :title="valueText" @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
     `,
     _focus(e){
         this.__focused = (e.type === 'focus');
@@ -204,12 +204,19 @@ ODA({is: 'oda-numeric-input',
             return ''
         return this.calcText(this.value);
     },
+    error: '',
     calcText(value){
-        if (this.hideZero && !value)
-            return ''
-        if (this.viewMode === 'Number' || this.__focused)
-            return value.toLocaleString(this.locale || 'ru-RU', {style: (this.memory?'decimal':(this.format || 'decimal')), 'currency': this.currency || 'RUB', minimumFractionDigits: this.accuracy || 0, maximumFractionDigits: this.accuracy || 0})+(this.memory?' = ':"");
-        return 'Текст';
+        try{
+            this.error = '';
+            if (this.hideZero && !value)
+                return ''
+            if (this.viewMode === 'Number' || this.__focused)
+                return value.toLocaleString(this.locale || 'ru-RU', {style: (this.memory?'decimal':(this.format || 'decimal')), 'currency': this.currency || 'RUB', minimumFractionDigits: this.accuracy || 0, maximumFractionDigits: this.accuracy || 0})+(this.memory?' = ':"");
+            return 'Текст';
+        }
+        catch (e){
+            return this.error = e.message;
+        }
     },
     calc(){
         if (!this.memory) return

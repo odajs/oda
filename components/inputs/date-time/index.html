@@ -2,8 +2,8 @@
 <script type="module" src="/web/oda/oda.js"></script>
 <script type="module" src="./date-time.js"></script>
 <oda-tester>
-    <oda-date-time-input id="input"></oda-date-time-input>
+    <oda-date-time-input id="input" year="numeric" month="2-digit" weekday="long" ></oda-date-time-input>
 </oda-tester>
 <script type="module">
-     input.value = new Date(Date.parse('2000-11-22'));
+     input.value = new Date();
 </script>

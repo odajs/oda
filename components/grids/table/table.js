@@ -438,33 +438,61 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 })
             }
             return items.reduce((res, i) => {
-
-                Object.defineProperties(i, {
-                    $parent: {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$parent
-                    },
-                    $level: {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$level
-                    },
-                    $expanded: {
+                if (!('$expanded' in i))
+                    Object.defineProperty(i, '$expanded', {
                         enumerable: false,
                         configurable: true,
                         writable: true,
                         value: i.$expanded
-                    },
-                    $hasChildren: {
+                    })
+
+                if (!('$parent' in i))
+                    Object.defineProperty(i, '$parent', {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: i.$parent
+                    })
+                if (!('$level' in i))
+                    Object.defineProperty(i, '$level', {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: i.$level
+                    })
+                if (!('$hasChildren' in i))
+                    Object.defineProperty(i, '$hasChildren', {
                         enumerable: false,
                         configurable: true,
                         writable: true,
                         value: i.$hasChildren
-                    },
-                })
+                    })
+                // Object.defineProperties(i, {
+                //     $parent: {
+                //         enumerable: false,
+                //         configurable: true,
+                //         writable: true,
+                //         value: i.$parent
+                //     },
+                //     $level: {
+                //         enumerable: false,
+                //         configurable: true,
+                //         writable: true,
+                //         value: i.$level
+                //     },
+                //     $expanded: {
+                //         enumerable: false,
+                //         configurable: true,
+                //         writable: true,
+                //         value: i.$expanded
+                //     },
+                //     $hasChildren: {
+                //         enumerable: false,
+                //         configurable: true,
+                //         writable: true,
+                //         value: i.$hasChildren
+                //     },
+                // })
 
                 if (parent) {
                     i.$parent = parent;

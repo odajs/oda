@@ -13,8 +13,60 @@ ODA({
                 @apply --flex;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged">
+        <input tabindex="0" :error @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" :title="valueText"  @input="onValueChanged">
     `,
+    onKeyDown(e){
+        switch (e.key) {
+            case '.':
+            case ',':{
+                e.preventDefault();
+                e.target.selectionStart;
+            } return;
+        }
+    },
+    get startArray(){
+        let  arr = [this.startYear, this.startMonth, this.startDay, this.startHour, this.startMinute, this.startSecond];
+        arr = arr.sort((a,b)=>{
+            return a>b?1:-1
+        })
+        return  arr;
+    },
+    get startYear(){
+        return this.testModel.indexOf('3333');
+    },
+    get startMonth(){
+        return this.testModel.indexOf('11');
+    },
+    get startDay(){
+        return this.testModel.indexOf('22');
+    },
+    get startHour(){
+        return this.testModel.indexOf('13');
+    },
+    get startMinute(){
+        return this.testModel.indexOf('42');
+    },
+    get startSecond(){
+        return this.testModel.indexOf('42');
+    },
+    get testModel(){
+        try{
+            return this.testDate?.toLocaleString(this.locale, {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'}) || '';
+        }
+        catch (e){
+            return e.message;
+        }
+
+    },
+    created(){
+        this.testDate = new Date(Date.parse('3333-11-22:13:42:43'));
+    },
+    testDate: null,
+
+    get input(){
+        return this.$('input')
+    },
+    error: '',
     _focus(e){
         this.__focused = (e.type === 'focus');
 
@@ -22,43 +74,59 @@ ODA({
     set __focused(n){
         if (n){
             this.$next(()=>{
-                this.input.selectionStart = 0;
-                this.input.selectionEnd = 100000;
+                this.input.selectionStart = this.startDay;
+                this.input.selectionEnd = this.startDay+2;
                 this.setPos();
-            })
+            },2)
         }
     },
+    setPos(){
+        this.render();
+    },
     get valueText(){
-        var options = {}
-        if (this.hour12)
-            options.hour12 = this.hour12;
-        if (this.timeZone !== 'none')
-            options.timeZone = this.timeZone;
-        if (this.weekday !== 'none')
-            options.weekday = this.weekday;
-        if (this.timeZoneName !== 'none')
-            options.timeZoneName = this.timeZoneName;
+        return this.calcText(this.value, this.__focused);
+    },
+    calcText(value){
+        try{
+            this.error = '';
+            let locale = this.locale;
+            if (this.calendar && this.calendar !== 'none'){
+                locale += '-ca-'+this.calendar;
+            }
+            let options = {};
+            if (!this.__focused){
+                if (this.hour12)
+                    options.hour12 = this.hour12;
+                if (this.timeZone !== 'none')
+                    options.timeZone = this.timeZone;
+                if (this.weekday !== 'none')
+                    options.weekday = this.weekday;
+                if (this.timeZoneName !== 'none')
+                    options.timeZoneName = this.timeZoneName;
 
-        if (this.era !== 'none')
-            options.era = this.era;
-        if (this.year !== 'none')
-            options.year = this.year;
-        if (this.month !== 'none')
-            options.month = this.month;
-        if (this.day !== 'none')
-            options.day = this.day;
-        if (this.hour !== 'none')
-            options.hour = this.hour;
-        if (this.minute !== 'none')
-            options.minute = this.minute;
-        if (this.second !== 'none')
-            options.second = this.second;
-
-        let locale = this.locale;
-        if (this.calendar && this.calendar !== 'none'){
-            locale += '-ca-'+this.calendar;
+                if (this.era !== 'none')
+                    options.era = this.era;
+                if (this.year !== 'none')
+                    options.year = this.year;
+                if (this.month !== 'none')
+                    options.month = this.month;
+                if (this.day !== 'none')
+                    options.day = this.day;
+                if (this.hour !== 'none')
+                    options.hour = this.hour;
+                if (this.minute !== 'none')
+                    options.minute = this.minute;
+                if (this.second !== 'none')
+                    options.second = this.second;
+            }
+            else{
+                options = {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+            }
+            return this.value?.toLocaleString(locale, options) || '';
         }
-        return this.value?.toLocaleString(locale, options) || ''
+        catch (e){
+            return (this.error = e.message);
+        }
     },
     props:{
         iso:{

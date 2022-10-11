@@ -77,9 +77,30 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
 })
 
 CLASS({is: 'PropertyGridDataRowOwner',
+    props:{
+        exxx:{
+            default: false
+        },
+
+        $expanded:{
+            default: false,
+            get(){
+                return false
+            }
+        }
+    },
+    $hasChildren: undefined,
+    // get $expanded(){
+    //     return false;
+    // },
+    // set $expanded(n){
+    //     this.items;
+    // },
     get items() {
-        if (this.mixed) return [];
-        if (!this.$expanded) return (this.value && typeof this.value === 'object') ? [{}] : [];
+        if (this.mixed)
+            return [];
+        if (!this.$expanded)
+            return (this.value && typeof this.value === 'object') ? [{}] : [];
         const items = {}
         for (let obj of this.inspectedObjects || []) {
             if (typeof obj !== 'object') continue;
@@ -139,7 +160,7 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get io(){
         return this.dataSet.inspectedObjects[0];
     },
-    $expanded: false,
+
     get category() {
         return this.prototype.constructor?.name + (this.prop?.category ? (` - ${this.prop?.category.toLowerCase()}`) : '');
     },
@@ -202,28 +223,33 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
         }
     },
     get ro() {
-        return !!this.prop.readOnly
+        return !!(this.prop?.readOnly)
     },
-    set $expanded(n) {
-        if (this.value?.then) {
-            this.value?.then(obj => {
-                const row = new PropertyGridDataRow('Resolve', this.dataSet)
-                row.isRevoked = true;
-                row.value = obj;
-                row.ro = true;
-                if (typeof obj === 'object')
-                    row.inspectedObjects = [obj];
-                this.items = [row];
-            }).catch(e => {
-                const row = new PropertyGridDataRow('Reject', this.dataSet)
-                row.isRevoked = true;
-                row.value = e;
-                row.ro = true;
-                row.inspectedObjects = [e];
-                this.items = [row];
-            })
+    props:{
+        $expanded:{
+            default: false,
+            set(n){
+                if (this.value?.then) {
+                    this.value?.then(obj => {
+                        const row = new PropertyGridDataRow('Resolve', this.dataSet)
+                        row.isRevoked = true;
+                        row.value = obj;
+                        row.ro = true;
+                        if (typeof obj === 'object')
+                            row.inspectedObjects = [obj];
+                        this.items = [row];
+                    }).catch(e => {
+                        const row = new PropertyGridDataRow('Reject', this.dataSet)
+                        row.isRevoked = true;
+                        row.value = e;
+                        row.ro = true;
+                        row.inspectedObjects = [e];
+                        this.items = [row];
+                    })
+                }
+            }
         }
-    }
+    },
 })
 CLASS({is: 'PropertyGridDataSet', extends: 'PropertyGridDataRowOwner',
     ctor(inspectedObject, expert, onlySave) {

@@ -503,7 +503,7 @@ if (!globalThis.KERNEL) {
                     cls.lists[name] = desc.get;
                 }
             }
-            if (prop.default) {
+            if (prop.default !== undefined) {
                 Object.defineProperty(cls.defaults, name, {
                     configurable: true,
                     enumerable: true,
@@ -606,7 +606,6 @@ if (!globalThis.KERNEL) {
         return obj && typeof obj === 'object';
     }
     String:{
-
 
         const kebabGlossary = Object.create(null);
         function toKebab(str) {
