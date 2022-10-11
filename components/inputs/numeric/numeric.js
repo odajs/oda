@@ -28,9 +28,10 @@ ODA({is: 'oda-numeric-input',
                 text-align: right;
                 text-overflow: ellipsis;
                 border: none;
+                @apply --flex;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" class="flex" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
+        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown"  @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
     `,
     _focus(e){
         this.__focused = (e.type === 'focus');
