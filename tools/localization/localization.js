@@ -44,7 +44,7 @@ Localization.setLocale(ODA.language)
 // console.log('jj')
 
 /* Ф-я перевода */
-ODA.translate = (defVal = '') => {
+Localization.translate = (defVal = '') => {
     if (ODA.language == 'en') return defVal // Английский язык мы не переводим совсем. 
     const testLeter = new RegExp('[a-z].*?', 'gi')
 
@@ -71,17 +71,17 @@ ODA.translate = (defVal = '') => {
     return newVal || ''
 }
 
-ODA.translateLite = (defVal = '') => {
-    if (ODA.language === 'en') return defVal // Английский язык мы не переводим совсем.
+// ODA.translateLite = (defVal = '') => {
+//     if (ODA.language === 'en') return defVal // Английский язык мы не переводим совсем.
 
-    const trPhraze = ODA.localization.dictionary.phraze[defVal]
-    const trWords = ODA.localization.dictionary.words[defVal]
+//     const trPhraze = ODA.localization.dictionary.phraze[defVal]
+//     const trWords = ODA.localization.dictionary.words[defVal]
 
-    if (trPhraze !== undefined) return trPhraze
-    if (trWords !== undefined) return trWords
+//     if (trPhraze !== undefined) return trPhraze
+//     if (trWords !== undefined) return trWords
 
-    return defVal || ''
-}
+//     return defVal || ''
+// }
 // Пояснеия:  .__ft -- flag translate -- хранит нужен ли вообще перевод, .__t -- хранит актуальный перевод
 // Localization.available -- готов ли перевод
 
@@ -95,15 +95,16 @@ let condNoTranslete = (el) => {
     return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslate || parent.attrs?.notranslate != undefined)
 }
 textContent.set = function (val) {
-    let newVal = val;
-    if (!(Localization.available && this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) { }
-    else if (this.__translate == val) { }
-    else if ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) { }
-    else if (condNoTranslete(this)) { }
-    else { newVal = ODA.translate(val) }
-    this.__translate = newVal;
-    // if ( /Dictionaries/g.test(val) ) console.log(val,newVal,this, Localization.available , this.isConnected , this.nodeType )
-    textSet.call(this, newVal)
+    const flagTranslate = (this.__ft != undefined) ? this.__ft // определяем нужен ли вообще перевод причем 1 раз
+                        : (!(this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) ? false 
+                        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
+                        : (condNoTranslete(this)) ? false : true
+    this.__ft = flagTranslate
+
+    if (!flagTranslate) textSet.call(this, val)
+    else if (!Localization.available) {this.__t = undefined; textSet.call(this, val)} // Если словарь не готов, то сбрасываем перевод
+    else if (this.__t != undefined) textSet.call(this, this.__t) // Если перевод уже сделан возвращаем его
+    else {this.__t = Localization.translate(val); textSet.call(this, this.__t) } // переводим, перевод сохраняем
 }
 textContent.get = function () {
     const value = textGet.call(this)
