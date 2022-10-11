@@ -837,9 +837,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     __checkChildren(node) {
         const items = this._beforeExpand(node);
         if (items?.then) {
-            return items.then(res => {
-                return res;
-            })
+            return items.then(res => (res?.length > 0))
         }
         return (items?.length > 0);
     },
