@@ -79,7 +79,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             padding-bottom: var(--button-size);
         }
     </style>
-    <div class="title-bar horizontal" invert @mouseenter="_flags.allowMove = true" @mouseleave="_flags.allowMove = false">
+    <div class="title-bar horizontal" invert @mouseenter="_in" @mouseleave="_out">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
         <div ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
@@ -92,8 +92,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: #00f4e1"></oda-button>
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
-    _flags: {
-        allowMove: false
+    _in(){
+        this.__allowMove = true
+    },
+    _out(){
+        this.__allowMove = false
     },
     props: {
         unique: String,
@@ -197,7 +200,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             // console.log(e)
             switch (d.state) {
                 case 'start': {
-                    if (!this.style.cursor && this._flags.allowMove)
+                    if (!this.style.cursor && this.__allowMove)
                         this.style.cursor = `move`;
                 } break;
                 case 'track': {
