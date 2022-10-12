@@ -1,4 +1,3 @@
-import ODA from '../../oda.js';
 import '../containers/containers.js'
 // import '../../components/grids/table/table.js'
 
@@ -10,7 +9,7 @@ Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/dictio
 Localization.inPage = { phraze: {}, words: {} }
 Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
-Localization.translateTagList = ['LABEL']
+Localization.translateTagList = ['LABEL', 'H3']
 // Localization.reload = () => {
 
 //  }

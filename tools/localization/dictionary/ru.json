@@ -21,7 +21,10 @@
 		"Overview": "Обзор",
 		"Setters": "Сеттеры",
 		"Stylization": "Стилизация",
-		"Watchers": "Наблюдатели cвойств"
+		"Watchers": "Наблюдатели cвойств",
+		"Users": "Пользователи",
+		"Base": "База",
+		"navigation": "навигация"
 	},
 	"phraze": {
 		"Only visible": "Только видимое",
