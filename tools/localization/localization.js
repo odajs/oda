@@ -1,3 +1,4 @@
+import ODA from '../../oda.js';
 import '../containers/containers.js'
 // import '../../components/grids/table/table.js'
 
@@ -10,9 +11,14 @@ Localization.inPage = { phraze: {}, words: {} }
 Localization.dictionary = { phraze: {}, words: {} }
 Localization.available = false
 Localization.translateTagList = ['LABEL']
+// Localization.reload = () => {
+
+//  }
 
 Localization.setLocale = async (rfc_locale) => {
     Localization.available = false
+    // ODA.next();
+    // ODA.render()
     const paths = rfc_locale.split('-').map((_, i, ar) => ar.slice(0, i + 1).join('-') + '.json')
     const localesAvailable = await ODA.loadJSON(Localization.path + '_.dir')
     const availablePaths = paths.filter(p => localesAvailable.includes(p))
@@ -21,6 +27,7 @@ Localization.setLocale = async (rfc_locale) => {
     Object.assign(Localization.dictionary.words, ...dictList.map(d => d.words))
     if (dictList.length > 0) Localization.available = true
     else console.log('Localization: ', 'No available dictionary')
+    // ODA.next();
 }
 
 // Object.defineProperty(ODA, 'language', {
@@ -91,34 +98,46 @@ const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent
 const textSet = textContent.set;
 const textGet = textContent.get;
 let condNoTranslete = (el) => {
-    const parent = el.parentElement?.$node;
-    return parent && ( !Localization.translateTagList.includes(parent.tag) 
-                    || parent.bind?.notranslate || parent.attrs?.notranslate != undefined)
+    const node = el.parentElement ? el.parentElement.$node: el.$node;
+    return ( !Localization.translateTagList.includes(node?.tag) 
+                    || node.bind?.notranslate || node.attrs?.notranslate != undefined)
 }
-let getFlagTranslate = (el,val) => 
-          (el.__ft != undefined) ? el.__ft // определяем нужен ли вообще перевод причем 1 раз
-        : (!(el.nodeType === 3 || el.nodeType === 1)) ? false 
-        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
-        : (condNoTranslete(el)) ? false : true
-
+let _newVal = (el,val) => {
+    // if (val=='Watchers') console.log(val)
+    const flagTranslate = (el.__ft != undefined) ? el.__ft // определяем нужен ли вообще перевод причем 1 раз
+                        : (!(el.nodeType === 3 || el.nodeType === 1)) ? false 
+                        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
+                        : (condNoTranslete(el)) ? false : true
+    el.__ft = flagTranslate
+    if (val=='OK') console.log(el, condNoTranslete(el))
+    if (!flagTranslate) return val
+    else if (!ODA.localization.available) {el.__t = undefined; return val} // Если словарь не готов, то сбрасываем перевод
+    else if (el.__t != undefined && el.__t != '') return el.__t // Если перевод уже сделан возвращаем его
+    else {el.__t = Localization.translate(val); return el.__t }
+}
 textContent.set = function (val) {
-    const flagTranslate = getFlagTranslate (this,val)
-    this.__ft = flagTranslate
-    if (!flagTranslate) textSet.call(this, val)
-    else if (!Localization.available) {this.__t = undefined; textSet.call(this, val)} // Если словарь не готов, то сбрасываем перевод
-    else if (this.__t != undefined) textSet.call(this, this.__t) // Если перевод уже сделан возвращаем его
-    else {this.__t = Localization.translate(val); textSet.call(this, this.__t) } // переводим, перевод сохраняем
+    // console.log(this)
+    const newVal = _newVal(this,val)
+    textSet.call(this, newVal)  // переводим, перевод сохраняем
 }
 textContent.get = function () {
-    const value = textGet.call(this)
-    if (!(Localization?.available && /* this.isConnected && */ this.nodeType === 3)) return value  // с isConnected не работает  
-    if (this.__translate != undefined) return this.__translate                                      // перевод уже есть
-    if ((/\{\{((?:.|\n)+?)\}\}/g.test(value))) { this.__translate = value; return value }           // нужно обрабатывать без перевода
-    if (condNoTranslete(this)) { this.__translate = value; return value }                           // стили и svg
-    const translates = ODA.translate(value)
-    this.__translate = translates
-    // if ( /Dictionaries/g.test(value) ) console.log(value,this )
-    return translates
+    const val = textGet.call(this)
+    const newVal = _newVal(this,val)
+    return newVal
+
+    // const flagTranslate = getFlagTranslate (this,val)
+    // this.__ft = flagTranslate
+
+    // if (!flagTranslate) return val
+
+    // if (!(Localization?.available && /* this.isConnected && */ this.nodeType === 3)) return value  // с isConnected не работает  
+    // if (this.__translate != undefined) return this.__translate                                      // перевод уже есть
+    // if ((/\{\{((?:.|\n)+?)\}\}/g.test(value))) { this.__translate = value; return value }           // нужно обрабатывать без перевода
+    // if (condNoTranslete(this)) { this.__translate = value; return value }                           // стили и svg
+    // const translates = ODA.translate(value)
+    // this.__translate = translates
+    // // if ( /Dictionaries/g.test(value) ) console.log(value,this )
+    // return translates
 }
 Object.defineProperty(Node.prototype, 'textContent', textContent)
 
@@ -126,13 +145,16 @@ const innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML'
 const innerSet = innerHTML.set;
 
 innerHTML.set = function (val) {
-    if (val == "Watchers") console.log (val, this)
-    // if (!(Localization.available && this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) {console.log (val) }
-    // else if ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) { }
-    // else if (condNoTranslete(this)) { }
-    // else {console.log (val)}
+    const newVal = _newVal(this,val)
+    innerSet.call(this, newVal)  // переводим, перевод сохраняем
+
+    // if (val == "Watchers") console.log (val, this)
+    // // if (!(Localization.available && this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) {console.log (val) }
+    // // else if ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) { }
+    // // else if (condNoTranslete(this)) { }
+    // // else {console.log (val)}
     
-    innerSet.call(this, val)
+    // innerSet.call(this, val)
 }
 Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
 

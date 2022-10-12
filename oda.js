@@ -1681,33 +1681,41 @@ if (!window.ODA) {
                 let h = src.children[i];
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
+                    $el.__for ??= {};
+                    const old_size = $el.__for[h.src.id] || 0;
                     // const children = $el.childNodes;
                     const list = [];
                     for(let j = 0; j<items.length; j++){
                         const node = items[j];
                         let elem;
-                        while(!elem){
-                            elem = $el.childNodes[idx + j];
-                            if (elem){
-                                const ff = elem?.$for;
-                                // if (ff)
-                                //     console.log(node?.params[0], ff[0]);
-                                if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
+                        if (old_size>items.length){
+                            while(!elem){
+                                elem = $el.childNodes[idx + j];
+                                if (elem){
+                                    const ff = elem?.$for;
+                                    if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
+                                        list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                        break;
+                                    }
+                                    else{
+                                        $el.removeChild(elem);
+                                        console.log(elem)
+                                        elem = undefined;
+                                    }
+                                }
+                                else{
                                     list.push(updateDom.call(this, node.child, elem, $el, node.params));
                                     break;
                                 }
-                                else{
-                                    $el.removeChild(elem);
-                                    console.log(elem)
-                                    elem = undefined;
-                                }
-                            }
-                            else{
-                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
-                                break;
                             }
                         }
+                        else{
+                            elem = $el.childNodes[idx + j];
+                            list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                        }
+
                     }
+                    $el.__for[h.src.id] = items.length;
                     idx += list.length;
                     let el = $el.childNodes[idx];
                     while (el && el.$node === h.src) {

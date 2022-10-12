@@ -11,17 +11,17 @@
             
         </style>
         <div class='control' > 
-            <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslete>
+            <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslate>
                 <oda-icon :icon='flag(item)'></oda-icon>{{item}}</div>
         </div>
         <h2>{{ODA.language}}</h2>
-        <label>{{watchers}}</label> -- прямая вставка внутри html (label)</br> 
+        <label>{{"Watchers"}}</label> -- прямая вставка внутри html (label)</br> 
         <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
         <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
         <div ~html='"Watchers"'>  -- то же но div</div>    
-        <oda-button :label='test1'> (ода батон test1)</oda-button>
+        <oda-button :label='test1' > (ода батон test1)</oda-button>
         <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
-        <label notranslete>{{watchers}}</label> -- прямая вставка внутри html (label, но notranslete)</br> 
+        <label notranslate>{{"OK"}}</label> -- прямая вставка внутри html (label, но notranslate)</br> 
         `,
         props: {
             test1:'test Watchers',
@@ -39,6 +39,8 @@
             // console.log(s)
             ODA.language = s 
             this.aLocale = s
+            ODA.localization.setLocale(s)
+            // ODA.render()
         },
         isActive(a) { return (a==ODA.language || a==  this.aLocale) }
 
@@ -47,3 +49,4 @@
 
 
 <oda-localisation-test></oda-localisation-test>
+
