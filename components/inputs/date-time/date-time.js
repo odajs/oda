@@ -15,14 +15,41 @@ ODA({
         </style>
         <input tabindex="0" :error @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" :title="valueText"  @input="onValueChanged">
     `,
-    onKeyDown(e){
-        switch (e.key) {
-            case '.':
-            case ',':{
-                e.preventDefault();
-                e.target.selectionStart;
-            } return;
+    onValueChanged(e){
+        try{
+            console.log(e.target.value)
+            console.log(Date.parse(e.target.value))
+            this.value = new Date(Date.parse(e.target.value));
         }
+        catch (e){
+            console.log(e)
+        }
+    },
+    onKeyDown(e){
+    //     switch (e.key) {
+    //         case '.':
+    //         case ',':{
+    //             e.preventDefault();
+    //             for (let i  of this.startArray){
+    //                 if (e.target.selectionStart<i){
+    //                     e.target.selectionStart = i;
+    //                     break;
+    //                 }
+    //             }
+    //         } return;
+    //     }
+    //     switch (e.keyCode){
+    //         case 188:
+    //         case 190:{
+    //             e.preventDefault();
+    //             for (let i  of this.startArray){
+    //                 if (e.target.selectionStart<i){
+    //                     e.target.selectionStart = i;
+    //                     break;
+    //                 }
+    //             }
+    //         } return;
+    //     }
     },
     get startArray(){
         let  arr = [this.startYear, this.startMonth, this.startDay, this.startHour, this.startMinute, this.startSecond];
@@ -47,7 +74,7 @@ ODA({
         return this.testModel.indexOf('42');
     },
     get startSecond(){
-        return this.testModel.indexOf('42');
+        return this.testModel.indexOf('43');
     },
     get testModel(){
         try{
@@ -56,7 +83,6 @@ ODA({
         catch (e){
             return e.message;
         }
-
     },
     created(){
         this.testDate = new Date(Date.parse('3333-11-22:13:42:43'));
@@ -69,16 +95,20 @@ ODA({
     error: '',
     _focus(e){
         this.__focused = (e.type === 'focus');
-
     },
     set __focused(n){
         if (n){
-            this.$next(()=>{
-                this.input.selectionStart = this.startDay;
-                this.input.selectionEnd = this.startDay+2;
-                this.setPos();
-            },2)
+            this.input.type = 'date'
+            // this.$next(()=>{
+            //     this.input.selectionStart = this.startDay;
+            //     this.input.selectionEnd = this.startDay+2;
+            //     this.setPos();
+            // },2)
         }
+        else{
+            this.input.type = 'text'
+        }
+
     },
     setPos(){
         this.render();
@@ -120,20 +150,24 @@ ODA({
                     options.second = this.second;
             }
             else{
+                return this.value?.toISOString().substring(0,10);
                 options = {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'};
             }
-            return this.value?.toLocaleString(locale, options) || '';
+            const res = this.value?.toLocaleString(locale, options) || '';
+            if (res === 'Invalid Date')
+                throw new Error('');
+            return res;
         }
         catch (e){
-            return (this.error = e.message);
+            if (!this.__focused)
+                return (this.error = e.message);
+            const res = this.value.toString();
+            if (res === 'Invalid Date')
+                return '';
+            return this.value?.toISOString().substring(0,10);
         }
     },
     props:{
-        iso:{
-            get (){
-                return this.value?.toISOString?.() || '';
-            }
-        },
         calendar:{
             default: 'none',
             list: ['none', "buddhist", "chinese", "coptic", "ethioaa", "ethiopic", "gregory", "hebrew", "indian", "islamic", "islamicc", "iso8601", "japanese", "persian", "roc"],
@@ -160,32 +194,32 @@ ODA({
             category: 'format',
         },
         year:{
-            default: 'none',
+            default: 'numeric',
             list: ['none', "numeric", "2-digit"],
             category: 'format',
         },
         month: {
-            default: 'none',
+            default: '2-digit',
             list: ['none', "numeric", "2-digit", "narrow", "short", "long"],
             category: 'format',
         },
         day: {
-            default: 'none',
+            default: '2-digit',
             list: ['none', "numeric", "2-digit"],
             category: 'format',
         },
         hour: {
-            default: 'none',
+            default: '2-digit',
             list: ['none', "numeric", "2-digit"],
             category: 'format',
         },
         minute: {
-            default: 'none',
+            default: '2-digit',
             list: ['none', "numeric", "2-digit"],
             category: 'format',
         },
         second: {
-            default: 'none',
+            default: '2-digit',
             list: ['none', "numeric", "2-digit"],
             category: 'format',
         },
@@ -217,3 +251,19 @@ ODA({
         },
     },
 })
+function isDigit(ch){
+    switch (ch){
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            return true;
+    }
+    return false;
+}

@@ -92,15 +92,18 @@ const textSet = textContent.set;
 const textGet = textContent.get;
 let condNoTranslete = (el) => {
     const parent = el.parentElement?.$node;
-    return parent && (parent?.svg || parent.tag == 'STYLE' || parent.bind?.notranslate || parent.attrs?.notranslate != undefined)
+    return parent && ( !Localization.translateTagList.includes(parent.tag) 
+                    || parent.bind?.notranslate || parent.attrs?.notranslate != undefined)
 }
-textContent.set = function (val) {
-    const flagTranslate = (this.__ft != undefined) ? this.__ft // определяем нужен ли вообще перевод причем 1 раз
-                        : (!(this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) ? false 
-                        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
-                        : (condNoTranslete(this)) ? false : true
-    this.__ft = flagTranslate
+let getFlagTranslate = (el,val) => 
+          (el.__ft != undefined) ? el.__ft // определяем нужен ли вообще перевод причем 1 раз
+        : (!(el.nodeType === 3 || el.nodeType === 1)) ? false 
+        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
+        : (condNoTranslete(el)) ? false : true
 
+textContent.set = function (val) {
+    const flagTranslate = getFlagTranslate (this,val)
+    this.__ft = flagTranslate
     if (!flagTranslate) textSet.call(this, val)
     else if (!Localization.available) {this.__t = undefined; textSet.call(this, val)} // Если словарь не готов, то сбрасываем перевод
     else if (this.__t != undefined) textSet.call(this, this.__t) // Если перевод уже сделан возвращаем его
