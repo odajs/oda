@@ -522,8 +522,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             }, []);
         };
 
-        let array = Object.assign([], this.dataSet);
-        array = extract(array, this.hideRoot || this.hideTop ? -1 : 0);
+        // let array = Object.assign([], this.dataSet);
+        let array = extract(this.dataSet, this.hideRoot || this.hideTop ? -1 : 0);
         this._useColumnFilters(array);
         // this._filter(array);
         if (this.groups.length)

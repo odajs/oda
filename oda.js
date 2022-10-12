@@ -439,8 +439,17 @@ if (!window.ODA) {
                     })
                 }
             }
+            set $needUpdate(n) {
+                this['#$needUpdate'] = n;
+                if (this.domHost)
+                    this.domHost.$needUpdate = n
+            }
+            get $needUpdate(){
+                return this['#$needUpdate'];
+            }
             render() {
                 if (!this.$core.shadowRoot) return;
+                this.$needUpdate = undefined;
                 ODA.render((this.rootHost || this).$core?.renderer);
                 callHook.call(this, 'onRender');
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
@@ -1666,6 +1675,7 @@ if (!window.ODA) {
         $el.$for = pars;
         const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
         if (ch) {
+
             let idx = 0;
             for (let i = 0, l = src.children.length; i < l; i++) {
                 let h = src.children[i];
@@ -1678,17 +1688,23 @@ if (!window.ODA) {
                         let elem;
                         while(!elem){
                             elem = $el.childNodes[idx + j];
-                            if(!elem){
-                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
-                                break;
-                            }
-                            else if (elem.$node === h.src){
-                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
-                                break;
+                            if (elem){
+                                const ff = elem?.$for;
+                                // if (ff)
+                                //     console.log(node?.params[0], ff[0]);
+                                if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
+                                    list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                    break;
+                                }
+                                else{
+                                    $el.removeChild(elem);
+                                    console.log(elem)
+                                    elem = undefined;
+                                }
                             }
                             else{
-                                $el.removeChild(elem);
-                                elem = undefined;
+                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                break;
                             }
                         }
                     }
