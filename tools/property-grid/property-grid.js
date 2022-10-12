@@ -380,7 +380,7 @@ editors: {
         value: null,
         get text() {
             if (!this.value)
-                return '[Object: udefined]';
+                return '[Object: undefined]';
             if (Array.isArray(this.value))
                 return `[Array (${this.value.length})]`
             if (typeof this.value === 'object')

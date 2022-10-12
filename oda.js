@@ -1671,20 +1671,34 @@ if (!window.ODA) {
                 let h = src.children[i];
                 if (typeof h === "function") {
                     const items = await h.call(this, pars)
-                    const children = $el.childNodes;
+                    // const children = $el.childNodes;
                     const list = [];
                     for(let j = 0; j<items.length; j++){
-                        const elem = children[idx + j];
-                        const node = items[j]
-                        list.push(updateDom.call(this, node.child, elem, $el, node.params))
+                        const node = items[j];
+                        let elem;
+                        while(!elem){
+                            elem = $el.childNodes[idx + j];
+                            if(!elem){
+                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                break;
+                            }
+                            else if (elem.$node === h.src){
+                                list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                break;
+                            }
+                            else{
+                                $el.removeChild(elem);
+                                elem = undefined;
+                            }
+                        }
                     }
-                    await Promise.all(list);
-                    idx += items.length;
+                    idx += list.length;
                     let el = $el.childNodes[idx];
                     while (el && el.$node === h.src) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
+                    await Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
