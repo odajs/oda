@@ -193,15 +193,17 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get editor() {
         if (this.mixed)
             return 'oda-pg-mixed';
-        if (this.prop?.editor?.includes('/')) {
+        if (this.prop?.editor?.includes('/') || (this.category === 'Array' && this.$parent?.prop.extEditor)) {
+            const ed = (this.category === 'Array' && this.$parent?.prop.extEditor) ? this.$parent?.prop.extEditor : this.prop.editor;
             let url = this.dataSet.inspectedObjects[0]?.url || '';
             const onError = (err) => {
                 console.error(`Type editor to "${this.prop.name}" prop not loaded.\n`, err);
                 this.editor = this._getDefaultEditor();
             }
             try {
-                const { path, tag } = this._extractEditor(this.prop.editor);
-                ODA.import((url ? (url + '/~/') : '') + path).catch(onError);
+                const { path, tag } = this._extractEditor(ed);
+                if (path)
+                    ODA.import((url ? (url + '/~/') : '') + path).catch(onError);
                 return tag;
             } catch (err) {
                 onError(err);
@@ -284,7 +286,7 @@ cells: {
                 border: none !important;
             }
         </style>
-        <span :readonly="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value">{{item?.value}}</span>
+        <span :readonly="item?.ro" style="align-self: center;" class="editor flex horizontal" ~is="item?.editor" :value="item?.value" @value-changed="item.value = $event.detail.value" :item>{{item?.value}}</span>
         <oda-button ~if="list?.length" @tap.stop.prevent="showDD" icon="icons:chevron-right:90"></oda-button>
         `,
         item: null,

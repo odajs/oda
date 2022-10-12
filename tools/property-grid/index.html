@@ -12,15 +12,19 @@
     import '../../oda.js';
     import '../styles/styles.js';
     import './property-grid.js';
-    ODA({is: 'oda-array-test',
-        template:`
+    ODA({
+        is: 'oda-array-test',
+        template: `
             TEST
         `,
         props: {
             bb: Boolean,
             num: 100,
             text: 'А это текст',
-            array: [1, 2, 3, 4, 5],
+            array: {
+                default: [1, 2, 3, 4, 5],
+                extEditor: '[oda-pg-array-editor]'
+            },
             array1: [44, 66],
             promise: {
                 get() {
@@ -38,14 +42,22 @@
                     });
                 }
             },
-            myProp:{
+            myProp: {
                 label: 'Мое свойство',
                 default: 100
             },
-            color:{
+            color: {
                 default: 'red',
                 editor: '@oda/color-picker[oda-color-picker]'
             }
         }
-    });
+    })
+
+    ODA({is: 'oda-pg-array-editor', imports: '@oda/button',
+        template: `
+        <label class="horizontal flex" style="align-items: center; color: red">{{value}}</label>
+        <oda-button class="no-flex" icon="icons:close" title="add link" style="margin-left: auto"></oda-button>
+    `,
+        value: null
+    })
 </script>
