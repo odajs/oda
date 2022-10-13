@@ -1,9 +1,11 @@
 <meta charset="UTF-8">
-
-<oda-button :label='"rabbit"' > (ода батон с кроликом)</oda-button>
-<oda-button :label='"New cucumber"'> (ода батон  с огурцом)</oda-button>
-
+<oda-iframe-test></oda-iframe-test>
 <script type="module">
     import "../../oda.js"
     import "./localization.js"
+    ODA({is: 'oda-iframe-test',
+        template: `
+            <label>iframe phrase for translate</label>
+        `
+    })
 </script>

@@ -2465,6 +2465,8 @@ if (!window.ODA) {
         },
         set(v) {
             globalThis.localStorage.setItem('oda-language', v);
+            const event = new odaCustomEvent('change-language', { detail: { value: v }, composed: true});
+            window.dispatchEvent(event);
         }
     });
     ODA.translate = (val)=>{

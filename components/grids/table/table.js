@@ -891,10 +891,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                         // $col: column,
                         $level: level,
                         items: [],
-                        // $hasChildren: true,
+                        $expanded: column.$expanded,
                         $group: true,
                         $parent: parent,
                         hideCheckbox: column.hideGroupCheckbox,
+                        hideExpander: column.$expanded
                     };
                     res.push(group);
                 }
@@ -909,7 +910,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
 
             for (let i = 0; i < result.length; i++) {
                 const old = result[i].$old;
-                let expanded = false;
+                let expanded = column.$expanded;
                 if (this.groupExpandingMode === 'auto' && (true)) {
                     expanded = true;
                 } else if (old) {

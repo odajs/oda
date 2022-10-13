@@ -6,24 +6,21 @@
     import "../../oda.js"
     import "./localization.js"
 
-    ODA({is:'oda-localisation-test', imports:'@oda/icon, @oda/button', template: `
+    ODA({is:'oda-localisation-test', imports:'@oda/button',
+        template: `
         <style>
             :host{
                 @apply --flex;
                 min-height: 100%;
                 @apply --horizontal;
             }
-            .control {display: flex; justify-content: space-evenly; padding:3px;}
-            .btn {border:1px solid grey; border-radius:5px; display: flex;padding:0 3px; align-items: center;}
-            .btn.true {border-color:green;}
-            
+
         </style>
         <div class="flex">
-            <div class='control' >
-            <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslate>
-                <oda-icon :icon='flag(item)'></oda-icon>{{item}}</div>
+            <div class='horizontal flex'>
+                <oda-button :label="item" :focused="item === ODA.language" @tap="ODA.language = item; render()" ~for='navigator.languages' :icon='flag(item)'></oda-button>
             </div>
-            <h2>{{ODA.language}}</h2>
+            <p>
             <label>{{"Watchers"}}</label> -- прямая вставка внутри html (label)</br>
             <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
             <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
@@ -31,8 +28,9 @@
             <oda-button :label='test1' > (ода батон test1)</oda-button>
             <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
             <label notranslate>{{"OK"}}</label> -- прямая вставка внутри html (label, но notranslate)</br>
+            <iframe src="./index-ifame.html"></iframe>
         </div>
-        <oda-localization-tree class="flex shadow">
+        <oda-localization-tree class="no-flex shadow">
 
         </oda-localization-tree>
 
@@ -49,15 +47,6 @@
             s = `flags:${s.slice(0,2).toUpperCase()}`
             return s;
         },
-        chengeL(s) { 
-            // console.log(s)
-            ODA.language = s 
-            this.aLocale = s
-            ODA.localization.setLocale(s)
-            // ODA.render()
-        },
-        isActive(a) { return (a==ODA.language || a==  this.aLocale) }
-
     }) 
 </script>
 
