@@ -167,7 +167,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         if (right > winWidth) size.right = 0;
 
         if (this.parent && this.useParentWidth)
-            minWidth /* = maxWidth */ = parentWidth;
+            minWidth  = maxWidth  = parentWidth;
 
         minWidth = minWidth > maxWidth ? maxWidth : minWidth;
         minHeight = minHeight > maxHeight ? maxHeight : minHeight;

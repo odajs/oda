@@ -301,7 +301,9 @@ cells: {
         },
         async showDD(e) {
             try {
-                const res = await ODA.showDropdown('oda-menu', { items: this.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i.value || i })), selectedItem: this.item.value }, { useParentWidth: true, parent: e.target.domHost, fadein: true });
+                const res = await ODA.showDropdown('oda-menu',
+                    { items: this.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i.value || i })), selectedItem: this.item.value },
+                    { useParentWidth: true, parent: e.target.domHost, fadein: true});
                 this.item.value = res.focusedItem.value;
             }
             catch (e) {

@@ -18,9 +18,9 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
         }
     </style>
     <div class="vertical flex">
-        <div ref="menuitems" ~for="items" ~if="!item.hidden" :selected="selectedItem && (item === selectedItem || item?.value === selectedItem)"  class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
-            <div class="flex horizontal row" ~class="item.group?'header':'content'">
-                <div ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
+        <div style="overflow: hidden" ref="menuitems" ~for="items" ~if="!item.hidden" :selected="selectedItem && (item === selectedItem || item?.value === selectedItem)"  class="horizontal item no-flex" @tap.stop.prev="_tap" :item :not-group="!item.group" ~style="getStyle(item)">
+            <div style="overflow: hidden" class="flex horizontal row" ~class="item.group?'header':'content'">
+                <div style="overflow: hidden" ~is="getTemplate(item)" class="flex row horizontal" :icon-size :item></div>
                 <oda-button ~if="item?.items?.length" icon="icons:arrow-drop-up:90" :item @tap.stop.prev="showSubMenu"></oda-button>
             </div>
         </div>
@@ -49,12 +49,10 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
         function onItemsOrSelectedItemChanged(items, selectedItem) {
             if (!items || !selectedItem) return;
 
-            // todo: scroll to selectedItem
             const idx = items.findIndex(i => i.value === selectedItem)
             if (!~idx) return;
 
-            //window.scrollTo(this.$refs.menuitems[idx]);
-            this.$refs.menuitems[idx].scrollIntoView();
+            this.$refs.menuitems[idx-3]?.scrollIntoView?.();
         }
     ],
     getStyle(item) {
@@ -95,6 +93,7 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
         :host([focused]) {
             @apply --focused;
             @apply --active;
+            overflow: hidden;
         }
         :host(:hover) {
             @apply --active;
@@ -110,6 +109,8 @@ ODA({ is: 'oda-menu-template', imports: '@oda/icon',
         label {
             padding: 4px 8px;
             white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
         .icon-box {
             min-width: {{iconSize}}px;
