@@ -1,27 +1,41 @@
 <meta charset="utf-8">
+
+<oda-localisation-test></oda-localisation-test>
+
 <script type="module" >
     import "../../oda.js"
     import "./localization.js"
 
     ODA({is:'oda-localisation-test', imports:'@oda/icon, @oda/button', template: `
-        <style> 
+        <style>
+            :host{
+                @apply --flex;
+                min-height: 100%;
+                @apply --horizontal;
+            }
             .control {display: flex; justify-content: space-evenly; padding:3px;}
             .btn {border:1px solid grey; border-radius:5px; display: flex;padding:0 3px; align-items: center;}
             .btn.true {border-color:green;}
             
         </style>
-        <div class='control' > 
+        <div class="flex">
+            <div class='control' >
             <div :class='"btn " + isActive(item)' ~for='navigator.languages' @tap='chengeL(item)' notranslate>
                 <oda-icon :icon='flag(item)'></oda-icon>{{item}}</div>
+            </div>
+            <h2>{{ODA.language}}</h2>
+            <label>{{"Watchers"}}</label> -- прямая вставка внутри html (label)</br>
+            <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
+            <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
+            <div ~html='"Watchers"'>  -- то же но div</div>
+            <oda-button :label='test1' > (ода батон test1)</oda-button>
+            <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
+            <label notranslate>{{"OK"}}</label> -- прямая вставка внутри html (label, но notranslate)</br>
         </div>
-        <h2>{{ODA.language}}</h2>
-        <label>{{"Watchers"}}</label> -- прямая вставка внутри html (label)</br> 
-        <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
-        <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
-        <div ~html='"Watchers"'>  -- то же но div</div>    
-        <oda-button :label='test1' > (ода батон test1)</oda-button>
-        <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
-        <label notranslate>{{"OK"}}</label> -- прямая вставка внутри html (label, но notranslate)</br> 
+        <oda-localization-tree class="flex shadow">
+
+        </oda-localization-tree>
+
         `,
         props: {
             test1:'test Watchers',
@@ -48,5 +62,4 @@
 </script>
 
 
-<oda-localisation-test></oda-localisation-test>
 

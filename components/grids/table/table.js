@@ -467,33 +467,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                         writable: true,
                         value: i.$hasChildren
                     })
-                // Object.defineProperties(i, {
-                //     $parent: {
-                //         enumerable: false,
-                //         configurable: true,
-                //         writable: true,
-                //         value: i.$parent
-                //     },
-                //     $level: {
-                //         enumerable: false,
-                //         configurable: true,
-                //         writable: true,
-                //         value: i.$level
-                //     },
-                //     $expanded: {
-                //         enumerable: false,
-                //         configurable: true,
-                //         writable: true,
-                //         value: i.$expanded
-                //     },
-                //     $hasChildren: {
-                //         enumerable: false,
-                //         configurable: true,
-                //         writable: true,
-                //         value: i.$hasChildren
-                //     },
-                // })
-
                 if (parent) {
                     i.$parent = parent;
                 }
