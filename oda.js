@@ -1464,9 +1464,7 @@ if (!window.ODA) {
             $el.style.display = exec.call(this, fn, p) ? '' : 'none';
         },
         html($el, fn, p) {
-            const val = exec.call(this, fn, p) ?? '';
-            if ($el.__innerHTML === val) return;
-            $el.innerHTML = $el.__innerHTML = val;
+            $el.innerHTML = exec.call(this, fn, p) ?? '';
         },
         text($el, fn, p) {
             $el.textContent = exec.call(this, fn, p) ?? '';

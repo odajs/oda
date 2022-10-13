@@ -2,31 +2,44 @@
 const Localization = ODA.regTool('localization');
 Localization.currentLocal = ODA.language  // под вопросом
 
-Localization.path = import.meta.url.split('/').slice(0, -1).join('/') + '/dictionary/'; // locales path
+Localization.path = import.meta.url.split('/').slice(0, -1).join('/'); // locales path
 Localization.inPage = { phrase: {}, words: {} }
 Localization.dictionary = { phrase: {}, words: {} }
 Localization.available = false
-Localization.translateTagList = ['LABEL', 'H3']
+Localization.translateTagList = ['label', 'h3']
 
 Localization.setLocale = async (rfc_locale) => {
-    Localization.available = false
-    const paths = rfc_locale.split('-').map((_, i, ar) => ar.slice(0, i + 1).join('-') + '.json')
-    const localesAvailable = await ODA.loadJSON(Localization.path + '_.dir')
-    const availablePaths = paths.filter(p => localesAvailable.includes(p))
-    const dictList = await Promise.all(availablePaths.map((p) => ODA.loadJSON(Localization.path + p)))
-    Object.assign(Localization.dictionary.phrase, ...dictList.map(d => d.phrase))
-    Object.assign(Localization.dictionary.words, ...dictList.map(d => d.words))
-    if (dictList.length > 0) Localization.available = true
-    else console.log('Localization: ', 'No available dictionary')
+    // Localization.available = false
+    // const paths = rfc_locale.split('-').map((_, i, ar) => ar.slice(0, i + 1).join('-') + '.json')
+    // const localesAvailable = await ODA.loadJSON(Localization.path + '_.dir')
+    // const availablePaths = paths.filter(p => localesAvailable.includes(p))
+    // const dictList = await Promise.all(availablePaths.map((p) => ODA.loadJSON(Localization.path + p)))
+    // Object.assign(Localization.dictionary.phrase, ...dictList.map(d => d.phrase))
+    // Object.assign(Localization.dictionary.words, ...dictList.map(d => d.words))
+    // if (dictList.length > 0) Localization.available = true
+    // else console.log('Localization: ', 'No available dictionary')
 }
-window.addEventListener('change-language', e=>{
-    Localization.setLocale(e.detail.value)
+window.top.addEventListener('change-language', e=>{
+    window.location.reload();
+    // Localization.setLocale(e.detail.value)
 })
 
 Localization.setLocale(ODA.language);
 
+let phrases;
+try{
+    phrases = await ODA.loadJSON(Localization.path + '/dictionary/phrases.json');
+}
+catch (e){
+    console.log(e);
+    phrases = [];
+}
+phrases.forEach(i=>{
+    sessionStorage.setItem(i, sessionStorage.getItem(i));
+})
+
 /* Ф-я перевода */
-Localization.translate = (text = '') => {
+Localization.translate = function (text = ''){
     if (ODA.language === 'en')
         return text // Английский язык мы не переводим совсем.
     const testLeter = new RegExp('[a-z].*?', 'gi')
@@ -59,23 +72,55 @@ Localization.translate = (text = '') => {
 
 
 
-let condNoTranslate = (el) => {
+function condNoTranslate(el){
     const node = el.parentElement ? el.parentElement.$node: el.$node;
     return ( !Localization.translateTagList.includes(node?.tag) 
                     || node.bind?.notranslate || node.attrs?.notranslate != undefined)
 }
-let _newVal = (el,val) => {
-    // if (val=='Watchers') console.log(val)
-    const flagTranslate = (el.__ft != undefined) ? el.__ft // определяем нужен ли вообще перевод причем 1 раз
-                        : (!(el.nodeType === 3 || el.nodeType === 1)) ? false
-                        : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
-                        : (condNoTranslate(el)) ? false : true
-    el.__ft = flagTranslate
-    // if (val === 'OK') console.log(el, condNoTranslate(el))
-    if (!flagTranslate) return val
-    else if (!ODA.localization.available) {el.__t = undefined; return val} // Если словарь не готов, то сбрасываем перевод
-    else if (el.__t != undefined && el.__t != '') return el.__t // Если перевод уже сделан возвращаем его
-    else {el.__t = Localization.translate(val); return el.__t }
+function _newVal(val){
+    if (/*!this.isConnected || */!val)
+        return val;
+    // if (this?.$node?.id ===65){
+    //     console.log(this, val)
+    // }
+    switch (this.__translate){
+        case false:
+            return val;
+        case undefined:
+            break;
+        default:{
+            return this.__translate;
+        } break;
+    }
+    this.__translate = false;
+    switch (this.nodeType){
+        case 3:{
+            if (!Localization.translateTagList.includes(this.parentElement?.localName)){
+                return val;
+            }
+        } break;
+        case 1:{
+            if (!Localization.translateTagList.includes(this.localName)){
+                return val;
+            }
+        } break;
+        default:
+            return val;
+    }
+    this.__translate = val /*+ ': '+ ODA.language*/; //todo перевод
+    // console.log(this, this.__translate)
+    return this.__translate;
+    // // if (val=='Watchers') console.log(val)
+    // const flagTranslate = (this.__ft != undefined) ? this.__ft // определяем нужен ли вообще перевод причем 1 раз
+    //                     : (!(this.nodeType === 3 || this.nodeType === 1)) ? false
+    //                     : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false
+    //                     : (condNoTranslate(this)) ? false : true
+    // this.__ft = flagTranslate
+    // // if (val === 'OK') console.log(this, condNoTranslate(this))
+    // if (!flagTranslate) return val
+    // else if (!ODA.localization.available) {this.__t = undefined; return val} // Если словарь не готов, то сбрасываем перевод
+    // else if (this.__t != undefined && this.__t != '') return this.__t // Если перевод уже сделан возвращаем его
+    // else {this.__t = Localization.translate(val); return this.__t }
 }
 /* Переопределение Геттера и Сеттера */
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent
@@ -83,16 +128,18 @@ const textSet = textContent.set;
 const textGet = textContent.get;
 
 textContent.set = function (val) {
-    // console.log(this)
-    const newVal = _newVal(this, val)
-    textSet.call(this, newVal)  // переводим, перевод сохраняем
+    if (this.__translate && this.__translate.src !== val)
+        this.__translate = undefined;
+    const newVal = _newVal.call(this, val)
+    textSet.call(this, val)  // переводим, перевод сохраняем
 }
 textContent.get = function () {
     const val = textGet.call(this)
-    const newVal = _newVal(this, val)
+    const newVal = _newVal.call(this, val)
     return newVal
-
 }
+
+
 Object.defineProperty(Node.prototype, 'textContent', textContent)
 
 const innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')
@@ -100,17 +147,17 @@ const innerSet = innerHTML.set;
 const innerGet = innerHTML.get;
 
 innerHTML.set = function (val) {
-    const newVal = _newVal(this,val)
+    if (this.__translate && this.__translate.src !== val)
+        this.__translate = undefined;
+    const newVal = _newVal.call(this,val)
     innerSet.call(this, newVal)  // переводим, перевод сохраняем
 }
 innerHTML.get = function () {
     const val = innerGet.call(this)
-    const newVal = _newVal(this, val)
+    const newVal = _newVal.call(this, val)
     return newVal
 }
 Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
-
-
 
 /* Нажатие клавиши */
 window.addEventListener('keydown', async e => {

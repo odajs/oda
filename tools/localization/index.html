@@ -3,8 +3,9 @@
 <oda-localisation-test></oda-localisation-test>
 
 <script type="module" >
-    import "../../oda.js"
-    import "./localization.js"
+    import "../../oda.js";
+    import "./localization.js";
+    import "./tester.js";
 
     ODA({is:'oda-localisation-test', imports:'@oda/button',
         template: `
@@ -14,21 +15,31 @@
                 min-height: 100%;
                 @apply --horizontal;
             }
-
+            iframe{
+                width: 100%;
+            }
         </style>
-        <div class="flex">
-            <div class='horizontal flex'>
-                <oda-button :label="item" :focused="item === ODA.language" @tap="ODA.language = item; render()" ~for='navigator.languages' :icon='flag(item)'></oda-button>
+        <div class="flex vertical">
+            <div class="no-flex">
+                <div class='horizontal no-flex'>
+                    <oda-button :label="item" :focused="item === ODA.language" @tap="ODA.language = item; render()" ~for='navigator.languages' :icon='flag(item)'></oda-button>
+                </div>
+                <oda-translate-test></oda-translate-test>
+<!--                <label>{{"Watchers"}}</label> &#45;&#45; прямая вставка внутри html (label)</br>-->
+<!--                <b>{{watchers}}</b> &#45;&#45; прямая вставка внутри html (не label)</br>-->
+<!--                <label ~html='"Watchers"'></label>  &#45;&#45; ~html (строка) тег label-->
+<!--                <div ~html='"Watchers"'>  &#45;&#45; то же но div</div>-->
+<!--                <oda-button :label='test1' > (ода батон test1)</oda-button>-->
+<!--                <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>-->
+<!--                <label notranslate>{{"OK"}}</label> &#45;&#45; прямая вставка внутри html (label, но notranslate)</br>-->
             </div>
-            <p>
-            <label>{{"Watchers"}}</label> -- прямая вставка внутри html (label)</br>
-            <b>{{watchers}}</b> -- прямая вставка внутри html (не label)</br>
-            <label ~html='"Watchers"'></label>  -- ~html (строка) тег label
-            <div ~html='"Watchers"'>  -- то же но div</div>
-            <oda-button :label='test1' > (ода батон test1)</oda-button>
-            <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>
-            <label notranslate>{{"OK"}}</label> -- прямая вставка внутри html (label, но notranslate)</br>
-            <iframe src="./index-ifame.html"></iframe>
+
+            <div class="flex horizontal"  style="position: relative">
+                <iframe class="flex" src="./index-ifame.html#first"></iframe>
+                <iframe class="flex" src="./index-ifame.html#second"></iframe>
+                <iframe class="flex" src="./index-ifame.html#third"></iframe>
+            </div>
+
         </div>
         <oda-localization-tree class="no-flex shadow">
 
