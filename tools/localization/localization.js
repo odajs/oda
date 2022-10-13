@@ -99,7 +99,7 @@ Localization.translate = (defVal = '') => {
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent
 const textSet = textContent.set;
 const textGet = textContent.get;
-let condNoTranslete = (el) => {
+let condNoTranslate = (el) => {
     const node = el.parentElement ? el.parentElement.$node: el.$node;
     return ( !Localization.translateTagList.includes(node?.tag) 
                     || node.bind?.notranslate || node.attrs?.notranslate != undefined)
@@ -109,9 +109,9 @@ let _newVal = (el,val) => {
     const flagTranslate = (el.__ft != undefined) ? el.__ft // определяем нужен ли вообще перевод причем 1 раз
                         : (!(el.nodeType === 3 || el.nodeType === 1)) ? false 
                         : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
-                        : (condNoTranslete(el)) ? false : true
+                        : (condNoTranslate(el)) ? false : true
     el.__ft = flagTranslate
-    if (val=='OK') console.log(el, condNoTranslete(el))
+    if (val=='OK') console.log(el, condNoTranslate(el))
     if (!flagTranslate) return val
     else if (!top.ODA.localization.available) {el.__t = undefined; return val} // Если словарь не готов, то сбрасываем перевод
     else if (el.__t != undefined && el.__t != '') return el.__t // Если перевод уже сделан возвращаем его
@@ -135,7 +135,7 @@ textContent.get = function () {
     // if (!(Localization?.available && /* this.isConnected && */ this.nodeType === 3)) return value  // с isConnected не работает  
     // if (this.__translate != undefined) return this.__translate                                      // перевод уже есть
     // if ((/\{\{((?:.|\n)+?)\}\}/g.test(value))) { this.__translate = value; return value }           // нужно обрабатывать без перевода
-    // if (condNoTranslete(this)) { this.__translate = value; return value }                           // стили и svg
+    // if (condNoTranslate(this)) { this.__translate = value; return value }                           // стили и svg
     // const translates = top.ODA.translate(value)
     // this.__translate = translates
     // // if ( /Dictionaries/g.test(value) ) console.log(value,this )
@@ -153,7 +153,7 @@ innerHTML.set = function (val) {
     // if (val == "Watchers") console.log (val, this)
     // // if (!(Localization.available && this.isConnected && (this.nodeType === 3 || this.nodeType === 1))) {console.log (val) }
     // // else if ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) { }
-    // // else if (condNoTranslete(this)) { }
+    // // else if (condNoTranslate(this)) { }
     // // else {console.log (val)}
     
     // innerSet.call(this, val)
@@ -187,15 +187,15 @@ ODA({is: 'oda-localization-tree', imports: '@oda/table, @oda/basic-input,', exte
             const words = sumObAB(top.ODA.localization.inPage.words, top.ODA.localization.dictionary.words)
             const phraze = subObAB(sumObAB(top.ODA.localization.inPage.phraze, top.ODA.localization.dictionary.phraze), words)
             let ds = {}
-            Object.keys(words).forEach(k => ds[k] = { words: k, transletes: (new TRANSLATE(k, 'words')), letter: k[0].toLocaleLowerCase(), items: [] })
+            Object.keys(words).forEach(k => ds[k] = { words: k, Translates: (new TRANSLATE(k, 'words')), letter: k[0].toLocaleLowerCase(), items: [] })
             Object.keys(phraze).map(k => {
                 const testLeter = new RegExp('[a-z].*?', 'gi')
                 k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
                     if (ds[w] == undefined) ds[w] = {
-                        words: w, transletes: new TRANSLATE(w, 'words'), letter: w[0].toLocaleLowerCase(),
-                        items: [{ words: k, transletes: new TRANSLATE(k, 'phraze') }]
+                        words: w, Translates: new TRANSLATE(w, 'words'), letter: w[0].toLocaleLowerCase(),
+                        items: [{ words: k, Translates: new TRANSLATE(k, 'phraze') }]
                     }
-                    else { ds[w].items.push({ words: k, transletes: new TRANSLATE(k, 'phraze') }) }
+                    else { ds[w].items.push({ words: k, Translates: new TRANSLATE(k, 'phraze') }) }
                 })
             })
             console.log(Object.values(ds))
@@ -204,7 +204,7 @@ ODA({is: 'oda-localization-tree', imports: '@oda/table, @oda/basic-input,', exte
 
     },
     columns: [{ name: 'words', treeMode: true, template: 'oda-localization-words', $sort: 1 },
-    { name: 'transletes', template: 'oda-localization-translates' },
+    { name: 'Translates', template: 'oda-localization-translates' },
     { name: 'letter', hidden: true }],
 })
 
@@ -214,7 +214,7 @@ ODA({is: 'oda-localization-words', imports: '@oda/basic-input',
 })
 
 ODA({is: 'oda-localization-translates', extends: 'oda-localization-words',
-    props: {readOnly:false}, value() {return this.item?.transletes?.t}
+    props: {readOnly:false}, value() {return this.item?.Translates?.t}
 })
 
 // ODA({
