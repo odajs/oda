@@ -107,7 +107,7 @@ let _newVal = (el,val) => {
                         : ((/\{\{((?:.|\n)+?)\}\}/g.test(val))) ? false 
                         : (condNoTranslate(el)) ? false : true
     el.__ft = flagTranslate
-    if (val === 'OK') console.log(el, condNoTranslate(el))
+    // if (val === 'OK') console.log(el, condNoTranslate(el))
     if (!flagTranslate) return val
     else if (!ODA.localization.available) {el.__t = undefined; return val} // Если словарь не готов, то сбрасываем перевод
     else if (el.__t != undefined && el.__t != '') return el.__t // Если перевод уже сделан возвращаем его
@@ -189,16 +189,16 @@ ODA({is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
             const phrase = subObAB(sumObAB(ODA.localization.inPage.phrase, ODA.localization.dictionary.phrase), words)
             let ds = {}
             Object.keys(words).forEach(k => ds[k] = {
-                words: k, translates: (new TRANSLATE(k, 'words')), letter: k[0].toLocaleLowerCase(), items: []
+                words: k, translates: ODA.localization.dictionary.words[k]/* (new TRANSLATE(k, 'words'))*/, letter: k[0].toLocaleLowerCase(), items: []
             })
             Object.keys(phrase).map(k => {
                 const testLeter = new RegExp('[a-z].*?', 'gi')
                 k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
                     if (ds[w] == undefined) ds[w] = {
-                        words: w, translates: new TRANSLATE(w, 'words'), letter: w[0].toLocaleLowerCase(),
-                        items: [{ words: k, translates: new TRANSLATE(k, 'phrase') }]
+                        words: w, translates: ODA.localization.dictionary.words[k] /*new TRANSLATE(w, 'words')*/, letter: w[0].toLocaleLowerCase(),
+                        items: [{ words: k, translates: ODA.localization.dictionary.phrase[k]  /*new TRANSLATE(k, 'phrase')*/ }]
                     }
-                    else { ds[w].items.push({ words: k, translates: new TRANSLATE(k, 'phrase') }) }
+                    else { ds[w].items.push({ words: k, translates: ODA.localization.dictionary.phrase[k]/*new TRANSLATE(k, 'phrase')*/ }) }
                 })
             })
             console.log(Object.values(ds))

@@ -1,4 +1,5 @@
-const CONTAINERS = ODA.regTool('containers');
+import ODA from "../../oda.js";
+const CONTAINERS = ODA.regTool('containers')
 const path = import.meta.url.split('/').slice(0,-1).join('/')
 const res = await ODA.loadJSON(path + '/_.dir');
 CONTAINERS.items = (res || []).map(i => i.name);
