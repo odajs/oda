@@ -161,7 +161,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <div  ref="header" :scroll-left="_scrollLeft" class="no-flex row header" ~if="showHeader" style="border-bottom: 1px solid var(--dark-background); overflow-y: scroll;">
-        <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col" :show-filter="showFilter" ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
+        <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col"  ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
     </div>
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll" @touchmove="_bodyTouchmove">
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 100))+'px'}">
@@ -309,7 +309,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         showFilter: {
             type: Boolean,
             default: false,
-            save: true
         },
         showFooter: false,
         showGroupingPanel: false,
@@ -1811,7 +1810,7 @@ cells: {
                 <oda-button :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="column.$expanded">
-                <oda-table-header ~for="col in column.items" :item="col" :column="col" :show-filter="showFilter" ~style="{width: col.width?col.width+'px':'auto' }" :save-key="col.name ? (column.name || column.id) + col.name : ''" ref="subColumn"></oda-table-header>
+                <oda-table-header ~for="col in column.items" :item="col" :column="col"  ~style="{width: col.width?col.width+'px':'auto' }" :save-key="col.name ? (column.name || column.id) + col.name : ''" ref="subColumn"></oda-table-header>
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
@@ -1819,7 +1818,6 @@ cells: {
             showSort() {
                 return this.allowSort && !this.column.$expanded && (!this.column.$parent || this.column.$parent.$expanded);
             },
-            showFilter: false,
             filter: {
                 type: String,
                 set(val) {
