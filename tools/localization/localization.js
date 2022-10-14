@@ -96,19 +96,16 @@ Localization.translate = function (text = '') {
     return newVal || ''
 }
 
-
-
-
 function condNoTranslate(el) {
     const node = el.parentElement ? el.parentElement.$node : el.$node;
     return (!Localization.translateTagList.includes(node?.tag)
         || node.bind?.notranslate || node.attrs?.notranslate != undefined)
 }
 function _newVal(val) {
-    if (/*!this.isConnected || */!val)
+    if (!this.isConnected || !val)
         return val;
     // if (this?.$node?.id ===65){
-    //     console.log(this, val)
+
     // }
     switch (this.__translate) {
         case false:
@@ -117,7 +114,7 @@ function _newVal(val) {
             break;
         default: {
             return this.__translate;
-        } break;
+        }
     }
     this.__translate = false;
     switch (this.nodeType) {
@@ -134,7 +131,7 @@ function _newVal(val) {
         default:
             return val;
     }
-    this.__translate = Localization.translate( val ) /*+ ': '+ ODA.language*/; //todo перевод
+    this.__translate = val + ': '+ ODA.language;//Localization.translate( val ) /*+ ': '+ ODA.language*/; //todo перевод
     // console.log(this, this.__translate)
     return this.__translate;
     // // if (val=='Watchers') console.log(val)
@@ -158,7 +155,7 @@ textContent.set = function (val) {
     if (this.__translate && this.__translate.src !== val)
         this.__translate = undefined;
     const newVal = _newVal.call(this, val)
-    textSet.call(this, val)  // переводим, перевод сохраняем
+    textSet.call(this, newVal)  // переводим, перевод сохраняем
 }
 textContent.get = function () {
     const val = textGet.call(this)

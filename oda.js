@@ -1580,7 +1580,7 @@ if (!window.ODA) {
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
         else if (tag === '#text')
-            $el = /*src.cache[tag] ??=*/ document.createTextNode(src.textContent || '');
+            $el = document.createTextNode(''/*src.textContent || ''*/);
         else {
             if (src.svg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
@@ -1645,6 +1645,8 @@ if (!window.ODA) {
             if (!$el) {
                 $el = createElement.call(this, src, tag);
                 $parent.appendChild($el);
+                if ($el.nodeType === 3)
+                    $el.textContent = src.textContent;
             }
             else if ($el.$node && $el.$node.id !== src.id) {
                 const el = createElement.call(this, src, tag);

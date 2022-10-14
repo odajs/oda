@@ -21,6 +21,9 @@ ODA({is: 'oda-translate-test',
             <label bold ~html="text"></label>
             <label>~html -> html:</label>
             <label bold ~html="html"></label>
+            
+            <label>~html -> html: (div)</label>
+            <div bold ~html="html"></div>
         `,
     get text(){
         return 'phrase for translate '+document.location.hash.substring(1);
