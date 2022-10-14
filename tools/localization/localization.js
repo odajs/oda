@@ -5,19 +5,12 @@ Localization.currentLocal = ODA.language  // под вопросом
 Localization.path = import.meta.url.split('/').slice(0, -1).join('/'); // locales path
 Localization.inPage = { phrase: {}, words: {} }
 Localization.dictionary = { phrase: {}, words: {} }
-// Localization.available = false
 Localization.translateTagList = ['label', 'h3']
 
-Localization.StorPrefix = {p:'#phrase#',w:'#words#'}
+// отдельно храним "переревод фраз" -- p, "перевод слов" -- w, "исходные фразы" -- ip 
+// ip -- это то, что раньше было inPage.phrase, inPage.words не храним, вычисляем налету.
+Localization.StorPrefix = {p:'#phrase#', w:'#words#', ip:'#ip#'}
 
-// Localization.StorGetP = () => { 
-//     return Object.entries(sessionStorage)
-//         .filter(([k,v]) => k.slice(0,Localization.StorPrefix.p.length)===Localization.StorPrefix.p )
-// }
-// Localization.StorGetW = () => { 
-//     return Object.entries(sessionStorage)
-//         .filter(([k,v]) => k.slice(0,Localization.StorPrefix.w.length)===Localization.StorPrefix.w )
-// }
 Localization.StorGet = (x) => { 
     const entries = Object.entries(sessionStorage)
         .filter(([k,v]) => k.slice(0,Localization.StorPrefix[x].length)===Localization.StorPrefix[x] )
@@ -25,11 +18,10 @@ Localization.StorGet = (x) => {
     return Object.fromEntries(entries)
 
 }
-Localization.StorClear = () => {  ['p','w'].forEach (x =>
+Localization.StorClear = () => { Object.keys(Localization.StorPrefix).forEach (x =>
         Object.keys(Localization.StorGet(x))
             .forEach(k => sessionStorage.removeItem(Localization.StorPrefix[x] +k))    )
 } 
-
 
 Localization.setLocale = async (rfc_locale) => {
     // Localization.available = false
@@ -40,7 +32,7 @@ Localization.setLocale = async (rfc_locale) => {
     let phrases; // Для чего тут try, если он все равно никак не спасает от вала ошибок при попытке загрузить несуществующий файл?
     try { phrases = await ODA.loadJSON(Localization.path + '/dictionary/phrases.json'); }
     catch (e) { console.log(e);  phrases = [];}
-    phrases.forEach(i => sessionStorage.setItem(Localization.StorPrefix.p + i, sessionStorage.getItem(i)) )
+    phrases.forEach(i => sessionStorage.setItem(Localization.StorPrefix.ip + i, sessionStorage.getItem(i)) )
 
     let dictionary = { phrase: {}, words: {} }
     const paths = rfc_locale.split('-').map((_, i, ar) => ar.slice(0, i + 1).join('-') + '.json')
@@ -68,31 +60,38 @@ Localization.setLocale(ODA.language);
 
 /* Ф-я перевода */
 Localization.translate = function (text = '') {
+    // console.log(text)
     // if (ODA.language === 'en')
     //     return text // Английский язык мы не переводим совсем.
     // const testLeter = new RegExp('[a-z].*?', 'gi')
 
     const phrase = text.split(/\r?\n/).map(a => a.trim()) //.filter(a => testLeter.test(a))
-    const words = text.split(/\s+/).map(a => a.trim()) //.filter(a => testLeter.test(a))
+    // const words = text.split(/\s+/).map(a => a.trim()) //.filter(a => testLeter.test(a))
 
-    phrase.forEach(v => ODA.localization.inPage.phrase[v] = '')
-    words.forEach(v => ODA.localization.inPage.words[v] = '')
+    phrase.forEach(p => sessionStorage.setItem(Localization.StorPrefix.ip + p, '') ) 
+
+    // phrase.forEach(v => ODA.localization.inPage.phrase[v] = '')
+    // words.forEach(v => ODA.localization.inPage.words[v] = '')
 
     // if (text == 'Search') console.log(text,words, ODA.localization.inPage.words)
 
-    const phraseK = Object.keys(ODA.localization.dictionary.phrase)
-    const wordsK = Object.keys(ODA.localization.dictionary.words)
+    const phraseK = Object.keys(Localization.StorGet('p')) // TODO: Нужно бы закэшипровать вычисление здесь не желательно
+    const wordsK = Object.keys(Localization.StorGet('w')) // TODO: Нужно бы закэшипровать вычисление здесь не желательно
+
+    // console.log(wordsK)
 
     let newVal = text
 
-    if (phraseK.length > 0) {
+    if (phraseK.length > 0) { //ODA.localization.dictionary.phrase[md]
         const rephrase = new RegExp('\\b' + phraseK.join('\\b|\\b') + '\\b', "g")
-        newVal = newVal.replaceAll(rephrase, md => ODA.localization.dictionary.phrase[md])
+        newVal = newVal.replaceAll(rephrase, md => sessionStorage.getItem(Localization.StorPrefix.p + md) )
     }
     if (wordsK.length > 0) {
         const reWords = new RegExp('\\b' + wordsK.join('\\b|\\b') + '\\b', "g")
-        newVal = newVal.replaceAll(reWords, md => ODA.localization.dictionary.words[md])
+        newVal = newVal.replaceAll(reWords, md => sessionStorage.getItem(Localization.StorPrefix.w + md) )
     }
+
+    // console.log(text,newVal)
 
     return newVal || ''
 }
@@ -135,7 +134,7 @@ function _newVal(val) {
         default:
             return val;
     }
-    this.__translate = val /*+ ': '+ ODA.language*/; //todo перевод
+    this.__translate = Localization.translate( val ) /*+ ': '+ ODA.language*/; //todo перевод
     // console.log(this, this.__translate)
     return this.__translate;
     // // if (val=='Watchers') console.log(val)
@@ -277,16 +276,16 @@ function supObAB(a, b) {
     return rez
 }
 
-CLASS({
-    is: 'TRANSLATE',
-    ctor(key, type) {
-        this.key = key
-        this.type = type
-    },
-    get t() {
-        let rez = ODA.localization.dictionary[this.type][this.key]
-        if (typeof rez === 'string') return rez
-        else return ''
-    },
-    set t(val) { ODA.localization.dictionary[this.type][this.key] = val }
-})
+// CLASS({
+//     is: 'TRANSLATE',
+//     ctor(key, type) {
+//         this.key = key
+//         this.type = type
+//     },
+//     get t() {
+//         let rez = ODA.localization.dictionary[this.type][this.key]
+//         if (typeof rez === 'string') return rez
+//         else return ''
+//     },
+//     set t(val) { ODA.localization.dictionary[this.type][this.key] = val }
+// })
