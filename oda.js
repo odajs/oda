@@ -1633,6 +1633,7 @@ if (!window.ODA) {
         }
     }
     async function updateDom(src, $el, $parent, pars) {
+        ODA.telemetry.domUpdates[src.id] = (ODA.telemetry.domUpdates[src.id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1916,7 +1917,11 @@ if (!window.ODA) {
         }
     }
     ODA.telemetry = {
-        proxy: 0, modules: {}, imports: {}, regs: {}, components: { count: 0 }, prototypes: {}, clear: () => {
+        proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
+            return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
+                return res+=i;
+            },0);
+        }, components: { count: 0 }, prototypes: {}, clear: () => {
             for (const i of Object.keys(ODA.telemetry)) {
                 if (typeof ODA.telemetry[i] === 'number')
                     ODA.telemetry[i] = 0;
