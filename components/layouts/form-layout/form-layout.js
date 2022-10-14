@@ -9,7 +9,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             height: 100%;
             touch-action: manipulation;
             white-space: nowrap;
-            --button-size: {{iconSize + 8}}px;
+            --top-padding: {{topPadding}}px;
         }
         :host(:not([modal])) {
             position: relative;
@@ -74,10 +74,11 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         }
         :host(:not([autosize]):not([is-minimized])[modal][size-mode=max]){
             padding: 8px;
-            padding-top: var(--button-size);
+            padding-top: var(--top-padding);
             background-color: rgba(0,0,0,.25);
-            padding-bottom: var(--button-size);
+            padding-bottom: {{iconSize + 8}}px;
         }
+        {{''}}
     </style>
     <div class="title-bar horizontal" invert @mouseenter="_in" @mouseleave="_out">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
@@ -104,6 +105,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         iconSize: {
             default: 24,
             shared: true
+        },
+        topPadding() {
+            return (this.domHost?.topPadding || this.iconSize || 24) + 8
         },
         autosize: {
             default: false,
