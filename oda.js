@@ -1624,15 +1624,17 @@ if (!window.ODA) {
         $el.domHost = this;
         return $el;
     }
-    let inRender = false;
+    let renderCount = 0;
     async function render() {
-        if (!inRender) {
-            inRender = true;
-            await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-            inRender = false;
-        }
+        renderCount++;
+        await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
     }
-    async function updateDom(src, $el, $parent, pars) {
+    async function updateDom(src, $el, $parent, pars, rc) {
+        if (rc !== renderCount){
+            console.log('cancel update', rc, renderCount)
+            return;
+        }
+
         ODA.telemetry.domUpdates[src.id] = (ODA.telemetry.domUpdates[src.id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
@@ -1693,24 +1695,23 @@ if (!window.ODA) {
                                 if (elem){
                                     const ff = elem?.$for;
                                     if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
-                                        list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
                                         break;
                                     }
                                     else{
                                         $el.removeChild(elem);
-                                        console.log(elem)
                                         elem = undefined;
                                     }
                                 }
                                 else{
-                                    list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
                                     break;
                                 }
                             }
                         }
                         else{
                             elem = $el.childNodes[idx + j];
-                            list.push(updateDom.call(this, node.child, elem, $el, node.params));
+                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
                         }
 
                     }
@@ -1729,7 +1730,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    /*await */updateDom.call(this, h, el, $el, pars);
+                    /*await */updateDom.call(this, h, el, $el, pars, rc);
                     idx++;
                 }
             }
@@ -1779,13 +1780,13 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot);
+                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc);
             }
             else if ($el.localName === 'slot') {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
                     if (el.$core && !el.$sleep) {
-                        updateDom.call(el, el.$core.node, el.$core.shadowRoot);
+                        updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc);
                     }
                 }
             }
@@ -2371,7 +2372,7 @@ if (!window.ODA) {
         };
         Node.prototype.render = function () {
             if (!this.$wake && (this.$sleep || !this.$node)) return;
-            updateDom.call(this.domHost, this.$node, this, renderCounter, this.parentNode, this.$for);
+            updateDom.call(this.domHost, this.$node, this, renderCounter, this.parentNode, this.$for, renderCount);
         };
     }
     Element:{
