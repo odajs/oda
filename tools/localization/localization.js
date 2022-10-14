@@ -10,17 +10,24 @@ Localization.translateTagList = ['label', 'h3']
 
 Localization.StorPrefix = {p:'#phrase#',w:'#words#'}
 
-Localization.StorGetP = () => { 
-    return Object.entries(sessionStorage)
-        .filter(([k,v]) => k.slice(0,Localization.StorPrefix.p.length)===Localization.StorPrefix.p )
+// Localization.StorGetP = () => { 
+//     return Object.entries(sessionStorage)
+//         .filter(([k,v]) => k.slice(0,Localization.StorPrefix.p.length)===Localization.StorPrefix.p )
+// }
+// Localization.StorGetW = () => { 
+//     return Object.entries(sessionStorage)
+//         .filter(([k,v]) => k.slice(0,Localization.StorPrefix.w.length)===Localization.StorPrefix.w )
+// }
+Localization.StorGet = (x) => { 
+    const entries = Object.entries(sessionStorage)
+        .filter(([k,v]) => k.slice(0,Localization.StorPrefix[x].length)===Localization.StorPrefix[x] )
+        .map(([k,v]) => [k.slice(ODA.localization.StorPrefix[x].length),v]  )
+    return Object.fromEntries(entries)
+
 }
-Localization.StorGetW = () => { 
-    return Object.entries(sessionStorage)
-        .filter(([k,v]) => k.slice(0,Localization.StorPrefix.w.length)===Localization.StorPrefix.w )
-}
-Localization.StorClear = () => {
-    [Localization.StorGetP(), Localization.StorGetW()].flat() 
-        .forEach (([k,v]) => sessionStorage.removeItem(k) )
+Localization.StorClear = () => {  ['p','w'].forEach (x =>
+        Object.keys(Localization.StorGet(x))
+            .forEach(k => sessionStorage.removeItem(Localization.StorPrefix[x] +k))    )
 } 
 
 
@@ -209,25 +216,46 @@ ODA({
         autoSize: true,
         autoWidth: true, //sort: [[letter]],
         dataSet() {
-            const words = sumObAB(ODA.localization.inPage.words, ODA.localization.dictionary.words)
-            const phrase = subObAB(sumObAB(ODA.localization.inPage.phrase, ODA.localization.dictionary.phrase), words)
-            
+            const words  = Object.entries( ODA.localization.StorGet('w') )
+            const phrase = Object.entries( subObAB(ODA.localization.StorGet('p'), words) )
+
+            //console.log(words,phrase)
+
+
+            // const words = ODA.localization.StorGetW().map(([k,v]) => [k.slice(ODA.localization.StorPrefix.w.length),v]  ) 
+            // const phrase = ODA.localization.StorGetP().map(([k,v]) => [k.slice(ODA.localization.StorPrefix.p.length),v]  ) 
+            // console.log(words, phrase  )
             let ds = {}
-            Object.keys(words).forEach(k => ds[k] = {
-                words: k, translates: ODA.localization.dictionary.words[k]/* (new TRANSLATE(k, 'words'))*/, letter: k[0].toLocaleLowerCase(), items: []
-            })
-            Object.keys(phrase).map(k => {
-                const testLeter = new RegExp('[a-z].*?', 'gi')
-                k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
-                    if (ds[w] == undefined) ds[w] = {
-                        words: w, translates: ODA.localization.dictionary.words[k] /*new TRANSLATE(w, 'words')*/, letter: w[0].toLocaleLowerCase(),
-                        items: [{ words: k, translates: ODA.localization.dictionary.phrase[k]  /*new TRANSLATE(k, 'phrase')*/ }]
-                    }
-                    else { ds[w].items.push({ words: k, translates: ODA.localization.dictionary.phrase[k]/*new TRANSLATE(k, 'phrase')*/ }) }
+
+            words.forEach(([k,v]) => ds[k] = {words: k, translates:v, letter: k[0].toLocaleLowerCase(), items: [] } )
+            phrase.forEach(([k,v]) => { 
+                const localWords = k.split(/\s+/).map(a => a.trim())
+                localWords.forEach(w => {
+                    if (ds[w] == undefined) ds[w] = { words: w, translates: '', letter: w[0].toLocaleLowerCase(),
+                                                      items: [{ words: k, translates: v }] }
+                    else ds[w].items.push( { words: k, translates: v })
                 })
             })
+
+
+            // Object.keys(words).forEach(k => ds[k] = {
+            //     words: k, translates: ODA.localization.dictionary.words[k]/* (new TRANSLATE(k, 'words'))*/, letter: k[0].toLocaleLowerCase(), items: []
+            // })
+            // Object.keys(phrase).map(k => {
+            //     const testLeter = new RegExp('[a-z].*?', 'gi')
+            //     k.split(/\s+/).map(a => a.trim()).filter(a => testLeter.test(a)).forEach(w => {
+            //         if (ds[w] == undefined) ds[w] = {
+            //             words: w, translates: ODA.localization.dictionary.words[k] /*new TRANSLATE(w, 'words')*/, letter: w[0].toLocaleLowerCase(),
+            //             items: [{ words: k, translates: ODA.localization.dictionary.phrase[k]  /*new TRANSLATE(k, 'phrase')*/ }]
+            //         }
+            //         else { ds[w].items.push({ words: k, translates: ODA.localization.dictionary.phrase[k]/*new TRANSLATE(k, 'phrase')*/ }) }
+            //     })
+            // })
             this.groups = [this.columns.find(c => c.name === 'letter')];
-            return Object.values(ds)
+            return Object.values(ds).map(o => {
+                if ( (o.items.length === 1) && (o.words ===  o.items[0].words) ) o.items = []
+                return o
+            })
         },
 
     },
