@@ -216,7 +216,7 @@ ODA({
         autoWidth: true, //sort: [[letter]],
         dataSet() {
             const words  = Object.entries( ODA.localization.StorGet('w') )
-            const phrase = Object.entries( subObAB(ODA.localization.StorGet('p'), words) )
+            const phrase = Object.entries( subObAB(sumObAB( ODA.localization.StorGet('p'), ODA.localization.StorGet('ip')), words) )
 
             //console.log(words,phrase)
 
