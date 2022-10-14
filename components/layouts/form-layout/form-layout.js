@@ -75,7 +75,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         :host(:not([autosize]):not([is-minimized])[modal][size-mode=max]){
             padding: 8px;
             padding-top: var(--button-size);
-            background-color: rgba(0,0,0,.5);
+            background-color: rgba(0,0,0,.25);
             padding-bottom: var(--button-size);
         }
     </style>

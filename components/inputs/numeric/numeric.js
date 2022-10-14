@@ -3,7 +3,7 @@ ODA({is: 'oda-numeric-input',
         <style>
             :host{
                 @apply --vertical;
-                @apply --border;
+                /*@apply --border;*/
             }
             :host([overload])>input{
                 @apply --error;
@@ -181,23 +181,22 @@ ODA({is: 'oda-numeric-input',
                     this.accuracy = 0;
             }
         },
-        value: {
-            type: Number,
-            default: 0,
-            set(n, o){
-                if (n === 0){
-                    this.render();
-                    this.$next(()=>{
-                        this.input.selectionStart = this.input.selectionEnd = this.endInt;
-                    })
-                }
-            }
-        },
+        value: 0,
         format:{
             default: 'decimal',
             list: ['decimal', 'currency', 'percent']
         }
     },
+    observers:[
+        function setValue(value){
+            if (value === 0){
+                this.render();
+                this.$next(()=>{
+                    this.input.selectionStart = this.input.selectionEnd = this.endInt;
+                })
+            }
+        }
+    ],
     get valueText(){
         const a = this.__focused;
         if (this.hideZero && !this.value)

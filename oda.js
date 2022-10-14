@@ -1631,7 +1631,7 @@ if (!window.ODA) {
     }
     async function updateDom(src, $el, $parent, pars, rc) {
         if (rc !== renderCount){
-            console.log('cancel update', rc, renderCount)
+            // console.log('cancel update', rc, renderCount)
             return;
         }
 
