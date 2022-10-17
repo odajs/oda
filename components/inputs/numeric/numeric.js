@@ -361,11 +361,12 @@ ODA({is: 'oda-numeric-input',
                 else
                     this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
                 this.valueText = this.calcText(this.value);
+                e.target.selectionEnd = e.target.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
                 this.$next(()=>{
                     if(Math.abs(this.value) < 10 && this.value === Math.floor(this.value))
                         this.input.selectionEnd = this.input.selectionStart = this.endInt;
                     else
-                        this.input.selectionEnd = this.input.selectionStart = this.valueText.length - backSS;
+                        this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
                 }, 1)
             } return;
             case 'Delete':{
@@ -414,10 +415,13 @@ ODA({is: 'oda-numeric-input',
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
                 const valueText = this.calcText(this.value);
-                this.input.selectionEnd = this.input.selectionStart = valueText.length - Math.min(valueText.length, backSS);
-                this.render();
+                e.target.selectionEnd = e.target.selectionStart = valueText.length - Math.min(valueText.length, backSS);
+                // console.log(e.target.selectionEnd)
+                // this.render();
                 this.$next(()=>{
+                    // console.log(this.input.selectionEnd)
                     this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
+                    // console.log(this.input.selectionEnd)
                 },1)
             } return;
         }
