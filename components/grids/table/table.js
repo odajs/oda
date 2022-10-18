@@ -1799,7 +1799,7 @@ cells: {
             <div class="flex horizontal" ~if="column.name" ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item="item"></oda-table-expand>
-                    <span class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></span>
+                    <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon :show="showSort && sortIcon" title="sort" :icon="sortIcon" :sort="sortIndex"></oda-icon>
                 </div>
                 <div class="split" @tap.stop @track="_track"></div>

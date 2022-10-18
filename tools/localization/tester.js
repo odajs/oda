@@ -12,9 +12,9 @@ ODA({is: 'oda-translate-test',
             <label>Просто текст (div):</label>
             <div bold>phrase for translate</div>
             <label>Просто текст (label):</label>
-            <label bold>phrase for translate</label>
+            <label bold>Phrase for translate</label>
             <label>binding:</label>
-            <label bold>binding: {{text}}</label>
+            <label bold>BINDING: {{text}}</label>
             <label>~text:</label>
             <label bold ~text="text"></label>
             <label>~html -> text:</label>
@@ -26,9 +26,9 @@ ODA({is: 'oda-translate-test',
             <div bold ~html="html"></div>
         `,
     get text(){
-        return 'phrase for translate '+document.location.hash.substring(1);
+        return 'phrase for Translate '+document.location.hash.substring(1);
     },
     get html(){
-        return '<label>'+this.text+' - html</label>';
+        return '<label>'+this.text+' - HTML</label>';
     }
 })
