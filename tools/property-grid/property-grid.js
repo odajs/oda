@@ -193,8 +193,8 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get editor() {
         if (this.mixed)
             return 'oda-pg-mixed';
-        if (this.prop?.editor?.includes('/') || (this.category === 'Array' && this.$parent?.prop.extEditor)) {
-            const ed = (this.category === 'Array' && this.$parent?.prop.extEditor) ? this.$parent?.prop.extEditor : this.prop.editor;
+        if (this.prop?.editor?.includes('/')) {
+            const ed = this.prop.editor;
             let url = this.dataSet.inspectedObjects[0]?.url || '';
             const onError = (err) => {
                 console.error(`Type editor to "${this.prop.name}" prop not loaded.\n`, err);
@@ -276,6 +276,7 @@ cells: {
         template: /*html*/`
         <style>
             :host {
+                overflow: hidden;
                 @apply --horizontal;
             }
             :host > span {
