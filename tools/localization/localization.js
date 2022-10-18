@@ -25,7 +25,7 @@ let dictionary;
 
 // Localization.setLocale(ODA.language);
 
-const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!']
+const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\']
 
 /* Ф-я перевода */
 
