@@ -152,7 +152,8 @@ window.addEventListener('keydown', async e => {
                  icon: 'icons:flag', 
                  title: 'Dictionaries', 
                  autosize: false, 
-                 buttons: [{ label: 'Download', icon: 'icons:file-download' }] })
+                 buttons: [{ label: 'Download', icon: 'icons:file-download' }] 
+                })
             result.setNewDict()
             if (result.focusedButton.label === 'Download')
                 result.dlDict();

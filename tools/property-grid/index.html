@@ -12,6 +12,12 @@
     import '../../oda.js';
     import '../styles/styles.js';
     import './property-grid.js';
+    KERNEL({is: 'ArrayItem', $typeEditor: 'oda-button',
+        ctor(name){
+            this.name = name;
+        },
+        name: ''
+    })
     ODA({
         is: 'oda-array-test',
         template: `
@@ -24,6 +30,12 @@
             array: {
                 default: [1, 2, 3, 4, 5],
                 extEditor: '[oda-pg-array-editor]'
+            },
+            arrayForClass: {
+                type: Array,
+                get(){
+                    return [new ArrayItem('Первый'), new ArrayItem('Второй')]
+                }
             },
             array1: [44, 66],
             promise: {

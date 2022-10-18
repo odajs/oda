@@ -99,8 +99,19 @@ CLASS({is: 'PropertyGridDataRowOwner',
     get items() {
         if (this.mixed)
             return [];
-        if (!this.$expanded)
-            return (this.value && typeof this.value === 'object') ? [{}] : [];
+        if (!this.$expanded){
+            if (this.value && typeof this.value === 'object'){
+                if (this.value.props){
+                    if (Object.keys(this.value.props).length)
+                        return [{}];
+                }
+                else if (Object.keys(this.value).length){
+                    return [{}];
+                }
+
+            }
+            return [];
+        }
         const items = {}
         for (let obj of this.inspectedObjects || []) {
             if (typeof obj !== 'object') continue;
@@ -169,8 +180,10 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     },
     _extractEditor(s) { // @path/path[component-name]
         const parts = s.split('[');
-        if (!parts[1]) throw new Error('Component name not specified!');
-        return { path: parts[0], tag: parts[1].slice(0, -1) };
+        if (parts.length === 2){
+            return { path: parts[0], tag: parts[1].slice(0, -1) };
+        }
+        return { path: undefined, tag: s };
     },
     _getDefaultEditor() {
         switch (this.prop?.type || (this.prop?.default !== undefined && typeof this.prop?.default) || typeof this.value) {
@@ -193,17 +206,18 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     get editor() {
         if (this.mixed)
             return 'oda-pg-mixed';
-        if (this.prop?.editor?.includes('/')) {
-            const ed = this.prop.editor;
-            let url = this.dataSet.inspectedObjects[0]?.url || '';
+        const editor =  this.prop?.editor || this.value?.$typeEditor;
+        if (editor){
             const onError = (err) => {
-                console.error(`Type editor to "${this.prop.name}" prop not loaded.\n`, err);
+                console.error(`Type editor to "${this.name}" prop not loaded.\n`, err);
                 this.editor = this._getDefaultEditor();
             }
             try {
-                const { path, tag } = this._extractEditor(ed);
-                if (path)
+                const { path, tag } = this._extractEditor(editor);
+                if (path){
+                    let url = this.dataSet.inspectedObjects[0]?.url || '';
                     ODA.import((url ? (url + '/~/') : '') + path).catch(onError);
+                }
                 return tag;
             } catch (err) {
                 onError(err);
