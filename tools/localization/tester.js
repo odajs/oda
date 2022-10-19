@@ -22,6 +22,9 @@ ODA({is: 'oda-translate-test',
             <label>~html -> html:</label>
             <label bold ~html="html"></label>
             
+            <label>~text -> html:</label>
+            <label bold ~text="html"></label>
+            
             <label>~html -> html: (div)</label>
             <div bold ~html="html"></div>
         `,
