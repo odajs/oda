@@ -25,13 +25,13 @@ let dictionary;
 
 // Localization.setLocale(ODA.language);
 
-const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\']
+const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\'] // ! '<', '>', -- нельзя! Иначе переводим теги!
 
 /* Ф-я перевода */
 
 function translateWord(word, uppercases){
     let key = word.toLowerCase();
-    sessionStorage.setItem(key, 'w');
+    if (key!='') sessionStorage.setItem(key, 'w');
     let value = dictionary?.words[key] || '';
     if (!value){
         value = word;
@@ -42,7 +42,6 @@ function translateWord(word, uppercases){
             value = value.toCapitalCase();
         else if(word.length === uppercases)
             value = value.toUpperCase();
-        // todo преобразовать заглавные
     }
 
     return value;
@@ -154,12 +153,16 @@ window.addEventListener('keydown', async e => {
                  autosize: false, 
                  buttons: [{ label: 'Download', icon: 'icons:file-download' }] 
                 })
-            result.setNewDict()
-            if (result.focusedButton.label === 'Download')
-                result.dlDict();
+            // console.log(result)
+            // console.log(result.focusedButton)
+            result.dlDict()
+            // result.setNewDict()
+            // if (result.focusedButton.label === 'Download')
+            //     // result.dlDict();
+            //     console.log('result')
         }
         catch (e) {
-            console.error(e);
+            console.error('dddd');
         }
     }
 })
@@ -167,6 +170,7 @@ window.addEventListener('keydown', async e => {
 
 /*  */
 ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
+    attached() { this._dataSet() } ,
     props: {
         evenOdd: true,
         showHeader: true,
@@ -175,47 +179,75 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
         showFilter: true,
         autoSize: true,
         autoWidth: true, //sort: [[letter]],
-        dataSet() {
-            const [iW,iP] = [{},{}]
-            Object.entries( sessionStorage ).forEach( ([k,v]) => (v==='p')? iP[k]='' : iW[k]='' )
-
-            const words  =  Object.entries( sumObAB(dictionary.words, iW ) )
-            const phrase =  Object.entries( sumObAB(dictionary.phrase, iP ) )
-
-            let ds = {}
-        
-            words.forEach(([k,v]) => ds[k] = {words: k, translates:v, letter: k.slice(0,1).toLowerCase(), items: [] } )
-            phrase.forEach(([k,v]) => {
-                // const localWords = k.split(/\s+/).map(a => a.trim())
-                let localWords = []
-                let word = ''
-                for (let ch of k) {
-                    if (separators.includes(ch)) {
-                        localWords.push(word)
-                        word  = ''
-                    } 
-                    else word += ch.toLowerCase()
-                }
-                if (word)  localWords.push(word)
-                // console.log(localWords)
-
-                localWords.filter(w => w!='').forEach(w => {
-                    if (ds[w] == undefined) ds[w] = { words: w, translates: '', letter: w.slice(0,1).toLowerCase(),
-                                                      items: [{ words: k, translates: v }] }
-                    else ds[w].items.push( { words: k, translates: v })
-                })
-            })
-        
-            this.groups = [this.columns.find(c => c.name === 'letter')];
-            return Object.values(ds).map(o => {
-                if ( (o.items.length === 1) && (o.words ===  o.items[0].words) ) o.items = []
-                return o
-            })
-        },
+        dataSet : []
     },
     columns: [{ name: 'words', treeMode: true, $sort: 1, fix: 'left' },
               { name: 'translates', template: 'oda-localization-input' },
               { name: 'letter', hidden: true, $sortGroups: 1, $expanded: true, $hideExppander: true }],
+    _dataSet() {
+        const [iW,iP] = [{},{}]
+        Object.entries( sessionStorage ).forEach( ([k,v]) => (v==='p')? iP[k]='' : iW[k]='' )
+
+        const words  =  Object.entries( sumObAB(dictionary.words, iW ) )
+        const phrase =  Object.entries( sumObAB(dictionary.phrase, iP ) )
+
+        let ds = {}
+    
+        words.forEach(([k,v]) => ds[k] = {words: k, translates:v, letter: k.slice(0,1).toLowerCase(), items: [] } )
+        phrase.forEach(([k,v]) => {
+            // const localWords = k.split(/\s+/).map(a => a.trim())
+            let localWords = []
+            let word = ''
+            for (let ch of k) {
+                if (separators.includes(ch)) {
+                    localWords.push(word)
+                    word  = ''
+                } 
+                else word += ch.toLowerCase()
+            }
+            if (word)  localWords.push(word)
+            // console.log(localWords)
+
+            localWords.filter(w => w!='').forEach(w => {
+                if (ds[w] == undefined) ds[w] = { words: w, translates: '', letter: w.slice(0,1).toLowerCase(),
+                                                    items: [{ words: k, translates: v }] }
+                else ds[w].items.push( { words: k, translates: v })
+            })
+        })
+    
+        this.groups = [this.columns.find(c => c.name === 'letter')];
+        this.dataSet = Object.values(ds).map(o => {
+            if ( (o.items.length === 1) && (o.words ===  o.items[0].words) ) o.items = []
+            return o
+        })
+    },
+    dlDict() {
+        let rez = { phrase: {}, words: {} }
+        this.dataSet.forEach( o => {
+            if (o.translates != '') rez.words[o.words] = o.translates
+            o.items.forEach( p => {
+                if (p.translates != '') rez.phrase[p.words] = p.translates
+            })
+        })
+        let a = document.createElement("a");
+        let file = new Blob([JSON.stringify(rez, null, " ")], {type: 'application/json'});
+        a.href = URL.createObjectURL(file);
+        a.download = ODA.language + ".json";
+        a.click();
+        // console.log(rez)
+    },
+    dlPhrase() {
+        let rez = []
+        Object.entries( sessionStorage ).forEach( ([k,v]) => (v==='p')? rez.push(k) : {} )
+        let a = document.createElement("a");
+        let file = new Blob([JSON.stringify(rez, null, " ")], {type: 'application/json'});
+        a.href = URL.createObjectURL(file);
+        a.download = "phrases.json";
+        a.click();
+        // console.log(rez)
+    }
+
+
 })
 
 ODA({ is: 'oda-localization-input', template: /*html*/ `<input ::value='item.translates'>`, })
