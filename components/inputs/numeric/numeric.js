@@ -356,18 +356,27 @@ ODA({is: 'oda-numeric-input',
                     backSS = text.length - this.endInt;
                 let slice = text.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
-                if (!this.value)
-                    this.value = textToNumber(e.key, this.separator);
+                if (!this.value) {
+                    if (this.endInt<e.target.selectionStart)
+                        this.value = textToNumber(this.separator + e.key, this.separator);
+                    else
+                        this.value = textToNumber(e.key, this.separator);
+                }
                 else
                     this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
-                this.valueText = this.calcText(this.value);
-                e.target.selectionEnd = e.target.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
-                this.$next(()=>{
-                    if(Math.abs(this.value) < 10 && this.value === Math.floor(this.value))
-                        this.input.selectionEnd = this.input.selectionStart = this.endInt;
-                    else
-                        this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
-                }, 1)
+                let cnt = 3;
+                const update = ()=>{
+                    if (!cnt) return;
+                    this.$next(()=>{
+                        if(Math.abs(this.value) < 10 && this.value === Math.floor(this.value))
+                            this.input.selectionEnd = this.input.selectionStart = this.endInt;
+                        else
+                            this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
+                        cnt--;
+                        update();
+                    },1)
+                }
+                update();
             } return;
             case 'Delete':{
                 e.preventDefault();
