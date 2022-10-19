@@ -72,7 +72,7 @@ Localization.translate = function (text = ''){
     return value;
 }
 
-function _newVal(val) {
+function _newVal(val, mTag=false) {
     if (!this.isConnected || !val)
         return val;
     switch (this.__translate) {
@@ -100,8 +100,19 @@ function _newVal(val) {
             return val;
     }
 
+    if (mTag) {
+        let inLabel = (text) => {
+            if (!text.includes('<')) return Localization.translate(text)
+            else {
+                function replacer (_, p1, p2, p3) { return '<label'+ p1 +'>'+ inLabel(p2) + p3 }
+                return text.replaceAll(/<label(.*?)>(.*?)(<\/label>|$)/g, replacer )
+            } 
+        }
+        this.__translate = inLabel (val)
 
-    this.__translate = Localization.translate( val ) 
+    } else 
+        this.__translate = Localization.translate( val )
+
     return this.__translate;
 
 }
@@ -132,12 +143,12 @@ const innerGet = innerHTML.get;
 innerHTML.set = function (val) {
     if (this.__translate && this.__translate.src !== val)
         this.__translate = undefined;
-    const newVal = _newVal.call(this, val)
+    const newVal = _newVal.call(this, val,true)
     innerSet.call(this, newVal)  // переводим, перевод сохраняем
 }
 innerHTML.get = function () {
     const val = innerGet.call(this)
-    const newVal = _newVal.call(this, val)
+    const newVal = _newVal.call(this, val,true)
     return newVal
 }
 Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
@@ -234,7 +245,6 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
         a.href = URL.createObjectURL(file);
         a.download = ODA.language + ".json";
         a.click();
-        // console.log(rez)
     },
     dlPhrase() {
         let rez = []
@@ -244,7 +254,6 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
         a.href = URL.createObjectURL(file);
         a.download = "phrases.json";
         a.click();
-        // console.log(rez)
     }
 
 

@@ -31,7 +31,7 @@ ODA({is: 'oda-numeric-input',
                 @apply --flex;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" :error :title="valueText" @input="onValueChanged" @scroll="onScroll" @mouseup="setPos()">
+        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" :error :title="valueText"  @input="onInput" @scroll="onScroll" @mouseup="setPos()">
     `,
     _focus(e){
         this.__focused = (e.type === 'focus');
@@ -74,8 +74,8 @@ ODA({is: 'oda-numeric-input',
     get separator(){
         return (1.1).toLocaleString(this.locale || 'ru-RU')[1]
     },
-    onValueChanged(e) {
-        console.log('onValueChanged', e.target.value);
+    onInput(e) {
+        console.log('onInput', e.target.value);
         let ss = this.valueText.length - e.target.selectionStart;
         switch (e.inputType){
             case 'insertText':{
@@ -364,19 +364,20 @@ ODA({is: 'oda-numeric-input',
                 }
                 else
                     this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
-                let cnt = 3;
-                const update = ()=>{
-                    if (!cnt) return;
+                this.valueText = this.calcText(this.value);
+                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
+                const update = (back)=>{
+                    this.input.selectionEnd = this.input.selectionStart = pos;
                     this.$next(()=>{
-                        if(Math.abs(this.value) < 10 && this.value === Math.floor(this.value))
-                            this.input.selectionEnd = this.input.selectionStart = this.endInt;
-                        else
-                            this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
-                        cnt--;
-                        update();
+                        pos = this.valueText.length - Math.min(this.valueText.length, back);
+                        this.input.selectionEnd = this.input.selectionStart = pos;
+                        if (this.input.selectionStart !== pos && backSS === back){
+                            this.input.selectionEnd = this.input.selectionStart = pos;
+                            update(back);
+                        }
                     },1)
                 }
-                update();
+                update(backSS);
             } return;
             case 'Delete':{
                 e.preventDefault();
@@ -396,9 +397,20 @@ ODA({is: 'oda-numeric-input',
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
-                this.$next(()=>{
-                    this.input.selectionEnd = this.input.selectionStart = this.input.value.length - Math.min(this.input.value.length, backSS);
-                },1)
+                this.valueText = this.calcText(this.value);
+                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
+                const update = (back)=>{
+                    this.input.selectionEnd = this.input.selectionStart = pos;
+                    this.$next(()=>{
+                        pos = this.valueText.length - Math.min(this.valueText.length, back);
+                        this.input.selectionEnd = this.input.selectionStart = pos;
+                        if (this.input.selectionStart !== pos && backSS === back){
+                            this.input.selectionEnd = this.input.selectionStart = pos;
+                            update(back);
+                        }
+                    },1)
+                }
+                update(backSS);
             } return;
             case 'Backspace':{
                 e.preventDefault();
@@ -423,15 +435,22 @@ ODA({is: 'oda-numeric-input',
                 let slice = e.target.value.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
-                const valueText = this.calcText(this.value);
-                e.target.selectionEnd = e.target.selectionStart = valueText.length - Math.min(valueText.length, backSS);
-                // console.log(e.target.selectionEnd)
-                // this.render();
-                this.$next(()=>{
-                    // console.log(this.input.selectionEnd)
-                    this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
-                    // console.log(this.input.selectionEnd)
-                },1)
+                e.target.selectionEnd = e.target.selectionStart = -1;
+                this.valueText = this.calcText(this.value);
+                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
+                const update = (back)=>{
+                    this.input.selectionEnd = this.input.selectionStart = pos;
+                    this.$next(()=>{
+                        pos = this.valueText.length - Math.min(this.valueText.length, back);
+                        this.input.selectionEnd = this.input.selectionStart = pos;
+                        if (this.input.selectionStart !== pos && backSS === back){
+                            this.input.selectionEnd = this.input.selectionStart = pos;
+                            update(back);
+                        }
+                    },1)
+                }
+                update(backSS);
+
             } return;
         }
         switch (e.keyCode){
