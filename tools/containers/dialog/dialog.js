@@ -5,7 +5,10 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     `,
     buttons: [],
     get focusedButton() {
-        return this.buttons.find(b => b.focused)
+        return this.buttons.find(b => b.focused) || null;
+    },
+    set focusedButton(n){
+
     },
     props: {
         title: 'Dialog'
@@ -28,7 +31,8 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     attached() { this.listen('keydown', '_onKeyDown', { target: window}) },
     detached() { this.unlisten('keydown', '_onKeyDown', { target: window}) },
     async ok(item = this.focusedButton) {
-        if (typeof item?.execute === 'function') await item?.execute();
+        if (typeof item?.execute === 'function')
+            await item?.execute();
         (this.domHost || this).fire('ok', item)
     },
     cancel() { (this.domHost || this).fire('cancel') }
@@ -62,16 +66,18 @@ ODA({is: 'oda-dialog-footer',
     <div class="flex horizontal" style="justify-content: space-around">
         <slot class="flex"></slot>
         <slot class="flex" name="footer"></slot>
-        <oda-button class="flex" ~props="item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" @blur="onBlur" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
+        <oda-button ~is="item?.is || 'oda-button'" class="flex" ~props="item" :focused="item === focusedButton?.item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
     </div>
     <div class="no-flex horizontal" style="margin-left: 16px">
-        <oda-button hide-icon ~if="!hideOkButton" @tap="ok" :disabled="okDisabled" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">OK</oda-button>
-        <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="0" @focusin="onFocusIn"  @blur="onBlur">Cancel</oda-button>
+        <oda-button hide-icon ~if="!hideOkButton" @tap="ok" :disabled="okDisabled" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn" >OK</oda-button>
+        <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="0" @focusin="onFocusIn" >Cancel</oda-button>
     </div>
     `,
     clickBtn(e) {
-        if (e.target.hasAttribute('disabled')) return;
-        this.ok(e.target?.item)
+        if (e.target.hasAttribute('disabled'))
+            return;
+
+        this.ok(e.target)
     },
     control: {},
     props: {
@@ -79,8 +85,13 @@ ODA({is: 'oda-dialog-footer',
         hideOkButton: false,
         hideCancelButton: false,
     },
-    onFocusIn(e) { this.focusedButton = e.target },
-    onBlur(e) { this.focusedButton = null },
+    onFocusIn(e) {
+        this.focusedButton = e.target
+        // console.log(this.focusedButton)
+    },
+    onBlur(e) {
+        this.focusedButton = null
+    },
     listeners:{
         pointerdown(e){
             e.stopPropagation();

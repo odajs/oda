@@ -44,6 +44,7 @@ ODA({is: 'oda-icon',
             bottom: 0px;
         }
         svg {
+            pointer-events: none;
             top: 0px;
             left: 0px;
             position: absolute;

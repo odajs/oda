@@ -2,6 +2,7 @@
 <button id="btn1" slot="buttons">dialogs</button>
 <button id="btn2" slot="buttons">buttons</button>
 <script type="module">
+    import '../../../oda.js'
     import "../containers.js";
     btn1.onclick = async e => {
         const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {animation: 500, help:'Привет'})
@@ -9,9 +10,9 @@
     btn2.onclick = async e => {
         const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {hideOkButton:true, icon:'icons:warning', animation: 500,
             buttons: [
-                {icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{
+                {is: 'input', icon: 'icons:warning', label: 'Class 1', iconPos: 'top', tap:(e)=>{
                         console.log('1 кнопка')
-                    }},{icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{
+                    }},{icon: 'icons:warning', label: 'Class 2', iconPos: 'top', execute:(e)=>{
                         console.log('2 кнопка')
                     }},
             ]

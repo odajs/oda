@@ -162,11 +162,14 @@ window.addEventListener('keydown', async e => {
                  icon: 'icons:flag', 
                  title: 'Dictionaries', 
                  autosize: false, 
-                 buttons: [{ label: 'Download', icon: 'icons:file-download' }] 
+                 buttons: [{ label: 'Download', icon: 'icons:file-download', tap: (e)=>{
+                        alert('yflfnf ryjgrf')
+                     } }]
                 })
+            console.log(result?.focusedButton)
             // console.log(result)
             // console.log(result.focusedButton)
-            result.dlDict()
+            // result.dlDict()
             // result.setNewDict()
             // if (result.focusedButton.label === 'Download')
             //     // result.dlDict();

@@ -1441,6 +1441,9 @@ if (!window.ODA) {
         },
         props($el, fn, p) {
             const props = exec.call(this, fn, p);
+            if ($el.__dir_props__ === props)
+                return;
+            $el.__dir_props__ = props;
             for (let i in props) {
                 if (i.startsWith('#') || i.startsWith('$')) continue;
                 let val = props[i];
