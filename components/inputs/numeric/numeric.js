@@ -357,8 +357,10 @@ ODA({is: 'oda-numeric-input',
                 let slice = text.slice(ss, se);
                 slice = slice.includes(this.separator)?this.separator:'';
                 if (!this.value) {
-                    if (this.endInt<e.target.selectionStart)
-                        this.value = textToNumber(this.separator + e.key, this.separator);
+                    if (this.endInt<e.target.selectionEnd){
+                        const z = e.target.selectionEnd - this.beginFrac;
+                        this.value = textToNumber(this.separator + ((z>0)?("0".repeat(z)):'') + e.key, this.separator);
+                    }
                     else
                         this.value = textToNumber(e.key, this.separator);
                 }
