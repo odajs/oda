@@ -1441,7 +1441,8 @@ if (!window.ODA) {
         },
         props($el, fn, p) {
             const props = exec.call(this, fn, p);
-            if ($el.__dir_props__ === props)
+            if (Object.equal($el.__dir_props__, props, true))
+            // if ($el.__dir_props__ === props)
                 return;
             $el.__dir_props__ = props;
             for (let i in props) {
