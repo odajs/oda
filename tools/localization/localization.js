@@ -25,7 +25,7 @@ let dictionary;
 
 // Localization.setLocale(ODA.language);
 
-const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\'] // ! '<', '>', -- нельзя! Иначе переводим теги!
+const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\'] 
 
 /* Ф-я перевода */
 
@@ -101,16 +101,8 @@ function _newVal(val, mTag=false) {
     }
 
     if (mTag) {
-        // let inLabel = (text) => {
-        //     if (!text.includes('<')) return Localization.translate(text)
-        //     else {
-        //         function replacer (_, p1, p2, p3) { return '<label'+ p1 +'>'+ inLabel(p2) + p3 }
-        //         return text.replaceAll(/<label(.*?)>(.*?)(<\/label>|$)/g, replacer )
-        //     } 
-        // }
         function replacer(_, p1, p2) {  return ( (p1.trim()==='')?p1:Localization.translate(p1) ) + p2 }
         this.__translate = val.replace(/([^<]*?)(<[^>]*>|$)/g, replacer )
-
     } else 
         this.__translate = Localization.translate( val )
 
@@ -158,26 +150,20 @@ Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
 window.addEventListener('keydown', async e => {
     if (e.code === 'KeyL' && e.altKey) {
         try {
+            let tapButton = ''
             await ODA.import('@tools/containers');
             const result = await ODA.showDialog('oda-localization-tree', {}, {
                  icon: 'icons:flag', 
                  title: 'Dictionaries', 
                  autosize: false, 
-                 buttons: [{ label: 'Download', icon: 'icons:file-download', tap: (e)=>{
-                        alert('yflfnf ryjgrf')
-                     } }]
+                 buttons: [ { label: 'Download Dictionary', icon: 'icons:file-download', execute:(e)=> tapButton='dlDict'},
+                            { label: 'Download Phrases', icon: 'icons:file-download', execute:(e)=> tapButton='dlPhrase'}]
                 })
-            console.log(result?.focusedButton)
-            // console.log(result)
-            // console.log(result.focusedButton)
-            // result.dlDict()
-            // result.setNewDict()
-            // if (result.focusedButton.label === 'Download')
-            //     // result.dlDict();
-            //     console.log('result')
+            if (tapButton==='dlDict') result.dlDict()
+            if (tapButton==='dlPhrase') result.dlPhrase()
         }
         catch (e) {
-            console.error('dddd');
+            //console.error('dddd');
         }
     }
 })
