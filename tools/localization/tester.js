@@ -32,6 +32,6 @@ ODA({is: 'oda-translate-test',
         return 'phrase for Translate '+document.location.hash.substring(1);
     },
     get html(){
-        return '<label>'+this.text+' - <i>HTML</i></label>';
+        return '<label>'+this.text+' - <i>HTML</i> <i>phrase</i></label>';
     }
 })

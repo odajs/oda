@@ -101,14 +101,15 @@ function _newVal(val, mTag=false) {
     }
 
     if (mTag) {
-        let inLabel = (text) => {
-            if (!text.includes('<')) return Localization.translate(text)
-            else {
-                function replacer (_, p1, p2, p3) { return '<label'+ p1 +'>'+ inLabel(p2) + p3 }
-                return text.replaceAll(/<label(.*?)>(.*?)(<\/label>|$)/g, replacer )
-            } 
-        }
-        this.__translate = inLabel (val)
+        // let inLabel = (text) => {
+        //     if (!text.includes('<')) return Localization.translate(text)
+        //     else {
+        //         function replacer (_, p1, p2, p3) { return '<label'+ p1 +'>'+ inLabel(p2) + p3 }
+        //         return text.replaceAll(/<label(.*?)>(.*?)(<\/label>|$)/g, replacer )
+        //     } 
+        // }
+        function replacer(_, p1, p2) {  return ( (p1.trim()==='')?p1:Localization.translate(p1) ) + p2 }
+        this.__translate = val.replace(/([^<]*?)(<[^>]*>|$)/g, replacer )
 
     } else 
         this.__translate = Localization.translate( val )
