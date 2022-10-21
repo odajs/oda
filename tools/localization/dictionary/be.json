@@ -1,5 +1,9 @@
 {
-    "phrase": {},
-    "words": {"Watchers": "Вотчеры", "transletes":"перевод",  
-    "Download":"скачать", "words":"слова", "OK":"Окый", "Cancel":"Кансел", "phrase":"фрася"}
+    "Watchers": "Вотчеры",
+    "transletes": "перевод",
+    "Download": "скачать",
+    "words": "слова",
+    "OK": "Окый",
+    "Cancel": "Кансел",
+    "phrase": "фрася"
 }
