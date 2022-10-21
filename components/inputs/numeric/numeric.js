@@ -31,7 +31,7 @@ ODA({is: 'oda-numeric-input',
                 @apply --flex;
             }
         </style>
-        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown" @keyup="onKeyUp" :error :title="valueText" @keypress="onKeyPress"  @input="onInput" @scroll="onScroll" @mouseup="setPos()">
+        <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown"  :error :title="valueText"  @input="onInput" @scroll="onScroll" @mouseup="setPos()">
     `,
     _focus(e){
         this.__focused = (e.type === 'focus');
@@ -250,40 +250,6 @@ ODA({is: 'oda-numeric-input',
 
     },
     isFocused: false,
-    onKeyUp(e){
-        switch (e.key){
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9': {
-                e.preventDefault();
-                console.log(e.key)
-            } break;
-        }
-    },
-    onKeyPress(e){
-        switch (e.key){
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9': {
-                e.preventDefault();
-                console.log(e.key)
-            } break;
-        }
-    },
     onKeyDown(e){
         let ss = e.target.selectionStart;
         let se = e.target.selectionEnd;
@@ -401,22 +367,9 @@ ODA({is: 'oda-numeric-input',
                 }
                 else
                     this.value = textToNumber(text.substring(0, ss) + e.key + slice + text.substring(se), this.separator);
-
                 this.valueText = this.calcText(this.value);
                 e.target.value = this.valueText;
-                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
-                const update = (back)=>{
-                    this.input.selectionEnd = this.input.selectionStart = pos;
-                    this.$next(()=>{
-                        pos = this.valueText.length - Math.min(this.valueText.length, back);
-                        this.input.selectionEnd = this.input.selectionStart = pos;
-                        if (this.input.selectionStart !== pos && backSS === back){
-                            this.input.selectionEnd = this.input.selectionStart = pos;
-                            update(back);
-                        }
-                    },1)
-                }
-                update(backSS);
+                this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
             } return;
             case 'Delete':{
                 e.preventDefault();
@@ -438,19 +391,7 @@ ODA({is: 'oda-numeric-input',
                 this.value = textToNumber(e.target.value.substring(0, ss) + slice + e.target.value.substring(se), this.separator);
                 this.valueText = this.calcText(this.value);
                 e.target.value = this.valueText;
-                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
-                const update = (back)=>{
-                    this.input.selectionEnd = this.input.selectionStart = pos;
-                    this.$next(()=>{
-                        pos = this.valueText.length - Math.min(this.valueText.length, back);
-                        this.input.selectionEnd = this.input.selectionStart = pos;
-                        if (this.input.selectionStart !== pos && backSS === back){
-                            this.input.selectionEnd = this.input.selectionStart = pos;
-                            update(back);
-                        }
-                    },1)
-                }
-                update(backSS);
+                this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
             } return;
             case 'Backspace':{
                 e.preventDefault();
@@ -478,20 +419,7 @@ ODA({is: 'oda-numeric-input',
                 e.target.selectionEnd = e.target.selectionStart = -1;
                 this.valueText = this.calcText(this.value);
                 e.target.value = this.valueText;
-                let pos = this.valueText.length - Math.min(this.valueText.length, backSS);
-                const update = (back)=>{
-                    this.input.selectionEnd = this.input.selectionStart = pos;
-                    this.$next(()=>{
-                        pos = this.valueText.length - Math.min(this.valueText.length, back);
-                        this.input.selectionEnd = this.input.selectionStart = pos;
-                        if (this.input.selectionStart !== pos && backSS === back){
-                            this.input.selectionEnd = this.input.selectionStart = pos;
-                            update(back);
-                        }
-                    },1)
-                }
-                update(backSS);
-
+                this.input.selectionEnd = this.input.selectionStart = this.valueText.length - Math.min(this.valueText.length, backSS);
             } return;
         }
         switch (e.keyCode){
