@@ -11,15 +11,11 @@ try{
     const fr = await ODA.loadJSON(Localization.path+'/dictionary/phrases.json');
     fr.forEach(i => sessionStorage.setItem(i, '?'))
 }
-catch (e){}
+catch (e) {}
 
 let dictionary;
-try{
-    dictionary = await ODA.loadJSON(Localization.path+'/dictionary/'+ODA.language + '.json');
-}
-catch (e){
-    dictionary = { };
-}
+try       { dictionary = await ODA.loadJSON(Localization.path+'/dictionary/'+ODA.language + '.json'); }
+catch (e) { dictionary = {} }
 
 const separators = [' ', '.', ',', ':', '-', '(', ')', '~', '!', '<', '>', '/', '\\'] 
 
@@ -30,7 +26,6 @@ function translateWord(word, uppercases){
     let value = dictionary[key] || '';
     if (!value){
         value = word;
-        // console.log(word, uppercases)
     }
     else if (uppercases) {
         if (uppercases === 1)
@@ -50,7 +45,6 @@ Localization.translate = function (text = ''){
         let uc = 0;
         for (let ch of text){
             if (separators.includes(ch)){
-                // console.log(word);
                 value += translateWord(word, uc) + ch;
                 uc = 0;
                 word  = ''
@@ -159,12 +153,10 @@ window.addEventListener('keydown', async e => {
     }
 })
 
-
 /*  */
 ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
     attached() { this._dataSet() } ,
     props: {
-        evenOdd: true,
         showHeader: true,
         allowSort: true,
         lazy: true,
@@ -180,16 +172,14 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
         const all = { ...dictionary}
         for (let k of Object.keys(sessionStorage)) if (all[k]===undefined) all[k] = ''
  
-        // this.groups = [this.columns.find(c => c.name === 'letter')];
-        this.dataSet = Object.entries(all).map(([k,v]) => {return {words: k, translates:v, letter: k.slice(0,1).toLowerCase() }} )
+        this.groups = [this.columns.find(c => c.name === 'letter')];
+        this.dataSet = Object.entries(all).map(([k,v]) => {
+            return {words: k.toLowerCase(), translates:v, letter: k.slice(0,1).toLowerCase() }} )
     },
     dlDict() {
         let rez = { }
         this.dataSet.forEach( o => {
-            if (o.translates != '') rez[o.words] = o.translates
-            // o.items.forEach( p => {
-            //     if (p.translates != '') rez.phrase[p.words] = p.translates
-            // })
+            if (o.translates != '') rez[o.words.toLowerCase()] = o.translates.toLowerCase()
         })
         let a = document.createElement("a");
         let file = new Blob([JSON.stringify(rez, null, " ")], {type: 'application/json'});
@@ -208,18 +198,19 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
     }
 })
 
-ODA({ is: 'oda-localization-input', template: /*html*/ `<input ::value='item.translates'>`, })
-
-
-function sumObAB(a, b) { return { ...b, ...a } }
-function subObAB(a, b) {
-    let rez = { ...a }
-    for (let key in b) { if (key in a) delete rez[key] }
-    return rez
-}
-function supObAB(a, b) {
-    let rez = {}
-    for (let key in a) { if (key in b) rez[key] = a[key] }
-    return rez
-}
+ODA({ is: 'oda-localization-input', template: /*html*/ `
+        <style>
+            :host{
+                @apply --horizontal;
+                @apply --header;
+                align-self: center;
+                @apply --flex;
+            }
+        </style>
+    <input ::value='item.translates' class="flex" style="padding: 4px; height: 100%;" :placeholder>
+    `,
+    get placeholder(){
+        return Localization.translate(this.item.words || '');
+    }
+})
 

@@ -1,9 +1,9 @@
 {
-    "Watchers": "Вотчеры",
-    "transletes": "перевод",
-    "Download": "скачать",
-    "words": "слова",
-    "OK": "Окый",
-    "Cancel": "Кансел",
-    "phrase": "фрася"
+ "cancel": "кансел",
+ "download": "скачать",
+ "ok": "окый",
+ "phrase": "фрася",
+ "transletes": "перевод",
+ "watchers": "вотчеры",
+ "words": "слова"
 }
