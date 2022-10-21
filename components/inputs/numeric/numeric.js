@@ -181,12 +181,13 @@ ODA({is: 'oda-numeric-input',
                     this.accuracy = 0;
             }
         },
-        value: 0,
+
         format:{
             default: 'decimal',
             list: ['decimal', 'currency', 'percent']
         }
     },
+    value: 0,
     observers:[
         function setValue(value){
             if (value === 0){
@@ -210,7 +211,7 @@ ODA({is: 'oda-numeric-input',
             if (this.hideZero && !value)
                 return ''
             if (this.viewMode === 'Number' || this.__focused)
-                return value.toLocaleString(this.locale || 'ru-RU', {style: (this.memory?'decimal':(this.format || 'decimal')), 'currency': this.currency || 'RUB', minimumFractionDigits: this.accuracy || 0, maximumFractionDigits: this.accuracy || 0})+(this.memory?' = ':"");
+                return (value || 0).toLocaleString(this.locale || 'ru-RU', {style: (this.memory?'decimal':(this.format || 'decimal')), 'currency': this.currency || 'RUB', minimumFractionDigits: this.accuracy || 0, maximumFractionDigits: this.accuracy || 0})+(this.memory?' = ':"");
             return 'Текст';
         }
         catch (e){
