@@ -1639,8 +1639,8 @@ if (!window.ODA) {
             // console.log('cancel update', rc, renderCount)
             return;
         }
-
-        ODA.telemetry.domUpdates[src.id] = (ODA.telemetry.domUpdates[src.id] ?? 0) + 1;
+        ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
+        ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
