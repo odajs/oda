@@ -169,9 +169,9 @@ ODA({is: 'oda-hexagon',
             width: {{size}}px;
             height: {{h/2}}px;
             margin: {{h/4}}px 0px;
-            @apply --horizontal;
             overflow: visible !important;
             padding: 0 !important;
+            @apply --horizontal;
         }
 
         :host:before,
@@ -216,7 +216,7 @@ ODA({is: 'oda-hexagon',
           :host(.drag-hover)>div {
               filter: brightness(.6) !important;
           }
-          :host(:hover)>.container:after{
+          :host(:hover)>.container>label{
                 transform: scale(1.5) !important;
                 top: {{size}}px !important;
           }
@@ -227,7 +227,7 @@ ODA({is: 'oda-hexagon',
                 transform: scale(1.5);
                 transition: top .5s, transform  .5s;
           }
-          :host([label])>.container:after{
+          :host([label])>.container>label{
             white-space: normal;
             overflow: hidden;
             transform: scale(1);
@@ -248,7 +248,9 @@ ODA({is: 'oda-hexagon',
         </style>
         <div class="flex vertical container" style="overflow: visible; align-items: center; align-self: center;">
             <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
+            <label>{{label}}</label>
         </div>
+        
 
       `,
     get allowDrop(){

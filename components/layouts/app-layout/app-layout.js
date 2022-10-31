@@ -58,7 +58,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             <slot name="right-panel"></slot>
         </app-layout-drawer>
     </div>
-    <slot name="footer" class="vertical no-flex" style="overflow: visible;"></slot>
+    <slot name="footer" class="horizontal no-flex" style="overflow: visible; flex-direction: row-reverse;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],
@@ -79,7 +79,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             set(n) {
                 if (n) {
                     if (!this._hideOnScroll)
-                        this.listen('wheel', '_scroll', { target: window, useCapture: true });
+                        this.listen('wheel', '_scroll', { target: window, useCapture: true, passive: true });
                     this._hideOnScroll = true;
                 }
             }
@@ -325,12 +325,7 @@ ODA({is: 'app-layout-toolbar',
     <slot name="left" class="horizontal no-flex" style="justify-content: flex-start;"></slot>
     <slot name="center" class="horizontal flex" style="justify-content: center;"></slot>
     <slot name="right" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
-    props: {
-        iconSize: {
-            default: 24,
-            shared: true
-        },
-    }
+    iconSize: 24,
 });
 
 ODA({is: 'app-layout-drawer',

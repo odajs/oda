@@ -83,7 +83,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     <div class="title-bar horizontal" invert @mouseenter="_in" @mouseleave="_out">
         <oda-icon ~if="title && icon" :icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" ref="titleBar" name="title-bar"></slot>
-        <div ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></div>
+        <label ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></label>
         <div class="flex"></div>
         <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
         <div ~if="modal && !hideMinMax" class="horizontal no-flex">
@@ -130,7 +130,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         },
         hideMinMode: {
             type: Boolean,
-            default: null,
+            default: false,
             reflectToAttribute: true
         },
         allowClose: {

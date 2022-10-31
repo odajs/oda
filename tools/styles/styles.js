@@ -238,6 +238,7 @@ body[context-menu-show] *:not(oda-context-menu){
     --error-color: red;
     --error-background: yellow;
     --info-color: blueviolet;
+    --info-background: lightyellow;
     --warning-color: orange;
     --disabled-color: silver;
     --invert:{
@@ -301,11 +302,12 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--info-color) !important;
         fill: var(--info-color) !important;
         border-color: var(--info-color) !important;
+        background-color: var(--info-background) !important;
     };
     --info-invert: {
         background-color: var(--info-color) !important;
-        fill: white !important;
-        color: white !important;
+        fill: var(--info-background) !important;
+        color: var(--info-background) !important;
     };
 
     --warning: {

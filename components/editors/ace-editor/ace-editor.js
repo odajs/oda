@@ -24,13 +24,16 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
                 width: inherit !important;
                 min-height: 100%;
             }
-            .ace_hidden-cursors { opacity: 0; }
+            .ace_hidden-cursors { 
+                opacity: {{showCursor ? 1 : 0}};
+            }
         </style>
         <div @keydown.stop></div>
     `,
     isChanged: false,
     text: '',
     props: {
+        showCursor: false,
         readOnly: {
             type: Boolean,
             default: false,

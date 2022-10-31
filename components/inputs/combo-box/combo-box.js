@@ -23,7 +23,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             margin-left: auto;
         }
     </style>
-    <input class="flex" type="text" @input="onInput" :value="text" :placeholder>
+    <input class="flex" type="text" @input="onInput" :value="text" :readonly="readOnly || (allowClear && !!value)" :placeholder>
     <oda-button id="combo-btn" class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
     `,
     get params() {
@@ -41,6 +41,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             }
         }
     },
+
     get input() {
         return this.$('input');
     },
@@ -69,11 +70,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this.input?.select(0, 1000);
         })
     },
+    placeholder: '',
     props: {
+        readOnly: false,
         allowClear: false,
         fadein: false,
         template: 'oda-combo-list',
-        placeholder: '',
         iconSize: 24,
         icon: 'icons:chevron-right:90',
         hideButton: {
@@ -85,7 +87,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     useParentWidth: true,
     createDropDownControl() {
-        return this.createElement(this.template, this.props);
+        return this.createElement(this.template);
     },
     set dropDownControl(n) {
         n?.setAttribute('tabIndex', 1);

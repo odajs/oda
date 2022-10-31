@@ -39,7 +39,9 @@ if (!window.ODA) {
     const pointerDownListen = (win = window) => {
         try { //cross-origin
             win.addEventListener('pointerdown', (e) => {
-                if (win !== top) top.dispatchEvent(new PointerEvent("pointerdown", e));
+                if (win !== top)
+                    top.dispatchEvent(new PointerEvent("pointerdown", e));
+
             })
             // ToDo: not works dropdown (without parent) in modal:
             win.addEventListener('pointerdown', (e) => {
@@ -85,7 +87,7 @@ if (!window.ODA) {
                 ext = ext.trim();
                 if (ext === 'this')
                     return ext;
-                let parent = ODA.telemetry.components[ext] || (await ODA.tryReg(ext));
+                let parent = ODA.telemetry.components[ext] || (await ODA.tryReg(ext, context));
                 if (!parent)
                     throw new Error(`Not found inherit parent "${ext}"`);
                 return parent;
@@ -413,7 +415,7 @@ if (!window.ODA) {
             notify(block, value) {
                 if (block?.options.target === this) {
                     const prop = block.prop;
-                    if (prop){
+                    if (prop && this.__events?.has(prop.attrName + '-changed')){
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
@@ -482,10 +484,10 @@ if (!window.ODA) {
                     callback = this.$core.events[callback] ??= this[callback].bind(this);
                 }
                 event.split(',').forEach(i => {
-                    props.target.addEventListener(i.trim(), callback, props.useCapture);
+                    props.target.addEventListener(i.trim(), callback, props);
                     if (props.once) {
                         const once = () => {
-                            props.target.removeEventListener(i.trim(), callback, props.useCapture)
+                            props.target.removeEventListener(i.trim(), callback, props)
                             props.target.removeEventListener(i.trim(), once)
                         }
                         props.target.addEventListener(i.trim(), once)
@@ -499,7 +501,7 @@ if (!window.ODA) {
                         callback = this.$core.events[callback];
                     if (callback) {
                         event.split(',').forEach(i => {
-                            props.target.removeEventListener(i.trim(), callback, props.useCapture)
+                            props.target.removeEventListener(i.trim(), callback, props)
                         });
                     }
                 }
@@ -1567,7 +1569,6 @@ if (!window.ODA) {
             const forFunc = (item, index)=>{
                 return { child, params: [...p, item, index, items, index] }
             }
-            // console.log('forDirective', this, expr, items.length, renderCounter);
             return items.map(forFunc);
         };
         h.src = child;
@@ -1621,7 +1622,7 @@ if (!window.ODA) {
                 const event = (ev) => {
                     src.listeners[e].call(this, ev);
                 }
-                $el.addEventListener(e, event);
+                $el.addEventListener(e, event, {passive: ['wheel'].some(i=>i === e)});
             }
         }
         $el.$node = src;
@@ -1728,7 +1729,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    await Promise.all(list);
+                    /*await*/ Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1853,14 +1854,13 @@ if (!window.ODA) {
         host.insertBefore($el, target);
     }
 
-    let renderQueue = [], rid = 0, renderCounter = 0
+    let renderQueue = [], rid = 0
     ODA.render = function (renderer) {
         renderQueue.add(renderer);
         if(rid) return
         rid = requestAnimationFrame(raf);
     }
     async function raf() {
-        renderCounter = rid;
         while (renderQueue.length){
             await renderQueue.shift()?.();
         }
@@ -2270,14 +2270,16 @@ if (!window.ODA) {
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 window.document.body.style.visibility = 'hidden';
-                import('./tools/tester/tester.js').then(async () => {
+                await import('./tools/tester/tester.js');
+                // .then(async () => {
                     await ODA.tryReg('oda-tester');
-                });
+                // });
             }
-            window.document.body.style.visibility = 'visible';
+
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
         }
         ODA.init();
+        window.document.body.style.visibility = 'visible';
     });
     ODA.init = ()=>{
         for (let tag in ODA.deferred){
@@ -2378,7 +2380,7 @@ if (!window.ODA) {
         };
         Node.prototype.render = function () {
             if (!this.$wake && (this.$sleep || !this.$node)) return;
-            updateDom.call(this.domHost, this.$node, this, renderCounter, this.parentNode, this.$for, renderCount);
+            updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount);
         };
     }
     Element:{
@@ -2431,7 +2433,7 @@ if (!window.ODA) {
                         event = new odaEventTrack(this, handler, ...args);
                         break;
                     default:
-                        // console.log('event', this, name, handler)
+                        // console.log('event', name)
                         event = func.call(this, name, handler, ...args);
                         break;
                 }
@@ -2495,8 +2497,8 @@ if (!window.ODA) {
         return import(url);
     }
     Qarantine:{
-        ODA.createComponent = ODA.createElement = (id, props = {}) => {
-            ODA.tryReg(id);
+        ODA.createComponent = ODA.createElement = (id, props = {}, context) => {
+            ODA.tryReg(id, context);
             let el = document.createElement(id);
             el.assignProps(props);
             return el;
