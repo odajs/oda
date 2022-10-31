@@ -358,9 +358,7 @@ if (!window.ODA) {
                     Object.defineProperty(this, key, desc);
                 }
             }
-            get rootHost(){
-                return this.domHost?.rootHost || (this.parentElement?.$core?this.parentElement.rootHost:this.domHost || this);
-            }
+
             static get observedAttributes() {
                 if (!prototype.$system.observedAttributes) {
                     prototype.$system.observedAttributes = Object.keys(prototype.props).map(key => prototype.props[key].attrName);
@@ -441,19 +439,17 @@ if (!window.ODA) {
                     })
                 }
             }
-            set $needUpdate(n) {
-                this['#$needUpdate'] = n;
-                if (this.domHost)
-                    this.domHost.$needUpdate = n
-            }
-            get $needUpdate(){
-                return this['#$needUpdate'];
+            get rootHost(){
+                this.__need_update = true;
+                const root = this.parentElement?.rootHost || this.domHost?.rootHost || this
+                return root;
             }
             render() {
                 if (!this.$core.shadowRoot) return;
-                this.$needUpdate = undefined;
-                ODA.render((this.rootHost || this).$core?.renderer);
+
+                ODA.render(this.rootHost.$core?.renderer);
                 callHook.call(this, 'onRender');
+
                 if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
                     this.debounce('first-show', ()=>{
                         if (this.$wake){
@@ -470,6 +466,7 @@ if (!window.ODA) {
                         }
                     }, 500)
                 }
+
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1787,14 +1784,21 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
+                if ($el.__need_update === false)
+                    return;
+                $el.__need_update = false;
                 updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc);
+
             }
             else if ($el.localName === 'slot') {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
-                    if (el.$core && !el.$sleep) {
-                        updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc);
-                    }
+                    if (!el.$core || el.$sleep)
+                        continue;
+                    if (el.__need_update === false)
+                        continue;
+                    el.__need_update = false;
+                    updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc);
                 }
             }
         }
