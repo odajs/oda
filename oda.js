@@ -191,12 +191,6 @@ if (!window.ODA) {
                     if (!!entry.target.$sleep !== entry.isIntersecting) continue;
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
-                        // if (entry.target.localName in ODA.deferred){
-                        //     ODA.tryReg(entry.target.localName)?.then(res=>{
-                        //         entry.target.domHost?.render();
-                        //     })
-                        // }
-                        // else
                             entry.target.domHost?.render();
                     }
                 }
@@ -441,7 +435,7 @@ if (!window.ODA) {
             }
             get rootHost(){
                 this.__need_update = true;
-                const root = this.parentElement?.rootHost || this.domHost?.rootHost || this
+                const root = this.parentElement?.rootHost || this.domHost?.rootHost || this;
                 return root;
             }
             render() {
@@ -1726,7 +1720,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    /*await*/ Promise.all(list);
+                    await Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1734,7 +1728,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    /*await */updateDom.call(this, h, el, $el, pars, rc);
+                    await updateDom.call(this, h, el, $el, pars, rc);
                     idx++;
                 }
             }

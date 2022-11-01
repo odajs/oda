@@ -267,8 +267,12 @@
         listeners:{
             resize(e){
                 e.stopPropagation()
-                this.width = this.item.width = this.offsetWidth;
-                this.height = this.item.height = this.offsetHeight;
+                this.width = this.offsetWidth;
+                this.height = this.offsetHeight;
+                if(this.item){
+                    this.item.width = this.width;
+                    this.item.height = this.height;
+                }
             },
             track (e){
                 if (e.detail.state !== 'track') return;
