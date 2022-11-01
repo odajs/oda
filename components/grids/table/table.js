@@ -153,7 +153,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <oda-table-header :_scroll-left ~if="showHeader"></oda-table-header>
+    <oda-table-header :columns="headerColumns" :_scroll-left ~if="showHeader"></oda-table-header>
     <oda-table-body></oda-table-body>
     
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
@@ -177,7 +177,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         </div>
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
-    <oda-table-footer :_scroll-left ~show="showFooter"></oda-table-footer:_scroll-left>
+    <oda-table-footer :columns="rowColumns" :_scroll-left ~show="showFooter" class="dark"></oda-table-footer>
     `,
     get _bodyHeight() {
         return this.lazy
@@ -1494,39 +1494,77 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
     },
 });
 
-ODA({is:'oda-table-header',
+ODA({is: 'oda-table-cols',
     template:  `
         <style>
             :host{
-                @apply --header;
-                margin-bottom: 2px;
                 @apply --horizontal;
+                @apply --header;
+                margin: 1px 0px;
                 @apply --shadow;
             }
         </style>
         <div :scroll-left="_scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
-            <oda-table-header-cell ~for="col in headerColumns" ~is="col.header || defaultHeader" :item="col"  :column="col" class="flex" style="position: sticky;" ~style="{zIndex: (col.left !== undefined  || col.left !== undefined)?1:0, right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'0px':col.left+'px'}"></oda-table-header-cell>
+            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"  :column="col" class="flex" style="position: sticky;" ~style="{zIndex: (col.left !== undefined  || col.left !== undefined)?1:0, right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'0px':col.left+'px'}"></div>
             <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
         </div>        
     `,
+    getItem(col){
+        return col;
+    },
+    getTemplate(col){
+        return 'div'
+    },
     _scrollLeft: 0,
-    h: 0,
+    scr: 0,
+    columns: [],
+})
+
+ODA({is:'oda-table-header', extends: 'oda-table-cols',
+    getTemplate(col){
+        return col.header || this.defaultHeader
+    },
+    _scrollLeft: 0,
     scr: 0
 })
-ODA({is:'oda-table-footer',
-    template:  `
+ODA({is:'oda-table-footer', extends: 'oda-table-cols',
+    getItem(col){
+        return this.footer;
+    },
+    getTemplate(col){
+        return col.footer || this.defaultFooter
+    }
+})
+
+
+ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
+    template: /*html*/`
         <style>
-            :host{
-                @apply --dark;
-                margin-top: 2px;
+            .split {
+                border-right: 1px solid var(--dark-color, white);
+                height: 100%;
+            }
+            span{
+                padding: 4px;
+            }
+            :host {
+                box-sizing: border-box;
+                border-color: white !important;
+                min-width: {{column.width}}px;
+                max-width: {{column.width}}px;
+                @apply --flex;
                 @apply --horizontal;
-                @apply --shadow;
+                justify-content: flex-end;
+                @apply --dark;
+                text-align: right;
+                font-size: smaller;
+                flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
+                
             }
         </style>
-        <oda-table-footer-cell ~for="col in rowColumns" ~is="col.footer || defaultFooter" :item="footer" :column="col" class="flex" ~style="{right: col.right?(col.right+'px'):'auto'}"></oda-table-footer-cell>
-        <div class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+        <div class="split"></div>
     `
-})
+});
 
 cells: {
     ODA({is: 'oda-table-cell-base', template: /*html*/`
@@ -2034,32 +2072,4 @@ cells: {
         }
     });
 
-    ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
-        template: /*html*/`
-        <style>
-            .split {
-                border-right: 1px solid var(--dark-color, white);
-                height: 100%;
-            }
-            span{
-                padding: 4px;
-            }
-            :host {
-                box-sizing: border-box;
-                border-color: white !important;
-                min-width: {{column.width}}px;
-                max-width: {{column.width}}px;
-                @apply --flex;
-                @apply --horizontal;
-                justify-content: flex-end;
-                @apply --dark;
-                text-align: right;
-                font-size: smaller;
-                flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
-                
-            }
-        </style>
-        <div class="split"></div>
-    `
-    });
 }

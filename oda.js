@@ -2341,7 +2341,7 @@ if (!window.ODA) {
                         try{
                             if (!(name === 'src' && this.localName === 'iframe' && typeof(v) === 'string'
                                     && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                                if (this[name] != v){
+                                if (this[name] !== v){
                                     this[name] = v;
                                     if (this.__events?.has(name+'-changed'))
                                         this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
