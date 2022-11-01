@@ -1806,7 +1806,6 @@ if (!window.ODA) {
 
         if (!$el.slot || $el.slotProxy || $el.slot === '?' || this.slot === '?' || $el.parentElement?.slot)
             return;
-        // console.warn('SLOT', this.$$id, $el.$$id)
         this.$core.slotted.add($el);
         this.$core.intersect.unobserve($el);
         const el = $el.slotProxy || createElement.call(this, src, '#comment');
