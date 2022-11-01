@@ -1778,8 +1778,8 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                if ($el.__need_update === false)
-                    return;
+                // if ($el.__need_update === false)
+                //     return;
                 $el.__need_update = false;
                 updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc);
 
@@ -1789,8 +1789,8 @@ if (!window.ODA) {
                 for (let el of elements) {
                     if (!el.$core || el.$sleep)
                         continue;
-                    if (el.__need_update === false)
-                        continue;
+                    // if (el.__need_update === false)
+                    //     continue;
                     el.__need_update = false;
                     updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc);
                 }
