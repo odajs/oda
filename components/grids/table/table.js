@@ -153,7 +153,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <oda-table-header ~if="showHeader"></oda-table-header>
+    <oda-table-header :_scroll-left ~if="showHeader"></oda-table-header>
     <oda-table-body></oda-table-body>
     
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
@@ -177,7 +177,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         </div>
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
-    <oda-table-footer ~show="showFooter"></oda-table-footer>
+    <oda-table-footer :_scroll-left ~show="showFooter"></oda-table-footer:_scroll-left>
     `,
     get _bodyHeight() {
         return this.lazy
@@ -775,7 +775,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
     _getRowStyle(row) {
-        const style = row?.$group ? { /*width: this.$refs.body?.offsetWidth - this._scrollbarWidth + 'px',*/ position: 'sticky', left: '0px' } : { /*width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px')*/ };
+        const style = row?.$group ? { position: 'sticky', left: '0px' } : { /*width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px')*/ };
         style.minHeight = this.rowHeight + 'px';
         if (!this.autoRowHeight)
             style.maxHeight = this.rowHeight + 'px';
@@ -963,24 +963,19 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return this.checkedRows;
     },
     _scroll(e) {
+        const body = this.$refs.body;
+        this._scrollLeft = body.scrollLeft;
         this.interval('_scroll', ()=>{
-            const body = this.$refs.body;
             const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
             const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
-            const scrollbarWidth = body.offsetWidth - body.clientWidth;
             const h = scrollTop / this.rowHeight;
-            this.headerHeight = Math.floor(h) - h;
-            if (this.$refs?.header)
-                this.$refs.header.scrollLeft = this._scrollLeft = body.scrollLeft;
-
+            this.headerHeight = Math.ceil(Math.floor(h) - h);
             if (scrollWidth && height) {
                 this._scrollTop = scrollTop;
                 this._scrollWidth = body.scrollWidth;
                 this._height = body.offsetHeight;
-                this._scrollbarWidth = scrollbarWidth
             }
-        //     console.log('scroll')
         })
     },
     _focus(e, d) {
@@ -1509,9 +1504,13 @@ ODA({is:'oda-table-header',
                 @apply --shadow;
             }
         </style>
-        <oda-table-header-cell ~for="col in headerColumns" ~is="col.header || defaultHeader" :item="col" :column="col" class="flex" ~style="{right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'':col.left+'px'}"></oda-table-header-cell>
-        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+        <div :scroll-left="_scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
+            <oda-table-header-cell ~for="col in headerColumns" ~is="col.header || defaultHeader" :item="col"  :column="col" class="flex" style="position: sticky;" ~style="{zIndex: (col.left !== undefined  || col.left !== undefined)?1:0, right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'0px':col.left+'px'}"></oda-table-header-cell>
+            <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+        </div>        
     `,
+    _scrollLeft: 0,
+    h: 0,
     scr: 0
 })
 ODA({is:'oda-table-footer',
@@ -1743,9 +1742,9 @@ cells: {
         template: /*html*/`
         <style>
             :host {
-
                 box-sizing: border-box;
                 position: sticky;
+                min-height: {{rowHeight}}px;
                 min-width: {{column.width}}px;
                 max-width: {{column.width}}px;
                 font-weight: bold;
@@ -1866,6 +1865,7 @@ cells: {
         listeners:{
             contextmenu: '_menu',
             resize(e) {
+                if (!this.column || this.column.$expanded) return;
                 e.stopPropagation();
                 this.column.width = Math.round(this.getBoundingClientRect().width);
             }
@@ -2045,7 +2045,6 @@ cells: {
                 padding: 4px;
             }
             :host {
-                
                 box-sizing: border-box;
                 border-color: white !important;
                 min-width: {{column.width}}px;
