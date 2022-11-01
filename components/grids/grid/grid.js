@@ -201,7 +201,9 @@ ODA({is:'oda-grid', imports: '@oda/icon, @oda/button, @tools/containers, @oda/sp
             part.$('oda-grid-body').scrollTop = n;
         }
     },
-    rowsScrollTop: 0,
+    get rowsScrollTop(){
+        return 0;
+    },
     sorts: [],
 })
 ODA({is: 'oda-grid-part',
@@ -496,12 +498,7 @@ header:{
         listeners:{
             resize(e) {
                 e.stopPropagation();
-                // if (!this.column?.$expanded) return;
                 const width = Math.round(this.getBoundingClientRect().width);
-                // if (!width) return;
-                // this.columns?.forEach(col => {
-                //     col.$width = col.$width || width / this.columns.length;
-                // })
                 this.column.$width = this.column.$width || width;
             }
         },

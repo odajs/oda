@@ -49,10 +49,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             @apply --header;
             border-right: none !important;
         }
-        .foot {
-            box-sizing: border-box;
-            @apply --header;
-        }
         .row[focused]::after {
             content: '';
             background-color: var(--focused-color);
@@ -151,18 +147,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             @apply --content;
             @apply --horizontal;
         }
-        oda-table-footer {
-            border-color: white !important;
-        }
         .header {
             overflow: hidden;
         }
     </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <div  ref="header" :scroll-left="_scrollLeft" class="no-flex row header" ~if="showHeader" style="border-bottom: 1px solid var(--dark-background); overflow-y: scroll;">
-        <div class="cell head" ~for="col in headerColumns"  :fix="col.fix" ~is="col.header || defaultHeader" :item="col" :column="col"  ~class="['col-'+col.id]" :save-key="col.name ? $$savePath + col.name : ''"></div>
-    </div>
+    <oda-table-header ~if="showHeader"></oda-table-header>
+    <oda-table-body></oda-table-body>
+    
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
@@ -184,9 +177,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         </div>
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
-    <div ref="footer" :scroll-left="_scrollLeft" class="no-flex horizontal header" ~show="showFooter" style="overflow-y: scroll;">
-        <div ~is="footer && (footer[col[columnId]+'.footer'] || footer.footer || col.footer || defaultFooter)" class="foot"  :item="footer" ~for="(col, c) in rowColumns"  :fix="col.fix"  is-footer :column="col" ~class="['col-'+col.id]" ></div>
-    </div>
+    <oda-table-footer ~show="showFooter"></oda-table-footer>
     `,
     get _bodyHeight() {
         return this.lazy
@@ -253,9 +244,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                 // this._scrollTop = 0;
             }
         },
-        defaultFooter: 'oda-table-footer',
+        defaultFooter: 'oda-table-footer-cell',
         defaultGroupTemplate: 'oda-table-cell-group',
-        defaultHeader: 'oda-table-header',
+        defaultHeader: 'oda-table-header-cell',
         defaultTemplate: 'oda-table-cell',
         defaultTreeTemplate: 'oda-table-cell-tree',
         evenOdd: {
@@ -403,7 +394,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         });
         const cols = this.columns.filter(i => !i.hidden);
         if (!this.autoWidth)
-            cols.push({ index: 999, template: 'div' });
+            cols.push({ index: 999, template: 'div', header: 'div', footer: 'div' });
         if (this.allowCheck !== 'none' && !this.columns.some(i => i.treeMode)) {
             cols.push({ width: 32, index: -999, template: 'oda-table-check', header: 'div', fix: 'left' });
         }
@@ -512,9 +503,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return Math.round(this.iconSize * 4 / 3);
     },
     get rows() {
-        // if (this.customRows) {
-        //     return [...this.dataSet];
-        // }
         if (!this.items?.length) {
             return [];
         }
@@ -527,7 +515,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             while (rows[0].$parent && this.items.includes(rows[0].$parent)) {
                 raised.push(rows[0].$parent);
                 rows.unshift(rows[0].$parent);
-                // if (rows.last !== this.items.last)
                 if (rows.length > this.screen.length)
                     rows.pop();
             }
@@ -539,10 +526,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     settingsId: '',
     sorts: [], // порядок вставки сюда имеет значение!
     get _sortsByFlag() {
-        // return this.rowColumns.reduce((res, col) => {
-        //     if (col?.$sort) res.push(col);
-        //     return res;
-        // }, []);
         return this._getSortsByFlag(this.columns, []);
     },
     get _styles() {
@@ -982,10 +965,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _scroll(e) {
         this.interval('_scroll', ()=>{
             const body = this.$refs.body;
-            const scrollTop = Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
+            const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
             const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
             const scrollbarWidth = body.offsetWidth - body.clientWidth;
+            const h = scrollTop / this.rowHeight;
+            this.headerHeight = Math.floor(h) - h;
             if (this.$refs?.header)
                 this.$refs.header.scrollLeft = this._scrollLeft = body.scrollLeft;
 
@@ -1514,6 +1499,36 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
     },
 });
 
+ODA({is:'oda-table-header',
+    template:  `
+        <style>
+            :host{
+                @apply --header;
+                margin-bottom: 2px;
+                @apply --horizontal;
+                @apply --shadow;
+            }
+        </style>
+        <oda-table-header-cell ~for="col in headerColumns" ~is="col.header || defaultHeader" :item="col" :column="col" class="flex" ~style="{right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'':col.left+'px'}"></oda-table-header-cell>
+        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+    `,
+    scr: 0
+})
+ODA({is:'oda-table-footer',
+    template:  `
+        <style>
+            :host{
+                @apply --dark;
+                margin-top: 2px;
+                @apply --horizontal;
+                @apply --shadow;
+            }
+        </style>
+        <oda-table-footer-cell ~for="col in rowColumns" ~is="col.footer || defaultFooter" :item="footer" :column="col" class="flex" ~style="{right: col.right?(col.right+'px'):'auto'}"></oda-table-footer-cell>
+        <div class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+    `
+})
+
 cells: {
     ODA({is: 'oda-table-cell-base', template: /*html*/`
         <style>
@@ -1724,15 +1739,20 @@ cells: {
     });
 
     const MHW = 24; //min header width
-    ODA({is: 'oda-table-header', imports: '@oda/button', extends: 'oda-table-cell-base',
+    ODA({is: 'oda-table-header-cell', imports: '@oda/button', extends: 'oda-table-cell-base',
         template: /*html*/`
         <style>
             :host {
+
+                box-sizing: border-box;
+                position: sticky;
+                min-width: {{column.width}}px;
+                max-width: {{column.width}}px;
                 font-weight: bold;
                 font-size: small;
-                @apply --header;
                 @apply --flex;
                 @apply --horizontal;
+                @apply --header;
                 cursor: pointer;
                 justify-content: space-around;
                 overflow: hidden;
@@ -1741,7 +1761,7 @@ cells: {
             }
             .split {
                 cursor: col-resize;
-                border-right: 1px solid var(--border-color, silver);
+                border-right: 1px solid var(--dark-background, black);
                 transition: border-color .5s;
             }
             .split:hover {
@@ -1770,7 +1790,7 @@ cells: {
             div {
                 overflow: hidden;
             }
-            oda-table-header {
+            .header-cell {
                 box-sizing: border-box;
                 /*border: 1px solid red;*/
             }
@@ -1778,7 +1798,7 @@ cells: {
                 border-top: 1px solid var(--dark-background);
                 box-sizing: border-box;
             }
-            .sub-cols > oda-table-header :not(:nth-child(1)) {
+            .sub-cols > .header-cell :not(:nth-child(1)) {
                 border-left: 1px solid var(--dark-background);
                 box-sizing: border-box;
             }
@@ -1793,9 +1813,6 @@ cells: {
                 @apply --shadow;
                 padding: 2px;
             }
-            /*:host .filter-input {*/
-            /*    border: none;*/
-            /*}*/
         </style>
         <div class="flex vertical" style="cursor: pointer" @tap.stop="_sort" :disabled="!column.name">
             <div class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight}">
@@ -1812,7 +1829,7 @@ cells: {
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="column.$expanded">
-                <oda-table-header ~for="col in column.items" :item="col" :column="col"  ~style="{width: col.width?col.width+'px':'auto' }" :save-key="col.name ? (column.name || column.id) + col.name : ''" ref="subColumn"></oda-table-header>
+                <oda-table-header-cell class="header-cell" ~for="col in column.items" :item="col" :column="col"  ref="subColumn"></oda-table-header-cell>
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
@@ -1846,13 +1863,12 @@ cells: {
                 return width;
             },
         },
-        // updated() {
-        //     if (this.table && this.table.set && this.column.$parent) {
-        //         this.table.set(this.column, 'width', Math.round(this.offsetWidth));
-        //     }
-        // },
-        listeners: {
-            contextmenu: '_menu'
+        listeners:{
+            contextmenu: '_menu',
+            resize(e) {
+                e.stopPropagation();
+                this.column.width = Math.round(this.getBoundingClientRect().width);
+            }
         },
         _dragstart(e) {
             this.table._draggableColumn = this.column;
@@ -2018,20 +2034,33 @@ cells: {
         }
     });
 
-    ODA({is: 'oda-table-footer', extends: 'oda-table-cell',
+    ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
         template: /*html*/`
         <style>
+            .split {
+                border-right: 1px solid var(--dark-color, white);
+                height: 100%;
+            }
+            span{
+                padding: 4px;
+            }
             :host {
+                
+                box-sizing: border-box;
+                border-color: white !important;
+                min-width: {{column.width}}px;
+                max-width: {{column.width}}px;
                 @apply --flex;
                 @apply --horizontal;
                 justify-content: flex-end;
-                padding: 4px;
                 @apply --dark;
                 text-align: right;
                 font-size: smaller;
+                flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
+                
             }
         </style>
-        <span class="no-flex header" style="height: 100%; width: 1px; margin-left: 4px;"></span>
+        <div class="split"></div>
     `
     });
 }
