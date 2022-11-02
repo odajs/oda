@@ -75,24 +75,23 @@ ODA({is: 'oda-icon',
     },
     get _obj() {
         if (this.icon) {
-            const obj = icons[this.icon];
-            if (obj === undefined) {
-                getIcon.call(this, this.icon).then(res => {
-                    return (this._obj = icons[this.icon] || res);
+            const obj = icons[this.icon] ??= getIcon.call(this, this.icon)
+            if (obj?.then) {
+                obj.then(res => {
+                    return (this._obj = icons[this.icon] = res);
                 }).catch(e => {
                     console.log(e)
                 })
-                return null;
             }
             return obj;
         }
     },
     get _def() {
         if (this.default) {
-            const obj = icons[this.default];
-            if (obj === undefined) {
-                getIcon.call(this, this.default).then(res => {
-                    return (this._def = icons[this.default] || res);
+            let obj = icons[this.default] ??= getIcon.call(this, this.default);
+            if (obj?.then) {
+                obj.then(res => {
+                    return (this._def = icons[this.default] = res);
                 }).catch(e => {
                     console.log(e)
                 })
@@ -164,7 +163,7 @@ async function getIcon(n) {
     const key = n;
     let obj = icons[key];
     if (!obj) {
-        obj = Object.create(null);
+        icons[key] = obj = Object.create(null);
         if (/:[0-9]+$/.test(n)) {
             let s = n.match(/:[0-9]+$/)[0];
             n = n.replace(s, '');
@@ -205,7 +204,7 @@ async function getIcon(n) {
                     this.icon = this.default;
             }
         }
-        icons[key] = obj;
+
     }
     return obj;
 }

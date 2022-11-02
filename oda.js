@@ -1654,10 +1654,10 @@ if (!window.ODA) {
         if (rc !== renderCount){
             return;
         }
-        if (Date.now() - time > 50 ){
-            render.call(this);
-            return;
-        }
+        // if (Date.now() - time > 50 ){
+        //     render.call(this);
+        //     return;
+        // }
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
