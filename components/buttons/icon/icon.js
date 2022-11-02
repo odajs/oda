@@ -81,6 +81,7 @@ ODA({is: 'oda-icon',
                     return (this._obj = icons[this.icon] = res);
                 }).catch(e => {
                     console.log(e)
+                    icons[this.icon] = EMPTY_ICON;
                 })
             }
             return obj;
@@ -94,6 +95,7 @@ ODA({is: 'oda-icon',
                     return (this._def = icons[this.default] = res);
                 }).catch(e => {
                     console.log(e)
+                    icons[this.icon] = EMPTY_ICON;
                 })
             }
             return obj;
@@ -144,6 +146,7 @@ ODA({is: 'oda-icon',
         return this._icon?.size || 0;
     },
 });
+const EMPTY_ICON = Object.create(null)
 async function loadIcons(name) {
     let content = libs[name];
     if (!content) {

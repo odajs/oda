@@ -1768,9 +1768,13 @@ if (!window.ODA) {
         if (src.dirs)
             for (let h of src.dirs)
                 h.call(this, $el, src.fn[h.name], pars);
-        if (src.bind)
-            for (let i in src.bind) {
-                const b = src.bind[i].call(this, pars, $el);
+        if (src.bind){
+            const binds = Object.keys(src.bind).map(key=>{
+                const val= src.bind[key].call(this, pars, $el);
+                return {key, val};
+            })
+            binds.forEach(bind=>{
+                let i = bind.key;
                 const listener = src.listeners[i.toKebabCase() + '-changed'];
                 if (i.includes('.') && listener) {
                     const pathToObj = i.slice(0, i.lastIndexOf('.'));
@@ -1781,19 +1785,46 @@ if (!window.ODA) {
                     if (bottUpdates > topUpdates && $el.fire) {
                         this.setProperty(listener.expr, obj[propName]);
                     } else {
-                        $el.setProperty(i, b);
+                        $el.setProperty(i, bind.val);
                     }
                 } else {
-                    if (b === undefined && listener && $el.fire) {
+                    if (bind.val === undefined && listener && $el.fire) {
                         requestAnimationFrame(() => {
                             $el.fire(i + '-changed');
                         });
                     } else  {
-                        $el.setProperty(i, b);
+                        $el.setProperty(i, bind.val);
                     }
                 }
+            })
 
-            }
+            // for (let i in src.bind) {
+            //     const b = src.bind[i].call(this, pars, $el);
+            //     const listener = src.listeners[i.toKebabCase() + '-changed'];
+            //     if (i.includes('.') && listener) {
+            //         const pathToObj = i.slice(0, i.lastIndexOf('.'));
+            //         const propName = i.slice(i.lastIndexOf('.') + 1);
+            //         const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
+            //         const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+            //         const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+            //         if (bottUpdates > topUpdates && $el.fire) {
+            //             this.setProperty(listener.expr, obj[propName]);
+            //         } else {
+            //             $el.setProperty(i, b);
+            //         }
+            //     } else {
+            //         if (b === undefined && listener && $el.fire) {
+            //             requestAnimationFrame(() => {
+            //                 $el.fire(i + '-changed');
+            //             });
+            //         } else  {
+            //             $el.setProperty(i, b);
+            //         }
+            //     }
+            //
+            // }
+        }
+
 
         this.$core.prototype.$system.observers?.forEach(name => {
             return this[name];
