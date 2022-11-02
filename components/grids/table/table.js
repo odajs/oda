@@ -1847,8 +1847,12 @@ cells: {
                 right: 0px;
             }
             :host .filter-container {
-                @apply --shadow;
+                /*@apply --shadow;*/
+                @apply --horizontal
                 padding: 2px;
+                align-items: center;
+                max-height: {{iconSize * .7}}px;
+                min-height: {{iconSize * .7}}px;
             }
         </style>
         <div class="flex vertical" style="cursor: pointer" @tap.stop="_sort" :disabled="!column.name">
@@ -1862,7 +1866,7 @@ cells: {
             </div>
             <div class="flex info horizontal filter-container" ~if="!column.$expanded && column.name && showFilter" style="align-items: center" @tap.stop>
                 <input class="flex filter-input" ::value="filter" @tap.stop>
-                <oda-button ~if="!filter" :icon-size="Math.round(iconSize * .3)+2" @tap.stop="showDD" icon="icons:filter" style="align-self: baseline;" title="filter"></oda-button>
+                <oda-button ~if="!filter" :icon-size="Math.round(iconSize * .3)+2" @tap.stop="showDD" icon="icons:filter" title="filter"></oda-button>
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="column.$expanded">

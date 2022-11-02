@@ -43,8 +43,12 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             this.controls[0].setAttribute('tabindex', 0);
             this.controls[0].setAttribute('autofocus', true);
             this.controls?.[0]?.focus();
+
         }
         this.setSize();
+        this.async(()=>{
+            this.controls?.[0]?.render();
+        },1000)
     },
     controls: undefined,
     props: {

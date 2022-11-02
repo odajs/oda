@@ -435,8 +435,9 @@ if (!window.ODA) {
             }
             get rootHost(){
                 this.__need_update = true;
-                const root = this.domHost?.rootHost || this.parentElement?.rootHost || this;
-                return root;
+                const r1 = this.domHost?.rootHost;
+                const r2 = this.parentElement?.rootHost;
+                return r2 || r1 || this;
             }
             render() {
                 if (!this.$core.shadowRoot) return;
@@ -1622,13 +1623,17 @@ if (!window.ODA) {
     }
 
     let renderQueue = [];
+    let rafid = 0;
     ODA.render = async function (renderer) {
         if (renderQueue.includes(renderer)) return;
         renderQueue.push(renderer);
-        requestAnimationFrame(async ()=>{
+        if (rafid) return;
+        rafid = requestAnimationFrame(async ()=>{
+            console.log("RR", renderQueue.length)
             while (renderQueue.length){
                 await renderQueue.shift()?.();
             }
+            rafid = 0;
         })
     }
 
