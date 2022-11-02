@@ -46,9 +46,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
 
         }
         this.setSize();
-        this.async(()=>{
-            this.controls?.[0]?.render();
-        },1000)
+
     },
     controls: undefined,
     props: {
@@ -186,7 +184,6 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     get control() {
         const ctrl = this.controls?.[0];
         ctrl?.addEventListener('resize', e => {
-            // console.log('resize')
             this.setSize();
         })
         return ctrl;
@@ -196,6 +193,9 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.async(() => {
             if (!this.control) return;
             this.contentRect = this.control?.getBoundingClientRect();
+            this.async(() => {
+                this.control.render();
+            }, 30)
         })
     }
 })

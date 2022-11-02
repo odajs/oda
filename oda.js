@@ -1535,20 +1535,7 @@ if (!window.ODA) {
         src.el.removeAttribute(attrName);
         const child = parseJSX(prototype, src.el, src.vars);
         const fn = createFunc(src.vars.join(','), expr, prototype);
-        const h = async function (p = []) {
-            let items = exec.call(this, fn, p);
-            if (items instanceof Promise){
-                items = await items;
-                // console.log('items instanceof Promise', items)
-            }
-            else if (typeof items === 'string')
-                items = items.split('');
-            else if (isObject(items) && !Array.isArray(items)){
-                const forFunc = (key, index)=>{
-                    return {child, params: [...p, items[key], index, items, key]}
-                }
-                return Object.keys(items).map(forFunc);
-            }
+        function createForArray(items, p){
             if (!Array.isArray(items)) {
                 items = +items || 0;
                 if (items < 0)
@@ -1562,10 +1549,29 @@ if (!window.ODA) {
                 return { child, params: [...p, item, index, items, index] }
             }
             return items.map(forFunc);
+        }
+        const h = function (p = []) {
+            let items = exec.call(this, fn, p);
+            if (items?.then){
+                return items.then(res=>{
+                    return createForArray(res, p)
+                })
+            }
+            else if (typeof items === 'string')
+                items = items.split('');
+            else if (isObject(items) && !Array.isArray(items)){
+                const forFunc = (key, index)=>{
+                    return {child, params: [...p, items[key], index, items, key]}
+                }
+                return Object.keys(items).map(forFunc);
+            }
+            return createForArray(items, p);
+
         };
         h.src = child;
         return h;
     }
+
     const  _createElement = document.createElement;
     document.createElement = function (tag, ...args){
         ODA.tryReg(tag.toLowerCase());
@@ -1629,7 +1635,6 @@ if (!window.ODA) {
         renderQueue.push(renderer);
         if (rafid) return;
         rafid = requestAnimationFrame(async ()=>{
-            console.log("RR", renderQueue.length)
             while (renderQueue.length){
                 await renderQueue.shift()?.();
             }
@@ -1649,10 +1654,10 @@ if (!window.ODA) {
         if (rc !== renderCount){
             return;
         }
-        // if (Date.now() - time > 50 ){
-        //     render.call(this);
-        //     return;
-        // }
+        if (Date.now() - time > 50 ){
+            render.call(this);
+            return;
+        }
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
@@ -1703,7 +1708,8 @@ if (!window.ODA) {
                 let h = src.children[i];
                 if (typeof h === "function") {
                     let items = h.call(this, pars);
-                    items = await items;
+                    if (items.then)
+                        items = await items;
                     $el.__for ??= {};
                     const old_size = $el.__for[h.src.id] || 0;
                     // const children = $el.childNodes;
