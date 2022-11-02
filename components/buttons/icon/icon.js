@@ -199,12 +199,10 @@ async function getIcon(n) {
                 });
             }
             catch (err) {
-                console.warn(err);
                 if (this.default !== this.icon)
                     this.icon = this.default;
             }
         }
-
     }
     return obj;
 }
