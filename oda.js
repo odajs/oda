@@ -1620,15 +1620,34 @@ if (!window.ODA) {
         $el.domHost = this;
         return $el;
     }
+
+    let renderQueue = [];
+    ODA.render = async function (renderer) {
+        if (renderQueue.includes(renderer)) return;
+        renderQueue.push(renderer);
+        requestAnimationFrame(async ()=>{
+            while (renderQueue.length){
+                await renderQueue.shift()?.();
+            }
+        })
+    }
+
+    let time = Date.now();
     let renderCount = 0;
     async function render() {
         renderCount++;
+        time = Date.now();
         await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
+
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
         if (rc !== renderCount){
             return;
         }
+        // if (Date.now() - time > 50 ){
+        //     render.call(this);
+        //     return;
+        // }
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
@@ -1678,7 +1697,8 @@ if (!window.ODA) {
             for (let i = 0, l = src.children.length; i < l; i++) {
                 let h = src.children[i];
                 if (typeof h === "function") {
-                    const items = await h.call(this, pars)
+                    let items = h.call(this, pars);
+                    items = await items;
                     $el.__for ??= {};
                     const old_size = $el.__for[h.src.id] || 0;
                     // const children = $el.childNodes;
@@ -1719,7 +1739,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    /*await*/ Promise.all(list);
+                    Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1727,7 +1747,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    /*await*/ updateDom.call(this, h, el, $el, pars, rc, all);
+                    updateDom.call(this, h, el, $el, pars, rc, all);
                     idx++;
                 }
             }
@@ -1852,18 +1872,8 @@ if (!window.ODA) {
         host.insertBefore($el, target);
     }
 
-    let renderQueue = [], rid = 0
-    ODA.render = function (renderer) {
-        renderQueue.add(renderer);
-        if(rid) return
-        rid = requestAnimationFrame(raf);
-    }
-    async function raf() {
-        while (renderQueue.length){
-            await renderQueue.shift()?.();
-        }
-        rid = 0;
-    }
+
+
     function parseModifiers(name) {
         if (!name) return;
         const match = name.match(modifierRE);

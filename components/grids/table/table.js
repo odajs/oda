@@ -142,7 +142,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             @apply --dark;
         }
         .row {
-            position: relative;
+            position: sticky;
+            left: 0px; 
+            /*position: relative;*/
             /*width: fit-content;*/
             @apply --content;
             @apply --horizontal;
@@ -151,16 +153,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             overflow: hidden;
         }
     </style>
+    <style>
+        .row{
+            min-height: {{rowHeight}}px;
+            max-height: {{autoRowHeight?'':rowHeight+'px'}};
+        }
+    </style>
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <oda-table-header :columns="headerColumns" :_scroll-left ~if="showHeader"></oda-table-header>
+    <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
     <oda-table-body></oda-table-body>
     
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
-        <div ref="rows-scroll-container" class="no-flex vertical body" style="overflow: visible; position:sticky; " ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
+        <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
-                <div :draggable="_getDraggable(row)" ~for="(row, r) in rows"
-                    ~style="_getRowStyle(row)" :row="row" :role="row.$role"
+                <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role"
                     ~class="['row', row.$group?'group-row':'']"
                     :drop-mode="row.$dropMode"
                     :last-raised="raisedRows[0] === row?(items?.indexOf(rows[r + 1]) - r - 1) + '↑' : false"
@@ -177,11 +184,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         </div>
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
-    <oda-table-footer :columns="rowColumns" :_scroll-left ~show="showFooter" class="dark"></oda-table-footer>
+    <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
     get _bodyHeight() {
         return this.lazy
-            ? (this.size + this.raisedRows.length /*+ 3*/) * this.rowHeight
+            ? (this.size + this.raisedRows.length) * this.rowHeight
             : 0;
     },
     get screenFrom() {
@@ -270,12 +277,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             default: 'none',
             list: ['none', 'first', 'auto', 'all']
         },
-        groups: {
-            default: [],
-            set(n, o) {
-                if (o?.length) o.forEach(col => delete col.$groups);
-            }
-        },
+
         headerHeight: 0,
         hideRoot: false,
         hideTop: false,
@@ -328,7 +330,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _scrollTop: 0,
     _scrollWidth: 0,
     _selectedAll: false,
-    _scrollLeft: 0,
+    leftScroll: 0,
     checkedRows: [],
     draggedRows: [],
     get filters() {
@@ -367,7 +369,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         });
         return obj;
     },
-    // groups: [],
+    groups: [],
+
+    // set groups(n, o){
+    //     if (o?.length) o.forEach(col => delete col.$groups);
+    // },
     get headerColumns() {
         this.columns.forEach((col, i) => {
             if (col[this.columnId]) {
@@ -774,13 +780,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _getDraggable(row) {
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
-    _getRowStyle(row) {
-        const style = row?.$group ? { position: 'sticky', left: '0px' } : { /*width: this.autoWidth ? 'auto' : (this._scrollWidth + 'px')*/ };
-        style.minHeight = this.rowHeight + 'px';
-        if (!this.autoRowHeight)
-            style.maxHeight = this.rowHeight + 'px';
-        return style;
-    },
+    // _getRowStyle(row) {
+    //     const style = row?.$group ? { position: 'sticky', left: '0px' } : {};
+    //     if (!this.autoRowHeight)
+    //         style.maxHeight = this.rowHeight + 'px';
+    //     return style;
+    // },
     expand(row, force, old) {
         const items = this._beforeExpand(row, force);
         if (items?.then) {
@@ -964,7 +969,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     _scroll(e) {
         const body = this.$refs.body;
-        this._scrollLeft = body.scrollLeft;
+        this.leftScroll = body.scrollLeft;
         this.interval('_scroll', ()=>{
             const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
@@ -1420,12 +1425,9 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
             value: false,
         }
     },
-    // listeners: {
-    //     mousedown: '_leave'
-    // },
     attached() {
         this.listen('mousedown', '_leave', { target: window });
-        this.listen('dragend', '_onDragEnd', { target: window });
+        // this.listen('dragend', '_onDragEnd', { target: window });
     },
     _tap(e) {
         this.opened = !this.opened;
@@ -1439,7 +1441,7 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
     },
     detached() {
         this.unlisten('mousedown', '_leave', { target: window });
-        this.unlisten('dragend', '_onDragEnd', { target: window });
+        // this.unlisten('dragend', '_onDragEnd', { target: window });
     }
 });
 
@@ -1504,7 +1506,7 @@ ODA({is: 'oda-table-cols',
                 @apply --shadow;
             }
         </style>
-        <div :scroll-left="_scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
+        <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
             <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"  :column="col" class="flex" style="position: sticky;" ~style="{zIndex: (col.left !== undefined  || col.left !== undefined)?1:0, right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'0px':col.left+'px'}"></div>
             <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
         </div>        
@@ -1515,7 +1517,6 @@ ODA({is: 'oda-table-cols',
     getTemplate(col){
         return 'div'
     },
-    _scrollLeft: 0,
     scr: 0,
     columns: [],
 })
@@ -1524,7 +1525,6 @@ ODA({is:'oda-table-header', extends: 'oda-table-cols',
     getTemplate(col){
         return col.header || this.defaultHeader
     },
-    _scrollLeft: 0,
     scr: 0
 })
 ODA({is:'oda-table-footer', extends: 'oda-table-cols',
