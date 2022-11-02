@@ -435,12 +435,12 @@ if (!window.ODA) {
             }
             get rootHost(){
                 this.__need_update = true;
-                const root = this.parentElement?.rootHost || this.domHost?.rootHost || this;
+                const root = this.domHost?.rootHost || this.parentElement?.rootHost || this;
                 return root;
             }
             render() {
                 if (!this.$core.shadowRoot) return;
-
+                this.__all = true;
                 ODA.render(this.rootHost.$core?.renderer);
                 callHook.call(this, 'onRender');
 
@@ -1625,9 +1625,8 @@ if (!window.ODA) {
         renderCount++;
         await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
     }
-    async function updateDom(src, $el, $parent, pars, rc) {
+    async function updateDom(src, $el, $parent, pars, rc, all = false) {
         if (rc !== renderCount){
-            // console.log('cancel update', rc, renderCount)
             return;
         }
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
@@ -1693,7 +1692,7 @@ if (!window.ODA) {
                                 if (elem){
                                     const ff = elem?.$for;
                                     if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
-                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
+                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
                                         break;
                                     }
                                     else{
@@ -1702,14 +1701,14 @@ if (!window.ODA) {
                                     }
                                 }
                                 else{
-                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
+                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
                                     break;
                                 }
                             }
                         }
                         else{
                             elem = $el.childNodes[idx + j];
-                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc));
+                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
                         }
 
                     }
@@ -1720,7 +1719,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    await Promise.all(list);
+                    /*await*/ Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1728,7 +1727,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars, rc);
+                    /*await*/ updateDom.call(this, h, el, $el, pars, rc, all);
                     idx++;
                 }
             }
@@ -1778,10 +1777,11 @@ if (!window.ODA) {
 
         if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                // if ($el.__need_update === false)
-                //     return;
+                if (!all && $el.__need_update === false)
+                    return;
                 $el.__need_update = false;
-                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc);
+                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc, all || $el.__all);
+                $el.__all = undefined;
 
             }
             else if ($el.localName === 'slot') {
@@ -1789,10 +1789,11 @@ if (!window.ODA) {
                 for (let el of elements) {
                     if (!el.$core || el.$sleep)
                         continue;
-                    // if (el.__need_update === false)
-                    //     continue;
+                    if (!all && el.__need_update === false)
+                        continue;
                     el.__need_update = false;
-                    updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc);
+                    updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc, all || el.__all);
+                    el.__all = undefined;
                 }
             }
         }
@@ -2316,16 +2317,12 @@ if (!window.ODA) {
                             this[name] = v;
                     }
                     catch (e){
-                       // console.log(e)
                     }
-
-                    // if(!(name in this.__proto__)) return;
                 }
                 else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
                     if (this[name] != v)
                         this[name] = v;
                     return;
-                        // if(!(name in this.__proto__)) return;
                 }
             }
             // понаблюдать 👀
@@ -2341,7 +2338,7 @@ if (!window.ODA) {
                         try{
                             if (!(name === 'src' && this.localName === 'iframe' && typeof(v) === 'string'
                                     && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                                if (this[name] !== v){
+                                if (this[name] != v){
                                     this[name] = v;
                                     if (this.__events?.has(name+'-changed'))
                                         this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
@@ -2377,7 +2374,7 @@ if (!window.ODA) {
         };
         Node.prototype.render = function () {
             if (!this.$wake && (this.$sleep || !this.$node)) return;
-            updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount);
+            updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount, true);
         };
     }
     Element:{
