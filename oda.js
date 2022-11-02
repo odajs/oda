@@ -1642,22 +1642,15 @@ if (!window.ODA) {
         })
     }
 
-    let time = Date.now();
     let renderCount = 0;
     async function render() {
         renderCount++;
-        time = Date.now();
         await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
 
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
-        if (rc !== renderCount){
+        if (rc !== renderCount)
             return;
-        }
-        // if (Date.now() - time > 50 ){
-        //     render.call(this);
-        //     return;
-        // }
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
