@@ -172,7 +172,7 @@ if (!window.ODA) {
     }
     function ComponentFactory(prototype, proto = HTMLElement) {
         function callHook(hook, ...args) {
-            this.fire(hook, ...args);
+            // this.fire(hook, ...args);
             try {
                 prototype[hook]?.call(this, ...args);
             } catch (err) {
@@ -194,7 +194,7 @@ if (!window.ODA) {
                             entry.target.domHost?.render();
                     }
                 }
-            }, { rootMargin: '20%' }),
+            }, { rootMargin: '10%' }),
             resize: new ResizeObserver(entries => {
                 for (const obs of entries) {
                     if (obs.target.__events?.has('resize'))
@@ -316,7 +316,7 @@ if (!window.ODA) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                this.fire('attached');
+                // this.fire('attached');
                 this.render();
                 this.async(()=>{
                     callHook.call(this, 'attached');
