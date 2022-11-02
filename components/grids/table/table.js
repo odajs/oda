@@ -164,7 +164,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
     <oda-table-body></oda-table-body>
     
-    <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
+    <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role"
@@ -188,7 +188,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     `,
     get _bodyHeight() {
         return this.lazy
-            ? (this.size + this.raisedRows.length) * this.rowHeight
+            ? (this.size + this.raisedRows.length + 1) * this.rowHeight
             : 0;
     },
     get screenFrom() {
@@ -626,7 +626,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             }
         },
         arrowDown(e) {
-            // e.preventDefault();
             e.stopPropagation();
             const rows = this.rows;
             const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
@@ -642,7 +641,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             }
         },
         arrowRight(e) {
-            // e.preventDefault();
             e.stopPropagation();
             const rows = this.rows;
             const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
@@ -702,12 +700,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             }
         }
     },
-
-    // _bodyTouchmove(e) { // для остановки обработки в app-layout
-    //     const b = this.$refs.body;
-    //     if (b && b.scrollLeft && (b.scrollLeft + b.clientWidth < b.scrollWidth))
-    //         e.$executed = true;
-    // },
     _getSortsByFlag(cols, res) { // возвращает в т.ч. скрытые колонки
         return cols.reduce((acc, col) => {
             if (col.$expanded && col.items?.length)
@@ -780,12 +772,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _getDraggable(row) {
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
-    // _getRowStyle(row) {
-    //     const style = row?.$group ? { position: 'sticky', left: '0px' } : {};
-    //     if (!this.autoRowHeight)
-    //         style.maxHeight = this.rowHeight + 'px';
-    //     return style;
-    // },
     expand(row, force, old) {
         const items = this._beforeExpand(row, force);
         if (items?.then) {
@@ -975,7 +961,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             const scrollWidth = body.scrollWidth;
             const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
             const h = scrollTop / this.rowHeight;
-            this.headerHeight = Math.ceil(Math.floor(h) - h);
+            if (body.scrollTop + body.offsetHeight === body.scrollHeight)
+                this.headerHeight = Math.ceil(Math.floor(h) - h);
+            else
+                this.headerHeight = 0;
             if (scrollWidth && height) {
                 this._scrollTop = scrollTop;
                 this._scrollWidth = body.scrollWidth;
