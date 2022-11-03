@@ -29,6 +29,7 @@ ODA({is: 'oda-numeric-input',
                 text-overflow: ellipsis;
                 border: none;
                 @apply --flex;
+                padding: 2px;
             }
         </style>
         <input tabindex="0" @focus="_focus" @blur="_focus" type="text" :value="valueText" @keydown="onKeyDown"  :error :title="valueText"  @input="onInput" @scroll="onScroll" @mouseup="setPos()">
