@@ -176,8 +176,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     :focused="allowFocus && isFocusedRow(row)"
                     :highlighted="allowHighlight && isHighlightedRow(row)"
                     :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                    <div  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id]">
-                        <div class="flex" ~class="[row.$group ? 'group' : '']" ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)" :column="col" class="cell-content" :item="row" :tabindex="_getTabIndex(col, row, c, r)"></div>
+                    <div :tabindex="_getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id]">
+                        <div class="flex" ~class="[row.$group ? 'group' : '']" ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)" :column="col" class="cell-content" :item="row" ></div>
                     </div>
                 </div>
             </div>
