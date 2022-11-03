@@ -19,6 +19,7 @@ function getIconFolder(template) {
     obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`;
     obj.search = [obj.name, obj.label, ...[...content.children].map(c => ` ${c.name || ''} ${c.label || ''}`)].join(' ');
     obj.items = Array.prototype.map.call(content.children, g => getIconItem(g, obj.name));
+    obj.disabled = true;
     return obj;
 }
 async function loadIcons(items) {
@@ -147,7 +148,10 @@ ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
 
     listeners: {
         tap(e) {
-            if (this.item.$hasChildren) e.stopPropagation();
+            if (this.item.$hasChildren) {
+                e.stopPropagation()
+                this.item.$expanded = !this.item.$expanded;
+            }
         }
     },
     _copyToClipboard() {

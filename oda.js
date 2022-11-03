@@ -2582,7 +2582,7 @@ if (!window.ODA) {
                 icon: '/web/res/icons/error.png'
             })
         };
-        ODA.showFileDialog = (accept = '*', multiple) => {
+        ODA.showFileDialog = ({ accept = '*', multiple }) => {
             return new Promise(resolve=>{
                 const fialog = document.createElement('input');
                 fialog.setAttribute('type', 'file');
