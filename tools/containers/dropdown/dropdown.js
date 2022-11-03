@@ -8,6 +8,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             :host {
                 pointer-events: none;
                 z-index: 1000;
+                height: 100%;
 
             }
             :host([fadein]){
@@ -25,13 +26,13 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             }
         </style>
         <div class="vertical shadow content" ~style="_style">
-            <div @resize="setSize" class="vertical flex" style="overflow: hidden">
+            <div @resize="setSize" class="vertical flex" style="overflow: hidden; height: 100%;">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
                 </oda-title>
-                <div class="flex vertical" style="overflow: auto;">
+                <div class="no-flex vertical" style="overflow: visible; height: 100%;">
                     <slot @slotchange="onSlot"></slot>
                 </div>
             </div>
@@ -84,8 +85,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         let winHeight = window.innerHeight;
         let top = this.align === 'modal' ? winHeight / 2 - height / 2 : rect.top;
         let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
-        // if (!height || !width)
-        //     return { top: top + 'px', left: left + 'px' };
+        if (!height || !width)
+            return { top: top + 'px', left: left + 'px' };
         height = height + (this.title ? 34 : 0)
         let maxHeight = winHeight;
         let maxWidth = winWidth;
@@ -187,6 +188,6 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             if (!this.control) return;
             this['#_style'] = undefined;
             this.contentRect = this.control?.getBoundingClientRect();
-        },100)
+        })
     }
 })
