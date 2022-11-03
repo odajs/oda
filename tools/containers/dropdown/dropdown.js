@@ -48,21 +48,15 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.setSize();
 
     },
-    controls: undefined,
+    set controls(n){
+        for (let i of (n || []))
+            i.render();
+    },
+    parent: undefined,
     props: {
         fadein: {
             default: false,
             reflectToAttribute: true
-        },
-        parent: {
-            type: [HTMLElement, Object],
-            set(n) {
-                if (n) {
-                    n.addEventListener('resize', () => {
-                        this.setSize();
-                    })
-                }
-            }
         },
         intersect: false,
         cascade: false,
@@ -79,7 +73,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
-        if (!this.isConnected)
+        if (!this.control || !this.isConnected)
             return {};
         const rect = new ODARect(this.parent);
         // this.contentRect = this.control?.getBoundingClientRect()
@@ -189,13 +183,10 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         return ctrl;
     },
     setSize(e) {
-        this['#_style'] = undefined;
         this.async(() => {
             if (!this.control) return;
+            this['#_style'] = undefined;
             this.contentRect = this.control?.getBoundingClientRect();
-            this.async(() => {
-                this.control.render();
-            }, 30)
-        })
+        },100)
     }
 })

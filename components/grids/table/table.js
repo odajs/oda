@@ -2,6 +2,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     template: /*html*/`
     <style>
         :host {
+            height: 100%;
             @apply --flex;
             @apply --vertical;
             overflow: hidden;
@@ -166,7 +167,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     <style ~text="_styles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body></oda-table-body>
+<!--    <oda-table-body></oda-table-body>-->
     
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
@@ -192,7 +193,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     `,
     get _bodyHeight() {
         return this.lazy
-            ? (this.size + this.raisedRows.length) * this.rowHeight
+            ? (this.size + this.raisedRows?.length) * this.rowHeight
             : 0;
     },
     get screenFrom() {
