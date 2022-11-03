@@ -122,6 +122,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         .cell[fix] {
             @apply --header;
         }
+        .cell:focus{
+            outline: 2px dotted black !important;
+            outline-offset: -1px !important;
+        }
         .group {
             position: sticky;
             position: -webkit-sticky;
