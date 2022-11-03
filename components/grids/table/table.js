@@ -170,7 +170,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     
     <div ref="body" tabindex="0" class="flex vertical" ~style="{overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
-            <div  ref="rows-container" class="sticky" is-data  ~style="{top: headerHeight + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
+            <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role"
                     ~class="['row', row.$group?'group-row':'']"
                     :drop-mode="row.$dropMode"
@@ -192,14 +192,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     `,
     get _bodyHeight() {
         return this.lazy
-            ? (this.size + this.raisedRows.length + 1) * this.rowHeight
+            ? (this.size + this.raisedRows.length) * this.rowHeight
             : 0;
     },
     get screenFrom() {
         return Math.round(this._scrollTop / this.rowHeight);
     },
     get screenLength() {
-        return Math.round(this._height / this.rowHeight) || 1;
+        return (Math.round(this._height / this.rowHeight) || 0)+1;
     },
     screenExpanded: [],
     get screen() {
@@ -216,6 +216,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return { from: this.screenFrom, length: this.screenLength, post };
     },
     columns: [],
+    firstTop: 0,
     props: {
         allowCheck: {
             default: 'none',
@@ -282,7 +283,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             list: ['none', 'first', 'auto', 'all']
         },
 
-        headerHeight: 0,
+
         hideRoot: false,
         hideTop: false,
         icon: 'odant:grid',
@@ -960,21 +961,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     _scroll(e) {
         const body = this.$refs.body;
         this.leftScroll = body.scrollLeft;
-        this.interval('_scroll', ()=>{
+        // this.interval('_scroll', ()=>{
             const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
             const scrollWidth = body.scrollWidth;
-            const height = body.offsetHeight;// - this.headerHeight - this.footerHeight;
+            const height = body.offsetHeight;
             const h = scrollTop / this.rowHeight;
-            if (body.scrollTop + body.offsetHeight === body.scrollHeight)
-                this.headerHeight = Math.ceil(Math.floor(h) - h);
+            if (body.scrollTop + body.offsetHeight + this.rowHeight < body.scrollHeight)
+                this.firstTop = Math.ceil(Math.floor(h) - h);
             else
-                this.headerHeight = 0;
+                this.firstTop = 0;
             if (scrollWidth && height) {
                 this._scrollTop = scrollTop;
                 this._scrollWidth = body.scrollWidth;
                 this._height = body.offsetHeight;
             }
-        })
+        // })
     },
     _focus(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
