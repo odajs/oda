@@ -1574,7 +1574,7 @@ if (!window.ODA) {
 
     const  _createElement = document.createElement;
     document.createElement = function (tag, ...args){
-        ODA.tryReg(tag.toLowerCase());
+        ODA.tryReg(tag);
         return _createElement.call(this, tag, ...args);
     }
     function createElement(src, tag, old) {
@@ -1588,7 +1588,7 @@ if (!window.ODA) {
             if (src.svg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
             else {
-                $el = ODA.createElement(tag, undefined, this.context);
+                $el = ODA.createElement.call(this, tag, undefined, this.context);
             }
             switch (tag){
                 case 'STYLE':{
@@ -1943,6 +1943,7 @@ if (!window.ODA) {
     ODA.tryReg = function (tagName, context) {
         if(!tagName?.includes('-'))
             return;
+        tagName = tagName.toLowerCase();
         const def = ODA.deferred[tagName];
         if (def)
             return def.reg(context);
@@ -2539,10 +2540,11 @@ if (!window.ODA) {
         return import(url);
     }
     Qarantine:{
-        ODA.createComponent = ODA.createElement = (id, props = {}, context) => {
+        ODA.createComponent = ODA.createElement = (id, props , context) => {
             ODA.tryReg(id, context);
             let el = document.createElement(id);
-            el.assignProps(props);
+            if(props)
+                el.assignProps(props);
             return el;
         }
         ODA.loadComponent = async (comp, props = {}, folder = 'components') => {
