@@ -277,10 +277,10 @@ if (!window.ODA) {
                 }
             }
             connectedCallback() {
-                if (!this.domHost/* && this.parentElement !== document.body*/){
-                    this.$wake = true;
-                    this.style.setProperty?.('visibility', 'hidden');
-                }
+                // if (!this.domHost/* && this.parentElement !== document.body*/){
+                //     this.$wake = true;
+                //     this.style.setProperty?.('visibility', 'hidden');
+                // }
                 const parentElement =  this.domHost || this.parentNode
                 if (parentElement?.$core) {
                     if (!parentElement.$core.$pdp){
@@ -445,22 +445,22 @@ if (!window.ODA) {
                 ODA.render(this.rootHost.$core?.renderer);
                 callHook.call(this, 'onRender');
 
-                if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
-                    this.debounce('first-show', ()=>{
-                        if (this.$wake){
-                            this.$wake = false;
-                            this.style.removeProperty?.('visibility');
-                            callHook.call(this, 'onVisible');
-                        }
-                    }, 100)
-                    this.async(()=>{
-                        if (this.$wake){
-                            this.$wake = false;
-                            this.style.removeProperty?.('visibility');
-                            callHook.call(this, 'onVisible');
-                        }
-                    }, 500)
-                }
+                // if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
+                //     this.debounce('first-show', ()=>{
+                //         if (this.$wake){
+                //             this.$wake = false;
+                //             this.style.removeProperty?.('visibility');
+                //             callHook.call(this, 'onVisible');
+                //         }
+                //     }, 100)
+                //     this.async(()=>{
+                //         if (this.$wake){
+                //             this.$wake = false;
+                //             this.style.removeProperty?.('visibility');
+                //             callHook.call(this, 'onVisible');
+                //         }
+                //     }, 500)
+                // }
 
             }
             resolveUrl(path) {
