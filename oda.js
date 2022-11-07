@@ -1588,7 +1588,7 @@ if (!window.ODA) {
             if (src.svg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
             else {
-                $el = document.createElement(tag);
+                $el = ODA.createElement(tag, undefined, this.context);
             }
             switch (tag){
                 case 'STYLE':{
