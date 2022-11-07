@@ -1500,6 +1500,7 @@ ODA({is: 'oda-table-cols',
                 @apply --header;
                 margin: 1px 0px;
                 @apply --shadow;
+                z-index: 1;
             }
         </style>
         <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
