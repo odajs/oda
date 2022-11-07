@@ -315,15 +315,24 @@ cells: {
             return this.item?.list;
         },
         async showDD(e) {
-            try {
-                const res = await ODA.showDropdown('oda-menu',
-                    { items: this.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i.value || i })), selectedItem: this.item.value },
-                    { useParentWidth: true, parent: e.target.domHost, fadein: true});
-                this.item.value = res.focusedItem.value;
-            }
-            catch (e) {
+            if (this.__dd_control){
+                this.__dd_control.fire('cancel');
+                delete this.__dd_control;
+                this.__dd_control = undefined;
+                return;
 
             }
+            else{
+                this.__dd_control = ODA.createElement('oda-menu', { items: this.list.map(i => ({ label: i?.label ?? i?.name ?? i, value: i.value || i })), selectedItem: this.item.value });
+                try {
+                    const res = await ODA.showDropdown(this.__dd_control, {}, { useParentWidth: true, parent: e.target.domHost, fadein: true});
+                    this.item.value = res.focusedItem.value;
+                }
+                catch (e) {
+
+                }
+            }
+
         },
         resetValue() {
             this.item.value = this.item.default;
