@@ -80,6 +80,7 @@ ODA({ is: 'oda-md-viewer', template: `
                         const replacement = (wholeMatch, match, left) => {
                             let lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
                             let html = lang && hljs.getLanguage(lang) ? hljs.highlight(lang, htmlDecode(match)).value : hljs.highlightAuto(htmlDecode(match)).value;
+                            let encode = htmlEncode(match);
                             if (editMode) return `
                                 <style>
                                     .hljs { @apply --layout; display: block; padding: 0; width: 100%}
@@ -103,7 +104,7 @@ ODA({ is: 'oda-md-viewer', template: `
                                 <pre class="hljs" style="display: flex; border: .5px solid lightgray; border-radius: 2px; min-height:32px; background: #FFE5; overflow: auto;">
                                     <code class="hljs" style="outline: 0px solid transparent; white-space: pre-wrap;">${html}</code>
                                 </pre>`;
-                            return `<oda-md-code code="${htmlEncode(match)}" lang="${lang}"></oda-md-code>`;
+                            return `<oda-md-code code="${encode}" lang="${lang}"></oda-md-code>`;
                         };
                         return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
                     }
