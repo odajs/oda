@@ -25,14 +25,14 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 max-height: 34px;
             }
         </style>
-        <div class="vertical shadow content" ~style="_style">
-            <div @resize="setSize" class="vertical flex" style="overflow: hidden; height: 100%;">
+        <div class="vertical shadow content" ~style="_style" >
+            <div @resize="setSize" class="vertical flex" style="overflow: hidden;">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
                 </oda-title>
-                <div class="no-flex vertical" style="overflow: visible; height: 100%;">
+                <div class="no-flex vertical" style="overflow: hidden;">
                     <slot @slotchange="onSlot"></slot>
                 </div>
             </div>
@@ -85,8 +85,8 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         let winHeight = window.innerHeight;
         let top = this.align === 'modal' ? winHeight / 2 - height / 2 : rect.top;
         let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
-        if (!height || !width)
-            return { top: top + 'px', left: left + 'px' };
+        // if (!height || !width)
+        //     return { top: top + 'px', left: left + 'px' };
         height = height + (this.title ? 34 : 0)
         let maxHeight = winHeight;
         let maxWidth = winWidth;

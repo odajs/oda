@@ -1633,7 +1633,9 @@ if (!window.ODA) {
     ODA.render = async function (renderer) {
         if (renderQueue.includes(renderer)) return;
         renderQueue.push(renderer);
-        if (rafid) return;
+        // if (rafid){
+        //     cancelAnimationFrame(rafid);
+        // }
         rafid = requestAnimationFrame(async ()=>{
             while (renderQueue.length){
                 await renderQueue.shift()?.();
@@ -1646,7 +1648,6 @@ if (!window.ODA) {
     async function render() {
         renderCount++;
         await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
-
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
         if (rc !== renderCount)
@@ -2332,8 +2333,9 @@ if (!window.ODA) {
         }
     }
     Node:{
+        const ob_types = ['function', 'object'];
         Node.prototype.setProperty = function (name, v) {
-            if (this.__lockBind === name) return;
+            // if (this.__lockBind === name) return;
             if (this.$core) {
                 if (name.includes('.')) {
                     let path = name.split('.');
@@ -2363,15 +2365,17 @@ if (!window.ODA) {
                     }
                     catch (e){
                     }
-                }
-                else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
-                    if (this[name] != v)
-                        this[name] = v;
                     return;
                 }
+
+                // else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
+                //     if (this[name] != v)
+                //         this[name] = v;
+                //     return;
+                // }
             }
             // понаблюдать 👀
-            if (['function', 'object'].includes(typeof v) || this.nodeType !== 1 || this.$node?.vars.includes(name)) {
+            if (ob_types.includes(typeof v) || this.nodeType !== 1) {
                 if (this[name] != v)
                     this[name] = v;
             }
@@ -2381,13 +2385,12 @@ if (!window.ODA) {
                 if (d){
                     if (d === true || (d.set && v !== undefined)) {
                         try{
-                            if (!(name === 'src' && this.localName === 'iframe' && typeof(v) === 'string'
-                                    && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                                if (this[name] != v){
+                            // if (!(name === 'src' && this.localName === 'iframe' && decodeURIComponent(this[name]) === decodeURIComponent(v)))
+                                if (this[name] != v)//{
                                     this[name] = v;
-                                    if (this.__events?.has(name+'-changed'))
-                                        this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
-                                }
+                                    // if (this.__events?.has(name+'-changed'))
+                                    //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
+                                // }
 
                             if (d !== true) //todo надо думать
                                 return;
