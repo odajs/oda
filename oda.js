@@ -1462,10 +1462,14 @@ if (!window.ODA) {
             $el.style.display = exec.call(this, fn, p) ? '' : 'none';
         },
         html($el, fn, p) {
-            $el.innerHTML = exec.call(this, fn, p) ?? '';
+            const html = exec.call(this, fn, p) ?? '';
+            if ($el.___innerHTML == html) return;
+            $el.innerHTML = $el.___innerHTML = html;
         },
         text($el, fn, p) {
-            $el.textContent = exec.call(this, fn, p) ?? '';
+            const text =  exec.call(this, fn, p) ?? '';
+            if ($el.___textContent == text) return;
+            $el.textContent = $el.___textContent = text;
         },
         class($el, fn, p) {
             let s = exec.call(this, fn, p) ?? '';
