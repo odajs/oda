@@ -348,7 +348,7 @@ content: {
             </style>
             <div class="vertical flex" style="padding: 2px 2px;">
                 <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
-                <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode" show-border="none"></oda-jupyter>
+                <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode" show-border="none" style="padding: 0"></oda-jupyter>
             </div>
         `,
         props: {

@@ -19,14 +19,18 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 pointer-events: auto;
                 position: fixed;
                 overflow: hidden;
+                visibility: hidden;
             }
             oda-title {
                 min-height: 34px;
                 max-height: 34px;
             }
+            .visible{
+                visibility: visible !important;
+            }
         </style>
-        <div class="vertical shadow content" ~style="_style" >
-            <div @resize="setSize" class="vertical flex" style="overflow: hidden;">
+        <div @resize="setSize"  class="vertical shadow content" ~style="_style" ~class="{visible: isVisible}">
+            <div class="vertical flex" style="overflow: hidden;">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
                         <slot class="no-flex" name="dropdown-title"></slot>
@@ -183,11 +187,15 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         })
         return ctrl;
     },
+    isVisible: false,
     setSize(e) {
-        this.async(() => {
+        this.interval('i-setSize', ()=>{
             if (!this.control) return;
             this['#_style'] = undefined;
             this.contentRect = this.control?.getBoundingClientRect();
-        })
+            this.debounce('d-setSize', ()=>{
+                this.isVisible = true;
+            }, 50)
+        }, 50)
     }
 })
