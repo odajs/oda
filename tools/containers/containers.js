@@ -15,7 +15,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             if (hostProps?.parent?._isShow) return;
             await import(path + '/' + id + '/' + id + '.js');
             const host = await ODA.createComponent('oda-' + id, hostProps);
-            // host.style.visibility = 'hidden';
+
 
             let ctrl = component;
             if (typeof ctrl === 'string')
@@ -34,6 +34,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 }
             }
             ctrl.assignProps(props);
+            ctrl.style.visibility = 'hidden';
             hostProps?.parent && (hostProps.parent._isShow = true);
             host.isContainer = true;
             host.style.position = 'fixed';
@@ -42,9 +43,9 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             ctrl.containerHost = host;
             host.appendChild(ctrl);
             document.body.appendChild(host);
-            // setTimeout(()=>{
-            //     host.style.visibility = 'visible';
-            // }, 100)
+            setTimeout(()=>{
+                ctrl.style.visibility = 'visible';
+            }, 100)
 
             const resolveEvent = hostProps?.resolveEvent || 'ok'
             let onMouseDown, onKeyDown, onCancel, onOk;

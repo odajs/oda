@@ -9,6 +9,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 pointer-events: none;
                 z-index: 1000;
                 height: 100%;
+                visibility: {{isVisible?'visible':'hidden'}};
 
             }
             :host([fadein]){
@@ -19,17 +20,13 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 pointer-events: auto;
                 position: fixed;
                 overflow: hidden;
-                visibility: hidden;
             }
             oda-title {
                 min-height: 34px;
                 max-height: 34px;
             }
-            .visible{
-                visibility: visible !important;
-            }
         </style>
-        <div @resize="setSize"  class="vertical shadow content" ~style="_style" ~class="{visible: isVisible}">
+        <div @resize="setSize"  class="vertical raised content" ~style="_style">
             <div class="vertical flex" style="overflow: hidden;">
                 <oda-title ~if="title" allow-close :icon :title>
                     <div slot="title-left">
@@ -54,8 +51,10 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
 
     },
     set controls(n){
-        for (let i of (n || []))
+        for (let i of (n || [])){
+            i.style.opacity = 0
             i.render();
+        }
     },
     parent: undefined,
     props: {
@@ -78,6 +77,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     contentRect: null,
     get _style() {
+        this.isVisible = false;
         if (!this.control || !this.isConnected)
             return {};
         const rect = new ODARect(this.parent);
@@ -189,13 +189,18 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     isVisible: false,
     setSize(e) {
-        this.interval('i-setSize', ()=>{
-            if (!this.control) return;
-            this['#_style'] = undefined;
-            this.contentRect = this.control?.getBoundingClientRect();
-            this.debounce('d-setSize', ()=>{
-                this.isVisible = true;
-            }, 50)
-        }, 50)
+        this.isVisible = false;
+        if (!this.control) return;
+        if (!this.control) return;
+        this['#_style'] = undefined;
+        this.contentRect = this.control?.getBoundingClientRect();
+
+    },
+    onRender(){
+        this.debounce('d-setSize', ()=>{
+            this.isVisible = true;
+            this.control.style.opacity = 1;
+        }, 100)
+        console.log('render', this.isVisible)
     }
 })
