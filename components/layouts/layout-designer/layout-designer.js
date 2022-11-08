@@ -74,8 +74,8 @@ ODA({ is: 'oda-layout-designer-container',
             oda-icon{
                 cursor: pointer;
                 opacity: .5;
-                padding-top: 8px;
-                align-self: end;
+                /*padding-top: 8px;*/
+                /*align-self: end;*/
             }
         </style>
         <div class="horizontal flex" style="align-items: center;" >

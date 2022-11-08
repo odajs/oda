@@ -42,7 +42,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         <slot name="title" class="horizontal"></slot>
         <slot name="header" class="vertical no-flex"></slot>
     </div>
-    <div class="main-container content flex" ~class="{'stop-pointer-events': sizeMode === 'min'}" ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}">
+    <div class="main-container header flex" ~class="{'stop-pointer-events': sizeMode === 'min'}" ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}">
         <div class="main vertical flex shadow" @wheel="_scroll"  style="order:1" ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}">
             <slot name="top" class="vertical no-flex"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
