@@ -362,7 +362,7 @@ ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
             .tmp {}
         </style>
         <div ~if="(babyMode || mine?.status === 'opened') && this.game._start" class="horizontal floor">
-            <span class="flex" ~style="{color: colors[count]}">{{count}}</span>
+            <span class="flex" ~style="{color: colors[count]}">{{+count || ''}}</span>
         </div>
         <oda-icon ~if="mine?.status !== 'opened'" fill="red" :icon class="btn" @tap="onTap" @pointerdown="pointerdown" @pointerup="pointerup" :icon-size="cellSize*.6"></oda-icon >
     `,

@@ -1723,7 +1723,7 @@ if (!window.ODA) {
                                 if (elem){
                                     const ff = elem?.$for;
                                     if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
-                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
+                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
                                         break;
                                     }
                                     else{
@@ -1732,14 +1732,14 @@ if (!window.ODA) {
                                     }
                                 }
                                 else{
-                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
+                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
                                     break;
                                 }
                             }
                         }
                         else{
                             elem = $el.childNodes[idx + j];
-                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, all));
+                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
                         }
 
                     }
@@ -1758,7 +1758,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    updateDom.call(this, h, el, $el, pars, rc, all);
+                    updateDom.call(this, h, el, $el, pars, rc, this.__all || all);
                     idx++;
                 }
             }
