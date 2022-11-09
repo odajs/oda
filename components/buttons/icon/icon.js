@@ -75,32 +75,32 @@ ODA({is: 'oda-icon',
     },
     get _obj() {
         if (this.icon) {
-            const obj = icons[this.icon];
+            let obj = icons[this.icon];
             if (obj === undefined) {
                 getIcon.call(this, this.icon).then(res => {
                     return (this._obj = icons[this.icon] ??= res);
                 }).catch(e => {
                     console.log(e)
-                    return (this._obj = icons[this.icon] ??= null);
+                    return (this._obj = icons[this.icon] ??= {});
                 })
-                return null;
+                obj = {};
             }
-            return obj;
+            return this._obj = obj;
         }
     },
     get _def() {
         if (this.default) {
-            const obj = icons[this.default];
+            let obj = icons[this.default];
             if (obj === undefined) {
                 getIcon.call(this, this.default).then(res => {
                     return (this._def = icons[this.default] ??= res);
                 }).catch(e => {
                     console.log(e)
-                    return (this._def = icons[this.default] ??= null);
+                    return (this._def = icons[this.default] ??= {});
                 })
-                return null;
+                obj = {};
             }
-            return obj;
+            return this._def = obj;
         }
     },
     props: {
