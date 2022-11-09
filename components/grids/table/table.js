@@ -24,6 +24,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             white-space: nowrap;
             box-sizing: border-box;
             align-items: center;
+            padding: 0px 4px;
         }
         :host([auto-width]) .cell {
             @apply --flex;
@@ -37,10 +38,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             border-right: 1px solid var(--dark-background);
             box-sizing: border-box;
         }
-        /*:host([col-lines]) .cell[fix=right] {*/
-        /*    border-left: 2px solid var(--dark-background);*/
-        /*    box-sizing: border-box;*/
-        /*}*/
         .body{
             scroll-behavior: smooth;
         }
@@ -149,9 +146,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         .row {
             position: sticky;
             left: 0px; 
-            /*position: relative;*/
-            /*width: fit-content;*/
-            @apply --content;
             @apply --horizontal;
         }
         .header {
@@ -173,8 +167,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     <div ref="body" tabindex="0" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
-                <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role"
-                    ~class="['row', row.$group?'group-row':'']"
+                <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
+                    ~class="{'group-row':row.$group}"
                     :drop-mode="row.$dropMode"
                     :last-raised="raisedRows[0] === row?(items?.indexOf(rows[r + 1]) - r - 1) + '↑' : false"
                     :dragging="draggedRows.includes(row)"
@@ -183,7 +177,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     :highlighted="allowHighlight && isHighlightedRow(row)"
                     :selected="allowSelection !== 'none' && isSelectedRow(row)">
                     <div :tabindex="_getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id]">
-                        <div class="flex" ~class="[row.$group ? 'group' : '']" ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)" :column="col" class="cell-content" :item="row" ></div>
+                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)" :column="col" class="cell-content" :item="row" ></div>
                     </div>
                 </div>
             </div>
@@ -1632,8 +1626,7 @@ cells: {
             <style>
                 :host * {
                   --line-border: 1px solid silver;
-                    /*align-items: center;*/
-                    background-color: unset;
+                    background-color: {{color || 'unset'}};
                 }
                 :host:last-child .step {
                     height: 50%;
@@ -1658,7 +1651,7 @@ cells: {
             </div>
             <oda-table-expand class="no-flex" :item></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
-            <div  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'span'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
+            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'span'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
             columnId: '',
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
@@ -1687,7 +1680,8 @@ cells: {
             },
             get stepWidth() {
                 return this.treeStep ?? this.iconSize ?? 0;
-            }
+            },
+            color: undefined
         });
 
         ODA({is: 'oda-empty-tree-cell', imports: '@oda/icon', extends: 'oda-icon, oda-table-cell-base',

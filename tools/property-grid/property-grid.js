@@ -400,7 +400,6 @@ editors: {
         <style>
             :host {
                 @apply --disabled;
-                padding: 4px;
             }
         </style>
         {{text}}
@@ -419,11 +418,6 @@ editors: {
 
     ODA({is: 'oda-pg-mixed',
         template: /*html*/`
-        <style>
-            :host {
-                padding: 4px;
-            }
-        </style>
         <input :placeholder="'mixed: [' + item.value+']'" class="error flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" :readonly="item.ro === true"  @input="_input" @keydown.stop>
         `,
         _input(e) {
@@ -436,10 +430,8 @@ editors: {
         <style>
             :host > input {
                 font-size: medium;
-                padding: 0px;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                padding: 4px;
             }
             :host > input[readonly] {
                 @apply --dimmed;
