@@ -75,32 +75,32 @@ ODA({is: 'oda-icon',
     },
     get _obj() {
         if (this.icon) {
-            let obj = icons[this.icon];
-            if (obj === undefined) {
-                getIcon.call(this, this.icon).then(res => {
-                    return (this._obj = icons[this.icon] ??= res);
+            let obj = icons[this.icon] ??= getIcon.call(this, this.icon);
+            if (obj?.then) {
+                obj.then(res => {
+                    return (this._obj = res);
                 }).catch(e => {
                     console.log(e)
-                    return (this._obj = icons[this.icon] ??= {});
+                    return (this._obj = {});
                 })
-                obj = {};
+                obj = null;
             }
-            return this._obj = obj;
+            return obj;
         }
     },
     get _def() {
         if (this.default) {
-            let obj = icons[this.default];
-            if (obj === undefined) {
-                getIcon.call(this, this.default).then(res => {
-                    return (this._def = icons[this.default] ??= res);
+            let obj = icons[this.default] ??= getIcon.call(this, this.default);
+            if (obj?.then) {
+                obj.then(res => {
+                    return (this._def = res);
                 }).catch(e => {
                     console.log(e)
-                    return (this._def = icons[this.default] ??= {});
+                    return (this._def = {});
                 })
-                obj = {};
+                obj = null;
             }
-            return this._def = obj;
+            return obj;
         }
     },
     props: {
@@ -116,14 +116,7 @@ ODA({is: 'oda-icon',
         fill: '',
         blink: 0,
         subIcon: '',
-        // alwaysBubble: false
     },
-    // get _bubble() {
-    //     if (this.bubble > 1 || (this.alwaysBubble && this.bubble > 0)) {
-    //         if (this.bubble > 9) return '9+';
-    //         else return String(this.bubble);
-    //     } else return '-';
-    // },
     get _style() {
         const s = this.iconSize + 'px';
         const obj = { width: s, height: s, minHeight: s };
