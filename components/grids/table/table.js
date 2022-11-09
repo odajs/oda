@@ -24,7 +24,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
             white-space: nowrap;
             box-sizing: border-box;
             align-items: center;
-            padding: 0px 4px;
+            /*padding: 0px 4px;*/
         }
         :host([auto-width]) .cell {
             @apply --flex;
@@ -1624,9 +1624,11 @@ cells: {
         ODA({is: 'oda-table-cell-tree', extends: 'oda-table-cell-base',
             template: /*html*/`
             <style>
+                :host{
+                    background-color: {{color || 'unset'}} !important;
+                }
                 :host * {
                   --line-border: 1px solid silver;
-                    background-color: {{color || 'unset'}};
                 }
                 :host:last-child .step {
                     height: 50%;
