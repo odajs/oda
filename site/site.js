@@ -592,7 +592,8 @@ header: {
             mobile: false,
             items: Array,
             part: Object,
-            iconSize: 24
+            iconSize: 24,
+            lastHeaderItem: ''
         },
         getHeaderItemClass(item) {
             return { outline: this.left.focused?.title === item.label || this.left.lastFocused?.title === item.label }
@@ -640,33 +641,31 @@ header: {
         listeners: {
             tap: '_tap',
         },
+        _clearDropdown() {
+            const dd = document.body.getElementsByTagName('oda-dropdown');
+            for (let i = 0; i < dd.length; i++) {
+                const elm = dd[i];
+                elm.fire('cancel');
+            }
+            this.lastHeaderItem = '';
+        },
         async _showDropdown() {
-            const dd = document.body.getElementsByTagName('oda-dropdown')
-            if (dd.length && this.ddMenuIndex === this.index) return;
-            this.ddMenuIndex = this.index;
-            if (dd.length)
-                for (let i = 0; i < dd.length; i++) {
-                    const elm = dd[i];
-                    elm.fire('cancel');
-                }
-            this.async(() => {
-                const dd = document.body.getElementsByTagName('oda-dropdown');
-                if (dd.length)
-                    for (let i = 0; i < dd.length; i++) {
-                        const elm = dd[i];
-                        elm.addEventListener('pointerleave', () => {
-                            elm.fire('cancel');
-                        })
-                    }
-            }, 300)
-            let res = await ODA.showDropdown('oda-site-menu', { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, cancelAfterLeave: true });
+            if (this.lastHeaderItem === this.item.label) return;
+            this._clearDropdown();
+            this.lastHeaderItem = this.item.label;
+            const elm = await ODA.createElement('oda-site-menu');
+            elm.addEventListener('pointerleave', () => {
+                elm.fire('cancel');
+                this.lastHeaderItem = '';
+            })
+            let res = await ODA.showDropdown(elm, { items: this.item.items || this.items, item: this.item, mobile: this.mobile }, { parent: this, cancelAfterLeave: true });
             if (res) {
-                this.ddMenuIndex = -1;
                 this.setLeftDrawerFocus(res.item);
             }
+            this.lastHeaderItem = '';
         },
         _tap() {
-            this.ddMenuIndex = -1;
+            this.lastHeaderItem = '';
             route(this.item);
             this.setLeftDrawerFocus(this.item);
         }

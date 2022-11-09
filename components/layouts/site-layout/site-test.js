@@ -38,9 +38,9 @@ ODA({
         fixmenu: 'nofix',
         sectionsActiv:[],
         progress:0,
-        hash: ''//{ type: String,
-            //set(v) { //console.log(v)
-              //  this.scrollTop = this.$refs[v.slice(1)][0].offsetTop}}
+        hash: { type: String,
+            set(v) { //console.log(v)
+                this.scrollTop = this.$refs[v.slice(1)][0].offsetTop}}
     },
     listeners: {
         'resize': '_resize',
