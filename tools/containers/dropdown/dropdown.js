@@ -33,7 +33,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                         <slot class="no-flex" name="dropdown-title"></slot>
                     </div>
                 </oda-title>
-                <div class="no-flex vertical" style="overflow: hidden;">
+                <div class="flex vertical" style="overflow: hidden;">
                     <slot @slotchange="onSlot"></slot>
                 </div>
             </div>
@@ -52,7 +52,6 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
     },
     set controls(n){
         for (let i of (n || [])){
-            i.style.opacity = 0
             i.render();
         }
     },
@@ -197,9 +196,9 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
 
     },
     onRender(){
+        if (this.isVisible) return;
         this.debounce('d-setSize', ()=>{
             this.isVisible = true;
-            this.control.style.opacity = 1;
         }, 100)
         console.log('render', this.isVisible)
     }

@@ -1,13 +1,11 @@
 import './src/ace.js';
 import './src/ext-language_tools.js';
-import snippet from './src/snippets/oda-snippet.js';
-
 // https://github.com/beautify-web/js-beautify
-import './src/beautify.js';
 // import './src/beautify-css.js';
-import './src/beautify-html.js';
+// import './src/beautify-html.js';
 
-ODA({ is: 'oda-ace-editor', template: /*html*/`
+// ODA({ is: 'oda-ace-editor', imports: './src/ace.js, ./src/ext-language_tools.js, ./src/beautify-html.js', template: /*html*/`
+ODA({ is: 'oda-ace-editor', imports: './src/beautify-html.js', template: /*html*/`
         <style>
             ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: lightgray; } ::-webkit-scrollbar-thumb { background-color: gray; }
             :host {
@@ -171,7 +169,7 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
     set src(v) {
         this.value = v;
     },
-    attached() {
+    async attached() {
         ['basePath', 'modePath', 'themePath', 'workerPath'].map(o => ace.config.set(o, ODA.rootPath + '/components/editors/ace-editor/src/'));
         this.editor = ace.edit(this.$('div'));
         this.editor.session.on('change', (e)=>{
@@ -180,19 +178,15 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             this.fire('change');
         })
 
+        const { default: snippet } = await import('./src/snippets/oda-snippet.js');
         const snippetManager = ace.require('ace/snippets').snippetManager;
         const snippets = snippetManager.parseSnippetFile(snippet, this.mode);
         snippetManager.register(snippets, this.mode);
     },
     focus(){ this.editor?.focus() },
-    // updated(e) {
-    //     this.editor?.setOptions(this.options);
-    // },
-    observers: [
-        function _observer(fontSize, tabSize, wrap, showPrintMargin, showLineNumbers, showGutter, minLines, maxLines, displayIndentGuides, printMarginColumn, firstLineNumber) {
-            this.editor?.setOptions(this.options);
-        },
-    ],
+    onRender(e) {
+        this.editor?.setOptions(this.options);
+    },
     set editor(editor) {
         editor.renderer.attachToShadowRoot();
         editor.setOptions(this.options);
@@ -262,4 +256,4 @@ ODA({ is: 'oda-ace-editor', template: /*html*/`
             this[i] = n[i];
         }
     }
-});
+})

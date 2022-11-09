@@ -1,5 +1,5 @@
 /* * oda.js v3.0
- * (c) 2019-2021 R.A. Perepelkin
+ * (c) 2019-2022 Roman Perepelkin, Vadim Biryuk, Alexander Uvarov
  * Under the MIT License.
  */
 import './rocks.js';
@@ -431,7 +431,9 @@ if (!window.ODA) {
                         }
                         this.render();
                     })
+                    callHook.call(this, 'updated');
                 }
+
             }
             get rootHost(){
                 this.__need_update = true;
@@ -1780,27 +1782,32 @@ if (!window.ODA) {
             })
             binds.forEach(bind=>{
                 let i = bind.key;
-                const listener = src.listeners[i.toKebabCase() + '-changed'];
-                if (i.includes('.') && listener) {
-                    const pathToObj = i.slice(0, i.lastIndexOf('.'));
-                    const propName = i.slice(i.lastIndexOf('.') + 1);
-                    const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
-                    const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
-                    const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-                    if (bottUpdates > topUpdates && $el.fire) {
-                        this.setProperty(listener.expr, obj[propName]);
-                    } else {
-                        $el.setProperty(i, bind.val);
+                if (i.includes('.')/* && listener*/) {
+                    const listener = src.listeners[i.toKebabCase() + '-changed'];
+                    if (listener){
+                        const pathToObj = i.slice(0, i.lastIndexOf('.'));
+                        const propName = i.slice(i.lastIndexOf('.') + 1);
+                        const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
+                        const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+                        const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+                        if (bottUpdates > topUpdates && $el.fire) {
+                            this.setProperty(listener.expr, obj[propName]);
+                            return;
+                        }
+                        // else {
+                        //     $el.setProperty(i, bind.val);
+                        // }
                     }
-                } else {
-                    if (bind.val === undefined && listener && $el.fire) {
-                        requestAnimationFrame(() => {
+
+                }/* else {*/
+              /*      if (bind.val === undefined && listener && $el.fire) {
+                        // requestAnimationFrame(() => {
                             $el.fire(i + '-changed');
-                        });
-                    } else  {
+                        // });
+                    } else  {*/
                         $el.setProperty(i, bind.val);
-                    }
-                }
+                    // }
+                // }
             })
 
             // for (let i in src.bind) {
@@ -2535,10 +2542,12 @@ if (!window.ODA) {
         url = url.trim();
         if (url in ODA.aliases)
             url = ODA.rootPath + '/' + ODA.aliases[url];
-        else if (url.startsWith('./'))
-            url = prototype.$system.dir + url.substring(1);
-        else if (url.startsWith('../'))
-            url = prototype.$system.dir +'/'+url;
+        else if (prototype){
+            if (url.startsWith('./'))
+                url = prototype.$system.dir + url.substring(1);
+            else if (url.startsWith('../'))
+                url = prototype.$system.dir +'/'+url;
+        }
 
         url = url.replace(/\/\//g, '/');
         return import(url);

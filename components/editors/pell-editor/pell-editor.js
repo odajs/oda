@@ -1,36 +1,63 @@
-ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.js, @oda/palette, @tools/containers',
+/* * oda.js v3.0
+ * (c) 2019-2022 Igor Pasynkov, Roman Perepelkin
+ * Under the MIT License.
+ */
+ODA({ is: 'oda-pell-editor', imports: './lib/pell.js',
     template: `
         <style>
-            .pell { border: 1px solid rgba(10, 10, 10, 0.1); box-sizing: border-box; }
-            .pell-content { box-sizing: border-box; outline: 0; overflow-y: auto; padding: 10px; }
-            .pell-actionbar { display: flex; background-color: rgb(240, 240, 240); border: 1px solid rgba(10, 10, 10, 0.1); position: sticky; top: 0px; z-index: 1; flex-wrap: wrap; }
-            .pell-button { background-color: white; border: solid 1px lightgray;  border-radius: 2px; margin: 1px; cursor: pointer; height: 24px; outline: 0; width: 30px; vertical-align: bottom; }
-            .pell-button-selected { background-color: rgb(220, 220, 220); }
-            .pell-button:hover { background-color: rgb(230, 230, 230); }
-            :host {
-                @aplly --vertical;
-                position: relative;
+            .pell {
+                box-sizing: border-box;
+                @apply --border; 
+             }
+            .pell-content { 
+                @apply --content;
+                @apply --flex;
+                box-sizing: border-box; 
+                outline: 0; 
+                overflow-y: auto; 
+                padding: 10px; 
+            }
+            .pell-actionbar { 
+                @apply --header; 
+            }
+            .pell-button { 
+                @apply --content;
+                width: {{iconSize * 1.5}}px;
+                height: {{iconSize}}px;
+                vertical-align: bottom;
+                margin: 1px; 
+                cursor: pointer; 
+                @apply --border;
+            }
+            .pell-button-selected { 
+                @apply --dark;
+            }
+            .pell-button:hover {
+                filter: brightness(.8); 
+             }
+             :host {
+                @apply --vertical;
             }
         </style>
-        <div ~show="!_showAce" id="editor" @keydown.stop></div>
-        <oda-button ~if="_showAce" icon="icons:close" @click="closeAce" style="position: absolute; z-index: 31; fill: red; right: 0"></oda-button>
-        <oda-ace-editor ~if="_showAce" id="ace" mode="html" wrap="true" font-size="16"></oda-ace-editor>
+        <div id="editor" class="vertical flex" @keydown.stop></div>
     `,
+    iconSize: 24,
+    src: '',
     props: {
-        src: '',
         readOnly: false,
     },
-    get value() { return this.editor?.content?.innerHTML || '' },
-    set value(v) { if (this.editor) this.editor.content.innerHTML = v },
-    _showAce: false,
-    attached() {
-        this.async(() => {
-            this._update();
-        }, 300);
+    get value() {
+        return this.editor?.content?.innerHTML || ''
     },
-    _update() {
-        this.editor = pell.init({
-            element: this.$('#editor'),
+    set value(v) {
+        this.editor.content.innerHTML = v
+    },
+    get e(){
+        return this.$('#editor');
+    },
+    attached(){
+        this.editor ??= pell.init({
+            element: this.e,
             onChange: () => this.fire('change', this.editor.content.innerHTML),
             actions: [
                 'bold',
@@ -106,29 +133,17 @@ ODA({ is: 'oda-pell-editor', imports: '@oda/button, @oda/ace-editor, ./lib/pell.
                         }
                         comm[url] && comm[url]();
                     }
-                },
-                {
-                    name: 'viewSource',
-                    icon: '&lt;/&gt;',
-                    title: 'View source code',
-                    result: () => {
-                        const value = this.editor.content.innerHTML;
-                        this._showAce = true;
-                        this.async(() => {
-                            const ace = this.$('#ace');
-                            ace.value = value;
-                        }, 100)
-                    }
-                },
+                }
             ],
-        });
-        this.editor.content.contentEditable = !this.readOnly;
-        this.value = this.src || '';
+        })
     },
-    closeAce(e) {
-        const value = this.$('#ace').value;
-        this._showAce = false;
-        this.editor.content.innerHTML = value;
-        this.fire('change', this.editor.content.innerHTML);
-    }
+    editor: undefined,
+    observers:[
+        function setValue(editor, src){
+            this.value = src
+        },
+        function setReadOnly(editor, readOnly){
+            editor.content.contentEditable = !readOnly;
+        }
+    ]
 })

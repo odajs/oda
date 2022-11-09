@@ -75,28 +75,30 @@ ODA({is: 'oda-icon',
     },
     get _obj() {
         if (this.icon) {
-            const obj = icons[this.icon] ??= getIcon.call(this, this.icon)
-            if (obj?.then) {
-                obj.then(res => {
-                    return (this._obj = icons[this.icon] = res);
+            const obj = icons[this.icon];
+            if (obj === undefined) {
+                getIcon.call(this, this.icon).then(res => {
+                    return (this._obj = icons[this.icon] ??= res);
                 }).catch(e => {
                     console.log(e)
-                    icons[this.icon] = EMPTY_ICON;
+                    return (this._obj = icons[this.icon] ??= null);
                 })
+                return null;
             }
             return obj;
         }
     },
     get _def() {
         if (this.default) {
-            let obj = icons[this.default] ??= getIcon.call(this, this.default);
-            if (obj?.then) {
-                obj.then(res => {
-                    return (this._def = icons[this.default] = res);
+            const obj = icons[this.default];
+            if (obj === undefined) {
+                getIcon.call(this, this.default).then(res => {
+                    return (this._def = icons[this.default] ??= res);
                 }).catch(e => {
                     console.log(e)
-                    icons[this.icon] = EMPTY_ICON;
+                    return (this._def = icons[this.default] ??= null);
                 })
+                return null;
             }
             return obj;
         }
@@ -146,7 +148,6 @@ ODA({is: 'oda-icon',
         return this._icon?.size || 0;
     },
 });
-const EMPTY_ICON = Object.create(null)
 async function loadIcons(name) {
     let content = libs[name];
     if (!content) {
@@ -202,10 +203,12 @@ async function getIcon(n) {
                 });
             }
             catch (err) {
+                console.warn(err);
                 if (this.default !== this.icon)
                     this.icon = this.default;
             }
         }
+
     }
     return obj;
 }

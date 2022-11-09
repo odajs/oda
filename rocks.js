@@ -1,6 +1,6 @@
 /*
     ROCKS.js v1.0
-    (c) 2021 Roman Perepelkin, Vadim Biryuk
+    (c) 2021-2022 Roman Perepelkin, Vadim Biryuk, Alexander Uvarov
     Under the MIT License.
 
     Reactive
@@ -125,13 +125,16 @@ if (!globalThis.KERNEL) {
     }
 
     function getBlock(options, key) {
-        let block = options.blocks[key];
-        if (!block){
-            block = (options.blocks[key] = Object.assign({ id: getBlockId(),options, key, deps: [], obs: key.startsWith?.(`#$obs$`), $$saveName: options.$$saveName }, this.constructor?.__model__?.$system?.blocks[key] || {}));
-            if (block.prop?.save){
-                block.$$saveName = block.prop.name;
-            }
-        }
+       const block = options.blocks[key] ??= Object.assign({
+               id: getBlockId(),
+               options,
+               key,
+               deps: [],
+               obs: key.startsWith?.(`#$obs$`),
+               $$saveName: options.$$saveName
+           }, this.constructor?.__model__?.$system?.blocks[key] || {});
+        if (block.prop?.save)
+            block.$$saveName = block.prop.name;
         return  block;
     }
     let updates = 0;
