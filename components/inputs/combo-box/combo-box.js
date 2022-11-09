@@ -236,6 +236,7 @@ ODA({is: 'oda-combo-list',
     },
     items: [],
     get rows() {
+        if (this.items.then) this.items.then(res => this.items = res)
         if (this.filter) {
             const filter = this.filter.toLowerCase();
             return this.items?.filter(i => {
