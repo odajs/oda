@@ -1648,18 +1648,19 @@ if (!window.ODA) {
     let renderQueue = [];
     let rafid = 0;
     ODA.render = async function (renderer) {
-        if (!renderQueue.includes(renderer));
-            renderQueue.push(renderer);
-        if (rafid) return;
-        const list  = renderQueue;//Array.from(renderQueue);
-        renderQueue = []
+        if (renderQueue.includes(renderer)) return;
+        renderQueue.push(renderer);
+        // if (rafid){
+        //     cancelAnimationFrame(rafid);
+        // }
         rafid = requestAnimationFrame(async ()=>{
-            while (list.length){
-                await list.shift()?.();
+            while (renderQueue.length){
+                await renderQueue.shift()?.();
             }
             rafid = 0;
         })
     }
+
 
     let renderCount = 0;
     async function render() {

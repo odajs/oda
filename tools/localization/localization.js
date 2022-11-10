@@ -76,6 +76,7 @@ function translatePhrase(phrase, toStorage){
     return value;
 }
 function _newVal(val) {
+    // console.log(val)
     if (!this.isConnected || !val)
         return val;
 
@@ -114,7 +115,7 @@ function HtmlToText(nodes, toStorage = true){
     for (let i of nodes){
         switch (i.nodeType) {
             case 3: {
-                result += Localization.translate(i.textContent, false);
+                result += Localization.translate(i.textContent, toStorage);
             } break;
             case 1: {
                 result += `<${i.localName}>${HtmlToText(i.childNodes, false)}</${i.localName}>`
