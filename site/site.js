@@ -453,8 +453,8 @@ navigator: {
     ODA({ is: 'oda-site-nav-tree', extends: 'oda-tree', imports: '@oda/tree',
         template: `
             <style>
-                :host, :host *{
-                    @apply --layout;
+                :host {
+                    @apply --content;
                 }
             </style>
         `,

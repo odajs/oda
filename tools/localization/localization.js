@@ -1,29 +1,17 @@
 /* Регистрация Инструмента */
 const Localization = ODA.regTool('localization');
+ODA.localization.saveMethod = async  (phrases, dictionary)=>{
+    console.log('СОХРАНЕНИЕ СЛОВАРЕЙ')
+    ODA.top.location.reload();
+    //todo сделать стандартный метод сохранения словарей
+}
 const domParser = new DOMParser();
 
 Localization.path = import.meta.url.split('/').slice(0, -1).join('/'); // locales path
 Localization.translateTagList = ['label', 'h3']
 
-window.top.addEventListener('change-language', e => window.location.reload() )
-ODA.loadJSON(Localization.path + '/dictionary/phrases.json').then(res=>{
-   res.forEach(i => sessionStorage.setItem(i, '.'))
-}).catch(e=>{
+ODA.top.addEventListener('change-language', e => window.location.reload() )
 
-})
-ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json').then(res=>{
-    Localization.dictionary = Object.assign(Object.create(null),res)
-}).catch(e=>{
-    Localization.dictionary = Object.create(null)
-})
-
-// try       {
-//     Localization.dictionary = Object.assign(Object.create(null), await ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json'));
-//     Object.keys(Localization.dictionary).forEach(i => sessionStorage.setItem(i, '.'))
-// }
-// catch (e) {
-//     Localization.dictionary = Object.create(null)
-// }
 
 
 /* Ф-я перевода */
@@ -174,12 +162,25 @@ import '../containers/containers.js'
 /* Нажатие клавиши */
 window.addEventListener('keydown', async e => {
     if (e.code !== 'KeyL' || !e.altKey) return;
-    // await top.ODA.import('@tools/containers');
-    await top.ODA.showDialog('oda-localization-tree', {style: 'margin: 32px'}, {fullSize: true,
+    const result = await ODA.top.ODA.showDialog('oda-localization-tree', {style: 'margin: 32px'}, {fullSize: true,
         icon: 'icons:flag',
          title: 'Dictionaries',
          autosize: false})
-    top.location.reload();
+    const phrases = Object.entries(sessionStorage).filter(i=>{
+        return i[1] === '.'
+    }).map(i=>{
+        return i[0];
+    })
+
+
+    const dictionary = result.dataSet.filter(i=>{
+        return i.translate;
+    }).reduce((res, i)=>{
+        res[i.word] = i.translate;
+        return res;
+    }, {})
+    await ODA.top.ODA.localization.saveMethod(phrases, dictionary);
+
 })
 
 /*  */
@@ -215,26 +216,6 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
             })
         })
     }
-    // dlDict() {
-    //     let rez = { }
-    //     this.dataSet.forEach( o => {
-    //         if (o.translates != '') rez[o.words.toLowerCase()] = o.translates.toLowerCase()
-    //     })
-    //     let a = document.createElement("a");
-    //     let file = new Blob([JSON.stringify(rez, null, " ")], {type: 'application/json'});
-    //     a.href = URL.createObjectURL(file);
-    //     a.download = ODA.language + ".json";
-    //     a.click();
-    // },
-    // dlPhrase() {
-    //     let rez = []
-    //     Object.entries( sessionStorage ).forEach( ([k,v]) => (v==='p')? rez.push(k) : {} )
-    //     let a = document.createElement("a");
-    //     let file = new Blob([JSON.stringify(rez, null, " ")], {type: 'application/json'});
-    //     a.href = URL.createObjectURL(file);
-    //     a.download = "phrases.json";
-    //     a.click();
-    // }
 })
 
 ODA({ is: 'oda-localization-input', template: /*html*/ `
@@ -260,3 +241,16 @@ ODA({ is: 'oda-localization-input', template: /*html*/ `
     }
 })
 
+
+setTimeout(()=>{
+    ODA.loadJSON(Localization.path + '/dictionary/phrases.json').then(res=>{
+        res.forEach(i => sessionStorage.setItem(i, '.'))
+    }).catch(e=>{
+
+    })
+    ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json').then(res=>{
+        Localization.dictionary = Object.assign(Object.create(null),res)
+    }).catch(e=>{
+        Localization.dictionary = Object.create(null)
+    })
+})

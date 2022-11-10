@@ -1157,6 +1157,15 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
+
+    Object.defineProperty(ODA, 'top',  {
+        get (){
+            if (window.parent !== window)
+                return window.parent.ODA?.top;
+            return window;
+        }
+    })
+
     Object.defineProperty(ODA, 'cssRules', {
         get(){
             let rules = ODA['#cssRules'];
