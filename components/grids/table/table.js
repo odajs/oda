@@ -1625,6 +1625,7 @@ cells: {
             template: /*html*/`
             <style>
                 :host{
+                    height: 100%;
                     background-color: {{color || 'unset'}} !important;
                 }
                 :host * {

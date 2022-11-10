@@ -1667,11 +1667,14 @@ if (!window.ODA) {
         await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
-        if (rc !== renderCount)
+        if (rc !== renderCount){
+            console.log('UD-cancel', rc, renderCount)
             return;
+        }
+
         // this.__need_update = false;
-        ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
-        ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
+        // ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
+        // ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1762,7 +1765,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    Promise.all(list);
+                    await Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1770,7 +1773,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    updateDom.call(this, h, el, $el, pars, rc, this.__all || all);
+                    await updateDom.call(this, h, el, $el, pars, rc, this.__all || all);
                     idx++;
                 }
             }
@@ -1859,7 +1862,7 @@ if (!window.ODA) {
                 if (!all && $el.__need_update === false)
                     return;
                 $el.__need_update = false;
-                updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc, all || $el.__all);
+                await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc, all || $el.__all);
                 $el.__all = undefined;
 
             }
@@ -1871,7 +1874,7 @@ if (!window.ODA) {
                     if (!all && el.__need_update === false)
                         continue;
                     el.__need_update = false;
-                    updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc, all || el.__all);
+                    await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc, all || el.__all);
                     el.__all = undefined;
                 }
             }
