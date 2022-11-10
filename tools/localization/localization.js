@@ -158,10 +158,11 @@ innerHTML.get = function () {
     return newVal
 }
 Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
-import '../containers/containers.js'
+
 /* Нажатие клавиши */
 window.addEventListener('keydown', async e => {
     if (e.code !== 'KeyL' || !e.altKey) return;
+    await import('../containers/containers.js');
     const result = await ODA.top.ODA.showDialog('oda-localization-tree', {style: 'margin: 32px'}, {fullSize: true,
         icon: 'icons:flag',
          title: 'Dictionaries',

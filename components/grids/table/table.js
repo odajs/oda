@@ -956,6 +956,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     },
     _scroll(e) {
         const body = this.$refs.body;
+        if (!body) return;
         this.leftScroll = body.scrollLeft;
         // this.interval('_scroll', ()=>{
             const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
