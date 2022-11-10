@@ -436,8 +436,8 @@ if (!window.ODA) {
 
             }
             get rootHost(){
-                if (this.__need_update)
-                    return this;
+                // if (this.__need_update)
+                //     return this;
                 this.__need_update = true;
                 const r1 = this.domHost?.rootHost;
                 const r2 = this.parentElement?.rootHost;
@@ -1660,7 +1660,7 @@ if (!window.ODA) {
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
         if (rc !== renderCount)
             return;
-        this.__need_update = false;
+        // this.__need_update = false;
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {

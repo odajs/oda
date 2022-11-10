@@ -526,7 +526,7 @@ navigator: {
     ODA({ is: 'oda-site-nav-cell', extends: 'this, oda-table-cell-base', imports: '@oda/table',
         template: /*html*/ `
             <style>
-                :host{ @apply --header; cursor: pointer; }
+                :host{ cursor: pointer; }
                 :host(:hover){ @apply --selected; }
             </style>
             <oda-icon ~if="icon" :icon="icon" :icon-size="iconSize * .7" style="margin-right: 8px;"></oda-icon>
