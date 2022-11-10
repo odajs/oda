@@ -1674,8 +1674,8 @@ if (!window.ODA) {
         }
 
         // this.__need_update = false;
-        // ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
-        // ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
+        ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
+        ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
