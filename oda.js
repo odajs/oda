@@ -1648,14 +1648,14 @@ if (!window.ODA) {
     let renderQueue = [];
     let rafid = 0;
     ODA.render = async function (renderer) {
-        if (renderQueue.includes(renderer)) return;
-        renderQueue.push(renderer);
-        // if (rafid){
-        //     cancelAnimationFrame(rafid);
-        // }
+        if (!renderQueue.includes(renderer));
+            renderQueue.push(renderer);
+        if (rafid) return;
+        const list  = renderQueue;//Array.from(renderQueue);
+        renderQueue = []
         rafid = requestAnimationFrame(async ()=>{
-            while (renderQueue.length){
-                await renderQueue.shift()?.();
+            while (list.length){
+                await list.shift()?.();
             }
             rafid = 0;
         })
@@ -1664,11 +1664,11 @@ if (!window.ODA) {
     let renderCount = 0;
     async function render() {
         renderCount++;
-        await updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
+        updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
         if (rc !== renderCount){
-            console.log('UD-cancel', rc, renderCount)
+            // console.log('UD-cancel', rc, renderCount)
             return;
         }
 
