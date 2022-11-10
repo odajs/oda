@@ -249,8 +249,10 @@ setTimeout(()=>{
 
     })
     ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json').then(res=>{
+        console.log(res)
         Localization.dictionary = Object.assign(Object.create(null),res)
     }).catch(e=>{
+        console.log(e)
         Localization.dictionary = Object.create(null)
     })
 })
