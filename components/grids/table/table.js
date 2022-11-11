@@ -1,4 +1,4 @@
-ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
+ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     template: /*html*/`
     <style>
         :host {
@@ -1856,7 +1856,7 @@ cells: {
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item="item"></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
-                    <oda-icon :show="showSort && sortIcon" title="sort" :icon="sortIcon" :sort="sortIndex"></oda-icon>
+                    <oda-icon :show="showSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <div class="split"  @tap.stop @track="_track"></div>
             </div>
@@ -1971,6 +1971,8 @@ cells: {
             e.preventDefault();
             e.stopPropagation();
             if (!this.column.name) return;
+            await ODA.import('@tools/containers');
+            await ODA.import('@oda/menu');
             const menu = [
                 {
                     label: this.table.groups.includes(this.column) ? 'Ungrouping' : 'Grouping' + ' by this column',
