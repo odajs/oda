@@ -137,7 +137,7 @@ if (!globalThis.KERNEL) {
             block.$$saveName = block.prop.name;
         return  block;
     }
-    let updates = 0;
+    // let updates = 0;
     function getProxyValue(block, val, old, setter) {
         if (Object.equal(val, old)) return val;
         const target = block.options.target;
@@ -152,10 +152,10 @@ if (!globalThis.KERNEL) {
                 val = makeReactive.call(this, v, block.$$saveName);
         }
         const reset = resetDeps(block, [], setter);
-        if (block.$$saveName)
-            this.saveSettings?.(block.$$saveName, this[block.$$saveName]);
+        // if (block.$$saveName)
+        //     this.saveSettings?.(block.$$saveName, this[block.$$saveName]);
         for (let host of block.options.hosts.keys()){
-            block.updates = ++updates;
+            // block.updates = ++updates;
             (host.notify || host.bubble)?.call(host, block, val);
         }
         return val;

@@ -164,7 +164,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
 <!--    <oda-table-body></oda-table-body>-->
     
-    <div ref="body" tabindex="0" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
+    <div ref="body" tabindex="0" @resize="_scroll" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
                 <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
@@ -195,7 +195,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
         return Math.round(this._scrollTop / this.rowHeight);
     },
     get screenLength() {
-        return (Math.round(this._height / this.rowHeight) || 0)+1;
+        return (Math.round(this._height / this.rowHeight) || 0) + 1;
     },
     screenExpanded: [],
     get screen() {
@@ -442,7 +442,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                         enumerable: false,
                         configurable: true,
                         writable: true,
-                        value: i.$expanded
+                        value: i.$expanded || false
                     })
 
                 if (!('$parent' in i))
@@ -450,21 +450,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                         enumerable: false,
                         configurable: true,
                         writable: true,
-                        value: i.$parent
+                        value: i.$parent || null
                     })
                 if (!('$level' in i))
                     Object.defineProperty(i, '$level', {
                         enumerable: false,
                         configurable: true,
                         writable: true,
-                        value: i.$level
+                        value: i.$level || 0
                     })
                 if (!('$hasChildren' in i))
                     Object.defineProperty(i, '$hasChildren', {
                         enumerable: false,
                         configurable: true,
                         writable: true,
-                        value: i.$hasChildren
+                        value: i.$hasChildren || false
                     })
                 if (parent) {
                     i.$parent = parent;
@@ -473,7 +473,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
                     delete i.$parent;
                 }
                 i.$level = level;
-                if (!this.hideTop || level > -1) res.push(i);
+                if (!this.hideTop || level > -1)
+                    res.push(i);
 
                 const has_children = this.__checkChildren(i);
                 if (has_children?.then)
@@ -692,7 +693,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/menu',
     listeners: {
         dragend: '_onDragEnd',
         dragleave: '_onDragEnd',
-        resize: '_scroll',
+        // resize: '_scroll',
         scrollToUp() {
             if (this.$refs?.body) {
                 this.$refs.body.style['scroll-behavior'] = 'unset';
