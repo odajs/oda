@@ -67,7 +67,7 @@ if (!globalThis.KERNEL) {
                 const saveName = (block.prop?.save && block.prop.name) || block.$$saveName
                 if (val === undefined) {
                     if (block.getter) {
-                        block.count = block.count || 0;
+                        // block.count = block.count || 0;
                         targetStack.push(KERNEL.dpTarget);
                         KERNEL.dpTarget = block;
                         val = block.getter.call(target);
@@ -126,6 +126,7 @@ if (!globalThis.KERNEL) {
 
     function getBlock(options, key) {
        const block = options.blocks[key] ??= Object.assign({
+               count: 0,
                id: getBlockId(),
                options,
                key,
