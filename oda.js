@@ -405,24 +405,23 @@ if (!window.ODA) {
                 this.render();
             }
             notify(block, value) {
-                if (block?.$$saveName)
-                    this.saveSettings?.(block.$$saveName, this[block.$$saveName]);
+                if (block?.options.target === this) {
+                    const prop = block.prop;
+                    if (prop && this.__events?.has(prop.attrName + '-changed')){
+                        this.fire(prop.attrName + '-changed', value);
+                    }
+                }
+
                 if (!this.isConnected){
                     if (block?.options.hosts.has(this)){
-                        this.async(() => {
+                        this.debounce('debounce-clear', () => {
                             if (!this.isConnected)
                                 block.options.hosts.delete(this);
-                        }, 200)
+                        }, 100)
                     }
                 }
                 else {
-                    if (block?.options.target === this) {
-                        const prop = block.prop;
-                        if (prop && this.__events?.has(prop.attrName + '-changed')){
-                            this.fire(prop.attrName + '-changed', value);
-                        }
-                    }
-                    // this.interval('render-interval', () => {
+                    this.interval('render-interval', () => {
                         for (const prop of this.$core.reflects) {
                             const val = this[prop.name]
                             if (val || val === 0)
@@ -430,14 +429,15 @@ if (!window.ODA) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
-                        callHook.call(this, 'updated');
                         this.render();
-                    // })
-
+                    })
+                    callHook.call(this, 'updated');
                 }
 
             }
             get rootHost(){
+                // if (this.__need_update)
+                //     return this;
                 this.__need_update = true;
                 const r1 = this.domHost?.rootHost;
                 const r2 = this.parentElement?.rootHost;
