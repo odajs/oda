@@ -156,11 +156,13 @@ async function loadIcons(name) {
     }
     return content;
 }
+
 async function getIcon(n) {
     const key = n;
     let obj = icons[key];
     if (!obj) {
         icons[key] = obj = Object.create(null);
+
         if (/:[0-9]+$/.test(n)) {
             let s = n.match(/:[0-9]+$/)[0];
             n = n.replace(s, '');
