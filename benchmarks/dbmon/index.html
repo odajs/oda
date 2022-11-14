@@ -193,7 +193,7 @@
                 }
                 setInterval(() => {
                     const ping = Monitoring.renderRate.ping();
-                    worker.postMessage(mutations());
+                    worker.postMessage(mutationsValue);
                     // this.databases = ENV.generateData(Monitoring.renderRate.ping()).toArray();
                 },0);
             }
@@ -204,15 +204,7 @@
 
         var mutationsValue = 0.5;
 
-        function mutations(value) {
-            if (value) {
-                mutationsValue = value;
-                document.querySelector('#ratioval').innerHTML = 'mutations : ' + (mutationsValue * 100).toFixed(0) + '%';
-                return mutationsValue;
-            } else {
-                return mutationsValue;
-            }
-        }
+
 
         var body = document.querySelector('body');
         var theFirstChild = body.firstChild;
@@ -233,6 +225,20 @@
         sliderContainer.appendChild(text);
         sliderContainer.appendChild(slider);
         body.insertBefore(sliderContainer, theFirstChild);
+
+        const ENV = {
+            mutations(value){
+                if (value) {
+                    mutationsValue = value;
+                    document.querySelector('#ratioval').innerHTML = 'mutations : ' + (mutationsValue * 100).toFixed(0) + '%';
+                    return mutationsValue;
+                } else {
+                    return mutationsValue;
+                }
+            }
+        }
+
     </script>
 
 </html>
+

@@ -154,7 +154,7 @@ var ENV = ENV || (function () {
             if (!keepIdentity && oldData && oldData[i]) {
                 row.lastSample = oldData[i].lastSample;
             }
-            if (!row.lastSample || Math.random() < mutations) {
+            if (!row.lastSample || Math.random() < ENV.mutations) {
                 counter = counter + 1;
                 if (!keepIdentity) {
                     row.lastSample = null;
@@ -171,11 +171,10 @@ var ENV = ENV || (function () {
             }
         };
     }
-    let mutations = .5
 
-
+    let mutations = 0;
     onmessage = function(e) {
-        mutations = e.data;
+        ENV.mutations = e.data;
         const result = getData();
 
         postMessage(result.toArray());
@@ -185,7 +184,7 @@ var ENV = ENV || (function () {
         generateData: getData,
         rows: 50,
         timeout: 0,
-        // mutations: mutations
+        mutations: mutations
     };
 })();
 
