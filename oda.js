@@ -2449,8 +2449,9 @@ if (!window.ODA) {
             this.dispatchEvent(event);
         };
         Node.prototype.render = function () {
-            if (!this.$wake && (this.$sleep || !this.$node)) return;
-            updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount, true);
+            if (!this.$wake && this.$sleep) return;
+            this.domHost?.render();
+            // updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount, true);
         };
     }
     Element:{
