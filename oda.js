@@ -1668,10 +1668,10 @@ if (!window.ODA) {
         updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
     }
     async function updateDom(src, $el, $parent, pars, rc, all = false) {
-        if (rc !== renderCount){
-            // console.log('UD-cancel', rc, renderCount)
-            return;
-        }
+        // if (rc !== renderCount){
+        //     // console.log('UD-cancel', rc, renderCount)
+        //     return;
+        // }
 
         // this.__need_update = false;
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
