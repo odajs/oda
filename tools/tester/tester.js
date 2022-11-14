@@ -87,8 +87,6 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
         if (this.component) return;
         const els = e.target.assignedElements();
         this.component = els[0];
-        //this.component.setAttribute('slot', 'main')
-        // this.removeAttribute('hidden');
     },
     async _componentAnalysis(comp = this.component) {
         if (!comp) return;

@@ -1245,14 +1245,12 @@ if (!window.ODA) {
                 src.text = src.text || [];
                 src.text.push(function textContent($el) {
                     let val = exec.call(this, fn, $el.$for);
-                    if ($el.textContent != val/* && typeof val !== 'object'*/)
+                    if ($el.textContent != val)
                         $el.textContent = val;
                 });
             }
-            else {
-                //todo  localization
+            else
                 src.textContent = value;
-            }
         }
         else if (el.nodeType === 8) {
             src.textContent = el.textContent;
@@ -1599,7 +1597,7 @@ if (!window.ODA) {
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
         else if (tag === '#text')
-            $el = document.createTextNode(''/*src.textContent || ''*/);
+            $el = document.createTextNode('');
         else {
             if (src.isSvg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
@@ -1681,10 +1679,10 @@ if (!window.ODA) {
             if (!$el) {
                 $el = createElement.call(this, src, tag);
                 $parent.appendChild($el);
-                if ($el.nodeType === 3)
+                if ($el.nodeType == 3)
                     $el.textContent = src.textContent;
             }
-            else if ($el.$node?.id !== src.id) {
+            else if ($el.$node?.id != src.id) {
                 const el = createElement.call(this, src, tag);
                 if ($parent.contains($el))
                     $parent.insertBefore(el, $el);
@@ -1694,7 +1692,7 @@ if (!window.ODA) {
             }
             else if ($el.slotTarget)
                 $el = $el.slotTarget;
-            else if ($el.nodeName !== tag) {
+            else if ($el.nodeName != tag) {
                 $el.__before ??= Object.create(null);
                 const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
                 el.__before ??= Object.create(null);
@@ -1704,23 +1702,32 @@ if (!window.ODA) {
                 $el = el;
             }
         }
+        if ($el.nodeType == 8)
+            return;
         if ($el.localName in ODA.deferred)
             return;
+        if (pars)
+            $el.$for = pars;
 
-        $el.$for = pars;
+        if ($el.nodeType == 3) {
+            for (let h of src.text || [])
+                h.call(this, $el);
+            return;
+        }
+
+
         const ch = src.children?.length && $el.children/* && (!$el.$sleep || $el.$wake || src.isSvg || $el.localName === 'slot')*/
         if (ch) {
 
             let idx = 0;
             for (let i = 0, l = src.children.length; i < l; i++) {
                 let h = src.children[i];
-                if (typeof h === "function") {
+                if (typeof h == "function") {
                     let items = h.call(this, pars);
                     if (items.then)
                         items = await items;
                     $el.__for ??= {};
                     const old_size = $el.__for[h.src.id] || 0;
-                    // const children = $el.childNodes;
                     const list = [];
                     for(let j = 0; j<items.length; j++){
                         const node = items[j];
@@ -1730,7 +1737,7 @@ if (!window.ODA) {
                                 elem = $el.childNodes[idx + j];
                                 if (elem){
                                     const ff = elem?.$for;
-                                    if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
+                                    if (elem.$node == h.src && (!ff || node?.params[0] == ff[0])){
                                         list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
                                         break;
                                     }
@@ -1754,7 +1761,7 @@ if (!window.ODA) {
                     $el.__for[h.src.id] = items.length;
                     idx += list.length;
                     let el = $el.childNodes[idx];
-                    while (el && el.$node === h.src) {
+                    while (el && el.$node == h.src) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
@@ -1771,11 +1778,7 @@ if (!window.ODA) {
                 }
             }
         }
-        if ($el.nodeType !== 1) {
-            for (let h of src.text || [])
-                h.call(this, $el);
-            return;
-        }
+
         this.$core.prototype.$system.observers?.forEach(name => {
             return this[name];
         });
@@ -1839,19 +1842,19 @@ if (!window.ODA) {
 
         // if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
-                if (!all && $el.__need_update === false)
+                if (!all && $el.__need_update == false)
                     return;
                 $el.__need_update = false;
                 await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, all || $el.__all);
                 $el.__all = undefined;
 
             }
-            else if (src.isSlot/*$el.localName === 'slot'*/) {
+            else if (src.isSlot/*$el.localName == 'slot'*/) {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
                     if (!el.$core || el.$sleep)
                         continue;
-                    if (!all && el.__need_update === false)
+                    if (!all && el.__need_update == false)
                         continue;
                     el.__need_update = false;
                     await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, all || el.__all);
@@ -1861,7 +1864,7 @@ if (!window.ODA) {
         // }
 
 
-        if (!$el.slot || $el.slotProxy || $el.slot === '?' || this.slot === '?' || $el.parentElement?.slot)
+        if (!$el.slot || $el.slotProxy || $el.slot == '?' || this.slot == '?' || $el.parentElement?.slot)
             return;
         this.$core.slotted.add($el);
         this.$core.intersect.unobserve($el);
@@ -1880,7 +1883,7 @@ if (!window.ODA) {
                 this.$core.slotRefs[$el.$ref] = $el;
         }
         $parent.replaceChild(el, $el);
-        if ($el.slot === '*')
+        if ($el.slot == '*')
             $el.removeAttribute('slot')
         // requestAnimationFrame(() => {
             let host;
