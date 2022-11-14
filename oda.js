@@ -602,9 +602,6 @@ if (!window.ODA) {
             $$(path){
                 return Array.from(this.$core.shadowRoot.querySelectorAll(path));
             }
-            // get $() {
-            //     return this.$refs;
-            // }
             get $url() {
                 return prototype.$system.url;
             }
@@ -641,12 +638,8 @@ if (!window.ODA) {
             async(handler, delay = 0) {
                 if (typeof handler === 'string')
                     handler = this[handler].bind(this);
-                return delay ? setTimeout(handler, delay) : requestAnimationFrame(handler)
+                return ODA.async.call(this, handler, delay);
             }
-            /**
-             * @argument {string|Function} handler
-             * @argument {number} tacts
-             */
             $next(handler, tacts = 0){
                 if (tacts>0)
                     requestAnimationFrame(()=>{
@@ -1157,6 +1150,28 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
+    ODA.async = function (handler, delay = 0){
+        if (handler)
+            return delay ? setTimeout(handler, delay) : ODA.requestAnimationFrame(handler);
+    }
+
+    ODA.requestAnimationFrameList = [];
+    ODA.requestAnimationFrameID;
+    ODA.requestAnimationFrame = function (handler){
+        ODA.requestAnimationFrameList.push(handler);
+        runRAF();
+    }
+    function runRAF(){
+        if (ODA.requestAnimationFrameID || !ODA.requestAnimationFrameList.length) return;
+        ODA.requestAnimationFrameID = requestAnimationFrame(()=>{
+            const list = Array.from(ODA.requestAnimationFrameList);
+            ODA.requestAnimationFrameList = [];
+            for (let i of list)
+                i();
+            ODA.requestAnimationFrameID = 0;
+            runRAF();
+        })
+    }
 
     Object.defineProperty(ODA, 'top',  {
         get (){
@@ -1253,16 +1268,20 @@ if (!window.ODA) {
                         }
                     })
                     src.text.push(function ($el) {
-                        if (this['#'+key] === undefined){
-                            $el.textContent = this[key];
-                        }
+                        // this.async(()=> {
+                            if (this['#' + key] === undefined) {
+                                $el.textContent = this[key];
+                            }
+                        // })
                     });
                 }
                 else{
                     src.text.push(function ($el) {
-                        let val = exec.call(this, fn, $el.$for);
-                        if ($el.textContent != val)
-                            $el.textContent = val;
+                        // this.async(()=>{
+                            let val = exec.call(this, fn, $el.$for);
+                            if ($el.textContent != val)
+                                $el.textContent = val;
+                        // })
                     });
                 }
             }
@@ -1805,25 +1824,30 @@ if (!window.ODA) {
                 const val= src.bind[key].call(this, pars, $el);
                 return {key, val};
             })
-            binds.forEach(bind=>{
-                let i = bind.key;
-                if (i.includes('.')/* && listener*/) {
-                    const listener = src.listeners[i.toKebabCase() + '-changed'];
-                    if (listener){
-                        const pathToObj = i.slice(0, i.lastIndexOf('.'));
-                        const propName = i.slice(i.lastIndexOf('.') + 1);
-                        const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
-                        const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
-                        const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-                        if (bottUpdates > topUpdates && $el.fire) {
-                            this.setProperty(listener.expr, obj[propName]);
-                            return;
+            // this.async(()=>{
+                binds.forEach(bind=>{
+                    let i = bind.key;
+                    if (i.includes('.')/* && listener*/) {
+                        const listener = src.listeners[i.toKebabCase() + '-changed'];
+                        if (listener){
+                            const pathToObj = i.slice(0, i.lastIndexOf('.'));
+                            const propName = i.slice(i.lastIndexOf('.') + 1);
+                            const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
+                            const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+                            const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+                            if (bottUpdates > topUpdates && $el.fire) {
+                                this.setProperty(listener.expr, obj[propName]);
+                                return;
+                            }
                         }
-                    }
 
-                }
-                $el.setProperty(i, bind.val);
-            })
+                    }
+                    // this.async(()=>{
+                        $el.setProperty(i, bind.val);
+                    // })
+                })
+            // })
+
 
             // for (let i in src.bind) {
             //     const b = src.bind[i].call(this, pars, $el);
@@ -1901,6 +1925,7 @@ if (!window.ODA) {
         if ($el.slot == '*')
             $el.removeAttribute('slot')
         // requestAnimationFrame(() => {
+        this.async(()=>{
             let host;
             const filter = `slot[name='${$el.slot}']`;
             for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
@@ -1924,6 +1949,8 @@ if (!window.ODA) {
                 host = host.domHost || (host.parentElement?.$core && host.parentElement);
             }
             applySlotByOrder($el, this);
+        })
+
         // })
     }
     function applySlotByOrder($el, host) {
