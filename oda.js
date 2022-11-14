@@ -1243,11 +1243,28 @@ if (!window.ODA) {
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
-                src.text.push(function textContent($el) {
-                    let val = exec.call(this, fn, $el.$for);
-                    if ($el.textContent != val)
-                        $el.textContent = val;
-                });
+                if(el.parentElement?.localName == 'style'){
+                    let key = '$$style' + el.$node.id;
+                    Object.defineProperty(prototype, key, {
+                        enumerable: true,
+                        configurable: false,
+                        get(){
+                            return exec.call(this, fn/*, $el.$for*/);
+                        }
+                    })
+                    src.text.push(function ($el) {
+                        if (this['#'+key] === undefined){
+                            $el.textContent = this[key];
+                        }
+                    });
+                }
+                else{
+                    src.text.push(function ($el) {
+                        let val = exec.call(this, fn, $el.$for);
+                        if ($el.textContent != val)
+                            $el.textContent = val;
+                    });
+                }
             }
             else
                 src.textContent = value;
