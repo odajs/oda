@@ -424,79 +424,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     },
     get items() {
         if (!this.dataSet?.length) return [];
-        const extract = (items, level, parent) => {
-            if (!this.groups.length && this.allowSort && this.sorts.length) {
-                items.sort((a, b) => {
-                    for (let col of this.sorts) {
-                        const va = a[col.name];
-                        const vb = b[col.name];
-                        if (va > vb) return col.$sort;
-                        if (va < vb) return -col.$sort;
-                    }
-                    return 0;
-                })
-            }
-            return items.reduce((res, i) => {
-                if (!('$expanded' in i))
-                    Object.defineProperty(i, '$expanded', {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$expanded || false
-                    })
 
-                if (!('$parent' in i))
-                    Object.defineProperty(i, '$parent', {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$parent || null
-                    })
-                if (!('$level' in i))
-                    Object.defineProperty(i, '$level', {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$level || 0
-                    })
-                if (!('$hasChildren' in i))
-                    Object.defineProperty(i, '$hasChildren', {
-                        enumerable: false,
-                        configurable: true,
-                        writable: true,
-                        value: i.$hasChildren || false
-                    })
-                if (parent) {
-                    i.$parent = parent;
-                }
-                else if (i.$parent) {
-                    delete i.$parent;
-                }
-                i.$level = level;
-                if (!this.hideTop || level > -1)
-                    res.push(i);
 
-                const has_children = this.__checkChildren(i);
-                if (has_children?.then)
-                    has_children.then(res => i.$hasChildren = res);
-                else
-                    i.$hasChildren = has_children;
-
-                if ((i.$expanded === undefined && (this.expandAll || (this.expandLevel < i.level))) || (level < 0 && !i.$expanded))
-                    i.$expanded = true;
-                if (i.$expanded) {
-                    if (i.items?.length)
-                        res.push(...extract(i.items, level + 1, i));
-                    else
-                        i.items = undefined;
-                    this.expand(i);
-                }
-                return res;
-            }, []);
-        };
-
-        // let array = Object.assign([], this.dataSet);
-        let array = extract(this.dataSet, this.hideRoot || this.hideTop ? -1 : 0);
+        let array = Object.assign([], this.dataSet);
+        array = extract.call(this, array, this.hideRoot || this.hideTop ? -1 : 0);
         this._useColumnFilters(array);
         // this._filter(array);
         if (this.groups.length)
@@ -2075,3 +2006,75 @@ cells: {
     });
 
 }
+
+
+function extract(items, level, parent) {
+    if (!this.groups.length && this.allowSort && this.sorts.length) {
+        items.sort((a, b) => {
+            for (let col of this.sorts) {
+                const va = a[col.name];
+                const vb = b[col.name];
+                if (va > vb) return col.$sort;
+                if (va < vb) return -col.$sort;
+            }
+            return 0;
+        })
+    }
+    return items.reduce((res, i) => {
+        if (!('$expanded' in i))
+            Object.defineProperty(i, '$expanded', {
+                enumerable: false,
+                configurable: true,
+                writable: true,
+                value: i.$expanded || false
+            })
+
+        if (!('$parent' in i))
+            Object.defineProperty(i, '$parent', {
+                enumerable: false,
+                configurable: true,
+                writable: true,
+                value: i.$parent || null
+            })
+        if (!('$level' in i))
+            Object.defineProperty(i, '$level', {
+                enumerable: false,
+                configurable: true,
+                writable: true,
+                value: i.$level || 0
+            })
+        if (!('$hasChildren' in i))
+            Object.defineProperty(i, '$hasChildren', {
+                enumerable: false,
+                configurable: true,
+                writable: true,
+                value: i.$hasChildren || false
+            })
+        if (parent) {
+            i.$parent = parent;
+        }
+        else if (i.$parent) {
+            delete i.$parent;
+        }
+        i.$level = level;
+        if (!this.hideTop || level > -1)
+            res.push(i);
+
+        const has_children = this.__checkChildren(i);
+        if (has_children?.then)
+            has_children.then(res => i.$hasChildren = res);
+        else
+            i.$hasChildren = has_children;
+
+        if ((i.$expanded === undefined && (this.expandAll || (this.expandLevel < i.level))) || (level < 0 && !i.$expanded))
+            i.$expanded = true;
+        if (i.$expanded) {
+            if (i.items?.length)
+                res.push(...extract.call(this,  i.items, level + 1, i));
+            else
+                i.items = undefined;
+            this.expand(i);
+        }
+        return res;
+    }, []);
+};

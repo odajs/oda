@@ -1242,7 +1242,7 @@ if (!window.ODA) {
                 if (prototype[expr])
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
-                src.text = src.text || [];
+                src.text ??= [];
                 src.text.push(function textContent($el) {
                     let val = exec.call(this, fn, $el.$for);
                     if ($el.textContent != val)
@@ -1702,14 +1702,12 @@ if (!window.ODA) {
                 $el = el;
             }
         }
-        if ($el.nodeType == 8)
-            return;
         if ($el.localName in ODA.deferred)
             return;
         if (pars)
             $el.$for = pars;
 
-        if ($el.nodeType == 3) {
+        if ($el.nodeType == 3 || $el.nodeType == 8) {
             for (let h of src.text || [])
                 h.call(this, $el);
             return;
@@ -1765,7 +1763,7 @@ if (!window.ODA) {
                         $el.removeChild(el);
                         el = $el.childNodes[idx];
                     }
-                    await Promise.all(list);
+                    // await Promise.all(list);
                 }
                 else {
                     let el = $el.childNodes[idx];
@@ -1773,7 +1771,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars, this.__all || all);
+                    /*await*/ updateDom.call(this, h, el, $el, pars, this.__all || all);
                     idx++;
                 }
             }
@@ -1845,7 +1843,7 @@ if (!window.ODA) {
                 if (!all && $el.__need_update == false)
                     return;
                 $el.__need_update = false;
-                await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, all || $el.__all);
+                /*await*/ updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, all || $el.__all);
                 $el.__all = undefined;
 
             }
@@ -1857,7 +1855,7 @@ if (!window.ODA) {
                     if (!all && el.__need_update == false)
                         continue;
                     el.__need_update = false;
-                    await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, all || el.__all);
+                    /*await*/ updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, all || el.__all);
                     el.__all = undefined;
                 }
             }
@@ -1915,7 +1913,6 @@ if (!window.ODA) {
         const prev = $el.slotProxy?.previousSibling;
         const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
         host.insertBefore($el, target);
-        console.log('applySlotByOrder',$el, target)
     }
 
 
