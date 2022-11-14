@@ -1155,21 +1155,25 @@ if (!window.ODA) {
             return delay ? setTimeout(handler, delay) : ODA.requestAnimationFrame(handler);
     }
 
-    ODA.requestAnimationFrameList = [];
-    ODA.requestAnimationFrameID;
+    let __requestAnimationFrameList = [];
+    let __requestAnimationFrameID;
     ODA.requestAnimationFrame = function (handler){
-        ODA.requestAnimationFrameList.push(handler);
+        __requestAnimationFrameList.add(handler);
         runRAF();
     }
     function runRAF(){
-        if (ODA.requestAnimationFrameID || !ODA.requestAnimationFrameList.length) return;
+        if (__requestAnimationFrameID/* || !__requestAnimationFrameList.length*/) return;
         ODA.requestAnimationFrameID = requestAnimationFrame(()=>{
-            const list = Array.from(ODA.requestAnimationFrameList);
-            ODA.requestAnimationFrameList = [];
-            for (let i of list)
-                i();
-            ODA.requestAnimationFrameID = 0;
-            runRAF();
+            if (__requestAnimationFrameList.length){
+                const time = Date.now();
+                const list = Array.from(__requestAnimationFrameList);
+                __requestAnimationFrameList = [];
+                for (let i of list)
+                    i();
+                __requestAnimationFrameID = 0;
+                // console.log('size:', list.length, 'time:', Date.now() - time);
+                runRAF();
+            }
         })
     }
 
@@ -1279,7 +1283,7 @@ if (!window.ODA) {
                     src.text.push(function ($el) {
                         // this.async(()=>{
                             let val = exec.call(this, fn, $el.$for);
-                            if ($el.textContent != val)
+                            // if ($el.textContent != val)
                                 $el.textContent = val;
                         // })
                     });
@@ -1681,16 +1685,22 @@ if (!window.ODA) {
     let renderQueue = [];
     let rafid = 0;
     ODA.render = async function (renderer) {
-        if (renderQueue.includes(renderer)) return;
-        renderQueue.push(renderer);
+        // ODA.requestAnimationFrame(renderer)
+        // if (renderQueue.includes(renderer)) return;
+        renderQueue.add(renderer);
+        if (rafid) return;
         // if (rafid){
         //     cancelAnimationFrame(rafid);
         // }
         rafid = requestAnimationFrame(async ()=>{
-            while (renderQueue.length){
-                await renderQueue.shift()?.();
+            const list = Array.from(renderQueue);
+            renderQueue = []
+            while (list.length){
+                await list.shift()?.();
             }
             rafid = 0;
+            if (!renderQueue?.length) return;
+            ODA.render(renderQueue[0])
         })
     }
 
