@@ -1,7 +1,7 @@
 /* Регистрация Инструмента */
 const Localization = ODA.regTool('localization');
 ODA.localization.saveMethod = async  (phrases, dictionary)=>{
-    console.log('СОХРАНЕНИЕ СЛОВАРЕЙ')
+    // console.log('СОХРАНЕНИЕ СЛОВАРЕЙ')
     ODA.top.location.reload();
     //todo сделать стандартный метод сохранения словарей
 }
@@ -77,6 +77,7 @@ function translatePhrase(phrase, toStorage){
 }
 function _newVal(val) {
     // console.log(val)
+    // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
     if (!this.isConnected || !val)
         return val;
 
@@ -100,16 +101,24 @@ function _newVal(val) {
         } break;
         case 1: {
             if (!Localization.translateTagList.includes(this.localName)) {
+                // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
                 return val;
             }
-            const doc = domParser.parseFromString(val, 'text/html');
-            this.__translate = HtmlToText(doc.body.childNodes);
+            // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
+            // const doc = domParser.parseFromString(val, 'text/html');
+            // this.__translate = HtmlToText(doc.body.childNodes);
+
+            function replacer(_, p1, p2) {  return ( (p1.trim()==='')?p1:Localization.translate(p1) ) + p2 }
+            this.__translate = val.replace(/([^<]*?)(<[^>]*>|$)/g, replacer )
+
+
         } break;
         default:
             return val;
     }
     return this.__translate;
 }
+
 function HtmlToText(nodes, toStorage = true){
     let result = ''
     for (let i of nodes){
@@ -251,7 +260,7 @@ setTimeout(()=>{
 
     })
     ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json').then(res=>{
-        console.log(res)
+        // console.log(res)
         Localization.dictionary = Object.assign(Object.create(null),res)
     }).catch(e=>{
         console.log(e)

@@ -154,7 +154,7 @@ var ENV = ENV || (function () {
             if (!keepIdentity && oldData && oldData[i]) {
                 row.lastSample = oldData[i].lastSample;
             }
-            if (!row.lastSample || Math.random() < ENV.mutations()) {
+            if (!row.lastSample || Math.random() < mutations) {
                 counter = counter + 1;
                 if (!keepIdentity) {
                     row.lastSample = null;
@@ -171,43 +171,21 @@ var ENV = ENV || (function () {
             }
         };
     }
+    let mutations = .5
 
-    var mutationsValue = 0.5;
 
-    function mutations(value) {
-        if (value) {
-            mutationsValue = value;
-            document.querySelector('#ratioval').innerHTML = 'mutations : ' + (mutationsValue * 100).toFixed(0) + '%';
-            return mutationsValue;
-        } else {
-            return mutationsValue;
-        }
+    onmessage = function(e) {
+        mutations = e.data;
+        const result = getData();
+
+        postMessage(result.toArray());
     }
-
-    var body = document.querySelector('body');
-    var theFirstChild = body.firstChild;
-
-    var sliderContainer = document.createElement('div');
-    sliderContainer.style.cssText = "display: flex";
-    var slider = document.createElement('input');
-    var text = document.createElement('label');
-    text.innerHTML = 'mutations : ' + (mutationsValue * 100).toFixed(0) + '%';
-    text.id = "ratioval";
-    slider.setAttribute('min', 1);
-    slider.setAttribute('max', 100);
-    slider.setAttribute("type", "range");
-    slider.style.cssText = 'margin-bottom: 10px; margin-top: 5px';
-    slider.addEventListener('change', function (e) {
-        ENV.mutations(+e.target.value / 100);
-    });
-    sliderContainer.appendChild(text);
-    sliderContainer.appendChild(slider);
-    body.insertBefore(sliderContainer, theFirstChild);
 
     return {
         generateData: getData,
         rows: 50,
         timeout: 0,
-        mutations: mutations
+        // mutations: mutations
     };
 })();
+
