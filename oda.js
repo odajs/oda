@@ -1216,8 +1216,10 @@ if (!window.ODA) {
             this.tag = el.nodeName;
             this.fn = {};
             this.children = [];
-            if (el.nodeName === 'svg' || (el.parentNode && el.parentNode.$node && el.parentNode.$node.svg))
-                this.svg = true;
+            if (el.parentNode?.$node?.isSvg || el.nodeName === 'svg')
+                this.isSvg = true;
+            else if (el.nodeName === 'SLOT')
+                this.isSlot = true;
             this.listeners = {};
         }
     }
@@ -1416,18 +1418,15 @@ if (!window.ODA) {
     }
     const tags = {
         if(tag, fn, p, $el) {
-            let t = exec.call(this, fn, p);
-            return t ? tag : '#comment';
+            return  exec.call(this, fn, p)? tag : false;
         },
         'else-if'(tag, fn, p, $el) {
-            if (!$el || ($el.previousElementSibling && $el.previousElementSibling.nodeType === 1))
-                return '#comment';
-            return exec.call(this, fn, p) ? tag : '#comment';
+            if ($el.previousElementSibling?.nodeType !== 1)
+                return exec.call(this, fn, p) ? tag : false;
         },
         else(tag, fn, p, $el) {
-            if (!$el || ($el.previousElementSibling && $el.previousElementSibling.nodeType === 1))
-                return '#comment';
-            return tag;
+            if ($el.previousElementSibling?.nodeType !== 1)
+                return tag;
         },
         is(tag, fn, p) {
             if (tag.startsWith('#'))
@@ -1602,7 +1601,7 @@ if (!window.ODA) {
         else if (tag === '#text')
             $el = document.createTextNode(''/*src.textContent || ''*/);
         else {
-            if (src.svg)
+            if (src.isSvg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
             else {
                 $el = ODA.createElement.call(this, tag, undefined, this.context);
@@ -1662,25 +1661,22 @@ if (!window.ODA) {
     }
 
 
-    let renderCount = 0;
     async function render() {
-        renderCount++;
-        updateDom.call(this, this.$core.node, this.$core.shadowRoot, undefined, undefined, renderCount);
+        updateDom.call(this, this.$core.node, this.$core.shadowRoot);
     }
-    async function updateDom(src, $el, $parent, pars, rc, all = false) {
-        // if (rc !== renderCount){
-        //     // console.log('UD-cancel', rc, renderCount)
-        //     return;
-        // }
+    async function updateDom(src, $el, $parent, pars, all = false) {
+        if (this?.$sleep && !this.$wake)
+            return;
+        if ($el?.$sleep && !$el?.$wake && !src.isSvg && !src.isSlot)
+            return;
 
-        // this.__need_update = false;
         ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
         ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
                 for (let h of src.tags)
-                    tag = h.call(this, tag, src.fn[h.name], pars, $el);
+                    tag = h.call(this, tag, src.fn[h.name], pars, $el) || '#comment';
             }
             if (!$el) {
                 $el = createElement.call(this, src, tag);
@@ -1688,35 +1684,31 @@ if (!window.ODA) {
                 if ($el.nodeType === 3)
                     $el.textContent = src.textContent;
             }
-            else if ($el.$node && $el.$node.id !== src.id) {
+            else if ($el.$node?.id !== src.id) {
                 const el = createElement.call(this, src, tag);
-                if ($parent.contains($el)){
+                if ($parent.contains($el))
                     $parent.insertBefore(el, $el);
-
-                }else{
+                else
                     $parent.replaceChild(el, $el);
-                }
                 $el = el;
             }
-            else if ($el.slotTarget) {
+            else if ($el.slotTarget)
                 $el = $el.slotTarget;
-            }
             else if ($el.nodeName !== tag) {
-                const before = $el.__before ??= Object.create(null);
+                $el.__before ??= Object.create(null);
                 const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
                 el.__before ??= Object.create(null);
                 el.__before[$el.nodeName] = $el;
                 $parent.replaceChild(el, $el);
                 el.$ref = $el.$ref;
                 $el = el;
-
             }
         }
         if ($el.localName in ODA.deferred)
             return;
 
         $el.$for = pars;
-        const ch = src.children.length && $el.children && (!$el.$sleep || $el.$wake || src.svg || $el.localName === 'slot')
+        const ch = src.children?.length && $el.children/* && (!$el.$sleep || $el.$wake || src.isSvg || $el.localName === 'slot')*/
         if (ch) {
 
             let idx = 0;
@@ -1739,7 +1731,7 @@ if (!window.ODA) {
                                 if (elem){
                                     const ff = elem?.$for;
                                     if (elem.$node === h.src && (!ff || node?.params[0] === ff[0])){
-                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
+                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
                                         break;
                                     }
                                     else{
@@ -1748,14 +1740,14 @@ if (!window.ODA) {
                                     }
                                 }
                                 else{
-                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
+                                    list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
                                     break;
                                 }
                             }
                         }
                         else{
                             elem = $el.childNodes[idx + j];
-                            list.push(updateDom.call(this, node.child, elem, $el, node.params, rc, this.__all || all));
+                            list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
                         }
 
                     }
@@ -1774,7 +1766,7 @@ if (!window.ODA) {
                         idx++
                         el = $el.childNodes[idx];
                     }
-                    await updateDom.call(this, h, el, $el, pars, rc, this.__all || all);
+                    await updateDom.call(this, h, el, $el, pars, this.__all || all);
                     idx++;
                 }
             }
@@ -1784,10 +1776,9 @@ if (!window.ODA) {
                 h.call(this, $el);
             return;
         }
-
-
-
-
+        this.$core.prototype.$system.observers?.forEach(name => {
+            return this[name];
+        });
         if (src.dirs)
             for (let h of src.dirs)
                 h.call(this, $el, src.fn[h.name], pars);
@@ -1810,20 +1801,10 @@ if (!window.ODA) {
                             this.setProperty(listener.expr, obj[propName]);
                             return;
                         }
-                        // else {
-                        //     $el.setProperty(i, bind.val);
-                        // }
                     }
 
-                }/* else {*/
-              /*      if (bind.val === undefined && listener && $el.fire) {
-                        // requestAnimationFrame(() => {
-                            $el.fire(i + '-changed');
-                        // });
-                    } else  {*/
-                        $el.setProperty(i, bind.val);
-                    // }
-                // }
+                }
+                $el.setProperty(i, bind.val);
             })
 
             // for (let i in src.bind) {
@@ -1854,20 +1835,18 @@ if (!window.ODA) {
         }
 
 
-        this.$core.prototype.$system.observers?.forEach(name => {
-            return this[name];
-        });
 
-        if (!$el.$sleep || this.$wake){
+
+        // if (!$el.$sleep || this.$wake){
             if ($el.$core && this.isConnected) {
                 if (!all && $el.__need_update === false)
                     return;
                 $el.__need_update = false;
-                await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, rc, all || $el.__all);
+                await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, all || $el.__all);
                 $el.__all = undefined;
 
             }
-            else if ($el.localName === 'slot') {
+            else if (src.isSlot/*$el.localName === 'slot'*/) {
                 const elements = $el.assignedElements?.() || [];
                 for (let el of elements) {
                     if (!el.$core || el.$sleep)
@@ -1875,11 +1854,11 @@ if (!window.ODA) {
                     if (!all && el.__need_update === false)
                         continue;
                     el.__need_update = false;
-                    await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, rc, all || el.__all);
+                    await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, all || el.__all);
                     el.__all = undefined;
                 }
             }
-        }
+        // }
 
 
         if (!$el.slot || $el.slotProxy || $el.slot === '?' || this.slot === '?' || $el.parentElement?.slot)
@@ -1903,7 +1882,7 @@ if (!window.ODA) {
         $parent.replaceChild(el, $el);
         if ($el.slot === '*')
             $el.removeAttribute('slot')
-        requestAnimationFrame(() => {
+        // requestAnimationFrame(() => {
             let host;
             const filter = `slot[name='${$el.slot}']`;
             for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
@@ -1927,12 +1906,13 @@ if (!window.ODA) {
                 host = host.domHost || (host.parentElement?.$core && host.parentElement);
             }
             applySlotByOrder($el, this);
-        })
+        // })
     }
     function applySlotByOrder($el, host) {
         const prev = $el.slotProxy?.previousSibling;
         const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
         host.insertBefore($el, target);
+        console.log('applySlotByOrder',$el, target)
     }
 
 
@@ -2451,7 +2431,7 @@ if (!window.ODA) {
         Node.prototype.render = function () {
             if (!this.$wake && this.$sleep) return;
             this.domHost?.render();
-            // updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, renderCount, true);
+            // updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, true);
         };
     }
     Element:{
