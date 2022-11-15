@@ -1685,13 +1685,8 @@ if (!window.ODA) {
     let renderQueue = [];
     let rafid = 0;
     ODA.render = async function (renderer) {
-        // ODA.requestAnimationFrame(renderer)
-        // if (renderQueue.includes(renderer)) return;
         renderQueue.add(renderer);
         if (rafid) return;
-        // if (rafid){
-        //     cancelAnimationFrame(rafid);
-        // }
         rafid = requestAnimationFrame(async ()=>{
             const list = Array.from(renderQueue);
             renderQueue = []

@@ -186,6 +186,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     </div>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
+    attached(){
+        this.setScreen(this.$refs.body);
+    },
     get _bodyHeight() {
         return this.lazy
             ? (this.size + this.raisedRows?.length) * this.rowHeight
@@ -887,7 +890,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         return this.checkedRows;
     },
     _scroll(e) {
-        const body = this.$refs.body;
+        this.setScreen(this.$refs.body);
+    },
+    setScreen(body){
         if (!body) return;
         this.leftScroll = body.scrollLeft;
         // this.interval('_scroll', ()=>{
