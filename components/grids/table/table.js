@@ -640,7 +640,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         }
     },
     _getSortsByFlag(cols, res) { // возвращает в т.ч. скрытые колонки
-        return cols.reduce((acc, col) => {
+        return cols?.reduce((acc, col) => {
             if (col.$expanded && col.items?.length)
                 this._getSortsByFlag(col.items, acc);
             else if (col.$sort)
@@ -1541,7 +1541,7 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <oda-icon ~if="item.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (hideIcon || !icon)?0:1}"></oda-icon>
+        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
