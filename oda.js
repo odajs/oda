@@ -1523,11 +1523,11 @@ if (!window.ODA) {
         },
         class($el, fn, p) {
             let s = exec.call(this, fn, p) ?? '';
-            if (Array.isArray(s))
-                s = s[0];
             if (!Object.equal($el.$class, s)) {
                 $el.$class = s;
-                if (typeof s === 'object')
+                if (Array.isArray(s))
+                    s = s.join(' ');
+                else if (typeof s === 'object')
                     s = Object.keys(s).filter(i => s[i]).join(' ');
                 if ($el.$node?.vals?.class)
                     s = (s ? (s + ' ') : '') + $el.$node.vals.class;

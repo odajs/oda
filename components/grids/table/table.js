@@ -176,8 +176,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
                     :focused="allowFocus && isFocusedRow(row)"
                     :highlighted="allowHighlight && isHighlightedRow(row)"
                     :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                    <div :tabindex="_getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id]">
-                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)" ~props="_getTemplateProps(row, col)" :column="col" class="cell-content" :item="row" ></div>
+                    <div :tabindex="_getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                     </div>
                 </div>
             </div>
@@ -695,14 +695,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             return template.tag || template.is || template.template;
         return template;
     },
-    _getTemplateProps(row, col) { // зачем это?
-        if (!row.$group && !col.treeMode) {
-            let template = col.template || row.template || this.defaultTemplate;
-            if (typeof template === 'object')
-                return template.props;
-        }
-        return {};
-    },
+    // _getTemplateProps(row, col) { // зачем это?
+    //     if (!row.$group && !col.treeMode) {
+    //         let template = col.template || row.template || this.defaultTemplate;
+    //         if (typeof template === 'object')
+    //             return template.props;
+    //     }
+    //     return {};
+    // },
     _getTabIndex(col, row, c, r) {
         if (row.$group || !this.allowFocus)
             return null;
