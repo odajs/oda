@@ -29,9 +29,12 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
         </div>
         <div ~if="showName" class="horizontal name">
             <label>name:</label>
-            <input tabindex="-1" class="flex" ::value="name" style="border: none; font-size: x-small; font-weight: bold;">
+            <input tabindex="-1" class="flex" :value="name" style="border: none; font-size: x-small; font-weight: bold;" @input="nameInput">
         </div>
     `,
+    nameInput(e){
+
+    },
     defaultList: Array,
     props: {
         label: {
