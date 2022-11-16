@@ -26,9 +26,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             align-items: center;
             /*padding: 0px 4px;*/
         }
-        :host([auto-width]) .cell {
-            @apply --flex;
-        }
+        /*:host([auto-width]) .cell {*/
+        /*    @apply --flex;*/
+        /*}*/
         :host([row-lines]) .cell {
             border-bottom: 1px  solid var(--dark-background);
             box-sizing: border-box;
@@ -159,7 +159,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             @apply --no-flex;
         }
     </style>
-    <style ~text="_styles"></style>
+    <style ~text="colStyles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
 <!--    <oda-table-body></oda-table-body>-->
@@ -342,11 +342,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     },
     get footer() {
         const obj = {};
-        const size = this.items.length;
         this.rowColumns.forEach(c => {
             switch (c.summary) {
                 case 'count': {
-                    obj[c[this.columnId]] = this.items.length;
+                    obj[c[this.columnId]] = this.size;
                 } break;
                 case 'sum': {
                     obj[c[this.columnId]] = this.dataSet.reduce((res, r) => {
@@ -358,13 +357,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
                 } break;
                 default: {
                     if (c.treeMode || c.showScreenInfo) {
-                        let d = size.toLocaleString();
-                        if (this.screen && this.screen.from !== undefined && this.screen.length !== undefined) {
-                            let to = this.screen.from + this.screen.length;
+                        let d = this.size;
+                        if (this.screenFrom !== undefined && this.screenLength !== undefined) {
+                            let to = this.screenFrom + this.screenLength;
                             if (to > d)
                                 to = d;
                             if (d)
-                                d += '  [ ' + (this.screen.from).toLocaleString() + ' ... ' + to.toLocaleString() + ' ]';
+                                d = d.toLocaleString() + '  [ ' + (this.screenFrom).toLocaleString() + ' ... ' + to.toLocaleString() + ' ]';
                         }
                         obj[c[this.columnId]] = d || '';
                     }
@@ -380,6 +379,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     // },
     get headerColumns() {
         this.columns.forEach((col, i) => {
+            checkWidth(col);
             if (col[this.columnId]) {
                 col.order = col.order || i + 1;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/order', col.order || i + 1);
                 col.hidden = col.hidden || false;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/hidden', col.hidden || false);
@@ -411,13 +411,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         cols.sort((a, b) => (a.index - b.index));
         cols.filter(i => i.fix === 'left' || i.treeMode).reduce((res, i) => {
             i.left = res;
-            res += i.width || 0;
+            res += i.$width || 0;
             return res;
         }, 0);
 
         cols.filter(i => i.fix === 'right').reverse().reduce((res, i) => {
             i.right = res;
-            res += i.width || 0;
+            res += i.$width || 0;
             return res;
         }, 0);
         cols.forEach((c, i) => {
@@ -470,35 +470,38 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     get _sortsByFlag() {
         return this._getSortsByFlag(this.columns, []);
     },
-    get _styles() {
+    get colStyles() {
         return this.rowColumns.map(col => {
             if (col.id === undefined)
                 return '';
+            let style = `.col-${col.id}{/*${col[this.columnId]}*/\n\t`;
             if (col.index === 999)
-                return `.col-${col.id}{\n\tmin-width: 0px !important;\n\tflex: 1;\n\tflex-basis: auto;\n}`;
+                style += '\n\tflex: 1;\n\tflex-basis: auto;';
+            else{
+                style += '\n\tposition: sticky;';
+                if (col.width){
+                    style+=`\n\tmin-width: ${col.width}px; \n\tmax-width: ${col.width}px;\n\tflex: 0;`
+                }
+                else{
+                    if (this.autoWidth && this.rowColumns.last === col)
+                        style+=`\n\tflex: 1;`
+                    style+=`\n\tmin-width: 16px;`
+                }
+                col.$width = col.$width || col.width || 150;
+                style+=`\n\twidth: ${col.$width}px;`;
 
-            col.width = col.width || 150;//this.__read(this.settingsId + '/column/' + col.id + '/width', col.width || 150);
-            const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
-            const max = col.width + 'px';
-            let style = `.col-${col.id}{\n\tmin-width: ${min};\n\twidth: ${max};`;
-            if (col.fix) {
-                style += `\n\tposition: sticky;\n\tposition: -webkit-sticky;\n\tz-index: 1;\n\tmax-width: ${max};`;
-                if (col.fix === 'left') {
-                    style += `\n\tleft: ${col.left}px;`
+
+                const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
+                const max = col.$width + 'px';
+                if (col.fix || col.treeMode) {
+                    style += `\n\tz-index: 1;`;
+                    if (col.fix === 'left') {
+                        style += `\n\tleft: ${col.left}px;`
+                    }
+                    else if (col.fix === 'right') {
+                        style += `\n\tright: ${col.right}px;`
+                    }
                 }
-                if (col.fix === 'right') {
-                    style += `\n\tright: ${col.right}px;`
-                }
-            }
-            if (col.treeMode) {
-                style += `\n\tposition: sticky;\n\tposition: -webkit-sticky;\n\tz-index: 1;\n\tleft: ${col.left}px;`;
-            }
-            while (col.$parent) {
-                col.$parent.width = col.$parent.items.reduce((res, a) => {
-                    res += (a.width || 0);
-                    return res;
-                }, 0) || col.$parent.width || 150;
-                col = col.$parent;
             }
             style += '\n}\n';
             return style;
@@ -1326,6 +1329,12 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
     }
 });
 
+ODA({is:'oda-table-part',
+    template:`
+        <style>{{colStyles}}}</style>
+    `
+})
+
 ODA({is: 'oda-table-settings', imports: '@oda/button',
     template: /*html*/`
     <style>
@@ -1424,7 +1433,7 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
     },
 });
 
-ODA({is: 'oda-table-cols',
+ODA({is: 'oda-table-cols', extends: 'oda-table-part',
     template:  `
         <style>
             :host{
@@ -1436,9 +1445,9 @@ ODA({is: 'oda-table-cols',
             }
         </style>
         <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
-            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"  :column="col" class="flex" style="position: sticky;" ~style="{zIndex: (col.left !== undefined  || col.left !== undefined)?1:0, right: col.right === undefined?'':col.right + scr +'px', left: col.left === undefined?'0px':col.left+'px'}"></div>
-            <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
-        </div>        
+            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
+        </div>
+        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>        
     `,
     getItem(col){
         return col;
@@ -1446,8 +1455,8 @@ ODA({is: 'oda-table-cols',
     getTemplate(col){
         return 'div'
     },
-    scr: 0,
     columns: [],
+    src: 0
 })
 
 ODA({is:'oda-table-header', extends: 'oda-table-cols',
@@ -1479,16 +1488,12 @@ ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
             :host {
                 box-sizing: border-box;
                 border-color: white !important;
-                min-width: {{column.width}}px;
-                max-width: {{column.width}}px;
-                @apply --flex;
                 @apply --horizontal;
                 justify-content: flex-end;
                 @apply --dark;
                 text-align: right;
                 font-size: smaller;
                 flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
-                
             }
         </style>
         <div class="split"></div>
@@ -1707,19 +1712,16 @@ cells: {
         <span class="label flex" :text="item.error"></span>`
     });
 
-    const MHW = 24; //min header width
     ODA({is: 'oda-table-header-cell', imports: '@oda/button', extends: 'oda-table-cell-base',
         template: /*html*/`
         <style>
             :host {
+                
+                min-height: 32px !important;
                 box-sizing: border-box;
                 position: sticky;
-                min-height: {{rowHeight}}px;
-                min-width: {{column.width}}px;
-                max-width: {{column.width}}px;
                 font-weight: bold;
                 font-size: small;
-                @apply --flex;
                 @apply --horizontal;
                 @apply --header;
                 cursor: pointer;
@@ -1727,11 +1729,16 @@ cells: {
                 overflow: hidden;
                 align-items: initial !important;
                 box-sizing: border-box;
+                max-width: {{column.width || 'auto'}};
+                min-width: {{column.width || '16px'}};
+                width: {{column.$width}};
+                @apply --no-flex;
             }
             .split {
                 cursor: col-resize;
                 border-right: 1px solid var(--dark-background, black);
                 transition: border-color .5s;
+                width: 2px;
             }
             .split:hover {
                 border-color: var(--dark-background, black);
@@ -1786,9 +1793,15 @@ cells: {
                 max-height: {{iconSize * .7}}px;
                 min-height: {{iconSize * .7}}px;
             }
+            oda-table-expand{
+                display: {{column?.items?.length?'flex':'none'}};
+            }
+            label{
+                padding-left: {{column?.items?.length?'0px':'4px'}};;
+            }
         </style>
         <div class="flex vertical" style="cursor: pointer" @tap.stop="_sort" :disabled="!column.name">
-            <div class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight}">
+            <div class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item="item"></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
@@ -1802,7 +1815,7 @@ cells: {
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="column.$expanded">
-                <oda-table-header-cell class="header-cell" ~for="col in column.items" :item="col" :column="col"  ref="subColumn"></oda-table-header-cell>
+                <oda-table-header-cell class="header-cell" ~for="col in column.items" :item="col" :column="col"  ref="subColumn"  ~class="['col-' + col.id]"></oda-table-header-cell>
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
@@ -1839,9 +1852,29 @@ cells: {
         listeners:{
             contextmenu: '_menu',
             resize(e) {
-                if (!this.column || this.column.$expanded) return;
+                if (!this.column || this.column.$expanded || this.column.id === 999) return;
+                checkWidth(this.column);
                 e.stopPropagation();
-                this.column.width = Math.round(this.getBoundingClientRect().width);
+                this.column.$width = /*this.column.$width || */Math.round(this.getBoundingClientRect().width);
+                let parent = this.column.$parent;
+                if (parent){
+                    parent.$width = parent.items.reduce((res, i)=>{
+                        checkWidth(i);
+                        return res += +i.$width;
+                    }, 0)
+                }
+                const width = this.column.items?.reduce((res,i)=>{
+                    checkWidth(i);
+                    i.$width = i.width ||  i.$width || this.column.$width/this.column.items.length;
+                    return res += i.$width;
+                }, 0);
+                if (width){
+                    const correct = this.column.$width/width;
+                    this.column.items?.forEach(i=>{
+                        checkWidth(i);
+                        i.$width = i.$width * correct;
+                    })
+                }
             }
         },
         _dragstart(e) {
@@ -1856,51 +1889,91 @@ cells: {
             }
         },
         _drop(e) {
-            this.table._swapColumns(this.table._draggableColumn, this.column);
+            e.preventDefault();
+            // this.table._swapColumns(this.table._draggableColumn, this.column);
             this.table._draggableColumn = null;
         },
         _track(e, d) {
             switch (e.detail.state) {
                 case 'start': {
-                    this.column.width = Math.round(this.offsetWidth);
+                    let parents  = [];
+                    let parent = this.column.$parent;
+                    while (parent){
+                        parents.push(parent);
+                        parent = parent.$parent;
+                    }
+                    this._trackProps = {
+                        sign: (this.column.fix === 'right' ? -1 : 1),
+                        next: this.nextElementSibling,
+                        parents: parents
+                    }
+                    this.column.$width = Math.round(this.offsetWidth);
                 } break;
                 case 'track': {
-                    const delta = e.detail.ddx * (this.column.fix === 'right' ? -1 : 1);
-                    const clientRect = this.getClientRects()[0];
-                    if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.column.fix !== 'right') return;
-                    let p = this.column;
+                    const step = this._trackProps.sign * e.detail.ddx;
+                    let w1 = +this.column.$width + step;
+                    // let w2 = +this._trackProps?.next?.column?.$width - step;
+                    if (w1 < 16) return;
+                    this.column.$width = w1;
+                    // if (this._trackProps.next?.column)
+                    //     this._trackProps.next.column.$width = w2;
+                    this._trackProps.parents.forEach(i=>{
+                        i.$width = +i.$width + step;
+                    })
+                    // if (this.column.$expanded){
+                    //     let w = this.column.items?.reduce((res, i)=>{
+                    //         i.$width = i.width || i.$width || w1/this.column.items.length;
+                    //         res += i.$width;
+                    //         return res;
+                    //     },0)
+                    //     if (w && w !== w1){
+                    //         w /= w1;
+                    //         this.column.items?.forEach(i=>{
+                    //             i.$width /= w;
+                    //         })
+                    //     }
+                    // }
 
-                    while (p) {
-                        const w = Math.round(p.width + delta);
-                        p.width = Math.max(w, this.minWidth);
-                        p = p.$parent;
-                    }
-                    const setChildrenWidth = (col, delta) => {
-                        if (col.items?.length) {
-                            const d = Math.round((delta || 0) / col.items.length);
-                            col.items.forEach(i => {
-                                const w = i.width + d;
-                                i.width = Math.max(getMinWidth(i), w);
-                                setChildrenWidth(i, d);
-                            });
-                        }
-                    };
-                    setChildrenWidth(this.column, delta);
+
+
+
+
+
+                    // const clientRect = this.getBoundingClientRect();
+                    // if (delta > 0 && e.detail.x < (clientRect.x + clientRect.width) && this.column.fix !== 'right') return;
+                    // let p = this.column;
+                    //
+                    // while (p) {
+                    //     const w = Math.round(p.width + delta);
+                    //     p.width = Math.max(w, this.minWidth);
+                    //     p = p.$parent;
+                    // }
+                    // const setChildrenWidth = (col, delta) => {
+                    //     if (col.items?.length) {
+                    //         const d = Math.round((delta || 0) / col.items.length);
+                    //         col.items.forEach(i => {
+                    //             const w = i.width + d;
+                    //             i.width = Math.max(getMinWidth(i), w);
+                    //             setChildrenWidth(i, d);
+                    //         });
+                    //     }
+                    // };
+                    // setChildrenWidth(this.column, delta);
                 } break;
-                case 'end': {
-                    let col = this.column;
-                    const writeChildren = col => {
-                        col.items?.forEach(c => {
-                            // this.table.__write(this.table.settingsId + '/column/' + c.id + '/width', c.width);
-                            writeChildren(c);
-                        });
-                    };
-                    writeChildren(col);
-                    while (col) {
-                        // this.table.__write(this.table.settingsId + '/column/' + col.id + '/width', col.width);
-                        col = col.$parent;
-                    }
-                } break;
+                // case 'end': {
+                //     let col = this.column;
+                //     const writeChildren = col => {
+                //         col.items?.forEach(c => {
+                //             // this.table.__write(this.table.settingsId + '/column/' + c.id + '/width', c.width);
+                //             writeChildren(c);
+                //         });
+                //     };
+                //     writeChildren(col);
+                //     while (col) {
+                //         // this.table.__write(this.table.settingsId + '/column/' + col.id + '/width', col.width);
+                //         col = col.$parent;
+                //     }
+                // } break;
             }
         },
         async _menu(e) {
@@ -1980,7 +2053,7 @@ cells: {
         if (column.items?.length) {
             return column.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
         } else {
-            return Math.max(column.width, 15);
+            return Math.max(column.$width, 15);
         }
     }
 
@@ -2083,3 +2156,32 @@ function extract(items, level, parent) {
         return res;
     }, []);
 };
+
+function checkWidth(col){
+    if (!('$width' in col)){
+        Object.defineProperty(col, '$width', {
+            configurable: false,
+            enumerable: true,
+            set(v) {
+                this['#$width'] = v;
+                if (this.$expanded){
+                    let  w = this.items?.reduce((res, i)=>{
+                        checkWidth(i);
+                        i.$width = i.$width || v/this.items.length;
+                        res += i.$width ;
+                        return res;
+                    },0)
+                    if (w && v !== w){
+                        w /= v;
+                        this.items.forEach(i=>{
+                            i.$width /=w;
+                        })
+                    }
+                }
+            },
+            get() {
+                return (this.width || this['#$width']);
+            }
+        })
+    }
+}
