@@ -1541,7 +1541,12 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
+            <style>
+                :host{
+                    @apply --no-flex;
+                }
+            </style>
+            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -1777,13 +1782,6 @@ cells: {
                 border-left: 1px solid var(--dark-background);
                 box-sizing: border-box;
             }
-            oda-icon :after {
-                content: attr(sort);
-                font-size: small;
-                top: 0px;
-                position: absolute;
-                right: 0px;
-            }
             :host .filter-container {
                 /*@apply --shadow;*/
                 @apply --horizontal
@@ -1796,7 +1794,7 @@ cells: {
                 display: {{column?.items?.length?'flex':'none'}};
             }
             label{
-                padding-left: {{column?.items?.length?'0px':'4px'}};;
+                text-align: center;
             }
         </style>
         <div class="flex vertical" style="cursor: pointer" @tap.stop="_sort" :disabled="!column.name">
@@ -1804,7 +1802,7 @@ cells: {
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item="item"></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
-                    <oda-icon :show="showSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
+                    <oda-icon style="position: absolute; right: 2px;" :show="showSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <div class="split"  @tap.stop @track="_track"></div>
             </div>
@@ -2090,8 +2088,9 @@ function checkWidth(col){
             configurable: false,
             enumerable: true,
             set(v) {
-                if (v<16)
-                    v = 16;
+                const min = this.items?.length?32:16;
+                if (v<min)
+                    v = min;
                 this['#$width'] = v;
                 if (this.$expanded){
                     let  w = this.items?.reduce((res, i)=>{
