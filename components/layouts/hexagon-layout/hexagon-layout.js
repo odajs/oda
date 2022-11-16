@@ -310,7 +310,7 @@ ODA({is: 'oda-hexagon',
         },
         dragenter(e){
             if (!this.x || !this.y) return;
-            this.$addClass('drag-hover');
+            this.classList.add('drag-hover');
         },
         dragend(e){
             this.showTrash = false;
@@ -332,11 +332,11 @@ ODA({is: 'oda-hexagon',
                 e.dataTransfer.dropEffect = 'none';
         },
         dragleave(e){
-            this.$removeClass('drag-hover');
+            this.classList.remove('drag-hover')
         },
         drop(e){
             this.showTrash = false;
-            this.$removeClass('drag-hover');
+            this.classList.remove('drag-hover')
             e.preventDefault()
             for (let type of e.dataTransfer.types){
                 switch (type){

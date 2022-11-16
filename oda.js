@@ -515,9 +515,6 @@ if (!window.ODA) {
                 }
                 return el;
             }
-            $addClass(cls){
-                this.classList.add(cls)
-            }
             get $keys(){
                 if (!this['#$keys']){
                     this['#$keys'] = {};
@@ -529,12 +526,6 @@ if (!window.ODA) {
             }
             get $body(){
                 return this.domHost?.body || this.parentNode?.body || this.parentElement;
-            }
-            $removeClass(cls){
-                this.classList.remove(cls)
-            }
-            $toggleClass(cls){
-                this.classList.toggle(cls)
             }
             clearSettings() {
                 globalThis.localStorage.removeItem(this.$$savePath);
@@ -1151,29 +1142,23 @@ if (!window.ODA) {
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
     ODA.async = function (handler, delay = 0){
-        if (handler)
-            return delay ? setTimeout(handler, delay) : ODA.requestAnimationFrame(handler);
+        if (!handler) return;
+        delay ? setTimeout(handler, delay) : ODA.RAF(handler);
     }
-
-    let __requestAnimationFrameList = [];
-    let __requestAnimationFrameID;
-    ODA.requestAnimationFrame = function (handler){
-        __requestAnimationFrameList.add(handler);
+    ODA.RAF = function (handler){
+        ODA.RAF.list.add(handler);
         runRAF();
     }
+    ODA.RAF.list = [];
     function runRAF(){
-        if (__requestAnimationFrameID/* || !__requestAnimationFrameList.length*/) return;
-        ODA.requestAnimationFrameID = requestAnimationFrame(()=>{
-            if (__requestAnimationFrameList.length){
-                const time = Date.now();
-                const list = Array.from(__requestAnimationFrameList);
-                __requestAnimationFrameList = [];
-                for (let i of list)
-                    i();
-                __requestAnimationFrameID = 0;
-                // console.log('size:', list.length, 'time:', Date.now() - time);
-                runRAF();
-            }
+        if (ODA.RAF.id) return;
+        if (!ODA.RAF.list.length) return;
+        const list = Array.from(ODA.RAF.list);
+        ODA.RAF.list = [];
+        ODA.RAF.id = requestAnimationFrame(()=>{
+            for (let i of list)
+                i();
+            ODA.RAF.id = 0;
         })
     }
 
