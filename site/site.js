@@ -90,7 +90,7 @@ site: {
                 <div class="vertical" style="padding: 10px;">
                     <oda-site-search class="no-flex" ::_edit-mode=_editMode ></oda-site-search>
                     <div class="horizontal" style="align-items:center; justify-content: flex-end;">
-                        <a ~if="location?.href?.includes('components/') || location?.href?.includes('benchmarks/') || location?.href?.includes('apps/')" class="no-flex" :href="location.href.replace('index.html', '').replace('#', '')" target="_blank">
+                        <a ~if="location?.href?.includes('components/') || location?.href?.includes('benchmarks/') || location?.href?.includes('apps/')" class="no-flex" :href="location.href.replace('index.html', '').replace('#', '') + '/'" target="_blank">
                             <oda-icon icon="icons:open-in-new" :icon-size="25" title="open in new window"></oda-icon>
                         </a>
                         <div class="flex"></div>
@@ -104,7 +104,7 @@ site: {
                 </div>
                 <oda-site-header :items ::part></oda-site-header>
             </div>
-            <div @activate="_activate(ctrl)" slot="left-panel" ~for="ctrl in leftControls" :icon="ctrl._icon" :title="ctrl._title" class="layout" @tap="_ontap(ctrl)">
+            <div @activate="_activate(ctrl)" slot="left-panel" ~for="ctrl in leftControls" :icon="ctrl._icon" :title="ctrl._title" class="layout" @tap="_ontap(ctrl)" style="position: relative; height: 100%">
                 <oda-site-nav-tree :part="items?.[index]" ::focused-node="focusedItem" class="flex" hide-top style="height: 100%"></oda-site-nav-tree>
             </div>
             <oda-site-content-tree ~show="!_showTester" :slot="part?'main':'?'" :part="focusedItem" ~style="{display: focusedItem?'flex':'none'}"></oda-site-content-tree>
