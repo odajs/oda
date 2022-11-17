@@ -233,10 +233,10 @@ if (!window.ODA) {
                 for (let i in core.defaults) {
                     const desc = Object.getOwnPropertyDescriptor(this, i);
                     if (desc) {
-                        defs[i] = makeReactive.call(this, desc.value, (this.$core.saveProps?.[i] && i));
+                        defs[i] = makeReactive.call(this, desc.value/*, (this.$core.saveProps?.[i] && i)*/);
                         delete this[i];
                     }
-                    this['#' + i] =  makeReactive.call(this, core.defaults[i], (this.$core.saveProps?.[i] && i));
+                    this['#' + i] =  makeReactive.call(this, core.defaults[i]/*, (this.$core.saveProps?.[i] && i)*/);
                 }
 
                 try {
@@ -271,7 +271,7 @@ if (!window.ODA) {
                 this.$core.renderer = render.bind(this);
                 if (this.$core.shadowRoot) {
                     this.$core.resize.observe(this);
-                    this.loadSettings();
+                    // this.loadSettings();
 
                     callHook.call(this, 'ready');
                 }
@@ -527,29 +527,11 @@ if (!window.ODA) {
             get $body(){
                 return this.domHost?.body || this.parentNode?.body || this.parentElement;
             }
-            clearSettings() {
-                globalThis.localStorage.removeItem(this.$$savePath);
+            $loadPropValue(key){
+                return ODA.LocalStorage.create(this.$savePath).getItem(key);
             }
-            loadSettings(force = false){
-                if (!this.$core.saveProps) return;
-                this.loadSettings.storage = ODA.LocalStorage.create(this.$$savePath);
-
-                // const saves = JSON.parse(globalThis.localStorage.getItem(this.$$savePath) || '{}');
-                for(const p in this.$core.saveProps) {
-                    // this.loadSettings.storage[p]
-                    try{
-                        const value = this.loadSettings.storage.data[p];
-                        if (value !== undefined)
-                            this[p] =  value;
-                    }
-                    catch (e){
-                        console.warn('Incompatible value for property ' + p, e)
-                    }
-                }
-                callHook.call(this, 'afterLoadSettings', this.$$savePath);
-            }
-            $$savePropValue(key, value){
-                ODA.LocalStorage.create(this.$$savePath).setItem(key, value);
+            $savePropValue(key, value){
+                ODA.LocalStorage.create(this.$savePath).setItem(key, value);
             }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
@@ -661,13 +643,13 @@ if (!window.ODA) {
         }
         Object.defineProperty(odaComponent, 'name', {value: 'odaComponent'})
         odaComponent.__model__ = prototype;
-        for(const name in prototype.props){
-            const prop = prototype.props[name];
-            if (prop.save) {
-                core.saveProps =  core.saveProps || {};
-                core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
-            }
-        }
+        // for(const name in prototype.props){
+        //     const prop = prototype.props[name];
+        //     if (prop.save) {
+        //         core.saveProps =  core.saveProps || {};
+        //         core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
+        //     }
+        // }
         while (prototype.observers.length > 0) {
             let func = prototype.observers.shift();
             let expr;
@@ -856,6 +838,12 @@ if (!window.ODA) {
         prototype.observers = prototype.observers || [];
         prototype.$system.observers = prototype.$system.observers || [];
 
+        Object.defineProperty(prototype, '$savePath', {
+            get() {
+                return `${this.localName}${this.$saveKey && ('/'+this.$saveKey)}`;
+            }
+        })
+        prototype.$saveKey = prototype.$saveKey || '';
         for (let key in prototype.props) {
             let prop = prototype.props[key];
             // if (prop === undefined) continue;
@@ -875,10 +863,14 @@ if (!window.ODA) {
                 prop.set = setter;
             }
             if (prop?.save){
-                const old_set = prop.set;
+                let  old_set = prop.set;
                 prop.set = function (n){
                     old_set?.call(this, n);
-                    this.$$savePropValue(key, n);
+                    this.$savePropValue(key, n);
+                }
+                let  old_get = prop.get;
+                prop.get = function (){
+                    return old_get?.call(this) || this.$loadPropValue(key);
                 }
             }
             if (typeof prop === "function") {
@@ -950,22 +942,6 @@ if (!window.ODA) {
             }
             prototype.props[key] = prop;
         }
-        Object.defineProperty(prototype, 'saveKey', {
-            set(val){
-                this.debounce('loadSettings', () => {
-                    this.loadSettings(true);
-                });
-            }
-        })
-        if (!('$$savePath' in prototype) && !('$$savePath' in prototype.props)) {
-            Object.defineProperty(prototype, '$$savePath', {
-                get() {
-                    let key = (this.$core.saveKey || this.saveKey || '');
-                    return `${this.localName}${key && '/'+key}`;
-                }
-            })
-        }
-
         prototype.listeners ??= {};
         prototype.keyBindings ??= {};
         prototype.listeners.keydown = function (e) {
@@ -1501,9 +1477,10 @@ if (!window.ODA) {
         },
         'save-key'($el, fn, p) {
             if ($el.$core) {
-                const key = exec.call(this, fn, p);
-                if ($el.$core.saveKey === key) return;
-                $el.$core.saveKey = key;
+                // const key =
+                $el.$saveKey =  exec.call(this, fn, p);
+                // if ($el.$core.saveKey === key) return;
+                // $el.$core.saveKey = key;
             }
         },
         props($el, fn, p) {

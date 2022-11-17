@@ -2080,7 +2080,7 @@ function extract(items, level, parent) {
         }
         return res;
     }, []);
-};
+}
 
 function checkWidth(col){
     if (!('$width' in col)){
