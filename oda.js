@@ -530,6 +530,7 @@ if (!window.ODA) {
                 return ODA.LocalStorage.create(this.$savePath).getItem(key);
             }
             $savePropValue(key, value){
+                if (this['#$savePath'] === undefined) return;
                 ODA.LocalStorage.create(this.$savePath).setItem(key, value);
             }
             loadSettings(force = false){
@@ -852,12 +853,7 @@ if (!window.ODA) {
         prototype.observers = prototype.observers || [];
         prototype.$system.observers = prototype.$system.observers || [];
 
-        Object.defineProperty(prototype, '$savePath', {
-            get() {
-                return `${this.localName}${this.$saveKey && ('/'+this.$saveKey)}`;
-            }
-        })
-        prototype.$saveKey = prototype.$saveKey || '';
+
         for (let key in prototype.props) {
             let prop = prototype.props[key];
             // if (prop === undefined) continue;
@@ -1060,6 +1056,26 @@ if (!window.ODA) {
                 }
             }
         });
+        Object.defineProperty(prototype, '$savePath', {
+            get() {
+                return `${this.localName}${this.$saveKey && ('/'+this.$saveKey)}`;
+            }
+        })
+        const sk = Object.getOwnPropertyDescriptor(prototype, '$saveKey')
+
+        Object.defineProperty(prototype, '$saveKey', {
+            get() {
+                let value = sk?.get?.call(this);
+                if (value === undefined)
+                    value = '';
+                // console.log('$saveKey', value, this['#$saveKey']);
+                return  value;
+            },
+            set(n){
+                this['#$savePath'] = undefined;
+                this.loadSettings();
+            }
+        })
     }
     const regExImport = /import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?<name>(?:".*?")|(?:'.*?'))[\s]*?(?:;|$|)/g;
     const regexUrl = /https?:\/\/(?:.+\/)[^:?#&]+/g

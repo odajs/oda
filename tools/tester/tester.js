@@ -11,7 +11,6 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/c
     <slot @slotchange="onSlot" class="flex"></slot>           
     `,
     props: {
-        saveKey: 'tester',
         label: { get() { return this.component && (this.component.localName || this.component.label || this.component.title || 'component') || 'no component'; } },
         component: {
             type: Object,

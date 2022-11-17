@@ -75,13 +75,14 @@ ODA({is: 'oda-modal-content', extends: 'oda-form-layout', imports: '@oda/form-la
     modal: true,
     size: 'normal',
     hideMinMax: true,
+    get $saveKey() {
+        return this.contextItem?.typeName + this.control?.localName;
+    },
     props: {
         minHeight() {
             return this.iconSize * 8;
         },
-        saveKey() {
-            return this.contextItem?.typeName + this.control?.localName;
-        },
+
     },
     _close() {
         this.fire('cancel');
