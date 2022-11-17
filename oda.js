@@ -530,23 +530,27 @@ if (!window.ODA) {
                 return ODA.LocalStorage.create(this.$savePath).getItem(key);
             }
             $savePropValue(key, value){
-                if (this['#$savePath'] === undefined) return;
+                if (!this.__loaded) return;
                 ODA.LocalStorage.create(this.$savePath).setItem(key, value);
             }
             loadSettings(force = false){
-                if (!this.$core.saveProps) return;
-                this.loadSettings.storage = ODA.LocalStorage.create(this.$savePath);
-                for(const p in this.$core.saveProps) {
-                    try{
-                        const value = this.loadSettings.storage.data[p];
-                        if (value !== undefined)
-                            this[p] =  value;
+                if (this.__loaded) return;
+                if (this.$core.saveProps){
+                    const path = this.$savePath;
+                    this.loadSettings.storage = ODA.LocalStorage.create(this.$savePath);
+                    for(const p in this.$core.saveProps) {
+                        try{
+                            const value = this.loadSettings.storage.data[p];
+                            if (value !== undefined)
+                                this[p] =  value;
+                        }
+                        catch (e){
+                            console.warn('Incompatible value for property ' + p, e)
+                        }
                     }
-                    catch (e){
-                        console.warn('Incompatible value for property ' + p, e)
-                    }
+                    callHook.call(this, 'afterLoadSettings', this.$savePath);
                 }
-                callHook.call(this, 'afterLoadSettings', this.$savePath);
+                this.__loaded = true;
             }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
@@ -1072,6 +1076,7 @@ if (!window.ODA) {
                 return  value;
             },
             set(n){
+                this.__loaded = false;
                 this['#$savePath'] = undefined;
                 this.loadSettings();
             }
