@@ -271,7 +271,7 @@ if (!window.ODA) {
                 this.$core.renderer = render.bind(this);
                 if (this.$core.shadowRoot) {
                     this.$core.resize.observe(this);
-                    // this.loadSettings();
+                    this.loadSettings();
 
                     callHook.call(this, 'ready');
                 }
@@ -325,9 +325,9 @@ if (!window.ODA) {
                         val = (val === '') ? true : (val === undefined ? false : val);
                         this.setProperty(a.name, val);
                     })
-                    if (this.style.getPropertyValue?.('visibility') !== 'hidden') {
-                        callHook.call(this, 'onVisible')
-                    }
+                    // if (this.style.getPropertyValue?.('visibility') !== 'hidden') {
+                    //     callHook.call(this, 'onVisible')
+                    // }
                 })
             }
             disconnectedCallback() {
@@ -533,6 +533,24 @@ if (!window.ODA) {
             $savePropValue(key, value){
                 ODA.LocalStorage.create(this.$savePath).setItem(key, value);
             }
+            loadSettings(force = false){
+                if (!this.$core.saveProps) return;
+                this.loadSettings.storage = ODA.LocalStorage.create(this.$savePath);
+
+                // const saves = JSON.parse(globalThis.localStorage.getItem(this.$savePath) || '{}');
+                for(const p in this.$core.saveProps) {
+                    // this.loadSettings.storage[p]
+                    try{
+                        const value = this.loadSettings.storage.data[p];
+                        if (value !== undefined)
+                            this[p] =  value;
+                    }
+                    catch (e){
+                        console.warn('Incompatible value for property ' + p, e)
+                    }
+                }
+                callHook.call(this, 'afterLoadSettings', this.$savePath);
+            }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
                     handler = this[handler].bind(this);
@@ -643,13 +661,13 @@ if (!window.ODA) {
         }
         Object.defineProperty(odaComponent, 'name', {value: 'odaComponent'})
         odaComponent.__model__ = prototype;
-        // for(const name in prototype.props){
-        //     const prop = prototype.props[name];
-        //     if (prop.save) {
-        //         core.saveProps =  core.saveProps || {};
-        //         core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
-        //     }
-        // }
+        for(const name in prototype.props){
+            const prop = prototype.props[name];
+            if (prop.save) {
+                core.saveProps ??= {};
+                core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
+            }
+        }
         while (prototype.observers.length > 0) {
             let func = prototype.observers.shift();
             let expr;
@@ -868,10 +886,10 @@ if (!window.ODA) {
                     old_set?.call(this, n);
                     this.$savePropValue(key, n);
                 }
-                let  old_get = prop.get;
-                prop.get = function (){
-                    return old_get?.call(this) || this.$loadPropValue(key);
-                }
+                // let  old_get = prop.get;
+                // prop.get = function (){
+                //     return old_get?.call(this) || this.$loadPropValue(key);
+                // }
             }
             if (typeof prop === "function") {
                 prop = { type: prop };
@@ -1173,6 +1191,7 @@ if (!window.ODA) {
             for (let i of list)
                 i();
             ODA.RAF.id = 0;
+            runRAF()
         })
     }
 
