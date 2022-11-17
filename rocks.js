@@ -12,7 +12,7 @@
 
 if (!globalThis.KERNEL) {
     const regExpCheck = /^__.*__$/g;
-    function makeReactive(target, saveName) {
+    function makeReactive(target) {
         if (!isObject(target) || !Object.isExtensible(target)) return target;
         const op = target.__op__;
         if (op){
@@ -26,7 +26,7 @@ if (!globalThis.KERNEL) {
         else if (target !== this) {
             if (Array.isArray(target)) {
                 target.forEach((val, i)=>{
-                    target[i] = makeReactive.call(this, val, saveName);
+                    target[i] = makeReactive.call(this, val);
                 })
             }
             else if (!isNativeObject(target) && !(target instanceof Promise))
@@ -54,7 +54,7 @@ if (!globalThis.KERNEL) {
                 }
                 else if (options.target instanceof Promise){
                     options.target.then(res=>{
-                        res = makeReactive.call(this, res, options.$$saveName);
+                        res = makeReactive.call(this, res);
                         options.target[key] = res?.[key];
                     })
                     return undefined;
@@ -64,7 +64,6 @@ if (!globalThis.KERNEL) {
                     block.deps.push(KERNEL.dpTarget);
                     KERNEL.dpTarget.count++;
                 }
-                const saveName = (block.prop?.save && block.prop.name) || block.$$saveName
                 if (val === undefined) {
                     if (block.getter) {
                         // block.count = block.count || 0;
@@ -72,20 +71,20 @@ if (!globalThis.KERNEL) {
                         KERNEL.dpTarget = block;
                         val = block.getter.call(target);
                         if (val instanceof Promise) {
-                            val = makeReactive.call(this, val, saveName);
+                            val = makeReactive.call(this, val);
                         }
                         else if (block.prop)
                             val = toType(block.prop.type, val)
                         KERNEL.dpTarget = targetStack.pop();
                         if (target === val) {
                             block.count = -1;
-                            return makeReactive.call(this, val, saveName);
+                            return makeReactive.call(this, val);
                         }
                         return (block.old = getProxyValue.call(this, block, val, block.count?undefined:block.old));
                     }
                 }
                 if (val && !block.prop?.freeze)
-                    val = makeReactive.call(this, val, saveName);
+                    val = makeReactive.call(this, val);
                 return val;
             },
             set: (target, key, value) => {
@@ -107,8 +106,6 @@ if (!globalThis.KERNEL) {
             options.hosts = new Map();
             options.proxy = proxy;
             options.blocks = Object.create(null);
-            if (saveName)
-                options.$$saveName = saveName;
             Object.defineProperty(target, '__op__', {
                 enumerable: false,
                 configurable: true,
@@ -132,10 +129,7 @@ if (!globalThis.KERNEL) {
                key,
                deps: [],
                obs: key.startsWith?.(`#$obs$`),
-               $$saveName: options.$$saveName
            }, this.constructor?.__model__?.$system?.blocks[key] || {});
-        if (block.prop?.save)
-            block.$$saveName = block.prop.name;
         return  block;
     }
     let updates = 0;
@@ -144,17 +138,15 @@ if (!globalThis.KERNEL) {
         const target = block.options.target;
         const key = block.key;
         if (!block.prop?.freeze)
-            val = makeReactive.call(this, val, block.$$saveName);
+            val = makeReactive.call(this, val);
         target[key] = (block.prop?.type)?toType(block.prop?.type, val):val;
         if (block.obs) return val;
         if (setter && block.setter) {
             const v = block.setter.call(target, val, old);
             if (v !== undefined && !block.prop?.freeze)
-                val = makeReactive.call(this, v, block.$$saveName);
+                val = makeReactive.call(this, v);
         }
         const reset = resetDeps(block, [], setter);
-        if (block.$$saveName)
-            this.saveSettings?.(block.$$saveName, this[block.$$saveName]);
         for (let host of block.options.hosts.keys()){
             block.updates = ++updates;
             (host.notify || host.bubble)?.call(host, block, val);

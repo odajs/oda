@@ -113,10 +113,10 @@ ODA({is: 'oda-hexagon-layout',
     __drop(e, hex){
         console.warn('method __drop not implemented!');
     },
-    afterLoadSettings() {
+/*    afterLoadSettings() {
         // временно, что бы очистить iconsSize у уже сохранённых иконок
         this.data.forEach(i => delete i.props.iconSize) //todo: убрать
-    }
+    }*/
 })
 
 

@@ -532,27 +532,24 @@ if (!window.ODA) {
             }
             loadSettings(force = false){
                 if (!this.$core.saveProps) return;
-                this.loadSettings.loadedPath = this.$$savePath;
-                const saves = JSON.parse(globalThis.localStorage.getItem(this.$$savePath) || '{}');
+                this.loadSettings.storage = ODA.LocalStorage.create(this.$$savePath);
+
+                // const saves = JSON.parse(globalThis.localStorage.getItem(this.$$savePath) || '{}');
                 for(const p in this.$core.saveProps) {
+                    // this.loadSettings.storage[p]
                     try{
-                        if (force || JSON.stringify(this[p]) === this.$core.saveProps[p])
-                            this[p] = saves[p] ?? this[p];
+                        const value = this.loadSettings.storage.data[p];
+                        if (value !== undefined)
+                            this[p] =  value;
                     }
                     catch (e){
-                        console.warn('Incompatible value for save', e)
+                        console.warn('Incompatible value for property ' + p, e)
                     }
                 }
                 callHook.call(this, 'afterLoadSettings', this.$$savePath);
             }
-            saveSettings(){
-                if (!this.$core.saveProps) return;
-                const saves = {};//JSON.parse(globalThis.localStorage.getItem(this.$$savePath) || '{}');
-                for (const name in this.$core.saveProps){
-                    const value = this[name];
-                    saves[name] = value
-                }
-                globalThis.localStorage.setItem(this.$$savePath, JSON.stringify(saves));
+            $$savePropValue(key, value){
+                ODA.LocalStorage.create(this.$$savePath).setItem(key, value);
             }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
@@ -870,12 +867,19 @@ if (!window.ODA) {
                     getter = prototype[getter];
                 prop.get = getter;
             }
-            let setter = prop && prop.set;
+            let setter = prop?.set;
             if (setter) {
                 if (typeof setter === 'string')
                     setter = prototype[setter];
                 delete prop.observe;
                 prop.set = setter;
+            }
+            if (prop?.save){
+                const old_set = prop.set;
+                prop.set = function (n){
+                    old_set?.call(this, n);
+                    this.$$savePropValue(key, n);
+                }
             }
             if (typeof prop === "function") {
                 prop = { type: prop };
@@ -1141,6 +1145,40 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
+    ODA.LocalStorage = CLASS({id: 'odaLocalStorage',
+        ctor(path){
+            this.path = path;
+        },
+        get data(){
+            try{
+                return JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
+            }
+            catch (e){
+                console.warn(e)
+            }
+            return {};
+        },
+        getItem(key){
+            return this.data[key];
+        },
+        setItem(key, value){
+            this.data[key] = value;
+            this.save();
+        },
+        save(){
+            if(this.raf)
+                cancelAnimationFrame(this.raf);
+            this.raf = requestAnimationFrame(()=>{
+                globalThis.localStorage.setItem(this.path, JSON.stringify(this.data));
+                this.raf = 0;
+            })
+        }
+    },{
+        items:{},
+        create(path){
+            return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
+        }
+    });
     ODA.async = function (handler, delay = 0){
         if (!handler) return;
         delay ? setTimeout(handler, delay) : ODA.RAF(handler);
