@@ -180,7 +180,6 @@ if (!window.ODA) {
             }
         }
         const core = {
-            // saveProps: {},
             reflects: [],
             prototype: prototype,
             node: { tag: '#document-fragment', id: 0, dirs: [] },
@@ -233,10 +232,10 @@ if (!window.ODA) {
                 for (let i in core.defaults) {
                     const desc = Object.getOwnPropertyDescriptor(this, i);
                     if (desc) {
-                        defs[i] = makeReactive.call(this, desc.value/*, (this.$core.saveProps?.[i] && i)*/);
+                        defs[i] = makeReactive.call(this, desc.value);
                         delete this[i];
                     }
-                    this['#' + i] =  makeReactive.call(this, core.defaults[i]/*, (this.$core.saveProps?.[i] && i)*/);
+                    this['#' + i] =  makeReactive.call(this, core.defaults[i]);
                 }
 
                 try {
@@ -536,10 +535,7 @@ if (!window.ODA) {
             loadSettings(force = false){
                 if (!this.$core.saveProps) return;
                 this.loadSettings.storage = ODA.LocalStorage.create(this.$savePath);
-
-                // const saves = JSON.parse(globalThis.localStorage.getItem(this.$savePath) || '{}');
                 for(const p in this.$core.saveProps) {
-                    // this.loadSettings.storage[p]
                     try{
                         const value = this.loadSettings.storage.data[p];
                         if (value !== undefined)
