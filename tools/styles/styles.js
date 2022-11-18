@@ -195,7 +195,6 @@ html {
 body{
     display: flex;
     flex: 1;
-    animation: fadeIn .5s;
     flex-direction: column;
     font-family: var(--font-family);
     user-select: none;

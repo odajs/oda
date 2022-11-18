@@ -2088,6 +2088,7 @@ function checkWidth(col){
             configurable: false,
             enumerable: true,
             set(v) {
+                if (!v) return;
                 const min = this.items?.length?32:16;
                 if (v<min)
                     v = min;

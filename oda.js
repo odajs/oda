@@ -270,8 +270,11 @@ if (!window.ODA) {
                 this.$core.renderer = render.bind(this);
                 if (this.$core.shadowRoot) {
                     this.$core.resize.observe(this);
-                    this.loadSettings();
-
+                    for (let i in this.$core.saveProps){
+                        const val = this.$loadPropValue(i);
+                        if (val !== undefined)
+                            this[i] = val;
+                    }
                     callHook.call(this, 'ready');
                 }
             }
@@ -435,17 +438,28 @@ if (!window.ODA) {
 
             }
             get rootHost(){
-                // if (this.__need_update)
+                if (this.__need_update){
+
+                    return false;
+
+                }
                 //     return this;
-                this.__need_update = true;
+
                 const r1 = this.domHost?.rootHost;
-                const r2 = this.parentElement?.rootHost;
-                return r2 || r1 || this;
+                if (r1 === false)
+                    return false;
+                this.__need_update = true;
+                // const r2 = this.parentElement?.rootHost;
+                return r1 || /*r2 || */ this;
             }
             render() {
-                if (!this.$core.shadowRoot) return;
+                // if (!this.$core.shadowRoot) return;
                 this.__all = true;
-                ODA.render(this.rootHost.$core?.renderer);
+                const root = this.rootHost;
+                if (root?.$core)
+                    ODA.render(root.$core?.renderer);
+                // else
+                //     console.log('this.__need_update')
                 callHook.call(this, 'onRender');
 
                 // if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
@@ -527,30 +541,13 @@ if (!window.ODA) {
                 return this.domHost?.body || this.parentNode?.body || this.parentElement;
             }
             $loadPropValue(key){
+                this.$core.loaded ??={};
+                this.$core.loaded[key] = true;
                 return ODA.LocalStorage.create(this.$savePath).getItem(key);
             }
             $savePropValue(key, value){
-                if (!this.__loaded) return;
+                if (!this.$core.loaded?.[key]) return;
                 ODA.LocalStorage.create(this.$savePath).setItem(key, value);
-            }
-            loadSettings(force = false){
-                if (this.__loaded) return;
-                if (this.$core.saveProps){
-                    const path = this.$savePath;
-                    this.loadSettings.storage = ODA.LocalStorage.create(this.$savePath);
-                    for(const p in this.$core.saveProps) {
-                        try{
-                            const value = this.loadSettings.storage.data[p];
-                            if (value !== undefined)
-                                this[p] =  value;
-                        }
-                        catch (e){
-                            console.warn('Incompatible value for property ' + p, e)
-                        }
-                    }
-                    callHook.call(this, 'afterLoadSettings', this.$savePath);
-                }
-                this.__loaded = true;
             }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
@@ -627,7 +624,10 @@ if (!window.ODA) {
             async(handler, delay = 0) {
                 if (typeof handler === 'string')
                     handler = this[handler].bind(this);
-                return ODA.async.call(this, handler, delay);
+                const fn = delay?setTimeout:requestAnimationFrame;
+                return fn(()=>{
+                    handler();
+                }, delay)
             }
             $next(handler, tacts = 0){
                 if (tacts>0)
@@ -882,9 +882,14 @@ if (!window.ODA) {
                     old_set?.call(this, n);
                     this.$savePropValue(key, n);
                 }
-                // let  old_get = prop.get;
-                // prop.get = function (){
-                //     return old_get?.call(this) || this.$loadPropValue(key);
+                // if (!prop.get){
+                //     prop.get = function (){
+                //         this.$core.loaded ??= {};
+                //         const saved = this.$loadPropValue(key);
+                //         if (saved === undefined)
+                //             return prop.default;// this.$core.defaults[key];
+                //         return saved;
+                //     }
                 // }
             }
             if (typeof prop === "function") {
@@ -1076,9 +1081,13 @@ if (!window.ODA) {
                 return  value;
             },
             set(n){
-                this.__loaded = false;
+                this.$core.loaded = {};
                 this['#$savePath'] = undefined;
-                this.loadSettings();
+                for (let i in this.$core.saveProps){
+                    const val = this.$loadPropValue(i);
+                    if (val !== undefined)
+                        this[i] = val;
+                }
             }
         })
     }
@@ -1190,27 +1199,6 @@ if (!window.ODA) {
             return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
         }
     });
-    ODA.async = function (handler, delay = 0){
-        if (!handler) return;
-        delay ? setTimeout(handler, delay) : ODA.RAF(handler);
-    }
-    ODA.RAF = function (handler){
-        ODA.RAF.list.add(handler);
-        runRAF();
-    }
-    ODA.RAF.list = [];
-    function runRAF(){
-        if (ODA.RAF.id) return;
-        if (!ODA.RAF.list.length) return;
-        const list = Array.from(ODA.RAF.list);
-        ODA.RAF.list = [];
-        ODA.RAF.id = requestAnimationFrame(()=>{
-            for (let i of list)
-                i();
-            ODA.RAF.id = 0;
-            runRAF()
-        })
-    }
 
     Object.defineProperty(ODA, 'top',  {
         get (){
@@ -1740,6 +1728,8 @@ if (!window.ODA) {
         updateDom.call(this, this.$core.node, this.$core.shadowRoot);
     }
     async function updateDom(src, $el, $parent, pars, all = false) {
+        this.__need_update = undefined;
+        this.__all = undefined;
         if (this?.$sleep && !this.$wake)
             return;
         if ($el?.$sleep && !$el?.$wake && !src.isSvg && !src.isSlot)
