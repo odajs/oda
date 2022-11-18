@@ -105,7 +105,9 @@ function _newVal(val) {
                 return val;
             }
             // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
+            
             // const doc = domParser.parseFromString(val, 'text/html');
+
             // this.__translate = HtmlToText(doc.body.childNodes);
 
             function replacer(_, p1, p2) {  return ( (p1.trim()==='')?p1:Localization.translate(p1) ) + p2 }
