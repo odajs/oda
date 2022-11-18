@@ -247,8 +247,14 @@
                         if (event.keyCode === KEY.ESC) {
                             this.gameOver();
                         } else if (this.moves[event.keyCode]) {
-                            event.preventDefault();
-                            this.action(event.keyCode);
+                            if (!this._keydown) {
+                                this._keydown = true;
+                                setTimeout(() => {
+                                    this._keydown = false;
+                                });
+                                event.preventDefault();
+                                this.action(event.keyCode);
+                            }
                         }
                     })
                 },
@@ -335,7 +341,6 @@
                     this.ctx = tet.ctx;
                     this.ctxNext = tet.ctxNext;
                     this.init();
-                    this._rotate = false;
                 }
                 init() {
                     this.ctx.canvas.width = this.tet.COLS * this.tet.BLOCK_SIZE;
@@ -464,11 +469,6 @@
                     return this.grid[y] && this.grid[y][x] === 0;
                 }
                 rotate(piece) {
-                    if (this._rotate) return;
-                    this._rotate = true;
-                    setTimeout(() => {
-                        this._rotate = false;
-                    }, 16);
                     let p = JSON.parse(JSON.stringify(piece));
 
                     for (let y = 0; y < p.shape.length; ++y) {
