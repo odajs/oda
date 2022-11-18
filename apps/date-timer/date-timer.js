@@ -133,41 +133,42 @@ ODA({ is: 'oda-date-timer-circle',
         labelColor: '',
         label: '',
     },
-    attached() {
-        this.ctx = this.$('#circle').getContext('2d');
-        this.start = 4.72;
-        this.cw = this.ctx.canvas.width;
-        this.ch = this.ctx.canvas.height;
-        this.clock = {
-            sec: (t, al, div) => {
-                t = t / 1000 | 0; 
-                al = t % 60;
-                div = 60;
-                this.s = t
-                return { t, al, div };
-            },
-            min: (t, al, div) => {
-                t = t / 1000 / 60 | 0;
-                al = t % 60;
-                div = 60;
-                this.mn = t;
-                return { t, al, div };
-            },
-            hour: (t, al, div) => {
-                t = t / 1000 / 60 / 60 | 0;
-                al = t % 24;
-                div = 24;
-                this.h = t;
-                return { t, al, div };
-            },
-            day: (t, al, div) => {
-                al = Math.floor(t / (1000 * 60 * 60 * 24));
-                div = 365.25;
-                return { t, al, div };
-            }
-        }
-    },
+    get circle() { return this.$('#circle').getContext('2d') },
     observers: [
+        function _circle(circle) {
+            this.ctx = this.circle;
+            this.start = 4.72;
+            this.cw = this.ctx.canvas.width;
+            this.ch = this.ctx.canvas.height;
+            this.clock = {
+                sec: (t, al, div) => {
+                    t = t / 1000 | 0; 
+                    al = t % 60;
+                    div = 60;
+                    this.s = t
+                    return { t, al, div };
+                },
+                min: (t, al, div) => {
+                    t = t / 1000 / 60 | 0;
+                    al = t % 60;
+                    div = 60;
+                    this.mn = t;
+                    return { t, al, div };
+                },
+                hour: (t, al, div) => {
+                    t = t / 1000 / 60 / 60 | 0;
+                    al = t % 24;
+                    div = 24;
+                    this.h = t;
+                    return { t, al, div };
+                },
+                day: (t, al, div) => {
+                    al = Math.floor(t / (1000 * 60 * 60 * 24));
+                    div = 365.25;
+                    return { t, al, div };
+                }
+            }
+        },
         function _toUpdate(toUpdate, today) {
             if (!this.ctx) return;
             let t = Math.abs(this.end - this.today);
