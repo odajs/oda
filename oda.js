@@ -3,6 +3,7 @@
  * Under the MIT License.
  */
 import './rocks.js';
+import './fastdom.js';
 'use strict';
 if (!window.ODA) {
     window.document.body.style.visibility = 'hidden';
@@ -1088,6 +1089,7 @@ if (!window.ODA) {
                     if (val !== undefined)
                         this[i] = val;
                 }
+
             }
         })
     }
