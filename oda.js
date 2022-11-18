@@ -3,7 +3,7 @@
  * Under the MIT License.
  */
 import './rocks.js';
-import './fastdom.js';
+// import './fastdom.js';
 'use strict';
 if (!window.ODA) {
     window.document.body.style.visibility = 'hidden';
@@ -883,15 +883,6 @@ if (!window.ODA) {
                     old_set?.call(this, n);
                     this.$savePropValue(key, n);
                 }
-                // if (!prop.get){
-                //     prop.get = function (){
-                //         this.$core.loaded ??= {};
-                //         const saved = this.$loadPropValue(key);
-                //         if (saved === undefined)
-                //             return prop.default;// this.$core.defaults[key];
-                //         return saved;
-                //     }
-                // }
             }
             if (typeof prop === "function") {
                 prop = { type: prop };
