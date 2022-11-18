@@ -1,11 +1,4 @@
-// import './src/ace.js';
-// import './src/ext-language_tools.js';
-// https://github.com/beautify-web/js-beautify
-// import './src/beautify-css.js';
-// import './src/beautify-html.js';
-
-// ODA({ is: 'oda-ace-editor', template: /*html*/`
-ODA({ is: 'oda-ace-editor', imports: './src/ace.js, ./src/ext-language_tools.js, ./src/beautify-html.js', template: /*html*/`
+ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
         <style>
             ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: lightgray; } ::-webkit-scrollbar-thumb { background-color: gray; }
             :host {
@@ -170,6 +163,9 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js, ./src/ext-language_tools.js,
         this.value = v;
     },
     async attached() {
+        await import('./src/ext-language_tools.js');
+        // https://github.com/beautify-web/js-beautify
+        await import('./src/beautify-html.js');
         ['basePath', 'modePath', 'themePath', 'workerPath'].map(o => ace.config.set(o, ODA.rootPath + '/components/editors/ace-editor/src/'));
         this.editor = ace.edit(this.$('div'));
         this.editor.session.on('change', (e)=>{
@@ -236,8 +232,8 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js, ./src/ext-language_tools.js,
     },
     get options() {
         const options = {
-            mode: 'ace/mode/' + this.mode,
-            theme: 'ace/theme/' + this.theme
+            mode: 'ace/mode/' + (this.mode || 'json'),
+            theme: 'ace/theme/' + (this.theme || 'chrome')
         }, props = [
             'highlightActiveLine', 'highlightSelectedWord', 'cursorStyle', 'autoScrollEditorIntoView',
             'copyWithEmptySelection', 'useSoftTabs', 'navigateWithinSoftTabs', 'enableMultiselect',
