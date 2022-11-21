@@ -10,9 +10,9 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
     <slot ~show="!inspectedObject" @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', template: 'oda-pg-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
-            { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell' },
-            { name: 'category', hidden: true, $sortGroups: 0 },
+            { name: 'name', template: 'oda-pg-cell-name', header: 'oda-property-grid-header-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell-value' },
+            { name: 'category', $hidden: true, $sortGroups: 0 },
         ]
     },
     get label() {
@@ -35,7 +35,6 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
         showFooter: true,
         colLines: true,
         rowLines: true,
-        allowSort: true,
         groupExpandingMode: 'first',
         dataSet() {
             const items = this.PropertyGridDataSet.items;
@@ -373,25 +372,33 @@ cells: {
         }
     })
 
-    ODA({is: 'oda-property-grid-header-cell',
+    ODA({is: 'oda-property-grid-header-cell-name', extends:'oda-table-header-cell',
         template: /*html*/`
         <style>
             :host {
                 @apply --horizontal;
                 align-items: center;
-                @apply --flex;
-                justify-content: flex-end;
             }
         </style>
-        <oda-button ~if="!onlySave" class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
-        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay"></oda-button>
+        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay" slot="tools"></oda-button>
         `,
         resetValue() {
             this.items.forEach(item => {
-                if (!item.prop?.default) return;
+                if (item.prop?.default === undefined) return;
                 item.value = (typeof item.prop.default === 'function') ? item.prop.default() : item.prop.default;
             })
         }
+    })
+    ODA({is: 'oda-property-grid-header-cell-value',
+        template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+            }
+        </style>
+        <div class="flex"></div>
+        <oda-button class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
+        `
     })
 }
 editors: {

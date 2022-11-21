@@ -145,7 +145,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         }
         .row {
             position: sticky;
-            left: 0px; 
+            left: 0px;
             @apply --horizontal;
         }
         .header {
@@ -163,7 +163,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
 <!--    <oda-table-body></oda-table-body>-->
-    
+
     <div ref="body" tabindex="0" @resize="_scroll" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
@@ -728,7 +728,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             return items.then(async items => {
                 clearTimeout(id)
                 row.$loading = false;
-                if (this.allowSort && this.sorts.length)
+                if (/* this.allowSort &&  */this.sorts.length)
                     this._sort(items)
                 const node = old || row;
                 if ((node.items && node.$expanded)) {
@@ -856,7 +856,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             return items.reduce((res, item) => {
                 res.push(item);
                 if (item.$expanded && item.items?.length) {
-                    if (this.allowSort)
+                    // if (this.allowSort)
                         this._sort(item.items);
                     const subItems = doExpanding(item.items);
                     res.push(...subItems);
@@ -1455,7 +1455,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
         <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
             <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
         </div>
-        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>        
+        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
     getItem(col){
         return col;
@@ -1746,7 +1746,7 @@ cells: {
                 max-width: {{column.width || '100%'}};
                 min-width: {{column.width || '16px'}};
                 width: {{column.$width}};
-                
+
                 @apply --no-flex;
             }
             /*:host::before{*/
@@ -1823,6 +1823,7 @@ cells: {
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon style="position: absolute; right: 2px;" :show="showSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
+                <slot name="tools"></slot>
                 <div class="split"  @tap.stop @track="_track"></div>
             </div>
             <div class="flex info horizontal filter-container" ~if="!column.$expanded && column.name && showFilter" style="align-items: center" @tap.stop>
@@ -2053,7 +2054,7 @@ cells: {
 
 
 function extract(items, level, parent) {
-    if (!this.groups.length && this.allowSort && this.sorts.length) {
+    if (!this.groups.length && /* this.allowSort && */ this.sorts.length) {
         items.sort((a, b) => {
             for (let col of this.sorts) {
                 const va = a[col.name];
