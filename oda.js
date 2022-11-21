@@ -1158,48 +1158,104 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
-    ODA.LocalStorage = CLASS({id: 'odaLocalStorage',
-        ctor(path){
-            this.path = path;
-        },
-        get data(){
-            try{
-                return JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
+    localStorage:{
+        ODA.LocalStorage = CLASS({id: 'odaLocalStorage',
+            ctor(path){
+                this.path = path;
+            },
+            get data(){
+                try{
+                    return JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
+                }
+                catch (e){
+                    console.warn(e)
+                }
+                return {};
+            },
+            getItem(key){
+                return this.data[key];
+            },
+            getFromItem(key, subKey){
+                return this.data[key]?.[subKey];
+            },
+            setItem(key, value){
+                this.data[key] = value;
+                this.save();
+            },
+            setToItem(key, subKey, value){
+                key = this.data[key] ??= {};
+                key[subKey] = value;
+                this.save();
+            },
+            save(){
+                if(this.raf)
+                    cancelAnimationFrame(this.raf);
+                this.raf = requestAnimationFrame(()=>{
+                    globalThis.localStorage.setItem(this.path, JSON.stringify(this.data));
+                    this.raf = 0;
+                })
             }
-            catch (e){
-                console.warn(e)
+        },{
+            items:{},
+            create(path){
+                return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
             }
-            return {};
-        },
-        getItem(key){
-            return this.data[key];
-        },
-        getFromItem(key, subKey){
-            return this.data[key]?.[subKey];
-        },
-        setItem(key, value){
-            this.data[key] = value;
-            this.save();
-        },
-        setToItem(key, subKey, value){
-            key = this.data[key] ??= {};
-            key[subKey] = value;
-            this.save();
-        },
-        save(){
-            if(this.raf)
-                cancelAnimationFrame(this.raf);
-            this.raf = requestAnimationFrame(()=>{
-                globalThis.localStorage.setItem(this.path, JSON.stringify(this.data));
-                this.raf = 0;
-            })
+        });
+    }
+
+    WebWorker:{ //todo здесь будет Web Worker
+        ODA.Worker = async function(handle){
+
         }
-    },{
-        items:{},
-        create(path){
-            return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
+    }
+
+    FastDom:{ //todo здесь будет Web Worker
+        ODA.fastDom = {
+            measures: [],
+            mutates: [],
+            async measure(fn){
+                var task = this?fn.bind(this):fn;
+                ODA.fastDom.measures.push(task);
+                ODA.fastDom.scheduleFlush();
+                return task;
+            },
+            async mutate(fn){
+                var task = this?fn.bind(this):fn;
+                ODA.fastDom.mutates.push(task);
+                ODA.fastDom.scheduleFlush();
+                return task;
+            },
+            runTasks(tasks) {
+                var task;
+                while (task = tasks.shift())
+                    task();
+            },
+            scheduleFlush() {
+                if (!this.scheduled) {
+                    this.scheduled = true;
+                    this.raf(this.flush());
+                }
+            },
+            flush() {
+                var mutates = this.mutates;
+                var measures = this.measures;
+                var error;
+                try {
+                    this.runTasks(measures);
+                    this.runTasks(mutates);
+                } catch (e) { error = e; }
+                this.scheduled = false;
+                if (measures.length || mutates.length)
+                    this.scheduleFlush();
+                if (error) {
+                    if (this.catch)
+                        this.catch(error);
+                    else
+                        throw error;
+                }
+            }
         }
-    });
+    }
 
     Object.defineProperty(ODA, 'top',  {
         get (){

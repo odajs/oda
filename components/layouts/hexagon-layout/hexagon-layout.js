@@ -88,7 +88,7 @@ ODA({is: 'oda-hexagon-layout',
     },
     listeners:{
         resize(e){
-            if (this.height<this.offsetHeight)
+            if (this.height < this.offsetHeight)
                 this.height = this.offsetHeight;
             if (this.width < this.offsetWidth)
                 this.width = this.offsetWidth;

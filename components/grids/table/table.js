@@ -185,7 +185,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
+    <oda-button ~if="showSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
+    async openSettings(e){
+        await ODA.showDropdown(
+            'oda-table-settings',
+            {table: this.table},
+            {parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true}
+        );
+    },
     get storage(){
         return ODA.LocalStorage.create(this.$savePath);
     },
@@ -203,23 +211,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     get screenLength() {
         return (Math.round(this._height / this.rowHeight) || 0) + 1;
     },
-    screenExpanded: [],
-    get screen() {
-        const post = {
-            expanded: this.screenExpanded,
-            groups: this.groups.map(g => ({ name: g.name, label: g.label })),
-            sort: this.sorts.map(i => {
-                return { name: i.name, order: i.$sort === 1 ? 'asc' : 'desc' }
-            }),
-            filter: this.filters.map(i => {
-                return { [i.name]: i.$filter }
-            })
-        };
-        return { from: this.screenFrom, length: this.screenLength, post };
-    },
+
     columns: [],
     firstTop: 0,
     props: {
+        rowFixLimit:{
+            default: 10,
+        },
+        showSettings: false,
         allowCheck: {
             default: 'none',
             list: ['none', 'single', 'down', 'up', 'double', 'cleardown']
@@ -385,11 +384,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             modifyColumn.call(this, col);
             if (col[this.columnId]) {
                 col.order = col.order || i + 1;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/order', col.order || i + 1);
-                col.hidden = col.hidden || false;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/hidden', col.hidden || false);
+                // col.hidden = col.hidden || false;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/hidden', col.hidden || false);
             } else {
                 // this.set(col, 'width', col.width);
                 col.order = i + 1;
-                col.hidden = false;
+                // col.hidden = false;
             }
             if (col.treeMode)
                 col.index = col.order - 500;
@@ -405,7 +404,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
                     break;
             }
         });
-        const cols = this.columns.filter(i => !i.hidden);
+        const cols = this.columns.filter(i => !i.$hidden);
         if (!this.autoWidth)
             cols.push({ index: 999, template: 'div', header: 'div', footer: 'div' });
         if (this.allowCheck !== 'none' && !this.columns.some(i => i.treeMode)) {
@@ -451,16 +450,16 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         if (!this.items?.length) {
             return [];
         }
-        if (!this.lazy || !this.screen) {
-            return this.items;
-        }
+        // if (!this.lazy || !this.screen) {
+        //     return this.items;
+        // }
         const raised = [];
-        const rows = this.items.slice(this.screen.from, this.screen.from + this.screen.length);
+        const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength);
         if (rows.length) {
             while (rows[0].$parent && this.items.includes(rows[0].$parent)) {
                 raised.push(rows[0].$parent);
                 rows.unshift(rows[0].$parent);
-                if (rows.length > this.screen.length)
+                if (rows.length > this.screenLength)
                     rows.pop();
             }
         }
@@ -469,10 +468,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     },
     selectedRows: [],
     settingsId: '',
-    sorts: [], // порядок вставки сюда имеет значение!
-    get _sortsByFlag() {
-        return this._getSortsByFlag(this.columns, []);
+    get sorts(){
+        return this.rowColumns.filter(i=>i.$sort) || [];
     },
+    // get _sortsByFlag() {
+    //     return this._getSortsByFlag(this.columns, []);
+    // },
     get colStyles() {
         return this.rowColumns.map(col => {
             if (col.id === undefined)
@@ -526,18 +527,18 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             if (_selectedAll)
                 this.selectAll();
         },
-        function updateSorts(_sortsByFlag) {
-            const oldSorts = this.sorts || [];
-            const sorts = [];
-            oldSorts.forEach(s => {
-                if (_sortsByFlag.includes(s)) sorts.push(s);
-                else s.$sort = 0;
-            });
-            _sortsByFlag.forEach(col => {
-                if (!sorts.includes(col)) sorts.push(col);
-            });
-            this.sorts = sorts;
-        },
+        // function updateSorts(_sortsByFlag) {
+        //     const oldSorts = this.sorts || [];
+        //     const sorts = [];
+        //     oldSorts.forEach(s => {
+        //         if (_sortsByFlag.includes(s)) sorts.push(s);
+        //         else s.$sort = 0;
+        //     });
+        //     _sortsByFlag.forEach(col => {
+        //         if (!sorts.includes(col)) sorts.push(col);
+        //     });
+        //     this.sorts = sorts;
+        // },
     ],
 
     keyBindings: {
@@ -564,7 +565,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
                 this._select(e, { value: rows[idx]})
             }
             if (idx <= (rows.findIndex(r => r === this.raisedRows[0]) + 2)) {
-                this.$refs.body.scrollTop -= (~~(this.screen.length / 2)) * this.rowHeight;
+                this.$refs.body.scrollTop -= (~~(this.screenLength / 2)) * this.rowHeight;
             }
         },
         arrowDown(e) {
@@ -578,8 +579,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             if (!e.ctrlKey) {
                 this._select(e, { value: rows[idx]})
             }
-            if (idx >= (this.screen.length - 1)) {
-                this.$refs.body.scrollTop += (~~(this.screen.length / 2)) * this.rowHeight;
+            if (idx >= (this.screenLength - 1)) {
+                this.$refs.body.scrollTop += (~~(this.screenLength / 2)) * this.rowHeight;
             }
         },
         arrowRight(e) {
@@ -1397,12 +1398,12 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
         }
     </style>
     <div class="horizontal no-flex header list">
-        <oda-checkbox ref="check" :value="items.every(i=> !i.col.hidden)" @tap="_onSelectAll"></oda-checkbox>
+        <oda-checkbox ref="check" :value="items.every(i=> !i.col.$hidden)" @tap="_onSelectAll"></oda-checkbox>
         <span class="flex label center" style="font-size: 10pt; padding: 0px 8px;">(show all)</span>
     </div>
     <div>
         <div ~for="item in items" class="list  no-flex horizontal">
-            <oda-checkbox :value="!item.col.hidden"  @value-changed="_onChange($event, item)"></oda-checkbox>
+            <oda-checkbox :value="!item.col.$hidden"  @value-changed="_onChange($event, item)"></oda-checkbox>
             <span class="label center" style="font-size: 10pt; padding: 0px 8px;">{{getLabel(item)}}</span>
         </div>
     </div>
@@ -1415,7 +1416,7 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
             return {
                 label: i.label,
                 name: i.name,
-                hidden: i.hidden,
+                $hidden: i.$hidden,
                 col: i
             }
         })
@@ -1424,13 +1425,13 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
         return item.label || item.name;
     },
     _onChange(e, item) {
-        item.col.hidden = !e.detail.value;
+        item.col.$hidden = !e.detail.value;
         // this.table.__write(this.table.settingsId + '/column/' + item.col[this.columnId] + '/hidden', !e.detail.value);
     },
     _onSelectAll(e) {
         // this.async(() => {
         this.items.forEach(i => {
-            i.col.hidden = !this.$refs.check.value;
+            i.col.$hidden = !this.$refs.check.value;
             // this.table.__write(this.table.settingsId + '/column/' + i.col[this.columnId] + '/hidden', !this.$refs.check.value)
         });
         // },0)
@@ -1450,7 +1451,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
             }
         </style>
         <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
-            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
+            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col" ~if="!col?.$hidden"  ~class="['col-' + col.id]"></div>
         </div>
         <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>        
     `,
@@ -1842,14 +1843,18 @@ cells: {
             })
             return this.column?.items;
         },
-
+        get sortIcon() {
+            switch (this.column.$sort){
+                case 1:
+                    return 'icons:arrow-drop-down';
+                case -1:
+                    return 'icons:arrow-drop-up';
+            }
+        },
+        get sortIndex() {
+            return (this.sorts?.filter(s => !s.$hidden && !s.$expanded).indexOf(this.column) + 1) || 0;
+        },
         props: {
-            // w:{
-            //     get(){
-            //         return this.column?.width || this.column?.$width;
-            //     },
-            //     reflectToAttribute: true
-            // },
             showSort() {
                 return this.allowSort && !this.column.$expanded && (!this.column.$parent || this.column.$parent.$expanded);
             },
@@ -1859,13 +1864,7 @@ cells: {
                     this.column.$filter = val || null;
                 }
             },
-            sortIcon() {
-                const sort = this.column.$sort;
-                return sort === 1 ? 'icons:arrow-drop-down' : sort === -1 ? 'icons:arrow-drop-up' : '';
-            },
-            sortIndex() {
-                return (this.sorts?.filter(s => !s.hidden).indexOf(this.column) + 1) || '';
-            },
+
             minWidth() {
                 let width = 15;
                 if (this.column.$expanded && this.$refs.subColumn?.length) {
@@ -1960,7 +1959,7 @@ cells: {
                     label: 'Hide this column',
                     icon: 'icons:visibility-off',
                     execute: () => {
-                        this.column.hidden = !this.column.hidden;
+                        this.column.$hidden = !this.column.$hidden;
                         // this.table.__write(this.table.settingsId + '/column/' + this.column.name + '/hidden', this.column.hidden);
                     }
                 },
@@ -2120,18 +2119,60 @@ function extract(items, level, parent) {
     }, []);
 }
 
+ODA({is:'oda-table-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
+    template:`
+        <style>
+            :host{
+                @apply --horizontal;
+                width: 300px;
+                @apply --flex;
+                bottom: 0px;
+                height: 90vh;
+            }
+            div>div{
+                align-items: center;
+                @apply --horizontal;
+                padding: 8px 4px;
+                cursor: pointer;
+            }
+            div>div:hover{
+                color: var(--focused-color) !important;
+            }
+            oda-icon{
+                transform: scale(.7);
+            }
+        </style>
+<!--        <oda-splitter align="vertical"></oda-splitter>-->
+        <div class="content flex vertical" style="overflow: hidden;">
+            <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" allow-drag allow-drop :data-set="table.columns"></oda-tree>
+            <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
+        </div>
+        <div style="writing-mode: vertical-lr;" class="horizontal header">
+            <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
+        </div>
+    `,
+    focusedTab: 0,
+    tabs: [
+        {icon: 'icons:tree-structure:90', title: 'columns'},
+        {icon: 'icons:filter:90', title: 'filters'},
+        {icon: 'icons:settings:90', title: 'properties'},
+    ],
+    table: null,
+})
+
+
 function modifyColumn(col){
     if (col.isModified) return;
     col.isModified = true;
     col.$saveKey = (col.$parent?.$saveKey?col.$parent?.$saveKey + '/':'') + (col[this.columnId] || 'empty-name');
     const storage = this.storage;
     const table = this;
-    console.log('col.$saveKey', col.$saveKey);
+    // console.log('col.$saveKey', col.$saveKey);
     col['#$width'] = col.$width;
     let checkWidth = false
     Object.defineProperty(col, '$width', {
         configurable: false,
-        enumerable: true,
+        enumerable: false,
         set(v) {
             if (!v) return;
             const min = this.items?.length?32:16;
@@ -2183,26 +2224,43 @@ function modifyColumn(col){
             return this['#$width'];
         }
     })
-    col['#$expanded'] = col.$expanded;
-
-    Object.defineProperty(col, '$expanded', {
-        configurable: false,
+    const props = ['expanded', 'hidden', 'sort', 'order', 'filter'];
+    for (let i  of props)
+        addSaveProp.call(col, i, storage);
+    if (col.checked !== undefined)
+        col['#checked'] = col.checked;
+    Object.defineProperty(col, 'checked',{
+        configurable: true,
         enumerable: true,
         set(v) {
-            if (this['$expanded'] === v)
-                return;
-            this['#$expanded'] = v;
-            // console.warn('set $expanded', col.$saveKey)
-            storage.setToItem(col.$saveKey, 'exp', v);
+            col.$hidden = !v ;
         },
         get() {
-            let result = this['#$expanded'];
-            if(result === undefined){
-                // console.warn('get $expanded', col.$saveKey)
-                this['#$expanded'] = result = storage.getFromItem(col.$saveKey, 'exp') || false;
-            }
-
+            return !col.$hidden;
+        }
+    })
+}
+function addSaveProp(name, storage){
+    const key = name[0];
+    name = '$'+name;
+    const vname = '#'+name;
+    if (this[name] !== undefined)
+        this[vname] = this[name];
+    Object.defineProperty(this, name, {
+        configurable: true,
+        enumerable: true,
+        set(v) {
+            if (this[name] === v)
+                return;
+            this[vname] = v;
+            storage.setToItem(this.$saveKey, key, v || undefined);
+        },
+        get() {
+            let result = this[vname];
+            if(result === undefined)
+                this[vname] = result = storage.getFromItem(this.$saveKey, key);
             return result;
         }
     })
+
 }
