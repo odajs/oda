@@ -10,7 +10,7 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
     <slot ~show="!inspectedObject" @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', template: 'oda-pg-cell-name', header: 'oda-property-grid-header-cell-name', label: this.label, treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'name', template: 'oda-pg-cell-name', header: 'oda-property-grid-header-cell-name', label: 'Property', treeMode: true, fix: 'left', $sort: 1 },
             { name: 'value', template: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell-value' },
             { name: 'category', $hidden: true, $sortGroups: 0 },
         ]
@@ -40,7 +40,7 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
     },
     get dataSet() {
         const items = this.PropertyGridDataSet.items;
-        if (this.onlySave)
+        if (this.onlySave  && !this.expertMode)
             return items.filter(i => i.prop?.save);
         return items;
     },
@@ -77,10 +77,6 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
 
 CLASS({is: 'PropertyGridDataRowOwner',
     props:{
-        exxx:{
-            default: false
-        },
-
         $expanded:{
             default: false,
             get(){
@@ -89,12 +85,6 @@ CLASS({is: 'PropertyGridDataRowOwner',
         }
     },
     $hasChildren: undefined,
-    // get $expanded(){
-    //     return false;
-    // },
-    // set $expanded(n){
-    //     this.items;
-    // },
     get items() {
         if (this.mixed)
             return [];
@@ -172,7 +162,15 @@ CLASS({is: 'PropertyGridDataRow', extends: 'PropertyGridDataRowOwner',
     },
 
     get category() {
-        return this.prototype.constructor?.name + (this.prop?.category ? (` - ${this.prop?.category.toLowerCase()}`) : '');
+        let cat = this.prototype.constructor?.name || '';
+        if (this.prop){
+            cat += ': public';
+            if (this.prop.category)
+                cat+= ` - ${this.prop?.category.toLowerCase()}`
+        }
+        else
+            cat+=': private';
+        return cat
     },
     get mixed() {
         return this.value instanceof MixedArray;
@@ -394,9 +392,14 @@ cells: {
         <style>
             :host {
                 @apply --horizontal;
+                align-items: center;
+                font-size: small;
             }
         </style>
-        <div class="flex"></div>
+        <div style="padding: 4px;" class="flex horizontal">
+            <label style="text-align: center;" class="flex">Value</label>
+        </div>
+        
         <oda-button class="no-flex" allow-toggle ::toggled="expertMode" icon="social:school"></oda-button>
         `
     })

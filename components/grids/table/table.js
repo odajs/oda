@@ -2150,6 +2150,7 @@ settings:{
                 transform: scale(.7);
             }
         </style>
+        <oda-splitter></oda-splitter>
         <div class="content flex vertical" style="overflow: hidden;">
             <oda-table-columns-tree class="border" ~show="focusedTab === 0"></oda-table-columns-tree>
             <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
@@ -2168,12 +2169,12 @@ settings:{
     ODA({is: 'oda-table-columns-tree', imports: '@oda/tree', extends: 'oda-tree',
         columns: [
             {name: 'name', treeMode: true},
-            {name: 'fix', $hidden: true, $sortGroups: 0 }
+            {name: 'fix', $hidden: true, $sortGroups: 0, $expand: true }
         ],
         props:{
             allowCheck: 'double',
             allowDrag: true,
-            allowDrop: true
+            allowDrop: true,
         },
         get dataSet(){
             return this.domHost.table.columns;
