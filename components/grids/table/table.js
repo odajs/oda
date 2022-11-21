@@ -217,6 +217,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     props: {
         rowFixLimit:{
             default: 10,
+            save: true,
         },
         allowSettings: false,
         allowCheck: {
@@ -441,7 +442,23 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     },
     raisedRows: [],
     get rowColumns() {
-        return this._getRowColumns(this.headerColumns);
+        const convert = (cols) => {
+            return cols.filter(i=>!i.$hidden).reduce((res, col) => {
+                modifyColumn.call(this.table, col)
+                if (col.$expanded && col.items?.length) {
+                    const items = col.items.filter(i=>!i.$hidden).map((c, i) => {
+                        c.id = col.id + '-' + i;
+                        c.$parent ??= col;
+                        return c;
+                    });
+                    res.push(...convert(items));
+                } else {
+                    res.push(col);
+                }
+                return res;
+            }, []);
+        }
+        return convert(this.headerColumns);
     },
     get rowHeight() {
         return Math.round(this.iconSize * 4 / 3);
@@ -672,22 +689,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         this._select(evt);
         this._focus(evt);
     },
-    _getRowColumns(cols) {
-        return cols.reduce((res, col) => {
-            modifyColumn.call(this.table, col)
-            if (col.$expanded && col.items?.length) {
-                const items = col.items.map((c, i) => {
-                    c.id = col.id + '-' + i;
-                    c.$parent ??= col;
-                    return c;
-                });
-                res.push(...this._getRowColumns(items));
-            } else {
-                res.push(col);
-            }
-            return res;
-        }, []);
-    },
+
     _getTemplateTag(row, col) {
         if (row.$role)
             return row.template || col.template || this.defaultTemplate;
@@ -1451,7 +1453,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
             }
         </style>
         <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
-            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col" ~if="!col?.$hidden"  ~class="['col-' + col.id]"></div>
+            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
         </div>
         <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>        
     `,
@@ -1741,7 +1743,7 @@ cells: {
                 overflow: hidden;
                 align-items: initial !important;
                 box-sizing: border-box;
-                max-width: {{column.width || 'auto'}};
+                max-width: {{column.width || '100%'}};
                 min-width: {{column.width || '16px'}};
                 width: {{column.$width}};
                 
@@ -1829,7 +1831,7 @@ cells: {
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="expanded">
-                <oda-table-header-cell class="header-cell flex" ~for="col in subCols" :item="col" :column="col"  ref="subColumn"  ~class="['col-' + col.id]"></oda-table-header-cell>
+                <oda-table-header-cell  class="header-cell flex" ~for="col in subCols" :item="col" :column="col"  ref="subColumn"  ~class="['col-' + col.id]"></oda-table-header-cell>
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
@@ -1837,11 +1839,11 @@ cells: {
             return this.column.$expanded;
         },
         get subCols(){
-            this.column?.items.forEach(i=>{
+            return this.column?.items?.map(i=>{
                 i.$parent ??= this.column;
                 modifyColumn.call(this.table, i);
-            })
-            return this.column?.items;
+                return i;
+            })?.filter(i=>!i.$hidden);
         },
         get sortIcon() {
             switch (this.column.$sort){
@@ -1864,19 +1866,19 @@ cells: {
                     this.column.$filter = val || null;
                 }
             },
-
-            minWidth() {
-                let width = 15;
-                if (this.column.$expanded && this.$refs.subColumn?.length) {
-                    width = this.$refs.subColumn.reduce((res, c) => {
-                        res += Math.max(c.minWidth || 15, 15);
-                        return res;
-                    }, 0);
-                } else if (this.column.items?.length) {
-                    width = getWidth(this.column);
-                }
-                return width;
-            },
+            //todo УДАЛИТЬ!!!
+            // minWidth() {
+            //     let width = 15;
+            //     if (this.column.$expanded && this.$refs.subColumn?.length) {
+            //         width = this.$refs.subColumn.reduce((res, c) => {
+            //             res += Math.max(c.minWidth || 15, 15);
+            //             return res;
+            //         }, 0);
+            //     } else if (this.column.items?.length) {
+            //         width = getWidth(this.column);
+            //     }
+            //     return width;
+            // },
         },
         listeners:{
             contextmenu: '_menu',
@@ -1888,7 +1890,7 @@ cells: {
                 let parent = this.column.$parent;
                 if (parent){
                     modifyColumn.call(this.table, parent);
-                    parent.$width = parent.items.reduce((res, i)=>{
+                    parent.$width = parent.items.filter(i=>!i.$hidden).reduce((res, i)=>{
                         modifyColumn.call(this.table, i);
                         return res += +i.$width;
                     }, 0)
@@ -1900,7 +1902,7 @@ cells: {
                 }, 0);
                 if (width){
                     const correct = this.column.$width/width;
-                    this.column.items?.forEach(i=>{
+                    this.column.items?.filter(i=>!i.$hidden).forEach(i=>{
                         modifyColumn.call(this.table, i);
                         i.$width = i.$width * correct;
                     })
@@ -2004,20 +2006,22 @@ cells: {
             console.log(res);
         }
     });
-    function getMinWidth(column) {
-        if (column.items?.length) {
-            return column.items.reduce((res, c) => res + Math.max(getMinWidth(c) || 0, 15), 0);
-        } else {
-            return 15;
-        }
-    }
-    function getWidth(column) {
-        if (column.items?.length) {
-            return column.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
-        } else {
-            return Math.max(column.$width, 15);
-        }
-    }
+
+    // todo УДАЛИТЬ!
+    // function getMinWidth(column) {
+    //     if (column.items?.length) {
+    //         return column.items.reduce((res, c) => res + Math.max(getMinWidth(c) || 0, 15), 0);
+    //     } else {
+    //         return 15;
+    //     }
+    // }
+    // function getWidth(column) {
+    //     if (column.items?.length) {
+    //         return column.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
+    //     } else {
+    //         return Math.max(column.$width, 15);
+    //     }
+    // }
 
     ODA({is: 'oda-table-cell-group', extends: 'oda-table-cell-base',
         template: /*html*/`
@@ -2167,7 +2171,6 @@ function modifyColumn(col){
     col.$saveKey = (col.$parent?.$saveKey?col.$parent?.$saveKey + '/':'') + (col[this.columnId] || 'empty-name');
     const storage = this.storage;
     const table = this;
-    // console.log('col.$saveKey', col.$saveKey);
     col['#$width'] = col.$width;
     let checkWidth = false
     Object.defineProperty(col, '$width', {
@@ -2175,7 +2178,7 @@ function modifyColumn(col){
         enumerable: false,
         set(v) {
             if (!v) return;
-            const min = this.items?.length?32:16;
+            const min = this.items?.filter(i=>!i.$hidden).length?32:16;
             v = Math.round(v);
             if (v<min)
                 v = min;
@@ -2183,24 +2186,24 @@ function modifyColumn(col){
                 return;
             this['#$width'] = v;
             if (this.$expanded){
-                let  w = col.items?.reduce((res, i)=>{
+                let  w = col.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
                     i.$parent = i.$parent || col;
                     modifyColumn.call(table, i);
-                    i.$width = i.$width || v / this.items.length;
+                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
                     res += i.$width ;
                     return res;
                 },0)
                 if (w && v != w){
                     w /= v;
-                    this.items.forEach(i=>{
+                    this.items?.filter(i=>!i.$hidden).forEach(i=>{
                         i.$width = i.$width / w;
                     })
                 }
             }
             if (this.$parent){
-                let  w = this.$parent.items.reduce((res, i)=>{
+                let  w = this.$parent.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
                     modifyColumn.call(table, i);
-                    i.$width = i.$width || v / this.items.length;
+                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
                     res += i.$width;
                     return res;
                 },0)
