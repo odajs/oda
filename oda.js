@@ -1174,8 +1174,16 @@ if (!window.ODA) {
         getItem(key){
             return this.data[key];
         },
+        getFromItem(key, subKey){
+            return this.data[key]?.[subKey];
+        },
         setItem(key, value){
             this.data[key] = value;
+            this.save();
+        },
+        setToItem(key, subKey, value){
+            key = this.data[key] ??= {};
+            key[subKey] = value;
             this.save();
         },
         save(){

@@ -312,6 +312,7 @@ ODA({is: 'app-layout-toolbar',
         :host {
             @apply --no-flex;
             @apply --horizontal;
+            @apply --shadow;
             border-bottom: 1px solid silver;
             align-items: center;
         }
