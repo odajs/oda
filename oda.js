@@ -191,7 +191,7 @@ if (!window.ODA) {
                     if (!!entry.target.$sleep !== entry.isIntersecting) continue;
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
-                            entry.target.domHost?.render();
+                        entry.target.domHost?.render();
                     }
                 }
             }, { rootMargin: '10%' }),
@@ -447,10 +447,10 @@ if (!window.ODA) {
                 //     return this;
 
                 const r1 = this.domHost?.rootHost;
-                if (r1 === false)
+                // const r2 = this.parentElement?.rootHost;/**/
+                if (r1 === false/* || r2 === false*/)
                     return false;
                 this.__need_update = true;
-                // const r2 = this.parentElement?.rootHost;
                 return r1 || /*r2 || */ this;
             }
             render() {
