@@ -36,13 +36,13 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
         colLines: true,
         rowLines: true,
         groupExpandingMode: 'first',
-        dataSet() {
-            const items = this.PropertyGridDataSet.items;
-            if (this.onlySave)
-                return items.filter(i => i.prop?.save);
-            return items;
-        },
         onlySave: false,
+    },
+    get dataSet() {
+        const items = this.PropertyGridDataSet.items;
+        if (this.onlySave)
+            return items.filter(i => i.prop?.save);
+        return items;
     },
     get PropertyGridDataSet() {
         return new PropertyGridDataSet(this.inspectedObject, this.expertMode, this.onlySave)
@@ -64,7 +64,7 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
                 const _a = a[col[this.columnId]];
                 const _b = b[col[this.columnId]];
                 if (!isNaN(_a) && !isNaN(_b)) {
-                    res = parseFloat(_a) > parseFloat(_b) ? 1 : -1
+                    res = parseFloat(_az) > parseFloat(_b) ? 1 : -1
                 } else {
                     res = (String(_a)).localeCompare(String(_b)) * col.$sort;
                 }

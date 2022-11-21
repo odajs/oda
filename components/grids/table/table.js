@@ -185,7 +185,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
-    <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
+    
     `,
     async openSettings(e){
         await ODA.showDropdown(
@@ -214,6 +214,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
 
     columns: [],
     firstTop: 0,
+    get dataSet(){
+        return  [];
+    },
+    set dataSet(n) {
+        this.$refs.body && (this.$refs.body.scrollTop = 0);
+    },
     props: {
         rowFixLimit:{
             default: 10,
@@ -250,14 +256,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         columnId: 'name',
 
         // customRows: false,
-        dataSet: {
-            default: [],
-            // freeze: true,
-            set(n, o) {
-                this.$refs.body && (this.$refs.body.scrollTop = 0);
-                // this._scrollTop = 0;
-            }
-        },
+
         defaultFooter: 'oda-table-footer-cell',
         defaultGroupTemplate: 'oda-table-cell-group',
         defaultHeader: 'oda-table-header-cell',
@@ -1444,6 +1443,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
     template:  `
         <style>
             :host{
+                position: relative;
                 border-color: white;
                 @apply --horizontal;
                 @apply --dark;
@@ -1468,6 +1468,9 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
 })
 
 ODA({is:'oda-table-header', extends: 'oda-table-cols',
+    template:`
+        <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
+    `,
     getTemplate(col){
         return col.header || this.defaultHeader
     },
@@ -2123,9 +2126,9 @@ function extract(items, level, parent) {
         return res;
     }, []);
 }
-
-ODA({is:'oda-table-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
-    template:`
+settings:{
+    ODA({is:'oda-table-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
+        template:`
         <style>
             :host{
                 @apply --horizontal;
@@ -2147,23 +2150,41 @@ ODA({is:'oda-table-settings', imports: '@tools/property-grid, @oda/tree, @oda/sp
                 transform: scale(.7);
             }
         </style>
-<!--        <oda-splitter align="vertical"></oda-splitter>-->
         <div class="content flex vertical" style="overflow: hidden;">
-            <oda-tree class="border" allow-check="double" ~show="focusedTab === 0" allow-drag allow-drop :data-set="table.columns"></oda-tree>
+            <oda-table-columns-tree class="border" ~show="focusedTab === 0"></oda-table-columns-tree>
             <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
         </div>
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
         </div>
     `,
-    focusedTab: 0,
-    tabs: [
-        {icon: 'icons:tree-structure:90', title: 'columns'},
-        {icon: 'icons:filter:90', title: 'filters'},
-        {icon: 'icons:settings:90', title: 'properties'},
-    ],
-    table: null,
-})
+        focusedTab: 0,
+        tabs: [
+            {icon: 'icons:tree-structure:90', title: 'columns'},
+            {icon: 'icons:filter:90', title: 'filters'},
+            {icon: 'icons:settings:90', title: 'properties'},
+        ],
+    })
+    ODA({is: 'oda-table-columns-tree', imports: '@oda/tree', extends: 'oda-tree',
+        columns: [
+            {name: 'name', treeMode: true},
+            {name: 'fix', $hidden: true, $sortGroups: 0 }
+        ],
+        props:{
+            allowCheck: 'double',
+            allowDrag: true,
+            allowDrop: true
+        },
+        get dataSet(){
+            return this.domHost.table.columns;
+        },
+        ready(){
+            this.groups = [this.columns.find(c => c.name === 'fix')];
+        }
+    })
+}
+
+
 
 
 function modifyColumn(col){
