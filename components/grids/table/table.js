@@ -185,7 +185,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
     </div>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
-    <oda-button ~if="showSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
+    <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
     async openSettings(e){
         await ODA.showDropdown(
@@ -218,7 +218,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
         rowFixLimit:{
             default: 10,
         },
-        showSettings: false,
+        allowSettings: false,
         allowCheck: {
             default: 'none',
             list: ['none', 'single', 'down', 'up', 'double', 'cleardown']
