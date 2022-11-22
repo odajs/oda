@@ -15,8 +15,6 @@ ODA({is: 'oda-hexagon-layout',
                   position: relative;
                   background: {{background}};
                   margin:  -{{h / 2 }}px -{{size / 2 + distance}}px;
-
-
               }
               :host([tracking]):before{
                     content: "";

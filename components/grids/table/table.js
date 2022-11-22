@@ -10,179 +10,18 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         :host([show-borders]) {
             border: 1px solid gray;
         }
-        :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])>.cell:not([fix]) {
-            background-color: rgba(0,0,0,.05);
-        }
-        .cell {
-            position: relative;
-            @apply --content;
-            @apply --no-flex;
-            @apply --horizontal;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            box-sizing: border-box;
-            align-items: center;
-        }
-        :host([row-lines]) .cell {
-            border-bottom: 1px  solid var(--dark-background);
-            box-sizing: border-box;
-        }
-
-        :host([col-lines]) .cell {
-            border-right: 1px solid var(--dark-background);
-            box-sizing: border-box;
-        }
-        .body{
-            scroll-behavior: smooth;
-        }
-        .head {
-            border-top: 1px  solid var(--dark-background);
-            box-sizing: border-box;
-            @apply --header;
-            border-right: none !important;
-        }
-        .row[focused]::after {
-            content: '';
-            background-color: var(--focused-color);
-            position: absolute;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            height: 2px;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .row[highlighted]::before {
-            content: '';
-            position: absolute;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            top: 0px;
-            outline: 1px dashed gray;
-            outline-offset: -3px;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .row[drop-mode]:before {
-            position: absolute;
-            left: 0px;
-            content: '';
-            pointer-events: none;
-            background-color: var(--info-color);
-            z-index: 10;
-            top: 0px;
-            bottom: 0px;
-        }
-        .row[drop-mode=top]:before {
-            top: -1px;
-            right: 0px;
-            bottom: unset;
-            height: 2px;
-        }
-        .row[drop-mode=bottom]:before {
-            bottom: -2px;
-            right: 0px;
-            top: unset;
-            height: 2px;
-        }
-        .row[drop-mode=in]:before {
-            width: 2px;
-        }
-        .row[dragging] > .cell {
-            @apply --error;
-            /*background-color: rgb(204, 255, 205) ;*/
-        }
-        :host .row[last-raised]/* > .cell*/:after {
-            content: attr(last-raised);
-            padding-left: 4px;
-            font-size: x-small;
-            text-align: left;
-            position: absolute;
-            left: -1px;
-            right: -1px;
-            border-bottom: 1px dashed;
-            bottom: -1px;
-        }
-        .cell[role=group] {
-            z-index: 2;
-            @apply --header;
-            border-color: transparent;
-        }
-        .cell[role=footer],
-        .row[role=group],
-        .cell[fix] {
-            @apply --header;
-        }
-        .cell:focus{
-            outline: 2px dotted black !important;
-            outline-offset: -1px !important;
-        }
-        .group {
-            position: sticky;
-            position: -webkit-sticky;
-            left: 0px;
-            border-color: transparent !important;
-            @apply --dark;
-            @apply --flex;
-        }
-        .sticky {
-            position: sticky;
-            position: -webkit-sticky;
-            /*z-index: 1;*/
-        }
-        .group-row {
-            z-index: 10;
-            position: sticky;
-            position: -webkit-sticky;
-            @apply --dark;
-        }
-        .row {
-            position: sticky;
-            left: 0px;
-            @apply --horizontal;
-        }
-        .header {
-            overflow: hidden;
-        }
     </style>
-    <style>
-        .row{
-            min-height: {{rowHeight}}px;
-            max-height: {{autoRowHeight?'':rowHeight+'px'}};
-            @apply --no-flex;
-        }
-    </style>
-    <style ~text="colStyles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-<!--    <oda-table-body fix></oda-table-body>-->
-<!--    <oda-splitter align="horizontal"></oda-splitter>-->
-<!--    <oda-table-body></oda-table-body>   -->
-    <div ref="body" tabindex="0" @resize="_scroll" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
-        <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
-            <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
-                <div :draggable="_getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
-                    ~class="{'group-row':row.$group}"
-                    :drop-mode="row.$dropMode"
-                    :last-raised="raisedRows[0] === row?(items?.indexOf(rows[r + 1]) - r - 1) + '↑' : false"
-                    :dragging="draggedRows.includes(row)"
-                    @dragstart="_onDragStart"
-                    :focused="allowFocus && isFocusedRow(row)"
-                    :highlighted="allowHighlight && isHighlightedRow(row)"
-                    :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                    <div :tabindex="_getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
-                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="flex content empty-space" @drop.stop.prevent="_onDropToEmptySpace" @dragover.stop.prevent="_onDragOverToEmptySpace" @down="_onDownToEmptySpace"></div>
-    </div>
+    <oda-table-body :scroll-left="$scrollLeft" class="no-flex" fix :rows="raisedRows"></oda-table-body>
+    <oda-table-body ref="body" :scroll-left="$scrollLeft" class="flex" :rows></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
-    
     `,
+    onDblClick(e) {
+        const el = e.path.find(p => p.row);
+        if (el)
+            this.table.fire('row-dblclick', el.row);
+    },
     async openSettings(e){
         await ODA.showDropdown(
             'oda-table-settings',
@@ -193,29 +32,22 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get storage(){
         return ODA.LocalStorage.create(this.$savePath);
     },
-    attached(){
-        this.setScreen(this.$refs.body);
-    },
-    get _bodyHeight() {
-        return this.lazy
-            ? (this.size + this.raisedRows?.length) * this.rowHeight
-            : 0;
-    },
     get screenFrom() {
-        return Math.round(this._scrollTop / this.rowHeight);
+        return Math.round(this.$scrollTop / this.rowHeight);
     },
     get screenLength() {
-        return (Math.round(this._height / this.rowHeight) || 0) + 1;
+        return (Math.round(this.$height / this.rowHeight) || 0) + 1;
     },
-
     columns: [],
+    dataSet: [],
     firstTop: 0,
-    get dataSet(){
-        return  [];
-    },
-    set dataSet(n) {
-        this.$refs.body && (this.$refs.body.scrollTop = 0);
-    },
+
+    // get dataSet(){
+    //     return  [];
+    // },
+    // set dataSet(n) {
+    //     this.$refs.body && (this.$refs.body.scrollTop = 0);
+    // },
     props: {
         rowFixLimit:{
             default: 10,
@@ -294,9 +126,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         lazy: false,
         rowLines: {
             default: false,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            save: true
         },
-        // screen: { from: 0, length: 0 },
         showBorders: {
             type: Boolean,
             reflectToAttribute: true
@@ -328,11 +160,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get size() {
         return this.items?.length || 0;
     },
-    _height: 0,
-    _scrollTop: 0,
-    _scrollWidth: 0,
+    $height: 0,
+    $scrollTop: 0,
+    $scrollWidth: 0,
     _selectedAll: false,
-    leftScroll: 0,
+    $scrollLeft: 0,
     checkedRows: [],
     draggedRows: [],
     get filters() {
@@ -425,8 +257,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     get items() {
         if (!this.dataSet?.length) return [];
-
-
         let array = Object.assign([], this.dataSet);
         array = extract.call(this, array, this.hideRoot || this.hideTop ? -1 : 0);
         this._useColumnFilters(array);
@@ -462,19 +292,21 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.items?.length) {
             return [];
         }
-        // if (!this.lazy || !this.screen) {
-        //     return this.items;
-        // }
-        const raised = [];
         const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength);
-        if (rows.length) {
-            while (rows[0].$parent && this.items.includes(rows[0].$parent)) {
-                raised.push(rows[0].$parent);
-                rows.unshift(rows[0].$parent);
-                if (rows.length > this.screenLength)
-                    rows.pop();
-            }
+        const raised = [];
+        let top = rows[0]?.$parent;
+        while (top){
+            raised.unshift(top);
+            top = top.$parent;
         }
+        // if (rows.length) {
+        //     while (rows[0].$parent && this.items.includes(rows[0].$parent)) {
+        //         raised.push(rows[0].$parent);
+        //         // rows.unshift(rows[0].$parent);
+        //         // if (rows.length > this.screenLength)
+        //         //     rows.pop();
+        //     }
+        // }
         this.raisedRows = raised;
         return rows;
     },
@@ -509,7 +341,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
                 const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
                 const max = col.$width + 'px';
-                if (col.fix || col.treeMode) {
+                if (col.fix) {
                     style += `\n\tz-index: 1;`;
                     if (col.fix === 'left') {
                         style += `\n\tleft: ${col.left}px;`
@@ -532,7 +364,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         // this._scroll();
     },
 
-    focus() { this.$refs.body.focus?.() },
+    // focus() { this.$refs.body.focus?.() },
 
     observers: [
         function obs_selectAll(items, _selectedAll) {
@@ -560,7 +392,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         'ctrl+a,ctrl+ф'(e) {
             if (this._selectedAll) {
                 this.clearSelection();
-                this._addSelection(this.focusedRow);
+                this.addSelection(this.focusedRow);
             } else {
                 this._selectedAll = true;
             }
@@ -572,9 +404,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
             let idx = rows.findIndex(r => this.compareRows(r, row));
             idx = idx > 0 ? idx - 1 : 0;
-            this._highlight(e, { value: rows[idx] });
+            this.highlightRow(e, { value: rows[idx] });
             if (!e.ctrlKey) {
-                this._select(e, { value: rows[idx]})
+                this.selectRow(e, { value: rows[idx]})
             }
             if (idx <= (rows.findIndex(r => r === this.raisedRows[0]) + 2)) {
                 this.$refs.body.scrollTop -= (~~(this.screenLength / 2)) * this.rowHeight;
@@ -587,9 +419,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             let idx = rows.findIndex(r => this.compareRows(r, row));
             const max = rows.length - 1;
             idx = idx < max ? idx + 1 : max;
-            this._highlight(e, { value: rows[idx] });
+            this.highlightRow(e, { value: rows[idx] });
             if (!e.ctrlKey) {
-                this._select(e, { value: rows[idx]})
+                this.selectRow(e, { value: rows[idx]})
             }
             if (idx >= (this.screenLength - 1)) {
                 this.$refs.body.scrollTop += (~~(this.screenLength / 2)) * this.rowHeight;
@@ -621,31 +453,31 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         'ctrl+space'(e) {
             // e.preventDefault();
             e.stopPropagation();
-            this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+            this.selectRow(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         },
         'space'(e) {
             // e.preventDefault();
             e.stopPropagation();
-            this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+            this.focusRow(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
         },
         enter(e) {
             e.preventDefault();
             e.stopPropagation();
             if (e.ctrlKey) {
-                return this._select(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+                return this.selectRow(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
             }
             if (this.allowHighlight && this.allowFocus) {
                 if (this.highlightedRow === this.focusedRow) {
-                    this._dblclick({ path: [{ row: this.focusedRow }] })
+                    this.onDblClick({ path: [{ row: this.focusedRow }] })
                 } else {
-                    this._focus(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
+                    this.focusRow(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
                 }
             }
         },
     },
     listeners: {
-        dragend: '_onDragEnd',
-        dragleave: '_onDragEnd',
+        dragend: 'onDragEnd',
+        dragleave: 'onDragEnd',
         // resize: '_scroll',
         scrollToUp() {
             if (this.$refs?.body) {
@@ -677,26 +509,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     isSelectedRow(row) { // вынесено в функцию для возможности переопределения
         return this.selectedRows.some(sr => this.compareRows(row, sr));
     },
-    _tapRows(e) {
+    onTapRows(e) {
         const evt = e.sourceEvent || e;
         if (evt.which !== 1) return;
         this.highlightedRow = null;
-        this._select(evt);
-        this._focus(evt);
+        this.selectRow(evt);
+        this.focusRow(evt);
     },
 
-    _getTemplateTag(row, col) {
-        if (row.$role)
-            return row.template || col.template || this.defaultTemplate;
-        if (row.$group)
-            return this.defaultGroupTemplate;
-        if (col.treeMode)
-            return this.defaultTreeTemplate;
-        let template = col.template || row.template || this.defaultTemplate;
-        if (typeof template === 'object')
-            return template.tag || template.is || template.template;
-        return template;
-    },
+
     // _getTemplateProps(row, col) { // зачем это?
     //     if (!row.$group && !col.treeMode) {
     //         let template = col.template || row.template || this.defaultTemplate;
@@ -705,14 +526,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     //     }
     //     return {};
     // },
-    _getTabIndex(col, row, c, r) {
-        if (row.$group || !this.allowFocus)
-            return null;
-        return (col[this.columnId] && !col.fix && !col.treeMode) ? ((r + 1) * 10000 + c + 1) : '';
-    },
-    _getDraggable(row) {
-        return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
-    },
+
+
     expand(row, force, old) {
         const items = this._beforeExpand(row, force);
         if (items?.then) {
@@ -891,32 +706,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return (String(_a)).localeCompare(String(_b)) * sort;
         });
     },
-    getChecked() {
-        return this.checkedRows;
-    },
-    _scroll(e) {
-        this.setScreen(this.$refs.body);
-    },
-    setScreen(body){
-        if (!body) return;
-        this.leftScroll = body.scrollLeft;
-        // this.interval('_scroll', ()=>{
-            const scrollTop = body.scrollTop;//Math.round(body.scrollTop / this.rowHeight) * this.rowHeight;
-            const scrollWidth = body.scrollWidth;
-            const height = body.offsetHeight;
-            const h = scrollTop / this.rowHeight;
-            if (body.scrollTop + body.offsetHeight + this.rowHeight < body.scrollHeight)
-                this.firstTop = Math.ceil(Math.floor(h) - h);
-            else
-                this.firstTop = 0;
-            if (scrollWidth && height) {
-                this._scrollTop = scrollTop;
-                this._scrollWidth = body.scrollWidth;
-                this._height = body.offsetHeight;
-            }
-        // })
-    },
-    _focus(e, d) {
+    focusRow(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
         const item = d?.value || e.target.item;
         if (!item) return;
@@ -928,12 +718,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this.focusedRow = item;
         }
     },
-    _highlight(e, d) {
+    highlightRow(e, d) {
         if (!this.allowHighlight) return;
         const item = d?.value || e.target.item;
         this.highlightedRow = item;
     },
-    _select(e, d) {
+    selectRow(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
             if (!item) return;
@@ -944,12 +734,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this.clearSelection();
                 if (from <= to) {
                     while (from <= to) {
-                        this._addSelection(this.rows[from])
+                        this.addSelection(this.rows[from])
                         from++;
                     }
                 } else {
                     while (from >= to) {
-                        this._addSelection(this.rows[from])
+                        this.addSelection(this.rows[from])
                         from--
                     }
                 }
@@ -957,7 +747,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this._selectedAll = false;
                 const idx = this.selectedRows.indexOf(item);
                 if (idx < 0)
-                    this._addSelection(item);
+                    this.addSelection(item);
                 else {
                     this.selectedRows.splice(idx, 1);
                     this.fire('selected-rows-changed', this.selectedRows);
@@ -968,12 +758,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             } else if (!item.disabled) {
                 this.selectionStartIndex = -1;
                 this.clearSelection()
-                this._addSelection(item);
+                this.addSelection(item);
             }
             this.render();
         }
     },
-    _addSelection(item) {
+    addSelection(item) {
         if (!item || item.$group || item.$allowSelection === false) return;
         switch (this.allowSelection) {
             case 'all': break;
@@ -1037,7 +827,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const items = this.items;
         if (items.length && this.allowSelection !== 'none') {
             for (let i = 0; i < items.length; i++) {
-                this._addSelection(items[i]);
+                this.addSelection(items[i]);
             }
         }
         this.render();
@@ -1256,15 +1046,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return find(this.dataSet);
     },
 
-    _onDragEnd(e) {
+    onDragEnd(e) {
         this.draggedRows = [];
         this._dropCheckWait = null;
     },
-    _dblclick(e) {
-        const el = e.path.find(p => p.row);
-        if (el)
-            this.fire('row-dblclick', el.row);
-    },
+
     _onRowContextMenu(e) {
         const el = e.path.find(p => p.row);
         if (el)
@@ -1333,7 +1119,7 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
 
 ODA({is:'oda-table-part',
     template:`
-        <style>{{colStyles}}}</style>
+        <style>{{colStyles}}</style>
     `
 })
 
@@ -1366,7 +1152,7 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
     },
     attached() {
         this.listen('mousedown', '_leave', { target: window });
-        // this.listen('dragend', '_onDragEnd', { target: window });
+        // this.listen('dragend', 'onDragEnd', { target: window });
     },
     _tap(e) {
         this.opened = !this.opened;
@@ -1380,7 +1166,7 @@ ODA({is: 'oda-table-settings', imports: '@oda/button',
     },
     detached() {
         this.unlisten('mousedown', '_leave', { target: window });
-        // this.unlisten('dragend', '_onDragEnd', { target: window });
+        // this.unlisten('dragend', 'onDragEnd', { target: window });
     }
 });
 
@@ -1448,7 +1234,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
                 z-index: 1;
             }
         </style>
-        <div :scroll-left="leftScroll" class="horizontal flex" style="overflow-x: hidden;">
+        <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
             <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
         </div>
         <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
@@ -1481,10 +1267,242 @@ ODA({is:'oda-table-footer', extends: 'oda-table-cols',
     }
 })
 
-ODA({is:'oda-table-body',
+ODA({is:'oda-table-body', extends: 'oda-table-part',
     template:`
-        body
-    `
+        <style>
+            :host{
+                position: relative;
+                overflow-x: {{autoWidth?'hidden':'auto'}};
+                overflow-y: {{showHeader?'scroll':'auto'}};
+                scroll-behavior: smooth;
+                @apply --vertical;
+            }
+            :host([fix]){
+                overflow-x: clip !important;
+                overflow-y: scroll !important;
+                height: {{_bodyHeight}}px;
+                margin-bottom: 1px;
+                border-bottom: 1px  solid var(--dark-background);
+            }
+            :host([fix]) .cell{
+               @apply --header;
+            }
+            .row{
+                min-height: {{rowHeight}}px;
+                max-height: {{autoRowHeight?'':rowHeight+'px'}};
+                @apply --no-flex;
+            }
+        </style>
+        <style>
+            :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])>.cell:not([fix]) {
+                background-color: rgba(0,0,0,.05);
+            }
+            .cell {
+                position: relative;
+                @apply --content;
+                @apply --no-flex;
+                @apply --horizontal;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                box-sizing: border-box;
+                align-items: center;
+            }
+            :host([row-lines]) .cell {
+                border-bottom: 1px  solid var(--dark-background);
+                box-sizing: border-box;
+            }
+    
+            :host([col-lines]) .cell {
+                border-right: 1px solid var(--dark-background);
+                box-sizing: border-box;
+            }
+            .row[focused]::after {
+                content: '';
+                background-color: var(--focused-color);
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                height: 2px;
+                z-index: 1;
+                pointer-events: none;
+            }
+            .row[highlighted]::before {
+                content: '';
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                top: 0px;
+                outline: 1px dashed gray;
+                outline-offset: -3px;
+                z-index: 2;
+                pointer-events: none;
+            }
+            .row[drop-mode]:before {
+                position: absolute;
+                left: 0px;
+                content: '';
+                pointer-events: none;
+                background-color: var(--info-color);
+                z-index: 10;
+                top: 0px;
+                bottom: 0px;
+            }
+            .row[drop-mode=top]:before {
+                top: -1px;
+                right: 0px;
+                bottom: unset;
+                height: 2px;
+            }
+            .row[drop-mode=bottom]:before {
+                bottom: -2px;
+                right: 0px;
+                top: unset;
+                height: 2px;
+            }
+            .row[drop-mode=in]:before {
+                width: 2px;
+            }
+            .row[dragging] > .cell {
+                @apply --error;
+            }
+            .cell[role=group] {
+                z-index: 2;
+                @apply --header;
+                border-color: transparent;
+            }
+            .cell[role=footer],
+            .row[role=group],
+            .cell[fix] {
+                @apply --header;
+            }
+            .cell:focus{
+                outline: 2px dotted black !important;
+                outline-offset: -1px !important;
+            }
+            .group {
+                position: sticky;
+                position: -webkit-sticky;
+                left: 0px;
+                border-color: transparent !important;
+                @apply --dark;
+                @apply --flex;
+            }
+            .sticky {
+                position: sticky;
+                position: -webkit-sticky;
+                /*z-index: 1;*/
+            }
+            .group-row {
+                z-index: 10;
+                position: sticky;
+                position: -webkit-sticky;
+                @apply --dark;
+            }
+            .row {
+                position: sticky;
+                left: 0px;
+                @apply --horizontal;
+            }
+        </style>
+            <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
+                <div class="sticky" ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave" @dragover="table._onDragOver"  @drop="table._onDrop">
+                    <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
+                        ~class="{'group-row':row.$group}"
+                        :drop-mode="row.$dropMode"
+                        :dragging="draggedRows.includes(row)"
+                        @dragstart="table._onDragStart"
+                        :focused="allowFocus && isFocusedRow(row)"
+                        :highlighted="allowHighlight && isHighlightedRow(row)"
+                        :selected="allowSelection !== 'none' && isSelectedRow(row)">
+                        <div :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                            <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace" @dragover.stop.prevent="table._onDragOverToEmptySpace" @down="table._onDownToEmptySpace"></div>
+    `,
+
+    get autoWidth(){
+        return this.table.autoWidth;
+    },
+    get showHeader(){
+        return this.table.showHeader;
+    },
+    rows: [],
+    props:{
+        fix:{
+            type: Boolean,
+            reflectToAttribute: true
+        },
+        evenOdd:{
+            type: Boolean,
+            get(){
+                return this.table.evenOdd;
+            },
+            reflectToAttribute: true
+        },
+        rowLines:{
+            type: Boolean,
+            get(){
+                return this.table.rowLines;
+            },
+            reflectToAttribute: true
+        },
+        colLines:{
+            type: Boolean,
+            get(){
+                return this.table.colLines;
+            },
+            reflectToAttribute: true
+        }
+    },
+    setScreen(){
+        if (this.fix) return;
+        this.$scrollLeft = this.scrollLeft;
+        this.$scrollTop = this.scrollTop;
+        this.$scrollWidth = this.scrollWidth;
+        this.$height = this.offsetHeight;
+        const h = this.$scrollTop / this.rowHeight;
+        if (this.$scrollTop + this.$height + this.rowHeight < this.scrollHeight)
+            this.firstTop = Math.ceil(Math.floor(h) - h);
+        else
+            this.firstTop = 0;
+    },
+    listeners:{
+        resize(e){
+            this.setScreen();
+        },
+        scroll(e){
+            this.setScreen();
+        }
+    },
+    _getTemplateTag(row, col) {
+        if (row.$role)
+            return row.template || col.template || this.defaultTemplate;
+        if (row.$group)
+            return this.defaultGroupTemplate;
+        if (col.treeMode)
+            return this.defaultTreeTemplate;
+        let template = col.template || row.template || this.defaultTemplate;
+        if (typeof template === 'object')
+            return template.tag || template.is || template.template;
+        return template;
+    },
+    getTabIndex(col, row, c, r) {
+        if (row.$group || !this.allowFocus)
+            return null;
+        return (col[this.columnId] && !col.fix && !col.treeMode) ? ((r + 1) * 10000 + c + 1) : '';
+    },
+    getDraggable(row) {
+        return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
+    },
+    get _bodyHeight() {
+        return (this.fix?this.rows.length:this.items.length) * this.rowHeight;
+    },
 })
 
 
@@ -1892,7 +1910,7 @@ cells: {
                 if (!this.column || this.column.$expanded || this.column.id === 999) return;
                 modifyColumn.call(this.table, this.column);
                 e.stopPropagation();
-                this.column.$width = /*this.column.$width || */Math.round(this.getBoundingClientRect().width);
+                this.column.$width = Math.round(this.offsetWidth);
                 let parent = this.column.$parent;
                 if (parent){
                     modifyColumn.call(this.table, parent);
@@ -1936,7 +1954,7 @@ cells: {
                 case 'start': {
                     this.active = true;
                     this.__sign = (this.column.fix === 'right' ? -1 : 1);
-                    this.column.$width = Math.round(this.getBoundingClientRect().width);
+                    this.column.$width = Math.round(this.offsetWidth);
                 } break;
                 case 'track': {
                     this.column.$width = +this.column.$width + this.__sign * e.detail.ddx;
@@ -2171,7 +2189,7 @@ settings:{
     ODA({is: 'oda-table-columns-tree', imports: '@oda/tree', extends: 'oda-tree',
         columns: [
             {name: 'name', treeMode: true},
-            {name: 'fix', $hidden: true, $sortGroups: 0, $expand: true }
+            {name: 'fix', $hidden: true, $sortGroups: 1, $expanded: true }
         ],
         props:{
             allowCheck: 'double',
@@ -2243,11 +2261,12 @@ function modifyColumn(col){
                 return this.width;
             if (!checkWidth){
                 let result = storage.getFromItem(col.$saveKey, 'w');
-                if (result)
+                if (result > 16)
                     this['#$width'] = result;
                 else
                     this['#$width'] = 150;
                 checkWidth = true;
+
             }
             return this['#$width'];
         }
@@ -2290,5 +2309,4 @@ function addSaveProp(name, storage){
             return result;
         }
     })
-
 }
