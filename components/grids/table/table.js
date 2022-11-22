@@ -1,8 +1,7 @@
-ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
+ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/splitter',
     template: /*html*/`
     <style>
         :host {
-            /*height: 100%;*/
             @apply --flex;
             @apply --vertical;
             overflow: hidden;
@@ -24,11 +23,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
             white-space: nowrap;
             box-sizing: border-box;
             align-items: center;
-            /*padding: 0px 4px;*/
         }
-        /*:host([auto-width]) .cell {*/
-        /*    @apply --flex;*/
-        /*}*/
         :host([row-lines]) .cell {
             border-bottom: 1px  solid var(--dark-background);
             box-sizing: border-box;
@@ -162,8 +157,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon',
     <style ~text="colStyles"></style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-<!--    <oda-table-body></oda-table-body>-->
-
+<!--    <oda-table-body fix></oda-table-body>-->
+<!--    <oda-splitter align="horizontal"></oda-splitter>-->
+<!--    <oda-table-body></oda-table-body>   -->
     <div ref="body" tabindex="0" @resize="_scroll" class="flex vertical" ~style="{height: _bodyHeight+'px', overflowX: autoWidth?'hidden':'auto', overflowY: showHeader?'scroll':'auto'}" style="min-height: 0px; height: 0px; max-height: 100vh; flex: auto; outline: none;" @scroll="_scroll">
         <div ref="rows-scroll-container" class="no-flex vertical body"  ~style="{height: _bodyHeight+'px', minWidth:  (autoWidth?0:(_scrollWidth - 20))+'px'}">
             <div  ref="rows-container" class="sticky"  ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="_dblclick" @tap="_tapRows" @contextmenu="_onRowContextMenu" @dragleave="_onDragLeave" @dragover="_onDragOver"  @drop="_onDrop">
@@ -1483,6 +1479,12 @@ ODA({is:'oda-table-footer', extends: 'oda-table-cols',
     getTemplate(col){
         return col.footer || this.defaultFooter
     }
+})
+
+ODA({is:'oda-table-body',
+    template:`
+        body
+    `
 })
 
 
