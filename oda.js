@@ -188,6 +188,7 @@ if (!window.ODA) {
             intersect: new IntersectionObserver(entries => {
                 for (let i = 0, entry, l = entries.length; i < l; i++) {
                     entry = entries[i];
+                    entry.target.$rect = entry.boundingClientRect;
                     if (!!entry.target.$sleep !== entry.isIntersecting) continue;
                     entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
                     if (!entry.target.$sleep){
@@ -197,6 +198,7 @@ if (!window.ODA) {
             }, { rootMargin: '10%' }),
             resize: new ResizeObserver(entries => {
                 for (const obs of entries) {
+                    obs.target.$rect = obs.contentRect;
                     if (obs.target.__events?.has('resize'))
                         obs.target.fire('resize');
                 }
@@ -2567,6 +2569,41 @@ if (!window.ODA) {
         };
     }
     Element:{
+        const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+        const oh = Object.assign({}, offsetHeight);
+        oh.get = function (){
+            if (this.$rect)
+                return this.$rect.height;
+            return offsetHeight.get.call(this);
+        }
+        Object.defineProperty(HTMLElement.prototype, 'offsetHeight', oh);
+
+        const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+        const ow = Object.assign({}, offsetWidth);
+        ow.get = function (){
+            if (this.$rect)
+                return this.$rect.width;
+            return offsetWidth.get.call(this);
+        }
+        Object.defineProperty(HTMLElement.prototype, 'offsetWidth', ow);
+
+        //
+        // const getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+        // HTMLElement.prototype.getBoundingClientRect = function (){
+        //     if (this.$rect){
+        //         const result = this.$rect;
+        //         this.$rect = undefined;
+        //         return result;
+        //     }
+        //     return getBoundingClientRect.call(this);
+        // }
+        //
+
+
+
+
+
+
         Element.prototype.assignProps = function (props = {}){
             for (let i in props){
                 const p = props[i];

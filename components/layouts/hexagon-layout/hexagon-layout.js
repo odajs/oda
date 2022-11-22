@@ -34,8 +34,12 @@ ODA({is: 'oda-hexagon-layout',
           </div>
           <oda-icon class="error shadow" ~show="showTrash" :icon-size="size" icon="icons:delete" ~style="{right: size + 'px', bottom: size+'px'}" style="position: absolute; z-index: 10000; border-radius: 25%" ></oda-icon>
       `,
-    width: 5,
-    height: 5,
+    get width(){
+        return this.offsetWidth;
+    },
+    get height(){
+        return this.offsetHeight;
+    },
     tr: {},
     get size(){
         return Math.min(48, Math.max(this.iconSize, 24)) * 3;
