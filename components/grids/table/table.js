@@ -202,20 +202,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return obj;
     },
     groups: [],
-
-    // set groups(n, o){
-    //     if (o?.length) o.forEach(col => delete col.$groups);
-    // },
     get headerColumns() {
         this.columns.forEach((col, i) => {
             modifyColumn.call(this, col);
             if (col[this.columnId]) {
-                col.order = col.order || i + 1;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/order', col.order || i + 1);
-                // col.hidden = col.hidden || false;//this.__read(this.settingsId + '/column/' + col[this.columnId] + '/hidden', col.hidden || false);
+                col.order = col.order || i + 1;
             } else {
-                // this.set(col, 'width', col.width);
                 col.order = i + 1;
-                // col.hidden = false;
             }
             if (col.treeMode)
                 col.index = col.order - 500;
@@ -357,31 +350,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get table() {
         return this;
     },
-
-    created() {
-        this.settingsId = this.localName;
-        // this._scroll();
-    },
-
-    // focus() { this.$refs.body.focus?.() },
-
+    focus() { this.$refs.body.focus?.() },
     observers: [
         function obs_selectAll(items, _selectedAll) {
             if (_selectedAll)
                 this.selectAll();
         },
-        // function updateSorts(_sortsByFlag) {
-        //     const oldSorts = this.sorts || [];
-        //     const sorts = [];
-        //     oldSorts.forEach(s => {
-        //         if (_sortsByFlag.includes(s)) sorts.push(s);
-        //         else s.$sort = 0;
-        //     });
-        //     _sortsByFlag.forEach(col => {
-        //         if (!sorts.includes(col)) sorts.push(col);
-        //     });
-        //     this.sorts = sorts;
-        // },
     ],
 
     keyBindings: {
@@ -855,8 +829,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const ord = col1.order;
         col1.order = col2.order;
         col2.order = ord;
-        // this.__write(this.settingsId + '/column/' + col1.name + '/order', col1.order);
-        // this.__write(this.settingsId + '/column/' + col2.name + '/order', col2.order);
     },
     insertBeforeRow(row, rows) {
         if (!Array.isArray(rows))
@@ -1208,15 +1180,11 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
     },
     _onChange(e, item) {
         item.col.$hidden = !e.detail.value;
-        // this.table.__write(this.table.settingsId + '/column/' + item.col[this.columnId] + '/hidden', !e.detail.value);
     },
     _onSelectAll(e) {
-        // this.async(() => {
         this.items.forEach(i => {
             i.col.$hidden = !this.$refs.check.value;
-            // this.table.__write(this.table.settingsId + '/column/' + i.col[this.columnId] + '/hidden', !this.$refs.check.value)
         });
-        // },0)
     },
 });
 
@@ -1985,7 +1953,6 @@ cells: {
                     icon: 'icons:visibility-off',
                     execute: () => {
                         this.column.$hidden = !this.column.$hidden;
-                        // this.table.__write(this.table.settingsId + '/column/' + this.column.name + '/hidden', this.column.hidden);
                     }
                 },
                 {

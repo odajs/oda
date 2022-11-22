@@ -2538,22 +2538,25 @@ if (!window.ODA) {
         }
         Object.defineProperty(HTMLElement.prototype, 'offsetWidth', ow);
 
-        //
+
         // const getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+        // let io;
         // HTMLElement.prototype.getBoundingClientRect = function (){
+        //     io ??= this.domHost?.$core?.intersect;
         //     if (this.$rect){
-        //         const result = this.$rect;
-        //         this.$rect = undefined;
-        //         return result;
+        //
+        //         io?.unobserve(this);
+        //         const res = this.$rect;
+        //         this.$rect = undefined
+        //         io?.observe(this);
+        //
+        //         return res;
+        //         // const res = this.$rect;
+        //         // this.$rect = undefined
+        //         // return res;
         //     }
         //     return getBoundingClientRect.call(this);
         // }
-        //
-
-
-
-
-
 
         Element.prototype.assignProps = function (props = {}){
             for (let i in props){
