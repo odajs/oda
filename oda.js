@@ -3,7 +3,6 @@
  * Under the MIT License.
  */
 import './rocks.js';
-// import './fastdom.js';
 'use strict';
 if (!window.ODA) {
     window.document.body.style.visibility = 'hidden';
@@ -1208,54 +1207,6 @@ if (!window.ODA) {
     WebWorker:{ //todo здесь будет Web Worker
         ODA.Worker = async function(handle){
 
-        }
-    }
-
-    FastDom:{ //todo здесь будет Web Worker
-        ODA.fastDom = {
-            measures: [],
-            mutates: [],
-            async measure(fn){
-                var task = this?fn.bind(this):fn;
-                ODA.fastDom.measures.push(task);
-                ODA.fastDom.scheduleFlush();
-                return task;
-            },
-            async mutate(fn){
-                var task = this?fn.bind(this):fn;
-                ODA.fastDom.mutates.push(task);
-                ODA.fastDom.scheduleFlush();
-                return task;
-            },
-            runTasks(tasks) {
-                var task;
-                while (task = tasks.shift())
-                    task();
-            },
-            scheduleFlush() {
-                if (!this.scheduled) {
-                    this.scheduled = true;
-                    this.raf(this.flush());
-                }
-            },
-            flush() {
-                var mutates = this.mutates;
-                var measures = this.measures;
-                var error;
-                try {
-                    this.runTasks(measures);
-                    this.runTasks(mutates);
-                } catch (e) { error = e; }
-                this.scheduled = false;
-                if (measures.length || mutates.length)
-                    this.scheduleFlush();
-                if (error) {
-                    if (this.catch)
-                        this.catch(error);
-                    else
-                        throw error;
-                }
-            }
         }
     }
 

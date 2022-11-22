@@ -322,7 +322,7 @@ content: {
                     }
                     else
                         this.dataSet = [];
-                    this.fire('scrollToUp');
+                    // this.fire('scrollToUp');
                 }
             },
         },

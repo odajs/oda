@@ -1,4 +1,4 @@
-ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/splitter',
+ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/splitter, @oda/menu',
     template: /*html*/`
     <style>
         :host {
@@ -123,7 +123,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         iconIntermediate: 'icons:check-box-indeterminate',
         iconSize: 24,
         iconUnchecked: 'icons:check-box-outline-blank',
-        lazy: false,
         rowLines: {
             default: false,
             reflectToAttribute: true,
@@ -479,13 +478,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         dragend: 'onDragEnd',
         dragleave: 'onDragEnd',
         // resize: '_scroll',
-        scrollToUp() {
-            if (this.$refs?.body) {
-                this.$refs.body.style['scroll-behavior'] = 'unset';
-                this.$refs.body.scrollTo(0, 0)
-                this.$refs.body.style['scroll-behavior'] = 'smooth';
-            }
-        }
+        // scrollToUp() {
+        //     if (this.$refs?.body) {
+        //         this.$refs.body.style['scroll-behavior'] = 'unset';
+        //         this.$refs.body.scrollTo(0, 0)
+        //         this.$refs.body.style['scroll-behavior'] = 'smooth';
+        //     }
+        // }
     },
     _getSortsByFlag(cols, res) { // возвращает в т.ч. скрытые колонки
         return cols?.reduce((acc, col) => {
@@ -1274,7 +1273,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 position: relative;
                 overflow-x: {{autoWidth?'hidden':'auto'}};
                 overflow-y: {{showHeader?'scroll':'auto'}};
-                scroll-behavior: smooth;
+                /*scroll-behavior: smooth;*/
                 @apply --vertical;
             }
             :host([fix]){
