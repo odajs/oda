@@ -315,7 +315,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get sorts(){
         const find_sorts = (columns = [])=>{
             return columns.reduce((res, i)=>{
-                res.push(...find_sorts(i.items), i);
+                res.add(...find_sorts(i.items), i);
                 return res;
             }, []);
         }
@@ -1820,7 +1820,7 @@ cells: {
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
-                    <oda-icon :disabled="column?.$expanded" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
+                    <oda-icon :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
                 <div class="split"  @tap.stop @track="_track"></div>
