@@ -50,6 +50,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     // },
     props: {
         noLazy: false,
+        pivotMode:{
+            default: false,
+            save: true
+        },
         rowFixLimit:{
             default: 10,
             save: true,
@@ -139,7 +143,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             save: true,
         },
         showFooter: false,
-        showGroupingPanel: false,
+        showGroupingPanel: {
+            default: false,
+            save: true
+        },
         showGroupFooter: false,
         showHeader: false,
         showTreeLines: {
@@ -203,6 +210,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return obj;
     },
     groups: [],
+    pivotLabels: [],
     get headerColumns() {
         this.columns.forEach((col, i) => {
             modifyColumn.call(this, col);
@@ -295,7 +303,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
         if (!raised.length){
             top = rows[0];
-            if (top.items?.length && top.$expanded){
+            if (top?.items?.length && top.$expanded){
                 raised.push(top);
                 rows.shift();
             }
@@ -304,13 +312,19 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return rows;
     },
     selectedRows: [],
-    settingsId: '',
     get sorts(){
-        return this.rowColumns.filter(i=>i.$sort) || [];
+        const find_sorts = (columns = [])=>{
+            return columns.reduce((res, i)=>{
+                res.push(...find_sorts(i.items), i);
+                return res;
+            }, []);
+        }
+        return find_sorts(this.columns).filter(i=>{
+            return i.$sort;
+        }).sort((a,b) =>{
+            return Math.abs(a.$sort)>Math.abs(b.$sort)?1:-1;
+        })
     },
-    // get _sortsByFlag() {
-    //     return this._getSortsByFlag(this.columns, []);
-    // },
     get colStyles() {
         return this.rowColumns.map(col => {
             if (col.id === undefined)
@@ -452,23 +466,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     listeners: {
         dragend: 'onDragEnd',
         dragleave: 'onDragEnd',
-        // resize: '_scroll',
-        // scrollToUp() {
-        //     if (this.$refs?.body) {
-        //         this.$refs.body.style['scroll-behavior'] = 'unset';
-        //         this.$refs.body.scrollTo(0, 0)
-        //         this.$refs.body.style['scroll-behavior'] = 'smooth';
-        //     }
-        // }
-    },
-    _getSortsByFlag(cols, res) { // возвращает в т.ч. скрытые колонки
-        return cols?.reduce((acc, col) => {
-            if (col.$expanded && col.items?.length)
-                this._getSortsByFlag(col.items, acc);
-            else if (col.$sort)
-                acc.push(col);
-            return acc;
-        }, res);
     },
     compareRows(row1, row2) { // вынесено в функцию для возможности переопределения
         if (!row1 || !row2) return false;
@@ -490,18 +487,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.selectRow(evt);
         this.focusRow(evt);
     },
-
-
-    // _getTemplateProps(row, col) { // зачем это?
-    //     if (!row.$group && !col.treeMode) {
-    //         let template = col.template || row.template || this.defaultTemplate;
-    //         if (typeof template === 'object')
-    //             return template.props;
-    //     }
-    //     return {};
-    // },
-
-
     expand(row, force, old) {
         const items = this._beforeExpand(row, force);
         if (items?.then) {
@@ -512,7 +497,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return items.then(async items => {
                 clearTimeout(id)
                 row.$loading = false;
-                if (/* this.allowSort &&  */this.sorts.length)
+                if (this.sorts.length)
                     this._sort(items)
                 const node = old || row;
                 if ((node.items && node.$expanded)) {
@@ -1045,30 +1030,59 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
     template: /*html*/`
     <style>
         :host {
-            padding: 4px;
             @apply --header;
+            @apply --horizontal
+            font-size: small;
         }
         .item {
             max-width: 120px;
-            margin: 4px;
-            padding: 4px 6px;
+            margin: 0px 4px;
+            padding-left: 4px;
             align-items: center;
+            border-radius: 4px;
         }
         .closer {
             cursor: pointer;
         }
+        .panel{
+            margin: 2px;
+        }
+        label{
+            @apply --flex;
+            @apply --disabled
+        }
+        :host>div>div{
+            align-items: center;
+            padding: 0px 4px;
+        }
+        oda-icon{
+            transform: scale(.7);
+        }
+        
     </style>
-    <div class="horizontal">
-        <div class="flex vertical">
-            <span ~if="groups.length === 0">drag&drop the column for grouping here</span>
+    <div class="horizontal border flex panel">
+        <oda-icon disabled :icon-size icon="icons:dns"></oda-icon>
+        <div class="flex horizontal">
+            <label ~if="!groups.length">Drag here to set row groups</label>
             <div class="no-flex horizontal">
                 <div class="item shadow content no-flex horizontal" ~for="column in groups">
-                    <span class="label flex" ~text="column.label || column.name"></span>
+                    <label class="label flex" ~text="column.$saveKey || column.name"></label>
                     <oda-icon class="closer" icon="icons:close" :icon-size @tap="_close" :column></oda-icon>
                 </div>
             </div>
         </div>
-        <oda-table-settings></oda-table-settings>
+    </div>
+    <div class="horizontal border flex panel">
+        <oda-icon disabled :icon-size icon="icons:dns:90"></oda-icon>
+        <div class="flex horizontal">
+            <label ~if="!pivotLabels.length">Drag here to set column labels</labeldisabled>
+            <div class="no-flex horizontal">
+                <div class="item shadow content no-flex horizontal" ~for="column in groups">
+                    <label class="label flex" ~text="column.$saveKey || column.name"></label>
+                    <oda-icon class="closer" icon="icons:close" :icon-size @tap="_close" :column></oda-icon>
+                </div>
+            </div>
+        </div>
     </div>
     `,
     listeners: {
@@ -1154,12 +1168,12 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
     </style>
     <div class="horizontal no-flex header list">
         <oda-checkbox ref="check" :value="items.every(i=> !i.col.$hidden)" @tap="_onSelectAll"></oda-checkbox>
-        <span class="flex label center" style="font-size: 10pt; padding: 0px 8px;">(show all)</span>
+        <label class="flex label center" style="font-size: 10pt; padding: 0px 8px;">(show all)</label>
     </div>
     <div>
         <div ~for="item in items" class="list  no-flex horizontal">
             <oda-checkbox :value="!item.col.$hidden"  @value-changed="_onChange($event, item)"></oda-checkbox>
-            <span class="label center" style="font-size: 10pt; padding: 0px 8px;">{{getLabel(item)}}</span>
+            <label class="label center" style="font-size: 10pt; padding: 0px 8px;">{{getLabel(item)}}</label>
         </div>
     </div>
     `,
@@ -1249,8 +1263,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 overflow-x: clip !important;
                 overflow-y: scroll !important;
                 height: {{_bodyHeight}}px;
-                margin-bottom: 1px;
-                border-bottom: 1px  solid var(--dark-background);
+                /*margin-bottom: 1px;*/
+                /*border-bottom: 1px  solid var(--dark-background);*/
             }
             :host([fix]) .cell{
                @apply --header;
@@ -1484,7 +1498,7 @@ ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
                 border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
                 height: 100%;
             }
-            span{
+            label{
                 padding: 4px;
             }
             :host {
@@ -1531,9 +1545,9 @@ cells: {
 
     ODA({is: 'oda-table-cell', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <span class="flex" ~is="template" :column :item style="overflow: hidden">{{value}}</span>`,
+        <label class="flex" ~is="template" :column :item style="overflow: hidden">{{value}}</label>`,
         props: {
-            template: 'span',
+            template: 'label',
             value() {
                 return this.item?.[this.column?.name]
             }
@@ -1605,7 +1619,7 @@ cells: {
             </div>
             <oda-table-expand class="no-flex" :item></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
-            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'span'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
+            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'label'" :column :item class="flex">{{item[column[columnId]]}}</div>`,
             columnId: '',
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
@@ -1717,7 +1731,7 @@ cells: {
     ODA({is: 'oda-table-error', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
         <oda-icon icon="icons:error"></oda-icon>
-        <span class="label flex" :text="item.error"></span>`
+        <label class="label flex" :text="item.error"></label>`
     });
 
     ODA({is: 'oda-table-header-cell', imports: '@oda/button', extends: 'oda-table-cell-base',
@@ -1742,29 +1756,22 @@ cells: {
 
                 @apply --no-flex;
             }
-            /*:host::before{*/
-            /*    position:absolute;*/
-            /*    content: attr(w);*/
-            /*    font-size: xx-small;*/
-            /*    color: grey;*/
-            /*    right: 0px;*/
-            /*    padding: 4px;*/
-            /*}*/
             .split {
                 cursor: col-resize;
                 border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
                 border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
-                /*transition: border-color .5s;*/
                 width: 1px;
             }
-            /*:host(:active){*/
-            /*    @apply --header;*/
-            /*}*/
             :host(:active) .split, .split:hover {
                 @apply --content;
             }
             oda-icon, oda-table-expand {
                 opacity: .5;
+            }
+            oda-icon{
+                transform: scale(.7);
+                /*@apply --content;*/
+                border-radius: 50%;
             }
             :host(:hover) > oda-icon {
                 opacity: 1;
@@ -1779,7 +1786,7 @@ cells: {
                 min-width: {{Math.round(iconSize * .5)+4}}px;
                 min-height: {{Math.round(iconSize * .5)+4}}px;
             }
-            span {
+            label {
                 margin: 4px 0px;
                 text-overflow: ellipsis;
             }
@@ -1795,7 +1802,6 @@ cells: {
                 box-sizing: border-box;
             }
             :host .filter-container {
-                /*@apply --shadow;*/
                 @apply --horizontal
                 padding: 2px;
                 align-items: center;
@@ -1809,12 +1815,12 @@ cells: {
                 text-align: center;
             }
         </style>
-        <div class="flex vertical" style="cursor: pointer" @tap.stop="_sort" :disabled="!column.name">
-            <div class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.$expanded?'auto':'100%'}">
+        <div class="flex vertical" style="cursor: pointer"  :disabled="!column.name">
+            <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.$expanded?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand :item></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
-                    <oda-icon style="position: absolute; right: 2px;" :show="showSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
+                    <oda-icon :disabled="column?.$expanded" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
                 <div class="split"  @tap.stop @track="_track"></div>
@@ -1840,39 +1846,23 @@ cells: {
             })?.filter(i=>!i.$hidden);
         },
         get sortIcon() {
-            switch (this.column.$sort){
-                case 1:
-                    return 'icons:arrow-drop-down';
-                case -1:
-                    return 'icons:arrow-drop-up';
-            }
+            if (+this.column.$sort>0)
+                return 'icons:arrow-back:270';
+            if (+this.column.$sort<0)
+                return 'icons:arrow-back:90';
+            return ''
         },
         get sortIndex() {
-            return (this.sorts?.filter(s => !s.$hidden && !s.$expanded).indexOf(this.column) + 1) || 0;
+            return Math.abs(+this.column?.$sort)
+            // return (this.sorts?.filter(s => !s.$hidden && !s.$expanded).indexOf(this.column) + 1) || 0;
         },
         props: {
-            showSort() {
-                return this.allowSort && !this.column.$expanded && (!this.column.$parent || this.column.$parent.$expanded);
-            },
             filter: {
                 type: String,
                 set(val) {
                     this.column.$filter = val || null;
                 }
-            },
-            //todo УДАЛИТЬ!!!
-            // minWidth() {
-            //     let width = 15;
-            //     if (this.column.$expanded && this.$refs.subColumn?.length) {
-            //         width = this.$refs.subColumn.reduce((res, c) => {
-            //             res += Math.max(c.minWidth || 15, 15);
-            //             return res;
-            //         }, 0);
-            //     } else if (this.column.items?.length) {
-            //         width = getWidth(this.column);
-            //     }
-            //     return width;
-            // },
+            }
         },
         listeners:{
             contextmenu: '_menu',
@@ -1976,12 +1966,29 @@ cells: {
             const res = await ODA.showDropdown('oda-menu', { parent: this, iconSize: this.iconSize, items: menu, title: 'Column menu', allowClose: true });
             res?.focusedItem.execute();
         },
-        _sort(e) {
-            e.stopPropagation();
-            if (this.allowSort) {
-                const sort = this.column.$sort;
-                this.column.$sort = sort === 1 ? -1 : sort === -1 ? 0 : 1;
+        setSort(e) {
+            if (!this.allowSort) return ;
+            const sort = this.column.$sort;
+            if (this.column.$sort>0){
+                this.column.$sort = -this.column.$sort;
             }
+            else if (this.column.$sort<0){
+                this.column.$sort = 0;
+                this.async(()=>{
+                    this.sorts.forEach((i, idx)=>{
+                        i.$sort = (idx + 1) * Math.sign(i.$sort);
+                    })
+                })
+            }
+            else{
+                this.column.$sort = this.sorts.length + 1;
+                this.async(()=>{
+                    this.sorts.forEach((i, idx)=>{
+                        i.$sort = (idx + 1) * Math.sign(i.$sort);
+                    })
+                })
+            }
+
         },
         async showDD(e) {
             const dataSet = this.items.reduce((res, i) => {
@@ -1999,23 +2006,6 @@ cells: {
             console.log(res);
         }
     });
-
-    // todo УДАЛИТЬ!
-    // function getMinWidth(column) {
-    //     if (column.items?.length) {
-    //         return column.items.reduce((res, c) => res + Math.max(getMinWidth(c) || 0, 15), 0);
-    //     } else {
-    //         return 15;
-    //     }
-    // }
-    // function getWidth(column) {
-    //     if (column.items?.length) {
-    //         return column.items.reduce((res, c) => res + Math.max(getWidth(c) || 0, 15), 0);
-    //     } else {
-    //         return Math.max(column.$width, 15);
-    //     }
-    // }
-
     ODA({is: 'oda-table-cell-group', extends: 'oda-table-cell-base',
         template: /*html*/`
         <style>
@@ -2029,14 +2019,14 @@ cells: {
                 position: sticky;
                 height: 100%;
             }
-            span {
+            label {
                 @apply --flex;
             }
         </style>
         <oda-table-expand :item ~style="{marginLeft: item.$level * iconSize + 'px'}" @expanded-changed="expandedChanged"></oda-table-expand>
         <label ~if="item.label"  style="font-size: small; margin: 4px;" class="no-flex">{{item.label}}:</label>
-        <span style="font-weight: bold; margin: 4px;" class="flex">{{item.value}}</span>
-        <span ~if="item.items" class="no-flex" style="font-size: small; margin: 4px;">[{{item.items?.length}}]</span>`,
+        <label style="font-weight: bold; margin: 4px;" class="flex">{{item.value}}</label>
+        <label ~if="item.items" class="no-flex" style="font-size: small; margin: 4px;">[{{item.items?.length}}]</label>`,
         expandedChanged() {
             this.table.setScreenExpanded?.(this.item);
         }
@@ -2046,7 +2036,7 @@ cells: {
 
 
 function extract(items, level, parent) {
-    if (!this.groups.length && /* this.allowSort && */ this.sorts.length) {
+    if (!this.groups.length && this.sorts.length) {
         items.sort((a, b) => {
             for (let col of this.sorts) {
                 const va = a[col.name];
@@ -2155,7 +2145,17 @@ settings:{
             {icon: 'icons:settings:90', title: 'properties'},
         ],
     })
-    ODA({is: 'oda-table-columns-tree', imports: '@oda/tree', extends: 'oda-tree',
+    ODA({is: 'oda-table-columns-tree', imports: '@oda/tree, @oda/toggle', extends: 'this, oda-tree',
+        template:`
+            <style>
+                :host{
+                    font-size: small;
+                }
+            </style>
+            <div class="flex header horizontal" style="align-items: center">
+                <oda-toggle ::toggled="pivotMode"></oda-toggle><label>Pivot mode</label>
+            </div>  
+        `,
         columns: [
             {name: 'name', treeMode: true},
             {name: 'fix', $hidden: true, $sortGroups: 1, $expanded: true }
@@ -2222,7 +2222,6 @@ function modifyColumn(col){
                 this.$parent.$width = w;
             }
             if (!checkWidth) return;
-            // console.warn('set $width', col.$saveKey)
             storage.setToItem(col.$saveKey, 'w', v);
         },
         get() {

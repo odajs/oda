@@ -78,7 +78,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
         defaultTemplate: 'oda-icons-icon',
         rootPath: '/',
     },
-    columns: [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', hidden: true, }],
+    columns: [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', $hidden: true, }],
     async _onDragStart(e) {
         const el = e.path.find(p => p.row);
         if (el.row.subIcon) {

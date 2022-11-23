@@ -440,13 +440,8 @@ if (!window.ODA) {
 
             }
             get rootHost(){
-                if (this.__need_update){
-
+                if (this.__need_update)
                     return false;
-
-                }
-                //     return this;
-
                 const r1 = this.domHost?.rootHost;
                 // const r2 = this.parentElement?.rootHost;/**/
                 if (r1 === false/* || r2 === false*/)
