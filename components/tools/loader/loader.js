@@ -26,3 +26,22 @@ ODA({
     },
     delay: 1000,
 })
+
+if(window === window.top) {
+    await ODA.tryReg('oda-loader');
+    const loader = document.createElement('oda-loader');
+    document.body.appendChild(loader);
+    const $tasks = [];
+    ((obj, methods) => {
+        for (const m of methods) {
+            obj[m] = (...args) => {
+                obj.constructor.prototype[m].apply($tasks, args);
+                loader.tasks = $tasks;
+                if (loader.tasks.length <= 0) {
+                    loader.show = false;
+                }
+            }
+        }
+    })($tasks, ['push', 'splice']);
+    ODANT.$tasks = $tasks;
+}
