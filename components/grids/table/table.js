@@ -315,15 +315,31 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get sorts(){
         const find_sorts = (columns = [])=>{
             return columns.reduce((res, i)=>{
-                res.add(...find_sorts(i.items), i);
+                res.add(i);
+                let items = i.items;
+                if (items){
+                    if (items?.then){
+                        items?.then(r=>{
+                            if (r?.length)
+                                res.add(...r);
+                        })
+                    }
+                    else{
+                        items = find_sorts(items);
+                        res.add(...items);
+                    }
+                }
                 return res;
             }, []);
         }
-        return find_sorts(this.columns).filter(i=>{
+        let result = find_sorts(this.columns);
+        result = result.filter(i=>{
             return i.$sort;
-        }).sort((a,b) =>{
+        })
+        result = result.sort((a,b) =>{
             return Math.abs(a.$sort)>Math.abs(b.$sort)?1:-1;
         })
+        return result;
     },
     get colStyles() {
         return this.rowColumns.map(col => {
@@ -1066,7 +1082,7 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
             <label ~if="!groups.length">Drag here to set row groups</label>
             <div class="no-flex horizontal">
                 <div class="item shadow content no-flex horizontal" ~for="column in groups">
-                    <label class="label flex" ~text="column.$saveKey || column.name"></label>
+                    <label class="label flex" ~text="column.$saveKey || column.label"></label>
                     <oda-icon class="closer" icon="icons:close" :icon-size @tap="_close" :column></oda-icon>
                 </div>
             </div>
@@ -1561,7 +1577,7 @@ cells: {
                     @apply --no-flex;
                 }
             </style>
-            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
+            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -1761,8 +1777,9 @@ cells: {
                 border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
                 border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
                 width: 1px;
+                @apply --no-flex;
             }
-            :host(:active) .split, .split:hover {
+            .split:hover {
                 @apply --content;
             }
             oda-icon, oda-table-expand {
@@ -1786,10 +1803,6 @@ cells: {
                 min-width: {{Math.round(iconSize * .5)+4}}px;
                 min-height: {{Math.round(iconSize * .5)+4}}px;
             }
-            label {
-                margin: 4px 0px;
-                text-overflow: ellipsis;
-            }
             div {
                 overflow: hidden;
             }
@@ -1808,17 +1821,17 @@ cells: {
                 max-height: {{iconSize * .7}}px;
                 min-height: {{iconSize * .7}}px;
             }
-            oda-table-expand{
-                display: {{column?.items?.length?'flex':'none'}};
-            }
             label{
                 text-align: center;
+                margin: 4px 0px;
+                text-overflow: ellipsis;
+                white-space:break-spaces !important;
             }
         </style>
         <div class="flex vertical" style="cursor: pointer"  :disabled="!column.name">
             <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.$expanded?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
-                    <oda-table-expand :item></oda-table-expand>
+                    <oda-table-expand ~if="column?.items?.length" :item></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
@@ -2152,7 +2165,7 @@ settings:{
                     font-size: small;
                 }
             </style>
-            <div class="flex header horizontal" style="align-items: center">
+            <div class="no-flex header horizontal" style="align-items: center">
                 <oda-toggle ::toggled="pivotMode"></oda-toggle><label>Pivot mode</label>
             </div>  
         `,
@@ -2197,7 +2210,17 @@ function modifyColumn(col){
             if(this['$width'] === v)
                 return;
             this['#$width'] = v;
-            if (this.$expanded){
+
+            if (this.$parent){
+                let  w = this.$parent.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
+                    modifyColumn.call(table, i);
+                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
+                    res += i.$width;
+                    return res;
+                },0)
+                this.$parent.$width = w;
+            }
+            if (this.$expanded && col.items?.length){
                 let  w = col.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
                     i.$parent = i.$parent || col;
                     modifyColumn.call(table, i);
@@ -2212,17 +2235,10 @@ function modifyColumn(col){
                     })
                 }
             }
-            if (this.$parent){
-                let  w = this.$parent.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
-                    modifyColumn.call(table, i);
-                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
-                    res += i.$width;
-                    return res;
-                },0)
-                this.$parent.$width = w;
+            else{
+                if (!checkWidth) return;
+                storage.setToItem(col.$saveKey, 'w', v);
             }
-            if (!checkWidth) return;
-            storage.setToItem(col.$saveKey, 'w', v);
         },
         get() {
             if (this.width)

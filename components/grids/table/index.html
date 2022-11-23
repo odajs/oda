@@ -9,13 +9,13 @@
     table.columns = [
         { fix: 'left', width: 32 },
         { name: 'right', fix: 'right' },
-        { name: 'col1', treeMode: true, props:{class:'shadow'}},
+        { name: 'col1', treeMode: true, props:{class:'shadow'}, label: 'Это поле "col1" с длинным заголовком'},
         { name: 'number', summary: 'sum' },
         { name: 'left', fix: 'left' },
         {
             name: 'col2', $expanded: true,  items: [
                 {
-                    name: 'col21', items: [
+                    name: 'col21', label:'А это поле col21 с длинным заголовком', items: [
                         { name: 'col211' },
                         { name: 'col212' },
                         { name: 'col213' },
