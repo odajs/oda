@@ -30,6 +30,8 @@ ODA({
 if(window === window.top) {
     await ODA.tryReg('oda-loader');
     const loader = document.createElement('oda-loader');
+    loader.style = 'position: fixed;top: 50%;left: 50%;z-index: 100;transform: translate3d(-50%, -50%, 0);pointer-events: none;';
+    loader.iconSize = 64;
     document.body.appendChild(loader);
     const $tasks = [];
     ((obj, methods) => {
