@@ -342,7 +342,7 @@ cells: {
                 font-weight: {{(item?.prop)?'bold':'normal'}};
             }
         </style>
-        <oda-button :title="defaultValue" ~if="showDefault" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
+        <oda-button title="defaultValue" ~if="showDefault" @tap.stop.prevent="resetValue" icon="av:replay" style="opacity: .3;"></oda-button>
     `,
         props: {
             title: {
@@ -378,9 +378,10 @@ cells: {
                 align-items: center;
             }
         </style>
-        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay" slot="tools"></oda-button>
+        <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay" slot="tools" title="Reset settings"></oda-button>
         `,
         resetValue() {
+
             this.items.forEach(item => {
                 if (item.prop?.default === undefined) return;
                 item.value = (typeof item.prop.default === 'function') ? item.prop.default() : item.prop.default;

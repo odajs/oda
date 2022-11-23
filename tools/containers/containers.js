@@ -1,6 +1,6 @@
 const CONTAINERS = ODA.regTool('containers')
 const path = import.meta.url.split('/').slice(0,-1).join('/')
-ODA.loadJSON(path + '/_.dir').then(res=>{
+const res = await ODA.loadJSON(path + '/_.dir');
     CONTAINERS.items = (res || []).map(i => i.name);
     for (let id of CONTAINERS.items) {
         ODA[('close-'+id).toCamelCase()] = function (){
@@ -136,6 +136,5 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
             return result;
         }
     }
-})
 // const res = await ODA.loadJSON(path + '/_.dir');
 export default CONTAINERS

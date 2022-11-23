@@ -23,6 +23,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this.table.fire('row-dblclick', el.row);
     },
     async openSettings(e){
+        await ODA.import('@tools/containers');
         await ODA.showDropdown(
             'oda-table-settings',
             {table: this.table},
@@ -314,6 +315,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     selectedRows: [],
     get sorts(){
         const find_sorts = (columns = [])=>{
+            modifyColumn.call(this,  columns);
             return columns.reduce((res, i)=>{
                 res.add(i);
                 let items = i.items;
@@ -342,7 +344,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return result;
     },
     get colStyles() {
-        return this.rowColumns.map(col => {
+        const result =  this.rowColumns.map(col => {
             if (col.id === undefined)
                 return '';
             let style = `.col-${col.id}{/*${col[this.columnId]}*/\n\t`;
@@ -377,6 +379,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             style += '\n}\n';
             return style;
         }).join('\n');
+        return result;
     },
     get table() {
         return this;
@@ -1279,8 +1282,6 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 overflow-x: clip !important;
                 overflow-y: scroll !important;
                 height: {{_bodyHeight}}px;
-                /*margin-bottom: 1px;*/
-                /*border-bottom: 1px  solid var(--dark-background);*/
             }
             :host([fix]) .cell{
                @apply --header;
@@ -1776,7 +1777,7 @@ cells: {
                 cursor: col-resize;
                 border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
                 border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
-                width: 1px;
+                width: 2px;
                 @apply --no-flex;
             }
             .split:hover {
@@ -1843,7 +1844,7 @@ cells: {
                 <oda-button ~if="!filter" :icon-size="Math.round(iconSize * .3)+2" @tap.stop="showDD" icon="icons:filter" title="filter"></oda-button>
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)+2" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
-            <div class="flex sub-cols horizontal" ~if="expanded">
+            <div class="flex sub-cols horizontal" ~if="expanded && column?.items?.length">
                 <oda-table-header-cell  class="header-cell flex" ~for="col in subCols" :item="col" :column="col"  ref="subColumn"  ~class="['col-' + col.id]"></oda-table-header-cell>
             </div>
             <div class="flex" ~if="!column.name"></div>
@@ -1881,29 +1882,9 @@ cells: {
             contextmenu: '_menu',
             resize(e) {
                 if (!this.column || this.column.$expanded || this.column.id === 999) return;
-                modifyColumn.call(this.table, this.column);
                 e.stopPropagation();
+                modifyColumn.call(this.table, this.column);
                 this.column.$width = Math.round(this.offsetWidth);
-                let parent = this.column.$parent;
-                if (parent){
-                    modifyColumn.call(this.table, parent);
-                    parent.$width = parent.items.filter(i=>!i.$hidden).reduce((res, i)=>{
-                        modifyColumn.call(this.table, i);
-                        return res += +i.$width;
-                    }, 0)
-                }
-                const width = this.column.items?.reduce((res,i)=>{
-                    modifyColumn.call(this.table, i);
-                    i.$width = i.width ||  i.$width || this.column.$width/this.column.items.length;
-                    return res += i.$width;
-                }, 0);
-                if (width){
-                    const correct = this.column.$width/width;
-                    this.column.items?.filter(i=>!i.$hidden).forEach(i=>{
-                        modifyColumn.call(this.table, i);
-                        i.$width = i.$width * correct;
-                    })
-                }
             }
         },
         _dragstart(e) {
@@ -2197,7 +2178,7 @@ function modifyColumn(col){
     const storage = this.storage;
     const table = this;
     col['#$width'] = col.$width;
-    let checkWidth = false
+    // let checkWidth = false
     Object.defineProperty(col, '$width', {
         configurable: false,
         enumerable: false,
@@ -2209,22 +2190,11 @@ function modifyColumn(col){
                 v = min;
             if(this['$width'] === v)
                 return;
-            this['#$width'] = v;
-
-            if (this.$parent){
-                let  w = this.$parent.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
-                    modifyColumn.call(table, i);
-                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
-                    res += i.$width;
-                    return res;
-                },0)
-                this.$parent.$width = w;
-            }
             if (this.$expanded && col.items?.length){
-                let  w = col.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
+                let  w = this.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
                     i.$parent = i.$parent || col;
                     modifyColumn.call(table, i);
-                    i.$width = i.$width || v / this.items?.filter(i=>!i.$hidden).length;
+                    i.$width ??= v / this.items?.filter(i=>!i.$hidden).length;
                     res += i.$width ;
                     return res;
                 },0)
@@ -2236,23 +2206,37 @@ function modifyColumn(col){
                 }
             }
             else{
-                if (!checkWidth) return;
-                storage.setToItem(col.$saveKey, 'w', v);
+                // if (!checkWidth) return;
+                this['#$width'] = v;
+                storage.setToItem(this.$saveKey, 'w', v);
             }
         },
         get() {
             if (this.width)
                 return this.width;
-            if (!checkWidth){
-                let result = storage.getFromItem(col.$saveKey, 'w');
-                if (result > 16)
-                    this['#$width'] = result;
-                else
-                    this['#$width'] = 150;
-                checkWidth = true;
-
+            if (this.$expanded && this.items?.length){
+                const result =  this.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
+                    i.$parent ??= this;
+                    modifyColumn.call(table, i);
+                    i.$width ??= v / this.items?.filter(i=>!i.$hidden).length;
+                    res += i.$width;
+                    return res;
+                },0)
+                return result;
             }
-            return this['#$width'];
+            else{
+                return this['#$width'] ??= storage.getFromItem(this.$saveKey, 'w');
+            }
+            // if (!checkWidth){
+            //     let result = storage.getFromItem(col.$saveKey, 'w');
+            //     if (result > 16)
+            //         this['#$width'] = result;
+            //     else
+            //         this['#$width'] = 150;
+            //     checkWidth = true;
+            //
+            // }
+            // return this['#$width'];
         }
     })
     const props = ['expanded', 'hidden', 'sort', 'order', 'filter'];
