@@ -40,7 +40,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     columns: [],
     dataSet: [],
-    firstTop: 0,
+
 
     // get dataSet(){
     //     return  [];
@@ -49,6 +49,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     //     this.$refs.body && (this.$refs.body.scrollTop = 0);
     // },
     props: {
+        noLazy: false,
         rowFixLimit:{
             default: 10,
             save: true,
@@ -284,6 +285,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.items?.length) {
             return [];
         }
+        if (this.noLazy) return this.items;
         const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength);
         const raised = [];
         let top = rows[0]?.$parent;
@@ -291,14 +293,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             raised.unshift(top);
             top = top.$parent;
         }
-        // if (rows.length) {
-        //     while (rows[0].$parent && this.items.includes(rows[0].$parent)) {
-        //         raised.push(rows[0].$parent);
-        //         // rows.unshift(rows[0].$parent);
-        //         // if (rows.length > this.screenLength)
-        //         //     rows.pop();
-        //     }
-        // }
+        if (!raised.length){
+            top = rows[0];
+            if (top.items?.length && top.$expanded){
+                raised.push(top);
+                rows.shift();
+            }
+        }
         this.raisedRows = raised;
         return rows;
     },
@@ -1241,7 +1242,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 position: relative;
                 overflow-x: {{autoWidth?'hidden':'auto'}};
                 overflow-y: {{showHeader?'scroll':'auto'}};
-                /*scroll-behavior: smooth;*/
+                scroll-behavior: smooth;
                 @apply --vertical;
             }
             :host([fix]){
@@ -1374,25 +1375,25 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 @apply --horizontal;
             }
         </style>
-            <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
-                <div class="sticky" ~style="{top: firstTop + 'px'}" style="min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave" @dragover="table._onDragOver"  @drop="table._onDrop">
-                    <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
-                        ~class="{'group-row':row.$group}"
-                        :drop-mode="row.$dropMode"
-                        :dragging="draggedRows.includes(row)"
-                        @dragstart="table._onDragStart"
-                        :focused="allowFocus && isFocusedRow(row)"
-                        :highlighted="allowHighlight && isHighlightedRow(row)"
-                        :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                        <div :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
-                            <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
-                        </div>
+        <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
+            <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave" @dragover="table._onDragOver"  @drop="table._onDrop">
+                <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
+                    ~class="{'group-row':row.$group}"
+                    :drop-mode="row.$dropMode"
+                    :dragging="draggedRows.includes(row)"
+                    @dragstart="table._onDragStart"
+                    :focused="allowFocus && isFocusedRow(row)"
+                    :highlighted="allowHighlight && isHighlightedRow(row)"
+                    :selected="allowSelection !== 'none' && isSelectedRow(row)">
+                    <div :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                     </div>
                 </div>
             </div>
-            <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace" @dragover.stop.prevent="table._onDragOverToEmptySpace" @down="table._onDownToEmptySpace"></div>
+        </div>
+        <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace" @dragover.stop.prevent="table._onDragOverToEmptySpace" @down="table._onDownToEmptySpace"></div>
     `,
-
+    firstTop: 0,
     get autoWidth(){
         return this.table.autoWidth;
     },
@@ -1433,11 +1434,13 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         this.$scrollTop = this.scrollTop;
         this.$scrollWidth = this.scrollWidth;
         this.$height = this.offsetHeight;
-        const h = this.$scrollTop / this.rowHeight;
-        if (this.$scrollTop + this.$height + this.rowHeight < this.scrollHeight)
-            this.firstTop = Math.ceil(Math.floor(h) - h);
-        else
-            this.firstTop = 0;
+        // const h = this.$scrollTop / this.rowHeight;
+        // if (this.$scrollTop + this.$height + this.rowHeight < this.scrollHeight)
+        //     this.firstTop = Math.ceil(Math.floor(h) - h);
+        // else
+        //     this.firstTop = 0;
+
+        this.firstTop = Math.floor(this.$scrollTop / this.rowHeight) * this.rowHeight;
     },
     listeners:{
         resize(e){

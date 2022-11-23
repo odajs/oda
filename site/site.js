@@ -310,10 +310,11 @@ content: {
             defaultTemplate: 'oda-site-content-cell',
             iconExpanded: 'icons:remove',
             iconCollapsed: 'icons:add',
-            lazy: false,
+            noLazy: true,
             treeStep: 4,
             rowLines: false,
             autoRowHeight: true,
+            hideTop: true,
             part: {
                 set(n) {
                     if (n) {
@@ -462,7 +463,6 @@ navigator: {
             icon: 'icons:menu',
             iconExpanded: 'icons:remove',
             iconCollapsed: 'icons:add',
-            lazy: true,
             allowFocus: true,
             defaultTemplate: 'oda-site-nav-cell',
             rowLines: false,
