@@ -40,6 +40,13 @@
         </div>        
     </div>
     `,
+    attached () {
+        this.myWorker = new Worker('w.js');
+        this.myWorker.onmessage = (e) => {
+            // this.result = e.data;
+            // console.log('Message received from worker',e);
+          }
+    },
     props:{netSize:28, zoom: {get() { return this._newZoom() } }, oscillo:true, digit:'?', rezProts:[0,0,0,0,0,0,0,0,0,0] },
     observers: ['_rec(oscillo)'],
     listeners: { resize() { this.zoom = this._newZoom() } },
@@ -53,7 +60,7 @@
         if (zoom<6) {zoom = Math.trunc(this.offsetWidth/(this.netSize+4)) }
         return zoom },
     _rec () {
-        let size = this.netSize*this.zoom, imgData = this.$refs.drow._ctx.getImageData(0, 0, size, size),
+        let size = this.netSize*this.zoom, imgData = this.$refs.drow?._ctx?.getImageData(0, 0, size, size),
             grayscaleImg = imageDataToGrayscale(imgData), boundingRectangle = getBoundingRectangle(grayscaleImg, 1/10),
             brW = boundingRectangle.maxX+1-boundingRectangle.minX, brH = boundingRectangle.maxY+1-boundingRectangle.minY,
             trans = centerImage(grayscaleImg), scaling = (size*3/4) / (brW>brH?brW:brH);
@@ -106,6 +113,9 @@
         }
         this.$refs.min._ctx.putImageData(thumbnail, 0, 0);
 
+        //
+
+        this.myWorker.postMessage(nnInput2)
         if (jsonNet?.layers?.length) {
             var output = window["nn"](nnInput2,jsonNet);
             const rezProts = output.map(a=> Math.trunc(a*100))
@@ -121,20 +131,7 @@
     ODA ({is: 'oda-canvas-drow', extends: 'oda-canvas',
         listeners:{ 'touchstart':'_drow','touchmove':'_drow','touchend':'_drow',
                     'mousedown':'_drow','mousemove':'_drow','mouseup':'_drow', },
-        // _track(e, d) { //console.log(e)            
-        //     const ox = this.$refs.canvas.offsetLeft, oy = this.$refs.canvas.offsetTop
-        //     this._ctx.beginPath();
-        //     this._ctx.lineWidth = this.lWidth;
-        //     this._ctx.lineCap="round";
-        //     this._ctx.moveTo(d.x-d.ddx-ox, d.y-d.ddy-oy);
-        //     this._ctx.lineTo(d.x-ox, d.y-oy);
-        //     if (d.state = "end" && !d.x) {
-        //         this._ctx.moveTo(d.start.x-ox, d.start.y-oy);
-        //         this._ctx.lineTo(d.start.x-ox, d.start.y-oy);  }
-        //     this._ctx.stroke();
-        //     this._ctx.closePath();
-        //     this.interval("track", ()=>{this.oscillo = !this.oscillo}, 300)
-        // },
+
         _drow(e) {  // console.log(e)
             const   x = (e.x)? e.pageX - this.$refs.canvas.offsetLeft : e.changedTouches[0].pageX - this.$refs.canvas.offsetLeft,
                     y = (e.y)? e.pageY - this.$refs.canvas.offsetTop : e.changedTouches[0].pageY - this.$refs.canvas.offsetTop;
@@ -150,7 +147,7 @@
             if ( (this.lastPoint.x)&&(e.type == 'mousemove') ) { this.lastPoint = {'x':x,'y':y} }
             if ( (e.type == 'touchend')||(e.type == 'mouseup')) {this.lastPoint = {} }
             this.interval("track", ()=>{this.oscillo = !this.oscillo}, 300)
-            console.log(x,y)
+            // console.log(x,y)
         },
         props:{ lWidth:5, lastPoint:{} },
     }),

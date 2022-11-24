@@ -6600,70 +6600,6 @@
 /* 22 */
 /***/ function (module, exports, __webpack_require__) {
 
-		// Copyright Joyent, Inc. and other Node contributors.
-		//
-		// Permission is hereby granted, free of charge, to any person obtaining a
-		// copy of this software and associated documentation files (the
-		// "Software"), to deal in the Software without restriction, including
-		// without limitation the rights to use, copy, modify, merge, publish,
-		// distribute, sublicense, and/or sell copies of the Software, and to permit
-		// persons to whom the Software is furnished to do so, subject to the
-		// following conditions:
-		//
-		// The above copyright notice and this permission notice shall be included
-		// in all copies or substantial portions of the Software.
-		//
-		// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-		// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-		// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-		// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-		// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-		// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-		// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-		// a transform stream is a readable/writable stream where you do
-		// something with the data.  Sometimes it's called a "filter",
-		// but that's not a great name for it, since that implies a thing where
-		// some bits pass through, and others are simply ignored.  (That would
-		// be a valid example of a transform, of course.)
-		//
-		// While the output is causally related to the input, it's not a
-		// necessarily symmetric or synchronous transformation.  For example,
-		// a zlib stream might take multiple plain-text writes(), and then
-		// emit a single compressed chunk some time in the future.
-		//
-		// Here's how this works:
-		//
-		// The Transform stream has all the aspects of the readable and writable
-		// stream classes.  When you write(chunk), that calls _write(chunk,cb)
-		// internally, and returns false if there's a lot of pending writes
-		// buffered up.  When you call read(), that calls _read(n) until
-		// there's enough pending readable data buffered up.
-		//
-		// In a transform stream, the written data is placed in a buffer.  When
-		// _read(n) is called, it transforms the queued up data, calling the
-		// buffered _write cb's as it consumes chunks.  If consuming a single
-		// written chunk would result in multiple output chunks, then the first
-		// outputted bit calls the readcb, and subsequent chunks just go into
-		// the read buffer, and will cause it to emit 'readable' if necessary.
-		//
-		// This way, back-pressure is actually determined by the reading side,
-		// since _read has to be called to start processing a new chunk.  However,
-		// a pathological inflate type of transform can cause excessive buffering
-		// here.  For example, imagine a stream where every byte of input is
-		// interpreted as an integer from 0-255, and then results in that many
-		// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
-		// 1kb of data being output.  In this case, you could write a very small
-		// amount of input, and end up with a very large amount of output.  In
-		// such a pathological inflating mechanism, there'd be no way to tell
-		// the system to stop doing the transform.  A single 4MB write could
-		// cause the system to run out of memory.
-		//
-		// However, even in such a pathological case, only a single written chunk
-		// would be consumed, and then the rest would wait (un-transformed) until
-		// the results of the previous transformed chunk were consumed.
-
 		module.exports = Transform;
 
 		var Duplex = __webpack_require__(19);
@@ -6747,16 +6683,7 @@
 			return Duplex.prototype.push.call(this, chunk, encoding);
 		};
 
-		// This is the part where you do stuff!
-		// override this function in implementation classes.
-		// 'chunk' is an input chunk.
-		//
-		// Call `push(newChunk)` to pass along transformed output
-		// to the readable side.  You may call 'push' zero or more times.
-		//
-		// Call `cb(err)` when you are done with this chunk.  If you pass
-		// an error, then that'll put the hurt on the whole operation.  If you
-		// never call cb(), then you'll never get another chunk.
+
 		Transform.prototype._transform = function (chunk, encoding, cb) {
 			throw new Error('not implemented');
 		};
@@ -6796,8 +6723,6 @@
 			if (er)
 				return stream.emit('error', er);
 
-			// if there's nothing in the write buffer, then that means
-			// that nothing more will ever be provided
 			var ws = stream._writableState;
 			var ts = stream._transformState;
 
@@ -6815,31 +6740,6 @@
 },
 /* 23 */
 /***/ function (module, exports, __webpack_require__) {
-
-		// Copyright Joyent, Inc. and other Node contributors.
-		//
-		// Permission is hereby granted, free of charge, to any person obtaining a
-		// copy of this software and associated documentation files (the
-		// "Software"), to deal in the Software without restriction, including
-		// without limitation the rights to use, copy, modify, merge, publish,
-		// distribute, sublicense, and/or sell copies of the Software, and to permit
-		// persons to whom the Software is furnished to do so, subject to the
-		// following conditions:
-		//
-		// The above copyright notice and this permission notice shall be included
-		// in all copies or substantial portions of the Software.
-		//
-		// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-		// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-		// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-		// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-		// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-		// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-		// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-		// a passthrough stream.
-		// basically just the most minimal sort of Transform stream.
-		// Every written chunk gets output as-is.
 
 		module.exports = PassThrough;
 
@@ -6884,18 +6784,12 @@
 },
 /* 26 */
 /***/ function (module, exports, __webpack_require__) {
-
 		module.exports = __webpack_require__(22)
-
-
 		/***/
 },
 /* 27 */
 /***/ function (module, exports, __webpack_require__) {
-
 		module.exports = __webpack_require__(23)
-
-
 		/***/
 },
 /* 28 */

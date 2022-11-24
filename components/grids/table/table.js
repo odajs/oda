@@ -1399,7 +1399,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </style>
 <!--    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">-->
     <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px'}">
-        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
@@ -1408,8 +1408,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div @tap="$event.target.focus()" :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
-                    <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
+                <div :item="row" :tabindex="getTabIndex(col, row, c, r)" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                    <div   class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
         </div>
@@ -1481,7 +1481,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     getTabIndex(col, row, c, r) {
         if (row.$group || !this.allowFocus)
             return null;
-        return (col[this.columnId] && !col.fix && !col.treeMode) ? ((r + 1) * 10000 + c + 1) : '';
+        return /*(col[this.columnId] && !col.fix && !col.treeMode) ?*/ ((r + 1) * 10000 + c + 1) /*: ''*/;
     },
     getDraggable(row) {
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
@@ -2030,7 +2030,7 @@ function extract(items, level, parent) {
                 enumerable: false,
                 configurable: true,
                 writable: true,
-                value: i.$expanded || false
+                value: i.$expanded // todo: нужно возвращать undefined для expandAll 
             })
 
         if (!('$parent' in i))
