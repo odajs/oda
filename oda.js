@@ -1223,7 +1223,7 @@ if (!window.ODA) {
     Object.defineProperty(ODA, 'top',  {
         get (){
             if (window.parent !== window)
-                return window.parent.ODA?.top;
+                return window.parent.ODA?.top || window;
             return window;
         }
     })
