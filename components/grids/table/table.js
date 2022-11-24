@@ -1562,7 +1562,7 @@ cells: {
                 @apply --no-flex;
             }
         </style>
-        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
+        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent @pointerdown.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -2068,7 +2068,6 @@ function extract(items, level, parent) {
             has_children.then(res => i.$hasChildren = res);
         else
             i.$hasChildren = has_children;
-
         if ((i.$expanded === undefined && (this.expandAll || (this.expandLevel < i.level))) || (level < 0 && !i.$expanded))
             i.$expanded = true;
         if (i.$expanded) {
