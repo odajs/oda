@@ -5,6 +5,7 @@ ODA({is: 'oda-icon',
     template: /*html*/`
     <style>
         :host {
+            /*will-change: transform;*/
             @apply --horizontal;
             @apply --no-flex;
             display: flex;
@@ -49,6 +50,7 @@ ODA({is: 'oda-icon',
             left: 0px;
             position: absolute;
             fill: {{fill || 'unset'}};
+            will-change: transform;
         }
     </style>
     <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">

@@ -1057,6 +1057,7 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
         }
         .panel {
             margin: 2px;
+            min-width: 50%;
         }
         label {
             @apply --flex;
@@ -1088,7 +1089,7 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
         <div class="flex horizontal">
             <label ~if="!pivotLabels.length">Drag here to set column labels</label>
             <div class="no-flex horizontal">
-                <div class="item shadow content no-flex horizontal" ~for="column in groups">
+                <div class="item shadow content no-flex horizontal" ~for="column in pivotLabels">
                     <label class="label flex" ~text="column.$saveKey || column.name"></label>
                     <oda-icon class="closer" icon="icons:close" :icon-size @tap="_close" :column></oda-icon>
                 </div>
@@ -1265,6 +1266,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     template: /*html*/`
     <style>
         :host {
+            will-change: transform;
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
             overflow-y: {{showHeader?'scroll':'auto'}};
@@ -1283,6 +1285,13 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             min-height: {{rowHeight}}px;
             max-height: {{autoRowHeight ? '' : rowHeight + 'px'}};
             @apply --no-flex;
+            @apply --horizontal;
+        }
+       .group-row {
+            position: sticky;
+            z-index: 2;
+            @apply --dark;
+            left: {{$scrollLeft}}px;
         }
     </style>
     <style>
@@ -1309,7 +1318,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             border-right: 1px solid var(--dark-background);
             box-sizing: border-box;
         }
-        .row[focused]::after {
+        .row[focused]>*::after {
             content: '';
             background-color: var(--focused-color);
             position: absolute;
@@ -1371,8 +1380,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             @apply --header;
         }
         .cell:focus {
-            outline: 2px dotted black !important;
-            outline-offset: -1px !important;
+            outline: auto !important;
+            /*outline-offset: -2px !important;*/
         }
         .group {
             position: sticky;
@@ -1387,19 +1396,9 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: -webkit-sticky;
             /*z-index: 1;*/
         }
-        .group-row {
-            z-index: 10;
-            position: sticky;
-            position: -webkit-sticky;
-            @apply --dark;
-        }
-        .row {
-            position: sticky;
-            left: 0px;
-            @apply --horizontal;
-        }
     </style>
-    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
+<!--    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">-->
+    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px'}">
         <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
                 ~class="{'group-row':row.$group}"
@@ -1523,6 +1522,7 @@ cells: {
         template: /*html*/`
         <style>
             :host {
+                will-change: transform;
                 @apply --horizontal;
                 align-items: center;
                 overflow: hidden;
