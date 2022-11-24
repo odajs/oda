@@ -13,10 +13,12 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     </style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body :scroll-left="$scrollLeft" class="no-flex" fix :rows="raisedRows"></oda-table-body>
-    <oda-table-body ref="body" :scroll-left="$scrollLeft" class="flex" :rows></oda-table-body>
+    <oda-table-body :over-height  class="no-flex" fix :rows="raisedRows" :scroll-left="$scrollLeft"></oda-table-body>
+    <oda-table-body ::over-height ref="body" class="flex" :rows></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
+    $width: 0,
+    overHeight: false,
     onDblClick(e) {
         const el = e.path.find(p => p.row);
         if (el)
@@ -1270,12 +1272,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
             overflow-y: {{showHeader?'scroll':'auto'}};
-            scroll-behavior: smooth;
             @apply --vertical;
         }
         :host([fix]) {
             overflow-x: clip !important;
-            overflow-y: clip !important;
+            overflow-y: {{overHeight? 'scroll':'clip'}} !important;
             height: {{_bodyHeight}}px;
         }
         :host([fix]) .cell {
@@ -1291,7 +1292,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: sticky;
             z-index: 2;
             @apply --dark;
-            left: {{$scrollLeft}}px;
+            max-width: {{$width}}px;
+            left: 0px;
         }
     </style>
     <style>
@@ -1311,12 +1313,16 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
         :host([row-lines]) .cell {
             border-bottom: 1px  solid var(--dark-background);
-            box-sizing: border-box;
         }
-
         :host([col-lines]) .cell {
             border-right: 1px solid var(--dark-background);
-            box-sizing: border-box;
+        }
+        :host([col-lines]) .cell[fix] {
+             border-right: 2px solid var(--dark-background);
+        }
+        :host([col-lines]) .cell[fix = right] {
+            border-left: 2px solid var(--dark-background);
+            border-right: none;
         }
         .row[focused]>*::after {
             content: '';
@@ -1384,9 +1390,6 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             outline-offset: -1px;
         }
         .group {
-            position: sticky;
-            position: -webkit-sticky;
-            left: 0px;
             border-color: transparent !important;
             @apply --dark;
             @apply --flex;
@@ -1394,11 +1397,9 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         .sticky {
             position: sticky;
             position: -webkit-sticky;
-            /*z-index: 1;*/
         }
     </style>
-<!--    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">-->
-    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px'}">
+    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':$scrollWidth + 'px'}">
         <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
                 ~class="{'group-row':row.$group}"
@@ -1451,13 +1452,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         this.$scrollTop = this.scrollTop;
         this.$scrollWidth = this.scrollWidth;
         this.$height = this.offsetHeight;
-        // const h = this.$scrollTop / this.rowHeight;
-        // if (this.$scrollTop + this.$height + this.rowHeight < this.scrollHeight)
-        //     this.firstTop = Math.ceil(Math.floor(h) - h);
-        // else
-        //     this.firstTop = 0;
+        this.$width = this.offsetWidth;
+        this.overHeight = this.offsetHeight < this.scrollHeight;
         this.firstTop = Math.floor(this.$scrollTop / this.rowHeight) * this.rowHeight;
     },
+    overHeight: false,
     listeners: {
         resize(e) {
             this.setScreen();
