@@ -690,9 +690,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!item) return;
         if (item.disabled) {
             item.$expanded = !item.$expanded;
-        } else if (item.$hasChildren && !item.$expanded) {
+            return;
+        }
+        
+        if (item.$hasChildren && !item.$expanded) {
             item.$expanded = true;
-        } else if (this.allowFocus && item && !item.$group && item.$allowFocus !== false) {
+        }
+
+        if (this.allowFocus && item && !item.$group && (item.$allowFocus !== false)) {
             this.focusedRow = item;
         }
     },
