@@ -314,7 +314,6 @@ content: {
             treeStep: 4,
             rowLines: false,
             autoRowHeight: true,
-            hideTop: true,
             part: {
                 set(n) {
                     if (n) {
@@ -481,7 +480,8 @@ navigator: {
                 set(n) {
                     this.columns = n ? [{ name: 'item', width: 24, template: 'oda-status-cell' }, { name: 'item', treeMode: true }] : [];
                 }
-            }
+            },
+            hideTop: true
         },
 
         observers: [
