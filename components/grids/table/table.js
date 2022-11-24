@@ -22,15 +22,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (el)
             this.table.fire('row-dblclick', el.row);
     },
-    async openSettings(e){
+    async openSettings(e) {
         await ODA.import('@tools/containers');
         await ODA.showDropdown(
             'oda-table-settings',
-            {table: this.table},
-            {parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true}
+            { table: this.table },
+            { parent: e.target, intersect: true, align: 'left', title: 'Settings', hideCancelButton: true }
         );
     },
-    get storage(){
+    get storage() {
         return ODA.LocalStorage.create(this.$savePath);
     },
     get screenFrom() {
@@ -41,8 +41,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     columns: [],
     dataSet: [],
-
-
     // get dataSet(){
     //     return  [];
     // },
@@ -51,11 +49,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     // },
     props: {
         noLazy: false,
-        pivotMode:{
+        pivotMode: {
             default: false,
             save: true
         },
-        rowFixLimit:{
+        rowFixLimit: {
             default: 10,
             save: true,
         },
@@ -88,9 +86,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             reflectToAttribute: true
         },
         columnId: 'name',
-
         // customRows: false,
-
         defaultFooter: 'oda-table-footer-cell',
         defaultGroupTemplate: 'oda-table-cell-group',
         defaultHeader: 'oda-table-header-cell',
@@ -104,8 +100,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             type: Object,
             freeze: true,
             set(n) {
-                if (n){
-                    this.debounce('focusedRow', ()=>{
+                if (n) {
+                    this.debounce('focusedRow', () => {
                         this.scrollToItem(n);
                     })
                     // this.fire('focused-row-changed', n); // ToDo - temporary solution
@@ -117,8 +113,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             default: 'none',
             list: ['none', 'first', 'auto', 'all']
         },
-
-
         hideRoot: false,
         hideTop: false,
         icon: 'odant:grid',
@@ -270,10 +264,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     raisedRows: [],
     get rowColumns() {
         const convert = (cols) => {
-            return cols.filter(i=>!i.$hidden).reduce((res, col) => {
+            return cols.filter(i => !i.$hidden).reduce((res, col) => {
                 modifyColumn.call(this.table, col)
                 if (col.$expanded && col.items?.length) {
-                    const items = col.items.filter(i=>!i.$hidden).map((c, i) => {
+                    const items = col.items.filter(i => !i.$hidden).map((c, i) => {
                         c.id = col.id + '-' + i;
                         c.$parent ??= col;
                         return c;
@@ -298,13 +292,13 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength);
         const raised = [];
         let top = rows[0]?.$parent;
-        while (top){
+        while (top) {
             raised.unshift(top);
             top = top.$parent;
         }
-        if (!raised.length){
+        if (!raised.length) {
             top = rows[0];
-            if (top?.items?.length && top.$expanded){
+            if (top?.items?.length && top.$expanded) {
                 raised.push(top);
                 rows.shift();
             }
@@ -313,20 +307,20 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return rows;
     },
     selectedRows: [],
-    get sorts(){
-        const find_sorts = (columns = [])=>{
-            modifyColumn.call(this,  columns);
-            return columns.reduce((res, i)=>{
+    get sorts() {
+        const find_sorts = (columns = []) => {
+            modifyColumn.call(this, columns);
+            return columns.reduce((res, i) => {
                 res.add(i);
                 let items = i.items;
-                if (items){
-                    if (items?.then){
-                        items?.then(r=>{
+                if (items) {
+                    if (items?.then) {
+                        items?.then(r => {
                             if (r?.length)
                                 res.add(...r);
                         })
                     }
-                    else{
+                    else {
                         items = find_sorts(items);
                         res.add(...items);
                     }
@@ -335,33 +329,33 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }, []);
         }
         let result = find_sorts(this.columns);
-        result = result.filter(i=>{
+        result = result.filter(i => {
             return i.$sort;
         })
-        result = result.sort((a,b) =>{
-            return Math.abs(a.$sort)>Math.abs(b.$sort)?1:-1;
+        result = result.sort((a, b) => {
+            return Math.abs(a.$sort) > Math.abs(b.$sort) ? 1 : -1;
         })
         return result;
     },
     get colStyles() {
-        const result =  this.rowColumns.map(col => {
+        const result = this.rowColumns.map(col => {
             if (col.id === undefined)
                 return '';
             let style = `.col-${col.id}{/*${col[this.columnId]}*/\n\t`;
             if (col.index === 999)
                 style += '\n\tflex: 1;\n\tflex-basis: auto;';
-            else{
+            else {
                 style += '\n\tposition: sticky;';
-                if (col.width){
-                    style+=`\n\tmin-width: ${col.width}px; \n\tmax-width: ${col.width}px;\n\tflex: 0;`
+                if (col.width) {
+                    style += `\n\tmin-width: ${col.width}px; \n\tmax-width: ${col.width}px;\n\tflex: 0;`
                 }
-                else{
+                else {
                     if (this.autoWidth && this.rowColumns.last === col)
-                        style+=`\n\tflex: 1;`
-                    style+=`\n\tmin-width: 16px;`
+                        style += `\n\tflex: 1;`
+                    style += `\n\tmin-width: 16px;`
                 }
                 col.$width = col.$width || col.width || 150;
-                style+=`\n\twidth: ${col.$width}px;`;
+                style += `\n\twidth: ${col.$width}px;`;
 
 
                 const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
@@ -391,7 +385,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this.selectAll();
         },
     ],
-
     keyBindings: {
         escape() {
             this.clearSelection();
@@ -413,7 +406,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             idx = idx > 0 ? idx - 1 : 0;
             this.highlightRow(e, { value: rows[idx] });
             if (!e.ctrlKey) {
-                this.selectRow(e, { value: rows[idx]})
+                this.selectRow(e, { value: rows[idx] })
             }
             if (idx <= (rows.findIndex(r => r === this.raisedRows[0]) + 2)) {
                 this.$refs.body.scrollTop -= (~~(this.screenLength / 2)) * this.rowHeight;
@@ -428,7 +421,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             idx = idx < max ? idx + 1 : max;
             this.highlightRow(e, { value: rows[idx] });
             if (!e.ctrlKey) {
-                this.selectRow(e, { value: rows[idx]})
+                this.selectRow(e, { value: rows[idx] })
             }
             if (idx >= (this.screenLength - 1)) {
                 this.$refs.body.scrollTop += (~~(this.screenLength / 2)) * this.rowHeight;
@@ -645,7 +638,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 res.push(item);
                 if (item.$expanded && item.items?.length) {
                     // if (this.allowSort)
-                        this._sort(item.items);
+                    this._sort(item.items);
                     const subItems = doExpanding(item.items);
                     res.push(...subItems);
                 }
@@ -692,7 +685,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             item.$expanded = !item.$expanded;
             return;
         }
-        
+
         if (item.$hasChildren && !item.$expanded) {
             item.$expanded = true;
         }
@@ -803,7 +796,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         }
     },
-
     selectAll() {
         if (!this._selectedAll)
             this._selectedAll = true;
@@ -916,8 +908,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         clearTimeout(this._expandTimer);
         this._expandTimer = null;
     },
-
-
     _onDragOver(e) {
         if (!this.allowDrop) return;
         e.stopPropagation();
@@ -959,7 +949,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     __getDropEffect(source, target, event) {
         return event.ctrlKey ? 'copy' : 'move';
     },
-
     _checkAllowDropIn(row) {
         const contains = !!(this.draggedRows && row.items && Array.isArray(row.items) && row.items.find(i => this.draggedRows.includes(i)));
         const isLoading = !!(row.items && row.items.length === 1 && !Object.keys(row.items[0]).length); // is not tested
@@ -1026,7 +1015,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         };
         return find(this.dataSet);
     },
-
     onDragEnd(e) {
         this.draggedRows = [];
         this._dropCheckWait = null;
@@ -1047,7 +1035,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.focusedRow = null
         this.clearSelection()
     }
-
 });
 
 ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
@@ -1068,18 +1055,18 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
         .closer {
             cursor: pointer;
         }
-        .panel{
+        .panel {
             margin: 2px;
         }
-        label{
+        label {
             @apply --flex;
             @apply --disabled
         }
-        :host>div>div{
+        :host > div > div{
             align-items: center;
             padding: 0px 4px;
         }
-        oda-icon{
+        oda-icon {
             transform: scale(.7);
         }
         
@@ -1099,7 +1086,7 @@ ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
     <div class="horizontal border flex panel">
         <oda-icon disabled :icon-size icon="icons:dns:90"></oda-icon>
         <div class="flex horizontal">
-            <label ~if="!pivotLabels.length">Drag here to set column labels</labeldisabled>
+            <label ~if="!pivotLabels.length">Drag here to set column labels</label>
             <div class="no-flex horizontal">
                 <div class="item shadow content no-flex horizontal" ~for="column in groups">
                     <label class="label flex" ~text="column.$saveKey || column.name"></label>
@@ -1228,22 +1215,22 @@ ODA({is: 'oda-table-hide-column', imports: '@oda/checkbox',
 });
 
 ODA({is: 'oda-table-cols', extends: 'oda-table-part',
-    template:  `
-        <style>
-            :host{
-                position: relative;
-                border-color: white;
-                @apply --horizontal;
-                @apply --dark;
-                margin: 1px 0px;
-                @apply --shadow;
-                z-index: 1;
-            }
-        </style>
-        <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
-            <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
-        </div>
-        <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+    template: /*html*/`
+    <style>
+        :host {
+            position: relative;
+            border-color: white;
+            @apply --horizontal;
+            @apply --dark;
+            margin: 1px 0px;
+            @apply --shadow;
+            z-index: 1;
+        }
+    </style>
+    <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
+        <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
+    </div>
+    <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
     getItem(col){
         return col;
@@ -1256,14 +1243,15 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
 })
 
 ODA({is:'oda-table-header', extends: 'oda-table-cols',
-    template:`
-        <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
+    template: /*html*/`
+    <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
     getTemplate(col){
         return col.header || this.defaultHeader
     },
     scr: 0
 })
+
 ODA({is:'oda-table-footer', extends: 'oda-table-cols',
     getItem(col){
         return this.footer;
@@ -1274,197 +1262,191 @@ ODA({is:'oda-table-footer', extends: 'oda-table-cols',
 })
 
 ODA({is:'oda-table-body', extends: 'oda-table-part',
-    template:`
-        <style>
-            :host{
-                position: relative;
-                overflow-x: {{autoWidth?'hidden':'auto'}};
-                overflow-y: {{showHeader?'scroll':'auto'}};
-                scroll-behavior: smooth;
-                @apply --vertical;
-            }
-            :host([fix]){
-                overflow-x: clip !important;
-                overflow-y: clip !important;
-                height: {{_bodyHeight}}px;
-            }
-            :host([fix]) .cell{
-               @apply --header;
-            }
-            .row{
-                min-height: {{rowHeight}}px;
-                max-height: {{autoRowHeight?'':rowHeight+'px'}};
-                @apply --no-flex;
-            }
-        </style>
-        <style>
-            :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging])>.cell:not([fix]) {
-                background-color: rgba(0,0,0,.05);
-            }
-            .cell {
-                position: relative;
-                @apply --content;
-                @apply --no-flex;
-                @apply --horizontal;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                box-sizing: border-box;
-                align-items: center;
-            }
-            :host([row-lines]) .cell {
-                border-bottom: 1px  solid var(--dark-background);
-                box-sizing: border-box;
-            }
-    
-            :host([col-lines]) .cell {
-                border-right: 1px solid var(--dark-background);
-                box-sizing: border-box;
-            }
-            .row[focused]::after {
-                content: '';
-                background-color: var(--focused-color);
-                position: absolute;
-                bottom: 0px;
-                left: 0px;
-                right: 0px;
-                height: 2px;
-                z-index: 1;
-                pointer-events: none;
-            }
-            .row[highlighted]::before {
-                content: '';
-                position: absolute;
-                bottom: 0px;
-                left: 0px;
-                right: 0px;
-                top: 0px;
-                outline: 1px dashed gray;
-                outline-offset: -3px;
-                z-index: 2;
-                pointer-events: none;
-            }
-            .row[drop-mode]:before {
-                position: absolute;
-                left: 0px;
-                content: '';
-                pointer-events: none;
-                background-color: var(--info-color);
-                z-index: 10;
-                top: 0px;
-                bottom: 0px;
-            }
-            .row[drop-mode=top]:before {
-                top: -1px;
-                right: 0px;
-                bottom: unset;
-                height: 2px;
-            }
-            .row[drop-mode=bottom]:before {
-                bottom: -2px;
-                right: 0px;
-                top: unset;
-                height: 2px;
-            }
-            .row[drop-mode=in]:before {
-                width: 2px;
-            }
-            .row[dragging] > .cell {
-                @apply --error;
-            }
-            .cell[role=group] {
-                z-index: 2;
-                @apply --header;
-                border-color: transparent;
-            }
-            .cell[role=footer],
-            .row[role=group],
-            .cell[fix] {
-                @apply --header;
-            }
-            .cell:focus{
-                outline: 2px dotted black !important;
-                outline-offset: -1px !important;
-            }
-            .group {
-                position: sticky;
-                position: -webkit-sticky;
-                left: 0px;
-                border-color: transparent !important;
-                @apply --dark;
-                @apply --flex;
-            }
-            .sticky {
-                position: sticky;
-                position: -webkit-sticky;
-                /*z-index: 1;*/
-            }
-            .group-row {
-                z-index: 10;
-                position: sticky;
-                position: -webkit-sticky;
-                @apply --dark;
-            }
-            .row {
-                position: sticky;
-                left: 0px;
-                @apply --horizontal;
-            }
-        </style>
-        <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
-            <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave" @dragover="table._onDragOver"  @drop="table._onDrop">
-                <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
-                    ~class="{'group-row':row.$group}"
-                    :drop-mode="row.$dropMode"
-                    :dragging="draggedRows.includes(row)"
-                    @dragstart="table._onDragStart"
-                    :focused="allowFocus && isFocusedRow(row)"
-                    :highlighted="allowHighlight && isHighlightedRow(row)"
-                    :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                    <div :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
-                        <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
-                    </div>
+    template: /*html*/`
+    <style>
+        :host {
+            position: relative;
+            overflow-x: {{autoWidth?'hidden':'auto'}};
+            overflow-y: {{showHeader?'scroll':'auto'}};
+            scroll-behavior: smooth;
+            @apply --vertical;
+        }
+        :host([fix]) {
+            overflow-x: clip !important;
+            overflow-y: clip !important;
+            height: {{_bodyHeight}}px;
+        }
+        :host([fix]) .cell {
+            @apply --header;
+        }
+        .row {
+            min-height: {{rowHeight}}px;
+            max-height: {{autoRowHeight ? '' : rowHeight + 'px'}};
+            @apply --no-flex;
+        }
+    </style>
+    <style>
+        :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging]) > .cell:not([fix]) {
+            background-color: rgba(0,0,0,.05);
+        }
+        .cell {
+            position: relative;
+            @apply --content;
+            @apply --no-flex;
+            @apply --horizontal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+            align-items: center;
+        }
+        :host([row-lines]) .cell {
+            border-bottom: 1px  solid var(--dark-background);
+            box-sizing: border-box;
+        }
+
+        :host([col-lines]) .cell {
+            border-right: 1px solid var(--dark-background);
+            box-sizing: border-box;
+        }
+        .row[focused]::after {
+            content: '';
+            background-color: var(--focused-color);
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            height: 2px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .row[highlighted]::before {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            outline: 1px dashed gray;
+            outline-offset: -3px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .row[drop-mode]:before {
+            position: absolute;
+            left: 0px;
+            content: '';
+            pointer-events: none;
+            background-color: var(--info-color);
+            z-index: 10;
+            top: 0px;
+            bottom: 0px;
+        }
+        .row[drop-mode=top]:before {
+            top: -1px;
+            right: 0px;
+            bottom: unset;
+            height: 2px;
+        }
+        .row[drop-mode=bottom]:before {
+            bottom: -2px;
+            right: 0px;
+            top: unset;
+            height: 2px;
+        }
+        .row[drop-mode=in]:before {
+            width: 2px;
+        }
+        .row[dragging] > .cell {
+            @apply --error;
+        }
+        .cell[role=group] {
+            z-index: 2;
+            @apply --header;
+            border-color: transparent;
+        }
+        .cell[role=footer],
+        .row[role=group],
+        .cell[fix] {
+            @apply --header;
+        }
+        .cell:focus {
+            outline: 2px dotted black !important;
+            outline-offset: -1px !important;
+        }
+        .group {
+            position: sticky;
+            position: -webkit-sticky;
+            left: 0px;
+            border-color: transparent !important;
+            @apply --dark;
+            @apply --flex;
+        }
+        .sticky {
+            position: sticky;
+            position: -webkit-sticky;
+            /*z-index: 1;*/
+        }
+        .group-row {
+            z-index: 10;
+            position: sticky;
+            position: -webkit-sticky;
+            @apply --dark;
+        }
+        .row {
+            position: sticky;
+            left: 0px;
+            @apply --horizontal;
+        }
+    </style>
+    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: (autoWidth?'auto':($scrollWidth - 20))+'px'}">
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+            <div :draggable="getDraggable(row)" ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
+                ~class="{'group-row':row.$group}"
+                :drop-mode="row.$dropMode"
+                :dragging="draggedRows.includes(row)"
+                @dragstart="table._onDragStart($event, $detail)"
+                :focused="allowFocus && isFocusedRow(row)"
+                :highlighted="allowHighlight && isHighlightedRow(row)"
+                :selected="allowSelection !== 'none' && isSelectedRow(row)">
+                <div :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                    <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
         </div>
-        <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace" @dragover.stop.prevent="table._onDragOverToEmptySpace" @down="table._onDownToEmptySpace"></div>
+    </div>
+    <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
     firstTop: 0,
-    get autoWidth(){
+    get autoWidth() {
         return this.table.autoWidth;
     },
-    get showHeader(){
+    get showHeader() {
         return this.table.showHeader;
     },
     rows: [],
-    props:{
-        fix:{
+    props: {
+        fix: {
             type: Boolean,
             reflectToAttribute: true
         },
-        evenOdd:{
+        evenOdd: {
             type: Boolean,
-            get(){
-                return this.table.evenOdd;
-            },
+            get() { return this.table.evenOdd; },
             reflectToAttribute: true
         },
-        rowLines:{
+        rowLines: {
             type: Boolean,
-            get(){
-                return this.table.rowLines;
-            },
+            get() { return this.table.rowLines; },
             reflectToAttribute: true
         },
-        colLines:{
+        colLines: {
             type: Boolean,
-            get(){
-                return this.table.colLines;
-            },
+            get() { return this.table.colLines; },
             reflectToAttribute: true
         }
     },
-    setScreen(){
+    setScreen() {
         if (this.fix) return;
         this.$scrollLeft = this.scrollLeft;
         this.$scrollTop = this.scrollTop;
@@ -1475,14 +1457,13 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         //     this.firstTop = Math.ceil(Math.floor(h) - h);
         // else
         //     this.firstTop = 0;
-
         this.firstTop = Math.floor(this.$scrollTop / this.rowHeight) * this.rowHeight;
     },
-    listeners:{
-        resize(e){
+    listeners: {
+        resize(e) {
             this.setScreen();
         },
-        scroll(e){
+        scroll(e) {
             this.setScreen();
         }
     },
@@ -1507,40 +1488,39 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
     get _bodyHeight() {
-        return (this.fix?this.rows.length:this.size) * this.rowHeight;
+        return (this.fix ? this.rows.length : this.size) * this.rowHeight;
     },
 })
-
-
 ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
     template: /*html*/`
-        <style>
-            .split {
-                border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
-                border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
-                height: 100%;
-            }
-            label{
-                padding: 4px;
-            }
-            :host {
-                box-sizing: border-box;
-                border-color: white !important;
-                @apply --horizontal;
-                @apply --no-flex;
-                justify-content: flex-end;
-                @apply --dark;
-                text-align: right;
-                font-size: smaller;
-                flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
-            }
-        </style>
-        <div class="split"></div>
+    <style>
+        .split {
+            border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
+            border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
+            height: 100%;
+        }
+        label {
+            padding: 4px;
+        }
+        :host {
+            box-sizing: border-box;
+            border-color: white !important;
+            @apply --horizontal;
+            @apply --no-flex;
+            justify-content: flex-end;
+            @apply --dark;
+            text-align: right;
+            font-size: smaller;
+            flex-direction: {{column.fix === 'right'?'row-reverse':'row'}};
+        }
+    </style>
+    <div class="split"></div>
     `
 });
 
 cells: {
-    ODA({is: 'oda-table-cell-base', template: /*html*/`
+    ODA({is: 'oda-table-cell-base',
+        template: /*html*/`
         <style>
             :host {
                 @apply --horizontal;
@@ -1560,7 +1540,7 @@ cells: {
         </style>`,
         column: null,
         item: null,
-        get fix(){
+        get fix() {
             return this.column?.fix;
         }
     });
@@ -1578,12 +1558,12 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-            <style>
-                :host{
-                    @apply --no-flex;
-                }
-            </style>
-            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
+        <style>
+            :host {
+                @apply --no-flex;
+            }
+        </style>
+        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :disabled="hideIcon || item?.disabled" :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
         `,
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -1611,7 +1591,7 @@ cells: {
         ODA({is: 'oda-table-cell-tree', extends: 'oda-table-cell-base',
             template: /*html*/`
             <style>
-                :host{
+                :host {
                     height: 100%;
                     background-color: {{color || 'unset'}} !important;
                 }
@@ -1774,7 +1754,7 @@ cells: {
                 box-sizing: border-box;
                 max-width: {{column.width || '100%'}};
                 min-width: {{column.width || '16px'}};
-                width: {{column.$width}};
+                width: {{column.$width}}px;
 
                 @apply --no-flex;
             }
@@ -1791,7 +1771,7 @@ cells: {
             oda-icon, oda-table-expand {
                 opacity: .5;
             }
-            oda-icon{
+            oda-icon {
                 transform: scale(.7);
                 /*@apply --content;*/
                 border-radius: 50%;
@@ -1827,7 +1807,7 @@ cells: {
                 max-height: {{iconSize * .7}}px;
                 min-height: {{iconSize * .7}}px;
             }
-            label{
+            label {
                 text-align: center;
                 margin: 4px 0px;
                 text-overflow: ellipsis;
@@ -1854,20 +1834,20 @@ cells: {
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
-        get expanded(){
+        get expanded() {
             return this.column.$expanded;
         },
-        get subCols(){
-            return this.column?.items?.map(i=>{
+        get subCols() {
+            return this.column?.items?.map(i => {
                 i.$parent ??= this.column;
                 modifyColumn.call(this.table, i);
                 return i;
-            })?.filter(i=>!i.$hidden);
+            })?.filter(i => !i.$hidden);
         },
         get sortIcon() {
-            if (+this.column.$sort>0)
+            if (+this.column.$sort > 0)
                 return 'icons:arrow-back:270';
-            if (+this.column.$sort<0)
+            if (+this.column.$sort < 0)
                 return 'icons:arrow-back:90';
             return ''
         },
@@ -1883,7 +1863,7 @@ cells: {
                 }
             }
         },
-        listeners:{
+        listeners: {
             contextmenu: '_menu',
             resize(e) {
                 if (!this.column || this.column.$expanded || this.column.id === 999) return;
@@ -1966,23 +1946,23 @@ cells: {
             res?.focusedItem.execute();
         },
         setSort(e) {
-            if (!this.allowSort) return ;
+            if (!this.allowSort) return;
             const sort = this.column.$sort;
-            if (this.column.$sort>0){
+            if (this.column.$sort > 0) {
                 this.column.$sort = -this.column.$sort;
             }
-            else if (this.column.$sort<0){
+            else if (this.column.$sort < 0) {
                 this.column.$sort = 0;
-                this.async(()=>{
-                    this.sorts.forEach((i, idx)=>{
+                this.async(() => {
+                    this.sorts.forEach((i, idx) => {
                         i.$sort = (idx + 1) * Math.sign(i.$sort);
                     })
                 })
             }
-            else{
+            else {
                 this.column.$sort = this.sorts.length + 1;
-                this.async(()=>{
-                    this.sorts.forEach((i, idx)=>{
+                this.async(() => {
+                    this.sorts.forEach((i, idx) => {
                         i.$sort = (idx + 1) * Math.sign(i.$sort);
                     })
                 })
@@ -2030,9 +2010,7 @@ cells: {
             this.table.setScreenExpanded?.(this.item);
         }
     });
-
 }
-
 
 function extract(items, level, parent) {
     if (!this.groups.length && this.sorts.length) {
@@ -2096,7 +2074,7 @@ function extract(items, level, parent) {
             i.$expanded = true;
         if (i.$expanded) {
             if (i.items?.length)
-                res.push(...extract.call(this,  i.items, level + 1, i));
+                res.push(...extract.call(this, i.items, level + 1, i));
             else
                 i.items = undefined;
             this.expand(i);
@@ -2106,25 +2084,25 @@ function extract(items, level, parent) {
 }
 settings:{
     ODA({is:'oda-table-settings', imports: '@tools/property-grid, @oda/tree, @oda/splitter',
-        template:`
+        template: /*html*/`
         <style>
-            :host{
+            :host {
                 @apply --horizontal;
                 width: 300px;
                 @apply --flex;
                 bottom: 0px;
                 height: 90vh;
             }
-            div>div{
+            div > div {
                 align-items: center;
                 @apply --horizontal;
                 padding: 8px 4px;
                 cursor: pointer;
             }
-            div>div:hover{
+            div > div:hover {
                 color: var(--focused-color) !important;
             }
-            oda-icon{
+            oda-icon {
                 transform: scale(.7);
             }
         </style>
@@ -2139,47 +2117,44 @@ settings:{
     `,
         focusedTab: 0,
         tabs: [
-            {icon: 'icons:tree-structure:90', title: 'columns'},
-            {icon: 'icons:filter:90', title: 'filters'},
-            {icon: 'icons:settings:90', title: 'properties'},
+            { icon: 'icons:tree-structure:90', title: 'columns' },
+            { icon: 'icons:filter:90', title: 'filters' },
+            { icon: 'icons:settings:90', title: 'properties' },
         ],
     })
     ODA({is: 'oda-table-columns-tree', imports: '@oda/tree, @oda/toggle', extends: 'this, oda-tree',
-        template:`
-            <style>
-                :host{
-                    font-size: small;
-                }
-            </style>
-            <div class="no-flex header horizontal" style="align-items: center">
-                <oda-toggle ::toggled="pivotMode"></oda-toggle><label>Pivot mode</label>
-            </div>  
+        template: /*html*/`
+        <style>
+            :host {
+                font-size: small;
+            }
+        </style>
+        <div class="no-flex header horizontal" style="align-items: center">
+            <oda-toggle ::toggled="pivotMode"></oda-toggle><label>Pivot mode</label>
+        </div>
         `,
         columns: [
-            {name: 'name', treeMode: true},
-            {name: 'fix', $hidden: true, $sortGroups: 1, $expanded: true }
+            { name: 'name', treeMode: true },
+            { name: 'fix', $hidden: true, $sortGroups: 1, $expanded: true }
         ],
-        props:{
+        props: {
             allowCheck: 'double',
             allowDrag: true,
             allowDrop: true,
         },
-        get dataSet(){
+        get dataSet() {
             return this.domHost.table.columns;
         },
-        ready(){
+        ready() {
             this.groups = [this.columns.find(c => c.name === 'fix')];
         }
     })
 }
 
-
-
-
-function modifyColumn(col){
+function modifyColumn(col) {
     if (col.isModified) return;
     col.isModified = true;
-    col.$saveKey = (col.$parent?.$saveKey?col.$parent?.$saveKey + '/':'') + (col[this.columnId] || 'empty-name');
+    col.$saveKey = (col.$parent?.$saveKey ? col.$parent?.$saveKey + '/' : '') + (col[this.columnId] || 'empty-name');
     const storage = this.storage;
     const table = this;
     col['#$width'] = col.$width;
@@ -2188,28 +2163,28 @@ function modifyColumn(col){
         enumerable: false,
         set(v) {
             if (!v) return;
-            const min = this.items?.filter(i=>!i.$hidden).length?32:16;
+            const min = this.items?.filter(i => !i.$hidden).length ? 32 : 16;
             v = Math.round(v);
-            if (v<min)
+            if (v < min)
                 v = min;
-            if(this['$width'] === v)
+            if (this['$width'] === v)
                 return;
-            if (this.$expanded && col.items?.length){
-                let  w = this.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
+            if (this.$expanded && col.items?.length) {
+                let w = this.items?.filter(i => !i.$hidden).reduce((res, i) => {
                     i.$parent = i.$parent || col;
                     modifyColumn.call(table, i);
-                    i.$width ??= v / this.items?.filter(i=>!i.$hidden).length;
-                    res += i.$width ;
+                    i.$width ??= v / this.items?.filter(i => !i.$hidden).length;
+                    res += i.$width;
                     return res;
-                },0)
-                if (w && v != w){
+                }, 0)
+                if (w && v != w) {
                     w /= v;
-                    this.items?.filter(i=>!i.$hidden).forEach(i=>{
+                    this.items?.filter(i => !i.$hidden).forEach(i => {
                         i.$width = i.$width / w;
                     })
                 }
             }
-            else{
+            else {
                 // if (!checkWidth) return;
                 this['#$width'] = v;
                 storage.setToItem(this.$saveKey, 'w', v);
@@ -2218,39 +2193,39 @@ function modifyColumn(col){
         get() {
             if (this.width)
                 return this.width;
-            if (this.$expanded && this.items?.length){
+            if (this.$expanded && this.items?.length) {
                 if (this.$version !== storage.version)
                     this.$version = storage.version;
-                const result =  this.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
+                const result = this.items?.filter(i => !i.$hidden).reduce((res, i) => {
                     i.$parent ??= this;
                     modifyColumn.call(table, i);
-                    i.$width ??= v / this.items?.filter(i=>!i.$hidden).length;
+                    i.$width ??= v / this.items?.filter(i => !i.$hidden).length;
                     res += i.$width;
                     return res;
-                },0)
+                }, 0)
                 return result;
             }
-            else{
+            else {
                 return this['#$width'] ??= storage.getFromItem(this.$saveKey, 'w');
             }
         }
     })
     const props = ['expanded', 'hidden', 'sort', 'order', 'filter'];
-    for (let i  of props)
+    for (let i of props)
         addSaveProp.call(col, i, storage);
     if (col.checked !== undefined)
         col['#checked'] = col.checked;
-    Object.defineProperty(col, 'checked',{
+    Object.defineProperty(col, 'checked', {
         configurable: true,
         enumerable: true,
         set(v) {
-            col.$hidden = !v ;
+            col.$hidden = !v;
         },
         get() {
             return !col.$hidden;
         }
     })
-    Object.defineProperty(col, '$version',{
+    Object.defineProperty(col, '$version', {
         configurable: true,
         enumerable: true,
         set(v) {
@@ -2261,26 +2236,26 @@ function modifyColumn(col){
             return col['#$version'];
         }
     })
-    col.reset = function (attr){
+    col.reset = function (attr) {
         storage.setItem(col.$saveKey, undefined);
         clear(attr);
     }
-    function clear(attr){
+    function clear(attr) {
         if (attr)
-            col['#'+attr] = undefined;
-        else{
+            col['#' + attr] = undefined;
+        else {
             col['#$width'] = undefined;
-            for (let i  of props)
-                col['#$'+i] = undefined;
+            for (let i of props)
+                col['#$' + i] = undefined;
         }
     }
 
 }
-function addSaveProp(name, storage){
+function addSaveProp(name, storage) {
     const key = name[0];
-    name = '$'+name;
+    name = '$' + name;
     if (this[name] !== undefined) return;
-    const vname = '#'+name;
+    const vname = '#' + name;
     if (this[name] !== undefined)
         this[vname] = this[name];
     Object.defineProperty(this, name, {
@@ -2296,7 +2271,7 @@ function addSaveProp(name, storage){
             if (this.$version !== storage.version)
                 this.$version = storage.version;
             let result = this[vname];
-            if(result === undefined)
+            if (result === undefined)
                 this[vname] = result = storage.getFromItem(this.$saveKey, key);
             return result;
         }
