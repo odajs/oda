@@ -546,6 +546,9 @@ if (!window.ODA) {
                 if (!this.$core.loaded?.[key]) return;
                 ODA.LocalStorage.create(this.$savePath).setItem(key, value);
             }
+            $resetSettings(){
+                ODA.LocalStorage.create(this.$savePath).clear();
+            }
             debounce(key, handler, delay = 0) {
                 if (typeof handler === 'string')
                     handler = this[handler].bind(this);
@@ -1161,7 +1164,9 @@ if (!window.ODA) {
             },
             get data(){
                 try{
-                    return JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
+                    const data = JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
+                    data.$$stamp ??= Date.now();
+                    return data;
                 }
                 catch (e){
                     console.warn(e)
@@ -1184,12 +1189,22 @@ if (!window.ODA) {
                 this.save();
             },
             save(){
+                if (this['#data'] === undefined) return;
                 if(this.raf)
                     cancelAnimationFrame(this.raf);
                 this.raf = requestAnimationFrame(()=>{
                     globalThis.localStorage.setItem(this.path, JSON.stringify(this.data));
                     this.raf = 0;
                 })
+            },
+            get version(){
+                return this.data.$$stamp;
+            },
+            clear(){
+                this.data = undefined;
+                this.version = undefined;
+                globalThis.localStorage.removeItem(this.path);
+
             }
         },{
             items:{},
@@ -1713,15 +1728,20 @@ if (!window.ODA) {
 
     let renderQueue = [];
     let rafid = 0;
-    ODA.render = async function (renderer) {
+    ODA.render = function (renderer) {
+        // console.log('rrr', rafid)
         renderQueue.add(renderer);
         if (rafid) return;
         rafid = requestAnimationFrame(async ()=>{
             const list = Array.from(renderQueue);
-            renderQueue = []
+            const count = list.length;
+            renderQueue = [];
+            // let time = Date.now();
             while (list.length){
                 await list.shift()?.();
             }
+            // time = Date.now() - time;
+            // console.warn(count, time);
             rafid = 0;
             if (!renderQueue?.length) return;
             ODA.render(renderQueue[0])
@@ -1730,7 +1750,7 @@ if (!window.ODA) {
 
 
     async function render() {
-        updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+        await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
     }
     async function updateDom(src, $el, $parent, pars, all = false) {
         this.__need_update = undefined;

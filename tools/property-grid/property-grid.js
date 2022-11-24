@@ -381,7 +381,13 @@ cells: {
         <oda-button ~if="onlySave" class="no-flex" @tap.stop.prevent="resetValue" icon="av:replay" slot="tools" title="Reset settings"></oda-button>
         `,
         resetValue() {
-
+            let io = this.inspectedObject
+            if (!Array.isArray(io)){
+                io = [io]
+            }
+            io.forEach(i=>{
+                i.$resetSettings();
+            })
             this.items.forEach(item => {
                 if (item.prop?.default === undefined) return;
                 item.value = (typeof item.prop.default === 'function') ? item.prop.default() : item.prop.default;

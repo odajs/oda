@@ -1280,7 +1280,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             }
             :host([fix]){
                 overflow-x: clip !important;
-                overflow-y: scroll !important;
+                overflow-y: clip !important;
                 height: {{_bodyHeight}}px;
             }
             :host([fix]) .cell{
@@ -1502,7 +1502,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         return (this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
     get _bodyHeight() {
-        return (this.fix?this.rows.length:this.items.length) * this.rowHeight;
+        return (this.fix?this.rows.length:this.size) * this.rowHeight;
     },
 })
 
@@ -1837,7 +1837,7 @@ cells: {
                     <oda-icon :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
-                <div class="split"  @tap.stop @track="_track"></div>
+                <div @dblclick="column.reset('$width')" class="split"  @tap.stop @track="_track"></div>
             </div>
             <div class="flex info horizontal filter-container" ~if="!column.$expanded && column.name && showFilter" style="align-items: center" @tap.stop>
                 <input class="flex filter-input" ::value="filter" @tap.stop>
@@ -2178,7 +2178,6 @@ function modifyColumn(col){
     const storage = this.storage;
     const table = this;
     col['#$width'] = col.$width;
-    // let checkWidth = false
     Object.defineProperty(col, '$width', {
         configurable: false,
         enumerable: false,
@@ -2215,6 +2214,8 @@ function modifyColumn(col){
             if (this.width)
                 return this.width;
             if (this.$expanded && this.items?.length){
+                if (this.$version !== storage.version)
+                    this.$version = storage.version;
                 const result =  this.items?.filter(i=>!i.$hidden).reduce((res, i)=>{
                     i.$parent ??= this;
                     modifyColumn.call(table, i);
@@ -2227,16 +2228,6 @@ function modifyColumn(col){
             else{
                 return this['#$width'] ??= storage.getFromItem(this.$saveKey, 'w');
             }
-            // if (!checkWidth){
-            //     let result = storage.getFromItem(col.$saveKey, 'w');
-            //     if (result > 16)
-            //         this['#$width'] = result;
-            //     else
-            //         this['#$width'] = 150;
-            //     checkWidth = true;
-            //
-            // }
-            // return this['#$width'];
         }
     })
     const props = ['expanded', 'hidden', 'sort', 'order', 'filter'];
@@ -2254,10 +2245,36 @@ function modifyColumn(col){
             return !col.$hidden;
         }
     })
+    Object.defineProperty(col, '$version',{
+        configurable: true,
+        enumerable: true,
+        set(v) {
+            clear()
+            col['#$version'] = v
+        },
+        get() {
+            return col['#$version'];
+        }
+    })
+    col.reset = function (attr){
+        storage.setItem(col.$saveKey, undefined);
+        clear(attr);
+    }
+    function clear(attr){
+        if (attr)
+            col['#'+attr] = undefined;
+        else{
+            col['#$width'] = undefined;
+            for (let i  of props)
+                col['#$'+i] = undefined;
+        }
+    }
+
 }
 function addSaveProp(name, storage){
     const key = name[0];
     name = '$'+name;
+    if (this[name] !== undefined) return;
     const vname = '#'+name;
     if (this[name] !== undefined)
         this[vname] = this[name];
@@ -2271,6 +2288,8 @@ function addSaveProp(name, storage){
             storage.setToItem(this.$saveKey, key, v || undefined);
         },
         get() {
+            if (this.$version !== storage.version)
+                this.$version = storage.version;
             let result = this[vname];
             if(result === undefined)
                 this[vname] = result = storage.getFromItem(this.$saveKey, key);
