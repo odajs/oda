@@ -43,12 +43,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     columns: [],
     dataSet: [],
-    // get dataSet(){
-    //     return  [];
-    // },
-    // set dataSet(n) {
-    //     this.$refs.body && (this.$refs.body.scrollTop = 0);
-    // },
     props: {
         noLazy: false,
         pivotMode: {
@@ -110,6 +104,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
         },
+        focusedCol: null,
         highlightedRow: Object,
         groupExpandingMode: {
             default: 'none',
@@ -344,8 +339,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             if (col.id === undefined)
                 return '';
             let style = `.col-${col.id}{/*${col[this.columnId]}*/\n\t`;
+            if (col.$parent)
+                style += '\n\tbackground-color: whitesmoke;';
             if (col.index === 999)
-                style += '\n\tflex: 1;\n\tflex-basis: auto;';
+                style += '\n\tflex: 1;\n\tflex-basis: "100%";';
             else {
                 style += '\n\tposition: sticky;';
                 if (col.width) {
@@ -1233,7 +1230,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;">
         <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id]"></div>
     </div>
-    <div @resize="scr = $event.target.offsetWidth" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+    <div class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
     getItem(col){
         return col;
@@ -1242,7 +1239,6 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
         return 'div'
     },
     columns: [],
-    src: 0
 })
 
 ODA({is:'oda-table-header', extends: 'oda-table-cols',
@@ -1251,8 +1247,7 @@ ODA({is:'oda-table-header', extends: 'oda-table-cols',
     `,
     getTemplate(col){
         return col.header || this.defaultHeader
-    },
-    scr: 0
+    }
 })
 
 ODA({is:'oda-table-footer', extends: 'oda-table-cols',
@@ -1398,9 +1393,13 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: sticky;
             position: -webkit-sticky;
         }
+        .cell[focus]{
+            outline: auto;
+            outline-offset: -1px;
+        }
     </style>
-    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':$scrollWidth + 'px'}">
-        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+    <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':($scrollWidth-.1) + 'px', maxWidth: autoWidth?'auto':($scrollWidth - .1) + 'px'}">
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
@@ -1409,7 +1408,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div @tap="$event.target.focus()" :tabindex="getTabIndex(col, row, c, r)"  :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                <div :focus="_getFocus(col, row)" @tap="$event.target.focus()" @focusin="focusedCol = col" @pointerdown="focusedCol = col" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
                     <div :draggable="getDraggable(row, col)" class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
@@ -1417,6 +1416,9 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
+    _getFocus(col, row) {
+        return !col.treeMode && this.focusedCol === col && this.focusedRow === row;
+    },
     firstTop: 0,
     get autoWidth() {
         return this.table.autoWidth;
@@ -1493,8 +1495,11 @@ ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
     template: /*html*/`
     <style>
         .split {
+            opacity: .5 !important;
             border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
-            border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
+            border-left: {{fix === 'right'?'2px solid var(--dark-color, white)':'none'}};
+            border-width: {{fix?2:1}}px;
+            border-color: {{fix?'black':'var(--dark-color, white)'}};
             height: 100%;
         }
         label {
@@ -1758,21 +1763,21 @@ cells: {
                 @apply --no-flex;
             }
             .split {
+                margin: 4px 0px;
+                width: 2px;
+                opacity: .5;
                 cursor: col-resize;
                 border-right: {{fix === 'right'?'none':'1px solid var(--dark-color, white)'}};
                 border-left: {{fix === 'right'?'1px solid var(--dark-color, white)':'none'}};
-                width: 2px;
+                border-width: {{fix?2:1}}px;
+                border-color: {{fix?'black':'var(--dark-color, white)'}};
                 @apply --no-flex;
             }
             .split:hover {
-                @apply --content;
-            }
-            oda-icon, oda-table-expand {
-                opacity: .5;
+                opacity: 1;
             }
             oda-icon {
                 transform: scale(.7);
-                /*@apply --content;*/
                 border-radius: 50%;
             }
             :host(:hover) > oda-icon {
@@ -1818,7 +1823,7 @@ cells: {
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand ~if="column?.items?.length" :item></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
-                    <oda-icon :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
+                    <oda-icon fill="black" :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
                 <div @dblclick="column.reset('$width')" class="split"  @tap.stop @track="_track"></div>
@@ -1845,9 +1850,9 @@ cells: {
         },
         get sortIcon() {
             if (+this.column.$sort > 0)
-                return 'icons:arrow-back:270';
+                return 'icons:arrow-drop-down';
             if (+this.column.$sort < 0)
-                return 'icons:arrow-back:90';
+                return 'icons:arrow-drop-up';
             return ''
         },
         get sortIndex() {
