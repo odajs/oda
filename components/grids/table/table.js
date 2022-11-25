@@ -13,7 +13,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     </style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body :over-height  class="no-flex" fix :rows="raisedRows" :scroll-left="$scrollLeft"></oda-table-body>
+    <oda-table-body :over-height  class="no-flex" fix :scroll-left="$scrollLeft"></oda-table-body>
     <oda-table-body ::over-height ref="body" class="flex" :rows></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
@@ -82,7 +82,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             reflectToAttribute: true
         },
         columnId: 'name',
-        // customRows: false,
         defaultFooter: 'oda-table-footer-cell',
         defaultGroupTemplate: 'oda-table-cell-group',
         defaultHeader: 'oda-table-header-cell',
@@ -100,7 +99,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     this.debounce('focusedRow', () => {
                         this.scrollToItem(n);
                     })
-                    // this.fire('focused-row-changed', n); // ToDo - temporary solution
                 }
             }
         },
@@ -304,6 +302,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return rows;
     },
     selectedRows: [],
+    fixedRows: [],
     get sorts() {
         const find_sorts = (columns = []) => {
             modifyColumn.call(this, columns);
@@ -1383,6 +1382,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         .cell:focus {
             outline: auto !important;
             outline-offset: -1px;
+            outline-width: 1px;
+            outline-color: var(--focused-color);
         }
         .group {
             border-color: transparent !important;
@@ -1395,7 +1396,10 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
         .cell[focus]{
             outline: auto;
-            outline-offset: -1px;
+            outline-offset: -2px;
+            outline-width: 1px;
+            outline-color: var(--focused-color);
+            outline-style: dotted;
         }
     </style>
     <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':($scrollWidth-.1) + 'px', maxWidth: autoWidth?'auto':($scrollWidth - .1) + 'px'}">
@@ -1408,7 +1412,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)" @tap="$event.target.focus()" @focusin="focusedCol = col" @pointerdown="focusedCol = col" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                <div :focus="_getFocus(col, row)"  @focusin="focusedCol = col" @pointerdown="focusedCol = col" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
                     <div :draggable="getDraggable(row, col)" class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
@@ -1417,7 +1421,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
     _getFocus(col, row) {
-        return !col.treeMode && this.focusedCol === col && this.focusedRow === row;
+        return !col.treeMode && !col.fix && this.focusedCol === col && this.focusedRow === row;
     },
     firstTop: 0,
     get autoWidth() {
@@ -1426,7 +1430,12 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     get showHeader() {
         return this.table.showHeader;
     },
-    rows: [],
+    get rows() {
+        if (this.fix){
+            return [...this.table.fixedRows, ...this.table.raisedRows];
+        }
+        return this.table.rows;
+    },
     props: {
         fix: {
             type: Boolean,
@@ -1450,13 +1459,14 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     },
     setScreen() {
         if (this.fix) return;
-        this.$scrollLeft = this.scrollLeft;
-        this.$scrollTop = this.scrollTop;
+
         this.$scrollWidth = this.scrollWidth;
         this.$height = this.offsetHeight;
         this.$width = this.offsetWidth;
         this.overHeight = this.offsetHeight < this.scrollHeight;
         this.firstTop = Math.floor(this.$scrollTop / this.rowHeight) * this.rowHeight;
+        this.$scrollTop = this.scrollTop;
+        this.$scrollLeft = this.scrollLeft;
     },
     overHeight: false,
     listeners: {
@@ -1465,6 +1475,22 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         },
         scroll(e) {
             this.setScreen();
+        },
+        mousewheel(e){
+            if (e.ctrlKey || e.altKey) return;
+            e.preventDefault();
+            if (!e.shiftKey){
+                let y = this.scrollTop + e.deltaY;
+                if (y<0)
+                    y = 0;
+                this.scrollTop = this.$scrollTop = y
+            }
+            else{
+                let x = this.scrollLeft + e.deltaY;
+                if (x < 0)
+                    x = 0;
+                this.scrollLeft = this.$scrollLeft = x;
+            }
         }
     },
     _getTemplateTag(row, col) {
