@@ -13,8 +13,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     </style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body :over-height  class="no-flex" fix :scroll-left="$scrollLeft"></oda-table-body>
-    <oda-table-body ::over-height ref="body" class="flex" :rows></oda-table-body>
+    <oda-table-body :over-height  class="no-flex" fix :scroll-left="$scrollLeft" tabindex="0"></oda-table-body>
+    <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="1"></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
     $width: 0,
@@ -102,7 +102,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
         },
-        focusedCol: null,
+
         highlightedRow: Object,
         groupExpandingMode: {
             default: 'none',
@@ -1379,12 +1379,6 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         .cell[fix] {
             @apply --header;
         }
-        .cell:focus {
-            outline: auto !important;
-            outline-offset: -1px;
-            outline-width: 1px;
-            outline-color: var(--focused-color);
-        }
         .group {
             border-color: transparent !important;
             @apply --dark;
@@ -1394,12 +1388,18 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: sticky;
             position: -webkit-sticky;
         }
-        .cell[focus]{
+        .cell[focus]::before{
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
             outline: auto;
             outline-offset: -2px;
-            outline-width: 1px;
-            outline-color: var(--focused-color);
+            outline-width: 3px;
+            outline-color: var(--focused-color) ;
             outline-style: dotted;
+            background-color: transparent;
+            z-index: 2;
         }
     </style>
     <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':($scrollWidth-.1) + 'px', maxWidth: autoWidth?'auto':($scrollWidth - .1) + 'px'}">
@@ -1420,6 +1420,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
+
     _getFocus(col, row) {
         return !col.treeMode && !col.fix && this.focusedCol === col && this.focusedRow === row;
     },
@@ -1456,6 +1457,29 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             get() { return this.table.colLines; },
             reflectToAttribute: true
         }
+    },
+    focusedCol: null,
+    keyBindings:{
+        tab(e){
+            e.preventDefault();
+            if (!this.focusedCol || !this.focusedRow) return;
+            let idx = this.activeCols.indexOf(this.focusedCol);
+            idx += (!e.shiftKey)?1:-1;
+            this.focusedCol = this.activeCols[idx];
+            if (this.focusedCol) return;
+            idx = this.rows.indexOf(this.focusedRow);
+            idx += (!e.shiftKey)?1:-1;
+            this.focusedRow = this.rows[idx];
+            if (this.focusedRow) return;
+            this.focusedCol = this.activeCols[0];
+        }
+    },
+    get activeCols(){
+        return  this.rowColumns.filter(i=>{
+            return !i.fix && !i.treeMode && i.index !== 999;
+        }).sort((a,b)=>{
+            return a.order>b.order?-1:1;
+        })
     },
     setScreen() {
         if (this.fix) return;
