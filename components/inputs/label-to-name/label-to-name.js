@@ -51,7 +51,7 @@ ODA({is: 'oda-label-to-name', imports: '@oda/button, @oda/list',
                 let last = name[name.length - 1];
                 if (last !== ' ' && last !== '-')
                     last = '';
-                    this.name = this.transliteration ? this.transliteration.slugify?.(name) + last : name;
+                    return this.transliteration ? this.transliteration.slugify?.(name) + last : name;
             }
         }
     },
