@@ -1,4 +1,8 @@
 
+console.log('worker create');
+// import './build3.js'
+
+// __webpack_require__(1) ()
 
         // if (jsonNet?.layers?.length) {
         //     var output = window["nn"](nnInput2,jsonNet);

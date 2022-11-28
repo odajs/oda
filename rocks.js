@@ -841,7 +841,7 @@ if (!globalThis.KERNEL) {
             case Boolean: return toBool(value);
             case Number: return parseFloat(value) || 0;
             case String: return value?.toString() || '';
-            case Date: return Date.parse(value) || new Date(value)
+            case Date: return new Date(value);
             default: return value;
         }
     }
