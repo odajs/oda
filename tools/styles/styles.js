@@ -440,7 +440,7 @@ body[context-menu-show] *:not(oda-context-menu){
 `;
 document.head.appendChild(style);
 
-//console.log('styles is loaded.');
+
 
 const style2 = document.createElement('style');
 style2.setAttribute('scope', 'oda-styles');
@@ -454,11 +454,11 @@ for (const key in ODA.cssRules) {
 }
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {
-    let _styleSheet = new CSSStyleSheet();
-    _styleSheet.replaceSync(style2.textContent);
-    ODA.adopted = [_styleSheet];
+    let ss = new CSSStyleSheet();
+    ss.replaceSync(style2.textContent);
+    ODA.adopted = [ss];
 }
 
 document.head.appendChild(style2);
-
+console.log('styles is loaded.');
 export default STYLES;

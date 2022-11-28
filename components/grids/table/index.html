@@ -1,5 +1,12 @@
 <meta charset="utf-8" lang="en">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root{
+        --my-test-style: {
+            background-color: darkviolet;
+        }
+    }
+</style>
 <script type="module" src="../../../oda.js"></script>
 <script type="module" src="./table.js"></script>
 <!-- <oda-tester>-->
@@ -12,8 +19,7 @@
         { name: 'col1', fix: 'left', treeMode: true, props:{class:'shadow'}, label: 'Это поле "col1" с длинным заголовком'},
         { name: 'number', summary: 'sum' },
         { name: 'left', fix: 'left' },
-        {
-            name: 'col2', $expanded: true,  items: [
+        { name: 'col2', $expanded: true,  items: [
                 {
                     name: 'col21', label:'А это поле col21 с длинным заголовком', items: [
                         { name: 'col211' },

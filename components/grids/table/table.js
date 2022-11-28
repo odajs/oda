@@ -13,8 +13,8 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     </style>
     <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
     <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body :over-height  class="no-flex" fix :scroll-left="$scrollLeft" tabindex="0"></oda-table-body>
-    <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="1"></oda-table-body>
+<!--    <oda-table-body :over-height  class="no-flex" fix :scroll-left="$scrollLeft" tabindex="0"></oda-table-body>-->
+    <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="1" :scroll-left="$scrollLeft"></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
     $width: 0,
@@ -1394,25 +1394,25 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             height: 100%;
             width: 100%;
             outline: auto;
-            outline-offset: -2px;
-            outline-width: 3px;
+            outline-offset: -1px !important;
+            outline-width: 1px !important;
             outline-color: var(--focused-color) ;
-            outline-style: dotted;
-            background-color: transparent;
+            background-color: rgba(var(--focused-color), 1);
             z-index: 2;
+            
         }
     </style>
     <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':($scrollWidth-.1) + 'px', maxWidth: autoWidth?'auto':($scrollWidth - .1) + 'px'}">
-        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
-            <div ~for="(row, r) in rows" :row="row" :role="row.$role" class="row"
-                ~class="{'group-row':row.$group}"
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+            <div ~for="(row, r) in allRows" :row="row" :role="row.$role" class="row"
+                ~class="{'group-row':row.$group, 'header': raisedRows.has(row)}"
                 :drop-mode="row.$dropMode"
                 :dragging="draggedRows.includes(row)"
                 @dragstart="table._onDragStart($event, $detail)"
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  @focusin="focusedCol = col" @pointerdown="focusedCol = col" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id, col.fix?'shadow':'']">
+                <div :focus="_getFocus(col, row)"  @focusin="focusCell(row, col)" @pointerdown="focusCell(row, col)" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col :row :scrolled-children="(col.treeMode) ? (items?.indexOf(rows[r + 1]) - r - 1) + '↑' : ''" ~class="[row.$group ? 'flex' : 'col-' + col.id]">
                     <div :draggable="getDraggable(row, col)" class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
@@ -1420,9 +1420,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
-
+    focusCell(row, col){
+        this.focusedCell = {row, col};
+    },
     _getFocus(col, row) {
-        return !col.treeMode && !col.fix && this.focusedCol === col && this.focusedRow === row;
+        return !col.treeMode && !col.fix && Object.equal(this.focusedCell?.row, row) && Object.equal(this.focusedCell?.col, col);
     },
     firstTop: 0,
     get autoWidth() {
@@ -1432,10 +1434,10 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         return this.table.showHeader;
     },
     get rows() {
-        if (this.fix){
-            return [...this.table.fixedRows, ...this.table.raisedRows];
-        }
         return this.table.rows;
+    },
+    get allRows(){
+        return  [...this.table.fixedRows, ...this.table.raisedRows, ...this.rows];
     },
     props: {
         fix: {
@@ -1458,27 +1460,78 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             reflectToAttribute: true
         }
     },
-    focusedCol: null,
+    set focusedCell(v){
+        if (!v?.col) return;
+        const idx = this.activeCols.findIndex(i => i === v?.col)
+        let left = 0;
+        for (let i = 0; i<idx; i++){
+            const col = this.activeCols[i]
+            left += col?.width || col?.$width;
+        }
+        if (left < this.$scrollLeft)
+            this.$scrollLeft = left;
+        else {
+            const right = left + (v.col?.width || v.col?.$width);
+            if (right > this.$scrollLeft + this.$width)
+                this.$scrollLeft = right;
+        }
+    },
     keyBindings:{
+        arrowLeft(e){
+            e.preventDefault();
+            this.movePointer(-1, 0)
+        },
+        arrowRight(e){
+            e.preventDefault();
+            this.movePointer(1, 0)
+        },
+        arrowTop(e){
+            e.preventDefault();
+            this.movePointer(0, -1)
+        },
+        arrowDown(e){
+            e.preventDefault();
+            this.movePointer(0, 1)
+        },
         tab(e){
             e.preventDefault();
-            if (!this.focusedCol || !this.focusedRow) return;
-            let idx = this.activeCols.indexOf(this.focusedCol);
-            idx += (!e.shiftKey)?1:-1;
-            this.focusedCol = this.activeCols[idx];
-            if (this.focusedCol) return;
-            idx = this.rows.indexOf(this.focusedRow);
-            idx += (!e.shiftKey)?1:-1;
-            this.focusedRow = this.rows[idx];
-            if (this.focusedRow) return;
-            this.focusedCol = this.activeCols[0];
+            const d = !e.shiftKey?1:-1;
+            this.movePointer(d, d);
+        }
+    },
+    movePointer(h = 0, v = 0) {
+        if (!this.focusedCell)
+            this.focusedCell = {row: this.focusedRow || this.rows[0], col: this.activeCols[0]}
+        else {
+            if (h) {
+                let idx = this.activeCols.findIndex(i => i === this.focusedCell.col);
+                idx += h;
+                this.focusedCell = {col: this.activeCols[idx], row: this.focusedCell.row, _col: this.focusedCell.col}
+                if (this.focusedCell.col)
+                    return;
+                if (!v) {
+                    this.focusedCell.col = this.focusedCell._col;
+                    return;
+                }
+                this.focusedCell.col = (h > 0) ? this.activeCols[0] : this.activeCols[this.activeCols.length - 1];
+            }
+            if (v) {
+                let idx = this.allRows.findIndex(i => i === this.focusedCell.row);
+                idx += v;
+                if (idx === -1)
+                    return;
+                this.focusedCell = {row: this.allRows[idx], col: this.focusedCell.col};
+                if (!h) return;
+                this.focusedRow = this.focusedCell.row;
+                this.selectedRows = [this.focusedRow];
+            }
         }
     },
     get activeCols(){
         return  this.rowColumns.filter(i=>{
             return !i.fix && !i.treeMode && i.index !== 999;
         }).sort((a,b)=>{
-            return a.order>b.order?-1:1;
+            return a.id>b.id?-1:1;
         })
     },
     setScreen() {
