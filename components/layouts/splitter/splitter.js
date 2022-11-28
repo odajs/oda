@@ -65,9 +65,12 @@ ODA({is: 'oda-splitter', template: /*html*/`
         }
     },
     attached(){
-        if (this.parentElement){
-            this.sign = Array.from(this.parentElement.children).indexOf(this)?-1:1;
+        if (this.parent){
+            this.sign = Array.from(this.parent.children).indexOf(this)?-1:1;
         }
+    },
+    get parent(){
+        return this.parentElement || this.domHost;
     },
     _onTrack(e, d) {
         switch (d.state) {
@@ -78,23 +81,24 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 this._mover?.remove();
                 switch (this.align) {
                     case 'horizontal': {
-                        this.parentElement.style.minHeight = '';
-                        this.parentElement.style.height = this.parentElement.offsetHeight - d.dy * this.sign + 'px';
-                        this.parentElement.style.minHeight = this.parentElement.scrollHeight + 'px';
+                        this.parent.style.minHeight = '';
+                        this.parent.style.height = this.parent.offsetHeight - d.dy * this.sign + 'px';
+                        this.parent.style.minHeight = this.parent.scrollHeight + 'px';
                     } break;
                     default: {
-                        this.parentElement.style.minWidth = '';
-                        this.parentElement.style.width = this.parentElement.offsetWidth - d.dx * this.sign + 'px';
-                        this.parentElement.style.minWidth = this.parentElement.scrollWidth + 'px';
+                        this.parent.style.minWidth = '';
+                        this.parent.style.width = this.parent.offsetWidth - d.dx * this.sign + 'px';
+                        this.parent.style.minWidth = this.parent.scrollWidth + 'px';
                     } break;
                 }
                 this.width = Math.max(0, this.width - (d.dx * this.sign));
                 this.height = Math.max(0, this.height - (d.dy * this.sign));
                 this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
                 this.async(()=>{
-                    const event = document.createEvent('Event');
-                    event.initEvent('resize', true, true);
-                    window.dispatchEvent(event);
+                    parent.fire('resize');
+                    // const event = document.createEvent('Event');
+                    // event.initEvent('resize', true, true);
+                    // parent.dispatchEvent(event);
                 });
 
             } break;

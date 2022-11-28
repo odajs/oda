@@ -86,7 +86,7 @@ const res = await ODA.loadJSON(path + '/_.dir');
                     if (e.keyCode === 27)
                         onCancel();
                 }
-                onCancel = () => {
+                onCancel = (e) => {
                     reject();
                 }
                 onOk = (e) => {
