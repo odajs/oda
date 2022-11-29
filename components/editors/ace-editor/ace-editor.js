@@ -182,6 +182,7 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
     focus(){ this.editor?.focus() },
     onRender(e) {
         this.editor?.setOptions(this.options);
+        this.async(() => { this.render() }, 50);
     },
     set editor(editor) {
         editor.renderer.attachToShadowRoot();

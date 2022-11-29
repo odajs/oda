@@ -53,6 +53,9 @@ ODA({is: 'oda-splitter', template: /*html*/`
             set(n){
                 if (this.max && n>this.max)
                     this.width = this.max;
+            },
+            get (){
+                return this.parent?.offsetWidth;
             }
         },
         height: Number
@@ -81,25 +84,27 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 this._mover?.remove();
                 switch (this.align) {
                     case 'horizontal': {
-                        this.parent.style.minHeight = '';
-                        this.parent.style.height = this.parent.offsetHeight - d.dy * this.sign + 'px';
-                        this.parent.style.minHeight = this.parent.scrollHeight + 'px';
+                        // this.parent.style.minHeight = '';
+                        this.parent.style.height = this.parent.offsetHeight - d.dy/* * this.sign*/ + 'px';
+                        // // this.parent.style.minHeight = this.parent.scrollHeight + 'px';
+                        // this.height = this.parent.offsetHeight//Math.max(0, this.height - (d.dy * this.sign));
                     } break;
                     default: {
-                        this.parent.style.minWidth = '';
-                        this.parent.style.width = this.parent.offsetWidth - d.dx * this.sign + 'px';
-                        this.parent.style.minWidth = this.parent.scrollWidth + 'px';
+                        // this.parent.style.minWidth = '';
+                        this.parent.style.width = this.parent.offsetWidth - d.dx/* * this.sign*/ + 'px';
+                        // this.parent.style.minWidth = this.parent.scrollWidth + 'px';
+                        // this.width = this.parent.offsetWidth;//Math.max(0, this.width - (d.dx * this.sign));
                     } break;
                 }
-                this.width = Math.max(0, this.width - (d.dx * this.sign));
-                this.height = Math.max(0, this.height - (d.dy * this.sign));
-                this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
-                this.async(()=>{
-                    parent.fire('resize');
-                    // const event = document.createEvent('Event');
-                    // event.initEvent('resize', true, true);
-                    // parent.dispatchEvent(event);
-                });
+
+
+                // this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
+                // this.async(()=>{
+                //     parent.fire('resize');
+                //     // const event = document.createEvent('Event');
+                //     // event.initEvent('resize', true, true);
+                //     // parent.dispatchEvent(event);
+                // });
 
             } break;
             case 'track': {

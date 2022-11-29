@@ -322,7 +322,11 @@ content: {
                     }
                     else
                         this.dataSet = [];
-                    // this.fire('scrollToUp');
+                    this.async(() => {
+                        const tableBody = this.$core?.shadowRoot?.querySelector('oda-table-body');
+                        // console.log(tableBody);
+                        tableBody.scrollTo(0, 0);
+                    }, 100)
                 }
             },
         },
