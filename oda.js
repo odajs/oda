@@ -188,9 +188,10 @@ if (!window.ODA) {
                 for (let i = 0, entry, l = entries.length; i < l; i++) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
-                    if (!!entry.target.$sleep !== entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && !!(entry.target.offsetWidth && entry.target.offsetHeight);
+                    if (!entry.target.$sleep === entry.isIntersecting) continue;
+                    entry.target.$sleep = !entry.isIntersecting && entry.target.$rect.width && entry.target.$rect.height;
                     if (!entry.target.$sleep){
+
                         entry.target.domHost?.render();
                     }
                 }
@@ -1705,8 +1706,10 @@ if (!window.ODA) {
                     })
                 } break;
                 default:{
-                    this.$core.resize.observe($el);
-                    this.$core.intersect.observe($el);
+                    if (!src.isSvg && !src.isSlot){
+                        this.$core.intersect.observe($el);
+                        this.$core.resize.observe($el);
+                    }
                 }
             }
 
