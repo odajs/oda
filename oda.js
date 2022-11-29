@@ -1349,9 +1349,9 @@ if (!window.ODA) {
                     name = name.replace(/^(::?|:|bind::?)/g, '');
                     if (tags[name])
                         new Tags(src, name, expr, vars, prototype);
-                    else if (directives[name])
+                    if (directives[name])
                         new Directive(src, name, expr, vars, prototype);
-                    else if (name === 'for')
+                    else if (name === 'for' && attr.name.startsWith('~') )//иначе, при использовании :for на элементе label срабатывает forDirective
                         return forDirective(prototype, src, name, expr, vars, attr.name);
                     else {
                         if (expr === '')

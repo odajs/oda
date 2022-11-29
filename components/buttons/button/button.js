@@ -33,6 +33,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             overflow-x: hidden;
             text-overflow: ellipsis;
             margin: 4px;
+            cursor: inherit;
         }
         :host(:active), :host([toggled]) {
             @apply --content;
