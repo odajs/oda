@@ -189,11 +189,9 @@ if (!window.ODA) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     if (!entry.target.$sleep === entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && entry.target.$rect.width && entry.target.$rect.height;
-                    if (!entry.target.$sleep){
-
-                        entry.target.domHost?.render();
-                    }
+                    entry.target.$sleep = !entry.isIntersecting && entry.target.offsetWidth && entry.target.offsetHeight;
+                    // if (!entry.target.$sleep)
+                    //     entry.target.domHost?.render();
                 }
             }, { rootMargin: '10%' }),
             resize: new ResizeObserver(entries => {
@@ -1350,9 +1348,9 @@ if (!window.ODA) {
                     name = name.replace(/^(::?|:|bind::?)/g, '');
                     if (tags[name])
                         new Tags(src, name, expr, vars, prototype);
-                    if (directives[name])
+                    else if (directives[name])
                         new Directive(src, name, expr, vars, prototype);
-                    else if (name === 'for' && attr.name.startsWith('~') )//иначе, при использовании :for на элементе label срабатывает forDirective
+                    else if (name === 'for'/* && attr.name.startsWith('~')*/ )//иначе, при использовании :for на элементе label срабатывает forDirective
                         return forDirective(prototype, src, name, expr, vars, attr.name);
                     else {
                         if (expr === '')
@@ -1706,7 +1704,7 @@ if (!window.ODA) {
                     })
                 } break;
                 default:{
-                    if (!src.isSvg && !src.isSlot){
+                    if (!src.isSvg){
                         this.$core.intersect.observe($el);
                         this.$core.resize.observe($el);
                     }
