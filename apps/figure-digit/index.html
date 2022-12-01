@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="module" src="../../oda.js"></script>
-<script src="./build.js"></script>
+<script src="./build2.js"></script>
 <oda-recognizing></oda-recognizing>
 
 <script type="module">
@@ -41,7 +41,7 @@
     </div>
     `,
     attached () {
-        this.myWorker = new Worker('w.js');
+        this.myWorker = new Worker('w.js', { type: "module" });
         this.myWorker.onmessage = (e) => {
             // this.result = e.data;
             // console.log('Message received from worker',e);

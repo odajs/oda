@@ -15,11 +15,13 @@ ODA({
         .menu  {color:#000; text-decoration:none; border-bottom:2px solid #00a0dc; padding: 5px; transition: all 0.5s linear; cursor: pointer;}
         .menu:hover, .sactive.menu a {border-color:#052e70}
         .sactive.menu {background:#00a0dc; color:white;}
-        #progress {height:2px ; background:#052e70}
+        #progress {height:3px ; background:#052e70}
         #progressbar {background:#00a0dc; border-bottom:1px solid #fff}
+        #mmenu {display:flex;align-items: center; justify-content: space-between; transition: all 0.5s linear;}
     </style>
     <div id='header' ~class='fixmenu'>
         <oda-site-header :fixmenu ></oda-site-header>
+        <div id='mmenu'><slot name='mainmenu' class='mainmenu'></slot></div>
         <div id='progressbar'><div id='progress' ~style='"width:"+ (progress) +"%"'> </div> </div>
     </div>
     <div ~for='sections' ~class='"content "+sectionsActiv[index]' ~ref='"sec"+index'>
