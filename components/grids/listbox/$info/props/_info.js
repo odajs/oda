@@ -16,7 +16,7 @@ export default [
     { label: 'selection', src: './$info/props/selection.md', title: 'Все выбранные элементы из списка', color: 'green' },
     { label: 'autofocus', src: './$info/props/autofocus.md', title: 'Устанавливает фокус на контейнер при его создании', color: 'green' },
     { label: 'hideIcons', src: './$info/props/hide-icons.md', title: 'Позволяет спрятать отображение иконок у элементом списка', color: 'green' },
-    { label: 'defaultTemplate', src: './$info/props/default-template.md', title: 'Определяет тип элементов пользовательского списка', color: 'green' },
+    { label: 'cellTemplate', src: './$info/props/default-template.md', title: 'Определяет тип элементов пользовательского списка', color: 'green' },
     { label: 'bottomOffset', src: './$info/props/bottom-offset.md', title: 'Задает отступ от конца контейнера до списка элементов', color: 'green' },
     { label: 'counterHeight', src: './$info/props/counter-height.md', title: 'Задает размер счетчика на итоговой панели ', color: 'green' },
     { label: 'hasIcons', src: './$info/props/has-icons.md', title: 'Определяет существование иконок у элементов списка', color: 'green' }

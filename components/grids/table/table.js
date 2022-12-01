@@ -94,11 +94,22 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             reflectToAttribute: true
         },
         columnId: 'name',
-        defaultFooter: 'oda-table-footer-cell',
-        defaultGroupTemplate: 'oda-table-cell-group',
-        defaultHeader: 'oda-table-header-cell',
-        defaultTemplate: 'oda-table-cell',
-        defaultTreeTemplate: 'oda-table-cell-tree',
+        footerTemplate: {
+            default: 'oda-table-footer-cell',
+            category: 'templates'
+        },
+        groupTemplate: {
+            default: 'oda-table-cell-group',
+            category: 'templates'
+        },
+        headerTemplate: {
+            default: 'oda-table-header-cell',
+            category: 'templates'
+        },
+        cellTemplate: {
+            default: 'oda-table-cell',
+            category: 'templates'
+        },
         evenOdd: {
             default: false,
             reflectToAttribute: true
@@ -915,7 +926,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const target = e.path.find(p => p.row);
         if (!target) return;
         const row = target.row;
-        if (row.$role) return;
         let r = row;
         while (r) {
             if (this.draggedRows.includes(r)) return;
@@ -960,7 +970,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const el = e.path.find(p => p.row);
         if (!el) return;
         const row = el.row;
-        if (row.$role) return;
         e.preventDefault();
         try {
             this.__doDrop(this.draggedRows, row, e)
@@ -1228,7 +1237,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
         }
     </style>
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;" ~style="{maxWidth: this.autoWidth?'100%':'auto'}">
-        <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id, col.$flex?'flex':'no-flex']"></div>
+        <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id, col.$flex?'flex':'auto']"></div>
     </div>
     <div class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
@@ -1246,7 +1255,7 @@ ODA({is:'oda-table-header', extends: 'oda-table-cols',
     <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
     getTemplate(col){
-        return col.header || this.defaultHeader
+        return col.header || this.headerTemplate
     }
 })
 
@@ -1255,7 +1264,7 @@ ODA({is:'oda-table-footer', extends: 'oda-table-cols',
         return this.footer;
     },
     getTemplate(col){
-        return col.footer || this.defaultFooter
+        return col.footer || 'oda-table-footer-cell'
     }
 })
 
@@ -1372,13 +1381,6 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         .row[dragging] > .cell {
             @apply --error;
         }
-        .cell[role=group] {
-            z-index: 2;
-            @apply --header;
-            border-right: none !important;
-        }
-        .cell[role=footer],
-        /*.row[role=group],*/
         .cell[fix] {
             @apply --header;
         }
@@ -1410,7 +1412,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </style>
     <div class="no-flex  vertical" ~style="{maxHeight: _bodyHeight+'px', minHeight: _bodyHeight+'px'}">
         <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
-            <div ~for="(row, r) in visibleRows" :row="row" :role="row.$role" class="row"  :row
+            <div ~for="(row, r) in visibleRows" class="row"  :row
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
                 :dragging="draggedRows.includes(row)"
@@ -1598,13 +1600,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
     },
     _getTemplateTag(row, col) {
-        if (row.$role)
-            return row.template || col.template || this.defaultTemplate;
         if (row.$group)
-            return this.defaultGroupTemplate;
+            return this.groupTemplate;
         if (col.treeMode)
-            return this.defaultTreeTemplate;
-        let template = col.template || row.template || this.defaultTemplate;
+            return 'oda-table-cell-tree';
+        let template = row.templates?.[col] ||  col.cellTemplate || this.cellTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
@@ -1766,7 +1766,7 @@ cells: {
             </div>
             <oda-table-expand class="no-flex" :item :scrolled-children></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
-            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || defaultTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
+            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || cellTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
             columnId: '',
             props:{
                 scrolledChildren: {

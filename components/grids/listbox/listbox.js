@@ -27,7 +27,7 @@ ODA({is: 'oda-list-box', imports: '@oda/icon, @oda/checkbox',
     <div ref="listcontainer" class="listcontainer flex" @scroll="_onScroll" tabindex="0">
         <div class="flex" ~style="{height: \`\${ rows.length * rowSize }px\`}">
             <div class="flex" style="position: sticky; top: 0px;" ~style="{maxHeight: \`\${(rowCount + 1) * rowSize}px\`}">
-                <div ~is="item.template || defaultTemplate || 'oda-list-box-item'" ~for="(item, i) in visibleRows" :key="i" :item="item" :icon-size="iconSize" :focused="focusedItem === item" :selected="_getSelected(multiple, selection, item)" :hide-icon="hideIcons" :combo-mode="comboMode" @tap="_tap($event, true)" @check="_check" ~style="{paddingLeft: !comboMode && hasIcons && !item.icon ? ((_itemPadding + iconSize) + 'px') : ''}"></div>
+                <div ~is="item.template || cellTemplate || 'oda-list-box-item'" ~for="(item, i) in visibleRows" :key="i" :item="item" :icon-size="iconSize" :focused="focusedItem === item" :selected="_getSelected(multiple, selection, item)" :hide-icon="hideIcons" :combo-mode="comboMode" @tap="_tap($event, true)" @check="_check" ~style="{paddingLeft: !comboMode && hasIcons && !item.icon ? ((_itemPadding + iconSize) + 'px') : ''}"></div>
             </div>
         </div>
     </div>
@@ -114,7 +114,7 @@ ODA({is: 'oda-list-box', imports: '@oda/icon, @oda/checkbox',
                 return this.items?.every(i => !i.icon);
             }
         },
-        defaultTemplate: 'oda-list-box-item',
+        cellTemplate: 'oda-list-box-item',
         bottomOffset: {
             default: 0,
             set(n, o) {

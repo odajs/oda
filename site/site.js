@@ -307,7 +307,7 @@ site: {
 content: {
     ODA({ is: 'oda-site-content-tree', extends: 'oda-tree', imports: '@oda/tree',
         props: {
-            defaultTemplate: 'oda-site-content-cell',
+            cellTemplate: 'oda-site-content-cell',
             iconExpanded: 'icons:remove',
             iconCollapsed: 'icons:add',
             noLazy: true,
@@ -467,7 +467,7 @@ navigator: {
             iconExpanded: 'icons:remove',
             iconCollapsed: 'icons:add',
             allowFocus: true,
-            defaultTemplate: 'oda-site-nav-cell',
+            cellTemplate: 'oda-site-nav-cell',
             rowLines: false,
             hideRoot: true,
             showTreeLines: true,
@@ -788,7 +788,7 @@ header: {
     });
 
 
-    ODA({ is: 'oda-seach-result', extends: 'oda-tree', props: { defaultTemplate: 'oda-site-search-cell' } });
+    ODA({ is: 'oda-seach-result', extends: 'oda-tree', props: { cellTemplate: 'oda-site-search-cell' } });
     ODA({ is: 'oda-site-search-cell', extends: 'oda-site-nav-cell', template: `
             <div class="flex" style="padding: 0 10px; text-align: right; color: green;font-size: 0.7em;">{{this.item.score}}</div>
         `,

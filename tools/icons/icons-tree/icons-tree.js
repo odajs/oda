@@ -75,7 +75,7 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
             }
         },
         filterHeight: '',
-        defaultTemplate: 'oda-icons-icon',
+        cellTemplate: 'oda-icons-icon',
         rootPath: '/',
     },
     columns: [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', $hidden: true, }],
