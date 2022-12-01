@@ -22,7 +22,7 @@
 ```javascript run_edit_[my-component.js]
  ODA({
     is: 'my-component',
-    imports: '@oda/icon',
+    imports: '@oda/button',
     template: `
         <oda-button ref="btn" label="Нажми на меня" icon="icons:android" @tap="onTap"></oda-button>
     `,
