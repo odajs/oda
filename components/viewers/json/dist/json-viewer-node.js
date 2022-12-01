@@ -37,7 +37,7 @@ ODA({
             }
         </style>
         <div ~if="_value" class="node">
-            <div :class="_type === 'simple' ? 'expander expander-empty' : 'expander'" ~text="_type === 'simple' ? '' : expanded ? '-' : '+'" @click="_expanderClick"></div>
+            <div ~class="_type === 'simple' ? 'expander expander-empty' : 'expander'" ~text="_type === 'simple' ? '' : expanded ? '-' : '+'" @click="_expanderClick"></div>
             <div class="key" ~if="key" ~text="'&#34;' + key + '&#34;:'"></div>
             <div class="value">
                 <div ~if="_type === 'simple'" ~text="'&#34;' + _value + '&#34;' + (notEnd ? ',' : '')"></div>

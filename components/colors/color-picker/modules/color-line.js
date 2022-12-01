@@ -16,7 +16,7 @@ ODA({is: 'oda-color-line', template: `
             transform: scale(1.5);
         }
     </style>
-    <div ~for="light in lightness" :style="_getStyle(size, light, hue, saturation)" @tap="_tap"></div> `,
+    <div ~for="light in lightness" ~style="_getStyle(size, light, hue, saturation)" @tap="_tap"></div> `,
     props: {
         size:  Number,
         hue: Number,

@@ -77,7 +77,7 @@ ODA({
                 color: yellow;
             }
         </style>
-       <label :class="myClass">{{label+": "}} <input ::value></label>
+       <label ~class="myClass">{{label+": "}} <input ::value></label>
     `,
     props: {
         value: {

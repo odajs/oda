@@ -20,7 +20,7 @@ ODA({is: 'oda-auto-doc', imports: '@oda/button, @oda/md-viewer',
             <div>{{description.copyright}}</div>
             <div><a target="_blank" :href="description.site">{{description.site}}</a></div>
         </div>
-        <div ~if="about" :html="about"></div>
+        <div ~if="about" ~html="about"></div>
         <hr style="width:100%" />
         <div class="no-flex horizontal between">
             <span style="font-size: 150%"><b>API Reference</b></span>
@@ -84,7 +84,7 @@ ODA({is: "oda-api-table", imports: '@oda/button',
     </div>
     <div ~for="k in Object.keys(apiSort)">
         <h2>{{k}}</h2>
-        <div ~for="i in Object.keys(apiSort[k])" :style="apiSort[k][i].isPrivate? 'background: #ccc;': 'background: #eee;'">
+        <div ~for="i in Object.keys(apiSort[k])" ~style="apiSort[k][i].isPrivate? 'background: #ccc;': 'background: #eee;'">
             <hr>
             <div class="horizontal">
                 <span class="colA">{{apiSort[k][i].f || i}}</span>

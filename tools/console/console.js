@@ -47,7 +47,7 @@ ODA({ is: 'oda-console', imports: '@oda/button, @oda/splitter', template: /*html
     </style>
     <oda-splitter sign="1" align="horizontal" ::height></oda-splitter>
     <div class="horizontal header">
-        <oda-button icon="icons:view-list" 
+        <oda-button icon="icons:view-list"
                 @tap="sidebarToggled = !sidebarToggled" :icon-size allow-toggle :toggled="sidebarToggled"></oda-button>
         <oda-button icon="icons:remove-circle-outline" :disabled="!items?.length" @tap.stop="items = null;console.clear();" :icon-size title="clear"></oda-button>
         <div class="statusBar" ~text="status" :title="status"></div>
@@ -61,9 +61,9 @@ ODA({ is: 'oda-console', imports: '@oda/button, @oda/splitter', template: /*html
                         @tap="filter = item?.type" :icon-size allow-toggle :toggled="filter === item?.type">{{' ' + item?.type}}</oda-button>
         </aside>
         <section class="flex">
-            <div class="flex log" :style="{height: height + 'px'}">
+            <div class="flex log" ~tyle="{height: height + 'px'}">
                 <div class="row" ~for="outputItems">
-                    <div :style="item?.style">{{ item?.count && item.count > 1 ? '(' + item.count + ') ' + (item?.text ?? item) : ' ' + (item?.text ?? item)}}</div>
+                    <div ~style="item?.style">{{ item?.count && item.count > 1 ? '(' + item.count + ') ' + (item?.text ?? item) : ' ' + (item?.text ?? item)}}</div>
                     <div title="timestamp">{{_getDT(item)}}</div>
                 </div>
             </div>

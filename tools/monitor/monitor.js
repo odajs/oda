@@ -26,7 +26,7 @@ ODA({
             zoom: {{1 / devicePixelRatio}};
         }
         .bars {
-            justify-content: flex-end; 
+            justify-content: flex-end;
             align-items: flex-end;
             height: {{barHeight}}px;
         }
@@ -40,11 +40,11 @@ ODA({
             <div>{{fps}} fps</div>
         </div>
         <div class="horizontal bars">
-            <div class="bar" ~for="_fpsArr" :style="{height:(item*barHeight/_fpsMax) > barHeight ? barHeight : (item*barHeight/_fpsMax) +'px'}"></div>
+            <div class="bar" ~for="_fpsArr" ~style="{height:(item*barHeight/_fpsMax) > barHeight ? barHeight : (item*barHeight/_fpsMax) +'px'}"></div>
         </div>
         <div class="horizontal" style="justify-content: flex-end; margin: 2px 0;">{{memory}}</div>
         <div class="horizontal bars">
-            <div class="bar" ~for="_memoryArr" :style="{height:item*barHeight/_memoryMax+'px'}"></div>
+            <div class="bar" ~for="_memoryArr" ~style="{height:item*barHeight/_memoryMax+'px'}"></div>
         </div>
     `,
     props: {

@@ -1399,7 +1399,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             outline-color: var(--focused-color) ;
             background-color: rgba(var(--focused-color), 1);
             z-index: 2;
-            
+
         }
     </style>
     <div class="no-flex  vertical" ~style="{height: _bodyHeight+'px', minWidth: autoWidth?'auto':($scrollWidth-.1) + 'px', maxWidth: autoWidth?'auto':($scrollWidth - .1) + 'px'}">
@@ -1840,7 +1840,7 @@ cells: {
     ODA({is: 'oda-table-error', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
         <oda-icon icon="icons:error"></oda-icon>
-        <label class="label flex" :text="item.error"></label>`
+        <label class="label flex" ~text="item.error"></label>`
     });
 
     ODA({is: 'oda-table-header-cell', imports: '@oda/button', extends: 'oda-table-cell-base',
@@ -1925,7 +1925,7 @@ cells: {
             <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.$expanded?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand ~if="column?.items?.length" :item></oda-table-expand>
-                    <label class="label flex" :title="column.label || column.name" :text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
+                    <label class="label flex" :title="column.label || column.name" ~text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon fill="black" :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>

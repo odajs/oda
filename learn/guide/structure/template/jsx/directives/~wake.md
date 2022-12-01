@@ -8,8 +8,8 @@
             :host { display: block; padding: 16px; }
         </style>
         <input style="width: 50vw;" type="range" max="5000" ::value="offset">{{offset}}
-        <div :style="{marginLeft: \`\${offset}px\`}" ~ref="'noWake'">{{offset}}</div>
-        <div :style="{marginLeft: \`\${offset}px\`}" ~ref="'wake'" ~wake>{{offset}}</div>
+        <div ~style="{marginLeft: \`\${offset}px\`}" ~ref="'noWake'">{{offset}}</div>
+        <div ~style="{marginLeft: \`\${offset}px\`}" ~ref="'wake'" ~wake>{{offset}}</div>
         <span>Содержимое элемента без ~wake: {{noWakeText}}</span><p></p>
         <span>Содержимое элемента с ~wake: {{wakeText}}</span>
         `,

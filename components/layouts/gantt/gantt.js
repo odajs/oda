@@ -30,14 +30,14 @@ ODA({ is: 'oda-gantt', template: /*html*/`
                     <th ~for="(i, k) in timeLine.info" :colspan="timeLine.colspan">{{i}}</th>
                 </tr>
                 <tr>
-                    <td :ref="c.timeStart" :id="c.timeStart" ~for="(c, k) in timeLine.columns" :style="{'background-color':c.now?'hsla(120, 100%, 94%, 1)':c.weekend?'hsla(60, 100%, 94%, .5)':''}">{{c.name}}</td>
+                    <td :ref="c.timeStart" :id="c.timeStart" ~for="(c, k) in timeLine.columns" ~style="{'background-color':c.now?'hsla(120, 100%, 94%, 1)':c.weekend?'hsla(60, 100%, 94%, .5)':''}">{{c.name}}</td>
                 </tr>
             </table>
         </div>
         <table width="100%" style="border-collapse:collapse;table-layout:fixed">
             <tr ~for="(t, k) in (dde.tasks && dde.tasks.length || 1)">
                 <div>
-                    <td ~for="(i, k) in timeLine.columns" :style="{height: cellHeight,'background-color':i.weekend?'hsla(60, 100%, 94%, .5)':''}"></td>
+                    <td ~for="(i, k) in timeLine.columns" ~style="{height: cellHeight,'background-color':i.weekend?'hsla(60, 100%, 94%, .5)':''}"></td>
                 </div>
             </tr>
         </table>

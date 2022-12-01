@@ -25,8 +25,8 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         <oda-button icon="image:rotate-right" fill="white" @tap="_rotateRight"></oda-button>
         <oda-button icon="icons:file-download" fill="white" @tap="_download"></oda-button>
     </div>
-    <div ref="img" class="img flex" :style="_imageStyle">
-        <div class="image" :style="\`background-image: url('\${src}');\`"></div>
+    <div ref="img" class="img flex" ~style="_imageStyle">
+        <div class="image" ~style="\`background-image: url('\${src}');\`"></div>
     </div>
     `,
     props: {

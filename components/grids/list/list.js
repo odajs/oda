@@ -5,7 +5,7 @@ ODA({ is: 'oda-list', imports: '@oda/icon', template: /*html*/`
         }
     </style>
     <ul ~is="tag" class="vertical shadow" :type="marker" style="overflow-x: hidden; margin: 0px;" ~style="{padding: (marker === 'none')?'4px':''}" >
-        <li ~for="items" :item="item" :focused="item === focusedItem" ~class="marker==='none' && !numerable ? 'horizontal' : ''" @down.stop="_select($event, item)" style="text-overflow:ellipsis; overflow: hidden; box-sizing: border-box; border-bottom: 1px solid transparent" :type="item.marker" :style="{height: iconSize + 'px'}" :title="item.label">
+        <li ~for="items" :item="item" :focused="item === focusedItem" ~class="marker==='none' && !numerable ? 'horizontal' : ''" @down.stop="_select($event, item)" style="text-overflow:ellipsis; overflow: hidden; box-sizing: border-box; border-bottom: 1px solid transparent" :type="item.marker" ~style="{height: iconSize + 'px'}" :title="item.label">
             <span ~is="item?.template || itemTemplate" :item="item" class="horizontal" style="align-items: center;"><oda-icon ~if="item.icon" :icon="item.icon"></oda-icon>{{item}}</span>
         </li>
     </ul>`,

@@ -32,13 +32,13 @@ ODA({
                 <text x="10" :y="2.5*fontSize" ~show="dots.length" fill="#fff">Dots: {{dots.length}}</text>
                 <text x="10" :y="4*fontSize" ~show="dotsPerSecond" fill="#fff">Dots per second: {{dotsPerSecond}}</text>
                 <text x="10" :y="5.5*fontSize" ~show="dots.length" fill="#fff">Seconds: {{Math.round((currentTime-startTime)/1000)}}</text>
-                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="radiusDot" :style="'fill:'+dots[index].color"></circle>
-                <circle ~for="triangleVertices.length" :id="index" :cx="triangleVertices[index].x" :cy="triangleVertices[index].y" :r="radiusVertex" 
-                        :style="'fill:'+triangleVertices[index].color" @track="move" class="vertex"></circle>
+                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="radiusDot" ~style="'fill:'+dots[index].color"></circle>
+                <circle ~for="triangleVertices.length" :id="index" :cx="triangleVertices[index].x" :cy="triangleVertices[index].y" :r="radiusVertex"
+                        ~style="'fill:'+triangleVertices[index].color" @track="move" class="vertex"></circle>
             </svg>
         </div>
         `,
-    props: { 
+    props: {
         radiusDot: 1,
         radiusVertex: 5,
         maxQuantityDots: 30000,
@@ -98,14 +98,14 @@ ODA({
     createPoint() {
         for( let i=0 ; i<this.quantityDotsPerTurn ; ++i ) {
             const randomVertex = this.randomInteger(0, 2);
-            //Рассчитываем цвет точки используя идеальный треугольник    
+            //Рассчитываем цвет точки используя идеальный треугольник
             this.color_currentPoint.x = (this.color_currentPoint.x + this.color_triangleVertices[randomVertex].x) / 2.0;
-            this.color_currentPoint.y = (this.color_currentPoint.y + this.color_triangleVertices[randomVertex].y) / 2.0;    
+            this.color_currentPoint.y = (this.color_currentPoint.y + this.color_triangleVertices[randomVertex].y) / 2.0;
             const red = 255 * (1 - this.distance(this.color_triangleVertices[0], this.color_currentPoint));
             const green = 255 * (1 - this.distance(this.color_triangleVertices[1], this.color_currentPoint));
-            const blue = 255 * (1 - this.distance(this.color_triangleVertices[2], this.color_currentPoint));        
+            const blue = 255 * (1 - this.distance(this.color_triangleVertices[2], this.color_currentPoint));
             const color = "rgb(" + red + "," + green + "," + blue  + ")";
-            //Рассчитываем координаты реальной точки   
+            //Рассчитываем координаты реальной точки
             var point = {};
             point.x = (this.dots[this.dots.length-1].x + this.triangleVertices[randomVertex].x) / 2.0;
             point.y = (this.dots[this.dots.length-1].y + this.triangleVertices[randomVertex].y) / 2.0;
@@ -114,7 +114,7 @@ ODA({
             this.dots.push(point);
         }
     },
-    drawTriangleVertices() { 
+    drawTriangleVertices() {
         const maxX = this.$refs.svg?.viewBox.baseVal.width;
         const maxY = this.$refs.svg?.viewBox.baseVal.height;
         this.triangleVertices[0] = { x: maxX / 2,    y: maxY * 0.05, color:"rgb(255,0,0)" };

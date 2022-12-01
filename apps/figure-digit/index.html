@@ -22,9 +22,9 @@
                     position:absolute; top:0;left:0; width: {{zoom*netSize}};}
         .rezprots {width:100%; color:#777; line-height:{{zoom*netSize/11}}px; font-size:{{zoom*netSize/15}}px; border-collapse: collapse;}
         .rezprots .pol {width:100%;}
-        .rezprots .pol div {color:transparent;font-size:1px; background:#f0f0f0; line-height:{{zoom*netSize/15}}px;}        
+        .rezprots .pol div {color:transparent;font-size:1px; background:#f0f0f0; line-height:{{zoom*netSize/15}}px;}
     </style>
-    
+
     <h2>Распознавание рукописных цифр. </br> Реализовано на odajs.</h2>
     <div id="panel">
         <div id='min'><oda-canvas :width="netSize" :height="netSize" ref="min"></oda-canvas-drow></div>
@@ -34,10 +34,10 @@
         <div id='obr'><oda-canvas :width="netSize*zoom" :height="netSize*zoom" ref="obr"></oda-canvas-drow></div>
         <div id='digit-cont'>
             <table class="rezprots">
-                <tr ~for="el, ix in rezProts" ><td>{{ix}}</td><td class="pol"><div :style="'width:'+ el + '%'">.</div></td><td>{{el}}%</td> </tr>
+                <tr ~for="el, ix in rezProts" ><td>{{ix}}</td><td class="pol"><div ~style="'width:'+ el + '%'">.</div></td><td>{{el}}%</td> </tr>
             </table>
             <div ~if="digit" id='digit'>{{digit}}</div>
-        </div>        
+        </div>
     </div>
     `,
     attached () {
@@ -64,7 +64,7 @@
             grayscaleImg = imageDataToGrayscale(imgData), boundingRectangle = getBoundingRectangle(grayscaleImg, 1/10),
             brW = boundingRectangle.maxX+1-boundingRectangle.minX, brH = boundingRectangle.maxY+1-boundingRectangle.minY,
             trans = centerImage(grayscaleImg), scaling = (size*3/4) / (brW>brH?brW:brH);
-        
+
         let canvasCopy = document.createElement("canvas"),  copyCtx = canvasCopy.getContext("2d");
         canvasCopy.width = size;
         canvasCopy.height = size;
@@ -152,7 +152,7 @@
         props:{ lWidth:5, lastPoint:{} },
     }),
 
-    ODA ({is: 'oda-canvas',  
+    ODA ({is: 'oda-canvas',
     template: /*html*/`<canvas ref="canvas" :width="width" :height="height">Sorry, is not supported.</canvas>`,
         props:{ width: 280, height:280, },
         _clear() {

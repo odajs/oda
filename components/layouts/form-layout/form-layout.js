@@ -92,7 +92,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         </div>
         <oda-button ~if="allowClose || (modal && allowClose !== false)" class="close-btn" :size="iconSize/2" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: #00f4e1"></oda-button>
     </div>
-    <form-status-bar ~show="!isMinimized" :icon-size="iconSize" :props="statusBar"></form-status-bar>`,
+    <form-status-bar ~show="!isMinimized" :icon-size="iconSize" ~props="statusBar"></form-status-bar>`,
     _in(){
         this.__allowMove = true
     },

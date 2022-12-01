@@ -22,7 +22,7 @@ import 'https://odajs.org/components/buttons/icon/icon.js'
             min-height: {{size}}px;
         }
     </style>
-    <svg :show="_icon" :style="_style" :stroke="stroke" :fill="fill" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" :view-box="\`0 0 \${_svgSize} \${_svgSize}\`">
+    <svg :show="_icon" ~style="_style" :stroke="stroke" :fill="fill" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" :view-box="\`0 0 \${_svgSize} \${_svgSize}\`">
         <defs v-if="blink">
             <g is="style" type="text/css">
                 @keyframes blinker { 100% { opacity: 0; } }

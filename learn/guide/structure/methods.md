@@ -140,7 +140,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <button :text="_getText"></button>
+        <button ~text="_getText"></button>
     `,
     _getText() {
         return "Привет, метод!";
@@ -156,7 +156,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <button :text="_getText()+'!'"></button>
+        <button ~text="_getText()+'!'"></button>
     `,
     _getText() {
         return "Привет, метод";
@@ -172,7 +172,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <button :text="_getText+'!'"></button>
+        <button ~text="_getText+'!'"></button>
     `,
     _getText() {
         return "Привет, метод";

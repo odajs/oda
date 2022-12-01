@@ -10,8 +10,8 @@ ODA({
                 overflow: auto;
             }
         </style>
-        <oda-html-editor :if="src.includes('.html')" :src></oda-html-editor>
-        <oda-md-viewer :if="src.includes('.md')" :src></oda-md-viewer>
+        <oda-html-editor ~if="src.includes('.html')" :src></oda-html-editor>
+        <oda-md-viewer ~if="src.includes('.md')" :src></oda-md-viewer>
     `,
     props: {
         src: ''

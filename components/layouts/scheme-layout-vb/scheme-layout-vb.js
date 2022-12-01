@@ -253,7 +253,7 @@ ODA({ is: 'oda-scheme-container', template: /*template*/`
         <div class="flex horizontal">
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$left?.length" pos="left" :interface="item?.interfaces?.$left"></oda-scheme-interface>
             <div class="flex shadow vertical content">
-                <div @attached="blockReady" class="block flex" :is="item?.is || 'div'" ~props="item?.props"></div>
+                <div @attached="blockReady" class="block flex" ~is="item?.is || 'div'" ~props="item?.props"></div>
             </div>
             <oda-scheme-interface class="vertical" ~if="item?.interfaces?.$right?.length" pos="right" :interface="item?.interfaces?.$right"></oda-scheme-interface>
         </div>

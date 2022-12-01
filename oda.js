@@ -1346,63 +1346,55 @@ if (!window.ODA) {
                     expr += '()';
                 if (/^(:|bind:)/.test(attr.name)) {
                     name = name.replace(/^(::?|:|bind::?)/g, '');
-                    if (tags[name])
-                        new Tags(src, name, expr, vars, prototype);
-                    else if (directives[name])
-                        new Directive(src, name, expr, vars, prototype);
-                    else if (name === 'for'/* && attr.name.startsWith('~')*/ )//иначе, при использовании :for на элементе label срабатывает forDirective
-                        return forDirective(prototype, src, name, expr, vars, attr.name);
-                    else {
-                        if (expr === '')
-                            expr = attr.name.replace(/:+/, '').toCamelCase();
-                        let fn = createFunc(vars.join(','), expr, prototype);
-                        if (/::/.test(attr.name)) {
+                    if (expr === '')
+                        expr = attr.name.replace(/:+/, '').toCamelCase();
+                    let fn = createFunc(vars.join(','), expr, prototype);
+                    if (/::/.test(attr.name)) {
 
-                            const params = ['$value', ...(vars || [])];
-                            src.listeners.input = function func2wayInput(e) {
-                                if (!e.target.parentNode || !(name === 'value' || name === 'checked')) return;
-                                e.stopPropagation();
-                                const target = e.target;
-                                let value = target.value;
-                                switch (target.type) {
-                                    case 'checkbox': {
-                                        value = target.checked;
-                                    }
+                        const params = ['$value', ...(vars || [])];
+                        src.listeners.input = function func2wayInput(e) {
+                            if (!e.target.parentNode || !(name === 'value' || name === 'checked')) return;
+                            e.stopPropagation();
+                            const target = e.target;
+                            let value = target.value;
+                            switch (target.type) {
+                                case 'checkbox': {
+                                    value = target.checked;
                                 }
-                                target.__lockBind = name;
-                                const handle = () => {
-                                    target.__lockBind = false;
-                                    target.removeEventListener('blur', handle);
-                                };
-                                target.addEventListener('blur', handle);
-                                target.dispatchEvent(new CustomEvent(name + '-changed', { detail: { value } }));
+                            }
+                            target.__lockBind = name;
+                            const handle = () => {
+                                target.__lockBind = false;
+                                target.removeEventListener('blur', handle);
                             };
-                            const func = new Function(params.join(','), `with (this) {${expr} = $value}`);
-                            src.listeners[name + '-changed'] = function func2wayBind(e, d) {
-                                if (!e.target.parentNode) return;
-                                let res = e.detail.value === undefined ? e.target[name] : e.detail.value;
-                                if (e.target.$node.vars.length) {
-                                    let idx = e.target.$node.vars.indexOf(expr);
-                                    if (idx % 2 === 0) {
-                                        const array = e.target.$for[idx + 2];
-                                        const index = e.target.$for[idx + 1];
-                                        array[index] = e.target[name];
-                                        return;
-                                    }
-                                }
-                                if (res !== undefined || e.target.$for !== undefined) //todo понаблюдать
-                                    exec.call(this, func, [res, ...(e.target.$for || [])]);
-                            };
-                            src.listeners[name + '-changed'].notify = name;
-                            src.listeners[name + '-changed'].expr = expr;
-                        }
-                        const h = function (params) {
-                            return exec.call(this, fn, params);
+                            target.addEventListener('blur', handle);
+                            target.dispatchEvent(new CustomEvent(name + '-changed', { detail: { value } }));
                         };
-                        h.modifiers = modifiers;
-                        src.bind = src.bind || {};
-                        src.bind[name.toCamelCase()] = h;
+                        const func = new Function(params.join(','), `with (this) {${expr} = $value}`);
+                        src.listeners[name + '-changed'] = function func2wayBind(e, d) {
+                            if (!e.target.parentNode) return;
+                            let res = e.detail.value === undefined ? e.target[name] : e.detail.value;
+                            if (e.target.$node.vars.length) {
+                                let idx = e.target.$node.vars.indexOf(expr);
+                                if (idx % 2 === 0) {
+                                    const array = e.target.$for[idx + 2];
+                                    const index = e.target.$for[idx + 1];
+                                    array[index] = e.target[name];
+                                    return;
+                                }
+                            }
+                            if (res !== undefined || e.target.$for !== undefined) //todo понаблюдать
+                                exec.call(this, func, [res, ...(e.target.$for || [])]);
+                        };
+                        src.listeners[name + '-changed'].notify = name;
+                        src.listeners[name + '-changed'].expr = expr;
                     }
+                    const h = function (params) {
+                        return exec.call(this, fn, params);
+                    };
+                    h.modifiers = modifiers;
+                    src.bind = src.bind || {};
+                    src.bind[name.toCamelCase()] = h;
                 }
                 else if (dirRE.test(name)) {
                     name = name.replace(dirRE, '');

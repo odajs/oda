@@ -109,7 +109,7 @@ ODA({is: 'oda-dialog-message', imports: '@oda/icon',
         }
     </style>
     <oda-icon :icon :icon-size></oda-icon>
-    <label :html="message"></label>
+    <label ~html="message"></label>
     `,
     message: '',
     icon: 'icons:info',

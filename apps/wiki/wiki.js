@@ -103,7 +103,7 @@ ODA({
                 <div class="acts"><oda-button id="s09" @tap="_settings" fill="tomato" borderColor="tomato">09</oda-button> delete all hidden</div>
                 <div class="acts"><oda-button id="s10" @tap="_settings" fill="tomato" borderColor="tomato">10</oda-button> delete all invisible</div>
                 <div class="acts"><oda-button id="s11" @tap="_settings" fill="tomato" borderColor="tomato">11</oda-button> delete all</div>
-            </div>             
+            </div>
             <div slot="left-panel" icon="icons:settings" title="settings">
                 <div style="border-bottom:1px solid lightgray;width:100%;margin: 4px 0;"></div>
                 <div>db name:</div>
@@ -118,7 +118,7 @@ ODA({
                     <oda-wiki-box ~if="_expandItem" :item="_expandItem" style="height: calc(100% - 40px);"
                             ::_expand-item="_expandItem" ::_item ::_action ::_index-full-area="_indexFullArea"></oda-wiki-box>
                     <div ~if="!_expandItem">
-                        <div ~for="i,idx in data" ~is="_item === i && _action === 'box-move' ? 'oda-wiki-box-shadow' : 'oda-wiki-box'" :item="i" :idx="idx" 
+                        <div ~for="i,idx in data" ~is="_item === i && _action === 'box-move' ? 'oda-wiki-box-shadow' : 'oda-wiki-box'" :item="i" :idx="idx"
                                 ::_expand-item="_expandItem" ::_item ::_action ::_index-full-area="_indexFullArea"></div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ ODA({
                         <oda-md-viewer ~if="i.show && i.type === 'showdown'" :src="(i.value || '') + '~~~~~_~~~~~'"></oda-md-viewer>
                         <iframe ~if="i.show && i.type === 'iframe'" :srcdoc="i.htmlValue || i.value || ''" style="width:100%;border: none"
                                 ~style="{height: i.h ? i.h + 'px' : 'auto'}"></iframe>
-                        <div class="res" ~if="i.show && i.type !== 'iframe' && i.type !== 'showdown'" :item="i" :html="i.htmlValue || i.value || ''"></div>
+                        <div class="res" ~if="i.show && i.type !== 'iframe' && i.type !== 'showdown'" :item="i" ~html="i.htmlValue || i.value || ''"></div>
                     </div>
                 </div>
             </div>
@@ -275,9 +275,9 @@ ODA({
         </style>
         <div ~if="!item.hidden">
             <div draggable="true" class="header"
-                    @dragstart="_dragStart" 
+                    @dragstart="_dragStart"
                     @dragend="_dragend"
-                    @drop="_dragend" 
+                    @drop="_dragend"
                     @dragover="_dragover">
                 {{(idx || 0) + 1 + '. ' + item?.label}}
                 <div style="flex:1"></div>
@@ -292,7 +292,7 @@ ODA({
                     ~style="{height:_expandItem ? '100%' : item?.h + 'px'}">
                     <div ~is="'oda-' + item.type" ref="ed" :item="item"></div>
                     </div>
-            <div class="bottomSplitter" ~class="{'bottomSplitter-move': _item === item}" :hidden="_expandItem" 
+            <div class="bottomSplitter" ~class="{'bottomSplitter-move': _item === item}" :hidden="_expandItem"
                     @mousedown="_setBoxHeight" @dragover="_dragover" @drop="_dragend" ></div>
         </div>
         `,

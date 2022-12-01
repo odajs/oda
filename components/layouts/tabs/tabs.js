@@ -24,7 +24,7 @@ ODA({ is: 'oda-tabs',
         </style>
         <div class="flex horizontal" style="border-bottom: 1px solid var(--border-color);">
             <div ~for="items" :focused="item === (focusedItem || items[0])" @tap="focusedItem = item" class="tab border" style="border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px;" ~style="{order: item.pinned ? -1 : 0}">
-                <div :is="item.is || 'span'">{{item.label}}</div>
+                <div ~is="item.is || 'span'">{{item.label}}</div>
             </div>
         </div>
         <slot :name="(focusedItem || items[0]).label"></slot>

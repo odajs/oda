@@ -196,7 +196,7 @@ ODA({ is: 'oda-color-line', template: /*html*/`
             transform: scale(1.5);
         }
     </style>
-    <div ~for="light in lightness" :style="_getStyle(light)" @tap="_tap"></div> `,
+    <div ~for="light in lightness" ~style="_getStyle(light)" @tap="_tap"></div> `,
     props: {
         size: Number, hue: Number, saturation: Number, gradients: Number, grays: false,
         lightness: {

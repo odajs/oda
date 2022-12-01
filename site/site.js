@@ -177,7 +177,7 @@ site: {
                 set(v) {
                     // this.part = null;
                     if (!v){
-                        window.location.hash = ''; 
+                        window.location.hash = '';
                         this.focusedItem = null;
                         this.selectedSiteHeaderMenu = '';
                         // this.left.smartClose();
@@ -351,7 +351,7 @@ content: {
                 }
             </style>
             <div class="vertical flex" style="padding: 2px 2px;">
-                <div :style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
+                <div ~style="h" style="padding-bottom:4px" class="title no-flex" @down="_tap" ~html="value"></div>
                 <oda-jupyter ~if="useJupyter" :notebook :read-only="!isEditMode" show-border="none" style="padding: 0"></oda-jupyter>
             </div>
         `,
@@ -438,7 +438,7 @@ content: {
                     width: auto;
                 }
             </style>
-            <div class="label" :html="goal?.label"></div>
+            <div class="label" ~html="goal?.label"></div>
         `,
         props: {
             iconPos() {
@@ -584,7 +584,7 @@ header: {
             <div ~show="mobile && toggled" style="font-size:18px;position:absolute;top:60px;right:0;width:auto;border:1px solid #ccc;z-index:999;background-color:#eeeeee;overflow:auto;max-height:80%">
                 <div ~class="{outline: selectedSiteHeaderMenu === (item.label || item.name)}" ~for="items" :item="item" @tap="_tap(item, item)" style="color: #336699;justify-content:left; padding:3px;font-weight:700;cursor: pointer">
                     <div class="horizontal" style="align-items: center" ~class="{highlighted: selectedSiteHeaderMenu === (item.label || item.name)}">
-                        <oda-icon :icon="leftControls[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>    
+                        <oda-icon :icon="leftControls[index]._icon" icon-size="20" style="margin-right: 4px; opacity: .7"></oda-icon>
                         {{item.label}}
                     </div>
                     <div class="mob" ~for="i in item.items" :item="i" @tap.stop="_tap(i, item)" style="color:#336699;padding:2px;margin-left:20px;font-weight:400;">{{i.label}}</div>
@@ -685,8 +685,8 @@ header: {
                 }
             </style>
             <div style="display:flex; alignitems: center">
-                <input :show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
-                <input class="flex" :if="chaosMode"  placeholder=" бездна наблюдает" type="search" @change="chaossee">
+                <input ~show="!chaosMode" class="flex" placeholder=" введите запрос" type="search" @input="search">
+                <input class="flex" ~if="chaosMode"  placeholder=" бездна наблюдает" type="search" @change="chaossee">
                 <oda-icon icon="icons:search" icon-size=28 class="noflex" :stroke="chaosMode?'#ff0000':'#0000'" @tap="chaosModeOff" ><oda-icon >
             </div>
         `,

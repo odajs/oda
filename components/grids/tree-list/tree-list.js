@@ -17,7 +17,7 @@ ODA({is: 'oda-tree-list',
         }
     </style>
     <div ~if="headerTemplate" ~is="headerTemplate"></div>
-    <div :class="direction" style="margin: 1px">
+    <div ~class="direction" style="margin: 1px">
         <div class="list-node" ~for="item in items" ~is="item.template || bodyTemplate" :item="item" :focused="item === focusedItem" @down.stop="_select($event, item)"></div>
     </div>
     <div ~if="footerTemplate" ~is="footerTemplate"></div>

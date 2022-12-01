@@ -25,7 +25,7 @@ ODA({
         </div>
         <div style="width:100px; height:100px; float:left">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
+                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" ~style="'fill:'+dots[index].color"></circle>
             </svg>
         </div>
         <div style="float:left">
@@ -35,7 +35,7 @@ ODA({
             <div ~if="renderingCount">Average rendering time: {{Math.round(totalTime / renderingCount)}} ms</div>
         </div>
         `,
-    props: { 
+    props: {
         maxQuantityDots: 50000,
         activeButton: true,
         dots: [], //Рассчитанные точки треугольника. Точка описывается координатами "x", "y" и цветом "color".
@@ -52,8 +52,8 @@ ODA({
         this.totalTime = 0;
         this.$next( ()=>{
             this.createTriangle();
-            this.$next( ()=>{ this.previousTime = Date.now(); 
-                requestAnimationFrame( this.loop.bind(this) ); 
+            this.$next( ()=>{ this.previousTime = Date.now();
+                requestAnimationFrame( this.loop.bind(this) );
             }, 1 );
         }, 1 );
     },
@@ -75,7 +75,7 @@ ODA({
     distance(start, stop) { //Расчет расстояния между точками
         return Math.sqrt( Math.pow(start.x-stop.x, 2) + Math.pow(start.y-stop.y, 2) );
     },
-    createTriangle() { 
+    createTriangle() {
         const start = Date.now();
         const maxX = this.$refs.svg?.viewBox.baseVal.width;
         const maxY = this.$refs.svg?.viewBox.baseVal.height;
@@ -91,7 +91,7 @@ ODA({
             point.y = (this.dots[this.dots.length-1].y + this.dots[randomVertex].y) / 2.0;
             const red = 255 * (1 - this.distance(this.dots[0], point) / maxX);
             const green = 255 * (1 - this.distance(this.dots[1], point) / maxX);
-            const blue = 255 * (1 - this.distance(this.dots[2], point) / maxX);        
+            const blue = 255 * (1 - this.distance(this.dots[2], point) / maxX);
             point.color = "rgb(" + red + "," + green + "," + blue  + ")";
             this.dots.push(point);
         }
@@ -113,7 +113,7 @@ ODA({
         </div>
         <div style="width:100px; height:100px; float:left">
             <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" :style="'fill:'+dots[index].color"></circle>
+                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" ~style="'fill:'+dots[index].color"></circle>
             </svg>
         </div>
         <div style="float:left">
@@ -123,7 +123,7 @@ ODA({
             <div ~if="renderingCount">Average rendering time: {{Math.round(totalTime / renderingCount)}} ms</div>
         </div>
         `,
-    props: { 
+    props: {
         maxQuantityDots: 50000,
         activeButton: true,
         renderingCount: 0, //Счетчик операций рендеринга
@@ -139,8 +139,8 @@ ODA({
         this.totalTime = 0;
         this.$next( ()=>{
             this.createTriangle();
-            this.$next( ()=>{ this.previousTime = Date.now(); 
-                requestAnimationFrame( this.loop.bind(this) ); 
+            this.$next( ()=>{ this.previousTime = Date.now();
+                requestAnimationFrame( this.loop.bind(this) );
             }, 1 );
         }, 1 );
     },
@@ -162,7 +162,7 @@ ODA({
     distance(start, stop) { //Расчет расстояния между точками
         return Math.sqrt( Math.pow(start.x-stop.x, 2) + Math.pow(start.y-stop.y, 2) );
     },
-    createTriangle() { 
+    createTriangle() {
         const start = Date.now();
         const maxX = this.$refs.svg?.viewBox.baseVal.width;
         const maxY = this.$refs.svg?.viewBox.baseVal.height;
@@ -178,7 +178,7 @@ ODA({
             point.y = (this.dots[this.dots.length-1].y + this.dots[randomVertex].y) / 2.0;
             const red = 255 * (1 - this.distance(this.dots[0], point) / maxX);
             const green = 255 * (1 - this.distance(this.dots[1], point) / maxX);
-            const blue = 255 * (1 - this.distance(this.dots[2], point) / maxX);        
+            const blue = 255 * (1 - this.distance(this.dots[2], point) / maxX);
             point.color = "rgb(" + red + "," + green + "," + blue  + ")";
             this.dots.push(point);
         }

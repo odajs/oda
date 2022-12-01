@@ -27,7 +27,7 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
                 </defs>
 
                 <rect ~if="showGrid" :x="vb.x * scale" :y="vb.y * scale" :width="vb.w * scale" :height="vb.h * scale" fill="url(#bigGrid)" />
-                <path ~for="el in elements" :is="el.is" ~props="el.props" ref="elements"></path>
+                <path ~for="el in elements" ~is="el.is" ~props="el.props" ref="elements"></path>
             </svg>
             <div ~style="{position: 'absolute', transform: 'scale('+(1 / scale)+')', left: -vb.x+'px', top: -vb.y+'px'}">
                 <slot name="content"></slot>

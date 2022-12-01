@@ -1,11 +1,11 @@
 ODA({is: 'oda-site-template', extends: 'oda-css', imports: '@oda/icon, ',
     template: /*html*/ `
-    <div  id='site-all' :class='_class()'>
+    <div  id='site-all' ~class='_class()'>
         <slot name='region-tuoolbar' id='region-tuoolbar'></slot>
         <slot name='region-mmenu' id='region-mmenu'></slot>
         <slot name='region-ltuoolbar' id='region-ltuoolbar'></slot>
         <slot name='region-rtuoolbar' id='region-rtuoolbar'></slot>
-        <div id='site-main'> 
+        <div id='site-main'>
             <slot name='region-header' id='region-header'></slot>
             <slot name='region-left' id='region-left'></slot>
             <slot name='region-abovecontrnt' id='region-abovecontrnt'></slot>

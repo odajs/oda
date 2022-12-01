@@ -34,11 +34,11 @@ ODA({ is: 'oda-gantt-block', template: /*html*/`
             position: absolute;
         }
     </style>
-    <div class="gantt-block" :style="styleBlock()" @tap.stop="task.selected=task.disabled?false:_move?true:!task.selected;_move=false;" @down.stop="task.trackType=task.selected?'moveTask':''" @up="task.trackType='';task.progress=task.progress>>0">
-        <span ref="title" class="gantt-block-title" :style="styleTitle()">{{task.animation || task.disabledTaskText?'' : _title()}}</span>
-        <div class="gantt-block-array-left" ~if="task.selected && task.allowedResizing" :style="styleArray()" @down.stop="task.trackType='retask.sizeLeft'" @up="task.trackType=''">⯇</div>
-        <div class="gantt-block-array-right" ~if="task.selected && task.allowedResizing" :style="styleArray()" @down.stop="task.trackType='retask.sizeRight'" @up="task.trackType=''">⯈</div>
-        <div ref="arraytop" class="gantt-block-array-top" ~if="task.selected && task.allowedChangeProgress" :style="styleArray(true)" @down.stop="task.trackType='setProgress'" @up="task.trackType='';task.progress=task.progress>>0">⯆</div>
+    <div class="gantt-block" ~style="styleBlock()" @tap.stop="task.selected=task.disabled?false:_move?true:!task.selected;_move=false;" @down.stop="task.trackType=task.selected?'moveTask':''" @up="task.trackType='';task.progress=task.progress>>0">
+        <span ref="title" class="gantt-block-title" ~style="styleTitle()">{{task.animation || task.disabledTaskText?'' : _title()}}</span>
+        <div class="gantt-block-array-left" ~if="task.selected && task.allowedResizing" ~style="styleArray()" @down.stop="task.trackType='retask.sizeLeft'" @up="task.trackType=''">⯇</div>
+        <div class="gantt-block-array-right" ~if="task.selected && task.allowedResizing" ~style="styleArray()" @down.stop="task.trackType='retask.sizeRight'" @up="task.trackType=''">⯈</div>
+        <div ref="arraytop" class="gantt-block-array-top" ~if="task.selected && task.allowedChangeProgress" ~style="styleArray(true)" @down.stop="task.trackType='setProgress'" @up="task.trackType='';task.progress=task.progress>>0">⯆</div>
     </div>
     `,
     props: {

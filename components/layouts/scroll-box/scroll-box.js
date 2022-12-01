@@ -39,7 +39,7 @@ ODA({ is: "oda-scroll-box", template: `
             width: var(--bar-size);
         }
     </style>
-    <div class="scroll-bar" :style="{
+    <div class="scroll-bar" ~style="{
             background: \`linear-gradient(to \${vertical ? 'bottom' : 'right'}, \${_barColor} \${_scroll}%, \${_scrollColor} 0%, \${_scrollColor} \${_scroll + _scrollSize}%, \${_barColor} 0%)\`,
             left: vertical ? 'unset' : _scrollPx + 'px',
             top: vertical ? _scrollPx + 'px' : 'unset',
