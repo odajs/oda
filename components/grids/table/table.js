@@ -1680,7 +1680,7 @@ cells: {
         props: {
             template: 'label',
             value() {
-                return this.item?.[this.column?.name]
+                return getRowCellValue(this.item, this.column);
             }
         }
     });
@@ -2474,4 +2474,15 @@ function addSaveProp(name, storage) {
             return result;
         }
     })
+}
+function getRowCellValue(row, col){
+    let path = col?.$saveKey || col;
+    path = path.split('/');
+    while(row && path.length>1){
+        let key = '$'+path.shift();
+        row = row[key];
+        if (Array.isArray(row))
+            row = row[0];
+    }
+    return row?.[path.shift()]
 }
