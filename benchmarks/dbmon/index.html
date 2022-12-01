@@ -171,9 +171,9 @@
                         <tr oda-for="(db, $index) in databases">
                             <td class="dbname">{{db.dbname}}</td>
                             <td class="query-count">
-                                <span :class="db.lastSample.countClassName">{{db.lastSample.nbQueries}} </span>
+                                <span ~class="db.lastSample.countClassName">{{db.lastSample.nbQueries}} </span>
                             </td>
-                            <td :for="(q, $index1) in db.lastSample.topFiveQueries" :class="q.elapsedClassName">
+                            <td ~for="(q, $index1) in db.lastSample.topFiveQueries" ~class="q.elapsedClassName">
                                 {{q.formatElapsed}}
                                 <div class="popover left">
                                     <div class="popover-content">{{q.query}}</div>

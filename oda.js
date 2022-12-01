@@ -189,9 +189,9 @@ if (!window.ODA) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     if (!entry.target.$sleep === entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && entry.target.offsetWidth && entry.target.offsetHeight;
-                    // if (!entry.target.$sleep)
-                    //     entry.target.domHost?.render();
+                    entry.target.$sleep = !entry.isIntersecting && !(entry.target.$rect.width && entry.target.$rect.height);
+                    if (!entry.target.$sleep)
+                        entry.target.domHost?.render();
                 }
             }, { rootMargin: '10%' }),
             resize: new ResizeObserver(entries => {
