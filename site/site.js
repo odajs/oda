@@ -463,6 +463,7 @@ navigator: {
             </style>
         `,
         props: {
+            autoFixRows: true,
             icon: 'icons:menu',
             iconExpanded: 'icons:remove',
             iconCollapsed: 'icons:add',
