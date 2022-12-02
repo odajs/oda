@@ -311,7 +311,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
                 else {
                     raised.unshift($parent)
-                    if (raised && (rows[0].$parent === raised.at(-1))) {
+                    if (raised && (rows[0]?.$parent === raised.at(-1))) {
                         rows.shift();
                         top = rows[0];
                     }
