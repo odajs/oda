@@ -16,10 +16,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="0" :scroll-top="$scrollTop" :scroll-left="$scrollLeft" :even-odd :col-lines :row-lines></oda-table-body>
     <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
-    get visibleRows(){
-        return  [...this.fixedRows, ...this.raisedRows, ...this.rows];
+    get visibleRows() {
+        return [...this.fixedRows, ...this.raisedRows, ...this.rows];
     },
-    hostAttributes:{
+    hostAttributes: {
         tabindex: 0
     },
     overHeight: false,
@@ -54,11 +54,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             })
         }
     },
-    set focusedCell(v){
+    set focusedCell(v) {
         if (v?.col) {
             const idx = this.activeCols.findIndex(i => i === v?.col)
             let left = 0;
-            for (let i = 0; i<idx; i++){
+            for (let i = 0; i < idx; i++) {
                 const col = this.activeCols[i]
                 left += col?.width || col?.$width;
             }
@@ -73,42 +73,42 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
         if (v?.row) {
             const idx = this.visibleRows.indexOf(v?.row);
-            if ((idx+.8) * this.rowHeight > this.$height){
+            if ((idx + .8) * this.rowHeight > this.$height) {
                 this.$scrollTop += this.rowHeight;
             }
         }
     },
-    focusCell(row, col, e){
+    focusCell(row, col, e) {
         if (col.fix || col.$flex) return;
         if (this.focusedCell?.row === row && this.focusedCell?.col === col)
             return;
-        this.focusedCell = {row, col};
+        this.focusedCell = { row, col };
     },
-    get activeCols(){
-        return  this.rowColumns.filter(i=>{
+    get activeCols() {
+        return this.rowColumns.filter(i => {
             return !i.fix && !i.treeMode && !i.$flex && !i.$hidden;
-        }).sort((a,b)=>{
-            return a.$order>b.$order?1:-1;
+        }).sort((a, b) => {
+            return a.$order > b.$order ? 1 : -1;
         })
     },
-    get _fixWidth(){
-        return this.headerColumns.filter(i=>{
+    get _fixWidth() {
+        return this.headerColumns.filter(i => {
             return i.fix;
-        }).reduce((res, i)=>{
+        }).reduce((res, i) => {
             return res += i.width || i.$width;
-        },0)
+        }, 0)
     },
 
 
     movePointer(h = 0, v = 0) {
-        this.interval('move', e=>{
+        this.interval('move', e => {
             if (!this.focusedCell)
-                this.focusedCell = {row: this.focusedRow || this.rows[0], col: this.activeCols[0]}
+                this.focusedCell = { row: this.focusedRow || this.rows[0], col: this.activeCols[0] }
             else {
                 if (h) {
                     let idx = this.activeCols.findIndex(i => i === this.focusedCell.col);
                     idx += h;
-                    this.focusedCell = {col: this.activeCols[idx], row: this.focusedCell.row, _col: this.focusedCell.col}
+                    this.focusedCell = { col: this.activeCols[idx], row: this.focusedCell.row, _col: this.focusedCell.col }
                     if (this.focusedCell.col)
                         return;
                     if (!v) {
@@ -121,23 +121,23 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     return;
                 let idx = this.visibleRows.findIndex(i => i === this.focusedCell.row);
                 idx += v;
-                if (idx < 0 || idx >= Math.min(this.screenLength - 1, this.visibleRows.length)){
+                if (idx < 0 || idx >= Math.min(this.screenLength - 1, this.visibleRows.length)) {
                     idx -= v;
                     this.scrollTop += this.rowHeight * v;
-                    if (this.scrollTop < 1){
+                    if (this.scrollTop < 1) {
                         idx = 0;
                     }
-                    else if (this.scrollTop >= (this.$scrollHeight - this.$height)){
-                        idx = Math.min(this.screenLength, this.visibleRows.length)-1;
+                    else if (this.scrollTop >= (this.$scrollHeight - this.$height)) {
+                        idx = Math.min(this.screenLength, this.visibleRows.length) - 1;
                     }
                     const col = this.focusedCell.col;
                     this.focusedCell = null;
-                    this.async(()=>{ //todo при асинхронной подгрузке данных будут проблемы.
-                        this.focusedCell = {row: this.visibleRows[idx], col};
+                    this.async(() => { //todo при асинхронной подгрузке данных будут проблемы.
+                        this.focusedCell = { row: this.visibleRows[idx], col };
                     }, 100)
                     return;
                 }
-                this.focusedCell = {row: this.visibleRows[idx], col: this.focusedCell.col};
+                this.focusedCell = { row: this.visibleRows[idx], col: this.focusedCell.col };
                 if (!h)
                     return;
                 this.focusedRow = this.focusedCell.row;
@@ -337,7 +337,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.autoWidth)
             cols.push({ $flex: true, $order: 999 * maxColsCount, template: 'div', header: 'div', footer: 'div' });
         if (this.allowCheck !== 'none' && !this.columns.some(i => i.treeMode)) {
-            cols.push({ width: 32,  $order: -999 * maxColsCount, template: 'oda-table-check', header: 'div', fix: 'left' });
+            cols.push({ width: 32, $order: -999 * maxColsCount, template: 'oda-table-check', header: 'div', fix: 'left' });
         }
         cols.filter(i => i.fix === 'left' || i.treeMode).reduce((res, i) => {
             i.left = res;
@@ -392,10 +392,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.items?.length) return [];
         if (this.noLazy) return this.items;
         const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength + this.raisedRows.length);
-        if (this.autoFixRows){
+        if (this.autoFixRows) {
             const raised = [];
             let top = rows[0];
-            let $parent = top.$parent;
+
+            // Если hideTop не подниматься до самого верхнего $parent
+            const getParent = (row) => {
+                return this.hideTop && !row?.$parent?.$parent ? null : row?.$parent;
+            }
+            let $parent = getParent(top);
             while ($parent || top?.$expanded && top?.items?.length) {
                 if (top?.$expanded && top?.items?.length) {
                     raised.add(top);
@@ -411,7 +416,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     else {
                         raised.pop();
                     }
-                    $parent = $parent?.$parent;
+                    $parent = getParent($parent);
                 }
             }
             this.raisedRows = raised;
@@ -468,7 +473,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
                 else {
                     if (this.autoWidth && this.rowColumns.last === col)
-                        style += `\n\tflex: 1;`
+                        style += `\n\tflex: 1 !important;`
                     style += `\n\tmin-width: 16px;`
                 }
                 col.$width = col.$width || col.width || 150;
@@ -503,33 +508,33 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         },
     ],
     keyBindings: {
-        arrowLeft(e){
+        arrowLeft(e) {
             e.preventDefault();
             this.movePointer(-1, 0)
         },
-        arrowRight(e){
+        arrowRight(e) {
             e.preventDefault();
             this.movePointer(1, 0)
         },
-        arrowUp(e){
+        arrowUp(e) {
             e.preventDefault();
             this.movePointer(0, -1)
         },
-        arrowDown(e){
+        arrowDown(e) {
             e.preventDefault();
             this.movePointer(0, 1)
         },
-        pageUp(e){
+        pageUp(e) {
             e.preventDefault();
             this.movePointer(0, -this.screenLength);
         },
-        pageDown(e){
+        pageDown(e) {
             e.preventDefault();
             this.movePointer(0, this.screenLength);
         },
-        tab(e){
+        tab(e) {
             e.preventDefault();
-            const d = !e.shiftKey?1:-1;
+            const d = !e.shiftKey ? 1 : -1;
             this.movePointer(d, d);
         },
         escape() {
@@ -1369,10 +1374,10 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
     </div>
     <div ~if="$scrollHeight > $height" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
-    getItem(col){
+    getItem(col) {
         return col;
     },
-    getTemplate(col){
+    getTemplate(col) {
         return 'div'
     },
     columns: [],
@@ -1382,16 +1387,16 @@ ODA({is:'oda-table-header', extends: 'oda-table-cols',
     template: /*html*/`
     <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
-    getTemplate(col){
+    getTemplate(col) {
         return col.header || this.headerTemplate
     }
 })
 
 ODA({is:'oda-table-footer', extends: 'oda-table-cols',
-    getItem(col){
+    getItem(col) {
         return this.footer;
     },
-    getTemplate(col){
+    getTemplate(col) {
         return col.footer || 'oda-table-footer-cell'
     }
 })
@@ -1428,13 +1433,13 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         .cell {
             position: relative;
             @apply --content;
-            @apply --no-flex;
-            @apply --horizontal;
+            /*@apply --no-flex;*/
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             box-sizing: border-box;
             align-items: center;
+            position: sticky;
         }
         :host([row-lines]) .cell {
             border-bottom: 1px  solid var(--dark-background);
@@ -1540,7 +1545,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id]">
+                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'']">
                     <div @focusin="focusCell(row, col, $event)" autofocus  class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
@@ -1573,16 +1578,16 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         scroll(e) {
             this.setScreen();
         },
-        mousewheel(e){
+        mousewheel(e) {
             if (e.ctrlKey || e.altKey) return;
             e.preventDefault();
-            if (!e.shiftKey){
+            if (!e.shiftKey) {
                 let y = this.scrollTop + e.deltaY;
-                if (y<0)
+                if (y < 0)
                     y = 0;
                 this.scrollTop = /*this.$scrollTop =*/ y
             }
-            else{
+            else {
                 let x = this.scrollLeft + e.deltaY;
                 if (x < 0)
                     x = 0;
@@ -1595,7 +1600,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             return this.groupTemplate;
         if (col.treeMode)
             return 'oda-table-cell-tree';
-        let template = row.templates?.[col] ||  col.cellTemplate || this.cellTemplate;
+        let template = row.templates?.[col] || col.cellTemplate || this.cellTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
@@ -1757,14 +1762,14 @@ cells: {
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
             <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || cellTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
             columnId: '',
-            props:{
+            props: {
                 scrolledChildren: {
-                    get (){
+                    get() {
                         let idx = this.raisedRows.indexOf(this.item);
-                        if (idx>-1){
-                            let next = this.raisedRows[idx+1] || this.rows[0];
+                        if (idx > -1) {
+                            let next = this.raisedRows[idx + 1] || this.rows[0];
                             let counter = 0;
-                            for (let i = 0; i<this.item?.items?.length || 0; i++){
+                            for (let i = 0; i < this.item?.items?.length || 0; i++) {
                                 if (this.item?.items[i] === next)
                                     break;
                                 counter++;
@@ -1775,11 +1780,11 @@ cells: {
                     reflectToAttribute: true
                 },
             },
-            get level(){
+            get level() {
                 return this.item?.$level;
             },
-            get myStyle(){
-                return {width: (+this.level * this.stepWidth) + 'px', ...this.stepStyle};
+            get myStyle() {
+                return { width: (+this.level * this.stepWidth) + 'px', ...this.stepStyle };
             },
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
@@ -1810,8 +1815,8 @@ cells: {
                 return this.treeStep ?? this.iconSize ?? 0;
             },
             color: undefined,
-            _tap(){
-                if(this.item.disabled) this.item.$expanded = !this.item.$expanded
+            _tap() {
+                if (this.item.disabled) this.item.$expanded = !this.item.$expanded
                 else this.item.$expanded = true
             }
         });
@@ -2026,7 +2031,7 @@ cells: {
         listeners: {
             contextmenu: '_menu',
             resize(e) {
-                if (!this.active  || !this.column || this.column.$expanded || this.column.$flex) return;
+                if (!this.active || !this.column || this.column.$expanded || this.column.$flex) return;
                 e.stopPropagation();
                 modifyColumn.call(this.table, this.column);
                 this.column.$width = Math.round(this.offsetWidth);
@@ -2273,14 +2278,14 @@ settings:{
         <div style="writing-mode: vertical-lr;" class="horizontal header">
             <div :focused="focusedTab === index" @tap="focusedTab = index" ~for="tabs"><oda-icon :icon="item.icon" :title="item.title"></oda-icon>{{item.title}}</div>
         </div>
-    `,
+        `,
         focusedTab: 0,
         tabs: [
             { icon: 'icons:tree-structure:90', title: 'columns' },
             { icon: 'icons:filter:90', title: 'filters' },
             { icon: 'icons:settings:90', title: 'properties' },
         ],
-        props:{
+        props: {
             width: {
                 default: 300,
                 save: true,
@@ -2430,13 +2435,13 @@ function modifyColumn(col) {
         return;
     let parent = col.$parent;
     let size = maxColsCount;
-    while (parent){
+    while (parent) {
         size /= col.$parent.items.length;
         parent = parent.$parent;
     }
     const idx = col.$parent.items.indexOf(col);
     const order = col.$parent.$order;
-    col.$order ??= order + Math.floor(size) *  idx;
+    col.$order ??= order + Math.floor(size) * idx;
 }
 function addSaveProp(name, storage) {
     const key = name[0];
@@ -2464,11 +2469,11 @@ function addSaveProp(name, storage) {
         }
     })
 }
-function getRowCellValue(row, col){
+function getRowCellValue(row, col) {
     let path = col?.$saveKey || col;
     path = path.split('/');
-    while(row && path.length>1){
-        let key = '$'+path.shift();
+    while (row && path.length > 1) {
+        let key = '$' + path.shift();
         row = row[key];
         if (Array.isArray(row))
             row = row[0];

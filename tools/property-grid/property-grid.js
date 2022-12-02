@@ -25,6 +25,7 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
         return this.inspectedObject?.constructor?.name
     },
     props: {
+        autoFixRows: true,
         inspectedObject: Object,
         icon: 'icons:settings',
         expertMode: false,
