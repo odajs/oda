@@ -1,6 +1,4 @@
-ODA({imports: '@oda/ace-editor',
-    is: "oda-xml-editor",
-    extends: 'oda-ace-editor',
+ODA({ is: "oda-xml-editor", imports: '@oda/ace-editor', extends: 'oda-ace-editor',
     // template:`<!--<script src="./sax-min.js"></script>-->`,
     props: {
         mode: 'xml',
@@ -35,11 +33,11 @@ ODA({imports: '@oda/ace-editor',
                     return str.replace(/"/g, '&quot;')
                 }
 
-                parser.onprocessinginstruction = function (e) {
+                parser.onprocessinginstruction = function(e) {
                     res += `<?${e.name} ${e.body}?>`;
                 };
 
-                parser.onopentag = function (tag) {
+                parser.onopentag = function(tag) {
                     this.indent();
                     res += ('<' + tag.name);
 
@@ -63,7 +61,7 @@ ODA({imports: '@oda/ace-editor',
                     res += (text);
                 }
 
-                parser.onclosetag = function (tag) {
+                parser.onclosetag = function(tag) {
                     if (!parser.tag.isSelfClosing) {
                         parser.level--;
                         this.indent();
@@ -72,7 +70,7 @@ ODA({imports: '@oda/ace-editor',
                     }
                 };
 
-                parser.oncdata = function (data) {
+                parser.oncdata = function(data) {
                     this.indent();
                     res += '<![CDATA[' + data + ']]>';
                 };
