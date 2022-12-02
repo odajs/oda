@@ -163,9 +163,6 @@ ODA({is: 'oda-tester-container',
             @apply --vertical;
             padding: 16px;
         }
-        /*::slotted(*) {*/
-        /*    @apply --flex;*/
-        /*}*/
     </style>
     <slot class="vertical flex" style="overflow: hidden;"></slot>
     `,

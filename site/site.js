@@ -483,7 +483,7 @@ navigator: {
             _editMode: {
                 default: false,
                 set(n) {
-                    this.columns = n ? [{ name: 'item', width: 24, template: 'oda-status-cell' }, { name: 'item', treeMode: true }] : [];
+                    this.columns = n ? [{ name: 'item', width: 24, cellTemplate: 'oda-status-cell' }, { name: 'item', treeMode: true }] : [];
                 }
             },
             hideTop: true

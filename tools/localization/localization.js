@@ -217,7 +217,7 @@ ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
         autoWidth: true, //sort: [[letter]],
     },
     columns: [{ name: 'word', treeMode: true, $sort: 1, fix: 'left', width: 200 },
-              { name: 'translate', template: 'oda-localization-input' },
+              { name: 'translate', cellTemplate: 'oda-localization-input' },
               { name: 'letter', hidden: true, $sortGroups: 1, $expanded: true, $hideExppander: true }],
     attached(){
         this.groups = [this.columns.find(c => c.name === 'letter')];

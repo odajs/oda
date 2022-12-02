@@ -10,8 +10,8 @@ ODA({is: 'oda-property-grid', extends: 'this, oda-table',
     <slot ~show="!inspectedObject" @slotchange="onSlot"></slot>`,
     get columns() {
         return [
-            { name: 'name', cellTemplate: 'oda-pg-cell-name', header: 'oda-property-grid-header-cell-name', label: 'Property', treeMode: true, fix: 'left', $sort: 1 },
-            { name: 'value', cellTemplate: 'oda-pg-cell-value', header: 'oda-property-grid-header-cell-value' },
+            { name: 'name', cellTemplate: 'oda-pg-cell-name', headerTemplate: 'oda-property-grid-header-cell-name', label: 'Property', treeMode: true, fix: 'left', $sort: 1 },
+            { name: 'value', cellTemplate: 'oda-pg-cell-value', headerTemplate: 'oda-property-grid-header-cell-value' },
             { name: 'category', $hidden: true, $sortGroups: 0 },
         ]
     },

@@ -335,9 +335,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         });
         const cols = this.columns.filter(i => !i.$hidden);
         if (!this.autoWidth)
-            cols.push({ $flex: true, $order: 999 * maxColsCount, template: 'div', header: 'div', footer: 'div' });
+            cols.push({ $flex: true, $order: 999 * maxColsCount, cellTemplate: 'div', headerTemplate: 'div', footerTemplate: 'div' });
         if (this.allowCheck !== 'none' && !this.columns.some(i => i.treeMode)) {
-            cols.push({ width: 32, $order: -999 * maxColsCount, template: 'oda-table-check', header: 'div', fix: 'left' });
+            cols.push({ width: 32, $order: -999 * maxColsCount, cellTemplate: 'oda-table-check', headerTemplate: 'div', fix: 'left' });
         }
         cols.filter(i => i.fix === 'left' || i.treeMode).reduce((res, i) => {
             i.left = res;
@@ -1388,7 +1388,7 @@ ODA({is:'oda-table-header', extends: 'oda-table-cols',
     <oda-button ~if="allowSettings" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
     `,
     getTemplate(col) {
-        return col.header || this.headerTemplate
+        return col.headerTemplate || this.headerTemplate
     }
 })
 
@@ -1397,7 +1397,7 @@ ODA({is:'oda-table-footer', extends: 'oda-table-cols',
         return this.footer;
     },
     getTemplate(col) {
-        return col.footer || 'oda-table-footer-cell'
+        return col.footeTemplate || 'oda-table-footer-cell'
     }
 })
 
@@ -1545,7 +1545,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'']">
+                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
                     <div @focusin="focusCell(row, col, $event)" autofocus  class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>

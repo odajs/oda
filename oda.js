@@ -189,7 +189,7 @@ if (!window.ODA) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     if (!entry.target.$sleep === entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && !(!entry.target.$rect.width && !entry.target.$rect.height);
+                    entry.target.$sleep = !entry.isIntersecting && !(!entry.target.$rect?.width && !entry.target.$rect?.height);
                     if (!entry.target.$sleep)
                         entry.target.domHost?.render();
                 }
@@ -241,9 +241,7 @@ if (!window.ODA) {
 
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    if (ODA.adopted) {
-                        this.$core.root.adoptedStyleSheets = ODA.adopted;
-                    }
+                    this.$core.root.adoptedStyleSheets = [...(prototype.$system.$styles || []), ...(ODA.adopted || [])];
                 }
                 catch (e) {
                     this.$core.root = this.$core.shadowRoot = new DocumentFragment()
@@ -859,7 +857,6 @@ if (!window.ODA) {
 
         for (let key in prototype.props) {
             let prop = prototype.props[key];
-            // if (prop === undefined) continue;
             let getter = prop && (prop.get || (typeof prop === 'function' && !prop.prototype && prop));
             if (getter) {
                 if (typeof prop === 'function')
@@ -886,8 +883,7 @@ if (!window.ODA) {
                 prop = { type: prop };
             }
             else if (Array.isArray(prop)) {
-                // const array = [].concat(prop);
-                prop = { default: prop, type: prop.__proto__.constructor };//{ default: function () { return [].concat(array); }, type: Array };
+                prop = { default: prop, type: prop.__proto__.constructor };
             }
             else if (prop !== null && typeof prop !== "object") {
                 prop = { default: prop, type: prop.__proto__.constructor };
@@ -975,7 +971,6 @@ if (!window.ODA) {
                 });
             });
             if (key) {
-                // e.preventDefault();
                 let handler = prototype.keyBindings[key];
                 if (typeof handler === 'string')
                     handler = prototype[handler];
@@ -1067,7 +1062,6 @@ if (!window.ODA) {
                 let value = sk?.get?.call(this);
                 if (value === undefined)
                     value = '';
-                // console.log('$saveKey', value, this['#$saveKey']);
                 return  value;
             },
             set(n){
@@ -1304,7 +1298,7 @@ if (!window.ODA) {
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
-                if(el.parentElement?.localName == 'style'){
+                if(el.parentElement?.localName === 'style'){
                     let key = '$$style' + el.$node.id;
                     Object.defineProperty(prototype, key, {
                         enumerable: true,
@@ -1331,6 +1325,15 @@ if (!window.ODA) {
                     });
                 }
             }
+            // else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
+            //     el.parentElement?.$node
+            //     prototype.$system.$styles ??=[];
+            //     let ss = new CSSStyleSheet();
+            //     ss.replaceSync(value);
+            //     prototype.$system.$styles.push(ss);
+            //     // el.parentElement.remove();
+            //     return;
+            // }
             else
                 src.textContent = value;
         }
@@ -2545,27 +2548,6 @@ if (!window.ODA) {
             return offsetWidth.get.call(this);
         }
         Object.defineProperty(HTMLElement.prototype, 'offsetWidth', ow);
-
-
-        // const getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
-        // let io;
-        // HTMLElement.prototype.getBoundingClientRect = function (){
-        //     io ??= this.domHost?.$core?.intersect;
-        //     if (this.$rect){
-        //
-        //         io?.unobserve(this);
-        //         const res = this.$rect;
-        //         this.$rect = undefined
-        //         io?.observe(this);
-        //
-        //         return res;
-        //         // const res = this.$rect;
-        //         // this.$rect = undefined
-        //         // return res;
-        //     }
-        //     return getBoundingClientRect.call(this);
-        // }
-
         Element.prototype.assignProps = function (props = {}){
             for (let i in props){
                 const p = props[i];

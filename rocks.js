@@ -13,6 +13,9 @@
 if (!globalThis.KERNEL) {
     const regExpCheck = /^__.*__$/g;
     function makeReactive(target) {
+        if (target?.root){
+            console.log(target)
+        }
         if (!isObject(target) || !Object.isExtensible(target)) return target;
         const op = target.__op__;
         if (op){
@@ -61,6 +64,7 @@ if (!globalThis.KERNEL) {
                 }
                 const block = getBlock.call(this, options, key);
                 if (KERNEL.dpTarget !== block && !block.obs && KERNEL.dpTarget && !block.deps.includes(KERNEL.dpTarget)) {
+
                     block.deps.push(KERNEL.dpTarget);
                     KERNEL.dpTarget.count++;
                 }

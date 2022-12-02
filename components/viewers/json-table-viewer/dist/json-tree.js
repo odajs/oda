@@ -59,7 +59,7 @@ ODA({is: 'oda-json-tree', imports: '@oda/tree',
         return {
             item: { key: key, value: value },
             end: params.end || '',
-            template: 'oda-json-item-simple',
+            cellTemplate: 'oda-json-item-simple',
             $level: params.level || 0,
             style: this.style
         }
@@ -68,10 +68,10 @@ ODA({is: 'oda-json-tree', imports: '@oda/tree',
         const arr = array.map(elem => {
            return this.makeDataSetItem(elem, {level: (params.level || 0) + 1});
         });
-        arr.push({ template: 'oda-json-item-array-end', end: params.end || ''});
+        arr.push({ cellTemplate: 'oda-json-item-array-end', end: params.end || ''});
         return {
             item: { key: params.key || '' },
-            template: 'oda-json-item-array-start',
+            cellTemplate: 'oda-json-item-array-start',
             items: arr,
             $expanded: true,
             $level: params.level,
@@ -99,10 +99,10 @@ ODA({is: 'oda-json-tree', imports: '@oda/tree',
                 level: (params.level || 0) + 1
             });
         });
-        arr.push({ template: 'oda-json-item-object-end', end: params.end || ''});
+        arr.push({ cellTemplate: 'oda-json-item-object-end', end: params.end || ''});
         return {
             item: {key: params.key || ''},
-            template: 'oda-json-item-object-start',
+            cellTemplate: 'oda-json-item-object-start',
             items: arr,
             $expanded: true,
             $level: params.level || 0,
