@@ -85,13 +85,13 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 switch (this.align) {
                     case 'horizontal': {
                         // this.parent.style.minHeight = '';
-                        this.parent.style.height = this.parent.offsetHeight - d.dy/* * this.sign*/ + 'px';
+                        this.parent.style.height = this.parent.offsetHeight - d.dy * this.sign + 'px';
                         // // this.parent.style.minHeight = this.parent.scrollHeight + 'px';
                         // this.height = this.parent.offsetHeight//Math.max(0, this.height - (d.dy * this.sign));
                     } break;
                     default: {
                         // this.parent.style.minWidth = '';
-                        this.parent.style.width = this.parent.offsetWidth - d.dx/* * this.sign*/ + 'px';
+                        this.parent.style.width = this.parent.offsetWidth - d.dx * this.sign + 'px';
                         // this.parent.style.minWidth = this.parent.scrollWidth + 'px';
                         // this.width = this.parent.offsetWidth;//Math.max(0, this.width - (d.dx * this.sign));
                     } break;

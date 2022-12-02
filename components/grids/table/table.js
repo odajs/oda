@@ -56,6 +56,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
     },
     props: {
+        autoFixRows: false,
         noLazy: false,
         pivotMode: {
             default: false,
@@ -171,6 +172,9 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     $height: 0,
     $scrollTop: 0,
     $scrollWidth: 0,
+    get $scrollHeight() {
+        return (this.size + this.fixedRows.length) * this.rowHeight;
+    },
     _selectedAll: false,
     $scrollLeft: 0,
     checkedRows: [],
@@ -295,29 +299,30 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.items?.length) return [];
         if (this.noLazy) return this.items;
         const rows = this.items.slice(this.screenFrom, this.screenFrom + this.screenLength + this.raisedRows.length);
-        const raised = [];
-        let top = rows[0];
-        let $parent = top.$parent;
-        while ($parent || top && top.$expanded && top.items?.length) {
-            if (top && top.$expanded && top.items?.length) {
-                raised.add(top);
-                rows.shift();
-                top = rows[0];
-            }
-            else {
-                raised.unshift($parent)
-                if (raised && (rows[0].$parent === raised.at(-1))) {
+        if (this.autoFixRows){
+            const raised = [];
+            let top = rows[0];
+            let $parent = top.$parent;
+            while ($parent || top?.$expanded && top?.items?.length) {
+                if (top?.$expanded && top?.items?.length) {
+                    raised.add(top);
                     rows.shift();
                     top = rows[0];
                 }
                 else {
-                    raised.pop();
+                    raised.unshift($parent)
+                    if (raised && (rows[0].$parent === raised.at(-1))) {
+                        rows.shift();
+                        top = rows[0];
+                    }
+                    else {
+                        raised.pop();
+                    }
+                    $parent = $parent.$parent;
                 }
-                $parent = $parent.$parent;
             }
+            this.raisedRows = raised;
         }
-        this.raisedRows = raised;
-
         return rows;
     },
     selectedRows: [],
@@ -1239,7 +1244,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;" ~style="{maxWidth: this.autoWidth?'100%':'auto'}">
         <div ~for="col in columns" ~is="getTemplate(col)" :item="getItem(col)"   :column="col"  ~class="['col-' + col.id, col.$flex?'flex':'auto']"></div>
     </div>
-    <div class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
+    <div ~if="$scrollHeight > $height" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
     getItem(col){
         return col;
@@ -1281,7 +1286,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         :host([fix]) {
             overflow-x: clip !important;
             overflow-y: {{overHeight? 'scroll':'clip'}} !important;
-            height: {{_bodyHeight}}px;
+            height: {{$scrollHeight}}px;
         }
         :host([fix]) .cell {
             @apply --header;
@@ -1410,7 +1415,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
 
     </style>
-    <div class="no-flex  vertical" ~style="{maxHeight: _bodyHeight+'px', minHeight: _bodyHeight+'px'}">
+    <div class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
         <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div ~for="(row, r) in visibleRows" class="row"  :row
                 ~class="{'group-row':row.$group}"
@@ -1420,8 +1425,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  @focusin="focusCell(row, col)" @pointerdown="focusCell(row, col)" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id]">
-                    <div tabindex="-1" autofocus :draggable="getDraggable(row, col)" class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
+                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id]">
+                    <div @focusin="focusCell(row, col, $event)" autofocus  class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
         </div>
@@ -1429,7 +1434,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
 
-    focusCell(row, col){
+    focusCell(row, col, e){
         if (col.fix || col.$flex) return;
         if (this.focusedCell?.row === row && this.focusedCell?.col === col)
             return;
@@ -1464,7 +1469,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
         if (v?.row) {
             const idx = this.visibleRows.indexOf(v?.row);
-            if ((idx+1) * this.rowHeight > this.$height){
+            if ((idx+.8) * this.rowHeight > this.$height){
                 this.$scrollTop += this.rowHeight;
             }
         }
@@ -1534,11 +1539,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                     if (this.scrollTop < 1){
                         idx = 0;
                     }
-                    else if (this.scrollTop >= (this._bodyHeight - this.$height)){
-                        // this.$scrollTop = this._bodyHeight - this.$height;
-                        // return;
-                        //
-                        idx = Math.min(this.screenLength, this.visibleRows.length)-1;
+                    else if (this.scrollTop >= (this.$scrollHeight - this.$height)){
+                         idx = Math.min(this.screenLength, this.visibleRows.length)-1;
                     }
                     const col = this.focusedCell.col;
                     this.focusedCell = null;
@@ -1612,9 +1614,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     getDraggable(row, col) {
         return (col.treeMode && this.allowDrag && !this.compact && !row.$group && row.drag !== false) ? 'true' : false;
     },
-    get _bodyHeight() {
-        return (this.size + this.fixedRows.length) * this.rowHeight;
-    },
+
 })
 ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
     template: /*html*/`
