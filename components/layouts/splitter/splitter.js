@@ -34,6 +34,10 @@ ODA({is: 'oda-splitter', template: /*html*/`
         }
     </style>
     `,
+    get _sign() {
+        const items = [...(this.parent?.children || []), ...(this.parent?.$core?.root.children || [])];
+        return (items.indexOf(this) === items.length - 1)?-1:1
+    },
     props: {
         color: 'var(--dark-background)',
         size: 4,
@@ -46,7 +50,7 @@ ODA({is: 'oda-splitter', template: /*html*/`
             reflectToAttribute: true,
             list: ['horizontal', 'vertical'],
         },
-        sign: 0,
+
         reverse: false,
         width: {
             type: Number,
@@ -67,11 +71,6 @@ ODA({is: 'oda-splitter', template: /*html*/`
             document.body.appendChild(this._mover);
         }
     },
-    attached(){
-        if (this.parent){
-            this.sign = Array.from(this.parent.children).indexOf(this)?-1:1;
-        }
-    },
     get parent(){
         return this.parentElement || this.domHost;
     },
@@ -84,28 +83,12 @@ ODA({is: 'oda-splitter', template: /*html*/`
                 this._mover?.remove();
                 switch (this.align) {
                     case 'horizontal': {
-                        // this.parent.style.minHeight = '';
-                        this.parent.style.height = this.parent.offsetHeight - d.dy * this.sign + 'px';
-                        // // this.parent.style.minHeight = this.parent.scrollHeight + 'px';
-                        // this.height = this.parent.offsetHeight//Math.max(0, this.height - (d.dy * this.sign));
+                        this.parent.style.height = this.parent.offsetHeight - d.dy * this._sign + 'px';
                     } break;
                     default: {
-                        // this.parent.style.minWidth = '';
-                        this.parent.style.width = this.parent.offsetWidth - d.dx * this.sign + 'px';
-                        // this.parent.style.minWidth = this.parent.scrollWidth + 'px';
-                        // this.width = this.parent.offsetWidth;//Math.max(0, this.width - (d.dx * this.sign));
+                        this.parent.style.width = this.parent.offsetWidth - d.dx * this._sign + 'px';
                     } break;
                 }
-
-
-                // this.fire('split', { dx: d.dx * this.sign, dy: d.dy * this.sign });
-                // this.async(()=>{
-                //     parent.fire('resize');
-                //     // const event = document.createEvent('Event');
-                //     // event.initEvent('resize', true, true);
-                //     // parent.dispatchEvent(event);
-                // });
-
             } break;
             case 'track': {
                 switch (this.align) {

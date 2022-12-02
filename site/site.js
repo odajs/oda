@@ -612,8 +612,8 @@ header: {
             }
         },
         _resize() {
-            this.mobile = this.rootHost.offsetWidth < 920;
-            this.showLogoImage = this.rootHost.offsetWidth > 320;
+            this.mobile = this.domHost.offsetWidth < 920;
+            this.showLogoImage = this.domHost.offsetWidth > 320;
         },
         _tap(i, item) {
             this.selectedSiteHeaderMenu = item.label || item.name;

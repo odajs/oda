@@ -1325,15 +1325,15 @@ if (!window.ODA) {
                     });
                 }
             }
-            else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
-                el.parentElement?.$node
-                prototype.$system.$styles ??=[];
-                let ss = new CSSStyleSheet();
-                ss.replaceSync(value);
-                prototype.$system.$styles.push(ss);
-                // el.parentElement.remove();
-                return;
-            }
+            // else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
+            //     el.parentElement?.$node
+            //     prototype.$system.$styles ??=[];
+            //     let ss = new CSSStyleSheet();
+            //     ss.replaceSync(value);
+            //     prototype.$system.$styles.push(ss);
+            //     // el.parentElement.remove();
+            //     return;
+            // }
             else
                 src.textContent = value;
         }
