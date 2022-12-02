@@ -1,7 +1,4 @@
-import '../../../grids/tree/tree.js';
-import ODA from '../../../../oda.js';
-ODA({
-    is: 'oda-json-tree',
+ODA({is: 'oda-json-tree', imports: '@oda/tree',
     extends: 'oda-tree',
     props: {
         columns: [
