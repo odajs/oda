@@ -189,7 +189,7 @@ if (!window.ODA) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     if (!entry.target.$sleep === entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && !(!entry.target.$rect?.width && !entry.target.$rect?.height);
+                    entry.target.$sleep = !entry.isIntersecting && !(!entry.target.offsetWidth && !entry.target.offsetHeight);
                     if (!entry.target.$sleep)
                         entry.target.domHost?.render();
                 }
@@ -241,9 +241,7 @@ if (!window.ODA) {
 
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    if (ODA.adopted) {
-                        this.$core.root.adoptedStyleSheets = [...prototype.$system.$styles || [], ...ODA.adopted];
-                    }
+                    this.$core.root.adoptedStyleSheets =  [...(prototype.$system.$styles || []), ...(ODA.adopted || [])];
                 }
                 catch (e) {
                     this.$core.root = this.$core.shadowRoot = new DocumentFragment()
@@ -1300,7 +1298,7 @@ if (!window.ODA) {
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
-                if(el.parentElement?.localName == 'style'){
+                if(el.parentElement?.localName === 'style'){
                     let key = '$$style' + el.$node.id;
                     Object.defineProperty(prototype, key, {
                         enumerable: true,
@@ -1327,7 +1325,7 @@ if (!window.ODA) {
                     });
                 }
             }
-            else if(el.parentElement?.localName === 'style'){
+            else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
                 el.parentElement?.$node
                 prototype.$system.$styles ??=[];
                 let ss = new CSSStyleSheet();

@@ -1760,7 +1760,7 @@ cells: {
             </div>
             <oda-table-expand class="no-flex" :item :scrolled-children></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
-            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.template || cellTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
+            <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.cellTemplate || cellTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
             columnId: '',
             props: {
                 scrolledChildren: {

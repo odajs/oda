@@ -13,7 +13,7 @@
 if (!globalThis.KERNEL) {
     const regExpCheck = /^__.*__$/g;
     function makeReactive(target) {
-        if (!isObject(target) || !Object.isExtensible(target)) return target;
+        if (/*!isObject(target) || */!Object.isExtensible(target)) return target;
         const op = target.__op__;
         if (op){
             let val = op.hosts.get(this);
