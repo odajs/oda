@@ -241,7 +241,9 @@ if (!window.ODA) {
 
                 try {
                     this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    this.$core.root.adoptedStyleSheets = [...(prototype.$system.$styles || []), ...(ODA.adopted || [])];
+                    if (ODA.adopted) {
+                        this.$core.root.adoptedStyleSheets = [...prototype.$system.$styles || [], ...ODA.adopted];
+                    }
                 }
                 catch (e) {
                     this.$core.root = this.$core.shadowRoot = new DocumentFragment()
@@ -1298,7 +1300,7 @@ if (!window.ODA) {
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
-                if(el.parentElement?.localName === 'style'){
+                if(el.parentElement?.localName == 'style'){
                     let key = '$$style' + el.$node.id;
                     Object.defineProperty(prototype, key, {
                         enumerable: true,
@@ -1325,15 +1327,15 @@ if (!window.ODA) {
                     });
                 }
             }
-            // else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
-            //     el.parentElement?.$node
-            //     prototype.$system.$styles ??=[];
-            //     let ss = new CSSStyleSheet();
-            //     ss.replaceSync(value);
-            //     prototype.$system.$styles.push(ss);
-            //     // el.parentElement.remove();
-            //     return;
-            // }
+            else if(el.parentElement?.localName === 'style'){
+                el.parentElement?.$node
+                prototype.$system.$styles ??=[];
+                let ss = new CSSStyleSheet();
+                ss.replaceSync(value);
+                prototype.$system.$styles.push(ss);
+                // el.parentElement.remove();
+                return;
+            }
             else
                 src.textContent = value;
         }
