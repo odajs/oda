@@ -1109,11 +1109,11 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this._dropCheckWait = null;
     },
 
-    _onRowContextMenu(e) {
-        const el = e.path.find(p => p.row);
-        if (el)
-            this.fire('row-contextmenu', el.row);
-    },
+    // _onRowContextMenu(e) {
+    //     const el = e.path.find(p => p.row);
+    //     if (el)
+    //         this.fire('row-contextmenu', el.row);
+    // },
     _onDropToEmptySpace() {
 
     },
@@ -1500,7 +1500,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
-
+    _onRowContextMenu(e) {
+        const el = e.path.find(p => p.row);
+        if (el)
+            this.table.fire('row-contextmenu', el.row);
+    },
     _getFocus(col, row) {
         return !col.treeMode && !col.fix && Object.equal(this.focusedCell?.row, row) && Object.equal(this.focusedCell?.col, col);
     },
