@@ -92,24 +92,24 @@ if (!window.ODA) {
             for (let style of styles) {
                 style.textContent = ODA.applyStyleMixins(style.textContent);
                 if (ODA.isApple){
-                    // *** for compatibility with devices from Apple
-                    let txtContent = style.textContent.replace(/\}\}/g, ']]]]').replace(/\s\s+/g, ' ').split('}');
-                    const arrHost = [];
-                    txtContent.map(o => {
-                        let s = o.replace(/]]]]/g, '}}').trim() + '}';
-                        if (s.includes(':host'))
-                            arrHost.push({ cssText: s, selectorText: s.replace(/\{.+\}/, '').trim() });
-                    })
-                    // ***
-                    document.head.appendChild(style);
-                    if (style.sheet.cssRules.length && !/\{\{.*\}\}/g.test(style.textContent)) {
-                        ODA.cssRuleParse(style.sheet.cssRules, rules);
-                        if (arrHost.length > 0)
-                            ODA.cssRuleParse(arrHost, rules, true); // ***
-                        style.remove();
-                    }
-                    else
-                        template.content.insertBefore(style, template.content.firstElementChild);
+                    // // *** for compatibility with devices from Apple
+                    // let txtContent = style.textContent.replace(/\}\}/g, ']]]]').replace(/\s\s+/g, ' ').split('}');
+                    // const arrHost = [];
+                    // txtContent.map(o => {
+                    //     let s = o.replace(/]]]]/g, '}}').trim() + '}';
+                    //     if (s.includes(':host'))
+                    //         arrHost.push({ cssText: s, selectorText: s.replace(/\{.+\}/, '').trim() });
+                    // })
+                    // // ***
+                    // document.head.appendChild(style);
+                    // if (style.sheet.cssRules.length && !/\{\{.*\}\}/g.test(style.textContent)) {
+                    //     ODA.cssRuleParse(style.sheet.cssRules, rules);
+                    //     if (arrHost.length > 0)
+                    //         ODA.cssRuleParse(arrHost, rules, true); // ***
+                    //     style.remove();
+                    // }
+                    // else
+                    //     template.content.insertBefore(style, template.content.firstElementChild);
                 }
             }
             const keys = Object.keys(rules);
