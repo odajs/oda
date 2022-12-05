@@ -1,11 +1,10 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
-const libs = {};
-const icons = {};
+const parser = new DOMParser();
 ODA({is: 'oda-icon',
     template: /*html*/`
     <style>
         :host {
-            /*will-change: transform;*/
+            will-change: transform;
             @apply --horizontal;
             @apply --no-flex;
             display: flex;
@@ -53,8 +52,8 @@ ODA({is: 'oda-icon',
             will-change: transform;
         }
     </style>
-    <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="{minWidth: iconSize+'px', minHeight: iconSize+'px', height: iconSize+'px', width: iconSize+'px'}">
-        <svg part="svg" ~show="_icon" ~style="_style" :stroke :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
+    <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="_style">
+        <svg ~style="_svgStyle" :stroke :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
             <defs ~if="blink">
                 <g is="style" type="text/css">
                     @keyframes blinker { 100% { opacity: 0; } }
@@ -66,6 +65,10 @@ ODA({is: 'oda-icon',
     </div>
     <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/3"></oda-icon>
     `,
+    get _style(){
+        const w = this.iconSize+'px';
+        return {minWidth: w, minHeight: w, height: w, width: w};
+    },
     get sub(){
         return this.$('.subicon');
     },
@@ -73,11 +76,16 @@ ODA({is: 'oda-icon',
         return this._obj?.body || this._def?.body;
     },
     get _rotate() {
-        return this._obj?.rotate || 0;
+        let n = this.icon;
+        if (/:[0-9]+$/.test(n)) {
+            let s = n.match(/:[0-9]+$/)[0];
+            return +s.substring(1);
+        }
+        return 0;
     },
     get _obj() {
         if (this.icon) {
-            let obj = icons[this.icon] ??= getIcon.call(this, this.icon);
+            let obj = icons[this.icon] ??= loadIcon.call(this, this.icon);
             if (obj?.then) {
                 obj.then(res => {
                     return (this._obj = res);
@@ -85,14 +93,14 @@ ODA({is: 'oda-icon',
                     console.log(e)
                     return (this._obj = {});
                 })
-                obj = null;
+                // obj = null;
             }
             return obj;
         }
     },
     get _def() {
         if (this.default) {
-            let obj = icons[this.default] ??= getIcon.call(this, this.default);
+            let obj = icons[this.default] ??= loadIcon.call(this, this.default);
             if (obj?.then) {
                 obj.then(res => {
                     return (this._def = res);
@@ -100,7 +108,7 @@ ODA({is: 'oda-icon',
                     console.log(e)
                     return (this._def = {});
                 })
-                obj = null;
+                // obj = null;
             }
             return obj;
         }
@@ -119,7 +127,7 @@ ODA({is: 'oda-icon',
         blink: 0,
         subIcon: '',
     },
-    get _style() {
+    get _svgStyle() {
         const s = this.iconSize + 'px';
         const obj = { width: s, height: s, minHeight: s };
         const r = this.rotate + (this._rotate || 0);
@@ -131,7 +139,7 @@ ODA({is: 'oda-icon',
         obj.backgroundImage = 'unset';
         obj.backgroundPosition = 'unset';
 
-        if (this._icon && typeof this._icon === 'string') {
+        if (typeof this._icon === 'string') {
             obj.backgroundImage = `url("${this._icon}")`;
             obj.backgroundRepeat = 'no-repeat';
             obj.backgroundSize = 'contain';
@@ -143,72 +151,46 @@ ODA({is: 'oda-icon',
         return this._icon?.size || 0;
     },
 });
-async function loadIcons(name) {
-    let content = libs[name];
-    if (!content) {
-        try {
-            const doc = await ODA.loadHTML(ODA.rootPath + '/tools/icons/svg/' + name + '.html');
-            const tmp = doc.querySelector('template');
-            libs[name] = content = tmp.content;
-            content.size = +tmp.getAttribute('size') || 0;
-        }
-        catch (e) {
-            console.error(e);
-        }
+function loadIcon(n){
+    if (/:[0-9]+$/.test(n)) {
+        let s = n.match(/:[0-9]+$/)[0];
+        n = n.replace(s, '');
     }
-    return content;
+    let object = icons[n] ??= new Promise((resolve, reject)=>{
+        resolves[n] = resolve;
+        worker.postMessage(n);
+        return icons[n];
+    })
+    return object;
 }
-
-async function getIcon(n) {
-    const key = n;
-    let obj = icons[key];
-    if (!obj) {
-        icons[key] = obj = Object.create(null);
-
-        if (/:[0-9]+$/.test(n)) {
-            let s = n.match(/:[0-9]+$/)[0];
-            n = n.replace(s, '');
-            obj.rotate = +s.substring(1);
-        }
-        else
-            obj.rotate = 0;
-        if (isSVG(n)) {
-            n = n.split(':');
-            let name = n.shift();
-            let content = await loadIcons(name);
-            n = n[0];
-            const g = content?.getElementById(n);
-            if (g)
-                obj.body = { body: g.outerHTML, size: (+g.getAttribute('size') || content.size) };
-        }
-        else {
-            if (!n.includes('.'))
-                n += '.png';
-            if (!n.includes('/'))
-                n = ODA.rootPath + '/tools/icons/png/' + n;
-            try {
-                let file = await fetch(n);
-                if (!file.ok)
-                    throw new Error(`icon file "${n}" not found!`)
-                file = await file.blob();
-                obj.body = await new Promise(async resolve => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onloadend = function () {
-                        resolve(reader.result);
-                    }
-                });
-            }
-            catch (err) {
-                console.warn(err);
-                if (this.default !== this.icon)
-                    this.icon = this.default;
-            }
-        }
-
+const resolves = {};
+const icons = {};
+let worker = new SharedWorker(path+'/icon-ww.js');
+worker = worker.port || worker;
+worker.start?.();
+worker.onmessage = function (e){
+    switch (e.data?.type){
+        case 'svg':{
+            const dom = parser.parseFromString(e.data.doc, 'text/html');
+            const template = dom.querySelector('template');
+            const size = +template.getAttribute('size') || 0
+            e.data.svg = Array.prototype.reduce.call(template.content.children, (res, i)=>{
+                res[i.id] = {body: {body: i.outerHTML, size: (+i.getAttribute('size') || size)}};
+                return res
+            }, {})
+            worker.postMessage(e.data);
+        } break;
+        case 'request':{
+            worker.postMessage(e.data.icon);
+        } break;
+        default:{
+            icons[e.data.icon] = e.data;
+            resolves[e.data.icon]?.(e.data);
+            delete resolves[e.data.icon];
+        } break;
     }
-    return obj;
 }
-function isSVG(str) {
-    return (str.includes(':') && !str.includes('/'));
+worker.onmessageerror = function (e) {
+    console.error(e);
 }
+worker.postMessage({type: 'init', url: ODA.rootPath})

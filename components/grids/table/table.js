@@ -548,59 +548,6 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this._selectedAll = true;
             }
         },
-        // arrowUp(e) {
-        //     // e.preventDefault();
-        //     e.stopPropagation();
-        //     const rows = this.rows;
-        //     const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
-        //     let idx = rows.findIndex(r => this.compareRows(r, row));
-        //     idx = idx > 0 ? idx - 1 : 0;
-        //     this.highlightRow(e, { value: rows[idx] });
-        //     if (!e.ctrlKey) {
-        //         this.selectRow(e, { value: rows[idx] })
-        //     }
-        //     if (idx <= (rows.findIndex(r => r === this.raisedRows[0]) + 2)) {
-        //         this.$refs.body.scrollTop -= (~~(this.screenLength / 2)) * this.rowHeight;
-        //     }
-        // },
-        // arrowDown(e) {
-        //     e.stopPropagation();
-        //     const rows = this.rows;
-        //     const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
-        //     let idx = rows.findIndex(r => this.compareRows(r, row));
-        //     const max = rows.length - 1;
-        //     idx = idx < max ? idx + 1 : max;
-        //     this.highlightRow(e, { value: rows[idx] });
-        //     if (!e.ctrlKey) {
-        //         this.selectRow(e, { value: rows[idx] })
-        //     }
-        //     if (idx >= (this.screenLength - 1)) {
-        //         this.$refs.body.scrollTop += (~~(this.screenLength / 2)) * this.rowHeight;
-        //     }
-        // },
-        // arrowRight(e) {
-        //     e.stopPropagation();
-        //     const rows = this.rows;
-        //     const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
-        //     let idx = rows.findIndex(r => this.compareRows(r, row));
-        //     if (!~idx) return;
-        //     if (rows[idx] && ('$expanded' in rows[idx] || rows[idx].$hasChildren)) {
-        //         rows[idx].$expanded = true;
-        //         this.setScreenExpanded?.(rows[idx])
-        //     }
-        // },
-        // arrowLeft(e) {
-        //     // e.preventDefault();
-        //     e.stopPropagation();
-        //     const rows = this.rows;
-        //     const row = this.allowHighlight && this.highlightedRow ? this.highlightedRow : this.focusedRow;
-        //     let idx = rows.findIndex(r => this.compareRows(r, row));
-        //     if (!~idx) return;
-        //     if (rows[idx]?.$expanded === true) {
-        //         rows[idx].$expanded = false;
-        //         this.setScreenExpanded?.(rows[idx])
-        //     }
-        // },
         'ctrl+space'(e) {
             // e.preventDefault();
             e.stopPropagation();
@@ -1562,11 +1509,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     setScreen() {
         if (this.fix) return;
 
-        this.$scrollWidth = this.scrollWidth;
         this.$height = this.offsetHeight;
         this.$width = this.offsetWidth;
         this.overHeight = this.offsetHeight < this.scrollHeight;
         this.firstTop = Math.floor(this.$scrollTop / this.rowHeight) * this.rowHeight;
+        this.$scrollWidth = this.scrollWidth;
         this.$scrollTop = this.scrollTop;
         this.$scrollLeft = this.scrollLeft;
     },
@@ -1580,18 +1527,26 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         },
         mousewheel(e) {
             if (e.ctrlKey || e.altKey) return;
-            e.preventDefault();
+
             if (!e.shiftKey) {
-                let y = this.scrollTop + e.deltaY;
+                if (Math.round(this.offsetHeight) === Math.round(this.scrollHeight))
+                    return;
+                let y = Math.round(this.scrollTop) + e.deltaY;
                 if (y < 0)
                     y = 0;
-                this.scrollTop = /*this.$scrollTop =*/ y
+                this.$scrollTop = y;
+                if (Math.round(this.scrollTop) !== Math.round(this.$scrollTop))
+                    e.preventDefault();
             }
             else {
-                let x = this.scrollLeft + e.deltaY;
+                if (Math.round(this.offsetWidth) === Math.round(this.scrollWidth))
+                    return;
+                let x = Math.round(this.scrollLeft) + e.deltaY;
                 if (x < 0)
                     x = 0;
-                this.scrollLeft = /*this.$scrollLeft = */x;
+                this.$scrollLeft = x;
+                if (Math.round(this.scrollLeft) !== Math.round(this.$scrollLeft))
+                    e.preventDefault();
             }
         }
     },
@@ -1716,7 +1671,7 @@ cells: {
             <style>
                 :host {
                     height: 100%;
-                    background-color: {{color || 'unset'}} !important;
+                    /*background-color: {{color || 'unset'}} !important;*/
                 }
                 :host * {
                   --line-border: 1px solid silver;

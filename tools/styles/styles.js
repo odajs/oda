@@ -1,7 +1,7 @@
 const STYLES = ODA.regTool('styles');
 STYLES.path = import.meta.url.split('/').slice(0,-1).join('/');
-const style = document.createElement('style');
-style.textContent = /*css*/`
+// const style = document.createElement('style');
+let style = /*css*/`
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -438,27 +438,31 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 `;
-document.head.appendChild(style);
+
+style = ODA.extractCSSRules(style)
+const ss = document.createElement('style');
+ss.textContent = style;
+document.head.appendChild(ss);
 
 
-
-const style2 = document.createElement('style');
-style2.setAttribute('scope', 'oda-styles');
-style2.textContent = '::-webkit-scrollbar {\n    width: 8px;\n    height: 8px;\n}\n::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);\n\n}\n::-webkit-scrollbar-thumb {\n    border-radius: 10px;\n    background: var(--body-background);\n   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);\n}\n::-webkit-scrollbar-thumb:hover {\n    @apply --dark;\n    width: 16px;\n}';
-for (const key in ODA.cssRules) {
-    const rule = ODA.cssRules[key];
-    if (rule.includes(';')) {
-        style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-        style2.textContent += `[${key.replace(/^--/, '')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-    }
-}
+//
+// const style2 = document.createElement('style');
+// style2.setAttribute('scope', 'oda-styles');
+// style2.textContent = '::-webkit-scrollbar {\n    width: 8px;\n    height: 8px;\n}\n::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);\n\n}\n::-webkit-scrollbar-thumb {\n    border-radius: 10px;\n    background: var(--body-background);\n   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);\n}\n::-webkit-scrollbar-thumb:hover {\n    @apply --dark;\n    width: 16px;\n}';
+// for (const key in ODA.cssRules) {
+//     const rule = ODA.cssRules[key];
+//     if (rule.includes(';')) {
+//         style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
+//         style2.textContent += `[${key.replace(/^--/, '')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
+//     }
+// }
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {
     let ss = new CSSStyleSheet();
-    ss.replaceSync(style2.textContent);
+    ss.replaceSync(style);
     ODA.adopted = [ss];
 }
 
-document.head.appendChild(style2);
+// document.head.appendChild(style2);
 console.log('styles is loaded.');
 export default STYLES;

@@ -11,6 +11,7 @@
 */
 
 if (!globalThis.KERNEL) {
+
     const regExpCheck = /^__.*__$/g;
     function makeReactive(target) {
         if (!isObject(target) || !Object.isExtensible(target)) return target;

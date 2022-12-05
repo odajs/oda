@@ -5,36 +5,13 @@
 import './rocks.js';
 'use strict';
 if (!window.ODA) {
+
     window.document.body.style.visibility = 'hidden';
     const makeReactive = KERNEL.makeReactive;
     const domParser = new DOMParser();
-    const regExpApply = /(?:@apply\s+)(--[\w-]*\w+)+/g;
-    const commentRegExp = /\/\*[^*/]*\*\//igm;
-    const regExpParseRule = /([a-z-]+)\s*:\s*((?:[^;]*url\(.*?\)[^;]*|[^;]*)*)\s*(?:;|$)/gi;
-    function cssRuleParse(rules, res, host = false) {
-        for (let rule of rules) {
-            switch (rule.type){
-                case CSSRule.KEYFRAMES_RULE:{
-                    let key = rule.cssText;
-                    let r = res[key] = res[key] || {};
-                    cssRuleParse(rule.cssRules, r);
-                } break;
-                case CSSRule.MEDIA_RULE:{
-                    let key = '@media ' + rule.media.mediaText;
-                    let r = res[key] = res[key] || {};
-                    cssRuleParse(rule.cssRules, r);
-                } break;
-                default:{
-                    if (rule.cssText.includes(':host') && !host) continue;
-                    const ss = rule.cssText.replace(rule.selectorText, '').match(regExpParseRule);
-                    if (!ss) continue;
-                    let sel = rule.selectorText?.split(',').join(',\r');
-                    let r = res[sel] = res[sel] || [];
-                    r.add(...ss);
-                } break;
-            }
-        }
-    }
+    // const regExpApply = /(?:@apply\s+)(--[\w-]*\w+)+/g;
+
+
 
     const pointerDownListen = (win = window) => {
         try { //cross-origin
@@ -56,42 +33,42 @@ if (!window.ODA) {
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
-    function decode(map, r){
-        if (!map) return;
-        for (let s of map.split(';')){
-            if (!s) continue;
-            if (s.trim().startsWith('@apply')){
-                s = s.replace('@apply', '').replace(';', '').trim();
-                decode(ODA.cssRules?.[s], r);
-            }
-            else{
-                r.add(s.trim() + ';')
-            }
-        }
-    }
+
     async function regComponent(prototype, context) {
+        let regTime = Date.now();
+        console.log(prototype.is, '==>>')
         if (window.customElements.get(prototype.is)) return prototype.is;
         try {
             if (prototype.imports){
                 if (typeof prototype.imports === 'string')
                     prototype.imports = prototype.imports.split(',').map(i=>i.trim());
-                await Promise.allSettled((prototype.imports).map( i => {
-                    return ODA.import(i, context, prototype);
-                }));
+                for (let imp of prototype.imports){
+                    const i = ODA.import(imp, context, prototype);
+                    if (i?.then)
+                        await i;
+                }
             }
             clearExtends(prototype);
-            let parents = await Promise.all(prototype.extends.filter(ext => {
-                ext = ext.trim();
-                return ext === 'this' || ext.includes('-');
-            }).map(async ext => {
+            let parents = [];
+            for (let ext of prototype.extends){
                 ext = ext.trim();
                 if (ext === 'this')
-                    return ext;
-                let parent = ODA.telemetry.components[ext] || (await ODA.tryReg(ext, context));
-                if (!parent)
-                    throw new Error(`Not found inherit parent "${ext}"`);
-                return parent;
-            }));
+                    parents.push(ext)
+                else if (ext.includes('-')){
+
+                    let parent = ODA.telemetry.components[ext] || ODA.tryReg(ext, context);
+                    if (!parent)
+                        throw new Error(`Not found inherit parent "${ext}"`);
+                    if (parent.then){
+                        console.log('ASYNC-COMPONENT-LOADING',ext);
+                        parent = await parent;
+                    }
+                    parents.push(parent);
+                }
+                else
+                    throw new Error(`Incorrect inherit extend name "${ext}"`);
+            }
+
             let template = prototype.template || '';
             if (parents.length) {
                 let templateExt = '';
@@ -109,28 +86,31 @@ if (!window.ODA) {
             }
             const doc = domParser.parseFromString(`<template>${template || ''}</template>`, 'text/html');
             template = doc.querySelector('template');
+
             const styles = Array.prototype.filter.call(template.content.children, i => i.localName === 'style');
             const rules = {};
             for (let style of styles) {
                 style.textContent = ODA.applyStyleMixins(style.textContent);
-                // *** for compatibility with devices from Apple
-                let txtContent = style.textContent.replace(/\}\}/g, ']]]]').replace(/\s\s+/g, ' ').split('}'),
-                    arrHost = [];
-                txtContent.map(o => {
-                    let s = o.replace(/]]]]/g, '}}').trim() + '}';
-                    if (s.includes(':host'))
-                        arrHost.push({ cssText: s, selectorText: s.replace(/\{.+\}/, '').trim() });
-                })
-                // ***
-                document.head.appendChild(style);
-                if (style.sheet.cssRules.length && !/\{\{.*\}\}/g.test(style.textContent)) {
-                    cssRuleParse(style.sheet.cssRules, rules);
-                    if (arrHost.length > 0)
-                        cssRuleParse(arrHost, rules, true); // ***
-                    style.remove();
+                if (ODA.isApple){
+                    // *** for compatibility with devices from Apple
+                    let txtContent = style.textContent.replace(/\}\}/g, ']]]]').replace(/\s\s+/g, ' ').split('}');
+                    const arrHost = [];
+                    txtContent.map(o => {
+                        let s = o.replace(/]]]]/g, '}}').trim() + '}';
+                        if (s.includes(':host'))
+                            arrHost.push({ cssText: s, selectorText: s.replace(/\{.+\}/, '').trim() });
+                    })
+                    // ***
+                    document.head.appendChild(style);
+                    if (style.sheet.cssRules.length && !/\{\{.*\}\}/g.test(style.textContent)) {
+                        ODA.cssRuleParse(style.sheet.cssRules, rules);
+                        if (arrHost.length > 0)
+                            ODA.cssRuleParse(arrHost, rules, true); // ***
+                        style.remove();
+                    }
+                    else
+                        template.content.insertBefore(style, template.content.firstElementChild);
                 }
-                else
-                    template.content.insertBefore(style, template.content.firstElementChild);
             }
             const keys = Object.keys(rules);
             if (keys.length) {
@@ -160,7 +140,7 @@ if (!window.ODA) {
                 el = ComponentFactory(prototype);
             window.customElements.define(prototype.is, el, options);
             ODA.telemetry.last = prototype.is;
-            console.log(prototype.is, '- ok')
+            console.log(prototype.is, Date.now() - regTime, '- ok')
         }
         catch (e) {
             console.error(prototype.is, e);
@@ -588,15 +568,12 @@ if (!window.ODA) {
             get $url() {
                 return prototype.$system.url;
             }
-            get $dir() {
-                return prototype.$system.dir;
-            }
+            // get $dir() {
+            //     return prototype.$system.dir;
+            // }
             get $$parents() {
                 return prototype.$system.parents.filter(i=>typeof i === 'object').map(i => i.prototype.is);
             }
-            // get $$imports() {
-            //     return ODA.telemetry.imports[prototype.$system.url];
-            // }
             get $$modules() {
                 return ODA.telemetry.modules[this.$url]?.filter(i => i !== prototype.is) || []
             }
@@ -1103,12 +1080,8 @@ if (!window.ODA) {
         return toRemove;
     }
     async function ODA(prototype = {}, stat = {}) {
-        prototype.is = prototype.is.toLowerCase();
-        const proto = ODA.telemetry.components[prototype.is];
-        if (proto)
-            return proto.prototype;
-        if(!prototype.$system){
-            prototype.$system = Object.create(null)
+        if (!ODA.telemetry.components[prototype.is]){
+            prototype.$system ??= Object.create(null)
             const matches = (new Error()).stack.match(regexUrl);
             prototype.$system.url = matches[matches.length - 1];
             prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
@@ -1118,7 +1091,7 @@ if (!window.ODA) {
                 url: prototype.$system.url,
                 is: prototype.is,
                 reg: async (context)=>{
-                    prototype.$system.reg = prototype.$system.reg || regComponent(prototype, context);
+                    prototype.$system.reg ??= regComponent(prototype, context);
                     await prototype.$system.reg;
                     return ODA.telemetry.components[prototype.is];
                 }
@@ -1150,6 +1123,8 @@ if (!window.ODA) {
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
     window.ODA = ODA;
+    const apples = ['Mac68K', 'MacPPC', 'MacIntel', 'iPhone', 'iPod', 'iPad',]
+    ODA.isApple = apples.includes(navigator.platform);
     localStorage:{
         ODA.LocalStorage = CLASS({id: 'odaLocalStorage',
             ctor(path){
@@ -1221,47 +1196,6 @@ if (!window.ODA) {
         }
     })
 
-    Object.defineProperty(ODA, 'cssRules', {
-        get(){
-            let rules = ODA['#cssRules'];
-            if (!rules || !Object.keys(rules).length){
-                ODA['#cssRules'] = rules = Object.create(null);
-                for (let style of document.querySelectorAll('style')){
-                    for (let i of style.sheet.cssRules) {
-                        if (i.style) {
-                            for (let key of i.style) {
-                                let val = i.style.getPropertyValue(key);
-                                if (!/^--/.test(key)) continue;
-                                val = val.toString().trim().replace(/^{|}$/g, '').trim().split(';').join(';');
-                                while (val.includes('@apply')){
-                                    val = ODA.applyStyleMixins(val);
-                                }
-                                rules[key] = val;
-                            }
-                        }
-                    }
-                }
-            }
-            return rules;
-        }
-    })
-    // ODA.cssRules
-    ODA.applyStyleMixins = function (styleText) {
-        while (styleText.match(commentRegExp)) {
-            styleText = styleText.replace(commentRegExp, '');
-        }
-        let matches = styleText.match(regExpApply);
-        if (matches) {
-            matches = matches.map(m => m.replace(/@apply\s*/, ''));
-            for (let v of matches) {
-                const rule = ODA.cssRules[v];
-                styleText = styleText.replace(new RegExp(`@apply\\s+${v}\\s*;?`, 'g'), rule);
-            }
-            if (styleText.match(regExpApply))
-                styleText = ODA.applyStyleMixins(styleText);
-        }
-        return styleText;
-    }
     class VNode {
         constructor(el, vars) {
             this.id = ++VNode.sid;
@@ -1286,7 +1220,7 @@ if (!window.ODA) {
             let tmp = document.createElement('template');
             tmp.innerHTML = el;
             tmp = tmp.content.childNodes;
-            return Array.prototype.map.call(tmp, el => parseJSX(prototype, el)).filter(i => i);
+            return Array.prototype.map.call(tmp, el => parseJSX(prototype, el)).filter(i => (i && !i.$remove));
         }
         let src = new VNode(el, vars);
         if (el.nodeType === 3) {
@@ -1308,31 +1242,25 @@ if (!window.ODA) {
                         }
                     })
                     src.text.push(function ($el) {
-                        // this.async(()=> {
-                            if (this['#' + key] === undefined) {
-                                $el.textContent = this[key];
-                            }
-                        // })
-                    });
+                        $el.textContent = this[key] || '';
+                    })
                 }
                 else{
                     src.text.push(function ($el) {
-                        // this.async(()=>{
-                            let val = exec.call(this, fn, $el.$for);
-                            // if ($el.textContent != val)
-                                $el.textContent = val;
-                        // })
+                        $el.textContent = exec.call(this, fn, $el.$for);
                     });
                 }
             }
-            // else if(el.parentElement?.localName === 'style' && !value.includes('@apply')){
-            //     el.parentElement?.$node
+            // else if(el.parentElement?.localName === 'style'/* && !value.includes('@apply')*/){
+            //     el.parentElement.$node.$remove = true;
             //     prototype.$system.$styles ??=[];
             //     let ss = new CSSStyleSheet();
+            //     value = ODA.applyStyleMixins(value);
             //     ss.replaceSync(value);
             //     prototype.$system.$styles.push(ss);
             //     // el.parentElement.remove();
             //     return;
+            //     src.textContent = value;
             // }
             else
                 src.textContent = value;
@@ -1864,7 +1792,6 @@ if (!window.ODA) {
                 }
             }
         }
-
         this.$core.prototype.$system.observers?.forEach(name => {
             return this[name];
         });
@@ -1976,8 +1903,8 @@ if (!window.ODA) {
         $parent.replaceChild(el, $el);
         if ($el.slot == '*')
             $el.removeAttribute('slot')
-        // requestAnimationFrame(() => {
-        this.async(()=>{
+        requestAnimationFrame(() => {
+        // this.async(()=>{
             let host;
             const filter = `slot[name='${$el.slot}']`;
             for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
@@ -2419,9 +2346,8 @@ if (!window.ODA) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 window.document.body.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
-                // .then(async () => {
                     await ODA.tryReg('oda-tester');
-                // });
+
             }
 
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
@@ -2648,7 +2574,7 @@ if (!window.ODA) {
     ODA.translate = (val)=>{
         return val;
     }
-    ODA.import = async function (url, context, prototype){
+    ODA.import = function (url, context, prototype){
         url = url.trim();
         if (url in ODA.aliases)
             url = ODA.rootPath + '/' + ODA.aliases[url];
@@ -2658,9 +2584,14 @@ if (!window.ODA) {
             else if (url.startsWith('../'))
                 url = prototype.$system.dir +'/'+url;
         }
-
         url = url.replace(/\/\//g, '/');
-        return import(url);
+        const imports = ODA['#imports'] ??= {};
+        imports[url] ??= import(url).then(res=>{
+            imports[url] = res;
+        }).catch(err=>{
+            imports[url] = err;
+        })
+        return imports[url];
     }
     Qarantine:{
         ODA.createComponent = ODA.createElement = (id, props , context) => {
@@ -2804,6 +2735,81 @@ if (!window.ODA) {
     }
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
+    }
+    CSS:{
+        ODA.cssRules = [];
+        const VAR_REG_EXP = /^--[\w-]*\w+/;
+        ODA.extractCSSRules = function (style){
+            const result = []
+            const adds = []
+            if (typeof style === 'string'){
+                let ss = new CSSStyleSheet();
+                ss.replaceSync(style);
+                style = ss;
+            }
+            for (let i of style.cssRules) {
+                if (i?.selectorText)
+                    result.push(i.selectorText+ '{');
+                else{
+                    adds.unshift(ODA.applyStyleMixins(i.cssText));
+                    continue
+                }
+                for (let st of i.styleMap || []) {
+                    let key = st[0];
+                    let val = i.style.getPropertyValue(key).toString().trim();
+                    if (!val) continue;
+                    if (!VAR_REG_EXP.test(key) || !/^{.+}/.test(val)) {
+                        result.push('\t' + key+': '+val+';')
+                        continue;
+                    }
+                    val = val.replace(/^{|}$/g, '');
+                    val = ODA.applyStyleMixins(val);
+                    ODA.cssRules[key] = val;
+                    key = key.substring(2);
+                    adds.push(`.${key}, [${key}] {`)
+                    adds.push(`\t${val}`)
+                    adds.push(`}`)
+                }
+                result.push('}');
+            }
+            result.push(...adds);
+            return result.join('\r\n');
+        }
+        const APPLY_REG_EXP = /@apply\s*/gm;
+        const COMMENT_REG_EXP = /\/\*[^*/]*\*\//igm;
+        ODA.applyStyleMixins = function (styleText) {
+            styleText = styleText.replace(COMMENT_REG_EXP, '');
+            return styleText.split(APPLY_REG_EXP).map(i=>{
+                let v = i.match(VAR_REG_EXP)?.[0];
+                return v ? i.replace(v, ODA.cssRules[v]) : i;
+            }).join('');
+        }
+        const PARSE_RULE_REG_EXP = /([a-z-]+)\s*:\s*((?:[^;]*url\(.*?\)[^;]*|[^;]*)*)\s*(?:;|$)/gi;
+        ODA.cssRuleParse = function (rules, res, host = false) {
+            for (let rule of rules) {
+                switch (rule.type){
+                    case CSSRule.KEYFRAMES_RULE:{
+                        let key = rule.cssText;
+                        let r = res[key] = res[key] || {};
+                        ODA.cssRuleParse(rule.cssRules, r);
+                    } break;
+                    case CSSRule.MEDIA_RULE:{
+                        let key = '@media ' + rule.media.mediaText;
+                        let r = res[key] = res[key] || {};
+                        ODA.cssRuleParse(rule.cssRules, r);
+                    } break;
+                    default:{
+                        if (rule.cssText.includes(':host') && !host) continue;
+                        const ss = rule.cssText.replace(rule.selectorText, '').match(PARSE_RULE_REG_EXP);
+                        if (!ss) continue;
+                        let sel = rule.selectorText?.split(',').join(',\r');
+                        let r = res[sel] = res[sel] || [];
+                        r.add(...ss);
+                    } break;
+                }
+            }
+        }
+
     }
 }
 export default ODA;
