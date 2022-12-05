@@ -1379,6 +1379,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
         .cell {
             position: relative;
+            @apply --horizontal;
             @apply --content;
             /*@apply --no-flex;*/
             overflow: hidden;
@@ -1640,13 +1641,11 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-        <style>
-            :host {
-                @apply --no-flex;
-            }
-        </style>
-        <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent @pointerdown.stop.prevent  class="no-flex expander" ~style="{opacity: (!icon)?0:1}"></oda-icon>
+            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent @pointerdown.stop.prevent  class="no-flex expander" ~style="_style"></oda-icon>
         `,
+        get _style(){
+            return {opacity: (!this.icon)?0:(this.item?.disabled?.5:1)}
+        },
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
         },
@@ -1717,7 +1716,7 @@ cells: {
             <div class="step no-flex" ~style="myStyle">
                 <div class="end-step" ~style="endStepStyle"></div>
             </div>
-            <oda-table-expand class="no-flex" :item :scrolled-children></oda-table-expand>
+            <oda-table-expand  class="no-flex" :item :scrolled-children></oda-table-expand>
             <oda-table-check class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></oda-table-check>
             <div ::color  ~is="item?.[column[columnId]+'.template'] || item?.template || column?.cellTemplate || cellTemplate || 'label'" :column :item class="flex" @tap="_tap">{{item[column[columnId]]}}</div>`,
             columnId: '',
@@ -1780,13 +1779,6 @@ cells: {
             }
         });
 
-        ODA({is: 'oda-empty-tree-cell', imports: '@oda/icon', extends: 'oda-icon, oda-table-cell-base',
-            template: /*html*/`
-            <label class="label flex">nothing</label>`,
-            props: {
-                icon: 'notification:do-not-disturb'
-            }
-        });
 
         ODA({is: 'oda-table-check', imports: '@oda/icon', extends: 'oda-table-cell-base',
             template: /*html*/`
