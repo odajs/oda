@@ -54,6 +54,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             })
         }
     },
+    focusedCellEnd: {},
     set focusedCell(v) {
         if (v?.col) {
             const idx = this.activeCols.findIndex(i => i === v?.col)
@@ -1499,9 +1500,9 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
 
     </style>
-    <div class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
-        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
-            <div ~for="(row, r) in visibleRows" class="row"  :row
+    <table class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
+        <tbody class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick"  @pointerup="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+            <tr ~for="(row, r) in visibleRows" class="row"  :row
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
                 :dragging="draggedRows.includes(row)"
@@ -1509,21 +1510,47 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
+                <td :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
                     <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
+    focusedMove(e){
+        if (e.buttons !== 1) return;
+        this.focusedCellEnd = {row: e.target.row, col: e.target.col}
+    },
     _onRowContextMenu(e) {
         const el = e.path.find(p => p.row);
         if (el)
             this.table.fire('row-contextmenu', el.row);
     },
     _getFocus(col, row) {
-        return !col.treeMode && !col.fix && Object.equal(this.focusedCell?.row, row) && Object.equal(this.focusedCell?.col, col);
+        this.focusedCellEnd = {};
+        return this._cellSelection.rows.indexOf(row)>-1 && this._cellSelection.cols.indexOf(col)>-1;
+    },
+    get _cellSelection(){
+        const selection = {rows: [], cols:[]};
+        if (this.focusedCell?.row){
+            let idx1 = this.items.indexOf(this.focusedCell.row);
+            let idx2 = this.items.indexOf(this.focusedCellEnd?.row || this.focusedCell.row);
+            let sign = Math.sign(idx2 - idx1) || 1;
+            for (let i = idx1; i<=idx2 * sign; i+=sign){
+                selection.rows.push(this.items[i]);
+            }
+
+            idx1 = this.rowColumns.indexOf(this.focusedCell.col);
+            idx2 = this.rowColumns.indexOf(this.focusedCellEnd?.col || this.focusedCell.col);
+            sign = Math.sign(idx2 - idx1) || 1;
+            for (let i = idx1; i<=idx2 * sign; i+=sign){
+                selection.cols.push(this.rowColumns[i]);
+            }
+        }
+
+
+        return selection;
     },
     firstTop: 0,
 
