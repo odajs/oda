@@ -2754,8 +2754,7 @@ if (!window.ODA) {
                     adds.unshift(ODA.applyStyleMixins(i.cssText));
                     continue
                 }
-                for (let st of i.styleMap || []) {
-                    let key = st[0];
+                for (let key of i.style || []) {
                     let val = i.style.getPropertyValue(key).toString().trim();
                     if (!val) continue;
                     if (!VAR_REG_EXP.test(key) || !/^{.+}/.test(val)) {
