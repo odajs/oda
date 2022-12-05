@@ -78,11 +78,14 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         }
     },
-    focusCell(row, col, e) {
+    focusCell(e) {
+        const {col, item} = e.path.find(i=>{
+            return i.col && i.item;
+        })
         if (col.fix || col.$flex) return;
-        if (this.focusedCell?.row === row && this.focusedCell?.col === col)
+        if (this.focusedCell?.row === item && this.focusedCell?.col === col)
             return;
-        this.focusedCell = { row, col };
+        this.focusedCell = {row: item, col };
     },
     get activeCols() {
         return this.rowColumns.filter(i => {
@@ -147,6 +150,15 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
     },
     props: {
+        allowFocusCell:{
+            default: 'none',
+            list:['none', 'single', 'rows', 'cols', 'all']
+        },
+        allowFocusCellZone:{
+            default: 'data',
+            list:['data', 'tree', 'left', 'right'],
+            multiselect: true
+        },
         autoFixRows: false,
         noLazy: false,
         pivotMode: {
@@ -561,6 +573,10 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         enter(e) {
             e.preventDefault();
             e.stopPropagation();
+            if (this.focusedCell){
+                this.focusedRow = this.focusedCell.row;
+            }
+
             if (e.ctrlKey) {
                 return this.selectRow(e, { value: (this.allowHighlight && this.highlightedRow) || this.focusedRow });
             }
@@ -1484,7 +1500,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
 
     </style>
     <div class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
-        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @pointerdown="onTapRows" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick" @tap="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
             <div ~for="(row, r) in visibleRows" class="row"  :row
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
@@ -1493,8 +1509,8 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)" @pointerdown="focusCell(row, col, $event)"   :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
-                    <div @focusin="focusCell(row, col, $event)" autofocus  class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
+                <div :focus="_getFocus(col, row)"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
+                    <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
         </div>

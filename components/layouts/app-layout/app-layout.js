@@ -360,11 +360,7 @@ ODA({is: 'app-layout-drawer',
         :host([hidden]) { /* todo: должно работать от глобального стиля */
             display: none !important;
         }
-        .bt {
-            transition: margin ease-in-out .2s;
-        }
         :host([hide-tabs]) .bt {
-            transition: margin ease-in-out .2s !important;
             margin-left: {{(pos === 'left')?-delta:1}}px !important;
             margin-right: {{(pos === 'left')?1:-delta}}px !important;
         }
@@ -417,13 +413,13 @@ ODA({is: 'app-layout-drawer',
     </style>
     <div @touchmove="hideTabs=false" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
-            <div class="no-flex vertical">
+            <div ~show="!hideTabs" class="no-flex vertical">
                 <oda-button :error="ctrl?.error || ctrl.hasAttribute('error')" :rotate="(ctrl?.label || ctrl.getAttribute('label'))?90:0" :label="ctrl?.label || ctrl?.getAttribute?.('label')" style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;" :icon-size="iconSize *.8 " class="no-flex tab" default="icons:help" :item="ctrl" ~style="getStyle(ctrl)" ~for="ctrl in controls" @down.stop="setFocus(ctrl)" :title="ctrl?.getAttribute('bar-title') || ctrl?.title || ctrl?.getAttribute('title') || ''" :icon="ctrl?.getAttribute('bar-icon') || ctrl?.icon || ctrl?.getAttribute('icon') || 'icons:menu'" :sub-icon="ctrl?.getAttribute('sub-icon')" :toggled="focused === ctrl" :bubble="ctrl.bubble" ~class="{outline: lastFocused === ctrl}"></oda-button>
             </div>
             <div class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
                 <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :rotate="hideTabs?0:180" :icon-size="iconSize" ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
             </div>
-            <oda-button ~is="item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help" ~text="item.is && item.text"></oda-button>
+            <oda-button ~show="!hideTabs" ~is="item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help" ~text="item.is && item.text"></oda-button>
         </div>
 
     </div>
