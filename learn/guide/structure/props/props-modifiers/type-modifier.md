@@ -22,7 +22,7 @@ ODA({
 });
 ```
 
-Значением этого модификатора может быть любой из следующих типов языка JavaScript:
+Значением этого модификатора может быть один из следующих типов языка JavaScript:
 
 1. Number — любое целое или вещественное число с плавающей запятой.
 2. String — любая строка в двойных, одинарных или обратных одинарных кавычках.
@@ -69,7 +69,7 @@ ODA({
 });
 ```
 
-В этом примере у свойства **digit** явно задан тип **Number**. В обработчике нажатия кнопки этому свойству присваивается константа строкового типа **'Это строка'**, но из-за статической типизации эта константа будет преобразована к типу **Number** перед присвоением.
+В этом примере у свойства **digit** явно задан тип **Number**. В обработчике нажатия кнопки этому свойству присваивается константа строкового типа **'Это строка'**, но из-за статической типизации эта константа будет преобразована к типу **Number** перед присвоением. В результате свойство получает значение **0**.
 
 ```info_md
 Если тип начального значения не совпадает с объявленным типом свойства, то начальное значение автоматически преобразуется к объявленному типу.
@@ -79,7 +79,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <p>Значение: {{victoryDay}} Тип: {{typeof victoryDay}}</p>
+        <div>Значение: {{victoryDay}} Тип: {{typeof victoryDay}}</div>
     `,
     props: {
         victoryDay: {
@@ -94,11 +94,11 @@ ODA({
 
 При объявлении свойства необходимо тщательно следить за его типом, особенно если оно используется для передачи логических значений.
 
-```javascript _error_run_edit_[my-component.js]
+```javascript _error_run_edit_[my-component.js]_h=40_
 ODA({
     is: 'my-component',
     template: `
-        <p><input type="checkbox" ::checked="isChecked">{{isChecked ? "Я отмечен" : "Я не отмечен"}}</p>
+        <label><input type="checkbox" ::checked="isChecked">{{isChecked ? "Я отмечен" : "Я не отмечен"}}</label>
         <div> Тип: {{typeof isChecked}} Значение: {{isChecked}}</div>
     `,
     props: {
@@ -134,77 +134,33 @@ ODA({
 
 В этом примере у свойства **collection** явно задан тип **Array**. По нажатию кнопки происходит присвоение свойству константы строкового типа **'Это строка'**, что меняет его тип на **String**.
 
-У свойства можно задать несколько альтернативных типов с помощью модификатора **type**. В этом случае их имена указываются в виде элементов массива в квадратных скобках.
+У свойства нельзя задать несколько альтернативных типов с помощью модификатора **type**. Если список альтернативных типов задать в виде элементов массива в квадратных скобках, то свойство получит динамическую типизацию.
 
-```javascript _run_edit_console_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <button @tap="_onTap">{{myItem}}: {{typeof myItem}}</button>
+        <button @tap="_onTap">{{typeof victoryDay}}: {{victoryDay}}</button>
     `,
     props: {
-        myNumber: 1,
-        myArray: ["Элемент 1", "Элемент 2"],
-        myItem: {
-            default: 1,
-            type: [Number, Array]
+        victoryDay: {
+            default: 1945,
+            type: [Number, String]
         }
     },
     _onTap() {
-        this.myItem = Array.isArray(this.myItem) ? this.myNumber : this.myArray;
+        switch( typeof this.victoryDay ) {
+            case "number": this.victoryDay = "9 мая 1945";
+                break;
+            case "string": this.victoryDay = new Date("1945-05-09");
+                break;
+            case "object": this.victoryDay = 1945;
+        }
     }
 });
 ```
 
-В этом примере свойство **myItem** может иметь один из указанных типов: либо быть числом, либо быть массивом.
-
-Если альтернативный тип не указан, то при попытке присвоения свойству несовместимого значения возникнет ошибка.
-
-```javascript error_run_edit_console_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <button @tap="_onTap">{{myItem}}: {{typeof myItem}}</button>
-    `,
-    props: {
-        myNumber: 1,
-        myArray: ["Элемент 1", "Элемент 2"],
-        myItem: {
-            default: 1,
-            type: Number
-        }
-    },
-    _onTap() {
-        this.myItem = Array.isArray(this.myItem) ? this.myNumber : this.myArray;
-    }
-});
-```
-
-Здесь тип данных **Array** нельзя привести к типу **Number**. Поэтому при присвоении   свойству массива возникнет ошибка. Однако если указать альтернативный тип **Array**, как в предыдущем примере, то эта ошибка исчезнет, так как этот тип полностью соответствует присваиваемому значению.
-
-Если присваиваемое значения можно привести к указанному типу, то альтернативные типы можно не задавать.
-
-```javascript _run_edit_console_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <button @tap="_onTap">{{myItem}}: {{typeof myItem}}</button>
-    `,
-    props: {
-        myNumber: 1,
-        myArray: ["Элемент 1", "Элемент 2"],
-        myItem: {
-            default: 1,
-            type: Array
-        }
-    },
-    _onTap() {
-        this.myItem = Array.isArray(this.myItem) ? this.myNumber : this.myArray;
-    }
-});
-```
-
-Здесь массиву присваивается число. Тип **Number** можно привести к типу **Array**. Поэтому предыдущая ошибка в этом примере не возникает.
+Из примера видно, что свойство **victoryDay** меняет свой тип в зависимости от последнего присвоенного значения, что указывает на динамическую типизацию.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/yHueM94LlbA?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
