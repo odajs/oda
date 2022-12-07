@@ -4,21 +4,15 @@
  */
 import './rocks.js';
 'use strict';
-if (!window.ODA) {
-
+if (!window.ODA?.IsReady) {
     window.document.body.style.visibility = 'hidden';
     const makeReactive = KERNEL.makeReactive;
     const domParser = new DOMParser();
-    // const regExpApply = /(?:@apply\s+)(--[\w-]*\w+)+/g;
-
-
-
     const pointerDownListen = (win = window) => {
         try { //cross-origin
             win.addEventListener('pointerdown', (e) => {
                 if (win !== top)
                     top.dispatchEvent(new PointerEvent("pointerdown", e));
-
             })
             // ToDo: not works dropdown (without parent) in modal:
             win.addEventListener('pointerdown', (e) => {
@@ -29,14 +23,12 @@ if (!window.ODA) {
             console.error(err);
         }
     }
-
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
-
     async function regComponent(prototype, context) {
         let regTime = Date.now();
-        console.log(prototype.is, '==>>')
+        console.log(prototype.is, '==>')
         if (window.customElements.get(prototype.is)) return prototype.is;
         try {
             if (prototype.imports){
@@ -168,17 +160,20 @@ if (!window.ODA) {
                 for (let i = 0, entry, l = entries.length; i < l; i++) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
-                    if (!entry.target.$sleep === entry.isIntersecting) continue;
-                    entry.target.$sleep = !entry.isIntersecting && !(!entry.target.offsetWidth && !entry.target.offsetHeight);
+                    entry.target.$sleep = !entry.isIntersecting;
+                    if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
+                        entry.target.$sleep = false;
                     if (!entry.target.$sleep)
                         entry.target.domHost?.render();
                 }
-            }, { rootMargin: '10%' }),
+            }, { rootMargin: '10%', threshold: 1.0 }),
             resize: new ResizeObserver(entries => {
-                for (const obs of entries) {
-                    obs.target.$rect = obs.contentRect;
-                    if (obs.target.__events?.has('resize'))
-                        obs.target.fire('resize');
+                for (const entry of entries) {
+                    entry.target.$rect = entry.contentRect;
+                    if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
+                        entry.target.$sleep = false;
+                    if (entry.target.__events?.has('resize'))
+                        entry.target.fire('resize');
                 }
             })
         };
@@ -417,42 +412,16 @@ if (!window.ODA) {
 
             }
             get rootHost(){
-                if (this.__need_update)
-                    return false;
-                const r1 = this.domHost?.rootHost;
-                // const r2 = this.parentElement?.rootHost;/**/
-                if (r1 === false/* || r2 === false*/)
-                    return false;
-                this.__need_update = true;
-                return r1 || /*r2 || */ this;
+                return this.domHost?.rootHost || this;
             }
             render() {
-                // if (!this.$core.shadowRoot) return;
-                this.__all = true;
-                const root = this.rootHost;
-                if (root?.$core)
-                    ODA.render(root.$core?.renderer);
-                // else
-                //     console.log('this.__need_update')
-                callHook.call(this, 'onRender');
-
-                // if (!this.domHost && this.$wake && this.style.getPropertyValue?.('visibility') === 'hidden'){
-                //     this.debounce('first-show', ()=>{
-                //         if (this.$wake){
-                //             this.$wake = false;
-                //             this.style.removeProperty?.('visibility');
-                //             callHook.call(this, 'onVisible');
-                //         }
-                //     }, 100)
-                //     this.async(()=>{
-                //         if (this.$wake){
-                //             this.$wake = false;
-                //             this.style.removeProperty?.('visibility');
-                //             callHook.call(this, 'onVisible');
-                //         }
-                //     }, 500)
-                // }
-
+                renderComponent.call(this.rootHost).finally(()=>{
+                    renderComponent.call(this).then(res=> {
+                        return res && callHook.call(this, 'onRender');
+                    }).catch(e =>{
+                        console.error(e)
+                    })
+                })
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1242,27 +1211,33 @@ if (!window.ODA) {
                         }
                     })
                     src.text.push(function ($el) {
-                        $el.textContent = this[key] || '';
+                        const st = this[key] || '';
+                        if ($el.textContent == st) return;
+                        // this.debounce('set style:'+$el.$node.id, ()=>{
+                            $el.textContent = st;
+                        // })
                     })
                 }
                 else{
                     src.text.push(function ($el) {
-                        $el.textContent = exec.call(this, fn, $el.$for);
+                        const st = exec.call(this, fn, $el.$for);
+                        if ($el.textContent == st) return;
+                        $el.textContent = st;
                     });
                 }
             }
-            // else if(el.parentElement?.localName === 'style'/* && !value.includes('@apply')*/){
+            // else if(el.parentElement?.localName === 'style'){
             //     el.parentElement.$node.$remove = true;
             //     prototype.$system.$styles ??=[];
             //     let ss = new CSSStyleSheet();
-            //     value = ODA.applyStyleMixins(value);
+            //     while(value.includes('@apply'))
+            //         value = ODA.applyStyleMixins(value);
             //     ss.replaceSync(value);
             //     prototype.$system.$styles.push(ss);
-            //     // el.parentElement.remove();
             //     return;
             //     src.textContent = value;
             // }
-            else
+            // else
                 src.textContent = value;
         }
         else if (el.nodeType === 8) {
@@ -1591,14 +1566,13 @@ if (!window.ODA) {
         h.src = child;
         return h;
     }
-
-    const  _createElement = document.createElement;
-    document.createElement = function (tag, ...args){
-        ODA.tryReg(tag);
-        return _createElement.call(this, tag, ...args);
-    }
+    //
+    // const  _createElement = document.createElement;
+    // document.createElement = function (tag, ...args){
+    //     // ODA.tryReg(tag);
+    //     return _createElement.call(this, tag, ...args);
+    // }
     function createElement(src, tag, old) {
-        // console.log('createElement', tag);
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
@@ -1633,11 +1607,9 @@ if (!window.ODA) {
                     }
                 }
             }
-
             if (src.attrs)
                 for (let i in src.attrs)
                     $el.setAttribute(i, src.attrs[i]);
-
             for (const e in src.listeners || {}) {
                 const event = (ev) => {
                     src.listeners[e].call(this, ev);
@@ -1647,6 +1619,7 @@ if (!window.ODA) {
         }
         $el.$node = src;
         $el.domHost = this;
+        // ODA.telemetry.
         return $el;
     }
 
@@ -1677,7 +1650,8 @@ if (!window.ODA) {
         r.id++;
         r.calls++;
         r = r.tasks[r.id] ??= {time: 0, dom: {}}
-        await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+        // await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+        await renderComponent.call(this);
         r.time = Date.now() - time;
         // console.log('RENDER: ' + ODA.telemetry.rendering.id, r.time);
         ODA.telemetry.rendering.time += r.time;
@@ -1691,243 +1665,208 @@ if (!window.ODA) {
             return a.time>b.time?-1:1;
         })
         r.dom = dom;
-        console.log(ODA.telemetry.rendering.id, r.dom)
     }
-    async function updateDom(src, $el, $parent, pars, all = false) {
-        let r = ODA.telemetry.rendering;
-        r = r.tasks[r.id];
-        let time = Date.now();
-        const d = r.dom[this.localName] ??= {tag: '', time: 0, calls: 0, self: 0, handles: {}};
-        const h = d.handles[this.$$id] ??= {time: 0, calls: 0, self: 0};
-
-
-        try{
-            this.__need_update = undefined;
-            this.__all = undefined;
-            if (this?.$sleep && !this.$wake)
-                return;
-            if ($el?.$sleep && !$el?.$wake && !src.isSvg && !src.isSlot)
-                return;
-
-            ODA.telemetry.domUpdates[0] = (ODA.telemetry.domUpdates[0] ?? 0) + 1;
-            ODA.telemetry.domUpdates[this.$$id] = (ODA.telemetry.domUpdates[this.$$id] ?? 0) + 1;
-            if ($parent) {
-                let tag = src.tag;
-                if (src.tags) {
-                    for (let h of src.tags)
-                        tag = h.call(this, tag, src.fn[h.name], pars, $el) || '#comment';
-                }
-                if (!$el) {
-                    $el = createElement.call(this, src, tag);
-                    $parent.appendChild($el);
-                    if ($el.nodeType == 3)
-                        $el.textContent = src.textContent;
-                }
-                else if ($el.$node?.id != src.id) {
-                    const el = createElement.call(this, src, tag);
-                    if ($parent.contains($el))
-                        $parent.insertBefore(el, $el);
-                    else
-                        $parent.replaceChild(el, $el);
-                    $el = el;
-                }
-                else if ($el.slotTarget)
-                    $el = $el.slotTarget;
-                else if ($el.nodeName != tag) {
-                    $el.__before ??= Object.create(null);
-                    const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
-                    el.__before ??= Object.create(null);
-                    el.__before[$el.nodeName] = $el;
-                    $parent.replaceChild(el, $el);
-                    el.$ref = $el.$ref;
-                    $el = el;
-                }
-            }
-            if ($el.localName in ODA.deferred)
-                return;
-            if (pars)
-                $el.$for = pars;
-
-            if ($el.nodeType == 3 || $el.nodeType == 8) {
-                for (let h of src.text || [])
-                    h.call(this, $el);
-                return;
-            }
-
-
-            const ch = src.children?.length && $el.children/* && (!$el.$sleep || $el.$wake || src.isSvg || $el.localName === 'slot')*/
-            if (ch) {
-
-                let idx = 0;
-                for (let i = 0, l = src.children.length; i < l; i++) {
-                    let h = src.children[i];
-                    if (typeof h == "function") {
-                        let items = h.call(this, pars);
-                        if (items.then)
-                            items = await items;
-                        $el.__for ??= {};
-                        const old_size = $el.__for[h.src.id] || 0;
-                        const list = [];
-                        for(let j = 0; j<items.length; j++){
-                            const node = items[j];
-                            let elem;
-                            if (old_size>items.length){
-                                while(!elem){
-                                    elem = $el.childNodes[idx + j];
-                                    if (elem){
-                                        const ff = elem?.$for;
-                                        if (elem.$node == h.src && (!ff || node?.params[0] == ff[0])){
-                                            list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
-                                            break;
-                                        }
-                                        else{
-                                            $el.removeChild(elem);
-                                            elem = undefined;
-                                        }
-                                    }
-                                    else{
-                                        list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
-                                        break;
-                                    }
-                                }
-                            }
-                            else{
-                                elem = $el.childNodes[idx + j];
-                                list.push(updateDom.call(this, node.child, elem, $el, node.params, this.__all || all));
-                            }
-
-                        }
-                        $el.__for[h.src.id] = items.length;
-                        idx += list.length;
-                        let el = $el.childNodes[idx];
-                        while (el && el.$node == h.src) {
-                            $el.removeChild(el);
-                            el = $el.childNodes[idx];
-                        }
-                        await Promise.all(list);
-                    }
-                    else {
-                        let el = $el.childNodes[idx];
-                        while (el && !el.$node){
-                            idx++
-                            el = $el.childNodes[idx];
-                        }
-                        await updateDom.call(this, h, el, $el, pars, this.__all || all);
-                        idx++;
-                    }
-                }
-            }
+    function renderIgnore(el) {
+        if (el && el.$sleep)
+            return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && el.$node.isStyle
+        return false;
+    }
+    async function renderComponent(){
+        try {
+            if (this.__render || renderIgnore(this))
+                return false;
+            this.__render = true;
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
             });
-            if (src.dirs)
-                for (let h of src.dirs)
-                    h.call(this, $el, src.fn[h.name], pars);
-            if (src.bind){
-                const binds = Object.keys(src.bind).map(key=>{
-                    const val= src.bind[key].call(this, pars, $el);
-                    return {key, val};
-                })
-                binds.forEach(bind=>{
-                    let i = bind.key;
-                    if (i.includes('.')/* && listener*/) {
-                        const listener = src.listeners[i.toKebabCase() + '-changed'];
-                        if (listener){
-                            const pathToObj = i.slice(0, i.lastIndexOf('.'));
-                            const propName = i.slice(i.lastIndexOf('.') + 1);
-                            const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
-                            const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
-                            const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-                            if (bottUpdates > topUpdates && $el.fire) {
-                                this.setProperty(listener.expr, obj[propName]);
+            await renderChildren.call(this, this.$core.shadowRoot);
+        }
+        finally {
+            requestAnimationFrame(()=>{
+                this.__render = false;
+            })
+        }
+        return true;
+    }
+    async function renderChildren(root){
+        let el, h, idx = 0;
+        for (h of (root?.$node || this.$core?.node).children || []){
+            if (h.call){ // table list
+                let items = h.call(this, root.$for);
+                if (items.then)
+                    items = await items;
+                for(let i = 0; i<items.length; i++){
+                    const node = items[i];
+                    while ((el = root.childNodes[idx+i]) && el?.$node !== h.src && node?.params[0] !== el.$for?.[0]){
+                        root.removeChild(el);
+                    }
+                    await renderElement.call(this, node.child, el, root, node.params)
+                }
+                idx += items.length;
+                // idx++
+            }
+            else{ // single element
+                while ((el = root.childNodes[idx]) && el?.$node !== h)
+                    root.removeChild(el);
+                el = await renderElement.call(this, h, el, root, root.$for);
+                idx++;
+            }
+        }
+        while (el = root.childNodes[idx]){
+            if (!el?.$node) return;
+            root.removeChild(el);
+        }
+
+    }
+    async function renderElement(src, $el, $parent, $for){
+        if ($parent) {
+            let tag = src.tag;
+            if (src.tags) {
+                for (let h of src.tags)
+                    tag = h.call(this, tag, src.fn[h.name], $for, $el) || '#comment';
+            }
+            if (!$el) {
+                $el = createElement.call(this, src, tag);
+                $parent.appendChild($el);
+                if ($el.nodeType === 3)
+                    $el.textContent = src.textContent;
+            }
+            else if ($el.$node?.id !== src.id) {
+                const el = createElement.call(this, src, tag);
+                if ($parent.contains($el))
+                    $parent.insertBefore(el, $el);
+                else
+                    $parent.replaceChild(el, $el);
+                $el = el;
+            }
+            else if ($el.slotTarget)
+                $el = $el.slotTarget;
+            else if ($el.nodeName !== tag) {
+                $el.__before ??= Object.create(null);
+                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                el.__before ??= Object.create(null);
+                el.__before[$el.nodeName] = $el;
+                $parent.replaceChild(el, $el);
+                el.$ref = $el.$ref;
+                $el = el;
+            }
+        }
+
+        if ($for)
+            $el.$for = $for;
+        // console.log('renderElement', $el.$$id)
+        switch ($el.nodeType){
+            case 3:
+            case 8:{
+                for (let h of src.text || [])
+                    h.call(this, $el);
+            } break;
+            default:{
+                if (src.dirs)
+                    for (let h of src.dirs)
+                        h.call(this, $el, src.fn[h.name], $for);
+                if (src.bind){
+                    const binds = Object.keys(src.bind).map(key=>{
+                        const val= src.bind[key].call(this, $for, $el);
+                        return {key, val};
+                    })
+                    binds.forEach(bind=>{
+                        let i = bind.key;
+                        if (i.includes('.')/* && listener*/) {
+                            const listener = src.listeners[i.toKebabCase() + '-changed'];
+                            if (listener){
+                                const pathToObj = i.slice(0, i.lastIndexOf('.'));
+                                const propName = i.slice(i.lastIndexOf('.') + 1);
+                                const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
+                                const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+                                const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+                                if (bottUpdates > topUpdates && $el.fire) {
+                                    this.setProperty(listener.expr, obj[propName]);
+                                    return;
+                                }
+                            }
+                        }
+                        $el.setProperty(i, bind.val);
+                    })
+                }
+                // if ($el.$core && this.isConnected) {
+                //     await renderComponent.call($el);
+                // }
+                // else if (src.isSlot) {
+                //     const elements = $el.assignedElements?.() || [];
+                //     for (let el of elements) {
+                //         if (el.$sleep) continue
+                //         if (el.$core)
+                //             await renderComponent.call(el);
+                //         else
+                //             await renderElement.call(this, el.$node, $el, null, $for);
+                //     }
+                //
+                // }
+                if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot){
+                    this.$core.slotted.add($el);
+                    // this.$core.intersect.unobserve($el);
+                    const el = $el.slotProxy ??= createElement.call(this, src, '#comment');
+                    el.slotTarget = $el;
+                    $el.slotProxy = el;
+                    el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
+
+                    if ($el.$ref) {
+                        let arr = this.$core.slotRefs[$el.$ref];
+                        if (Array.isArray(arr))
+                            arr.push($el);
+                        else if ($el.$for)
+                            this.$core.slotRefs[$el.$ref] = [$el];
+                        else
+                            this.$core.slotRefs[$el.$ref] = $el;
+                    }
+                    $parent.replaceChild(el, $el);
+                    if ($el.slot === '*')
+                        $el.removeAttribute('slot')
+                    requestAnimationFrame(() => {
+                        let host;
+                        const filter = `slot[name='${$el.slot}']`;
+                        for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
+                            if (host.$core?.shadowRoot?.querySelector(filter)) {
+                                applySlotByOrder($el, host);
                                 return;
                             }
                         }
-                    }
-                    $el.setProperty(i, bind.val);
-                })
-            }
-            if ($el.$core && this.isConnected) {
-                if (!all && $el.__need_update == false)
-                    return;
-                $el.__need_update = false;
-                await updateDom.call($el, $el.$core.node, $el.$core.shadowRoot, undefined, undefined, all || $el.__all);
-                $el.__all = undefined;
-
-            }
-            else if (src.isSlot/*$el.localName == 'slot'*/) {
-                const elements = $el.assignedElements?.() || [];
-                for (let el of elements) {
-                    if (!el.$core || el.$sleep)
-                        continue;
-                    if (!all && el.__need_update == false)
-                        continue;
-                    el.__need_update = false;
-                    await updateDom.call(el, el.$core.node, el.$core.shadowRoot, undefined, undefined, all || el.__all);
-                    el.__all = undefined;
-                }
-            }
-            // }
-
-
-            if (!$el.slot || $el.slotProxy || $el.slot == '?' || this.slot == '?' || $el.parentElement?.slot)
-                return;
-            this.$core.slotted.add($el);
-            this.$core.intersect.unobserve($el);
-            const el = $el.slotProxy || createElement.call(this, src, '#comment');
-            el.slotTarget = $el;
-            $el.slotProxy = el;
-            el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
-
-            if ($el.$ref) {
-                let arr = this.$core.slotRefs[$el.$ref];
-                if (Array.isArray(arr))
-                    arr.push($el);
-                else if ($el.$for)
-                    this.$core.slotRefs[$el.$ref] = [$el];
-                else
-                    this.$core.slotRefs[$el.$ref] = $el;
-            }
-            $parent.replaceChild(el, $el);
-            if ($el.slot == '*')
-                $el.removeAttribute('slot')
-            requestAnimationFrame(() => {
-                // this.async(()=>{
-                let host;
-                const filter = `slot[name='${$el.slot}']`;
-                for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
-                    if (host.$core?.shadowRoot?.querySelector(filter)) {
-                        applySlotByOrder($el, host);
-                        return;
-                    }
-                }
-                host = this;
-                while (host) {
-                    for (let ch of host.children) {
-                        if(ch.$core?.shadowRoot?.querySelector(filter)){
-                            applySlotByOrder($el, ch);
-                            return;
+                        host = this;
+                        while (host) {
+                            for (let ch of host.children) {
+                                if(ch.$core?.shadowRoot?.querySelector(filter)){
+                                    applySlotByOrder($el, ch);
+                                    return;
+                                }
+                            }
+                            if (host.$core?.shadowRoot?.querySelector(filter)) {
+                                applySlotByOrder($el, host);
+                                return;
+                            }
+                            host = host.domHost || (host.parentElement?.$core && host.parentElement);
                         }
-                    }
-                    if (host.$core?.shadowRoot?.querySelector(filter)) {
-                        applySlotByOrder($el, host);
-                        return;
-                    }
-                    host = host.domHost || (host.parentElement?.$core && host.parentElement);
+                        applySlotByOrder($el, this);
+                    })
+
                 }
-                applySlotByOrder($el, this);
-            })
+
+
+
+                if (renderIgnore($el))
+                    return $el;
+
+
+                await renderChildren.call(this, $el, $el.$for);
+                // if ($el?.$core)
+                //     await renderComponent.call($el);
+
+
+            } break;
         }
-        finally {
-            time = Date.now() - time;
-            d.time += time;
-            h.time += time;
-            d.calls++;
-            h.calls++;
-            d.self += Math.round(d.time / d.calls);
-            h.self += Math.round(h.time / h.calls);
-        }
+        return $el;
     }
+
     function applySlotByOrder($el, host) {
         const prev = $el.slotProxy?.previousSibling;
         const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
@@ -1967,9 +1906,8 @@ if (!window.ODA) {
     ODA.deferred = {};
     ODA.calledDeferred = [];
     ODA.tryReg = function (tagName, context) {
-        if(!tagName?.includes('-'))
-            return;
         tagName = tagName.toLowerCase();
+        if (!tagName?.includes('-') || window.customElements.get(tagName)) return;
         const def = ODA.deferred[tagName];
         if (def)
             return def.reg(context);
@@ -2387,7 +2325,7 @@ if (!window.ODA) {
                 }
                 else if (name in this.__proto__) { // понаблюдать 👀
                     try{
-                        if (this[name] != v)
+                        // if (this[name] != v)
                             this[name] = v;
                     }
                     catch (e){
@@ -2403,7 +2341,7 @@ if (!window.ODA) {
             }
             // понаблюдать 👀
             if (ob_types.includes(typeof v) || this.nodeType !== 1) {
-                if (this[name] != v)
+                // if (this[name] != v)
                     this[name] = v;
             }
             else {
@@ -2413,7 +2351,7 @@ if (!window.ODA) {
                     if (d === true || (d.set && v !== undefined)) {
                         try{
                             // if (!(name === 'src' && this.localName === 'iframe' && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                                if (this[name] != v)//{
+                            //     if (this[name] != v)//{
                                     this[name] = v;
                                     // if (this.__events?.has(name+'-changed'))
                                     //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
@@ -2805,7 +2743,7 @@ if (!window.ODA) {
                 }
             }
         }
-
     }
+    window.ODA.IsReady = true;
 }
 export default ODA;

@@ -14,7 +14,7 @@ ODA({is: 'oda-icon',
             :host > div[bubble]::before{
                 content: attr(bubble);
                 position: absolute;
-                top: -2px;
+                top: -0px;
                 right: -2px;
                 width: 40%;
                 height: 40%;
