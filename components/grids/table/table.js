@@ -1370,7 +1370,6 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     template: /*html*/`
     <style>
         :host {
-            
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
             overflow-y: {{showHeader?'auto':'auto'}};
@@ -1691,7 +1690,13 @@ cells: {
 
     ODA({is: 'oda-table-expand', imports: '@oda/icon', extends: 'oda-table-cell-base',
         template: /*html*/`
-            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :icon-size @dblclick.stop.prevent @tap.stop.prevent="_toggleExpand" @down.stop.prevent @pointerdown.stop.prevent  class="no-flex expander" ~style="_style"></oda-icon>
+            <oda-icon ~if="item?.$level !== -1" style="cursor: pointer" :icon :icon-size
+                @dblclick.stop.prevent
+                @down.stop.prevent
+                @pointerdown.stop.prevent
+                @pointerup.stop.prevent
+                @tap.stop.prevent="_toggleExpand"
+                class="no-flex expander" ~style="_style"></oda-icon>
         `,
         get _style(){
             return {opacity: (!this.icon)?0:(this.item?.disabled?.5:1)}
