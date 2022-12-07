@@ -2,69 +2,73 @@ const path = import.meta.url.split('/').slice(0, -1).join('/');
 const parser = new DOMParser();
 ODA({is: 'oda-icon',
     template: /*html*/`
-    <style>
-        :host {
-            will-change: transform;
-            @apply --horizontal;
-            @apply --no-flex;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-        :host > div[bubble]::before{
-            content: attr(bubble);
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 40%;
-            height: 40%;
-            text-align: center;
-            font-weight: bold;
-            background-color: red;
-            color: white;
-            border: 1px solid purple;
-            border-radius: 50%;
-            padding: 1px;
-            font-size: {{iconSize/3}}px;
-            z-index: 1;
-            writing-mode: initial;
-            transform: rotate({{rotate}}deg);
-        }
-        :host > div {
-            position: relative;
-        }
-        .subicon {
-            padding: {{iconSize/16}}px;
-            position: absolute;
-            left: {{iconSize/2}}px;
-            border-radius: {{iconSize/16}}px;
-            @apply --content;
-            @apply --raised;
-            margin: {{getComputedStyle(this)['padding']?.toString() || 'unset'}};
-            bottom: 0px;
-        }
-        svg {
-            pointer-events: none;
-            top: 0px;
-            left: 0px;
-            position: absolute;
-            fill: {{fill || 'unset'}};
-            will-change: transform;
-        }
-    </style>
-    <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="_style">
-        <svg ~style="_svgStyle" :stroke :view-box="\`0 0 \${svgSize || 0} \${svgSize || 0}\`">
-            <defs ~if="blink">
-                <g is="style" type="text/css">
-                    @keyframes blinker { 100% { opacity: 0; } }
-                    g { animation: {{blink}}ms ease blinker infinite; }
-                </g>
-            </defs>
-            <g ~html="_icon?.body"></g>
-        </svg>
-    </div>
-    <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/3"></oda-icon>
+        <style>
+            :host {
+                will-change: transform;
+                @apply --horizontal;
+                @apply --no-flex;
+                display: flex;
+                align-items: center;
+                position: relative;
+            }
+            :host > div[bubble]::before{
+                content: attr(bubble);
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 40%;
+                height: 40%;
+                text-align: center;
+                font-weight: bold;
+                background-color: red;
+                color: white;
+                border: 1px solid purple;
+                border-radius: 50%;
+                padding: 1px;
+                font-size: {{iconSize/3}}px;
+                z-index: 1;
+                writing-mode: initial;
+                transform: rotate({{rotate}}deg);
+            }
+            :host > div {
+                position: relative;
+            }
+            .subicon {
+                padding: {{iconSize/16}}px;
+                position: absolute;
+                left: {{iconSize/2}}px;
+                border-radius: {{iconSize/16}}px;
+                @apply --content;
+                @apply --raised;
+                margin: {{getComputedStyle(this)['padding']?.toString() || 'unset'}};
+                bottom: 0px;
+            }
+            svg {
+                pointer-events: none;
+                top: 0px;
+                left: 0px;
+                position: absolute;
+                fill: {{fill || 'unset'}};
+                will-change: transform;
+            }
+        </style>
+        <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="_style">
+            <svg ~style="_svgStyle" :stroke :view-box="">
+                <defs ~if="blink">
+                    <g is="style" type="text/css">
+                        @keyframes blinker { 100% { opacity: 0; } }
+                        g { animation: {{blink}}ms ease blinker infinite; }
+                    </g>
+                </defs>
+                <g ~html="_icon?.body"></g>
+            </svg>
+        </div>
+        <oda-icon class="subicon" ~if="subIcon"  ~show="!!sub?._icon" :icon="subIcon" :icon-size="iconSize/3"></oda-icon>
     `,
+    get viewBox(){
+        const size = this._icon?.size || 0;
+        return  `0 0 ${size} ${size}`;
+    },
     get _style(){
         const w = this.iconSize+'px';
         return {minWidth: w, minHeight: w, height: w, width: w};
@@ -146,10 +150,7 @@ ODA({is: 'oda-icon',
             obj.backgroundPosition = 'center';
         }
         return obj;
-    },
-    get svgSize() {
-        return this._icon?.size || 0;
-    },
+    }
 });
 function loadIcon(n){
     if (/:[0-9]+$/.test(n)) {

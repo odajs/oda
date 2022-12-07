@@ -1,20 +1,21 @@
 ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/splitter, @oda/menu',
     template: /*html*/`
-    <style>
-        :host {
-            @apply --flex;
-            @apply --vertical;
-            overflow: hidden;
-            position: relative;
-        }
-        :host([show-borders]) {
-            border: 1px solid gray;
-        }
-    </style>
-    <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
-    <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
-    <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="0" :scroll-top="$scrollTop" :scroll-left="$scrollLeft" :even-odd :col-lines :row-lines></oda-table-body>
-    <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
+        <style>
+            :host {
+                will-change: transform;
+                @apply --flex;
+                @apply --vertical;
+                overflow: hidden;
+                position: relative;
+            }
+            :host([show-borders]) {
+                border: 1px solid gray;
+            }
+        </style>
+        <oda-table-group-panel ~if="showGroupingPanel" :groups></oda-table-group-panel>
+        <oda-table-header :columns="headerColumns" ~if="showHeader"></oda-table-header>
+        <oda-table-body ::over-height ref="body" class="flex" :rows tabindex="0" :scroll-top="$scrollTop" :scroll-left="$scrollLeft" :even-odd :col-lines :row-lines></oda-table-body>
+        <oda-table-footer :columns="rowColumns" ~show="showFooter" class="dark"></oda-table-footer>
     `,
     get visibleRows() {
         return [...this.fixedRows, ...this.raisedRows, ...this.rows];
@@ -1369,7 +1370,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     template: /*html*/`
     <style>
         :host {
-            will-change: transform;
+            
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
             overflow-y: {{showHeader?'auto':'auto'}};
@@ -1500,9 +1501,9 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         }
 
     </style>
-    <table class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
-        <tbody class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick"  @pointerup="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
-            <tr ~for="(row, r) in visibleRows" class="row"  :row
+    <div class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
+        <div class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick="onDblClick"  @pointerup="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
+            <div ~for="(row, r) in visibleRows" class="row"  :row
                 ~class="{'group-row':row.$group}"
                 :drop-mode="row.$dropMode"
                 :dragging="draggedRows.includes(row)"
@@ -1510,12 +1511,12 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <td :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
+                <div :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
                     <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
     focusedMove(e){
@@ -1705,7 +1706,7 @@ cells: {
             this.async(() => {
                 if (!this.item.hideExpander) {
                     this.item.$expanded = !this.item.$expanded;
-                    this.fire('expanded-changed', this.item.$expanded);
+                    this.fire('expand-changed', this.item.$expanded);
                 }
             })
         }
@@ -1828,10 +1829,10 @@ cells: {
             <oda-icon class="no-flex" @down.stop.prevent="_toggleChecked" @tap.stop.prevent :icon :icon-size ~style="{padding: Math.round(iconSize*.2)+'px'}"></oda-icon>`,
             props: {
                 icon() {
-                    if (!this.item.checked || this.item.checked === 'unchecked')
-                        return this.iconUnchecked;
-                    if (this.item.checked === true || this.item.checked === 'checked')
+                    if (this.item?.checked === true || this.item?.checked === 'checked')
                         return this.iconChecked;
+                    if (!this.item?.checked || this.item?.checked === 'unchecked')
+                        return this.iconUnchecked;
                     return this.iconIntermediate;
                 }
             },
@@ -1976,7 +1977,7 @@ cells: {
         <div class="flex vertical" style="cursor: pointer"  :disabled="!column.name">
             <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.$expanded?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
-                    <oda-table-expand ~if="column?.items?.length" :item></oda-table-expand>
+                    <oda-table-expand ~if="column?.items?.length" :item class="no-flex"></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" ~text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon :disabled="column?.$expanded && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
@@ -2465,6 +2466,7 @@ function addSaveProp(name, storage) {
 }
 function getRowCellValue(row, col) {
     let path = col?.$saveKey || col;
+    if (!path) return '';
     path = path.split('/');
     while (row && path.length > 1) {
         let key = '$' + path.shift();

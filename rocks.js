@@ -133,7 +133,6 @@ if (!globalThis.KERNEL) {
            }, this.constructor?.__model__?.$system?.blocks[key] || {});
         return  block;
     }
-    let updates = 0;
     function getProxyValue(block, val, old, setter) {
         if (Object.equal(val, old)) return val;
         const target = block.options.target;
@@ -149,7 +148,6 @@ if (!globalThis.KERNEL) {
         }
         const reset = resetDeps(block, [], setter);
         for (let host of block.options.hosts.keys()){
-            block.updates = ++updates;
             (host.notify || host.bubble)?.call(host, block, val);
         }
         return val;
