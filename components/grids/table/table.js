@@ -1780,7 +1780,7 @@ cells: {
                     get() {
                         let idx = this.raisedRows.indexOf(this.item);
                         if (idx > -1) {
-                            let next = this.raisedRows[idx + 1] || this.rows[0];
+                            let next = this.raisedRows[idx + 1] || this.rows?.[0];
                             let counter = 0;
                             for (let i = 0; i < this.item?.items?.length || 0; i++) {
                                 if (this.item?.items[i] === next)
