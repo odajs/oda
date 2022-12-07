@@ -1584,8 +1584,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 if (y < 0)
                     y = 0;
                 this.$scrollTop = y;
-                if (Math.round(this.scrollTop) !== Math.round(this.$scrollTop))
+                if (Math.round(this.scrollTop) !== Math.round(this.$scrollTop)){
+                    this.scrollTop = this.$scrollTop;
                     e.preventDefault();
+                }
+
             }
             else {
                 if (Math.round(this.offsetWidth) === Math.round(this.scrollWidth))
@@ -1594,8 +1597,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 if (x < 0)
                     x = 0;
                 this.$scrollLeft = x;
-                if (Math.round(this.scrollLeft) !== Math.round(this.$scrollLeft))
+                if (Math.round(this.scrollLeft) !== Math.round(this.$scrollLeft)){
+                    this.scrollLeft = this.$scrollLeft;
                     e.preventDefault();
+                }
+
             }
         }
     },
