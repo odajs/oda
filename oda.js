@@ -413,18 +413,13 @@ if (!window.ODA?.IsReady) {
 
             }
             get rootHost(){
+                if (this.domHost?.rootHost?.__render)
+                    return this;
                 return this.domHost?.rootHost || this;
             }
-            render() {
-                return renderComponent.call(this.rootHost).finally(res=>{
-                    if (this.rootHost === this)
-                        return res && callHook.call(this, 'onRender');
-                    renderComponent.call(this).then(res=> {
-                        return res && callHook.call(this, 'onRender');
-                    }).catch(e =>{
-                        console.error(e)
-                    })
-                })
+            async render() {
+                await renderComponent.call(this.rootHost);
+                callHook.call(this, 'onRender');
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1674,22 +1669,25 @@ if (!window.ODA?.IsReady) {
             return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && el.$node.isStyle
         return false;
     }
-    async function renderComponent(){
-        try {
-            if (this.__render || renderIgnore(this))
-                return false;
-            this.__render = true;
-            this.$core.prototype.$system.observers?.forEach(name => {
-                return this[name];
-            });
-            await renderChildren.call(this, this.$core.shadowRoot);
-        }
-        finally {
-            requestAnimationFrame(()=>{
-                this.__render = false;
+    function renderComponent(){
+        if (this.__render || renderIgnore(this))
+            return false;
+        this.__render = true;
+        let time = Date.now();
+        this.$core.prototype.$system.observers?.forEach(name => {
+            return this[name];
+        });
+        let res = renderChildren.call(this, this.$core.shadowRoot);
+        if (res.then)
+            res = res.then(res=>{
+                setTimeout(()=>{
+                    time = Date.now() - time;
+                    console.log('renderComponent', this.localName, time)
+                    this.__render = false;
+                })
+                return this;
             })
-        }
-        return true;
+        return res;
     }
     async function renderChildren(root){
         let el, h, idx = 0;
