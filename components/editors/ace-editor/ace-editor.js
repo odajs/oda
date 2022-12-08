@@ -180,10 +180,10 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
         snippetManager.register(snippets, this.mode);
     },
     focus(){ this.editor?.focus() },
-    onRender(e) {
-        this.editor?.setOptions(this.options);
-        this.async(() => { this.render() }, 50);
-    },
+    // onRender(e) {
+    //     this.editor?.setOptions(this.options);
+    //     this.async(() => { this.render() }, 50);
+    // },
     set editor(editor) {
         editor.renderer.attachToShadowRoot();
         editor.setOptions(this.options);
@@ -230,6 +230,7 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
             }
         })
         editor.setReadOnly(this.readOnly);
+        editor.setOptions(this.options);
     },
     get options() {
         const options = {
