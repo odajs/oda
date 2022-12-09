@@ -241,7 +241,7 @@ if (!window.ODA?.IsReady) {
                 for (let i in defs) {
                     this[i] = defs[i];
                 }
-                this.$core.renderer = render.bind(this);
+                // this.$core.renderer = render.bind(this);
                 if (this.$core.shadowRoot) {
                     this.$core.resize.observe(this);
                     for (let i in this.$core.saveProps){
@@ -1620,70 +1620,70 @@ if (!window.ODA?.IsReady) {
         // ODA.telemetry.
         return $el;
     }
-
-    let renderQueue = [];
-    let rafid = 0;
-    ODA.render = function (renderer) {
-        // console.log('rrr', rafid)
-        renderQueue.add(renderer);
-        if (rafid) return;
-        rafid = requestAnimationFrame(async ()=>{
-            const list = Array.from(renderQueue);
-            const count = list.length;
-            renderQueue = [];
-            // let time = Date.now();
-            while (list.length){
-                await list.shift()?.();
-            }
-            // time = Date.now() - time;
-            // console.warn(count, time);
-            rafid = 0;
-            if (!renderQueue?.length) return;
-            ODA.render(renderQueue[0])
-        })
-    }
-    async function render() {
-        let time = Date.now();
-        let r = ODA.telemetry.rendering;
-        r.id++;
-        r.calls++;
-        r = r.tasks[r.id] ??= {time: 0, dom: {}}
-        // await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-        await renderComponent.call(this);
-        r.time = Date.now() - time;
-        // console.log('RENDER: ' + ODA.telemetry.rendering.id, r.time);
-        ODA.telemetry.rendering.time += r.time;
-        ODA.telemetry.rendering.self = Math.round(ODA.telemetry.rendering.time / ODA.telemetry.rendering.calls);
-        let dom = r.dom;
-        dom = Object.keys(dom).map(i=>{
-            const d = dom[i];
-            d.tag = i;
-            return d;
-        }).sort((a,b)=>{
-            return a.time>b.time?-1:1;
-        })
-        r.dom = dom;
-    }
+    //
+    // let renderQueue = [];
+    // let rafid = 0;
+    // ODA.render = function (renderer) {
+    //     // console.log('rrr', rafid)
+    //     renderQueue.add(renderer);
+    //     if (rafid) return;
+    //     rafid = requestAnimationFrame(async ()=>{
+    //         const list = Array.from(renderQueue);
+    //         const count = list.length;
+    //         renderQueue = [];
+    //         // let time = Date.now();
+    //         while (list.length){
+    //             await list.shift()?.();
+    //         }
+    //         // time = Date.now() - time;
+    //         // console.warn(count, time);
+    //         rafid = 0;
+    //         if (!renderQueue?.length) return;
+    //         ODA.render(renderQueue[0])
+    //     })
+    // }
+    // async function render() {
+    //     let time = Date.now();
+    //     let r = ODA.telemetry.rendering;
+    //     r.id++;
+    //     r.calls++;
+    //     r = r.tasks[r.id] ??= {time: 0, dom: {}}
+    //     // await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
+    //     await renderComponent.call(this);
+    //     r.time = Date.now() - time;
+    //     // console.log('RENDER: ' + ODA.telemetry.rendering.id, r.time);
+    //     ODA.telemetry.rendering.time += r.time;
+    //     ODA.telemetry.rendering.self = Math.round(ODA.telemetry.rendering.time / ODA.telemetry.rendering.calls);
+    //     let dom = r.dom;
+    //     dom = Object.keys(dom).map(i=>{
+    //         const d = dom[i];
+    //         d.tag = i;
+    //         return d;
+    //     }).sort((a,b)=>{
+    //         return a.time>b.time?-1:1;
+    //     })
+    //     r.dom = dom;
+    // }
     function renderIgnore(el) {
         if (el && el.$sleep)
             return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && !el.$node.isStyle
         return false;
     }
     function renderComponent(){
-        if (this.__render || renderIgnore(this))
-            return false;
-        this.__render = true;
-        let time = Date.now();
-        this.$core.prototype.$system.observers?.forEach(name => {
-            return this[name];
-        });
-        return renderChildren.call(this, this.$core.shadowRoot).then(()=>{
-            setTimeout(()=>{
-                time = Date.now() - time;
-                // console.log('renderComponent', this.localName, time)
-                this.__render = false;
+        return this.__render ??= new Promise((resolve)=>{
+            let time = Date.now();
+            this.$core.prototype.$system.observers?.forEach(name => {
+                return this[name];
+            });
+            return renderChildren.call(this, this.$core.shadowRoot).then(()=>{
+                requestAnimationFrame(()=>{
+                    time = Date.now() - time;
+                    console.log('render', this.localName, time);
+                    this.__render = undefined;
+                })
+                resolve();
+                return this;
             })
-            return this;
         })
     }
     async function renderChildren(root){
@@ -1701,7 +1701,6 @@ if (!window.ODA?.IsReady) {
                     await renderElement.call(this, node.child, el, root, node.params)
                 }
                 idx += items.length;
-                // idx++
             }
             else{ // single element
                 while ((el = root.childNodes[idx]) && el?.$node !== h)
@@ -1714,7 +1713,6 @@ if (!window.ODA?.IsReady) {
             if (!el?.$node) return;
             root.removeChild(el);
         }
-
     }
     async function renderElement(src, $el, $parent, $for){
         if ($parent) {
@@ -1764,7 +1762,7 @@ if (!window.ODA?.IsReady) {
             default:{
 
                 if ($el.$core && this.isConnected) {
-                    renderComponent.call($el);
+                    await renderComponent.call($el);
                 }
                 else if (src.isSlot) {
                     const elements = $el.assignedElements?.() || [];
