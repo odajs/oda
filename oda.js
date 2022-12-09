@@ -163,8 +163,8 @@ if (!window.ODA?.IsReady) {
                     entry.target.$sleep = !entry.isIntersecting;
                     // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
                     //     entry.target.$sleep = false;
-                    if (!entry.target.$sleep)
-                        entry.target.domHost?.render();
+                    // if (!entry.target.$sleep)
+                    //     entry.target.domHost?.render();
                 }
             }, { rootMargin: '10%', threshold: 0.1 }),
             resize: new ResizeObserver(entries => {
