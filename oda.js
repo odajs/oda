@@ -161,17 +161,17 @@ if (!window.ODA?.IsReady) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     entry.target.$sleep = !entry.isIntersecting;
-                    if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
-                        entry.target.$sleep = false;
+                    // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
+                    //     entry.target.$sleep = false;
                     if (!entry.target.$sleep)
                         entry.target.domHost?.render();
                 }
-            }, { rootMargin: '10%', threshold: 1.0 }),
+            }, { rootMargin: '10%', threshold: 0.1 }),
             resize: new ResizeObserver(entries => {
                 for (const entry of entries) {
                     entry.target.$rect = entry.contentRect;
-                    if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
-                        entry.target.$sleep = false;
+                    // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
+                    //     entry.target.$sleep = false;
                     if (entry.target.__events?.has('resize'))
                         entry.target.fire('resize');
                 }
@@ -1666,7 +1666,7 @@ if (!window.ODA?.IsReady) {
     }
     function renderIgnore(el) {
         if (el && el.$sleep)
-            return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && el.$node.isStyle
+            return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && !el.$node.isStyle
         return false;
     }
     function renderComponent(){
@@ -1677,17 +1677,14 @@ if (!window.ODA?.IsReady) {
         this.$core.prototype.$system.observers?.forEach(name => {
             return this[name];
         });
-        let res = renderChildren.call(this, this.$core.shadowRoot);
-        if (res.then)
-            res = res.then(res=>{
-                setTimeout(()=>{
-                    time = Date.now() - time;
-                    console.log('renderComponent', this.localName, time)
-                    this.__render = false;
-                })
-                return this;
+        return renderChildren.call(this, this.$core.shadowRoot).then(()=>{
+            setTimeout(()=>{
+                time = Date.now() - time;
+                // console.log('renderComponent', this.localName, time)
+                this.__render = false;
             })
-        return res;
+            return this;
+        })
     }
     async function renderChildren(root){
         let el, h, idx = 0;
@@ -1753,8 +1750,10 @@ if (!window.ODA?.IsReady) {
             }
         }
 
+
         if ($for)
             $el.$for = $for;
+
         // console.log('renderElement', $el.$$id)
         switch ($el.nodeType){
             case 3:
@@ -1763,6 +1762,7 @@ if (!window.ODA?.IsReady) {
                     h.call(this, $el);
             } break;
             default:{
+
                 if ($el.$core && this.isConnected) {
                     renderComponent.call($el);
                 }
@@ -1854,12 +1854,8 @@ if (!window.ODA?.IsReady) {
 
                 }
 
-
-
                 if (renderIgnore($el))
                     return $el;
-
-
                 await renderChildren.call(this, $el, $el.$for);
                 // if ($el?.$core)
                 //     await renderComponent.call($el);
