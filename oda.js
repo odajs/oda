@@ -160,13 +160,13 @@ if (!window.ODA?.IsReady) {
                 for (let i = 0, entry, l = entries.length; i < l; i++) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
-                    entry.target.$sleep = !entry.isIntersecting;
+                    entry.target.$sleep = !entry.isIntersecting && !entry.target.$wake;
                     // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
                     //     entry.target.$sleep = false;
-                    // if (!entry.target.$sleep)
-                    //     entry.target.domHost?.render();
+                    if (!entry.target.$sleep)
+                        entry.target.domHost?.render();
                 }
-            }, { rootMargin: '10%', threshold: 0.1 }),
+            }, { rootMargin: '10%', threshold: 0.0 }),
             resize: new ResizeObserver(entries => {
                 for (const entry of entries) {
                     entry.target.$rect = entry.contentRect;
@@ -387,7 +387,6 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-
                 if (!this.isConnected){
                     if (block?.options.hosts.has(this)){
                         this.debounce('debounce-clear', () => {
@@ -405,20 +404,13 @@ if (!window.ODA?.IsReady) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
-                        this.render();
                     })
-
+                    this.render();
                     callHook.call(this, 'updated');
                 }
-
             }
-            get rootHost(){
-                if (this.domHost?.rootHost?.__render)
-                    return this;
-                return this.domHost?.rootHost || this;
-            }
-            async render() {
-                await renderComponent.call(this.rootHost);
+           async render(src) {
+                await renderComponent.call(this, src);
                 callHook.call(this, 'onRender');
             }
             resolveUrl(path) {
@@ -1210,16 +1202,14 @@ if (!window.ODA?.IsReady) {
                     })
                     src.text.push(function ($el) {
                         const st = this[key] || '';
-                        if ($el.textContent == st) return;
-                        // this.debounce('set style:'+$el.$node.id, ()=>{
-                            $el.textContent = st;
-                        // })
+                        // if ($el.textContent == st) return;
+                        $el.textContent = st;
                     })
                 }
                 else{
                     src.text.push(function ($el) {
                         const st = exec.call(this, fn, $el.$for);
-                        if ($el.textContent == st) return;
+                        // if ($el.textContent == st) return;
                         $el.textContent = st;
                     });
                 }
@@ -1617,104 +1607,72 @@ if (!window.ODA?.IsReady) {
         }
         $el.$node = src;
         $el.domHost = this;
-        // ODA.telemetry.
         return $el;
     }
-    //
-    // let renderQueue = [];
-    // let rafid = 0;
-    // ODA.render = function (renderer) {
-    //     // console.log('rrr', rafid)
-    //     renderQueue.add(renderer);
-    //     if (rafid) return;
-    //     rafid = requestAnimationFrame(async ()=>{
-    //         const list = Array.from(renderQueue);
-    //         const count = list.length;
-    //         renderQueue = [];
-    //         // let time = Date.now();
-    //         while (list.length){
-    //             await list.shift()?.();
-    //         }
-    //         // time = Date.now() - time;
-    //         // console.warn(count, time);
-    //         rafid = 0;
-    //         if (!renderQueue?.length) return;
-    //         ODA.render(renderQueue[0])
-    //     })
-    // }
-    // async function render() {
-    //     let time = Date.now();
-    //     let r = ODA.telemetry.rendering;
-    //     r.id++;
-    //     r.calls++;
-    //     r = r.tasks[r.id] ??= {time: 0, dom: {}}
-    //     // await updateDom.call(this, this.$core.node, this.$core.shadowRoot);
-    //     await renderComponent.call(this);
-    //     r.time = Date.now() - time;
-    //     // console.log('RENDER: ' + ODA.telemetry.rendering.id, r.time);
-    //     ODA.telemetry.rendering.time += r.time;
-    //     ODA.telemetry.rendering.self = Math.round(ODA.telemetry.rendering.time / ODA.telemetry.rendering.calls);
-    //     let dom = r.dom;
-    //     dom = Object.keys(dom).map(i=>{
-    //         const d = dom[i];
-    //         d.tag = i;
-    //         return d;
-    //     }).sort((a,b)=>{
-    //         return a.time>b.time?-1:1;
-    //     })
-    //     r.dom = dom;
-    // }
-    function renderIgnore(el) {
-        if (el && el.$sleep)
-            return !el.$wake && !el.$node.isSvg && !el.$node.isSlot && !el.$node.isStyle
-        return false;
-    }
-    function renderComponent(){
-        return this.__render ??= new Promise((resolve)=>{
-            let time = Date.now();
+
+    function renderComponent(src){
+        return this.__render ??= new Promise(async (resolve)=>{
+            if (!src && this.domHost){
+                await renderComponent.call(this.domHost);
+            }
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
             });
-            return renderChildren.call(this, this.$core.shadowRoot).then(()=>{
-                requestAnimationFrame(()=>{
-                    time = Date.now() - time;
-                    console.log('render', this.localName, time);
-                    this.__render = undefined;
-                })
-                resolve();
-                return this;
+            const r = renderChildren.call(this, this.$core.shadowRoot);
+            if (r?.then)
+                await r;
+            resolve();
+            requestAnimationFrame(()=>{
+                this.__render = undefined;
             })
+            return this;
         })
     }
-    async function renderChildren(root){
-        let el, h, idx = 0;
-        for (h of (root?.$node || this.$core?.node).children || []){
-            if (h.call){ // table list
-                let items = h.call(this, root.$for);
-                if (items.then)
-                    items = await items;
-                for(let i = 0; i<items.length; i++){
-                    const node = items[i];
-                    while ((el = root.childNodes[idx+i]) && el?.$node !== h.src && node?.params[0] !== el.$for?.[0]){
-                        root.removeChild(el);
+    function renderChildren(root){
+        if (root.$sleep)
+            return root;
+        return root.__rc ??= new Promise(async resolve =>{
+            if (root.$core)
+                root.render(this);
+            else if (root?.$node?.isSlot)
+                for (let el of root.assignedElements?.() || [])
+                    el.render(this);
+            let el, h, idx = 0;
+            for (h of (root?.$node || this.$core?.node).children || []){
+                if (h.call){ // table list
+                    let items = h.call(this, root.$for);
+                    if (items.then)
+                        items = await items;
+                    for(let i = 0; i<items.length; i++){
+                        const node = items[i];
+                        el = root.childNodes[idx+i];
+                        el = renderElement.call(this, node.child, el, root, node.params)
+                        if (el?.then)
+                            el = await el;
                     }
-                    await renderElement.call(this, node.child, el, root, node.params)
+                    idx += items.length;
                 }
-                idx += items.length;
+                else{ // single element
+                    el = root.childNodes[idx];
+                    el = renderElement.call(this, h, el, root, root.$for);
+                    if (el?.then)
+                        el = await el;
+                    idx++;
+                }
             }
-            else{ // single element
-                while ((el = root.childNodes[idx]) && el?.$node !== h)
-                    root.removeChild(el);
-                el = await renderElement.call(this, h, el, root, root.$for);
-                idx++;
+
+            while (el = root.childNodes[idx]){
+                if (!el?.$node) break;
+                root.removeChild(el);
             }
-        }
-        while (el = root.childNodes[idx]){
-            if (!el?.$node) return;
-            root.removeChild(el);
-        }
+            resolve();
+            requestAnimationFrame(()=>{
+                root.__rc = undefined;
+            })
+            return root;
+        })
     }
-    async function renderElement(src, $el, $parent, $for){
+    function renderElement(src, $el, $parent, $for){
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1747,131 +1705,96 @@ if (!window.ODA?.IsReady) {
                 $el = el;
             }
         }
-
-
-        if ($for)
-            $el.$for = $for;
-
-        // console.log('renderElement', $el.$$id)
-        switch ($el.nodeType){
+        $el.$for = $for || $el.$for;
+        switch ($el.nodeType) {
             case 3:
-            case 8:{
+            case 8: {
                 for (let h of src.text || [])
                     h.call(this, $el);
-            } break;
-            default:{
-
-                if ($el.$core && this.isConnected) {
-                    await renderComponent.call($el);
-                }
-                else if (src.isSlot) {
-                    const elements = $el.assignedElements?.() || [];
-                    for (let el of elements) {
-                        if (el.$sleep) continue
-                        if (el.$core)
-                            await renderComponent.call(el);
-                        // else if (el.$node)
-                        //     await renderElement.call(this, el.$node, el, el.slotProxy.parentNode);
-                    }
-
-                }
-
-                if (src.dirs)
-                    for (let h of src.dirs)
-                        h.call(this, $el, src.fn[h.name], $for);
-                if (src.bind){
-                    const binds = Object.keys(src.bind).map(key=>{
-                        const val= src.bind[key].call(this, $for, $el);
-                        return {key, val};
-                    })
-                    binds.forEach(bind=>{
-                        let i = bind.key;
-                        if (i.includes('.')/* && listener*/) {
-                            const listener = src.listeners[i.toKebabCase() + '-changed'];
-                            if (listener){
-                                const pathToObj = i.slice(0, i.lastIndexOf('.'));
-                                const propName = i.slice(i.lastIndexOf('.') + 1);
-                                const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
-                                const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
-                                const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
-                                if (bottUpdates > topUpdates && $el.fire) {
-                                    this.setProperty(listener.expr, obj[propName]);
-                                    return;
-                                }
-                            }
-                        }
-                        $el.setProperty(i, bind.val);
-                    })
-                }
-
-                if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot){
-                    this.$core.slotted.add($el);
-                    // this.$core.intersect.unobserve($el);
-                    const el = $el.slotProxy ??= createElement.call(this, src, '#comment');
-                    el.slotTarget = $el;
-                    $el.slotProxy = el;
-                    el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
-
-                    if ($el.$ref) {
-                        let arr = this.$core.slotRefs[$el.$ref];
-                        if (Array.isArray(arr))
-                            arr.push($el);
-                        else if ($el.$for)
-                            this.$core.slotRefs[$el.$ref] = [$el];
-                        else
-                            this.$core.slotRefs[$el.$ref] = $el;
-                    }
-                    $parent.replaceChild(el, $el);
-                    if ($el.slot === '*')
-                        $el.removeAttribute('slot')
-                    requestAnimationFrame(() => {
-                        let host;
-                        const filter = `slot[name='${$el.slot}']`;
-                        for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
-                            if (host.$core?.shadowRoot?.querySelector(filter)) {
-                                applySlotByOrder($el, host);
-                                return;
-                            }
-                        }
-                        host = this;
-                        while (host) {
-                            for (let ch of host.children) {
-                                if(ch.$core?.shadowRoot?.querySelector(filter)){
-                                    applySlotByOrder($el, ch);
-                                    return;
-                                }
-                            }
-                            if (host.$core?.shadowRoot?.querySelector(filter)) {
-                                applySlotByOrder($el, host);
-                                return;
-                            }
-                            host = host.domHost || (host.parentElement?.$core && host.parentElement);
-                        }
-                        applySlotByOrder($el, this);
-                    })
-
-                }
-
-                if (renderIgnore($el))
-                    return $el;
-                await renderChildren.call(this, $el, $el.$for);
-                // if ($el?.$core)
-                //     await renderComponent.call($el);
-
-
-            } break;
+                return $el;
+            }
         }
-        return $el;
+        if (src.dirs)
+            for (let h of src.dirs)
+                h.call(this, $el, src.fn[h.name], $for);
+        if (src.bind) {
+            for (let key in src.bind) {
+                const val = src.bind[key].call(this, $for, $el);
+                if (key.includes('.')/* && listener*/) {
+                    const listener = src.listeners[key.toKebabCase() + '-changed'];
+                    if (listener) {
+                        const pathToObj = key.slice(0, key.lastIndexOf('.'));
+                        const propName = key.slice(key.lastIndexOf('.') + 1);
+                        const obj = (new Function(`with(this){return ${pathToObj}}`)).call($el);
+                        const bottUpdates = obj?.__op__?.blocks?.[propName]?.updates;
+                        const topUpdates = new Function(`with(this){return __op__.blocks['${listener.expr}'] || __op__.blocks['#${listener.expr}']}`).call(this, listener)?.updates ?? 0;
+                        if (bottUpdates > topUpdates && $el.fire) {
+                            this.setProperty(listener.expr, obj[propName]);
+                            continue;
+                        }
+                    }
+                }
+                $el.setProperty(key, val);
+            }
+        }
+        renderSlottedElement.call(this, src, $el, $parent);
+        return renderChildren.call(this, $el, $el.$for);
     }
+    function renderSlottedElement(src, $el, $parent){
 
+        if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot){
+            this.$core.slotted.add($el);
+            // this.$core.intersect.unobserve($el);
+            const el = $el.slotProxy ??= createElement.call(this, src, '#comment');
+            el.slotTarget = $el;
+            $el.slotProxy = el;
+            el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
+
+            if ($el.$ref) {
+                let arr = this.$core.slotRefs[$el.$ref];
+                if (Array.isArray(arr))
+                    arr.push($el);
+                else if ($el.$for)
+                    this.$core.slotRefs[$el.$ref] = [$el];
+                else
+                    this.$core.slotRefs[$el.$ref] = $el;
+            }
+            $parent.replaceChild(el, $el);
+            if ($el.slot === '*')
+                $el.removeAttribute('slot')
+            requestAnimationFrame(() => {
+                let host;
+                const filter = `slot[name='${$el.slot}']`;
+                for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
+                    if (host.$core?.shadowRoot?.querySelector(filter)) {
+                        applySlotByOrder($el, host);
+                        return;
+                    }
+                }
+                host = this;
+                while (host) {
+                    for (let ch of host.children) {
+                        if(ch.$core?.shadowRoot?.querySelector(filter)){
+                            applySlotByOrder($el, ch);
+                            return;
+                        }
+                    }
+                    if (host.$core?.shadowRoot?.querySelector(filter)) {
+                        applySlotByOrder($el, host);
+                        return;
+                    }
+                    host = host.domHost || (host.parentElement?.$core && host.parentElement);
+                }
+                applySlotByOrder($el, this);
+            })
+
+        }
+    }
     function applySlotByOrder($el, host) {
         const prev = $el.slotProxy?.previousSibling;
         const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
         host.insertBefore($el, target);
     }
-
-
-
     function parseModifiers(name) {
         if (!name) return;
         const match = name.match(modifierRE);
@@ -2382,10 +2305,8 @@ if (!window.ODA?.IsReady) {
             event = new odaCustomEvent(event, { detail: { value: detail }, composed: true, ...options});
             this.dispatchEvent(event);
         };
-        Node.prototype.render = function () {
-            if (!this.$wake && this.$sleep) return;
-            this.domHost?.render();
-            // updateDom.call(this.domHost, this.$node, this, this.parentNode, this.$for, true);
+        Node.prototype.render = function (src) {
+            this.domHost?.render(src);
         };
     }
     Element:{

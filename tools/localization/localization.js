@@ -147,6 +147,18 @@ textContent.set = function (val) {
     const newVal = _newVal.call(this, val)
     textSet.call(this, newVal)  // переводим, перевод сохраняем
 }
+// textContent.get = function () {
+//     const val = textGet.call(this)
+//     let newVal = _newVal.call(this, val)
+//     if (newVal?.then) {
+//         newVal.then (val => {
+//             textSet.call(this,val)
+//         })
+//         return '' // проверить заход
+//     }
+//     return newVal
+// }
+
 textContent.get = function () {
     const val = textGet.call(this)
     const newVal = _newVal.call(this, val)
@@ -269,3 +281,56 @@ setTimeout(()=>{
         Localization.dictionary = Object.create(null)
     })
 })
+
+function tr(str){
+    let object = new Promise((resolve, reject)=>{
+        resolves[str] = resolve;
+        worker.str({type: 'translate', 'str':str });
+        return icons[n];
+    })
+    return object;
+}
+
+// function loadIcon(n){
+//     if (/:[0-9]+$/.test(n)) {
+//         let s = n.match(/:[0-9]+$/)[0];
+//         n = n.replace(s, '');
+//     }
+//     let object = icons[n] ??= new Promise((resolve, reject)=>{
+//         resolves[n] = resolve;
+//         worker.postMessage(n);
+//         return icons[n];
+//     })
+//     return object;
+// }
+// const resolves = {};
+// const icons = {};
+// let worker = new SharedWorker(path+'/icon-ww.js');
+// worker = worker.port || worker;
+// worker.start?.();
+// worker.onmessage = function (e){
+//     switch (e.data?.type){
+//         case 'svg':{
+//             const dom = parser.parseFromString(e.data.doc, 'text/html');
+//             const template = dom.querySelector('template');
+//             const size = +template.getAttribute('size') || 0
+//             e.data.svg = Array.prototype.reduce.call(template.content.children, (res, i)=>{
+//                 res[i.id] = {body: {body: i.outerHTML, size: (+i.getAttribute('size') || size)}};
+//                 return res
+//             }, {})
+//             worker.postMessage(e.data);
+//         } break;
+//         case 'request':{
+//             worker.postMessage(e.data.icon);
+//         } break;
+//         default:{
+//             icons[e.data.icon] = e.data;
+//             resolves[e.data.icon]?.(e.data);
+//             delete resolves[e.data.icon];
+//         } break;
+//     }
+// }
+// worker.onmessageerror = function (e) {
+//     console.error(e);
+// }
+// worker.postMessage({type: 'init', url: ODA.rootPath})

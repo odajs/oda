@@ -27,7 +27,7 @@ var Monitoring = Monitoring || (function () {
 
         var self = this;
         var rate = 0;
-        var bucketSize = 20;
+        var bucketSize = 1000;
         var bucket = [];
         var lastTime = Date.now();
         return {

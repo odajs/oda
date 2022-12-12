@@ -12,8 +12,8 @@ ODA({
         .fix oda-site-header {padding:5px 10%;}
         .content .secname {background-image:url(h.jpg);background-attachment: fixed;height: 30vh; color: #fff; font-size:10vh ; padding: 0; margin: 0;
         display: grid;align-content: center; justify-content: center; text-shadow: 0 0 2px #000; text-align:center;}
-        .menu  {color:#000; text-decoration:none; border-bottom:2px solid #00a0dc; padding: 5px; transition: all 0.5s linear; cursor: pointer;}
-        .menu:hover, .sactive.menu a {border-color:#052e70}
+        ::slotted(.menu)  {color:#000; text-decoration:none; border-bottom:2px solid #00a0dc; padding: 5px; transition: all 0.5s linear; cursor: pointer;}
+        ::slotted(.menu:hover), ::slotted(.sactive.menu a) {border-color:#052e70}
         .sactive.menu {background:#00a0dc; color:white;}
         #progress {height:3px ; background:#052e70}
         #progressbar {background:#00a0dc; border-bottom:1px solid #fff}

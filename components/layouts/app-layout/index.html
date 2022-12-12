@@ -3,8 +3,8 @@
 <script type="module" src="../../../oda.js"></script>
 <oda-test-layout></oda-test-layout>
 <script type="module">
-    import './app-layout.js';
-    ODA({is:'oda-test-layout', extends:'oda-app-layout',
+    // import './app-layout.js';
+    ODA({is:'oda-test-layout', imports:'@oda/app-layout', extends:'oda-app-layout',
         template:`
             <app-layout-toolbar slot="header">
                     <oda-button icon="class" slot="header-left">left toolbar</oda-button>
@@ -20,11 +20,11 @@
             </div>
             <input slot="top" value="100">
             <div slot="top-left">TOP-LEFT</div>
-            <div slot="main">MAIN</div>
+            <iframe slot="main" src="../../grids/table/index.html">MAIN</iframe>
             <div slot="bottom">BOTTOM</div>
     <!--        <div slot="leftbar">LEFT BAR</div>-->
             <div  icon="odant:class" allow-pin title="ПППП"  slot="left-panel">ссссс</div>
-            <div  slot="left-panel" bar-opened label="надпись">LEFT1</div>
+            <iframe  slot="left-panel" bar-opened label="надпись" src="../../../_sandbox/simple/index.html">LEFT1</iframe>
             <div  style="font-weight: bolder; color: red;" :slot="mySlot">LEFT2</div>
             <div slot="left-panel">LEFT3</div>
             <div slot="right-panel">RIGHT</div>

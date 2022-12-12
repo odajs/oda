@@ -152,13 +152,18 @@ ODA({is: 'oda-icon',
         return obj;
     }
 });
-function loadIcon(n){
+function loadIcon(n){ //todo сделать обобщение
     if (/:[0-9]+$/.test(n)) {
         let s = n.match(/:[0-9]+$/)[0];
         n = n.replace(s, '');
     }
     let object = icons[n] ??= new Promise((resolve, reject)=>{
-        resolves[n] = resolve;
+        resolves[n] = (a)=>{
+
+                resolve(a);
+                this.render();
+
+        }
         worker.postMessage(n);
         return icons[n];
     })
