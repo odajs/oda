@@ -429,8 +429,10 @@ if (!window.ODA?.IsReady) {
                 }
             }
            async render(src) {
-                await renderComponent.call(this, src);
-                callHook.call(this, 'onRender');
+               // ODA.telemetry.measure(this.localName, async ()=>{
+                   await renderComponent.call(this, src);
+                   callHook.call(this, 'onRender');
+               // })
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -2667,7 +2669,8 @@ if (!window.ODA?.IsReady) {
         }
     }
     telemetry:{
-        ODA.telemetry = CLASS({is:'odaTelemetry',
+        let telId = 0;
+        CLASS({is:'odaTelemetry',
             ctor(){
 
             },
@@ -2676,6 +2679,8 @@ if (!window.ODA?.IsReady) {
                 return new Promise(resolve=>{
                     this.resolves[path] = resolve;
                     worker.postMessage({type: 'get', path})
+                }).then(res=>{
+                    console.log(res);
                 })
             },
             set(path, value){
@@ -2683,30 +2688,26 @@ if (!window.ODA?.IsReady) {
             },
             clear(path){
                 worker.postMessage({type: 'clear', path})
-            }
-        })
-
-        ODA.telemetry =    {
-            rendering: {},
-            proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
-                return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
-                    return res+=i;
-                },0);
-            }, components: { count: 0 }, prototypes: {}, clear: () => {
-                for (const i of Object.keys(ODA.telemetry)) {
-                    if (typeof ODA.telemetry[i] === 'number')
-                        ODA.telemetry[i] = 0;
-                }
             },
-        };
+            async measure(path, handle){
+                let time = Date.now();
+                await handle();
+                worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
+            },
+            prototypes: {},
+            components: {}
+        })
+        ODA.telemetry = new odaTelemetry();
+
         let worker = new SharedWorker(ODA.rootPath+'/telemetry-ww.js');
         worker = worker.port || worker;
         worker.start?.();
         worker.onmessage = function (e){
             switch (e.data.type){
                 case 'get':{
-
-                }
+                    ODA.telemetry.resolves[e.data.path]?.(e.data.result);
+                    delete ODA.telemetry.resolves[e.data.path];
+                } break;
             }
         }
         worker.onmessageerror = function (e) {
