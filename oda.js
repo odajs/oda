@@ -52,7 +52,9 @@ if (!window.ODA?.IsReady) {
                     if (!parent)
                         throw new Error(`Not found inherit parent "${ext}"`);
                     if (parent.then){
-                        console.log('ASYNC-COMPONENT-LOADING',ext);
+                        if (!window.customElements.get(ext)){
+                            console.log('ASYNC-COMPONENT-LOADING',ext);
+                        }
                         parent = await parent;
                     }
                     parents.push(parent);
@@ -253,6 +255,11 @@ if (!window.ODA?.IsReady) {
                 }
             }
             connectedCallback() {
+                if (this._on_disconnect_timer){
+                    clearTimeout(this._on_disconnect_timer)
+                    this._on_disconnect_timer = 0;
+                    return;
+                }
                 // if (!this.domHost/* && this.parentElement !== document.body*/){
                 //     this.$wake = true;
                 //     this.style.setProperty?.('visibility', 'hidden');
@@ -307,14 +314,26 @@ if (!window.ODA?.IsReady) {
                 })
             }
             disconnectedCallback() {
-                // console.log('disconnectedCallback', this)
-                for (let event in prototype.listeners) {
-                    this.removeEventListener(event, this.$core.listeners[event]);
-                    delete this.$core.listeners[event];
-                }
+                this._on_disconnect_timer = setTimeout(()=>{
+                    //todo доделать отписку
+                    // this.__op__.hosts
+                    // if (this.__op__.hosts.has(this)){
+                    //     this.debounce('debounce-clear', () => {
+                    //         if (!this.isConnected)
+                    //             this.__op__.hosts.delete(this);
+                    //     }, 100)
+                    // }
+                    for (let event in prototype.listeners) {
+                        this.removeEventListener(event, this.$core.listeners[event]);
+                        delete this.$core.listeners[event];
+                    }
 
-                this._retractSlots();
-                callHook.call(this, 'detached');
+                    this._retractSlots();
+                    callHook.call(this, 'detached');
+                    this._on_disconnect_timer = 0;
+                }, 100)
+                // console.log('disconnectedCallback', this)
+
             }
             setPDP() {
                 const parentElement = this.domHost || this.parentNode;
@@ -1141,12 +1160,6 @@ if (!window.ODA?.IsReady) {
         });
     }
 
-    WebWorker:{ //todo здесь будет Web Worker
-        ODA.Worker = async function(handle){
-
-        }
-    }
-
     Object.defineProperty(ODA, 'top',  {
         get (){
             if (window.parent !== window)
@@ -1613,7 +1626,7 @@ if (!window.ODA?.IsReady) {
     function renderComponent(src){
         return this.__render ??= new Promise(async (resolve)=>{
             if (!src && this.domHost){
-                await renderComponent.call(this.domHost);
+                await this.domHost.render();
             }
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
@@ -1621,11 +1634,11 @@ if (!window.ODA?.IsReady) {
             const r = renderChildren.call(this, this.$core.shadowRoot);
             if (r?.then)
                 await r;
-            resolve();
+            resolve(this);
             requestAnimationFrame(()=>{
                 this.__render = undefined;
             })
-            return this;
+            return this
         })
     }
     function renderChildren(root){
@@ -1665,11 +1678,12 @@ if (!window.ODA?.IsReady) {
                 if (!el?.$node) break;
                 root.removeChild(el);
             }
-            resolve();
+            resolve(root);
             requestAnimationFrame(()=>{
                 root.__rc = undefined;
             })
             return root;
+
         })
     }
     function renderElement(src, $el, $parent, $for){
@@ -1685,24 +1699,26 @@ if (!window.ODA?.IsReady) {
                 if ($el.nodeType === 3)
                     $el.textContent = src.textContent;
             }
-            else if ($el.$node?.id !== src.id) {
-                const el = createElement.call(this, src, tag);
-                if ($parent.contains($el))
-                    $parent.insertBefore(el, $el);
-                else
+            else if (src.tags){
+                if ($el.$node?.id !== src.id) {
+                    const el = createElement.call(this, src, tag);
+                    if ($parent.contains($el))
+                        $parent.insertBefore(el, $el);
+                    else
+                        $parent.replaceChild(el, $el);
+                    $el = el;
+                }
+                else if ($el.slotTarget)
+                    $el = $el.slotTarget;
+                else if ($el.nodeName !== tag) {
+                    $el.__before ??= Object.create(null);
+                    const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                    el.__before ??= Object.create(null);
+                    el.__before[$el.nodeName] = $el;
                     $parent.replaceChild(el, $el);
-                $el = el;
-            }
-            else if ($el.slotTarget)
-                $el = $el.slotTarget;
-            else if ($el.nodeName !== tag) {
-                $el.__before ??= Object.create(null);
-                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
-                el.__before ??= Object.create(null);
-                el.__before[$el.nodeName] = $el;
-                $parent.replaceChild(el, $el);
-                el.$ref = $el.$ref;
-                $el = el;
+                    el.$ref = $el.$ref;
+                    $el = el;
+                }
             }
         }
         $el.$for = $for || $el.$for;
@@ -1852,19 +1868,7 @@ if (!window.ODA?.IsReady) {
             }
         }
     }
-    ODA.telemetry = {
-        rendering: {id:0,time: 0, calls: 0, self: 0, tasks: {}},
-        proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
-            return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
-                return res+=i;
-            },0);
-        }, components: { count: 0 }, prototypes: {}, clear: () => {
-            for (const i of Object.keys(ODA.telemetry)) {
-                if (typeof ODA.telemetry[i] === 'number')
-                    ODA.telemetry[i] = 0;
-            }
-        },
-    };
+
     const cache = {
         fetch: {},
         file: {}
@@ -2660,6 +2664,53 @@ if (!window.ODA?.IsReady) {
                     } break;
                 }
             }
+        }
+    }
+    telemetry:{
+        ODA.telemetry = CLASS({is:'odaTelemetry',
+            ctor(){
+
+            },
+            resolves: {},
+            get(path){
+                return new Promise(resolve=>{
+                    this.resolves[path] = resolve;
+                    worker.postMessage({type: 'get', path})
+                })
+            },
+            set(path, value){
+                worker.postMessage({type: 'set', path, value})
+            },
+            clear(path){
+                worker.postMessage({type: 'clear', path})
+            }
+        })
+
+        ODA.telemetry =    {
+            rendering: {},
+            proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
+                return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
+                    return res+=i;
+                },0);
+            }, components: { count: 0 }, prototypes: {}, clear: () => {
+                for (const i of Object.keys(ODA.telemetry)) {
+                    if (typeof ODA.telemetry[i] === 'number')
+                        ODA.telemetry[i] = 0;
+                }
+            },
+        };
+        let worker = new SharedWorker(ODA.rootPath+'/telemetry-ww.js');
+        worker = worker.port || worker;
+        worker.start?.();
+        worker.onmessage = function (e){
+            switch (e.data.type){
+                case 'get':{
+
+                }
+            }
+        }
+        worker.onmessageerror = function (e) {
+            console.error(e);
         }
     }
     window.ODA.IsReady = true;

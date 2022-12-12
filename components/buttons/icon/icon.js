@@ -159,10 +159,8 @@ function loadIcon(n){ //todo сделать обобщение
     }
     let object = icons[n] ??= new Promise((resolve, reject)=>{
         resolves[n] = (a)=>{
-
-                resolve(a);
-                this.render();
-
+            resolve(a);
+            this.render();
         }
         worker.postMessage(n);
         return icons[n];
