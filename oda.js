@@ -274,10 +274,6 @@ if (!window.ODA?.IsReady) {
                     this._on_disconnect_timer = 0;
                     return;
                 }
-                // if (!this.domHost/* && this.parentElement !== document.body*/){
-                //     this.$wake = true;
-                //     this.style.setProperty?.('visibility', 'hidden');
-                // }
                 this.$core.pdp = undefined;
                 for (const key in this.$core.observers) {
                     for (const h of this.$core.observers[key])
@@ -289,8 +285,6 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                // this.fire('attached');
-                this.render();
                 this.async(()=>{
                     callHook.call(this, 'attached');
                     Array.prototype.forEach.call(this.attributes, a=>{
@@ -298,30 +292,19 @@ if (!window.ODA?.IsReady) {
                         val = (val === '') ? true : (val === undefined ? false : val);
                         this.setProperty(a.name, val);
                     })
-                    // if (this.style.getPropertyValue?.('visibility') !== 'hidden') {
-                    //     callHook.call(this, 'onVisible')
-                    // }
                 })
             }
             disconnectedCallback() {
                 this._on_disconnect_timer = setTimeout(() => {
-                    //todo доделать отписку
-                    // this.__op__.hosts
-                    // if (this.__op__.hosts.has(this)){
-                    //     this.debounce('debounce-clear', () => {
-                    //         if (!this.isConnected)
-                    //             this.__op__.hosts.delete(this);
-                    //     }, 100)
-                    // }
+                    this.__op__.hosts = {}
+                    this.__op__.blocks = {}
                     for (let event in prototype.listeners) {
                         this.removeEventListener(event, this.$core.listeners[event]);
                         delete this.$core.listeners[event];
                     }
-
                     callHook.call(this, 'detached');
                     this._on_disconnect_timer = 0;
                 }, 100)
-                // console.log('disconnectedCallback', this)
                 this._retractSlots();
             }
 
@@ -383,15 +366,15 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-                if (!this.isConnected){
-                    if (block?.options.hosts.has(this)){
-                        this.debounce('debounce-clear', () => {
-                            if (!this.isConnected)
-                                block.options.hosts.delete(this);
-                        }, 100)
-                    }
-                }
-                else {
+                // if (!this.isConnected){
+                //     if (block?.options.hosts.has(this)){
+                //         this.debounce('debounce-clear', () => {
+                //             if (!this.isConnected)
+                //                 block.options.hosts.delete(this);
+                //         }, 100)
+                //     }
+                // }
+                // else {
                     this.interval('render-interval', () => {
                         for (const prop of this.$core.reflects) {
                             const val = this[prop.name]
@@ -400,16 +383,15 @@ if (!window.ODA?.IsReady) {
                             else
                                 this.removeAttribute(prop.attrName);
                         }
+                        this.render();
                     })
-                    this.render();
+
                     callHook.call(this, 'updated');
-                }
+                // }
             }
            async render(src) {
-               // ODA.telemetry.measure(this.localName, async ()=>{
-                   await renderComponent.call(this, src);
-                   callHook.call(this, 'onRender');
-               // })
+               await renderComponent.call(this, src);
+               callHook.call(this, 'onRender');
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1205,24 +1187,28 @@ if (!window.ODA?.IsReady) {
                 }
                 else{
                     src.text.push(function ($el) {
-                        const st = exec.call(this, fn, $el.$for);
-                        // if ($el.textContent == st) return;
-                        $el.textContent = st;
+
+                        requestAnimationFrame(()=> {
+                            const st = exec.call(this, fn, $el.$for);
+                            $el.textContent = st;
+                        })
                     });
                 }
             }
-            // else if(el.parentElement?.localName === 'style'){
-            //     el.parentElement.$node.$remove = true;
-            //     prototype.$system.$styles ??=[];
-            //     let ss = new CSSStyleSheet();
-            //     while(value.includes('@apply'))
-            //         value = ODA.applyStyleMixins(value);
-            //     ss.replaceSync(value);
-            //     prototype.$system.$styles.push(ss);
-            //     return;
-            //     src.textContent = value;
-            // }
-            // else
+            else if(el.parentElement?.localName === 'style'){
+                // el.parentElement.$node.$remove = true;
+                // prototype.$system.$styles ??=[];
+                // let ss = new CSSStyleSheet();
+                // while(value.includes('@apply'))
+                //     value = ODA.applyStyleMixins(value);
+                // ss.replaceSync(value);
+                // prototype.$system.$styles.push(ss);
+                // return;
+                // requestAnimationFrame(()=>{
+                    src.textContent = value;
+                // })
+            }
+            else
                 src.textContent = value;
         }
         else if (el.nodeType === 8) {
@@ -1655,18 +1641,10 @@ if (!window.ODA?.IsReady) {
             if (r?.then)
                 await r;
             ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
-
-            if (!src) {
-                // resolve(this);
+            requestAnimationFrame(()=>{
+                resolve(this);
                 this.__render = undefined;
-            }
-            else{
-                requestAnimationFrame(()=>{
-                    // resolve(this);
-                    this.__render = undefined;
-                })
-            }
-            resolve(this);
+            })
             return this
         })
     }
@@ -1708,17 +1686,18 @@ if (!window.ODA?.IsReady) {
                 root.removeChild(el);
             }
 
-            if (root.nodeType !== 11) {
-                requestAnimationFrame(()=>{
-                    // resolve(root);
+            // if (root.nodeType === 11) {
+            //     requestAnimationFrame(()=>{
+                    resolve(root);
                     root.__rc = undefined;
-                })
-            }
-            else {
-                // resolve(root);
-                root.__rc = undefined;
-            }
-            resolve(root);
+                // })
+            // }
+            // else {
+            //     // resolve(root);
+            //     resolve(root);
+            //     root.__rc = undefined;
+            // }
+
             return root;
 
         })
@@ -2132,10 +2111,6 @@ if (!window.ODA?.IsReady) {
                 }
                 else if (odaEventTrack.detail) {
                     odaEventTrack.detail.state = 'track';
-                    // console.log(target, this.detail.state, e.clientX, e.clientY)
-                    if (odaEventTrack.back)
-                        odaEventTrack.back.style.cursor = target.style.cursor || odaEventTrack.back.style.cursor || 'pointer';
-                    // console.log('back', target.style.cursor)
                     odaEventTrack.detail.x = e.clientX;
                     odaEventTrack.detail.y = e.clientY;
                     odaEventTrack.detail.ddx = -(odaEventTrack.detail.dx - (e.clientX - odaEventTrack.detail.start.x));
