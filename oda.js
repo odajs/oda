@@ -265,6 +265,7 @@ if (!window.ODA?.IsReady) {
                             this[i] = val;
                     }
                     callHook.call(this, 'ready');
+                    // this.render();
                 }
             }
             connectedCallback() {
@@ -277,31 +278,7 @@ if (!window.ODA?.IsReady) {
                 //     this.$wake = true;
                 //     this.style.setProperty?.('visibility', 'hidden');
                 // }
-                const parentElement =  this.domHost || this.parentNode
-                if (parentElement?.$core) {
-                    if (!parentElement.$core.$pdp){
-                        parentElement.$core.$pdp = {};
-                        let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(parentElement.constructor.prototype), Object.getOwnPropertyDescriptors(parentElement));
-                        for (let key in pdp) {
-                            //todo: исключить все системные свойства и методы
-                            if (hooks.includes(key)) continue;
-                            if (key.startsWith('_')) continue;
-                            if (key.startsWith('$obs$')) continue;
-                            const d = pdp[key];
-                            if((typeof d.value === 'function') || d.get || d.set){
-                                parentElement.$core.$pdp[key] = {
-                                    get() {
-                                        return parentElement[key];
-                                    },
-                                    set(val) {
-                                        parentElement[key] = val;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.setPDP();
-                }
+                this.$core.pdp = undefined;
                 for (const key in this.$core.observers) {
                     for (const h of this.$core.observers[key])
                         h.call(this);
@@ -327,7 +304,7 @@ if (!window.ODA?.IsReady) {
                 })
             }
             disconnectedCallback() {
-                this._on_disconnect_timer = setTimeout(()=>{
+                this._on_disconnect_timer = setTimeout(() => {
                     //todo доделать отписку
                     // this.__op__.hosts
                     // if (this.__op__.hosts.has(this)){
@@ -341,24 +318,11 @@ if (!window.ODA?.IsReady) {
                         delete this.$core.listeners[event];
                     }
 
-                    this._retractSlots();
                     callHook.call(this, 'detached');
                     this._on_disconnect_timer = 0;
                 }, 100)
                 // console.log('disconnectedCallback', this)
-
-            }
-            setPDP() {
-                const parentElement = this.domHost || this.parentNode;
-                if (!parentElement.$core) return
-                for (let key in parentElement.$core.$pdp){
-                    if (key in this) continue;
-                    let desc = parentElement.$core.$pdp[key];
-                    if(typeof desc.value === 'function'){
-                        desc = Object.assign({}, desc, {value: desc.value.bind(this)});
-                    }
-                    Object.defineProperty(this, key, desc);
-                }
+                this._retractSlots();
             }
 
             static get observedAttributes() {
@@ -1649,6 +1613,41 @@ if (!window.ODA?.IsReady) {
                 await this.domHost.render();
             }
             const time = Date.now();
+            if (this.domHost && !this.$core.pdp) {
+                this.$core.pdp = {}
+                let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), Object.getOwnPropertyDescriptors(this.domHost))
+                for (const key in pdp) {
+                    let desc = pdp[key]
+                    if (
+                        key in this
+                        || (!desc.get && !desc.set && (typeof desc.value !== 'function'))
+                        || key.startsWith('_')
+                        || key.startsWith('#')
+                        || key.startsWith('$obs$')
+                        || key.startsWith('$$style')
+                        || hooks.includes(key)
+                    ) {
+                        continue
+                    }
+
+                    this.$core.pdp[key] = desc
+                    if (typeof desc.value === 'function') {
+                        desc = Object.assign({}, desc, { value: desc.value.bind(this) })
+                    }
+                    else {
+                        desc = {
+                            get() {
+                                return this.domHost[key]
+                            },
+                            set(val) {
+                                this.domHost[key] = val
+                            }
+                        }
+                    }
+                    Object.defineProperty(this, key, desc)
+                }
+
+            }
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
             });
@@ -1656,17 +1655,18 @@ if (!window.ODA?.IsReady) {
             if (r?.then)
                 await r;
             ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
-            if (!src){
+
+            if (!src) {
+                // resolve(this);
                 this.__render = undefined;
-                resolve(this);
             }
             else{
                 requestAnimationFrame(()=>{
+                    // resolve(this);
                     this.__render = undefined;
-                    resolve(this);
-
                 })
             }
+            resolve(this);
             return this
         })
     }
@@ -1707,10 +1707,18 @@ if (!window.ODA?.IsReady) {
                 if (!el?.$node) break;
                 root.removeChild(el);
             }
-            resolve(root);
-            requestAnimationFrame(()=>{
+
+            if (root.nodeType !== 11) {
+                requestAnimationFrame(()=>{
+                    // resolve(root);
+                    root.__rc = undefined;
+                })
+            }
+            else {
+                // resolve(root);
                 root.__rc = undefined;
-            })
+            }
+            resolve(root);
             return root;
 
         })

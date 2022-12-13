@@ -60,6 +60,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     </div>
     <slot name="footer" class="horizontal no-flex" style="overflow: visible; flex-direction: row-reverse;"></slot>
     `,
+    iconSize: 24,
     leftButtons: [],
     rightButtons: [],
     get left() {
