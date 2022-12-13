@@ -388,7 +388,7 @@ ODA({is: 'app-layout-drawer',
             @apply --content;
             @apply --invert;
         }
-        :host([hide-tabs]) .hider{
+        :host([hide-tabs]) .hider {
             position: absolute;
             {{pos}}: {{iconSize/3}}px;
             bottom: 50%;
@@ -405,11 +405,10 @@ ODA({is: 'app-layout-drawer',
             outline: gray dashed 1px;
             outline-offset: -2px;
         }
-        [toggled]{
+        [toggled] {
             @apply --success;
             border-color: var(--header-background, black);
         }
-
     </style>
     <div @touchmove="hideTabs=false" ref="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;">
@@ -421,11 +420,9 @@ ODA({is: 'app-layout-drawer',
             </div>
             <oda-button ~show="!hideTabs" ~is="item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size="iconSize" ~for="buttons" @down.stop="execTap($event, item)" ~props="item" :item="item" :focused="item.focused" default="icons:help" ~text="item.is && item.text"></oda-button>
         </div>
-
     </div>
     <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal content drawer no-flex"
         ~style="_styles">
-
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
             <div ~if="showTitle || focused?.title" invert class="horizontal content shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="align-items: center; padding: 1px" @tap.stop>
@@ -436,13 +433,13 @@ ODA({is: 'app-layout-drawer',
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
-        <oda-splitter :sign="({left: -1, right: 1})[pos]" ~if="!hideResize" ::width></oda-splitter>
+        <oda-splitter :sign ~if="!hideResize" ::width></oda-splitter>
     </div>
     `,
-    getStyle(ctrl){
+    getStyle(ctrl) {
         const label = ctrl?.label || ctrl.getAttribute('label');
         const order = ctrl?.order || ctrl.getAttribute('order') || 0;
-        const res = {order}
+        const res = { order }
         if (label)
             res.transform = `rotate(180deg)`;
         return res;
@@ -514,12 +511,12 @@ ODA({is: 'app-layout-drawer',
             flexDirection: `row${({ right: '-reverse', left: '' })[this.pos]}`,
             // maxWidth: cpt ? '70vw' : `${this.width||0}px`,
             // minWidth: `${this.width||0}px`,
-            width: `${this.width||0}px`,
+            width: `${this.width || 0}px`,
             display: (this.hideTabs || !this.focused) ? 'none' : '',
             position: cpt ? 'absolute' : 'relative',
-            left:  cpt && this.pos === 'left' ? panelW : 'unset',
+            left: cpt && this.pos === 'left' ? panelW : 'unset',
             right: cpt && this.pos === 'right' ? panelW : 'unset',
-            transform: `translateX(${-this.sign*this.swipe}px)`
+            transform: `translateX(${this.sign * this.swipe}px)`
         };
         /* {flexDirection: \`row\${pos === 'right'?'-reverse':''}\`,
                 maxWidth: allowCompact && compact?'70vw':(width + 'px'),
@@ -528,10 +525,10 @@ ODA({is: 'app-layout-drawer',
                 position: allowCompact && compact?'absolute':'relative',
                 left: (allowCompact && compact && pos === 'left'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
                 right: (allowCompact && compact && pos === 'right'?($refs.panel?.offsetWidth||0)+'px':'') || 'unset',
-                transform: \`translateX(\${-sign*swipe}px)\`} */
+                transform: \`translateX(\${sign*swipe}px)\`} */
     },
     get sign() {
-        return this.pos === "left" ? 1 : -1;
+        return ({ left: -1, right: 1 })[this.pos];//this.pos === "left" ? 1 : -1;
     },
     get opened() {
         return (!this.hideTabs && this.$$('oda-button.tab').some(i => i.toggled)) || undefined;
@@ -595,7 +592,7 @@ ODA({is: 'app-layout-drawer',
     },
     swipePanel(e) {
         if (this.__sw) {
-            this.swipe += this.sign > 0 ? (this.__sw.touches[0].screenX - e.touches[0].screenX) : (e.touches[0].screenX - this.__sw.touches[0].screenX);
+            this.swipe += this.sign > 0 ? (e.touches[0].screenX - this.__sw.touches[0].screenX) : (this.__sw.touches[0].screenX - e.touches[0].screenX);
             if (this.swipe < 0)
                 this.swipe = 0;
             else
@@ -622,11 +619,11 @@ ODA({is: 'app-layout-drawer',
             e.preventDefault();
             e.stopPropagation();
             const idx = parseInt(e.key) - 1;
-            if(e.altKey){
+            if (e.altKey) {
                 if (idx < this.buttons.sort((a, b) => parseInt(a.order || 0) < parseInt(b.order || 0) ? -1 : 1).length) {
                     this.buttons[idx]?.tap()
                 }
-            }else{
+            } else {
                 if (idx < this.controls.sort((a, b) => parseInt(a.getAttribute('order') || 0) < parseInt(b.getAttribute('order') || 0) ? -1 : 1).length) {
                     this.setFocus(this.controls[idx])
                 }

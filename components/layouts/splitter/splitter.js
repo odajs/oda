@@ -1,25 +1,26 @@
-ODA({is: 'oda-splitter', template: /*html*/`
+ODA({is: 'oda-splitter',
+    template: /*html*/`
     <style>
-        :host([align=vertical]){
-            width: {{size}}px;
-            cursor: col-resize;
+        :host([align=vertical]) {
             @apply --vertical;
+            cursor: col-resize;
+            width: {{size}}px;
             max-width: {{size}}px;
             min-width: {{size}}px;
             z-index: 1;
         }
-        :host([align=horizontal]){
+        :host([align=horizontal]) {
+            @apply --horizontal;
+            cursor: row-resize;
             height: {{size}}px;
             max-height: {{size}}px;
             min-height: {{size}}px;
-            cursor: row-resize;
-            @apply --horizontal;
         }
         :host(:active) {
             z-index: 1;
             pointer-events: none;
         }
-        :host{
+        :host {
             background-color: {{color}};
             /*@apply --dark;*/
             overflow: visible;
@@ -28,16 +29,12 @@ ODA({is: 'oda-splitter', template: /*html*/`
             align-items: center;
             justify-content: center;
         }
-        :host(:hover){
+        :host(:hover) {
             opacity: 1;
             z-index: 1;
         }
     </style>
     `,
-    get _sign() {
-        const items = [...(this.parent?.children || []), ...(this.parent?.$core?.root.children || [])];
-        return (items.indexOf(this) === items.length - 1)?-1:1
-    },
     props: {
         color: 'var(--dark-background)',
         size: 4,
@@ -50,29 +47,33 @@ ODA({is: 'oda-splitter', template: /*html*/`
             reflectToAttribute: true,
             list: ['horizontal', 'vertical'],
         },
-
         reverse: false,
         width: {
             type: Number,
-            set(n){
-                if (this.max && n>this.max)
-                    this.width = this.max;
-            },
-            get (){
+            get() {
                 return this.parent?.offsetWidth;
+            },
+            set(n) {
+                if (this.max && n > this.max)
+                    this.width = this.max;
             }
         },
         height: Number
     },
+    get _sign() {
+        if (this.sign) return this.sign;
+        const items = [...(this.parent?.children || []), ...(this.parent?.$core?.root.children || [])];
+        return (items.indexOf(this) === items.length - 1) ? -1 : 1
+    },
+    get parent() {
+        return this.parentElement || this.domHost;
+    },
     listeners: {
         track: '_onTrack',
-        pointerdown(e){
-            this._mover = this.create('oda-splitter-mover', {align: this.align });
+        pointerdown(e) {
+            this._mover = this.create('oda-splitter-mover', { align: this.align });
             document.body.appendChild(this._mover);
         }
-    },
-    get parent(){
-        return this.parentElement || this.domHost;
     },
     _onTrack(e, d) {
         switch (d.state) {
@@ -110,41 +111,42 @@ ODA({is: 'oda-splitter', template: /*html*/`
     }
 });
 
-ODA({ is: 'oda-splitter-mover', template: /*html*/`
-        <style>
-            :host{
-                position: fixed;
-                width: 100%;
-                height: 100%;
-                animation: fadin 5s ease-in-out;
-                background-color: rgba(0, 0, 0, 0.4);
-                z-index: 1000;
-                cursor: col-resize;
-            }
-            :host div{
-                position: absolute;
-                z-index: 1001;
-                @apply --header;
-            }
-            @keyframes fadin {
-                from {background-color: rgba(0, 0, 0, 0)}
-                to {background-color: rgba(0, 0, 0, 0.4)}
-            }
-        </style>
-        <div class="border" ~style="_getStyle(pos)"></div>
+ODA({is: 'oda-splitter-mover',
+    template: /*html*/`
+    <style>
+        :host {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            animation: fadin 5s ease-in-out;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            cursor: col-resize;
+        }
+        :host div {
+            position: absolute;
+            z-index: 1001;
+            @apply --header;
+        }
+        @keyframes fadin {
+            from {background-color: rgba(0, 0, 0, 0)}
+            to {background-color: rgba(0, 0, 0, 0.4)}
+        }
+    </style>
+    <div class="border" ~style="_getStyle(pos)"></div>
     `,
-    attached(){
-        this.async(()=>{
+    align: '',
+    pos: null,
+    attached() {
+        this.async(() => {
             this.style.setProperty?.('visibility', 'visible');
         })
     },
-    listeners:{
-        mousedown(e){
+    listeners: {
+        mousedown(e) {
             this.remove();
         }
     },
-    align: '',
-    pos: null,
     _getStyle(e) {
         if (e) {
             switch (this.align) {
