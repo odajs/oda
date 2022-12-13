@@ -305,9 +305,9 @@ function tr(str){
 // }
 // const resolves = {};
 // const icons = {};
-// let worker = new SharedWorker(path+'/icon-ww.js');
-// worker = worker.port || worker;
-// worker.start?.();
+let worker = new Worker('localizationW.js'); // SharedWorker
+worker = worker.port || worker;
+worker.start?.();
 // worker.onmessage = function (e){
 //     switch (e.data?.type){
 //         case 'svg':{
@@ -335,3 +335,4 @@ function tr(str){
 // }
 
 worker.postMessage({type: 'init', language: ODA.language})
+worker.postMessage({type: 'setlanguage', language: ODA.language})
