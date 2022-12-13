@@ -1648,16 +1648,25 @@ if (!window.ODA?.IsReady) {
             if (!src && this.domHost){
                 await this.domHost.render();
             }
+            const time = Date.now();
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
             });
             const r = renderChildren.call(this, this.$core.shadowRoot);
             if (r?.then)
                 await r;
-            resolve(this);
-            requestAnimationFrame(()=>{
+            ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
+            if (!src){
                 this.__render = undefined;
-            })
+                resolve(this);
+            }
+            else{
+                requestAnimationFrame(()=>{
+                    this.__render = undefined;
+                    resolve(this);
+
+                })
+            }
             return this
         })
     }
@@ -2701,6 +2710,9 @@ if (!window.ODA?.IsReady) {
             },
             set(path, value){
                 worker.postMessage({type: 'set', path, value})
+            },
+            add(path, value){
+                worker.postMessage({type: 'add', path, value})
             },
             clear(path){
                 worker.postMessage({type: 'clear', path})
