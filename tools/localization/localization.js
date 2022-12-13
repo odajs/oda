@@ -333,4 +333,5 @@ function tr(str){
 // worker.onmessageerror = function (e) {
 //     console.error(e);
 // }
-// worker.postMessage({type: 'init', url: ODA.rootPath})
+
+worker.postMessage({type: 'init', language: ODA.language})

@@ -41,27 +41,40 @@ if (!window.ODA?.IsReady) {
                 }
             }
             clearExtends(prototype);
-            let parents = [];
-            for (let ext of prototype.extends){
+            let parents = prototype.extends.reduce((res, ext) => {
                 ext = ext.trim();
                 if (ext === 'this')
-                    parents.push(ext)
-                else if (ext.includes('-')){
-
+                    res.push(ext)
+                else if (ext.includes('-')) {
                     let parent = ODA.telemetry.components[ext] || ODA.tryReg(ext, context);
-                    if (!parent)
-                        throw new Error(`Not found inherit parent "${ext}"`);
-                    if (parent.then){
-                        if (!window.customElements.get(ext)){
-                            console.log('ASYNC-COMPONENT-LOADING',ext);
-                        }
-                        parent = await parent;
-                    }
-                    parents.push(parent);
+                    res.push(parent)
                 }
-                else
-                    throw new Error(`Incorrect inherit extend name "${ext}"`);
+                return res
+            }, [])
+            if (parents.some(p => p.then)) {
+                parents = await Promise.all(parents)
             }
+            // let parents = [];
+            // for (let ext of prototype.extends){
+            //     ext = ext.trim();
+            //     if (ext === 'this')
+            //         parents.push(ext)
+            //     else if (ext.includes('-')){
+
+            //         let parent = ODA.telemetry.components[ext] || ODA.tryReg(ext, context);
+            //         if (!parent)
+            //             throw new Error(`Not found inherit parent "${ext}"`);
+            //         if (parent.then){
+            //             if (!window.customElements.get(ext)){
+            //                 console.log('ASYNC-COMPONENT-LOADING',ext);
+            //             }
+            //             parent = await parent;
+            //         }
+            //         parents.push(parent);
+            //     }
+            //     else
+            //         throw new Error(`Incorrect inherit extend name "${ext}"`);
+            // }
 
             let template = prototype.template || '';
             if (parents.length) {
@@ -1070,10 +1083,15 @@ if (!window.ODA?.IsReady) {
             ODA.deferred[prototype.is] = {
                 url: prototype.$system.url,
                 is: prototype.is,
-                reg: async (context)=>{
-                    prototype.$system.reg ??= regComponent(prototype, context);
-                    await prototype.$system.reg;
-                    return ODA.telemetry.components[prototype.is];
+                reg: (context) => {
+                    if (ODA.telemetry.components[prototype.is]) {
+                        return ODA.telemetry.components[prototype.is]
+                    }
+                    else {
+                        return prototype.$system.reg ??= regComponent(prototype, context).then(() => {
+                            return ODA.telemetry.components[prototype.is]
+                        })
+                    }
                 }
             }
             setTimeout(() => {
@@ -1701,26 +1719,24 @@ if (!window.ODA?.IsReady) {
                 if ($el.nodeType === 3)
                     $el.textContent = src.textContent;
             }
-            else if (src.tags){
-                if ($el.$node?.id !== src.id) {
-                    const el = createElement.call(this, src, tag);
-                    if ($parent.contains($el))
-                        $parent.insertBefore(el, $el);
-                    else
-                        $parent.replaceChild(el, $el);
-                    $el = el;
-                }
-                else if ($el.slotTarget)
-                    $el = $el.slotTarget;
-                else if ($el.nodeName !== tag) {
-                    $el.__before ??= Object.create(null);
-                    const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
-                    el.__before ??= Object.create(null);
-                    el.__before[$el.nodeName] = $el;
+            else if ($el.$node?.id !== src.id) {
+                const el = createElement.call(this, src, tag);
+                if ($parent.contains($el))
+                    $parent.insertBefore(el, $el);
+                else
                     $parent.replaceChild(el, $el);
-                    el.$ref = $el.$ref;
-                    $el = el;
-                }
+                $el = el;
+            }
+            else if ($el.slotTarget)
+                $el = $el.slotTarget;
+            else if ($el.nodeName !== tag) {
+                $el.__before ??= Object.create(null);
+                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                el.__before ??= Object.create(null);
+                el.__before[$el.nodeName] = $el;
+                $parent.replaceChild(el, $el);
+                el.$ref = $el.$ref;
+                $el = el;
             }
         }
         $el.$for = $for || $el.$for;
