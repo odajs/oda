@@ -54,27 +54,6 @@ if (!window.ODA?.IsReady) {
             if (parents.some(p => p.then)) {
                 parents = await Promise.all(parents)
             }
-            // let parents = [];
-            // for (let ext of prototype.extends){
-            //     ext = ext.trim();
-            //     if (ext === 'this')
-            //         parents.push(ext)
-            //     else if (ext.includes('-')){
-
-            //         let parent = ODA.telemetry.components[ext] || ODA.tryReg(ext, context);
-            //         if (!parent)
-            //             throw new Error(`Not found inherit parent "${ext}"`);
-            //         if (parent.then){
-            //             if (!window.customElements.get(ext)){
-            //                 console.log('ASYNC-COMPONENT-LOADING',ext);
-            //             }
-            //             parent = await parent;
-            //         }
-            //         parents.push(parent);
-            //     }
-            //     else
-            //         throw new Error(`Incorrect inherit extend name "${ext}"`);
-            // }
 
             let template = prototype.template || '';
             if (parents.length) {
@@ -1572,12 +1551,12 @@ if (!window.ODA?.IsReady) {
         h.src = child;
         return h;
     }
-    //
-    // const  _createElement = document.createElement;
-    // document.createElement = function (tag, ...args){
-    //     // ODA.tryReg(tag);
-    //     return _createElement.call(this, tag, ...args);
-    // }
+
+    const  _createElement = document.createElement;
+    document.createElement = function (tag, ...args){
+        ODA.tryReg(tag);
+        return _createElement.call(this, tag, ...args);
+    }
     function createElement(src, tag, old) {
         let $el;
         if (tag === '#comment')
@@ -1657,8 +1636,11 @@ if (!window.ODA?.IsReady) {
         if (root.$core)
             root.render(this);
         else if (root?.$node?.isSlot)
-            for (let el of root.assignedElements?.() || [])
+            for (let el of root.assignedElements?.() || []){
+                if (el.$sleep || !el.$core) continue;
                 el.render(this);
+            }
+
         return new Promise(async resolve =>{
             let el, idx = 0;
             for (let h of (root?.$node || this.$core?.node).children || []){
@@ -1851,15 +1833,16 @@ if (!window.ODA?.IsReady) {
     ODA.origin = origin;
     ODA.deferred = {};
     ODA.calledDeferred = [];
-    ODA.tryReg = function (tagName, context) {
+    ODA.tryReg = async function (tagName, context) {
         tagName = tagName.toLowerCase();
         if (!tagName?.includes('-') || window.customElements.get(tagName)) return;
-        const def = ODA.deferred[tagName];
+        let def = ODA.deferred[tagName];
         if (def)
-            return def.reg(context);
+            def = await def.reg(context);
         if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context)){
             ODA.calledDeferred.push({tagName, context});
         }
+        return def;
     }
     ODA.updateStyle=(changes = ODA.cssRules, el)=>{
         if (el?.style) {
