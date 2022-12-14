@@ -10,11 +10,6 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
                 min-height: 100%;
                 min-width: 100%;
             }
-            :host>div {
-                border-radius: 2px;
-                width: inherit !important;
-                min-height: 100%;
-            }
             .ace_hidden-cursors { 
                 opacity: {{showCursor ? 1 : 0}};
             }
