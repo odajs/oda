@@ -28,7 +28,7 @@ if (!window.ODA?.IsReady) {
     }
     async function regComponent(prototype, context) {
         let regTime = Date.now();
-        console.log(prototype.is, '==>')
+        // console.log(prototype.is, '==>')
         if (window.customElements.get(prototype.is)) return prototype.is;
         try {
             if (prototype.imports){
@@ -146,7 +146,7 @@ if (!window.ODA?.IsReady) {
                 el = ComponentFactory(prototype);
             window.customElements.define(prototype.is, el, options);
             ODA.telemetry.last = prototype.is;
-            console.log(prototype.is, Date.now() - regTime, '- ok')
+            console.log(prototype.is, (Date.now() - regTime) + ' ms', '- ok')
         }
         catch (e) {
             console.error(prototype.is, e);
@@ -171,21 +171,22 @@ if (!window.ODA?.IsReady) {
             node: { tag: '#document-fragment', id: 0, dirs: [] },
             defaults: {},
             intersect: new IntersectionObserver(entries => {
+                let wakes = [];
                 for (let i = 0, entry, l = entries.length; i < l; i++) {
                     entry = entries[i];
                     entry.target.$rect = entry.boundingClientRect;
                     entry.target.$sleep = !entry.isIntersecting && !entry.target.$wake;
-                    // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
-                    //     entry.target.$sleep = false;
-                    if (!entry.target.$sleep)
-                        entry.target.domHost?.render();
+                    if (!entry.target.$sleep && entry.target.$core)
+                        wakes.push(entry.target.domHost);
                 }
+                if (!wakes.length) return;
+                requestAnimationFrame(()=>{
+                    wakes.forEach(i=>i.render())
+                })
             }, { rootMargin: '10%', threshold: 0.0 }),
             resize: new ResizeObserver(entries => {
                 for (const entry of entries) {
                     entry.target.$rect = entry.contentRect;
-                    // if (entry.target.$rect.width === 0 || entry.target.$rect.height === 0)
-                    //     entry.target.$sleep = false;
                     if (entry.target.__events?.has('resize'))
                         entry.target.fire('resize');
                 }
@@ -273,39 +274,40 @@ if (!window.ODA?.IsReady) {
                     this._on_disconnect_timer = 0;
                     return;
                 }
-                if (this.domHost && !this.$core.pdp) {
+                if (!this.$core.pdp) {
                     this.$core.pdp = {}
-                    let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), Object.getOwnPropertyDescriptors(this.domHost))
-                    for (const key in pdp) {
-                        let desc = pdp[key]
-                        if (
-                            key in this
-                            || (!desc.get && !desc.set && (typeof desc.value !== 'function'))
-                            || key.startsWith('_')
-                            || key.startsWith('#')
-                            || key.startsWith('$obs$')
-                            || key.startsWith('$$style')
-                            || hooks.includes(key)
-                        ) continue
+                    if (this.domHost){
+                        let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), Object.getOwnPropertyDescriptors(this.domHost))
+                        for (const key in pdp) {
+                            let desc = pdp[key]
+                            if (
+                                key in this
+                                || (!desc.get && !desc.set && (typeof desc.value !== 'function'))
+                                || key.startsWith('_')
+                                || key.startsWith('#')
+                                || key.startsWith('$obs$')
+                                || key.startsWith('$$style')
+                                || hooks.includes(key)
+                            ) continue
 
 
-                        this.$core.pdp[key] = desc
-                        if (typeof desc.value === 'function') {
-                            desc = Object.assign({}, desc, { value: desc.value.bind(this) })
-                        }
-                        else {
-                            desc = {
-                                get() {
-                                    return this.domHost[key]
-                                },
-                                set(val) {
-                                    this.domHost[key] = val;
+                            this.$core.pdp[key] = desc
+                            if (typeof desc.value === 'function') {
+                                desc = Object.assign({}, desc, { value: desc.value.bind(this) })
+                            }
+                            else {
+                                desc = {
+                                    get() {
+                                        return this.domHost[key]
+                                    },
+                                    set(val) {
+                                        this.domHost[key] = val;
+                                    }
                                 }
                             }
+                            Object.defineProperty(this, key, desc)
                         }
-                        Object.defineProperty(this, key, desc)
                     }
-
                 }
                 for (const key in this.$core.observers) {
                     for (const h of this.$core.observers[key])
@@ -399,30 +401,24 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-                // if (!this.isConnected){
-                //     if (block?.options.hosts.has(this)){
-                //         this.debounce('debounce-clear', () => {
-                //             if (!this.isConnected)
-                //                 block.options.hosts.delete(this);
-                //         }, 100)
-                //     }
-                // }
-                // else {
-                    this.interval('render-interval', () => {
-                        for (const prop of this.$core.reflects) {
-                            const val = this[prop.name]
-                            if (val || val === 0)
-                                this.setAttribute(prop.attrName, val === true ? '' : val);
-                            else
-                                this.removeAttribute(prop.attrName);
-                        }
-                        this.render();
-                    })
-                    callHook.call(this, 'updated');
-                // }
+
+                this.interval('render-interval', () => {
+                    for (const prop of this.$core.reflects) {
+                        const val = this[prop.name]
+                        if (val || val === 0)
+                            this.setAttribute(prop.attrName, val === true ? '' : val);
+                        else
+                            this.removeAttribute(prop.attrName);
+                    }
+                    this.render();
+                })
+
+                callHook.call(this, 'updated');
             }
            render(src) {
-               return renderComponent.call(this, src).then?.(res=>{
+               if (!this.isConnected)
+                   return this;
+               return renderComponent.call(this, src)?.then?.(res=>{
                    callHook.call(this, 'onRender');
                })
             }
@@ -1073,7 +1069,7 @@ if (!window.ODA?.IsReady) {
                     }
                 }
             }
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 ODA.calledDeferred.reduce((res, d, i) => {
                     if (d.tagName === prototype.is) {
                         res.push(i);
@@ -1629,9 +1625,12 @@ if (!window.ODA?.IsReady) {
     }
 
     function renderComponent(src){
-        if (!src && this.domHost)
+        if (!src && this.domHost?.__render)
             return this.domHost.render();
         if (!this.__render){
+            if (!this.isConnected)
+                return this;
+            // console.log('render-component', !!src, this);
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
             });
@@ -1654,15 +1653,14 @@ if (!window.ODA?.IsReady) {
     function renderChildren(root){
         if (root.$sleep)
             return root;
-        if (root.$core)
-            root.render(this);
-        else if (root?.$node?.isSlot)
-            for (let el of root.assignedElements?.() || []){
-                if (el.$sleep || !el.$core) continue;
-                el.render(this);
-            }
-
         return new Promise(async resolve =>{
+            if (root.$core)
+                await root.render(this);
+            else if (root?.$node?.isSlot)
+                for (let el of root.assignedElements?.() || []){
+                    if (el.$sleep || !el.$core) continue;
+                    el.render(this);
+                }
             let el, idx = 0;
             for (let h of (root?.$node || this.$core?.node).children || []){
 
@@ -1692,11 +1690,12 @@ if (!window.ODA?.IsReady) {
                 if (!el?.$node) break;
                 root.removeChild(el);
             }
-            if (root.nodeType === 11)
-                requestAnimationFrame(()=>{
-                    resolve(root);
-                })
-            else
+
+            // if (root.nodeType === 11)
+            //     requestAnimationFrame(()=>{
+            //         resolve(root);
+            //     })
+            // else
                 resolve(root);
             return root;
         })
@@ -1734,6 +1733,7 @@ if (!window.ODA?.IsReady) {
                 $el = el;
             }
         }
+        if (!this.isConnected) return
         $el.$for = $for || $el.$for;
         switch ($el.nodeType) {
             case 3:
@@ -1743,6 +1743,7 @@ if (!window.ODA?.IsReady) {
                 return $el;
             }
         }
+
         if (src.dirs)
             for (let h of src.dirs)
                 h.call(this, $el, src.fn[h.name], $for);
