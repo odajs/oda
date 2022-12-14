@@ -72,45 +72,65 @@ if (!window.ODA?.IsReady) {
             }
             const doc = domParser.parseFromString(`<template>${template || ''}</template>`, 'text/html');
             template = doc.querySelector('template');
-
+            //
             const styles = Array.prototype.filter.call(template.content.children, i => i.localName === 'style');
-            const rules = {};
+            const static_rules = [];
+            const recalc_rules = [];
             for (let style of styles) {
-                style.textContent = ODA.applyStyleMixins(style.textContent);
-                if (ODA.isApple){
-                    // // *** for compatibility with devices from Apple
-                    // let txtContent = style.textContent.replace(/\}\}/g, ']]]]').replace(/\s\s+/g, ' ').split('}');
-                    // const arrHost = [];
-                    // txtContent.map(o => {
-                    //     let s = o.replace(/]]]]/g, '}}').trim() + '}';
-                    //     if (s.includes(':host'))
-                    //         arrHost.push({ cssText: s, selectorText: s.replace(/\{.+\}/, '').trim() });
-                    // })
-                    // // ***
-                    // document.head.appendChild(style);
-                    // if (style.sheet.cssRules.length && !/\{\{.*\}\}/g.test(style.textContent)) {
-                    //     ODA.cssRuleParse(style.sheet.cssRules, rules);
-                    //     if (arrHost.length > 0)
-                    //         ODA.cssRuleParse(arrHost, rules, true); // ***
-                    //     style.remove();
-                    // }
-                    // else
-                    //     template.content.insertBefore(style, template.content.firstElementChild);
+                let css = style.textContent.trim();
+                while (css.includes('@apply'))
+                    css = ODA.applyStyleMixins(css);
+
+                let ss = new CSSStyleSheet();
+                ss.replaceSync(css);
+                style.textContent = css
+                if (!css.startsWith('{{')){
+                    for (let i of ss.rules){
+                        if (INLINE_EXPRESSION.test(i))
+                            recalc_rules.push(i);
+                        else
+                            static_rules.push(i);
+                    }
+                    // style.remove();
                 }
             }
-            const keys = Object.keys(rules);
-            if (keys.length) {
-                const el = document.createElement('style');
-                el.textContent = keys.map(i => {
-                    const rule = rules[i];
-                    if (Array.isArray(rule))
-                        return '\r' + i + '{\r\t' + rule.join('\r\t') + '\r}';
-                    return '\r' + i + '{\r\t' + Object.keys(rule).map(i => {
-                        return i + '{\r\t\t' + rule[i].join('\r\t\t') + '\r\t}';
-                    }).join('\r') + '\r}';
-                }).join('');
-                template.content.insertBefore(el, template.content.firstElementChild);
-            }
+            // if (recalc_rules.length){
+            //     const el = document.createElement('style');
+            //     el.setAttribute('scope', 'recalc');
+            //     el.textContent = recalc_rules.map(rule => {
+            //         return rule.cssText;
+            //     }).join('\r');
+            //     template.content.insertBefore(el, template.content.firstChild);
+            // }
+            //
+            // if (static_rules.length){
+            //     const el = document.createElement('style');
+            //     el.setAttribute('scope', 'static');
+            //     el.textContent = static_rules.map(rule => {
+            //         const i = rule.selectorText;
+            //         if (Array.isArray(rule))
+            //             return '\r' + i + '{\r\t' + rule.join('\r\t') + '\r}';
+            //         return '\r' + i + '{\r\t' + Object.keys(static_rules).map(i => {
+            //             return i + '{\r\t\t' + rule[i].join('\r\t\t') + '\r\t}';
+            //         }).join('\r') + '\r}';
+            //     }).join('\r');
+            //     template.content.insertBefore(el, template.content.firstChild);
+            // }
+            //
+
+            // const keys = Object.keys(rules);
+            // if (keys.length) {
+            //     const el = document.createElement('style');
+            //     el.textContent = keys.map(i => {
+            //         const rule = rules[i];
+            //         if (Array.isArray(rule))
+            //             return '\r' + i + '{\r\t' + rule.join('\r\t') + '\r}';
+            //         return '\r' + i + '{\r\t' + Object.keys(rule).map(i => {
+            //             return i + '{\r\t\t' + rule[i].join('\r\t\t') + '\r\t}';
+            //         }).join('\r') + '\r}';
+            //     }).join('');
+            //     template.content.insertBefore(el, template.content.firstElementChild);
+            // }
             prototype.template = template.innerHTML.trim();
             ODA.telemetry.components[prototype.is] = { prototype: prototype, count: 0, render: 0 };
             convertPrototype(prototype, parents);
@@ -1166,6 +1186,7 @@ if (!window.ODA?.IsReady) {
     VNode.sid = 0
     const dirRE = /^((oda|[a-z])?-)|~/;
     //var localizationPhrase = {}
+    const INLINE_EXPRESSION = /\{\{((?:.|\n)+?)\}\}/;
     function parseJSX(prototype, el, vars = []) {
         if (typeof el === 'string') {
             let tmp = document.createElement('template');
@@ -1177,7 +1198,7 @@ if (!window.ODA?.IsReady) {
         if (el.nodeType === 3) {
             let value = el.textContent.trim();
             if (!value) return;
-            if ( (/\{\{((?:.|\n)+?)\}\}/g.test(value))){
+            if (INLINE_EXPRESSION.test(value)){
                 let expr = value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
                     expr += '()';
