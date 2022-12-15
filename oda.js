@@ -2688,54 +2688,79 @@ if (!window.ODA?.IsReady) {
             }
         }
     }
-    telemetry:{
-        let telId = 0;
-        CLASS({is:'odaTelemetry',
-            ctor(){
+    ODA.Worker = typeof SharedWorker !== 'undefined' ? SharedWorker : Worker;
+    if (typeof SharedWorker !== 'undefined') {
+        telemetry:{
+            let telId = 0;
+            CLASS({is:'odaTelemetry',
+                ctor(){
 
-            },
-            resolves: {},
-            get(path){
-                return new Promise(resolve=>{
-                    this.resolves[path] = resolve;
-                    worker.postMessage({type: 'get', path})
-                }).then(res=>{
-                    console.log(res);
-                })
-            },
-            set(path, value){
-                worker.postMessage({type: 'set', path, value})
-            },
-            add(path, value){
-                worker.postMessage({type: 'add', path, value})
-            },
-            clear(path){
-                worker.postMessage({type: 'clear', path})
-            },
-            async measure(path, handle){
-                let time = Date.now();
-                await handle();
-                worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
-            },
-            prototypes: {},
-            components: {}
-        })
-        ODA.telemetry = new odaTelemetry();
+                },
+                resolves: {},
+                get(path){
+                    return new Promise(resolve=>{
+                        this.resolves[path] = resolve;
+                        worker.postMessage({type: 'get', path})
+                    }).then(res=>{
+                        console.log(res);
+                    })
+                },
+                set(path, value){
+                    worker.postMessage({type: 'set', path, value})
+                },
+                add(path, value){
+                    worker.postMessage({type: 'add', path, value})
+                },
+                clear(path){
+                    worker.postMessage({type: 'clear', path})
+                },
+                async measure(path, handle){
+                    let time = Date.now();
+                    await handle();
+                    worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
+                },
+                prototypes: {},
+                components: {}
+            })
+            ODA.telemetry = new odaTelemetry();
 
-        let worker = new SharedWorker(ODA.rootPath+'/telemetry-ww.js');
-        worker = worker.port || worker;
-        worker.start?.();
-        worker.onmessage = function (e){
-            switch (e.data.type){
-                case 'get':{
-                    ODA.telemetry.resolves[e.data.path]?.(e.data.result);
-                    delete ODA.telemetry.resolves[e.data.path];
-                } break;
+            let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
+            worker = worker.port || worker;
+            worker.start?.();
+            worker.onmessage = function (e){
+                switch (e.data.type){
+                    case 'get':{
+                        ODA.telemetry.resolves[e.data.path]?.(e.data.result);
+                        delete ODA.telemetry.resolves[e.data.path];
+                    } break;
+                }
+            }
+            worker.onmessageerror = function (e) {
+                console.error(e);
             }
         }
-        worker.onmessageerror = function (e) {
-            console.error(e);
-        }
+
+    }
+    else {
+        ODA.telemetry = {
+            rendering: {id:0,time: 0, calls: 0, self: 0, tasks: {}},
+            proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
+                return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
+                    return res+=i;
+                },0);
+            },
+            components: { count: 0 }, prototypes: {}, clear: () => {
+                for (const i of Object.keys(ODA.telemetry)) {
+                    if (typeof ODA.telemetry[i] === 'number')
+                        ODA.telemetry[i] = 0;
+                }
+            },
+            statictics: {},
+            add(path, val) {
+                this.statictics[path] = val
+                this.last = path
+            }
+        };
     }
     window.ODA.IsReady = true;
 }
