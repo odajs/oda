@@ -419,11 +419,29 @@ if (!window.ODA?.IsReady) {
             }
            render(src) {
                if (!this.isConnected)
-                   return this;
-               return renderComponent.call(this, src)?.then?.(res=>{
-                   callHook.call(this, 'onRender');
-                   console.log('render', this);
-               })
+                   return;
+               if (!src && this.domHost?.__render)
+                   return this.domHost.render();
+               if (!this.__render){
+                   this.$core.prototype.$system.observers?.forEach(name => {
+                       return this[name];
+                   });
+                   const time = Date.now();
+                   const res = renderChildren.call(this, this.$core.shadowRoot);
+                   if (res.then){
+                       return  (this.__render = res).then(res=>{
+                           this.__render = undefined;
+                           ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                           callHook.call(this, 'onRender');
+                           console.log('render', this);
+                           return res;
+                       })
+                   }
+                   else{
+                       ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
+                       return res;
+                   }
+               }
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1630,30 +1648,6 @@ if (!window.ODA?.IsReady) {
         return $el;
     }
 
-    function renderComponent(src){
-        if (!src && this.domHost?.__render)
-            return this.domHost.render();
-        if (!this.__render){
-            // console.log('render-component', !!src, this);
-            this.$core.prototype.$system.observers?.forEach(name => {
-                return this[name];
-            });
-            const time = Date.now();
-            const res = renderChildren.call(this, this.$core.shadowRoot);
-            if (res.then){
-                return  (this.__render = res).then(res=>{
-                    this.__render = undefined;
-                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
-                    return res;
-                })
-            }
-            else{
-                ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
-                return res;
-            }
-        }
-        return this.__render || this;
-    }
     function renderChildren(root){
         if (root.$sleep){
             root.__rc = undefined;
