@@ -200,6 +200,5 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.debounce('d-setSize', ()=>{
             this.isVisible = true;
         }, 100)
-        console.log('render', this.isVisible)
     }
 })

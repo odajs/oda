@@ -3,10 +3,8 @@
  * Under the MIT License.
  */
 import './rocks.js';
-// import './fastdom.js';
 'use strict';
 if (!window.ODA?.IsReady) {
-
     // window.document.body.style.visibility = 'hidden';
     const makeReactive = KERNEL.makeReactive;
     const domParser = new DOMParser();
@@ -343,11 +341,10 @@ if (!window.ODA?.IsReady) {
                     this._on_disconnect_timer = 0;
                 }, 100)
                 if (this.$core.slotted?.length) {
-                    requestAnimationFrame(() => {
+                    requestAnimationFrame(()=>{
                         this.render();
                     })
                 }
-                // this._retractSlots();
             }
 
             static get observedAttributes() {
@@ -406,6 +403,8 @@ if (!window.ODA?.IsReady) {
                     this.render();
                 })
                 this.updated?.();
+
+
             }
            render(src) {
                 if (!src && this.domHost?.__render)
@@ -415,7 +414,23 @@ if (!window.ODA?.IsReady) {
                    this.$core.prototype.$system.observers?.forEach(name => {
                        return this[name];
                    });
-                   await renderChildren.call(this, this.$core.shadowRoot);
+                   // const doc = new DocumentFragment();
+                   await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
+                   // let el, idx = 0;
+                   // const array = Array.from(doc.childNodes)
+                   // while (el = array[idx]){
+                   //     const old = this.$core.shadowRoot.childNodes[idx];
+                   //     if(!old)
+                   //         this.$core.shadowRoot.appendChild(el);
+                   //     else if (el.$node === old.$node){
+                   //        this.$core.shadowRoot.replaceChild(el, old);
+                   //
+                   //     }
+                   //     else{
+                   //         this.$core.shadowRoot.replaceChild(el, old);
+                   //     }
+                   //     idx++;
+                   // }
                    this.__render = undefined;
                    resolve(this);
                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
@@ -1640,25 +1655,34 @@ if (!window.ODA?.IsReady) {
                         const node = items[i];
                         el = root.childNodes[idx+i];
                         el = renderElement.call(this, node.child, el, root, node.params);
+                        if (el.then)
+                            await el;
                     }
                     idx += items.length;
                 }
                 else{ // single element
                     el = root.childNodes[idx];
                     el = renderElement.call(this, h, el, root, root.$for);
+                    if (el.then)
+                        await el;
                     idx++;
                 }
-            }
-            while (el = root.childNodes[idx]){
-                if (!el?.$node || (root.nodeType !== 11 && el.slot)) break;
-                root.removeChild(el);
             }
             if (root.$core)
                 await root.render(this);
             else if (root?.$node?.isSlot){
                 for (let el of root.assignedElements?.() || []){
                     if (el.$sleep || !el.$core) continue;
-                    el.render(this);
+                    await el.render(this);
+                }
+            }
+            else{
+                while (el = root.childNodes[idx]){
+                    if (!el?.$node) {
+                        idx++;
+                        continue;
+                    }
+                    root.removeChild(el);
                 }
             }
         }
@@ -2713,18 +2737,6 @@ if (!window.ODA?.IsReady) {
             console.error(e);
         }
     }
-    // ODA.measure = function (callback, context){
-    //     if (window.fastdom)
-    //         window.fastdom.measure(callback, context)
-    //     else
-    //         callback.call(context || this);
-    // }
-    // ODA.mutate = function (callback, context){
-    //     if (window.fastdom)
-    //         window.fastdom.mutate(callback, context)
-    //     else
-    //         callback.call(context || this);
-    // }
     window.ODA.IsReady = true;
 }
 export default ODA;
