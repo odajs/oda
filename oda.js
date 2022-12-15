@@ -181,7 +181,7 @@ if (!window.ODA?.IsReady) {
                 }
                 if (!wakes.length) return;
                 // ODA.mutate(()=>{
-                    wakes.forEach(i=>i.render())
+                wakes.forEach(i=>i.render())
                 // })
             }, { rootMargin: '10%', threshold: 0.0 }),
             resize: new ResizeObserver(entries => {
@@ -319,8 +319,9 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
+                this.render();
                 this.async(()=>{
-                    this.render();
+
                     callHook.call(this, 'attached');
                     Array.prototype.forEach.call(this.attributes, a=>{
                         let val = a.value;
@@ -391,52 +392,50 @@ if (!window.ODA?.IsReady) {
                     }
                 }
                 this.interval('render-interval', () => {
-                    // ODA.mutate(()=>{
-                        for (const prop of this.$core.reflects) {
-                            const val = this[prop.name]
-                            if (val || val === 0)
-                                this.setAttribute(prop.attrName, val === true ? '' : val);
-                            else
-                                this.removeAttribute(prop.attrName);
-                        }
-                    // })
+                    for (const prop of this.$core.reflects) {
+                        const val = this[prop.name]
+                        if (val || val === 0)
+                            this.setAttribute(prop.attrName, val === true ? '' : val);
+                        else
+                            this.removeAttribute(prop.attrName);
+                    }
                     this.render();
                 })
                 this.updated?.();
 
 
             }
-           render(src) {
+            render(src) {
                 if (!src && this.domHost?.__render)
                     return this.domHost?.render();
-               return this.__render ??= new Promise(async resolve =>{
-                   const time = Date.now();
-                   this.$core.prototype.$system.observers?.forEach(name => {
-                       return this[name];
-                   });
-                   // const doc = new DocumentFragment();
-                   await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
-                   // let el, idx = 0;
-                   // const array = Array.from(doc.childNodes)
-                   // while (el = array[idx]){
-                   //     const old = this.$core.shadowRoot.childNodes[idx];
-                   //     if(!old)
-                   //         this.$core.shadowRoot.appendChild(el);
-                   //     else if (el.$node === old.$node){
-                   //        this.$core.shadowRoot.replaceChild(el, old);
-                   //
-                   //     }
-                   //     else{
-                   //         this.$core.shadowRoot.replaceChild(el, old);
-                   //     }
-                   //     idx++;
-                   // }
-                   this.__render = undefined;
-                   resolve(this);
-                   ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                   this.onRender?.();
-                   // console.log('render', this.localName, this.$$id);
-               })
+                return this.__render ??= new Promise(async resolve =>{
+                    const time = Date.now();
+                    this.$core.prototype.$system.observers?.forEach(name => {
+                        return this[name];
+                    });
+                    // const doc = new DocumentFragment();
+                    await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
+                    // let el, idx = 0;
+                    // const array = Array.from(doc.childNodes)
+                    // while (el = array[idx]){
+                    //     const old = this.$core.shadowRoot.childNodes[idx];
+                    //     if(!old)
+                    //         this.$core.shadowRoot.appendChild(el);
+                    //     else if (el.$node === old.$node){
+                    //        this.$core.shadowRoot.replaceChild(el, old);
+                    //
+                    //     }
+                    //     else{
+                    //         this.$core.shadowRoot.replaceChild(el, old);
+                    //     }
+                    //     idx++;
+                    // }
+                    this.__render = undefined;
+                    resolve(this);
+                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                    this.onRender?.();
+                    // console.log('render', this.localName, this.$$id);
+                })
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -714,10 +713,10 @@ if (!window.ODA?.IsReady) {
                 if (prop.reflectToAttribute){
                     this.interval(key+'-attr', ()=>{
                         // ODA.mutate(()=>{
-                            if (val || val === 0)
-                                this.setAttribute(prop.attrName, val === true ? '' : val);
-                            else
-                                this.removeAttribute(prop.attrName);
+                        if (val || val === 0)
+                            this.setAttribute(prop.attrName, val === true ? '' : val);
+                        else
+                            this.removeAttribute(prop.attrName);
                         // })
 
                     })
@@ -1236,13 +1235,10 @@ if (!window.ODA?.IsReady) {
                 }
                 else{
                     src.text.push(function ($el) {
-
-                        requestAnimationFrame(()=> {
-                            const st = exec.call(this, fn, $el.$for);
-                            if ($el.textContent == st) return;
-                            $el.textContent = st;
-                        })
-                    });
+                        const st = exec.call(this, fn, $el.$for);
+                        if ($el.textContent == st) return;
+                        $el.textContent = st;
+                    })
                 }
             }
             else if(el.parentElement?.localName === 'style'){
@@ -1255,7 +1251,7 @@ if (!window.ODA?.IsReady) {
                 // prototype.$system.$styles.push(ss);
                 // return;
                 // requestAnimationFrame(()=>{
-                    src.textContent = value;
+                src.textContent = value;
                 // })
             }
             else
@@ -1448,7 +1444,7 @@ if (!window.ODA?.IsReady) {
         props($el, fn, p) {
             const props = exec.call(this, fn, p);
             if (Object.equal($el.__dir_props__, props, true))
-            // if ($el.__dir_props__ === props)
+                // if ($el.__dir_props__ === props)
                 return;
             $el.__dir_props__ = props;
             for (let i in props) {
@@ -1843,7 +1839,7 @@ if (!window.ODA?.IsReady) {
             return fn.call(this, ...p);
         }
         catch (e) {
-            console.warn('%c' + fn?.toString() + '\r\n', 'color: blue; padding: 4px;', this, e);
+            console.error(e, this);
         }
     }
     const forVars = ['item', 'index', 'items', 'key'];
@@ -2053,8 +2049,8 @@ if (!window.ODA?.IsReady) {
         static removeBack(){
             if (odaEventTrack.back){
                 // ODA.mutate(()=>{
-                    odaEventTrack.back.style.cursor = ''
-                    odaEventTrack.back?.remove();
+                odaEventTrack.back.style.cursor = ''
+                odaEventTrack.back?.remove();
                 // })
 
             }
@@ -2097,7 +2093,7 @@ if (!window.ODA?.IsReady) {
                 }
                 if (!odaEventTrack.back.isConnected){
                     // ODA.mutate(()=>{
-                        document.body.appendChild(odaEventTrack.back);
+                    document.body.appendChild(odaEventTrack.back);
                     // })
                 }
 
@@ -2220,7 +2216,7 @@ if (!window.ODA?.IsReady) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 // window.document.body.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
-                    // await ODA.tryReg('oda-tester');
+                // await ODA.tryReg('oda-tester');
 
             }
 
@@ -2294,11 +2290,11 @@ if (!window.ODA?.IsReady) {
                     if (d === true || (d.set && v !== undefined)) {
                         try{
                             // if (!(name === 'src' && this.localName === 'iframe' && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                                if (this[name] != v)//{
-                                    this[name] = v;
-                                    // if (this.__events?.has(name+'-changed'))
-                                    //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
-                                // }
+                            if (this[name] != v)//{
+                                this[name] = v;
+                            // if (this.__events?.has(name+'-changed'))
+                            //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
+                            // }
 
                             if (d !== true) //todo надо думать
                                 return;
@@ -2313,10 +2309,10 @@ if (!window.ODA?.IsReady) {
                 else
                     name = name.toKebabCase();
                 // ODA.mutate(()=>{
-                    if (!v && v !== 0)
-                        this.removeAttribute(name);
-                    else if (this.getAttribute(name) != v)
-                        this.setAttribute(name, v === true ? '' : v);
+                if (!v && v !== 0)
+                    this.removeAttribute(name);
+                else if (this.getAttribute(name) != v)
+                    this.setAttribute(name, v === true ? '' : v);
                 // })
 
             }
