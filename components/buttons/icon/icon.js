@@ -137,7 +137,6 @@ ODA({is: 'oda-icon',
         const r = this.rotate + (this._rotate || 0);
 
         obj.transform = `rotate(${r || 0}deg)`;
-
         obj.backgroundRepeat = 'unset';
         obj.backgroundSize = 'unset';
         obj.backgroundImage = 'unset';

@@ -1739,10 +1739,17 @@ if (!window.ODA?.IsReady) {
                 $el.setProperty(key, val);
             }
         }
+
         renderSlottedElement.call(this, src, $el, $parent);
         return renderChildren.call(this, $el);
     }
     function renderSlottedElement(src, $el, $parent){
+        if (this.isConnected){
+            // устанавливаем и перепроверяем по свойству :slot
+        }
+        else{
+           // собираем свои слотовые  элементы
+        }
 
         if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot){
             this.$core.slotted.add($el);
