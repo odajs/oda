@@ -342,7 +342,12 @@ if (!window.ODA?.IsReady) {
                     callHook.call(this, 'detached');
                     this._on_disconnect_timer = 0;
                 }, 100)
-                this._retractSlots();
+                if (this.$core.slotted?.length) {
+                    requestAnimationFrame(() => {
+                        this.render();
+                    })
+                }
+                // this._retractSlots();
             }
 
             static get observedAttributes() {
@@ -351,16 +356,6 @@ if (!window.ODA?.IsReady) {
                     prototype.$system.observedAttributes.add('slot');
                 }
                 return prototype.$system.observedAttributes;
-            }
-            _retractSlots() {
-                this.debounce('_retractSlots', () => {
-                    this.$core.slotted.forEach(el => {
-                        el.slotProxy?.parentNode?.replaceChild(el, el.slotProxy);
-                        el._slotProxy = el.slotProxy;
-                        el.slotProxy = undefined;
-                    });
-                    this.$core.slotted.splice(0, this.$core.slotted.length);
-                }, 50);
             }
             attributeChangedCallback(name, o, n) {
                 if (o === n) return;
@@ -381,14 +376,9 @@ if (!window.ODA?.IsReady) {
                             return;
                     }
                 }
-                if (name === 'slot' && n === '?') {
-                    this._retractSlots();
+                if (name === 'slot') {
+                    this.render()
                 }
-                // if (name === 'slot') {
-                //     this.async(() => {
-                //         this._retractSlots();
-                //     }, 150);
-                // }
                 if (this[name.toCamelCase()] !== n)
                     this[name.toCamelCase()] = n;
             }
@@ -1660,7 +1650,7 @@ if (!window.ODA?.IsReady) {
                 }
             }
             while (el = root.childNodes[idx]){
-                if (!el?.$node) break;
+                if (!el?.$node || (root.nodeType !== 11 && el.slot)) break;
                 root.removeChild(el);
             }
             if (root.$core)
@@ -1744,65 +1734,69 @@ if (!window.ODA?.IsReady) {
         return renderChildren.call(this, $el);
     }
     function renderSlottedElement(src, $el, $parent){
-        if (this.isConnected){
-            // устанавливаем и перепроверяем по свойству :slot
-        }
-        else{
-           // собираем свои слотовые  элементы
-        }
+        if (this.isConnected) {
+            if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot) {
+                $el.slotProxy ??= createElement.call(this, src, '#comment');
+                $el.slotProxy.slotTarget = $el;
+                $el.slotProxy.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
 
-        if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot){
-            this.$core.slotted.add($el);
-            // this.$core.intersect.unobserve($el);
-            const el = $el.slotProxy ??= createElement.call(this, src, '#comment');
-            el.slotTarget = $el;
-            $el.slotProxy = el;
-            el.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
+                this.$core.slotted.add($el);
 
-            if ($el.$ref) {
-                let arr = this.$core.slotRefs[$el.$ref];
-                if (Array.isArray(arr))
-                    arr.push($el);
-                else if ($el.$for)
-                    this.$core.slotRefs[$el.$ref] = [$el];
-                else
-                    this.$core.slotRefs[$el.$ref] = $el;
-            }
-            $parent.replaceChild(el, $el);
-            if ($el.slot === '*')
-                $el.removeAttribute('slot')
-            requestAnimationFrame(() => {
-                let host;
-                const filter = `slot[name='${$el.slot}']`;
-                for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
-                    if (host.$core?.shadowRoot?.querySelector(filter)) {
-                        applySlotByOrder($el, host);
-                        return;
-                    }
+                if ($el.$ref) {
+                    let arr = this.$core.slotRefs[$el.$ref];
+                    if (Array.isArray(arr))
+                        arr.push($el);
+                    else if ($el.$for)
+                        this.$core.slotRefs[$el.$ref] = [$el];
+                    else
+                        this.$core.slotRefs[$el.$ref] = $el;
                 }
-                host = this;
-                while (host) {
-                    for (let ch of host.children) {
-                        if(ch.$core?.shadowRoot?.querySelector(filter)){
-                            applySlotByOrder($el, ch);
+
+                $parent.replaceChild($el.slotProxy, $el);
+                if ($el.slot === '*')
+                    $el.removeAttribute('slot')
+
+                requestAnimationFrame(() => {
+                    let host;
+                    const filter = `slot[name='${$el.slot}']`;
+                    for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
+                        if (host.$core?.shadowRoot?.querySelector(filter)) {
+                            applySlotByOrder($el, host);
                             return;
                         }
                     }
-                    if (host.$core?.shadowRoot?.querySelector(filter)) {
-                        applySlotByOrder($el, host);
-                        return;
+                    host = this;
+                    while (host) {
+                        for (let ch of host.children) {
+                            if(ch.$core?.shadowRoot?.querySelector(filter)){
+                                applySlotByOrder($el, ch);
+                                return;
+                            }
+                        }
+                        if (host.$core?.shadowRoot?.querySelector(filter)) {
+                            applySlotByOrder($el, host);
+                            return;
+                        }
+                        host = host.domHost || (host.parentElement?.$core && host.parentElement);
                     }
-                    host = host.domHost || (host.parentElement?.$core && host.parentElement);
-                }
-                applySlotByOrder($el, this);
-            })
+                    applySlotByOrder($el, this);
+                })
 
+            }
+        }
+        else {
+            while (this.$core.slotted?.length) {
+                const el = this.$core.slotted.shift();
+                el.slotProxy?.parentNode?.replaceChild(el, el.slotProxy);
+                el._slotProxy = el.slotProxy;
+                el.slotProxy = undefined;
+            }
         }
     }
     function applySlotByOrder($el, host) {
         const prev = $el.slotProxy?.previousSibling;
         const target = prev instanceof Comment && prev?.slotTarget?.nextSibling || null;
-        host.insertBefore($el, target);
+        host.insertBefore($el.slotProxy.slotTarget, target);
     }
     function parseModifiers(name) {
         if (!name) return;
