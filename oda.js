@@ -3,9 +3,11 @@
  * Under the MIT License.
  */
 import './rocks.js';
+// import './fastdom.js';
 'use strict';
 if (!window.ODA?.IsReady) {
-    window.document.body.style.visibility = 'hidden';
+
+    // window.document.body.style.visibility = 'hidden';
     const makeReactive = KERNEL.makeReactive;
     const domParser = new DOMParser();
     const pointerDownListen = (win = window) => {
@@ -180,9 +182,9 @@ if (!window.ODA?.IsReady) {
                         wakes.push(entry.target.domHost);
                 }
                 if (!wakes.length) return;
-                requestAnimationFrame(()=>{
+                // ODA.mutate(()=>{
                     wakes.forEach(i=>i.render())
-                })
+                // })
             }, { rootMargin: '10%', threshold: 0.0 }),
             resize: new ResizeObserver(entries => {
                 for (const entry of entries) {
@@ -319,8 +321,8 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                this.render();
                 this.async(()=>{
+                    this.render();
                     callHook.call(this, 'attached');
                     Array.prototype.forEach.call(this.attributes, a=>{
                         let val = a.value;
@@ -401,18 +403,18 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-
                 this.interval('render-interval', () => {
-                    for (const prop of this.$core.reflects) {
-                        const val = this[prop.name]
-                        if (val || val === 0)
-                            this.setAttribute(prop.attrName, val === true ? '' : val);
-                        else
-                            this.removeAttribute(prop.attrName);
-                    }
+                    // ODA.mutate(()=>{
+                        for (const prop of this.$core.reflects) {
+                            const val = this[prop.name]
+                            if (val || val === 0)
+                                this.setAttribute(prop.attrName, val === true ? '' : val);
+                            else
+                                this.removeAttribute(prop.attrName);
+                        }
+                    // })
                     this.render();
                 })
-
                 callHook.call(this, 'updated');
             }
            render(src) {
@@ -420,6 +422,7 @@ if (!window.ODA?.IsReady) {
                    return this;
                return renderComponent.call(this, src)?.then?.(res=>{
                    callHook.call(this, 'onRender');
+                   console.log('render', this);
                })
             }
             resolveUrl(path) {
@@ -697,10 +700,13 @@ if (!window.ODA?.IsReady) {
                 this.$proxy[key] = val;
                 if (prop.reflectToAttribute){
                     this.interval(key+'-attr', ()=>{
-                        if (val || val === 0)
-                            this.setAttribute(prop.attrName, val === true ? '' : val);
-                        else
-                            this.removeAttribute(prop.attrName);
+                        // ODA.mutate(()=>{
+                            if (val || val === 0)
+                                this.setAttribute(prop.attrName, val === true ? '' : val);
+                            else
+                                this.removeAttribute(prop.attrName);
+                        // })
+
                     })
                 }
 
@@ -1628,8 +1634,6 @@ if (!window.ODA?.IsReady) {
         if (!src && this.domHost?.__render)
             return this.domHost.render();
         if (!this.__render){
-            if (!this.isConnected)
-                return this;
             // console.log('render-component', !!src, this);
             this.$core.prototype.$system.observers?.forEach(name => {
                 return this[name];
@@ -1648,11 +1652,14 @@ if (!window.ODA?.IsReady) {
                 return res;
             }
         }
-        return this.__render;
+        return this.__render || this;
     }
     function renderChildren(root){
-        if (root.$sleep)
+        if (root.$sleep){
+            root.__rc = undefined;
             return root;
+        }
+
         return new Promise(async resolve =>{
             if (root.$core)
                 await root.render(this);
@@ -1733,7 +1740,7 @@ if (!window.ODA?.IsReady) {
                 $el = el;
             }
         }
-        if (!this.isConnected) return
+        if (!this.isConnected) return;
         $el.$for = $for || $el.$for;
         switch ($el.nodeType) {
             case 3:
@@ -2055,15 +2062,18 @@ if (!window.ODA?.IsReady) {
     class odaEventTrack extends odaEvent {
         static removeBack(){
             if (odaEventTrack.back){
-                odaEventTrack.back.style.cursor = ''
-                odaEventTrack.back?.remove();
+                // ODA.mutate(()=>{
+                    odaEventTrack.back.style.cursor = ''
+                    odaEventTrack.back?.remove();
+                // })
+
             }
             odaEventTrack.handler = undefined;
             odaEventTrack.detail = undefined;
         }
         constructor(target, handler, ...args) {
             super(target, handler, ...args);
-            this.addSubEvent('mousedown', (e) => {
+            this.addSubEvent('pointerdown', (e) => {
                 if(e.buttons !== 1) return;
                 odaEventTrack.handler ??= handler;
                 odaEventTrack.detail ??= {
@@ -2074,9 +2084,9 @@ if (!window.ODA?.IsReady) {
                     target: target,
                     startButton: e.button
                 };
-                window.addEventListener('mousemove', moveHandler);
-                window.addEventListener('mouseup', upHandler);
-                target.addEventListener('mouseleave', leaveHandler, {once: true});
+                window.addEventListener('pointermove', moveHandler);
+                window.addEventListener('pointerup', upHandler);
+                target.addEventListener('pointerleave', leaveHandler, {once: true});
             });
             const leaveHandler = (e) =>{
                 if(e.buttons !== 1) {
@@ -2089,21 +2099,25 @@ if (!window.ODA?.IsReady) {
                     odaEventTrack.back.style.setProperty('height', '100%');
                     odaEventTrack.back.style.setProperty('position', 'fixed');
                     odaEventTrack.back.classList.add('odaTrackBack');
-                    odaEventTrack.back.addEventListener('mousedown', () => {
+                    odaEventTrack.back.addEventListener('pointerdown', () => {
                         odaEventTrack.removeBack()
                     }, {once: true});
-                    odaEventTrack.back.addEventListener('mouseup', upHandler, {once: true});
+                    odaEventTrack.back.addEventListener('pointerup', upHandler, {once: true});
                     odaEventTrack.back.style.setProperty('z-index', '1000000');
                 }
-                if (!odaEventTrack.back.isConnected)
-                    document.body.appendChild(odaEventTrack.back);
+                if (!odaEventTrack.back.isConnected){
+                    // ODA.mutate(()=>{
+                        document.body.appendChild(odaEventTrack.back);
+                    // })
+                }
+
             }
 
             const moveHandler = (e) => {
                 if (odaEventTrack.detail && !odaEventTrack.detail.state) {
                     const x = Math.abs(odaEventTrack.detail.start.x - e.clientX);
                     const y = Math.abs(odaEventTrack.detail.start.y - e.clientY)
-                    if (Math.max(x,y)>2 || e.type === 'mouseleave') {
+                    if (Math.max(x,y)>2 || e.type === 'pointerleave') {
                         // target.removeEventListener('mouseleave', moveHandler);
                         odaEventTrack.detail.state = 'start'
                         let ce = new odaCustomEvent("track", {detail: Object.assign({}, odaEventTrack.detail)}, e);
@@ -2123,9 +2137,9 @@ if (!window.ODA?.IsReady) {
                 }
             };
             const upHandler = (e) => {
-                window.removeEventListener('mousemove', moveHandler);
-                window.removeEventListener('mouseup', upHandler);
-                target.removeEventListener('mouseleave', leaveHandler);
+                window.removeEventListener('pointermove', moveHandler);
+                window.removeEventListener('pointerup', upHandler);
+                target.removeEventListener('pointerleave', leaveHandler);
                 if (odaEventTrack.detail?.state){
                     odaEventTrack.detail.ddx = 0;
                     odaEventTrack.detail.ddy = 0;
@@ -2214,7 +2228,7 @@ if (!window.ODA?.IsReady) {
         ODA.aliases = await ODA.loadJSON(ODA.rootPath + '/aliases.json');
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
-                window.document.body.style.visibility = 'hidden';
+                // window.document.body.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
                     await ODA.tryReg('oda-tester');
 
@@ -2223,7 +2237,7 @@ if (!window.ODA?.IsReady) {
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
         }
         ODA.init();
-        window.document.body.style.visibility = 'visible';
+
     });
     ODA.init = ()=>{
         for (let tag in ODA.deferred){
@@ -2231,6 +2245,10 @@ if (!window.ODA?.IsReady) {
             if (el)
                 ODA.tryReg(tag);
         }
+        // ODA.mutate(()=>{
+        //     window.document.body.style.visibility = 'visible';
+        // })
+
     }
     Node:{
         const ob_types = ['function', 'object'];
@@ -2304,10 +2322,13 @@ if (!window.ODA?.IsReady) {
                 }
                 else
                     name = name.toKebabCase();
-                if (!v && v !== 0)
-                    this.removeAttribute(name);
-                else if (this.getAttribute(name) != v)
-                    this.setAttribute(name, v === true ? '' : v);
+                // ODA.mutate(()=>{
+                    if (!v && v !== 0)
+                        this.removeAttribute(name);
+                    else if (this.getAttribute(name) != v)
+                        this.setAttribute(name, v === true ? '' : v);
+                // })
+
             }
 
             if (!this.assignedElements) return;
@@ -2726,6 +2747,18 @@ if (!window.ODA?.IsReady) {
             console.error(e);
         }
     }
+    // ODA.measure = function (callback, context){
+    //     if (window.fastdom)
+    //         window.fastdom.measure(callback, context)
+    //     else
+    //         callback.call(context || this);
+    // }
+    // ODA.mutate = function (callback, context){
+    //     if (window.fastdom)
+    //         window.fastdom.mutate(callback, context)
+    //     else
+    //         callback.call(context || this);
+    // }
     window.ODA.IsReady = true;
 }
 export default ODA;

@@ -442,27 +442,14 @@ body[context-menu-show] *:not(oda-context-menu){
 style = ODA.extractCSSRules(style)
 const ss = document.createElement('style');
 ss.textContent = style;
-document.head.appendChild(ss);
-
-
-//
-// const style2 = document.createElement('style');
-// style2.setAttribute('scope', 'oda-styles');
-// style2.textContent = '::-webkit-scrollbar {\n    width: 8px;\n    height: 8px;\n}\n::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);\n\n}\n::-webkit-scrollbar-thumb {\n    border-radius: 10px;\n    background: var(--body-background);\n   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);\n}\n::-webkit-scrollbar-thumb:hover {\n    @apply --dark;\n    width: 16px;\n}';
-// for (const key in ODA.cssRules) {
-//     const rule = ODA.cssRules[key];
-//     if (rule.includes(';')) {
-//         style2.textContent += `${key.replace(/^--/, '.')}{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-//         style2.textContent += `[${key.replace(/^--/, '')}]{\n     ${rule.replace(/;/g, ';\n    ')}}\n`.replace(/    \}/g, '}');
-//     }
-// }
+// ODA.mutate(()=>{
+    document.head.appendChild(ss);
+// })
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {
     let ss = new CSSStyleSheet();
     ss.replaceSync(style);
     ODA.adopted = [ss];
 }
-
-// document.head.appendChild(style2);
 console.log('styles is loaded.');
 export default STYLES;
