@@ -418,8 +418,8 @@ if (!window.ODA?.IsReady) {
                 this.updated?.();
             }
            render(src) {
-                // if (!src && this.domHost?.__render)
-                //     return this.domHost?.render();
+                if (!src && this.domHost?.__render)
+                    return this.domHost?.render();
                return this.__render ??= new Promise(async resolve =>{
                    const time = Date.now();
                    this.$core.prototype.$system.observers?.forEach(name => {
@@ -430,7 +430,7 @@ if (!window.ODA?.IsReady) {
                    resolve(this);
                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
                    this.onRender?.();
-                   console.log('render', this.localName, this.$$id);
+                   // console.log('render', this.localName, this.$$id);
                })
             }
             resolveUrl(path) {
@@ -1649,13 +1649,13 @@ if (!window.ODA?.IsReady) {
                     for(let i = 0; i<items.length; i++){
                         const node = items[i];
                         el = root.childNodes[idx+i];
-                        el = await renderElement.call(this, node.child, el, root, node.params);
+                        el = renderElement.call(this, node.child, el, root, node.params);
                     }
                     idx += items.length;
                 }
                 else{ // single element
                     el = root.childNodes[idx];
-                    el = await renderElement.call(this, h, el, root, root.$for);
+                    el = renderElement.call(this, h, el, root, root.$for);
                     idx++;
                 }
             }
@@ -1665,16 +1665,16 @@ if (!window.ODA?.IsReady) {
             }
             if (root.$core)
                 await root.render(this);
-            // else if (root?.$node?.isSlot){
-            //     for (let el of root.assignedElements?.() || []){
-            //         if (el.$sleep || !el.$core) continue;
-            //         await el.render(this);
-            //     }
-            // }
+            else if (root?.$node?.isSlot){
+                for (let el of root.assignedElements?.() || []){
+                    if (el.$sleep || !el.$core) continue;
+                    el.render(this);
+                }
+            }
         }
         return root;
     }
-    async function renderElement(src, $el, $parent, $for){
+    function renderElement(src, $el, $parent, $for){
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
