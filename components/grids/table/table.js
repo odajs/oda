@@ -620,7 +620,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (items?.then) {
             const id = setTimeout(() => {
                 row.$loading = true;
-                this.render();
+                //this.render();
             })
             return items.then(async items => {
                 clearTimeout(id)
@@ -844,7 +844,7 @@ ODA({is: "oda-table", imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this.clearSelection()
                 this.addSelection(item);
             }
-            this.render();
+            //this.render();
         }
     },
     addSelection(item) {
@@ -1528,7 +1528,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             this.table.fire('row-contextmenu', el.row);
     },
     _getFocus(col, row) {
-        this.focusedCellEnd = {};
+        // this.focusedCellEnd = {};
         return this._cellSelection.rows.indexOf(row)>-1 && this._cellSelection.cols.indexOf(col)>-1;
     },
     get _cellSelection(){
@@ -1830,7 +1830,7 @@ cells: {
             color: undefined,
             _tap() {
                 if (this.item.disabled) this.item.$expanded = !this.item.$expanded
-                else this.item.$expanded = true
+                //else this.item.$expanded = true
             }
         });
 

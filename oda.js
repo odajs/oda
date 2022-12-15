@@ -415,33 +415,23 @@ if (!window.ODA?.IsReady) {
                     // })
                     this.render();
                 })
-                callHook.call(this, 'updated');
+                this.updated?.();
             }
            render(src) {
-               if (!this.isConnected)
-                   return;
-               if (!src && this.domHost?.__render)
-                   return this.domHost.render();
-               if (!this.__render){
+                // if (!src && this.domHost?.__render)
+                //     return this.domHost?.render();
+               return this.__render ??= new Promise(async resolve =>{
+                   const time = Date.now();
                    this.$core.prototype.$system.observers?.forEach(name => {
                        return this[name];
                    });
-                   const time = Date.now();
-                   const res = renderChildren.call(this, this.$core.shadowRoot);
-                   if (res.then){
-                       return  (this.__render = res).then(res=>{
-                           this.__render = undefined;
-                           ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                           callHook.call(this, 'onRender');
-                           console.log('render', this);
-                           return res;
-                       })
-                   }
-                   else{
-                       ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1})
-                       return res;
-                   }
-               }
+                   await renderChildren.call(this, this.$core.shadowRoot);
+                   this.__render = undefined;
+                   resolve(this);
+                   ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                   this.onRender?.();
+                   console.log('render', this.localName, this.$$id);
+               })
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -1648,23 +1638,10 @@ if (!window.ODA?.IsReady) {
         return $el;
     }
 
-    function renderChildren(root){
-        if (root.$sleep){
-            root.__rc = undefined;
-            return root;
-        }
-
-        return new Promise(async resolve =>{
-            if (root.$core)
-                await root.render(this);
-            else if (root?.$node?.isSlot)
-                for (let el of root.assignedElements?.() || []){
-                    if (el.$sleep || !el.$core) continue;
-                    el.render(this);
-                }
+    async function renderChildren(root){
+        if (!root.$sleep){
             let el, idx = 0;
             for (let h of (root?.$node || this.$core?.node).children || []){
-
                 if (h.call){ // table list
                     let items = h.call(this, root.$for);
                     if (items.then)
@@ -1672,36 +1649,32 @@ if (!window.ODA?.IsReady) {
                     for(let i = 0; i<items.length; i++){
                         const node = items[i];
                         el = root.childNodes[idx+i];
-                        el = renderElement.call(this, node.child, el, root, node.params)
-                        if (el?.then)
-                            el = await el;
+                        el = await renderElement.call(this, node.child, el, root, node.params);
                     }
                     idx += items.length;
                 }
                 else{ // single element
                     el = root.childNodes[idx];
-                    el = renderElement.call(this, h, el, root, root.$for);
-                    if (el?.then)
-                        el = await el;
+                    el = await renderElement.call(this, h, el, root, root.$for);
                     idx++;
                 }
             }
-
             while (el = root.childNodes[idx]){
                 if (!el?.$node) break;
                 root.removeChild(el);
             }
-
-            // if (root.nodeType === 11)
-            //     requestAnimationFrame(()=>{
-            //         resolve(root);
-            //     })
-            // else
-                resolve(root);
-            return root;
-        })
+            if (root.$core)
+                await root.render(this);
+            // else if (root?.$node?.isSlot){
+            //     for (let el of root.assignedElements?.() || []){
+            //         if (el.$sleep || !el.$core) continue;
+            //         await el.render(this);
+            //     }
+            // }
+        }
+        return root;
     }
-    function renderElement(src, $el, $parent, $for){
+    async function renderElement(src, $el, $parent, $for){
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
@@ -1734,7 +1707,6 @@ if (!window.ODA?.IsReady) {
                 $el = el;
             }
         }
-        if (!this.isConnected) return;
         $el.$for = $for || $el.$for;
         switch ($el.nodeType) {
             case 3:
@@ -1744,7 +1716,6 @@ if (!window.ODA?.IsReady) {
                 return $el;
             }
         }
-
         if (src.dirs)
             for (let h of src.dirs)
                 h.call(this, $el, src.fn[h.name], $for);
@@ -2224,7 +2195,7 @@ if (!window.ODA?.IsReady) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 // window.document.body.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
-                    await ODA.tryReg('oda-tester');
+                    // await ODA.tryReg('oda-tester');
 
             }
 
