@@ -2178,21 +2178,6 @@ if (!window.ODA?.IsReady) {
         }
         return res;
     }
-    window.ODARect ??= class ODARect {
-        constructor(element) {
-            if (element?.host)
-                element = element.host;
-            const pos = element ? element.getBoundingClientRect() : ODA.mousePos || {};
-            this.x = pos.x;
-            this.y = pos.y;
-            this.top = pos.top;
-            this.bottom = pos.bottom;
-            this.left = pos.left;
-            this.right = pos.right;
-            this.width = pos.width;
-            this.height = pos.height;
-        }
-    };
     const keyPressMap = {}
     window.addEventListener('keypress', (e) => {
         const e_key = e.key.toLowerCase();

@@ -79,9 +79,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         this.isVisible = false;
         if (!this.control || !this.isConnected)
             return {};
-        const rect = new ODARect(this.parent);
-        // this.contentRect = this.control?.getBoundingClientRect()
-        // this.contentRect = e.target.getBoundingClientRect();
+        const rect = this.parent?.$rect || ODA.mousePos;
         let height = this.contentRect?.height || 0;
         let width = this.contentRect?.width || 0;
         let winWidth = window.innerWidth;
