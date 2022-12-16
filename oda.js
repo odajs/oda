@@ -1663,8 +1663,9 @@ if (!window.ODA?.IsReady) {
                     idx++;
                 }
             }
-            if (root.$core)
+            if (root.$core && root.isConnected){
                 await root.render(this);
+            }
             else if (root?.$node?.isSlot){
                 for (let el of root.assignedElements?.() || []){
                     if (el.$sleep || !el.$core) continue;
