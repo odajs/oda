@@ -168,7 +168,7 @@ function loadIcon(n){ //todo сделать обобщение
 }
 const resolves = {};
 const icons = {};
-let worker = new SharedWorker(path+'/icon-ww.js');
+let worker = new ODA.Worker(path+'/icon-ww.js');
 worker = worker.port || worker;
 worker.start?.();
 worker.onmessage = function (e){
