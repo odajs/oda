@@ -1,10 +1,7 @@
 ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
         <style>
-            ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: lightgray; } ::-webkit-scrollbar-thumb { background-color: gray; }
             :host {
-                display: block;
-                position: relative;
-                @apply --flex;
+                @apply --vertical;
             }
             .ace_content{
                 min-height: 100%;
@@ -14,7 +11,7 @@ ODA({ is: 'oda-ace-editor', imports: './src/ace.js', template: /*html*/`
                 opacity: {{showCursor ? 1 : 0}};
             }
         </style>
-        <div @keydown.stop></div>
+        <div @keydown.stop class="flex" style="height: 100%;"></div>
     `,
     isChanged: false,
     text: '',

@@ -1065,7 +1065,8 @@ if (!window.ODA?.IsReady) {
         return toRemove;
     }
     async function ODA(prototype = {}, stat = {}) {
-        if (!ODA.telemetry.components[prototype.is]){
+        if (!ODA.telemetry.components[prototype.is]) {
+            prototype.is = prototype.is.toLowerCase();
             prototype.$system ??= Object.create(null)
             const matches = (new Error()).stack.match(regexUrl);
             prototype.$system.url = matches[matches.length - 1];
@@ -1648,6 +1649,14 @@ if (!window.ODA?.IsReady) {
                         items = await items;
                     for(let i = 0; i<items.length; i++){
                         const node = items[i];
+                        while (el = root.childNodes[idx]){
+                            if (el.$node === node.child) break;
+                            if (!el.$node) {
+                                idx++;
+                                continue;
+                            }
+                            root.removeChild(el);
+                        }
                         el = root.childNodes[idx+i];
                         el = renderElement.call(this, node.child, el, root, node.params);
                         if (el.then)
@@ -1656,7 +1665,14 @@ if (!window.ODA?.IsReady) {
                     idx += items.length;
                 }
                 else{ // single element
-                    el = root.childNodes[idx];
+                    while (el = root.childNodes[idx]){
+                        if (el.$node === h) break;
+                        if (!el.$node) {
+                            idx++;
+                            continue;
+                        }
+                        root.removeChild(el);
+                    }
                     el = renderElement.call(this, h, el, root, root.$for);
                     if (el.then)
                         await el;
