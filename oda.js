@@ -403,7 +403,7 @@ if (!window.ODA?.IsReady) {
                 else if (name in this.__proto__) {
                     this[name] = v;
                 }
-                else{
+                else if (!isObject(v)){
                     try{
                         name = name.toKebabCase();
                         if (v || v === 0)
