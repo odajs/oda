@@ -251,7 +251,7 @@ if (!window.ODA?.IsReady) {
                 for (let a of this.attributes) {
                     let val = a.value;
                     val = (val === '') ? true : (val === undefined ? false : val);
-                    this.setProperty(a.name, val);
+                    this.setProperty(a.name.toCamelCase(), val);
                 }
                 for (let i in defs) {
                     this[i] = defs[i];
@@ -376,8 +376,40 @@ if (!window.ODA?.IsReady) {
                 if (name === 'slot') {
                     this.render()
                 }
-                if (this[name.toCamelCase()] !== n)
-                    this[name.toCamelCase()] = n;
+                this.setProperty(name.toCamelCase(), n);
+            }
+            setProperty(name, v){
+                if (name.includes('.')) {
+                    let path = name.split('.');
+                    let step;
+                    for (let i = 0; i < path.length; i++) {
+                        let key = path[i].toCamelCase();
+                        if (i === 0) {
+                            if (this.props && key in this.props) {
+                                step = this[key] ??= {}
+                            }
+                            else break;
+                        }
+                        else if (isObject(step)) {
+                            if (i < path.length - 1) {
+                                step = step[key] ??= {};
+                            } else {
+                                step[key] = v;
+                                return;
+                            }
+                        }
+                    }
+                }
+                else if (name in this.__proto__) {
+                    this[name] = v;
+                }
+                else{
+                    name = name.toKebabCase();
+                    if (v || v === 0)
+                        this.setAttribute(name, v === true ? '' : v);
+                    else
+                        this.removeAttribute(name);
+                }
             }
             updateStyle(styles = {}) {
                 this.$core.style = Object.assign({}, this.$core.style, styles);
@@ -401,12 +433,10 @@ if (!window.ODA?.IsReady) {
                     this.render();
                 })
                 this.updated?.();
-
-
             }
             render(src) {
-                if (!src && this.domHost?.__render)
-                    return this.domHost?.render();
+                // if (!src && this.domHost?.__render)
+                //     return this.domHost?.render();
                 return this.__render ??= new Promise(async resolve =>{
                     const time = Date.now();
                     this.$core.prototype.$system.observers?.forEach(name => {
@@ -2221,89 +2251,28 @@ if (!window.ODA?.IsReady) {
     }
     Node:{
         const ob_types = ['function', 'object'];
+        const only_getters = ['viewBox'];
         Node.prototype.setProperty = function (name, v) {
-            // if (this.__lockBind === name) return;
-            if (this.$core) {
-                if (name.includes('.')) {
-                    let path = name.split('.');
-                    let step;
-                    for (let i = 0; i < path.length; i++) {
-                        let key = path[i].toCamelCase();
-                        if (i === 0) {
-                            if (this.props && key in this.props) {
-                                step = this[key] ??= {}
-                            }
-                            else break;
-                        }
-                        else if (isObject(step)) {
-                            if (i < path.length - 1) {
-                                step = step[key] ??= {};
-                            } else {
-                                step[key] = v;
-                                return;
-                            }
-                        }
-                    }
+            if ((name in this || ob_types.includes(typeof v) || this.nodeType !== 1) && !only_getters.includes(name)) {
+                try{
+                    if (this[name] != v)
+                        this[name] = v;
                 }
-                else if (name in this.__proto__) { // понаблюдать 👀
-                    try{
-                        if (this[name] != v)
-                            this[name] = v;
-                    }
-                    catch (e){
-                    }
-                    return;
+                catch (e){
+                    console.warn(e, 'Error on set value ', v, name, this)
                 }
-
-                // else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
-                //     if (this[name] != v)
-                //         this[name] = v;
-                //     return;
-                // }
+                name = name.toKebabCase();
             }
-            // понаблюдать 👀
-            if (ob_types.includes(typeof v) || this.nodeType !== 1) {
-                if (this[name] != v)
-                    this[name] = v;
-            }
-            else {
-                const d = !this.$core && (Object.getOwnPropertyDescriptor(this.__proto__, name) || name in this);
-
-                if (d){
-                    if (d === true || (d.set && v !== undefined)) {
-                        try{
-                            // if (!(name === 'src' && this.localName === 'iframe' && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                            if (this[name] != v)//{
-                                this[name] = v;
-                            // if (this.__events?.has(name+'-changed'))
-                            //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
-                            // }
-
-                            if (d !== true) //todo надо думать
-                                return;
-                        }
-                        catch (e){
-
-                        }
-
-
-                    }
-                }
-                else
-                    name = name.toKebabCase();
-                // ODA.mutate(()=>{
+            if (!ob_types.includes(typeof v)){ // todo лишняя проверка
                 if (!v && v !== 0)
                     this.removeAttribute(name);
                 else if (this.getAttribute(name) != v)
                     this.setAttribute(name, v === true ? '' : v);
-                // })
-
             }
 
             if (!this.assignedElements) return;
             for (const ch of this.assignedElements())
                 ch.setProperty(name, v)
-
         };
         Node.prototype.fire = function (event, detail, options = {}) {
             if (!this.$wake && this.$sleep) return;
