@@ -208,7 +208,7 @@ if (!window.ODA?.IsReady) {
                 this.$core.slotRefs = Object.create(null);
                 this.$core.events = Object.create(null);
                 this.$core.debounces = new Map();
-                this.$core.intervals = Object.create(null);
+                this.$core.throttles = Object.create(null);
                 this.$core.listeners = Object.create(null);
                 Object.defineProperty(this, 'props', {
                     value: prototype.props
@@ -341,7 +341,7 @@ if (!window.ODA?.IsReady) {
                     this._on_disconnect_timer = 0;
                 }, 100)
                 if (this.$core.slotted?.length) {
-                    requestAnimationFrame(()=>{
+                    setTimeout(()=>{
                         this.render();
                     })
                 }
@@ -390,7 +390,7 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-                this.interval('render-interval', () => {
+                this.throttle('render-throttle', () => {
                     for (const prop of this.$core.reflects) {
                         const val = this[prop.name]
                         if (val || val === 0)
@@ -521,10 +521,10 @@ if (!window.ODA?.IsReady) {
                 }, delay);
                 this.$core.debounces.set(key, t)
             }
-            interval(key, handler, delay = 0) {
+            throttle(key, handler, delay = 0) {
                 if (typeof handler === 'string')
                     handler = this[handler].bind(this);
-                let task = this.$core.intervals[key];
+                let task = this.$core.throttles[key];
                 if (task) {
                     task.handler = handler;
                 } else {
@@ -534,12 +534,18 @@ if (!window.ODA?.IsReady) {
                         handler,
                         id: fn(() => {
                             clearFn(task.id);
-                            this.$core.intervals[key] = undefined;
+                            this.$core.throttles[key] = undefined;
                             task.handler();
                         }, delay)
                     };
-                    this.$core.intervals[key] = task;
+                    this.$core.throttles[key] = task;
                 }
+            }
+            /*
+            * deprecated
+            */
+            interval(key, handler, delay = 0) {
+                this.throttle(key, handler, delay)
             }
             $(path){
                 return this.$core.shadowRoot.querySelector(path) || undefined;
@@ -550,9 +556,6 @@ if (!window.ODA?.IsReady) {
             get $url() {
                 return prototype.$system.url;
             }
-            // get $dir() {
-            //     return prototype.$system.dir;
-            // }
             get $$parents() {
                 return prototype.$system.parents.filter(i=>typeof i === 'object').map(i => i.prototype.is);
             }
@@ -710,7 +713,7 @@ if (!window.ODA?.IsReady) {
 
                 this.$proxy[key] = val;
                 if (prop.reflectToAttribute){
-                    this.interval(key+'-attr', ()=>{
+                    this.throttle(key+'-attr', ()=>{
                         // ODA.mutate(()=>{
                         if (val || val === 0)
                             this.setAttribute(prop.attrName, val === true ? '' : val);
@@ -1893,11 +1896,7 @@ if (!window.ODA?.IsReady) {
         }
     }
 
-    const cache = {
-        fetch: {},
-        file: {}
-    };
-    ODA.loadURL = async function (url, context, prototype) {
+    ODA.convertOdaUrl = function (url, context, prototype){
         try{
             url = url.trim();
             if (ODA.aliases && url in ODA.aliases)
@@ -1914,39 +1913,22 @@ if (!window.ODA?.IsReady) {
         catch (e){
             console.log(e)
         }
-        if (!cache.fetch[url])
-            cache.fetch[url] = fetch(url);
-        return cache.fetch[url];
-    };
-    ODA.loadJSON = async function (url, context, prototype) {
-        if (!cache.file[url]) {
-            cache.file[url] = new Promise(async (resolve, reject) => {
-                try {
-                    const file = await ODA.loadURL(url, context, prototype);
-                    const text = await file.json();
-                    resolve(text)
-                }
-                catch (e) {
-                    reject(e)
-                }
-            });
-        }
-        return cache.file[url];
-    };
-    ODA.loadHTML = async function (url) {
-        if (!cache.file[url]) {
-            cache.file[url] = new Promise(async (resolve, reject) => {
-                try {
-                    const file = await ODA.loadURL(url);
-                    const text = await file.text();
-                    resolve(domParser.parseFromString(text, 'text/html'))
-                } catch (e) {
-                    reject(e)
-                }
-            });
-        }
-        return cache.file[url];
-    };
+        return url;
+    }
+    ODA.cache = {};
+    ODA.import = function (url, context, prototype){
+        url = ODA.convertOdaUrl(url, context, prototype);
+        return ODA.cache[url] ??= import(url);
+    }
+    ODA.fetch = function (url, context, prototype) {
+        url = ODA.convertOdaUrl(url, context, prototype);
+        return ODA.cache[url] ??= fetch(url);
+    }
+    ODA.loadJSON = function (url, context, prototype) {
+        return ODA.cache['json:'+url] ??= ODA.fetch(url, context, prototype).then(file=>{
+            return file.json();
+        })
+    }
     const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender', 'onVisible'];
     const toString = Object.prototype.toString;
     function isNativeObject(obj) {
@@ -2447,28 +2429,7 @@ if (!window.ODA?.IsReady) {
             window.dispatchEvent(event);
         }
     });
-    ODA.translate = (val)=>{
-        return val;
-    }
-    ODA.import = function (url, context, prototype){
-        url = url.trim();
-        if (url in ODA.aliases)
-            url = ODA.rootPath + '/' + ODA.aliases[url];
-        else if (prototype){
-            if (url.startsWith('./'))
-                url = prototype.$system.dir + url.substring(1);
-            else if (url.startsWith('../'))
-                url = prototype.$system.dir +'/'+url;
-        }
-        url = url.replace(/\/\//g, '/');
-        const imports = ODA['#imports'] ??= {};
-        imports[url] ??= import(url).then(res=>{
-            imports[url] = res;
-        }).catch(err=>{
-            imports[url] = err;
-        })
-        return imports[url];
-    }
+
     Qarantine:{
         ODA.createComponent = ODA.createElement = (id, props , context) => {
             ODA.tryReg(id, context);
@@ -2685,80 +2646,75 @@ if (!window.ODA?.IsReady) {
             }
         }
     }
-    ODA.Worker = typeof SharedWorker !== 'undefined' ? SharedWorker : Worker;
-    if (typeof SharedWorker !== 'undefined') {
-        telemetry:{
-            let telId = 0;
-            CLASS({is:'odaTelemetry',
-                ctor(){
+    ODA.Worker = class{
+        constructor(url) {
+            this.worker = new ((typeof SharedWorker !== 'undefined')?SharedWorker:Worker)(url);
+            this.worker = this.worker.port || this.worker;
+            this.worker.start?.();
+        }
+        set onmessage(v){
+            this.worker.onmessage = v;
+        }
+        get onmessage(){
+            return this.worker.onmessage;
+        }
+        set onmessageerror(v){
+            this.worker.onmessageerror = v
+        }
+        get onmessageerror(){
+            return this.worker.onmessageerror;
+        }
+        postMessage(...args){
+            this.worker.postMessage(...args);
+        }
+    }
+    telemetry:{
+        let telId = 0;
+        CLASS({is:'odaTelemetry',
+            ctor(){
 
-                },
-                resolves: {},
-                get(path){
-                    return new Promise(resolve=>{
-                        this.resolves[path] = resolve;
-                        worker.postMessage({type: 'get', path})
-                    }).then(res=>{
-                        console.log(res);
-                    })
-                },
-                set(path, value){
-                    worker.postMessage({type: 'set', path, value})
-                },
-                add(path, value){
-                    worker.postMessage({type: 'add', path, value})
-                },
-                clear(path){
-                    worker.postMessage({type: 'clear', path})
-                },
-                async measure(path, handle){
-                    let time = Date.now();
-                    await handle();
-                    worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
-                },
-                prototypes: {},
-                components: {}
-            })
-            ODA.telemetry = new odaTelemetry();
-
-            let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
-            worker = worker.port || worker;
-            worker.start?.();
-            worker.onmessage = function (e){
-                switch (e.data.type){
-                    case 'get':{
-                        ODA.telemetry.resolves[e.data.path]?.(e.data.result);
-                        delete ODA.telemetry.resolves[e.data.path];
-                    } break;
-                }
-            }
-            worker.onmessageerror = function (e) {
-                console.error(e);
+            },
+            resolves: {},
+            get(path){
+                return new Promise(resolve=>{
+                    this.resolves[path] = resolve;
+                    worker.postMessage({type: 'get', path})
+                }).then(res=>{
+                    console.log(res);
+                })
+            },
+            set(path, value){
+                worker.postMessage({type: 'set', path, value})
+            },
+            add(path, value){
+                worker.postMessage({type: 'add', path, value})
+            },
+            clear(path){
+                worker.postMessage({type: 'clear', path})
+            },
+            async measure(path, handle){
+                let time = Date.now();
+                await handle();
+                worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
+            },
+            prototypes: {},
+            components: {}
+        })
+        ODA.telemetry = new odaTelemetry();
+        let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
+        worker.onmessage = function (e){
+            switch (e.data.type){
+                case 'get':{
+                    ODA.telemetry.resolves[e.data.path]?.(e.data.result);
+                    delete ODA.telemetry.resolves[e.data.path];
+                } break;
             }
         }
+        worker.onmessageerror = function (e) {
+            console.error(e);
+        }
+    }
 
-    }
-    else {
-        ODA.telemetry = {
-            rendering: {id:0,time: 0, calls: 0, self: 0, tasks: {}},
-            proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
-                return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
-                    return res+=i;
-                },0);
-            },
-            components: { count: 0 }, prototypes: {}, clear: () => {
-                for (const i of Object.keys(ODA.telemetry)) {
-                    if (typeof ODA.telemetry[i] === 'number')
-                        ODA.telemetry[i] = 0;
-                }
-            },
-            statictics: {},
-            add(path, val) {
-                this.statictics[path] = val
-                this.last = path
-            }
-        };
-    }
     window.ODA.IsReady = true;
 }
 export default ODA;

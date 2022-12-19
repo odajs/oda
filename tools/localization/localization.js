@@ -291,24 +291,8 @@ function tr(str){
     return object;
 }
 
-// function loadIcon(n){
-//     if (/:[0-9]+$/.test(n)) {
-//         let s = n.match(/:[0-9]+$/)[0];
-//         n = n.replace(s, '');
-//     }
-//     let object = icons[n] ??= new Promise((resolve, reject)=>{
-//         resolves[n] = resolve;
-//         worker.postMessage(n);
-//         return icons[n];
-//     })
-//     return object;
-// }
-// const resolves = {};
-// const icons = {};
-let worker = new ODA.Worker(Localization.path+'/localizationW.js');
-// let worker = new Worker('localizationW.js'); // SharedWorker
-worker = worker.port || worker; //ccc
-worker.start?.();
+let worker = new ODA.Worker(Localization.path + '/localizationW.js');
+
 // worker.onmessage = function (e){
 //     switch (e.data?.type){
 //         case 'svg':{
