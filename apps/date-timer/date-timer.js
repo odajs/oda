@@ -61,15 +61,15 @@ ODA({ is: 'oda-date-timer',
         txt: {
             default: '',
             save: true
-        }, 
+        },
         txt2: {
             default: '',
             save: true
-        }, 
+        },
         date: {
             default: '',
             save: true
-        }, 
+        },
         time: {
             default: '',
             save: true
@@ -79,7 +79,9 @@ ODA({ is: 'oda-date-timer',
     toUpdate: false,
     attached() {
         // this.style.visibility = 'visible'
-        this.init();
+        this.async(() => {
+            this.init();
+        }, 300)
     },
     init() {
         const url = new URL(document.location.href);
@@ -87,7 +89,7 @@ ODA({ is: 'oda-date-timer',
         const time = url.searchParams.get('time');
         const txt = url.searchParams.get('txt');
         const txt2 = url.searchParams.get('txt2');
-        
+
         this.date = date || this.date || `${(new Date()).getFullYear() + 1}-01-01`;
         this.time = time || this.time || '00:00:00';
 
@@ -118,7 +120,7 @@ ODA({ is: 'oda-date-timer',
 
 ODA({ is: 'oda-date-timer-circle',
     template: /*html*/`
-        <canvas id="circle" :width="size" :height="height || size"></canvas>
+        <canvas id="circle" :width="Math.round(size)" :height="Math.round(height || size)"></canvas>
     `,
     props: {
         type: 'ms',
@@ -133,44 +135,44 @@ ODA({ is: 'oda-date-timer-circle',
         labelColor: '',
         label: '',
     },
-    get circle() { return this.$('#circle').getContext('2d') },
+    get circle() { return this.$('canvas')?.getContext('2d') },
+    attached() {
+        this.clock = {
+            sec: (t, al, div) => {
+                t = t / 1000 | 0;
+                al = t % 60;
+                div = 60;
+                this.s = t
+                return { t, al, div };
+            },
+            min: (t, al, div) => {
+                t = t / 1000 / 60 | 0;
+                al = t % 60;
+                div = 60;
+                this.mn = t;
+                return { t, al, div };
+            },
+            hour: (t, al, div) => {
+                t = t / 1000 / 60 / 60 | 0;
+                al = t % 24;
+                div = 24;
+                this.h = t;
+                return { t, al, div };
+            },
+            day: (t, al, div) => {
+                al = Math.floor(t / (1000 * 60 * 60 * 24));
+                div = 365.25;
+                return { t, al, div };
+            }
+        }
+    },
     observers: [
-        function _circle(circle) {
+        function _toUpdate(toUpdate, today) {
+            if (!this.circle) return;
             this.ctx = this.circle;
             this.start = 4.72;
             this.cw = this.ctx.canvas.width;
             this.ch = this.ctx.canvas.height;
-            this.clock = {
-                sec: (t, al, div) => {
-                    t = t / 1000 | 0; 
-                    al = t % 60;
-                    div = 60;
-                    this.s = t
-                    return { t, al, div };
-                },
-                min: (t, al, div) => {
-                    t = t / 1000 / 60 | 0;
-                    al = t % 60;
-                    div = 60;
-                    this.mn = t;
-                    return { t, al, div };
-                },
-                hour: (t, al, div) => {
-                    t = t / 1000 / 60 / 60 | 0;
-                    al = t % 24;
-                    div = 24;
-                    this.h = t;
-                    return { t, al, div };
-                },
-                day: (t, al, div) => {
-                    al = Math.floor(t / (1000 * 60 * 60 * 24));
-                    div = 365.25;
-                    return { t, al, div };
-                }
-            }
-        },
-        function _toUpdate(toUpdate, today) {
-            if (!this.ctx) return;
             let t = Math.abs(this.end - this.today);
             let al = t % 1000;
             let div = 1000;
@@ -191,7 +193,7 @@ ODA({ is: 'oda-date-timer-circle',
             this.ctx.fillText(this.label || this.type, this.cw * .52, this.ch * .45 + 5 + this.fontSize, this.cw + 12);
             this.ctx.beginPath();
             if (this.height === 0)
-                    this.ctx.arc(this.size / 2, this.size / 2, this.size / 2 - this.padding, this.start, diff / 10 + this.start, false);
+                this.ctx.arc(this.size / 2, this.size / 2, this.size / 2 - this.padding, this.start, diff / 10 + this.start, false);
             this.ctx.stroke();
         }
     ]

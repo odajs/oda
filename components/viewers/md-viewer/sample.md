@@ -31,11 +31,12 @@ NPM
 
 this is a \:smile\: => :smile: emoji   
 
-``` info_copy_md
+``` info_hideGutter_md
 **Имя** компонента обязательно должно содержать хотя бы один дефис в соответствии с требованиями [стандарта HTML](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)   
 ```
 
-```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=120_
+
+```javascript _run_line_edit_loadoda_console_copy_warn_error_[my-component.js]_h=240_
 import '/components/buttons/icon/icon.js';
 
 ODA({
@@ -46,9 +47,9 @@ ODA({
     `,
     props:{
         items:[
-            {tag: 'oda-icon', icon: 'tools:magnify', size: 96},
-            {tag: 'oda-icon', icon: 'icons:android', size: 64, fill: 'green'},
-            {tag: 'oda-icon', icon: 'icons:alarm', size: 32, fill: 'orange'}
+            {tag: 'oda-icon', icon: 'tools:magnify', iconSize: 96},
+            {tag: 'oda-icon', icon: 'icons:android', iconSize: 64, fill: 'green'},
+            {tag: 'oda-icon', icon: 'icons:alarm', iconSize: 32, fill: 'orange'}
         ]
     },
     ready() {
@@ -68,7 +69,7 @@ ODA({
 
 ```
 
-```javascript _run_line_edit_loadoda_console_[my-component.js]_h=120_
+```javascript _run_line_edit_loadoda_console_[my-component.js]_h=240_
 
 import '/components/buttons/icon/icon.js';
 
@@ -80,9 +81,9 @@ ODA({
     `,
     props:{
         items:[
-            {tag: 'oda-icon', icon: 'tools:magnify', size: 96},
-            {tag: 'oda-icon', icon: 'icons:android', size: 64, fill: 'green'},
-            {tag: 'oda-icon', icon: 'icons:alarm', size: 32, fill: 'orange'}
+            {tag: 'oda-icon', icon: 'tools:magnify', iconSize: 96},
+            {tag: 'oda-icon', icon: 'icons:android', iconSize: 64, fill: 'green'},
+            {tag: 'oda-icon', icon: 'icons:alarm', iconSize: 32, fill: 'orange'}
         ]
     },
     ready() {

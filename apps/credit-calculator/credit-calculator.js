@@ -8,8 +8,7 @@ let _lds = (d) => {
     return d.toLocaleDateString("ru-RU", { year: 'numeric', month: 'long' });
 }
 
-ODA({
-    is: 'oda-credit-calulator',
+ODA({ is: 'oda-credit-calulator',
     template: `
         <style>
             :host {
@@ -137,11 +136,11 @@ ODA({
     },
     attached() {
         this.date = new Date();
-        this._calc();
+        this.async(() => this._calc(), 300);
     },
     _calc() {
         let S = this.creditAmount;
-        let p =  this.loanInterest / 12 / 100;
+        let p = this.loanInterest / 12 / 100;
         let n = this.timeCredit = Number(this.$refs.timeCredit.value);
 
         let mp = S * p / (1 - Math.pow(1 + p, -n));
@@ -153,8 +152,8 @@ ODA({
         this._dataYears = {};
         this._dataMonth = [];
         let prev = 0;
-        let d = new Date(this.date)  || new Date();
-        this.date  = d.toLocaleDateString('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        let d = new Date(this.date) || new Date();
+        this.date = d.toLocaleDateString('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
         for (let i = 0; i < n; i++) {
             let data = {};
             d.setDate(1);

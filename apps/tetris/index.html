@@ -182,13 +182,15 @@
                     _pause: false
                 },
                 attached() {
-                    this.canvas = this.$refs.board;
-                    this.ctx = this.canvas.getContext('2d');
-                    this.canvasNext = this.$refs.next;
-                    this.ctxNext = this.canvasNext.getContext('2d');
-                    this.board = new Board(this);
-                    this.addEventListener();
-                    this.initNext();
+                    this.async(() => {
+                        this.canvas = this.$refs.board;
+                        this.ctx = this.canvas.getContext('2d');
+                        this.canvasNext = this.$refs.next;
+                        this.ctxNext = this.canvasNext.getContext('2d');
+                        this.board = new Board(this);
+                        this.addEventListener();
+                        this.initNext();
+                    }, 300)
                 },
                 down(e, action) {
                     e.preventDefault();

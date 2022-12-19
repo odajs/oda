@@ -111,8 +111,8 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     smileQY: 25,
     isReady: false,
     get game() { return this },
-    listeners: { 
-        resize: '_resize' 
+    listeners: {
+        resize: '_resize'
     },
     ready() {
         this._winAudio = new Audio('./win.mp3');
@@ -121,7 +121,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this._errAudio.volume = 0.2;
     },
     attached() {
-        this.init();
+        this.async(() => this.init(), 300);
     },
     setLevel(level) {
         this.level = level;
@@ -174,7 +174,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
             let cells = [idx];
             if (this.rows >= 5 || this.cols >= 5) {
                 const cols = this.cols;
-                cells = [ idx, idx + 1, idx - 1, idx - cols, idx - cols - 1, idx - cols + 1, idx + cols, idx + cols - 1, idx + cols + 1];
+                cells = [idx, idx + 1, idx - 1, idx - cols, idx - cols - 1, idx - cols + 1, idx + cols, idx + cols - 1, idx + cols + 1];
             }
             for (let i = 0; i < this.mineCount; i++) {
                 let pos;
@@ -209,7 +209,7 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
         this.mineCount = this.mineCount < 1 ? 1 : this.mineCount > (this.rows * this.cols) / 4 ? (this.rows * this.cols) / 4 : this.mineCount;
         this.mineCount = Math.floor(this.mineCount);
         this._resize();
-        this.generateModel();  
+        this.generateModel();
     },
     clearGameStartInterval() {
         this.game.gameStartInterval && clearInterval(this.game.gameStartInterval);
@@ -267,7 +267,8 @@ ODA({ is: 'oda-minesweeper', imports: '../date-timer/date-timer.js',
     }
 })
 
-ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
+ODA({
+    is: 'oda-minesweeper-title', imports: '@oda/button',
     template:/*html*/`
         <style>
             :host {
@@ -305,7 +306,8 @@ ODA({ is: 'oda-minesweeper-title', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-minesweeper-field',
+ODA({
+    is: 'oda-minesweeper-field',
     template: /*html*/`
         <style>
             :host {
@@ -321,7 +323,8 @@ ODA({ is: 'oda-minesweeper-field',
     `
 })
 
-ODA({ is: 'oda-minesweeper-mine', imports: '@oda/icon',
+ODA({
+    is: 'oda-minesweeper-mine', imports: '@oda/icon',
     template: /*html*/`
         <style>
             :host {
