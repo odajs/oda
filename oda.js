@@ -3,6 +3,7 @@
  * Under the MIT License.
  */
 import './rocks.js';
+import {removeCSSRulesContainingSelector} from "./ext/monaco-editor/dev/vs/editor/editor.main";
 'use strict';
 if (!window.ODA?.IsReady) {
     // window.document.body.style.visibility = 'hidden';
@@ -404,11 +405,17 @@ if (!window.ODA?.IsReady) {
                     this[name] = v;
                 }
                 else{
-                    name = name.toKebabCase();
-                    if (v || v === 0)
-                        this.setAttribute(name, v === true ? '' : v);
-                    else
-                        this.removeAttribute(name);
+                    try{
+                        name = name.toKebabCase();
+                        if (v || v === 0)
+                            this.setAttribute(name, v === true ? '' : v);
+                        else
+                            this.removeAttribute(name);
+                    }
+                    catch (e){
+                        console.log(e)
+                    }
+
                 }
             }
             updateStyle(styles = {}) {
