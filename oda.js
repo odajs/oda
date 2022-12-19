@@ -3,7 +3,6 @@
  * Under the MIT License.
  */
 import './rocks.js';
-import {removeCSSRulesContainingSelector} from "./ext/monaco-editor/dev/vs/editor/editor.main";
 'use strict';
 if (!window.ODA?.IsReady) {
     // window.document.body.style.visibility = 'hidden';
