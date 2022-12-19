@@ -319,8 +319,9 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
+                this.render();
                 this.async(()=>{
-                    this.render();
+
                     callHook.call(this, 'attached');
                     Array.prototype.forEach.call(this.attributes, a=>{
                         let val = a.value;
