@@ -305,8 +305,9 @@ function tr(str){
 // }
 // const resolves = {};
 // const icons = {};
-let worker = new Worker('localizationW.js'); // SharedWorker
-worker = worker.port || worker;
+let worker = new ODA.Worker(Localization.path+'/localizationW.js');
+// let worker = new Worker('localizationW.js'); // SharedWorker
+worker = worker.port || worker; //ccc
 worker.start?.();
 // worker.onmessage = function (e){
 //     switch (e.data?.type){
@@ -334,5 +335,5 @@ worker.start?.();
 //     console.error(e);
 // }
 
-worker.postMessage({type: 'init', language: ODA.language})
+worker.postMessage({type: 'init'})
 worker.postMessage({type: 'setlanguage', language: ODA.language})
