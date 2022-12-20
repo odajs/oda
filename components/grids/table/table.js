@@ -1379,7 +1379,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
             position: relative;
             min-height: {{rowHeight}}px;
             max-height: {{autoRowHeight ? '' : rowHeight + 'px'}};
-            @apply --no-flex;
+            /*@apply --no-flex;*/
             @apply --horizontal;
         }
        .group-row {
@@ -1510,7 +1510,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)"    :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group ? 'flex' : 'col-' + col.id, col.$flex ? 'flex':'no-flex']">
+                <div :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group || col.$flex ? 'flex' : 'col-' + col.id]">
                     <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>

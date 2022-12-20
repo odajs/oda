@@ -435,7 +435,7 @@ if (!window.ODA?.IsReady) {
                             this.removeAttribute(prop.attrName);
                     }
                     this.render();
-                })
+                },30)
 
                 this.updated?.();
             }
