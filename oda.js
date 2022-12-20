@@ -309,17 +309,17 @@ if (!window.ODA?.IsReady) {
                         }
                     }
                 }
-                for (const key in this.$core.observers) {
-                    for (const h of this.$core.observers[key])
-                        h.call(this);
-                }
+                // for (const key in this.$core.observers) {
+                //     for (const h of this.$core.observers[key])
+                //         h.call(this);
+                // }
                 for (let event in prototype.listeners) {
                     this.$core.listeners[event] = (e) => {
                         prototype.listeners[event].call(this, e, e.detail);
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                this.async(()=>{
+                // this.async(()=>{
                     this.render();
                     callHook.call(this, 'attached');
                     Array.prototype.forEach.call(this.attributes, a=>{
@@ -327,7 +327,7 @@ if (!window.ODA?.IsReady) {
                         val = (val === '') ? true : (val === undefined ? false : val);
                         this.setProperty(a.name, val);
                     })
-                })
+                // })
             }
             disconnectedCallback() {
                 this._on_disconnect_timer = setTimeout(() => {
@@ -436,41 +436,46 @@ if (!window.ODA?.IsReady) {
                         else
                             this.removeAttribute(prop.attrName);
                     }
-                    this.render();
+
                 })
+                this.render();
                 this.updated?.();
             }
             render(src) {
-                // if (!src && this.domHost?.__render)
-                //     return this.domHost?.render();
-                return this.__render ??= new Promise(async resolve =>{
-                    const time = Date.now();
-                    this.$core.prototype.$system.observers?.forEach(name => {
-                        return this[name];
-                    });
-                    // const doc = new DocumentFragment();
-                    await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
-                    // let el, idx = 0;
-                    // const array = Array.from(doc.childNodes)
-                    // while (el = array[idx]){
-                    //     const old = this.$core.shadowRoot.childNodes[idx];
-                    //     if(!old)
-                    //         this.$core.shadowRoot.appendChild(el);
-                    //     else if (el.$node === old.$node){
-                    //        this.$core.shadowRoot.replaceChild(el, old);
-                    //
-                    //     }
-                    //     else{
-                    //         this.$core.shadowRoot.replaceChild(el, old);
-                    //     }
-                    //     idx++;
-                    // }
-                    this.__render = undefined;
-                    resolve(this);
-                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                    this.onRender?.();
-                    // console.log('render', this.localName, this.$$id);
-                })
+                if (!src && this.domHost?.__render)
+                    return this.domHost?.render();
+                if (this.isConnected){
+                    return this.__render ??= new Promise(async resolve =>{
+                        const time = Date.now();
+
+                        // const doc = new DocumentFragment();
+                        await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
+                        this.$core.prototype.$system.observers?.forEach(name => {
+                            return this[name];
+                        });
+                        // let el, idx = 0;
+                        // const array = Array.from(doc.childNodes)
+                        // while (el = array[idx]){
+                        //     const old = this.$core.shadowRoot.childNodes[idx];
+                        //     if(!old)
+                        //         this.$core.shadowRoot.appendChild(el);
+                        //     else if (el.$node === old.$node){
+                        //        this.$core.shadowRoot.replaceChild(el, old);
+                        //
+                        //     }
+                        //     else{
+                        //         this.$core.shadowRoot.replaceChild(el, old);
+                        //     }
+                        //     idx++;
+                        // }
+                        this.__render = undefined;
+                        resolve(this);
+                        ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                        this.onRender?.();
+                        // console.log('render', this.localName, this.$$id);
+                    })
+                }
+
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
