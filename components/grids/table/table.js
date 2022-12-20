@@ -1510,7 +1510,7 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow(row)"
                 :highlighted="allowHighlight && isHighlightedRow(row)"
                 :selected="allowSelection !== 'none' && isSelectedRow(row)">
-                <div :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="[row.$group || col.$flex ? 'flex' : 'col-' + col.id]">
+                <div :focus="_getFocus(col, row)" @pointerenter="focusedMove"  :draggable="getDraggable(row, col)" :item="row" class="cell" ~for="(col, c) in row.$group ? [row] : rowColumns" :role="row.$role" :fix="col.fix" ~props="col?.props" :col  ~class="_getCellClasses(row, col)">
                     <div class="flex" ~class="{'group' : row.$group}" ~is="_getTemplateTag(row, col)"  :column="col" class="cell-content" :item="row" ></div>
                 </div>
             </div>
@@ -1518,6 +1518,17 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     </div>
     <div class="flex content empty-space" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)" @down="table._onDownToEmptySpace($event, $detail)"></div>
     `,
+    _getCellClasses(row, col){
+        const res = [];
+        if(row.$group || col.$flex){
+            res.push('flex');
+        }
+        else{
+            res.push('no-flex');
+            res.push('col-' + col.id);
+        }
+        return res;
+    },
     focusedMove(e){
         if (e.buttons !== 1) return;
         this.focusedCellEnd = {row: e.target.row, col: e.target.col}
