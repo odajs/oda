@@ -180,9 +180,7 @@ if (!window.ODA?.IsReady) {
                         wakes.push(entry.target.domHost);
                 }
                 if (!wakes.length) return;
-                // ODA.mutate(()=>{
                 wakes.forEach(i=>i.render())
-                // })
             }, { rootMargin: '10%', threshold: 0.0 }),
             resize: new ResizeObserver(entries => {
                 for (const entry of entries) {
@@ -319,15 +317,15 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                // this.async(()=>{
+                this.async(()=>{
                     this.render();
                     callHook.call(this, 'attached');
-                    Array.prototype.forEach.call(this.attributes, a=>{
-                        let val = a.value;
-                        val = (val === '') ? true : (val === undefined ? false : val);
-                        this.setProperty(a.name, val);
-                    })
-                // })
+                    // Array.prototype.forEach.call(this.attributes, a=>{
+                    //     let val = a.value;
+                    //     val = (val === '') ? true : (val === undefined ? false : val);
+                    //     this.setProperty(a.name, val);
+                    // })
+                })
             }
             disconnectedCallback() {
                 this._on_disconnect_timer = setTimeout(() => {
@@ -428,7 +426,7 @@ if (!window.ODA?.IsReady) {
                         this.fire(prop.attrName + '-changed', value);
                     }
                 }
-                this.throttle('render-throttle', () => {
+                this.debounce('render-debounce', () => {
                     for (const prop of this.$core.reflects) {
                         const val = this[prop.name]
                         if (val || val === 0)
@@ -436,23 +434,29 @@ if (!window.ODA?.IsReady) {
                         else
                             this.removeAttribute(prop.attrName);
                     }
-
+                    this.render();
                 })
-                this.render();
+
                 this.updated?.();
             }
             render(src) {
-                if (!src && this.domHost?.__render)
-                    return this.domHost?.render();
-                if (this.isConnected){
+
+                    if (!src && this.domHost?.__render)
+                        return this.domHost?.render();
+                // if (this.isConnected){
                     return this.__render ??= new Promise(async resolve =>{
                         const time = Date.now();
-
-                        // const doc = new DocumentFragment();
-                        await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
                         this.$core.prototype.$system.observers?.forEach(name => {
                             return this[name];
                         });
+                        // const doc = new DocumentFragment();
+                        await  renderChildren.call(this, this.$core.shadowRoot /*doc*/)//.then(res=>{
+                            this.__render = undefined;
+                            resolve(this);
+                            ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                            this.onRender?.();
+                     //   })
+
                         // let el, idx = 0;
                         // const array = Array.from(doc.childNodes)
                         // while (el = array[idx]){
@@ -468,13 +472,10 @@ if (!window.ODA?.IsReady) {
                         //     }
                         //     idx++;
                         // }
-                        this.__render = undefined;
-                        resolve(this);
-                        ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                        this.onRender?.();
+
                         // console.log('render', this.localName, this.$$id);
                     })
-                }
+                // }
 
             }
             resolveUrl(path) {
@@ -1724,12 +1725,12 @@ if (!window.ODA?.IsReady) {
                 }
             }
             if (root.$core && root.isConnected){
-                await root.render(this);
+                /*await*/ root.render(this);
             }
             else if (root?.$node?.isSlot){
                 for (let el of root.assignedElements?.() || []){
                     if (el.$sleep || !el.$core) continue;
-                    await el.render(this);
+                    /*await*/ el.render(this);
                 }
             }
             else{
