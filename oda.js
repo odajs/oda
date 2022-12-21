@@ -3,6 +3,7 @@
  * Under the MIT License.
  */
 import './rocks.js';
+import aliases from './aliases.js';
 'use strict';
 if (!window.ODA?.IsReady) {
     // window.document.body.style.visibility = 'hidden';
@@ -1945,8 +1946,8 @@ if (!window.ODA?.IsReady) {
     ODA.convertOdaUrl = function (url, context, prototype){
         try{
             url = url.trim();
-            if (ODA.aliases && url in ODA.aliases)
-                url = ODA.rootPath + '/' + ODA.aliases[url];
+            if (aliases && url in aliases)
+                url = ODA.rootPath + '/' + aliases[url];
             else if (prototype){
                 if (url.startsWith('./'))
                     url = prototype.$system.dir + url.substring(1);
@@ -2240,7 +2241,7 @@ if (!window.ODA?.IsReady) {
             return false;
         };
         await import('./tools/styles/styles.js');
-        ODA.aliases = await ODA.loadJSON(ODA.rootPath + '/aliases.json');
+         // = await ODA.loadJSON(ODA.rootPath + '/aliases.json');
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 // window.document.body.style.visibility = 'hidden';
