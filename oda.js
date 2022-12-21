@@ -243,15 +243,15 @@ if (!window.ODA?.IsReady) {
                         for (let a in prototype.hostAttributes) {
                             let val = prototype.hostAttributes[a];
                             val = (val === '') ? true : (val === undefined ? false : val);
-                            this.setProperty(a, val);
+                            this.setProperty(a.toCamelCase(), val);
                         }
                     });
                 }
-                for (let a of this.attributes) {
-                    let val = a.value;
-                    val = (val === '') ? true : (val === undefined ? false : val);
-                    this.setProperty(a.name.toCamelCase(), val);
-                }
+                // for (let a of this.attributes) {
+                //     let val = a.value;
+                //     val = (val === '') ? true : (val === undefined ? false : val);
+                //     this.setProperty(a.name.toCamelCase(), val);
+                // }
                 for (let i in defs) {
                     this[i] = defs[i];
                 }
@@ -276,7 +276,7 @@ if (!window.ODA?.IsReady) {
                 if (!this.$core.pdp) {
                     this.$core.pdp = {}
                     if (this.domHost){
-                        let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), Object.getOwnPropertyDescriptors(this.domHost))
+                        let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), this.domHost.$core.pdp)
                         for (const key in pdp) {
                             let desc = pdp[key]
                             if (
@@ -318,15 +318,15 @@ if (!window.ODA?.IsReady) {
                     };
                     this.addEventListener(event, this.$core.listeners[event]);
                 }
-                this.async(()=>{
+                // this.async(()=>{
                     this.render();
                     callHook.call(this, 'attached');
-                    // Array.prototype.forEach.call(this.attributes, a=>{
-                    //     let val = a.value;
-                    //     val = (val === '') ? true : (val === undefined ? false : val);
-                    //     this.setProperty(a.name, val);
-                    // })
-                })
+                    Array.prototype.forEach.call(this.attributes, a=>{
+                        let val = a.value;
+                        val = (val === '') ? true : (val === undefined ? false : val);
+                        this.setProperty(a.name.toLowerCase(), val);
+                    })
+                // })
             }
             disconnectedCallback() {
                 this._on_disconnect_timer = setTimeout(() => {
@@ -436,8 +436,7 @@ if (!window.ODA?.IsReady) {
                             this.removeAttribute(prop.attrName);
                     }
                     this.render();
-                },30)
-
+                })
                 this.updated?.();
             }
             render(src) {
@@ -1694,8 +1693,8 @@ if (!window.ODA?.IsReady) {
                     idx++;
                 }
             }
-            if (root.$core && root.isConnected){
-                /*await*/ root.render(this);
+            if (root.$core && root.isConnected && !root.$sleep){
+                await root.render(this);
             }
             else if (root?.$node?.isSlot){
                 for (let el of root.assignedElements?.() || []){
@@ -2619,9 +2618,6 @@ if (!window.ODA?.IsReady) {
     telemetry:{
         let telId = 0;
         CLASS({is:'odaTelemetry',
-            ctor(){
-
-            },
             resolves: {},
             get(path){
                 return new Promise(resolve=>{
