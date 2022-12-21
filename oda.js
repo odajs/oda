@@ -443,7 +443,11 @@ if (!window.ODA?.IsReady) {
 
                     if (!src && this.domHost?.__render)
                         return this.domHost?.render();
-                // if (this.isConnected){
+                    if (this.isConnected) {
+                        this.$core.prototype.$system.observers?.forEach(name => {
+                            return this[name];
+                        });
+                    }
                     return this.__render ??= new Promise(async resolve =>{
                         const time = Date.now();
                         this.$core.prototype.$system.observers?.forEach(name => {
