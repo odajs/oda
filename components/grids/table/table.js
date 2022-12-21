@@ -1586,11 +1586,10 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
         },
         mousewheel(e) {
             if (e.ctrlKey || e.altKey) return;
-
             if (!e.shiftKey) {
                 if (Math.round(this.offsetHeight) === Math.round(this.scrollHeight))
                     return;
-                let y = Math.round(this.scrollTop) + e.deltaY;
+                let y = Math.round(this.scrollTop) + e.deltaY/10;
                 if (y < 0)
                     y = 0;
                 this.$scrollTop = y;
@@ -1598,12 +1597,11 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
                     this.scrollTop = this.$scrollTop;
                     e.preventDefault();
                 }
-
             }
             else {
                 if (Math.round(this.offsetWidth) === Math.round(this.scrollWidth))
                     return;
-                let x = Math.round(this.scrollLeft) + e.deltaY;
+                let x = Math.round(this.scrollLeft) + e.deltaY/10;
                 if (x < 0)
                     x = 0;
                 this.$scrollLeft = x;

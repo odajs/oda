@@ -441,47 +441,19 @@ if (!window.ODA?.IsReady) {
                 this.updated?.();
             }
             render(src) {
-
-                    if (!src && this.domHost?.__render)
-                        return this.domHost?.render();
-                    if (this.isConnected) {
-                        this.$core.prototype.$system.observers?.forEach(name => {
-                            return this[name];
-                        });
-                    }
-                    return this.__render ??= new Promise(async resolve =>{
-                        const time = Date.now();
-                        this.$core.prototype.$system.observers?.forEach(name => {
-                            return this[name];
-                        });
-                        // const doc = new DocumentFragment();
-                        await  renderChildren.call(this, this.$core.shadowRoot /*doc*/)//.then(res=>{
-                            this.__render = undefined;
-                            resolve(this);
-                            ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                            this.onRender?.();
-                     //   })
-
-                        // let el, idx = 0;
-                        // const array = Array.from(doc.childNodes)
-                        // while (el = array[idx]){
-                        //     const old = this.$core.shadowRoot.childNodes[idx];
-                        //     if(!old)
-                        //         this.$core.shadowRoot.appendChild(el);
-                        //     else if (el.$node === old.$node){
-                        //        this.$core.shadowRoot.replaceChild(el, old);
-                        //
-                        //     }
-                        //     else{
-                        //         this.$core.shadowRoot.replaceChild(el, old);
-                        //     }
-                        //     idx++;
-                        // }
-
-                        // console.log('render', this.localName, this.$$id);
-                    })
-                // }
-
+                if (!src && this.domHost?.__render)
+                    return this.domHost?.render();
+                return this.__render ??= new Promise(async resolve =>{
+                    const time = Date.now();
+                    this.$core.prototype.$system.observers?.forEach(name => {
+                        return this[name];
+                    });
+                    await  renderChildren.call(this, this.$core.shadowRoot)
+                    resolve(this);
+                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
+                    this.onRender?.();
+                    this.__render = undefined;
+                })
             }
             resolveUrl(path) {
                 return prototype.$system.path + path;
@@ -2086,11 +2058,8 @@ if (!window.ODA?.IsReady) {
     class odaEventTrack extends odaEvent {
         static removeBack(){
             if (odaEventTrack.back){
-                // ODA.mutate(()=>{
                 odaEventTrack.back.style.cursor = ''
                 odaEventTrack.back?.remove();
-                // })
-
             }
             odaEventTrack.handler = undefined;
             odaEventTrack.detail = undefined;
