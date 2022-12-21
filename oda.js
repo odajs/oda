@@ -734,17 +734,14 @@ if (!window.ODA?.IsReady) {
                 core.reflects.add(prop)
             const key = '#' + name;
             const desc = { enumerable: !name.startsWith('_'), configurable: true };
-            prototype.$system.blocks[key] = Object.create(null);
-            prototype.$system.blocks[key].getter = prop.get;
-            prototype.$system.blocks[key].setter = prop.set;
-            prototype.$system.blocks[key].prop = prop;
-            prototype.$system.blocks[key].key = key;
+            prototype.$system.blocks[key] = {prop, key, getter: prop.get, setter: prop.set};
             desc.get = function () {
                 let val = this[key];
                 if (val === undefined) {
                     val = this.$proxy[key];
                 }
                 else if (KERNEL.dpTarget) {
+                    // console.log(block)
                     const block = this.__op__.blocks[key];
                     if (!block?.deps.includes(KERNEL.dpTarget))
                         val = this.$proxy[key];
@@ -761,19 +758,15 @@ if (!window.ODA?.IsReady) {
                 this.$proxy[key] = val;
                 if (prop.reflectToAttribute){
                     this.throttle(key+'-attr', ()=>{
-                        // ODA.mutate(()=>{
                         if (val || val === 0)
                             this.setAttribute(prop.attrName, val === true ? '' : val);
                         else
                             this.removeAttribute(prop.attrName);
-                        // })
-
                     })
                 }
 
             }
             Object.defineProperty(odaComponent.prototype, name, desc);
-
             Object.defineProperty(core.defaults, name, {
                 configurable: true,
                 enumerable: true,

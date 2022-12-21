@@ -1520,12 +1520,12 @@ ODA({is:'oda-table-body', extends: 'oda-table-part',
     `,
     _getCellClasses(row, col){
         const res = [];
+        res.push('col-' + col.id);
         if(row.$group || col.$flex){
             res.push('flex');
         }
         else{
             res.push('no-flex');
-            res.push('col-' + col.id);
         }
         return res;
     },
