@@ -1,7 +1,11 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="./color-picker.js"></script>
 <oda-tester>
-    <oda-color-picker value="red"></oda-color-picker>
+    <oda-color-picker id="picker" style="height: 8px; border: 1px solid darkgray;"></oda-color-picker>
 </oda-tester>
+<script type="module">
+    import '../../../oda.js';
+    import './color-picker.js';
+    picker.addEventListener('value-changed', (e)=>{
+        e.target.parentElement.style.setProperty('background-color', e.detail.value)
+    })
+</script>

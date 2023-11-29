@@ -1,0 +1,1846 @@
+{
+    "label": {
+        "ru": "Обучение"
+    },
+    "defaultLanguage": "ru",
+    "items": [
+        {
+            "label": {
+                "ru": "Руководство"
+            },
+            "items": [
+                {
+                    "label": {
+                        "ru": "White Book"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Вступление. Краткое описание фреймворка"
+                            },
+                            "name": "white-book-introduction.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Соответствие технологии Web Components"
+                            },
+                            "name": "white-book-web-components.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Супер-компактный код"
+                            },
+                            "name": "white-book-super-compact-code.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Полноценное наследование компонентов"
+                            },
+                            "name": "white-book-full-inheritance.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Полная, но контролируемая реактивность"
+                            },
+                            "name": "white-book-full-reactivity.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенная подсистема управления темами"
+                            },
+                            "name": "white-book-themes-control.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Реактивная стилизация"
+                            },
+                            "name": "white-book-reactive-styling.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенная подсистема runtime локализации"
+                            },
+                            "name": "white-book-runtime-localization.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенная подсистема управления 3D-сценами"
+                            },
+                            "name": "white-book-3d-scene-control.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенная подсистема хранения состояний"
+                            },
+                            "name": "white-book-state-storage.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Расширенная модель управления слотами"
+                            },
+                            "name": "white-book-extended-slot-control-model.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенный SPA-роутинг"
+                            },
+                            "name": "white-book-spa-routing.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Поддержка PUSH-сообщений"
+                            },
+                            "name": "white-book-push-messages.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Интеллектуальный двусторонний типонезависимый биндинг"
+                            },
+                            "name": "white-book-smart-binding.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Property Deep Propagation"
+                            },
+                            "name": "white-book-pdp.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Встроенные мощные инструменты разработчика"
+                            },
+                            "name": "white-book-built-in-dev-tools.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Исключительная производительность"
+                            },
+                            "name": "white-book-exceptional-performance.md"
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "Установка"
+                    },
+                    "name": "guide-install.md"
+                },
+                {
+                    "label": {
+                        "ru": "Hello, world!"
+                    },
+                    "name": "guide-hello-world.md"
+                },
+                {
+                    "label": {
+                        "ru": "Структура компонента"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>is</b>: Идентификатор компонента"
+                            },
+                            "name": "structure-is.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>extends</b>: Признак наследования"
+                            },
+                            "name": "structure-extends.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>imports</b>: Отложенный импорт модулей"
+                            },
+                            "name": "structure-imports.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>template</b>: Шаблон компонента"
+                            },
+                            "abstract": {
+                                "ru": "\n~~~md\nПосмотреть [ВИДЕО-УРОК](https://youtu.be/ZRX5Srr6TqA?t=0) \nШаблон компонента задается атрибутом **template** с помощью шаблонных литералов, заключенных в обратные кавычки в формате **JSX**. \nВ соответствии со спецификацией [WEB components](https://en.wikipedia.org/wiki/Web_Components), стилизация задается внутри шаблона для каждого компонента\n~~~"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "JSX"
+                                },
+                                "abstract": {
+                                    "ru": "\n~~~md\nJSX (JavaScript XML) является синтаксическим расширением языка JavaScript, совмещенным с описанием HTML-тэгов\n~~~"
+                                },
+                                "items": [
+                                    {
+                                        "label": {
+                                            "ru": "HTML-разметка"
+                                        },
+                                        "name": "structure-template-jsx-html.md"
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "Директивы"
+                                        },
+                                        "abstract": {
+                                            "ru": "\n~~~md\nДирективы управляют поведением HTML-кода компонента во время его работы.\nВ JSX-разметке директивы начинаются с префикса **~** (тильда). \n~~~"
+                                        },
+                                        "items": [
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~for</b>: Синтаксис директивы цикла"
+                                                },
+                                                "name": "structure-template-jsx-directives-~for-syntax.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~for</b>: Особенности директивы цикла"
+                                                },
+                                                "name": "structure-template-jsx-directives-~for-features.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~for</b>: Преимущества директивы цикла"
+                                                },
+                                                "name": "structure-template-jsx-directives-~for-advantage.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~is</b>: Динамическое изменение имени тега"
+                                                },
+                                                "name": "structure-template-jsx-directives-~is.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~style</b>: Стили"
+                                                },
+                                                "name": "structure-template-jsx-directives-~style.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~class</b>: Классы"
+                                                },
+                                                "name": "structure-template-jsx-directives-~class.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~props</b>: Групповой биндинг"
+                                                },
+                                                "name": "structure-template-jsx-directives-~props.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~text / {{}}</b>: Вставка текста"
+                                                },
+                                                "name": "structure-template-jsx-directives-~text.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~html</b>: Вставка HTML"
+                                                },
+                                                "name": "structure-template-jsx-directives-~html.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~show</b>: Отображение элемента"
+                                                },
+                                                "name": "structure-template-jsx-directives-~show.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~if / ~else / ~else-if</b>: Условная прорисовка"
+                                                },
+                                                "name": "structure-template-jsx-directives-~if.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~ref</b>: Указатели на элементы"
+                                                },
+                                                "name": "structure-template-jsx-directives-~ref.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~save-key</b>: Ключ хранилища"
+                                                },
+                                                "name": "structure-template-jsx-directives-~save-key.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~save-key</b>: Дополнительные сведения"
+                                                },
+                                                "name": "structure-template-jsx-directives-~save-key2.md"
+                                            },
+                                            {
+                                                "label": {
+                                                    "ru": "<b style='color: brown'>~wake</b>: Директива пробуждения"
+                                                },
+                                                "name": "structure-template-jsx-directives-~wake.md"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "Биндинг. Директива <b style='color: brown'>:</b>"
+                                        },
+                                        "name": "structure-template-jsx-binding.md"
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "Двойной биндинг. Директива <b style='color: brown'>::</b>"
+                                        },
+                                        "name": "structure-template-jsx-double-binding.md"
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "PDP: Групповой биндинг свойств"
+                                        },
+                                        "name": "structure-template-jsx-pdp.md"
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "<b style='color: brown'>$this</b>: Указатель на текущий HTML-элемент"
+                                        },
+                                        "name": "structure-template-jsx-$this.md"
+                                    },
+                                    {
+                                        "label": {
+                                            "ru": "События"
+                                        },
+                                        "items": [
+                                            {
+                                                "label": {
+                                                    "ru": "Директива @"
+                                                },
+                                                "name": "structure-template-jsx-events-event-directive.md"
+                                            },
+                                                {
+                                                    "label": {
+                                                        "ru": "Обработчики событий"
+                                                    },
+                                                    "name": "structure-template-jsx-events-event-handling.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Параметры обработчиков"
+                                                    },
+                                                    "name": "structure-template-jsx-events-event-handling-params.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Исходные события"
+                                                    },
+                                                    "name": "structure-template-jsx-events-event-source.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Перенацеливание событий"
+                                                    },
+                                                    "name": "structure-template-jsx-events-event-retargeting.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Модификаторы событий"
+                                                    },
+                                                    "name": "structure-template-jsx-events-event-modifier.md"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Стилизация"
+                                    },
+                                    "abstract": {
+                                        "ru": "\n~~~md\nstyle — это раздел шаблона компонента, в котором задаются CSS-стили отображения его элементов\n~~~"
+                                    },
+                                    "items": [
+                                        {
+                                            "label": {
+                                                "ru": "Глобальная стилизация"
+                                            },
+                                            "items": [
+                                                {
+                                                    "label": {
+                                                        "ru": "Группы стилей"
+                                                    },
+                                                    "name": "structure-template-style-global-style-global-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>layouts</b>: Стили оконных элементов"
+                                                    },
+                                                    "name": "structure-template-style-global-style-layouts-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>shadow</b>: Стили теней"
+                                                    },
+                                                    "name": "structure-template-style-global-style-shadow-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>special</b>: Стили диалоговых компонентов"
+                                                    },
+                                                    "name": "structure-template-style-global-style-special-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>effects</b>: Стили состояний"
+                                                    },
+                                                    "name": "structure-template-style-global-style-effects-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>oda</b>: Стили анимаций"
+                                                    },
+                                                    "name": "structure-template-style-global-style-oda-style.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "<b style='color: brown'>theme</b>: Стили сайта"
+                                                    },
+                                                    "name": "structure-template-style-global-style-theme-style.md"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "Стилизация CSS4"
+                                            },
+                                            "items": [
+                                                {
+                                                    "label": {
+                                                        "ru": "var: Пользовательские CSS-свойства"
+                                                    },
+                                                    "name": "structure-template-style-css4-var.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Правила задания CSS-свойств"
+                                                    },
+                                                    "name": "structure-template-style-css4-var-rule.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Правило CSS @apply"
+                                                    },
+                                                    "name": "structure-template-style-css4-apply.md"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "Локальная стилизация"
+                                            },
+                                            "abstract": {
+                                                "ru": "\n~~~md\nЛокальная стилизация определяется CSS-стилями, указанными непосредственно в атрибутах style и class или с помощью одноименных директив, организуя inline-стилизацию любого элемента внутри компонента.\n~~~"
+                                            },
+                                            "items": [
+                                                {
+                                                    "label": {
+                                                        "ru": "Inline-стилизация. Атрибут style"
+                                                    },
+                                                    "name": "structure-template-style-local-style-style-attribute.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "~style: Динамическая локальная стилизация"
+                                                    },
+                                                    "name": "structure-template-style-local-style-style-directive.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Классовая стилизация. Атрибут class"
+                                                    },
+                                                    "name": "structure-template-style-local-style-class-attribute.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "~class: Классовая динамическая стилизация"
+                                                    },
+                                                    "name": "structure-template-style-local-style-class-directive.md"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "Стилизация кастомных элементов v1.0"
+                                            },
+                                            "items": [
+                                                {
+                                                    "label": {
+                                                        "ru": "Стилизация хоста теневого дерева :host"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-pseudo-class-host.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "CSS-часть part"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-pseudo-element-part.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "exportparts: Переадресация теневых элементов"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-exportparts.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Слотовая стилизация ::slotted()"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-pseudo-element-slotted.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Управление слотовой стилизацией"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-slot-stylization-management.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "Глобальная переадресация ::theme"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-pseudo-element-theme.md"
+                                                },
+                                                {
+                                                    "label": {
+                                                        "ru": "path: Глобальная стилизация"
+                                                    },
+                                                    "name": "structure-template-style-custom-elements-style-global-style-path.md"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>props</b>: Свойства компонента"
+                            },
+                            "abstract": {
+                                "ru": "\n~~~md\n Свойства — это элементы компонента, предназначенные для чтения, хранения и изменения его данных.\n~~~"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "Объявление свойств"
+                                    },
+                                    "name": "structure-props-properties.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Модификаторы свойств"
+                                    },
+                                    "items": [
+                                        {
+                                            "label": {
+                                                "ru": "Список модификаторов"
+                                            },
+                                            "name": "structure-props-props-modifiers-list-props-modifiers.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>default</b>: Модификатор начального значения"
+                                            },
+                                            "name": "structure-props-props-modifiers-default-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>type</b>: Модификатор типа"
+                                            },
+                                            "name": "structure-props-props-modifiers-type-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>reflectToAttribute</b>: Модификатор атрибутов хоста"
+                                            },
+                                            "name": "structure-props-props-modifiers-reflect-to-attribute-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>reactive</b>: Модификатор реактивности"
+                                            },
+                                            "name": "structure-props-props-modifiers-reactive-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>freeze</b>: Модификатор блокировки реактивности"
+                                            },
+                                            "name": "structure-props-props-modifiers-freeze-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>label</b>: Модификатор имени"
+                                            },
+                                            "name": "structure-props-props-modifiers-label-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>category</b>: Модификатор группы"
+                                            },
+                                            "name": "structure-props-props-modifiers-category-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>list</b>: Модификатор списка значений"
+                                            },
+                                            "name": "structure-props-props-modifiers-list-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>shared</b>: Модификатор сквозного биндинга"
+                                            },
+                                            "name": "structure-props-props-modifiers-shared-modifier.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>save</b>: Модификатор сохранения"
+                                            },
+                                            "name": "structure-template-jsx-directives-~save-key.md"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Геттеры"
+                                    },
+                                    "name": "structure-props-getters.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Сеттеры"
+                                    },
+                                    "name": "structure-props-setters.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Совместное использование геттера и сеттера"
+                                    },
+                                    "name": "structure-props-getter-setter.md"
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>hostAttributes</b>: Начальные значения атрибутов компонента"
+                            },
+                            "name": "structure-host-attributes.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>observers</b>: Обозреватели свойств компонента"
+                            },
+                            "name": "structure-observers.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>listeners</b>: Слушатели событий компонента"
+                            },
+                            "name": "structure-listeners.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>keyBindings</b>: Обработка нажатий клавиш клавиатуры"
+                            },
+                            "name": "structure-key-bindings.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Методы"
+                            },
+                            "name": "structure-methods.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Переменные"
+                            },
+                            "name": "structure-variables.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Хуки жизненного цикла"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "Диаграмма жизненного цикла"
+                                    },
+                                    "name": "structure-hooks-hooks-life-cycle.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>created</b>: Хук создания"
+                                    },
+                                    "name": "structure-hooks-hook-created.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ready</b>: Хук готовности"
+                                    },
+                                    "name": "structure-hooks-hook-ready.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>attached</b>: Хук присоединения"
+                                    },
+                                    "name": "structure-hooks-hook-attached.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>detached</b>: Хук удаления"
+                                    },
+                                    "name": "structure-hooks-hook-detached.md"
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>slot</b>: Слоты компонента"
+                            },
+                            "name": "structure-slots.md"
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "API фреймворка"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Свойства компонента"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>$url</b>: Полное имя модуля компонента"
+                                    },
+                                    "name": "api-properties-$url.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>$dir</b>: Путь к модулю компонента"
+                                    },
+                                    "name": "api-properties-$dir.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>$dirInfo</b>: Информация о папке компонента"
+                                    },
+                                    "name": "api-properties-$dirInfo.md"
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "Методы компонента"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>$</b> и <b style='color: brown'>$$</b>: Поиск HTML-элементов"
+                                    },
+                                    "name": "api-methods-$-$$.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>listen</b>: Регистрация обработчиков событий"
+                                    },
+                                    "name": "api-methods-listen.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>unlisten</b>: Удаление обработчиков событий"
+                                    },
+                                    "name": "api-methods-unlisten.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>fire</b>: Генерация пользовательского события"
+                                    },
+                                    "name": "api-methods-fire.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>create</b>: Создание вложенных HTML-элементов"
+                                    },
+                                    "name": "api-methods-create.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "Функции временной задержки"
+                                    },
+                                    "items": [
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>async</b>: Вызов функции с задержкой"
+                                            },
+                                            "name": "api-methods-delay-functions-async.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>debounce</b>: Вызов функции с ограниченной частотой"
+                                            },
+                                            "name": "api-methods-delay-functions-debounce.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>interval</b>: Вызов функции с фиксированной частотой"
+                                            },
+                                            "name": "api-methods-delay-functions-interval.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>$next</b>: Вызов функции с рендерной задержкой"
+                                            },
+                                            "name": "api-methods-delay-functions-$next.md"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>$super</b>: Вызов родительских методов"
+                                    },
+                                    "name": "api-methods-$super.md"
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "Команды фреймворка"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.console</b>: Работа с ODA-консолью"
+                                    },
+                                    "name": "api-commands-console.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.createComponent</b>: Создание компонента"
+                                    },
+                                    "name": "api-commands-create-component.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.loadComponent</b>: Загрузка компонента"
+                                    },
+                                    "name": "api-commands-load-component.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.showModal</b>: Отображение модального окна"
+                                    },
+                                    "name": "api-commands-show-modal.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.showDialog</b>: Отображение диалогового окна"
+                                    },
+                                    "name": "api-commands-show-dialog.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.showDropdown</b>: Отображение выпадающего окна"
+                                    },
+                                    "name": "api-commands-show-drop-down.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.loadURL</b>: Загрузка любого внешнего ресурса"
+                                    },
+                                    "name": "api-commands-load-url.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.loadJSON</b>: Загрузка внешнего JSON-ресурса"
+                                    },
+                                    "name": "api-commands-load-json.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.loadHTML</b>: Загрузка внешнего HTML-ресурса"
+                                    },
+                                    "name": "api-commands-load-html.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.push</b>: Отправка уведомлений"
+                                    },
+                                    "name": "api-commands-push.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.notify</b>: Отправка предупреждающих уведомлений"
+                                    },
+                                    "name": "api-commands-notify.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.pushMessage</b>: Отправка уведомлений"
+                                    },
+                                    "name": "api-commands-push-message.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.pushError</b>: Отправка уведомлений об ошибках"
+                                    },
+                                    "name": "api-commands-push-error.md"
+                                }
+                            ]
+                        },
+                        {
+                            "label": {
+                                "ru": "Параметры фреймворка"
+                            },
+                            "items": [
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.origin</b>: Первоначальное определение URL-ресурса"
+                                    },
+                                    "name": "api-parameters-origin.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.language</b>: Предпочитаемый язык пользователя"
+                                    },
+                                    "name": "api-parameters-language.md"
+                                },
+                                {
+                                    "label": {
+                                        "ru": "<b style='color: brown'>ODA.telemetry</b>: Мониторинг текущего состояния"
+                                    },
+                                    "name": "api-parameters-telemetry.md"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "SPA-роутинг"
+                    },
+                    "name": "guide-spa-routing.md"
+                },
+                {
+                    "label": {
+                        "ru": "SPA-роутинг. Дополнительные сведения"
+                    },
+                    "name": "guide-spa-routing2.md"
+                },
+                {
+                    "label": {
+                        "ru": "Smart-кэширование"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Основные принципы"
+                            },
+                            "name": "smart-caching-introduction.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Особенности кэширования"
+                            },
+                            "name": "smart-caching-features.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Дополнительные сведения"
+                            },
+                            "name": "smart-caching-additional.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Коротко о кешировании"
+                            },
+                            "name": "smart-caching-brief.md"
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "Smart-рендеринг"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Основные принципы"
+                            },
+                            "name": "smart-rendering-introduction.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Особенности рендеринга"
+                            },
+                            "name": "smart-rendering-features.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Дополнительные сведения"
+                            },
+                            "name": "smart-rendering-additional.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Коротко о рендеринге"
+                            },
+                            "name": "smart-rendering-brief.md"
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "Мой первый компонент"
+                    },
+                    "name": "guide-my-first-component.md"
+                },
+                {
+                    "label": {
+                        "ru": "Искусственный интеллект"
+                    },
+                    "name": "guide-ai.md"
+                },
+                {
+                    "label": {
+                        "ru": "Принципы документирования"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Формирование оглавления"
+                            },
+                            "name": "doc-principles-content-for-help.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Создание справочных материалов"
+                            },
+                            "name": "doc-principles-help-for-help.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Элементы оповещения"
+                            },
+                            "name": "doc-principles-alert-elements.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Модификаторы редактора кода"
+                            },
+                            "name": "doc-principles-code-modifiers.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Документирование компонентов"
+                            },
+                            "name": "doc-principles-help-for-component.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Справочник по формату Markdown"
+                            },
+                            "name": "doc-principles-markdown-doc.md"
+                        }
+                    ]
+                },
+                {
+                    "label": {
+                        "ru": "Оптимизация реактивности"
+                    },
+                    "name": "guide-redundant-reactivity.md"
+                },
+                {
+                    "label": {
+                        "ru": "Фреймворк ROCKS"
+                    },
+                    "items": [
+                        {
+                            "label": {
+                                "ru": "Функция ROCKS"
+                            },
+                            "name": "rocks-framework-function-rocks.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Принцип работы фреймворка"
+                            },
+                            "name": "rocks-framework-principle-of-operation.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Модификаторы свойств"
+                            },
+                            "name": "rocks-framework-list-of-modifiers.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Модификаторы в объектах"
+                            },
+                            "name": "rocks-framework-modifiers-in-objects.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color: blue'>$def</b>: Модификатор начального значения"
+                            },
+                            "name": "rocks-framework-$def-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color: blue'>$type</b>: Модификатор типа"
+                            },
+                            "name": "rocks-framework-$type-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Реактивность свойств"
+                            },
+                            "name": "rocks-framework-properties-reactivity.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$freeze</b>: Модификатор блокировки реактивности"
+                            },
+                            "name": "rocks-framework-$freeze-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$readOnly</b>: Модификатор блокировки записи"
+                            },
+                            "name": "rocks-framework-$readonly-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$public</b>: Модификатор доступности свойства"
+                            },
+                            "name": "rocks-framework-$public-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$final</b>: Модификатор запрета переопределения"
+                            },
+                            "name": "rocks-framework-$final-modifier.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Геттеры"
+                            },
+                            "name": "rocks-framework-getters.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Кэширование геттеров"
+                            },
+                            "name": "rocks-framework-getters-caching.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Сеттеры"
+                            },
+                            "name": "rocks-framework-setters.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Идемпотентность сеттеров"
+                            },
+                            "name": "rocks-framework-setters-idempotency.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "Методы"
+                            },
+                            "name": "rocks-framework-methods.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$observers</b>: Обозреватели свойств - синтаксис"
+                            },
+                            "name": "rocks-framework-$observers-syntax.md"
+                        },
+                        {
+                            "label": {
+                                "ru": "<b style='color:blue'>$observers</b>: Обозреватели - дополнительные сведения"
+                            },
+                            "name": "rocks-framework-$observers-additional.md"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "label": {
+                "ru": "Видео-уроки"
+            },
+            "items": [
+                {
+                    "label": {
+                        "ru": "Вступление. Краткое описание фреймворка"
+                    },
+                    "name": "video-lessons-introduction.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №1. Установка фреймворка ODA.js"
+                    },
+                    "name": "video-lessons-lesson-1.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №2. Компонент «Hello, World!»"
+                    },
+                    "name": "video-lessons-lesson-2.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №3. is: идентификатор компонента"
+                    },
+                    "name": "video-lessons-lesson-3.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №4. extends: Признак наследования"
+                    },
+                    "name": "video-lessons-lesson-4.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №5. Imports: Отложенный импорт модулей"
+                    },
+                    "name": "video-lessons-lesson-5.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №6. template: Шаблон компонента"
+                    },
+                    "name": "video-lessons-lesson-6.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №7 ч.1. Директива ~for: Синтаксис директивы"
+                    },
+                    "name": "video-lessons-lesson-7.1.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №7 ч.2. Директива ~for: Особенности директивы"
+                    },
+                    "name": "video-lessons-lesson-7.2.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №7 ч.3. Директива ~for: Вложенные директивы"
+                    },
+                    "name": "video-lessons-lesson-7.3.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №8. Директива ~is: Динамическое изменение имени тега"
+                    },
+                    "name": "video-lessons-lesson-8.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №9. Директива ~style: Стили"
+                    },
+                    "name": "video-lessons-lesson-9.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №10. Директива ~class: Классы"
+                    },
+                    "name": "video-lessons-lesson-10.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №11. Директива ~props: Групповой биндинг"
+                    },
+                    "name": "video-lessons-lesson-11.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №12. Директива ~text: Вставка текста"
+                    },
+                    "name": "video-lessons-lesson-12.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №13. Директива ~html: Вставка HTML"
+                    },
+                    "name": "video-lessons-lesson-13.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №14. Директива ~show: Отображение элемента"
+                    },
+                    "name": "video-lessons-lesson-14.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №15. Директивы ~if / ~else / ~else-if: Условная прорисовка"
+                    },
+                    "name": "video-lessons-lesson-15.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №16. Директива ~ref: Указатели на элементы"
+                    },
+                    "name": "video-lessons-lesson-16.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №17. Директива ~save-key: Ключ хранилища"
+                    },
+                    "name": "video-lessons-lesson-17.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №18. Директива ~wake: Директива пробуждения"
+                    },
+                    "name": "video-lessons-lesson-18.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №19. Биндинг. Директива :"
+                    },
+                    "name": "video-lessons-lesson-19.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №20. Двойной биндинг. Директива ::"
+                    },
+                    "name": "video-lessons-lesson-20.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №21. PDP: Групповой биндинг свойств"
+                    },
+                    "name": "video-lessons-lesson-21.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №22. События: директива @"
+                    },
+                    "name": "video-lessons-lesson-22.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №23. Обработчики событий"
+                    },
+                    "name": "video-lessons-lesson-23.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №24. Параметры обработчиков событий"
+                    },
+                    "name": "video-lessons-lesson-24.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №25. Исходные события"
+                    },
+                    "name": "video-lessons-lesson-25.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №26. Перенацеливание событий"
+                    },
+                    "name": "video-lessons-lesson-26.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №27. Модификаторы событий"
+                    },
+                    "name": "video-lessons-lesson-27.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №28. Глобальная стилизация"
+                    },
+                    "name": "video-lessons-lesson-28.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №29. layouts: Стили оконных элементов"
+                    },
+                    "name": "video-lessons-lesson-29.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №30. shadow: Стили теней"
+                    },
+                    "name": "video-lessons-lesson-30.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №31. special: Стили диалоговых компонентов"
+                    },
+                    "name": "video-lessons-lesson-31.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №32. effects: Стили состояний"
+                    },
+                    "name": "video-lessons-lesson-32.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №33. oda: Стили анимаций"
+                    },
+                    "name": "video-lessons-lesson-33.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №34. var: Пользовательские CSS-свойства"
+                    },
+                    "name": "video-lessons-lesson-34.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №35. Правила задания CSS-свойств"
+                    },
+                    "name": "video-lessons-lesson-35.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №36. Правило CSS @apply"
+                    },
+                    "name": "video-lessons-lesson-36.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №37. Inline-стилизация. Атрибут style"
+                    },
+                    "name": "video-lessons-lesson-37.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №38. ~style: Динамическая локальная стилизация"
+                    },
+                    "name": "video-lessons-lesson-38.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №39. Классовая стилизация. Атрибут class"
+                    },
+                    "name": "video-lessons-lesson-39.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №40. ~class: Классовая динамическая стилизация"
+                    },
+                    "name": "video-lessons-lesson-40.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №41. Стилизация хоста теневого дерева :host"
+                    },
+                    "name": "video-lessons-lesson-41.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №42. CSS-часть part"
+                    },
+                    "name": "video-lessons-lesson-42.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №43. exportparts: Переадресация теневых элементов"
+                    },
+                    "name": "video-lessons-lesson-43.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №44. Слотовая стилизация ::slotted()"
+                    },
+                    "name": "video-lessons-lesson-44.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №45. Управление слотовой стилизацией"
+                    },
+                    "name": "video-lessons-lesson-45.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №46. props: Объявление свойств"
+                    },
+                    "name": "video-lessons-lesson-46.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №47. $def: Модификатор начального значения"
+                    },
+                    "name": "video-lessons-lesson-47.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №48. $type: Модификатор типа"
+                    },
+                    "name": "video-lessons-lesson-48.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №49. $attr: Модификатор атрибутов хоста"
+                    },
+                    "name": "video-lessons-lesson-49.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №50. reactive: Модификатор реактивности"
+                    },
+                    "name": "video-lessons-lesson-50.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №51. $freeze: Модификатор блокировки реактивности"
+                    },
+                    "name": "video-lessons-lesson-51.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №52. label Модификатор имени"
+                    },
+                    "name": "video-lessons-lesson-52.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №53. category: Модификатор группы"
+                    },
+                    "name": "video-lessons-lesson-53.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №54. list: Модификатор списка значений"
+                    },
+                    "name": "video-lessons-lesson-54.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №55. shared: Модификатор сквозного биндинга"
+                    },
+                    "name": "video-lessons-lesson-55.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №56. Геттеры"
+                    },
+                    "name": "video-lessons-lesson-56.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №57. Сеттеры"
+                    },
+                    "name": "video-lessons-lesson-57.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №58. Совместное использование геттера и сеттера"
+                    },
+                    "name": "video-lessons-lesson-58.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №59. hostAttributes: Начальные значения атрибутов компонента"
+                    },
+                    "name": "video-lessons-lesson-59.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №60. observers: Обозреватели свойств компонента"
+                    },
+                    "name": "video-lessons-lesson-60.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №61. listeners: Слушатели событий компонента"
+                    },
+                    "name": "video-lessons-lesson-61.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №62. $keyBindings: Обработка нажатий клавиш клавиатуры"
+                    },
+                    "name": "video-lessons-lesson-62.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №63. Методы"
+                    },
+                    "name": "video-lessons-lesson-63.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №64. Диаграмма жизненного цикла"
+                    },
+                    "name": "video-lessons-lesson-64.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №65. created: Хук создания"
+                    },
+                    "name": "video-lessons-lesson-65.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №66. ready: Хук готовности"
+                    },
+                    "name": "video-lessonСлоты компонентаs-lesson-66.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №67. attached: Хук присоединения"
+                    },
+                    "name": "video-lessons-lesson-67.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №68. detached: Хук удаления"
+                    },
+                    "name": "video-lessons-lesson-68.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №69. slot: Слоты компонента"
+                    },
+                    "name": "video-lessons-lesson-69.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №70. $refs: объект внутренних идентификаторов"
+                    },
+                    "name": "video-lessons-lesson-70.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №71. $url: полное имя модуля компонента"
+                    },
+                    "name": "video-lessons-lesson-71.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №72. $dir: путь к модулю компонента"
+                    },
+                    "name": "video-lessons-lesson-72.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №73. $dirInfo: информация о папке компонента"
+                    },
+                    "name": "video-lessons-lesson-73.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №74. listen: метод регистрации обработчиков событий"
+                    },
+                    "name": "video-lessons-lesson-74.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №75. unlisten: метод удаления обработчиков событий"
+                    },
+                    "name": "video-lessons-lesson-75.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №76. fire: метод генерации пользовательского события"
+                    },
+                    "name": "video-lessons-lesson-76.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №77. create: метод создания вложенных HTML-элементов"
+                    },
+                    "name": "video-lessons-lesson-77.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №78. async: метод вызова функции с задержкой"
+                    },
+                    "name": "video-lessons-lesson-78.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №79. debounce: метод вызова функции с ограниченной частотой"
+                    },
+                    "name": "video-lessons-lesson-79.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №80. interval: метод вызова функции с фиксированной частотой"
+                    },
+                    "name": "video-lessons-lesson-80.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №81. $next: Вызов функции с рендерной задержкой"
+                    },
+                    "name": "video-lessons-lesson-81.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №82. $super: вызов родительских методов"
+                    },
+                    "name": "video-lessons-lesson-82.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №83. ODA.console: Работа с ODA-консолью"
+                    },
+                    "name": "video-lessons-lesson-83.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №84. ODA.createComponent: Создание компонента"
+                    },
+                    "name": "video-lessons-lesson-84.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №86. ODA.showModal: Отображение модального окна"
+                    },
+                    "name": "video-lessons-lesson-85.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №86. ODA.showModal: Отображение модального окна"
+                    },
+                    "name": "video-lessons-lesson-86.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №87. ODA.showDialog: Отображение диалогового окна"
+                    },
+                    "name": "video-lessons-lesson-87.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №88. ODA.showDropdown: Отображение выпадающего окна"
+                    },
+                    "name": "video-lessons-lesson-88.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №89. ODA.loadURL: Загрузка любого внешнего ресурса"
+                    },
+                    "name": "video-lessons-lesson-89.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №90. ODA.loadJSON: Загрузка внешнего JSON-ресурса"
+                    },
+                    "name": "video-lessons-lesson-90.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №91. ODA.loadHTML: Загрузка внешнего HTML-ресурса"
+                    },
+                    "name": "video-lessons-lesson-91.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №92. ODA.push: Отправка уведомлений"
+                    },
+                    "name": "video-lessons-lesson-92.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №93. ODA.notify: Отправка предупреждающих уведомлений"
+                    },
+                    "name": "video-lessons-lesson-93.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №94. ODA.pushMessage: Отправка уведомлений"
+                    },
+                    "name": "video-lessons-lesson-94.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №95. ODA.pushError: Отправка уведомлений об ошибках"
+                    },
+                    "name": "video-lessons-lesson-95.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №96. ODA.origin: Первоначальное определение URL-ресурса"
+                    },
+                    "name": "video-lessons-lesson-96.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №97.ODA.language: Предпочитаемый язык пользователя"
+                    },
+                    "name": "video-lessons-lesson-97.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №98. ODA.telemetry:  Мониторинг текущего состояния"
+                    },
+                    "name": "video-lessons-lesson-98.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №99. SPA-роутинг"
+                    },
+                    "name": "video-lessons-lesson-99.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №100. Основные принципы Smart-кеширования"
+                    },
+                    "name": "video-lessons-lesson-100.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №101. Особенности работы Smart-кэширования"
+                    },
+                    "name": "video-lessons-lesson-101.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №102. Дополнительные сведения о Smart-кэшировании"
+                    },
+                    "name": "video-lessons-lesson-102.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №103. Основные принципы Smart-рендеринга"
+                    },
+                    "name": "video-lessons-lesson-103.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №104. Особенности Smart-рендеринга"
+                    },
+                    "name": "video-lessons-lesson-104.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №105. Дополнительные сведения о Smart-рендеринге"
+                    },
+                    "name": "video-lessons-lesson-105.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №107. Формирование оглавления"
+                    },
+                    "name": "video-lessons-lesson-107.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №109. Модификаторы редактора кода"
+                    },
+                    "name": "video-lessons-lesson-109.md"
+                },
+                {
+                    "label": {
+                        "ru": "Урок №111. Справочник по формату Markdown"
+                    },
+                    "name": "video-lessons-lesson-111.md"
+                }
+            ]
+        }
+    ]
+}

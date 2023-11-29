@@ -1,26 +1,93 @@
 [
-  {
-    "name": "ace-editor",
-    "label": "<b style='color: #e689fe'>oda-ace-editor:</b> ace-редактор",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "ace-editor",
+        "label": "<b style='color: #e689fe'>oda-ace-editor:</b> Ace редактор кода",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  },
-  {
-    "name": "html-editor",
-    "label": "<b style='color: #e689fe'>oda-html-editor:</b> html-редактор",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "monaco-editor",
+        "label": "<b style='color: #e689fe'>oda-monaco-editor:</b> Monaco редактор кода",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  },
-  {
-    "name": "md-editor",
-    "label": "<b style='color: #e689fe'>oda-md-editor:</b> md-редактор",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "pell-editor",
+        "label": "<b style='color: #e689fe'>oda-pell-editor:</b> Pell редактор HTML кода",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  }
+    {
+        "name": "executable-editor",
+        "label": "<b style='color: #e689fe'>oda-executable-editor:</b> Исполняемый редактор HTML кода",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "code-editor",
+        "label": "<b style='color: #e689fe'>oda-code-editor:</b> Редактор кода",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "markdown-editor",
+        "label": "<b style='color: #e689fe'>oda-markdown-editor:</b> Редактор markdown",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "simplemde-editor",
+        "label": "<b style='color: #e689fe'>oda-simplemde-editor:</b> simplemde редактор",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "wysiwyg",
+        "label": "<b style='color: #e689fe'>oda-wysiwyg:</b> WYSIWYG редактор HTML кода",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "html-editor",
+        "label": "<b style='color: #e689fe'>oda-html-editor:</b> Редактор HTML кода",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "xml-editor",
+        "label": "<b style='color: #e689fe'>oda-xml-editor:</b> Редактор XML кода",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "rich-text-editor",
+        "label": "<b style='color: #e689fe'>oda-rich-text-editor:</b> Текстовый редактор",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "excalidraw-editor",
+        "label": "<b style='color: #e689fe'>oda-excalidraw-editor:</b> Интерактивная доска для создания графиков и диаграмм",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "onlyoffice-editor",
+        "label": "<b style='color: #e689fe'>oda-onlyoffice-editor:</b> Редактор документов (docx, xlsx, pptx)",
+        "content": {
+            "link": "index.html"
+        }
+    }
 ]

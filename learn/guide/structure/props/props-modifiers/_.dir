@@ -50,7 +50,8 @@
         "status": "check"
     },
     {
-        "name": "../../template/jsx/directives/~save-key.md",
+        "name": "~save-key.md",
+        "path": "learn/guide/structure/template/jsx/directives/~save-key.md",
         "label": "<b style='color: brown'>save</b>: Модификатор сохранения",
         "status": "check"
     }

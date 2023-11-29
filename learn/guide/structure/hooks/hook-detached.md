@@ -4,7 +4,7 @@
 
 Диаграмма жизненного цикла компонента с начала момента его удаления имеет следующий вид:
 
-![Диаграмма для хука detached](./learn/images/hook-detached.svg "Хук удаления detached")
+![Диаграмма для хука detached](./learn/_images/hook-detached.svg "Хук удаления detached")
 
 В соответствии с этой диаграммой перед вызовом хука **detached** будут удалены все ранее зарегистрированные слушатели компонента.
 
@@ -17,16 +17,16 @@ ODA({
         <div>{{text}}</div>
         <button @tap='_onTap'>Удали меня</button>
     `,
-    props: {
+    $public: {
         text: {
-            default: "Привет, хук detached!",
-            reflectToAttribute: true
+            $def: "Привет, хук detached!",
+            $attr: true
         }
     },
     _onTap() {
         this.remove();
     },
-    listeners: {
+    $listeners: {
         detached() {
             console.log('Слушатель задан')
         }

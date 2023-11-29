@@ -14,10 +14,10 @@
                 template: `
                     <span>{{text}}</span>
                 `,
-                props:{
+                $public:{
                     text: {
-                        default: "Hello, property!",
-                        type: String,
+                        $def: "Hello, property!",
+                        $type: String,
                     }
                 }
             });

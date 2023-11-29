@@ -1,128 +1,18 @@
 [
-  {
-    "name": "bugs",
-    "label": "Жуки",
-    "content": {
-      "link": "index.html"
-    }
-  },
     {
-    "name": "bugs2",
-    "label": "Жуки-2",
-    "content": {
-      "link": "index.html"
+        "name": "neuronet",
+        "label": "Нейросеть"
+    },
+    {
+        "name": "apps",
+        "label": "Приложения"
+    },
+    {
+        "name": "games",
+        "label": "Игры"
+    },
+    {
+        "name": "misc",
+        "label": "Разное"
     }
-  },
-  {
-    "name": "spike-net",
-    "label": "Импульсная нейронная сеть (модель Ижикевича)",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "in-yan",
-    "label": "Инь ян",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "sierpinski-triangle",
-    "label": "Треугольник Серпинского",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "figure-digit",
-    "label": "Распознавание рукописных цифр",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "l-system",
-    "label": "L-System",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "oda-doom",
-    "label": "oda-doom",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "t-rex",
-    "label": "Динозавр T-Rex",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "t-rex-ai",
-    "label": "Динозавр T-Rex (+AI)",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "oda-bird",
-    "label": "Нейроптицы",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "tetris",
-    "label": "Тетрис",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "minesweeper",
-    "label": "Сапер",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "flips",
-    "label": "Перевёртыши",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "raccoon",
-    "label": "Raccoon",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "raccoon-ai",
-    "label": "Raccoon (+AI)",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "credit-calculator",
-    "label": "Кредитный калькулятор",
-    "content": {
-      "link": "index.html"
-    }
-  },
-  {
-    "name": "date-timer",
-    "label": "oda-date-timer",
-    "content": {
-      "link": "index-tester.html"
-    }
-  }
 ]

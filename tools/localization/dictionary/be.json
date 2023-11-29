@@ -1,9 +1,21 @@
 {
- "cancel": "кансел",
- "download": "скачать",
- "ok": "окый",
- "phrase": "фрася",
- "transletes": "перевод",
- "watchers": "вотчеры",
- "words": "слова"
+    "w": {
+        "cancel": "кансел",
+        "download": "скачать",
+        "ok": "окый",
+        "phrase": "ыыыы",
+        "translates": "перевод",
+        "watchers": "вотчеры",
+        "words": "слова",
+        "title":"титул",
+        "quick":"быстро"
+
+    },
+    "p": {
+        "phrase for Translate first": "!!!!!",
+        "BINDING: phrase for Translate first": "БББ:фраза для первого Перевода"
+    },
+    "r": [
+        ["^BINDING: phrase for Translate(?<num>.*)$", "Регуляркой заменено для $<num> элемента"]
+    ]
 }

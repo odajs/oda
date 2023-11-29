@@ -43,12 +43,12 @@ import '../../oda.js';
                 <td>{{uCost(.2)}}<td> {{sCost(.2)}}  </td>    </tr>
         </tbody></table>
         `,
-        props: {
-            uUser: 10,
-            uBase: 2,
-            sCore: 8,
-            baseCost: 10000,
-        },
+
+        uUser: 10,
+        uBase: 2,
+        sCore: 8,
+        baseCost: 10000,
+
         uCost(k) { let cost = (this.uUser + this.uBase) * this.baseCost
             return (cost * k).toLocaleString() + ' ₽'  },
         sCost(k) { let cost =  0.5 * this.sCore * (this.sCore + 1) * this.baseCost

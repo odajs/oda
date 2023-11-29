@@ -2,7 +2,7 @@
 
 Диаграмма жизненного цикла компонента до этого момента имеет следующий вид:
 
-![Диаграмма для хука ready](./learn/images/hook-ready.svg "Хук готовности ready")
+![Диаграмма для хука ready](./learn/_images/hook-ready.svg "Хук готовности ready")
 
 В отличие от хука **created**, здесь:
 
@@ -18,7 +18,7 @@ ODA({
     template: `
         <div>{{text}}</div>
     `,
-    props: {
+    $public: {
         text: "Привет, хук ready!"
     },
     hostAttributes: {

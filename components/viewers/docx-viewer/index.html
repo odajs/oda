@@ -1,0 +1,42 @@
+<meta charset="UTF-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./docx-viewer.js"></script>
+
+<input id="files" type="file" style="width: 60ch; position: fixed; padding: 2px; top: 3px" accept=".docx" />
+<input id="btn" type="button" style="width: 114px; position: fixed; margin: 2px; padding: 2px; top: 32px" value="Заполнить" />
+<input id="prn" type="button" style="width: 114px; position: fixed; margin: 2px; padding: 2px; top: 64px" value="Печать" />
+<oda-docx-viewer id="docx_viewer" src="./details.docx"></oda-docx-viewer>
+
+<script>
+    const fileInput = document.querySelector("#files");
+    fileInput.addEventListener("change", ev => {
+        docx_viewer.src = fileInput.files[0];
+        fileInput.value = null;
+    })
+    btn.addEventListener("click", ev => {
+        docx_viewer.fill();
+    })
+    prn.addEventListener("click", ev => {
+        docx_viewer.print();
+    })
+    docx_viewer.fillData = {
+        orgName: 'ООО "БИС"',
+        orgFullName: '"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "БИЗНЕСИНТЕРСОФТ"',
+        orgShortName: 'ООО "БИС"',
+        orgUridAddress: '390000, Рязанская область, город Рязань, ул. Ленина, д. 47, этаж/пом 2/9',
+        orgFactAddress: '390000, Рязанская область, город Рязань, ул. Ленина, д. 47, этаж/пом 2/9',
+        orgPostAddress: '390000, Рязанская область, город Рязань, ул. Ленина, д. 47, этаж/пом 2/9',
+        orgOGRN: '1076234013712',
+        orgINN: '6234049193',
+        orgKPP: '623401001',
+        orgDirector: 'Перепелкин Роман Александрович',
+        orgRasChet: '...',
+        orgPhone: '+7 (4912) 75-76-59, +7 (4912) 44-74-12, +7 (4912) 28-28-68, +7 (910) 642-39-14',
+        orgMail: 'support@oda.su',
+        orgSite: 'https://odant.org/',
+        orgOKWD: '...',
+        orgOKPO: '83612976',
+        currDate: new Date().toLocaleString('ru', { year: 'numeric', month: 'long', day: 'numeric' })
+    }
+
+</script>

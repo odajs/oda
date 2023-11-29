@@ -1,65 +1,117 @@
 <meta charset="utf-8">
-
-<oda-localisation-test></oda-localisation-test>
-
+<link rel="icon" href="data:image/svg+xml,
+    <svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
+        <text y=%22.9em%22 font-size=%2290%22>🇺🇳</text>
+    </svg>">
+<oda-localization-test></oda-localization-test>
+<!-- <script type="module" src="./localization-fn.js" ></script> -->
 <script type="module" >
-    import "../../oda.js";
-    import "./localization.js";
-    import "./tester.js";
+        import "../../oda.js";
+        import "./localization.js";
 
-    ODA({is:'oda-localisation-test', imports:'@oda/button',
-        template: `
-        <style>
-            :host{
-                @apply --flex;
-                min-height: 100%;
-                @apply --horizontal;
-            }
-            iframe{
-                width: 100%;
-            }
-        </style>
-        <div class="flex vertical">
-            <div class="no-flex">
-                <div class='horizontal no-flex'>
-                    <oda-button :label="item" :focused="item === ODA.language" @tap="ODA.language = item; render()" ~for='navigator.languages' :icon='flag(item)'></oda-button>
+        ODA({
+            is: 'oda-localization-test', imports: '@oda/icon', template: /*html*/ `
+            <style>
+                :host{ @apply --flex; min-height: 100%; @apply --horizontal; }
+                iframe{ width: 100%; }
+                .btn {margin:0 .5em; align-items: center; cursor: pointer; padding:3px 5px; }
+                .btn:hover {background-color: rgba(0, 0, 0, 0.05);}
+            </style>
+            <div ~if='hash===""' class="flex vertical">
+                <div class="no-flex">
+                    <div class='horizontal no-flex'>
+                        <div class='horizontal btn' ~for='navigator.languages' :focused="$for.item==lang" @tap="tap($for.item)">
+                            <oda-icon style='margin-right:3px' :icon='ODA.getFlags($for.item)'></oda-icon>{{$for.item}}
+                        </div>
+                    </div>
+                    <oda-translate-test></oda-translate-test>
                 </div>
-                <oda-translate-test></oda-translate-test>
-<!--                <label>{{"Watchers"}}</label> &#45;&#45; прямая вставка внутри html (label)</br>-->
-<!--                <b>{{watchers}}</b> &#45;&#45; прямая вставка внутри html (не label)</br>-->
-<!--                <label ~html='"Watchers"'></label>  &#45;&#45; ~html (строка) тег label-->
-<!--                <div ~html='"Watchers"'>  &#45;&#45; то же но div</div>-->
-<!--                <oda-button :label='test1' > (ода батон test1)</oda-button>-->
-<!--                <oda-button :label='"New Watchers"'> (ода батон     текст)</oda-button>-->
-<!--                <label notranslate>{{"OK"}}</label> &#45;&#45; прямая вставка внутри html (label, но notranslate)</br>-->
+
+                <div class="flex horizontal"  style="position: relative">
+                    <iframe class="flex" src="./index.html#first"></iframe>
+                    <iframe class="flex" src="./index.html#second"></iframe> 
+                    <!-- <iframe class="flex" src="./index.html#third"></iframe> -->
+                </div>
+
             </div>
-    
-            <div class="flex horizontal"  style="position: relative">
-                <iframe class="flex" src="./index-ifame.html#first"></iframe>
-                <iframe class="flex" src="./index-ifame.html#second"></iframe>
-                <iframe class="flex" src="./index-ifame.html#third"></iframe>
+            <oda-translate-test ~if='hash!=""'></oda-translate-test>
+            
+            `,  
+            tap(l) {
+                ODA.language = l;
+                this.lang = l
+            },
+            attached() { this.lang = ODA.language },
+            $public: {
+                test1: 'test Watchers',
+                FAQ: 'FaQ',
+                aLocale: '',
+                watchers: 'Watchers',
+                lang: ''
+            },
+            $pdp: {
+                get hash() { return document.location.hash.substring(1); }
+            },
+        });
+
+    ODA({
+        is: 'oda-translate-test',
+        template: /*html*/ `
+            <style>
+                :host{ @apply --vertical; padding: 16px;}
+                .test {border:1px solid silver; padding:2px; margin:1px; background:#efe; }
+                .no-translate { background:#eee;}    
+            </style>
+
+            <div class='test no-translate' no-translate :title="'title'">
+                <div  >1. Просто текст (div):</div>
+                <div bold>phrase for translate</div>
             </div>
 
-        </div>
-        <oda-localization-tree class="no-flex shadow">
+            <div class='test'>
+                <div>2. Просто текст (label):</div>
+                <label bold>Phrase for translate</label>
+            </div>
 
-        </oda-localization-tree>
+            <div class='test'>
+                <div>3. binding:</div>
+                <label bold>BINDING: {{text}}</label>
+            </div>
 
+            <div class='test'>
+                <div>4. ~text:</div>
+                <label bold ~text="text"></label>
+            </div>
+
+            <div class='test'>
+                <div>5. ~html -> text:</div>
+                <label bold ~html="text"></label>
+            </div>
+            <div class='test'>
+                <div>6. ~html -> html:</div>
+                <label bold ~html="html"></label>
+            </div>
+            <div class='test'>
+                <div>7. ~text -> html:</div>
+                <label bold ~text="html"></label>
+            </div>
+            <div class='test no-translate'>
+                <div>8. ~html -> html: (div)</div>
+                <div bold ~html="html"></div>
+            </div>
+            <div class='test'>
+                <div>9. Ввод:</div>
+                <input ::value > <label>{{value}}</label>
+                <input :placeholder='"phrase"' >
+                <input no-translate :placeholder='"ok"' >
+            </div>
         `,
-        props: {
-            test1:'test Watchers',
-            FAQ:'FaQ',
-            aLocale:'',
-            watchers:'Watchers'
+        get text() {
+            return 'phrase for Translate ' + document.location.hash.substring(1);
         },
-        flag(s) {
-            const exclusions = {'en': 'gb','zh': 'cn','uk': 'ua', 'be': 'by',}
-            for (const k in exclusions)  s = s.replace(k, exclusions[k])        
-            s = `flags:${s.slice(0,2).toUpperCase()}`
-            return s;
+        get html() {
+            return '<label>' + this.text + ' - <i>HTML</i> <i style="color:red">phrase</i></label>';
         },
-    }) 
+        value: 'phrase'
+    })
 </script>
-
-
-

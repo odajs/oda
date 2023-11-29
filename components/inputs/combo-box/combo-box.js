@@ -26,6 +26,29 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     <input class="flex" type="text" @input="onInput" :value="text" :readonly="readOnly || (allowClear && !!value)" :placeholder>
     <oda-button id="combo-btn" class="no-flex" :icon-size ~if="!hideButton" :icon="(value && allowClear)?'icons:close':icon" @tap.stop="_tap"></oda-button>
     `,
+    placeholder: '',
+    text: '',
+    result: null,
+    iconSize: 24,
+    arrowMoveDone: false,
+    $public: {
+        dropDownTitle: '',
+        readOnly: false,
+        allowClear: false,
+        fadein: false,
+        template: 'oda-combo-list',
+        //iconSize: 24, // todo: duplicate
+        icon: 'icons:chevron-right:90',
+        hideButton: {
+            $label: 'Скрыть кнопку',
+            $def: false,
+            $attr: true
+        },
+        useParentWidth: {
+            $def: false,
+            $type: Boolean
+        }
+    },
     get params() {
         return {
             "focused-item-changed": (e) => {
@@ -38,12 +61,41 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
                     if (!this.result) return;
                     this.dropDownControl?.fire('ok');
                 })
-            }
+            },
         }
     },
-
     get input() {
         return this.$('input');
+    },
+    set value(n) {
+        this.async(() => {
+            this.input?.select(0, 1000);
+        })
+    },
+    set dropDownControl(n) {
+        n?.setAttribute('tabIndex', 1);
+        // n?.addEventListener('resize', e=>{
+        //     if (e.target.offsetHeight) return
+        //     this.closeDown();
+        // })
+    },
+    $observers: {
+        load(value) {
+            if (!this.text)
+                this.text = value;
+        }
+    },
+    // get text() {
+    //     switch (typeof this.value) {
+    //         case 'string':
+    //             return this.value;
+    //         case 'object':
+    //             return (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
+    //     }
+    //     return this.value?.toString() || '';
+    // },
+    createDropDownControl() {
+        return ODA.createElement(this.template);
     },
     _setFocus(select) {
         this.async(() => {
@@ -57,54 +109,12 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this.text = '';
             this.value = '';
         }
-        else if (this._dd)
+        else if (this._dd) {
             this.closeDown();
-        else
+        } else {
             this.dropDown();
-    },
-    set value(n) {
-        this.text = undefined;
-        this.async(() => {
-            this.input?.select(0, 1000);
-        })
-    },
-    placeholder: '',
-    props: {
-        readOnly: false,
-        allowClear: false,
-        fadein: false,
-        template: 'oda-combo-list',
-        iconSize: 24,
-        icon: 'icons:chevron-right:90',
-        hideButton: {
-            label: 'Скрыть кнопку',
-            default: false,
-            reflectToAttribute: true
-        },
-        // items: Array
-    },
-    useParentWidth: true,
-    createDropDownControl() {
-        return this.createElement(this.template);
-    },
-    set dropDownControl(n) {
-        n?.setAttribute('tabIndex', 1);
-        // n?.addEventListener('resize', e=>{
-        //     if (e.target.offsetHeight) return
-        //     this.closeDown();
-        // })
-    },
-    result: null,
-    get text() {
-        switch (typeof this.value) {
-            case 'string':
-                return this.value;
-            case 'object':
-                return (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
         }
-        return this.value?.toString() || '';
     },
-    iconSize: 24,
     async onInput(e) {
         this.text = e.target.value;
         if (this.text)
@@ -120,9 +130,20 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         if (!this._dd) {
             // if (this.items?.length)
             //     this.params.items = this.items;
-            this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: true, fadein: this.fadein });
+            this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: this.useParentWidth, fadein: this.fadein, title: this.dropDownTitle });
             this._dd.then(res => {
                 this.value = this.result;
+                switch (typeof this.value) {
+                    case 'string': {
+                        this.text = this.value;
+                    } break;
+                    case 'object': {
+                        this.text = (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
+                    } break;
+                    default: {
+                        this.text = this.value?.toString() || '';
+                    } break;
+                }
             }).catch(e => {
                 this.arrowMoveDone = false;
             }).finally(() => {
@@ -141,11 +162,10 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this.dropDownControl?.fire?.('cancel')
         })
     },
-    arrowMoveDone: false,
-    keyBindings: {
+    $keyBindings: {
         escape(e) {
             if (!this._dd) {
-                this.text = undefined;
+                this.text = '';
             }
         },
         arrowDown(e) {
@@ -202,10 +222,10 @@ ODA({is: 'oda-combo-list',
             overflow-y: auto;
             overflow-x: hidden;
         }
-        label:hover {
+        span:hover {
             @apply --selected;
         }
-        label {
+        span {
             @apply --content;
             min-height: 24px;
             align-content: center;
@@ -213,28 +233,16 @@ ODA({is: 'oda-combo-list',
             padding: 2px 4px;
         }
     </style>
-    <label ~for="rows" :focused="item === focusedItem" @tap="focusedItem = item">{{item?.label || item}}</label>
+    <span ~for="rows" :focused="$for.item === focusedItem" @tap="focusedItem = $for.item">{{$for.item?.label || $for.item}}</span>
     `,
     filter: '',
+    items: [],
     get hasData() {
         return this.rows?.length;
-    },
-    keyBindings: {
-        arrowDown(e) {
-            const idx = this.rows.indexOf(this.focusedItem);
-            if (idx < this.rows.length - 1)
-                this.focusedItem = this.rows[idx + 1];
-        },
-        arrowUp(e) {
-            const idx = this.rows.indexOf(this.focusedItem);
-            if (idx > 0)
-                this.focusedItem = this.rows[idx - 1];
-        }
     },
     set focusedItem(v) {
         this.fire('focused-item-changed', v); // ToDo - temporary solution, doesn't always work
     },
-    items: [],
     get rows() {
         if (this.items.then) this.items.then(res => this.items = res)
         if (this.filter) {
@@ -254,5 +262,17 @@ ODA({is: 'oda-combo-list',
     },
     get result() {
         return this.focusedItem;
-    }
+    },
+    $keyBindings: {
+        arrowDown(e) {
+            const idx = this.rows.indexOf(this.focusedItem);
+            if (idx < this.rows.length - 1)
+                this.focusedItem = this.rows[idx + 1];
+        },
+        arrowUp(e) {
+            const idx = this.rows.indexOf(this.focusedItem);
+            if (idx > 0)
+                this.focusedItem = this.rows[idx - 1];
+        }
+    },
 })

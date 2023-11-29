@@ -1,0 +1,121 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="975" xmlns="http://www.w3.org/2000/svg" height="223" viewBox="0 0 975 223">
+    <style type="text/css"><![CDATA[
+.st4 {fill:#00b0f0;font-family:Courier New;font-size:18pt;font-weight:bold}
+.st2 {fill:#da5a64;font-family:Courier New;font-size:18pt;font-weight:bold}
+.st1 {fill:#ffffff;font-family:Arial;font-size:12pt;font-weight:bold}
+.st3 {fill:#ffffff;font-family:Courier New;font-size:18pt;font-weight:bold}
+]]></style>
+    <defs>
+        <linearGradient id="lg1" y1="0%" y2="100%" x1="0%" x2="0%">
+            <stop offset="0" stop-color="#e29195"/>
+            <stop offset="0.65" stop-color="#da5a64"/>
+            <stop offset="1" stop-color="#c5515a"/>
+        </linearGradient>
+        <linearGradient id="lg2" y1="0%" y2="100%" x1="0%" x2="0%">
+            <stop offset="0" stop-color="#83b3e3"/>
+            <stop offset="0.65" stop-color="#3498db"/>
+            <stop offset="1" stop-color="#2e89c6"/>
+        </linearGradient>
+        <linearGradient id="lg3" y1="0%" y2="100%" x1="0%" x2="0%">
+            <stop offset="0" stop-color="#8d9cb1"/>
+            <stop offset="0.65" stop-color="#527294"/>
+            <stop offset="1" stop-color="#496786"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(-6.5,-1804)">
+        <g transform="translate(219.35,1805)" id="shape1">
+            <path fill="url(#lg1)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#ff9092"/>
+            <text class="st1">
+                <tspan x="10.5" y="31">Инициализация </tspan>
+                <tspan x="41.5" y="51">свойств</tspan>
+            </text>
+        </g>
+        <g transform="translate(140,1841)" id="shape2">
+            <path fill="none" d="M0,0L62.7,0" stroke-width="4.33333" stroke="#476482" stroke-dasharray="2.5,2.5"/>
+            <path fill="#476482" d="M62.7,-8.3L79.3,0L62.7,8.3L62.7,-8.3" stroke-linecap="round" stroke-width="1" stroke="#476482"/>
+        </g>
+        <g transform="translate(412.25,1805)" id="shape3">
+            <path fill="url(#lg1)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#ff9092"/>
+            <text class="st1">
+                <tspan x="40.5" y="31">Задание </tspan>
+                <tspan x="16.5" y="51">реактивности </tspan>
+            </text>
+        </g>
+        <g transform="translate(605.15,1805)" id="shape4">
+            <path fill="url(#lg1)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#ff9092"/>
+            <text class="st1">
+                <tspan x="10.5" y="31">Присоединение </tspan>
+                <tspan x="15.5" y="51">теневого DOM </tspan>
+            </text>
+        </g>
+        <g transform="translate(843.45,1893.69)">
+            <path fill="none" d="M21.8,43.6L112,43.6C124,43.6,133.8,33.8,133.8,21.8C133.8,9.8,124,0,112,0L21.8,0C9.8,0,0,9.8,0,21.8C0,33.8,9.8,43.6,21.8,43.6z" stroke-width="4" id="shape5" stroke="#da5a64"/>
+            <text class="st2">
+                <tspan x="18.4" y="27.3">created</tspan>
+            </text>
+        </g>
+        <g transform="translate(367.25,1841)" id="shape6">
+            <path fill="none" d="M0,0L28.3,0" stroke-width="4.33333" stroke="#da5a64"/>
+            <path fill="#da5a64" d="M28.3,-8.3L45,0L28.3,8.3L28.3,-8.3" stroke-linecap="round" stroke-width="1" stroke="#da5a64"/>
+        </g>
+        <g transform="translate(560.15,1841)" id="shape7">
+            <path fill="none" d="M0,0L28.3,0" stroke-width="4.33333" stroke="#da5a64"/>
+            <path fill="#da5a64" d="M28.3,-8.3L45,0L28.3,8.3L28.3,-8.3" stroke-linecap="round" stroke-width="1" stroke="#da5a64"/>
+        </g>
+        <g transform="translate(605.15,1953.94)" id="shape8">
+            <path fill="url(#lg2)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#aecaea"/>
+            <text class="st1">
+                <tspan x="23.5" y="31">Регистрация </tspan>
+                <tspan x="27.5" y="51">телеметрии</tspan>
+            </text>
+        </g>
+        <g transform="translate(412.25,1953.94)" id="shape9">
+            <path fill="url(#lg2)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#aecaea"/>
+            <text class="st1">
+                <tspan x="25.5" y="21">Добавление </tspan>
+                <tspan x="32.5" y="41">атрибутов </tspan>
+                <tspan x="51.5" y="61">хоста</tspan>
+            </text>
+        </g>
+        <g transform="translate(219.35,1953.94)" id="shape10">
+            <path fill="url(#lg2)" d="M132.8,72C141.1,72,147.9,65.2,147.9,56.9L147.9,15.1C147.9,6.8,141.1,0,132.8,0L15.1,0C6.8,0,0,6.8,0,15.1L0,56.9C0,65.2,6.8,72,15.1,72L132.8,72z" stroke="#aecaea"/>
+            <text class="st1">
+                <tspan x="31.5" y="31">Рендеринг </tspan>
+                <tspan x="38.5" y="51">шаблона</tspan>
+            </text>
+        </g>
+        <g transform="translate(560.15,1989.94)" id="shape11">
+            <path fill="none" d="M16.7,0L45,0" stroke-width="4.33333" stroke="#00b0f0"/>
+            <path fill="#00b0f0" d="M16.7,8.3L0,0L16.7,-8.3L16.7,8.3" stroke-linecap="round" stroke-width="1" stroke="#00b0f0"/>
+        </g>
+        <g transform="translate(367.25,1989.94)" id="shape12">
+            <path fill="none" d="M16.7,0L45,0" stroke-width="4.33333" stroke="#00b0f0"/>
+            <path fill="#00b0f0" d="M16.7,8.3L0,0L16.7,-8.3L16.7,8.3" stroke-linecap="round" stroke-width="1" stroke="#00b0f0"/>
+        </g>
+        <g transform="translate(140,1989.94)" id="shape13">
+            <path fill="none" d="M9.3,0L79.3,0" stroke-width="4.33333" stroke="#00b0f0" stroke-dasharray="2.5,2.5"/>
+            <path fill="#00b0f0" d="M9.3,9.3L0,0L9.3,-9.3L9.3,9.3" stroke-linecap="round" stroke-width="1" stroke="#00b0f0"/>
+        </g>
+        <g transform="translate(9,1819.22)">
+            <path fill="url(#lg3)" d="M21.8,43.6L109.2,43.6C121.2,43.6,131,33.8,131,21.8C131,9.8,121.2,0,109.2,0L21.8,0C9.8,0,0,9.8,0,21.8C0,33.8,9.8,43.6,21.8,43.6z" id="shape14" stroke="#476482"/>
+            <text class="st3">
+                <tspan x="31" y="27.3">ODA()</tspan>
+            </text>
+        </g>
+        <path fill="none" d="M0,0L40.9,0L40.9,74.9" stroke-width="4.33333" transform="translate(753.05,1841)" id="shape15" stroke="#da5a64" stroke-dasharray="2.5,2.5"/>
+        <g transform="translate(753.05,1989.94)" id="shape16">
+            <path fill="none" d="M16.7,0L40.9,0L40.9,-74" stroke-width="4.33333" stroke="#00b0f0" stroke-dasharray="2.5,2.5"/>
+            <path fill="#00b0f0" d="M16.7,8.3L0,0L16.7,-8.3L16.7,8.3" stroke-linecap="round" stroke-width="1" stroke="#00b0f0"/>
+        </g>
+        <g transform="translate(794,1915.47)" id="shape17">
+            <path fill="none" d="M0,0L32.8,0" stroke-width="4.33333" stroke="#da5a64" stroke-dasharray="2.5,2.5"/>
+            <path fill="#da5a64" d="M32.8,-8.3L49.4,0L32.8,8.3L32.8,-8.3" stroke-linecap="round" stroke-width="1" stroke="#da5a64"/>
+        </g>
+        <g transform="translate(10.5,1968.15)">
+            <path fill="none" d="M21.8,43.6L107.7,43.6C119.7,43.6,129.5,33.8,129.5,21.8C129.5,9.8,119.7,0,107.7,0L21.8,0C9.8,0,0,9.8,0,21.8C0,33.8,9.8,43.6,21.8,43.6z" stroke-width="4" id="shape18" stroke="#00b0f0"/>
+            <text class="st4">
+                <tspan x="30.3" y="27.3">ready</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

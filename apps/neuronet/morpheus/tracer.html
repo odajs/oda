@@ -1,0 +1,336 @@
+<meta charset="UTF-8">
+<title>Title</title>
+<oda-gpt id="gpt"></oda-gpt>
+<script type="module">
+    import '../../../oda.js';
+    import '../../../tools/containers/containers.js';
+    ODA({is: 'oda-gpt', imports: '@oda/app-layout', extends: 'oda-app-layout',
+        template: `
+          <div class="flex vertical" slot="left-panel" opened>
+              <div class="horizontal dark" style="padding:4px;">
+                  <oda-button icon="icons:note-add" :icon-size @tap="create"></oda-button>
+                  <oda-button icon="icons:file-upload" :icon-size @tap="load"></oda-button>
+                  <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
+                  <oda-button class="dark" icon="icons:add" @tap="loadFile">Add corpus</oda-button>
+                  <div flex></div>
+                  <oda-button :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
+              </div>
+              <fieldset class="vertical"  style="border-radius: 4px; min-width: 0px;">
+                  <legend bold>SIMILAR:{{Math.round(similar * 100)}}%</legend>
+                  word 1:
+                  <div horizontal>
+                      <input ::value="w1">
+                      <div border flex style="height: 20px;" ~style="grad1"></div>
+                  </div>
+                  word 2:
+                  <div horizontal>
+                      <input ::value="w2">
+                      <div border flex style="height: 20px;" ~style="grad2"></div>
+                  </div>
+              </fieldset>
+              <fieldset class="flex vertical"  style="border-radius: 4px; min-width: 0px;">
+                  <legend bold>PREDICATE</legend>
+                  text:
+                  <textarea ::value="text"></textarea>
+                  <div border style="height: 20px;" ~style="grad3"></div>
+                  predicate:
+                  <textarea flex>{{predicate}}</textarea>
+              </fieldset>
+          </div>
+          <div slot="main" class="flex vertical" style="overflow-y: auto">
+              <div dark border ~for="tokens" class="horizontal" >
+                    <div class="horizontal" style="width: 80px; text-align: left; padding: 4px 8px; justify-content: space-between">
+                        <div>{{$for.key}}</div>
+                        <button @tap="showLinks" :token="$for.key" style="width: 50%;">{{Object.keys(model.tokens[$for.key].map).length}}</button>
+                    </div>
+                    <div border class="flex" ~style="getBackGradient($for.item.emb[0])"></div>
+              </div>
+          </div>
+          <div class="horizontal header bold" slot="footer">
+              <style>
+                div{
+                    padding: 4px;
+                    font-size: small;
+                }
+              </style>
+              <div>TOKENS: {{Object.keys(model.tokens).length.toLocaleString()}}</div>
+              <div>TRAINED: {{model.count.toLocaleString()}}</div>
+          </div>
+        `,
+        async loadFile(e){
+            const opts = {
+                types: [{
+                    description: 'text file',
+                    accept: {'text/plain': ['.txt']},
+                },
+                {
+                    description: 'JS file',
+                    accept: {'text/javascript': ['.js'] },
+                }
+            ],
+                excludeAcceptAllOption: true,
+                multiple: true
+            };
+
+            const files = await window.showOpenFilePicker(opts);
+            for (let fileHandle of files) {
+                const file = await fileHandle.getFile();
+                const reader = new FileReader();
+                reader.onload = (e) =>{
+                    this.corpus = e.target.result;
+                }
+                reader.readAsText(file);
+            }
+        },
+        async showLinks(e){
+            const token = e.target.getAttribute('token')
+            const {result} = await ODA.showDropdown('oda-token-links', {token}, {title: token, parent: e.target, align: 'right', anchor: 'top-right'});
+        },
+        getBackGradient(vector){
+            return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
+        },
+        get predicate(){
+            let text = this.text;
+            const result = Object.create(null);
+            const join = [];
+            for (let t = 0; t < text.length; t++){
+                const token = text.substr(t, this.winSize);
+                if (!token) continue;
+                const next =  this.model.tokens[token];
+                const emb = next.emb[0];
+                for(let i = 0; i < emb.length; i++){
+                    join[i] ??= emb[i];
+                    join[i] = (join[i] + emb[i]) / 2;
+                }
+                result[token] = next.map;
+            }
+            return JSON.stringify(result, null, 2);
+        },
+        text: {
+            $def: '',
+            set(n){
+                scan(n, .1);
+            },
+            $save: true,
+        },
+        get grad1(){
+            return this.getBackGradient(this.join(this.w1));
+        },
+        get grad2(){
+            return this.getBackGradient(this.join(this.w2));
+        },
+        get grad3(){
+            return this.getBackGradient(this.join(this.text));
+        },
+        w1:{
+            $def: '',
+            $save: true,
+        },
+        w2:{
+            $def: '',
+            $save: true,
+        },
+        get similar(){
+            return  this.similarWords(this.w1, this.w2);
+        },
+        similarWords(t1, t2){
+            t1 = this.join(t1);
+            t2 = this.join(t2);
+            return cosSimilar(t1, t2);
+        },
+        set corpus(n){
+            scan(n);
+            this.$render();
+        },
+        join(word){
+            scan(word, .1);
+            const result = [];
+            for (let t = 0; t < word.length; t++){
+                const token = word.substr(t, this.winSize);
+                if (!token) continue;
+                const emb = this.model.tokens[token].emb[0];
+                for(let i = 0; i < emb.length; i++){
+                    result[i] ??= emb[i];
+                    result[i] = (result[i] + emb[i]) / 2;
+                }
+            }
+            return result;
+        },
+        set train(n){
+            if (n){
+                this._interval = setInterval(()=>{
+                    scan(this.corpus);
+                    this.predicate = undefined;
+                },10)
+            }
+            else{
+                clearInterval(this._interval);
+            }
+        },
+        getColors(items){
+            const getColor = (val)=>{
+                return 360 * val;
+            }
+            return items?.map((val, idx, items)=>{
+                return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
+            }).join(', ');
+        },
+        get tokens(){
+            return this.model.tokens;
+        },
+        get winSize(){
+            return this.model.winSize;
+        },
+        model: Object,
+    })
+    ODA({is: 'oda-token-links',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                }
+                div{
+                    padding: 4px 8px;
+                    border-bottom: 1px solid silver;
+                }
+                div:hover{
+                    @apply --active;
+                }
+            </style>
+            <div @tap="result = $for.key" ~for="links" class="horizontal">
+                <span class="flex">{{$for.key}}</span>
+                <span>{{$for.item}}</span>
+            </div>
+        `,
+        token: '',
+        get links(){
+            return model.tokens[this.token].map;
+        },
+        set result(n){
+            this.fire('ok', n);
+        }
+    })
+    const negSize = 2;
+    const model = {
+        error: 1,
+        count: 0,
+        winSize: 2,
+        negSize,
+        dimension: 32,
+        tokens: Object.create(null),
+        // embedding: Object.create(null),
+        // context: Object.create(null),
+        // tracer: Object.create(null),
+    }
+    gpt.model = model;
+    let tokenList;
+    let negPos = 0;
+    function scan(text, plastic = 1){
+        if (!text) return;
+        let {winSize, dimension, negSize} = model;
+        let prevToken = '';
+        let predPredicate = [...Array(dimension)].map(i=>(0));
+        let tokenItem;
+        const array = [...Array(dimension)];
+        const array1 = [...Array(dimension/2)];
+        tokenList ??= Object.keys(model.tokens);
+        for (let i = 0; i < text.length; i++){
+            const token = text.substr(i, winSize);
+            tokenItem = model.tokens[token];
+            if (!tokenItem){
+                tokenItem = model.tokens[token] = Object.create(null);
+                tokenItem.map = Object.create(null);
+                tokenItem.emb = [array.map(i=>(Math.random() - .5)), array.map(i=>(0))];
+                tokenItem.cnt = [array.map(i=>(Math.random() - .5)), array.map(i=>(0))];
+                tokenItem.net = [array.map(i => array1.map(i=>(Math.random() - .5))), array.map(i => array1.map(i=>(Math.random() - .5))), array.map(i=>(0)), array.map(i=>(0))];
+                tokenList = Object.keys(model.tokens);
+            }
+            if (prevToken){
+                let prevTokenItem = model.tokens[prevToken];
+                prevTokenItem.map[token] ??= 0;
+                prevTokenItem.map[token]++;
+                const trainData = [{cur: prevTokenItem, next: tokenItem, target: 1, sum: 0}]
+                for (let n = 0; n<negSize; n++){ // поиск негативных токенов
+                    if (negPos >= tokenList.length)
+                        negPos = 0;
+                    while(++negPos < tokenList.length){
+                        const neg = tokenList[negPos];
+                        if (!prevTokenItem.map[neg]){
+                            trainData.push({next: model.tokens[neg], target: 0, sum: 0});
+                            break;
+                        }
+                    }
+                }
+                train(trainData);
+            }
+            prevToken = token;
+        }
+        Object.assign(model, {winSize, dimension, negPos});
+    }
+    function train(data){
+        if (data.length < negSize + 1)
+            return;
+        model.count++;
+        const emb = data[0].cur.emb[0];
+        const emb1 = data[0].cur.emb[1];
+        for (let d of data){
+            d.cnt ??= d.next.cnt[0];
+            d.cnt1 ??= d.next.cnt[1];
+        }
+        for (let i = 0; i <emb.length; i++) {
+            const embVal = emb[i];
+            for (let d of data){
+                d.sum += d.cnt[i] * embVal;
+            }
+        }
+        for (let d of data){
+            d.predicate = 1 / (1 + Math.exp(-d.sum));
+            d.loss = d.target - d.predicate;
+            d.sigma = d.loss * d.predicate * (1 - d.predicate);
+        }
+        for (let i = 0; i <emb.length; i++) {
+            let sum = 0;
+            const embVal = emb[i];
+            for (let d of data){
+                const cntVal = d.cnt[i];
+                const delta =  cntVal * d.sigma;
+                d.cnt1[i] = (d.cnt1[i] / 2) + delta;
+                d.cnt[i] += d.cnt1[i];
+                sum += delta;
+            }
+            const delta =  embVal * sum;
+            emb1[i] = (emb1[i] / 2) + delta;
+            emb[i] += emb1[i];
+        }
+        // const tr = data[0].tr;
+        // const next = data[0].next;
+        // for (let i = 0; i <emb.length; i++) {
+        //     let sum = 0;
+        //     const embVal = emb[i];
+        //     for (let i = 0; i <tr.length; i++) {
+        //         sum += embVal * tr[i];
+        //     }
+        //     const predicate = 1 / (1 + Math.exp(-sum)) - .5;
+        //     const loss = next[i] - predicate;
+        //     const correct =  loss * predicate * (1 - predicate) * embVal;
+        //     for (let i = 0; i <tr.length; i++) {
+        //         tr[i] += correct * plastic * tr[i];
+        //     }
+        // }
+    }
+    function cosSimilar(A, B) { //На входе 2 вектора
+        if (!A || !B) return 0;
+        const m = A?.length || 0;
+        let scalar = 0;
+        let avgA = 0;
+        let avgB = 0;
+        for (let i = 0; i < m; i++){
+            let a = A[i];
+            let b = B[i];
+            scalar += a * b;
+            avgA += a * a;
+            avgB += b * b;
+        }
+        return Math.abs((scalar && scalar / (Math.sqrt(avgA) * Math.sqrt(avgB))) || 0) ;
+    }
+</script>

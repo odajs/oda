@@ -1,0 +1,27 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../../oda.js" type="module"></script>
+<script src="./executable-editor.js" type="module"></script>
+<oda-tester>
+    <oda-executable-editor id="editor"></oda-executable-editor>
+</oda-tester>
+<script type="module">
+    setTimeout(() => {
+        editor.source = `
+<style>
+    h1 { color: red; }
+    #counter { font-size: 24px; color: blue; }
+</style>
+
+<h1>Counter demo</h1>
+<span>counts: </span>
+<span id="counter">0</span>
+
+<script type="module">
+    let upto = 10;
+    const counter = document.getElementById("counter");
+    setInterval(() => counter.innerHTML = ++upto, 100);
+<\/script>
+`
+    }, 300)
+</script>

@@ -16,7 +16,7 @@
                 template: `
                     <span>{{text}}</span>
                 `,
-                props:{
+                $public:{
                     text: 'Hello, world!'
                 }
             });

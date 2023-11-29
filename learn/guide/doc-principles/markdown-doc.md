@@ -262,16 +262,16 @@ let a = "Программный код";
 # **Изображения**
 
 ```info _hideGutter_hideicon
-![Альтернативный текст] (https://odajs.org/learn/images/logo/logo-150-x-150.png "Всплывающая подсказка")
+![Альтернативный текст] (https://odajs.org/learn/_images/logo/logo-150-x-150.png "Всплывающая подсказка")
 ```
 
-![Альтернативный текст] (https://odajs.org/learn/images/logo/logo-150-x-150.png "Всплывающая подсказка")
+![Альтернативный текст] (https://odajs.org/learn/_images/logo/logo-150-x-150.png "Всплывающая подсказка")
 
 ```info _hideGutter_hideicon
-![Локальное изображение] (learn\images\logo\logo-150-x-150.png "Всплывающая подсказка")
+![Локальное изображение] (learn\_images\logo\logo-150-x-150.png "Всплывающая подсказка")
 ```
 
-![Локальное изображение] (learn\images\logo\logo-150-x-150.png "Всплывающая подсказка")
+![Локальное изображение] (learn\_images\logo\logo-150-x-150.png "Всплывающая подсказка")
 
 # **Таблицы**
 

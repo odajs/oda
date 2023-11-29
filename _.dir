@@ -8,9 +8,8 @@
         "label": "КОМПОНЕНТЫ"
     },
     {
-        "name": "themes",
-        "path": "/tools/styles/themes/",
-        "label": "ТЕМЫ"
+        "name": "tools",
+        "label": "ИНСТРУМЕНТЫ"
     },
     {
         "name": "benchmarks",

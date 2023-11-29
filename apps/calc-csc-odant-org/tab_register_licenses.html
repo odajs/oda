@@ -1,12 +1,16 @@
 <!DOCTYPE HTML>
 <html>
+    <head><meta charset="utf-8"></head>
 
-<head>
-    <meta charset="utf-8">
-</head>
-
-<oda-register_licenses t-tab="0"></oda-register_licenses>
-
-<script type="module" src="./tab_register_licenses.js" ></script>
+    <oda-register_licenses t-tab="0"></oda-register_licenses>
+    <script type="module" src="./tab_register_licenses.js"></script>
 
 </html>
+
+<!-- <iframe src="https://current.odant.org/web/oda/apps/calc-csc-odant-org/tab_register_licenses.html#0" 
+    id="odaiframe" width="100%" height="100" marginheight="0" frameborder="0" ></iframe>
+<script>
+    window.addEventListener("message", function(e) {
+        if (e.data.slice(0,7)==='height:') { document.getElementById('odaiframe').height=e.data.slice(7) }
+    }, false);
+</script> -->

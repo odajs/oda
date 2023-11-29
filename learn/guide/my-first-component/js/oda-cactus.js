@@ -30,7 +30,7 @@ ODA({ is: 'oda-cactus',
         </svg>
     `,
     attached() {
-        const svg = this.$core.root.querySelector("svg");
+        const svg = this[CORE_KEY].root.querySelector("svg");
         this.polygons = new Map();
         this.polygons.set('cactus', createPolygon(svg,'path'));
         this.getAnimations().forEach((anim, i, arr) => {

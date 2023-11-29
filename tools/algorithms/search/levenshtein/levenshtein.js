@@ -53,21 +53,21 @@ export function levenshtein(value, other, insensitive) {
             cache[index] = result =
                 distance > result
                     ? distanceOther > result
-                    ? result + 1
-                    : distanceOther
+                        ? result + 1
+                        : distanceOther
                     : distanceOther > distance
-                    ? distance + 1
-                    : distanceOther
+                        ? distance + 1
+                        : distanceOther
         }
     }
 
     return result
 }
 export function levenshteinList(value, array, insensitive) {
-    let res = array.map(v=>{
-        return {value: v, distance:levenshtein(value, v, insensitive)}
-    }).sort((a, b)=>{
-        return a.distance>b.distance?1:-1;
+    let res = array.map(v => {
+        return { value: v, distance: levenshtein(value, v, insensitive) }
+    }).sort((a, b) => {
+        return a.distance > b.distance ? 1 : -1;
     })
     return res;
 }

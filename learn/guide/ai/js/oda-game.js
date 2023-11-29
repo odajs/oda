@@ -5,80 +5,79 @@ import "./oda-pterodactyl.js";
 import {NeuralNetwork} from './neural-net.js';
 
 ODA({ is: 'oda-game',
-    template: `
-        <style>
-            :host {
-                height: 100%;
-                width: 100%;
-                position: absolute;
-                background-color: var(--header-background-color);
-            }
-            #game-space {
-                position: absolute;
-                top: 200px;
-                width: 100%;
-                height: 500px;
-                overflow: hidden;
-                background-color: var(--background-color) !important;
-            }
-            h1 {
-                margin-bottom: 0px;
-                text-align: center;
-                font-family: "Comic Sans MS", Arial, sans-serif;
-                color: var(--header-color);
-            }
-            .score {
-                font-size: 50px;
-                margin-top: 0px;
-            }
-            #message {
-                position: relative;
-                top: 35%;
-            }
+    template: /*html*/`
+    <style>
+        :host {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            background-color: var(--header-background-color);
+        }
+        #game-space {
+            position: absolute;
+            top: 200px;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            background-color: var(--background-color) !important;
+        }
+        h1 {
+            margin-bottom: 0px;
+            text-align: center;
+            font-family: "Comic Sans MS", Arial, sans-serif;
+            color: var(--header-color);
+        }
+        .score {
+            font-size: 50px;
+            margin-top: 0px;
+        }
+        #message {
+            position: relative;
+            top: 35%;
+        }
 
-            oda-dino {
-                position: absolute;
-                top: var(--dino-top);
-                left: 72px;
-                z-index: 300;
-            }
-            #horizon {
-                position: absolute;
-                top: 435px;
-                width: 100%;
-                height: 3px;
-                background-color: var(--horizon-color);
-            }
-            #population {
-                position: absolute;
-                top: 0px;
-                margin-left: 10px;
-            }
-            #best-cost {
-                position: absolute;
-                top: 0px;
-                right: 0px;
-                margin-right: 10px;
-            }
-        </style>
-
-        <h1>Счет игры</h1>
-        <h1 class="score">{{score || '0'}}</h1>
-        <div id="population">
-            <h1>Популяция</h1>
-            <h1 class="score">{{populationCount || "0"}}</h1>
-        </div>
-        <div id="best-cost">
-            <h1>Лучший</h1>
-            <h1 class="score">{{bestCost || "0"}}</h1>
-        </div>
-        <div id="game-space" ref="game-space">
-            <h1 id="message" ~show="showMessage">{{message}}</h1>
-            <oda-dino ~for="showDinos" ~show="item" ~ref="index || '0'">{{index || "0"}}</oda-dino>
-            <div id="horizon"></div>
-        </div>
+        oda-dino {
+            position: absolute;
+            top: var(--dino-top);
+            left: 72px;
+            z-index: 300;
+        }
+        #horizon {
+            position: absolute;
+            top: 435px;
+            width: 100%;
+            height: 3px;
+            background-color: var(--horizon-color);
+        }
+        #population {
+            position: absolute;
+            top: 0px;
+            margin-left: 10px;
+        }
+        #best-cost {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            margin-right: 10px;
+        }
+    </style>
+    <h1>Счет игры</h1>
+    <h1 class="score">{{score || '0'}}</h1>
+    <div id="population">
+        <h1>Популяция</h1>
+        <h1 class="score">{{populationCount || "0"}}</h1>
+    </div>
+    <div id="best-cost">
+        <h1>Лучший</h1>
+        <h1 class="score">{{bestCost || "0"}}</h1>
+    </div>
+    <div id="game-space" id="game-space">
+        <h1 id="message" ~show="showMessage">{{message}}</h1>
+        <oda-dino ~for="showDinos" ~show="$for.item" :id="'D' + ($for.index || '0')">{{$for.index || "0"}}</oda-dino>
+        <div id="horizon"></div>
+    </div>
     `,
-    props: {
+    $public: {
         timerID: 1,
         score: 0,
         message: 'Для начала обучения нажмите пробел',
@@ -93,10 +92,10 @@ ODA({ is: 'oda-game',
         bestCost: 0,
     },
     get dino() {
-        return this.$refs.dino;
+        return this.$('#dino');
     },
     get gameSpace() {
-        return this.$refs["game-space"];
+        return this.$('#game-space');
     },
     ready() {
         this.showDinos = Array(this.populationSize).fill(true)
@@ -111,7 +110,7 @@ ODA({ is: 'oda-game',
     },
     createPopulation() {
         for (let i = 0; i < this.populationSize; i++) {
-            const dino = this.$refs[i][0];
+            const dino = this.$('#D' + i);
             dino.dinoBrain = this.bestBrain.clone();
             dino.dinoBrain.cost = 0;
             if ( Math.random() < 0.75 ) {
@@ -150,7 +149,7 @@ ODA({ is: 'oda-game',
         let cactuses = this.gameSpace.querySelectorAll('oda-cactus');
         for (let i = 0; i < this.populationSize; i++) {
             if (this.showDinos[i]) {
-                const dino = this.$refs[i][0];
+                const dino = this.$('#D' + i);
                 for (let j = 0; j < cactuses.length; j++) {
                     let cactusCoords = cactuses[j].getBoundingClientRect();
                     let dinoCoords = dino.getBoundingClientRect();
@@ -169,10 +168,6 @@ ODA({ is: 'oda-game',
                 }
             }
         }
-
-
-
-
         // let dinos = this.gameSpace.querySelectorAll('oda-dino');
         // let removeCount = 0;
         // dinos.forEach( dino => {

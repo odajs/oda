@@ -1,13 +1,14 @@
 <meta charset="UTF-8">
-<button id="btn1" slot="buttons">Confirm</button>
-<button id="btn2" slot="buttons">Confirm</button>
+<button id="btn1" slot="buttons">Show confirm</button>
+<button id="btn2" slot="buttons">Show confirm</button>
 <script type="module">
+    import '../../../oda.js';
     import "../containers.js";
     btn1.onclick = async e => {
-        const res = await ODA.showConfirm('oda-dialog-message', {icon: 'icons:help', message: "1111"})
+        const res = await ODA.showConfirm("1111")
     }
     btn2.onclick = async e => {
-        const res = await ODA.showConfirm('oda-dialog-message', {icon: 'icons:help', message: "1111"}, {hideOkButton:true, buttons: [
+        const res = await ODA.showConfirm("1111", {hideOkButton:true, buttons: [
                 {icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{
                         console.log('1 кнопка')
                     }},{icon: 'icons:warning', label: 'Class', iconPos: 'top', tap:(e)=>{

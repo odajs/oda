@@ -1,8 +1,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<oda-tester>
+<!-- <oda-tester> -->
     <oda-splitter-tester></oda-splitter-tester>
-</oda-tester>
+<!-- </oda-tester> -->
 <script type="module">
     import '../../../oda.js';
     import './splitter.js';
@@ -12,16 +12,17 @@
                 :host{
                     @apply --flex;
                     @apply --vertical;
+                    height: 100%;
                 }
             </style>
-            <div class="flex horizontal">
-                <div class="horizontal">
-                    <div class="flex">СПЛИТТЕР СПРАВА</div>
+            <div class="flex horizontal" style="max-height: 100%;">
+                <div class="horizontal" style="min-width: 120px;">
+                    <div class="flex" style="padding: 12px;">СПЛИТТЕР СПРАВА</div>
                     <oda-splitter></oda-splitter>
                 </div>
-                <div class="flex vertical">
-                    <div class="vertical">
-                        <div class="flex">СПЛИТТЕР СНИЗУ</div>
+                <div class="flex vertical" style="min-width: 120px;">
+                    <div class="vertical" style="max-height: 95%;">
+                        <div class="flex" style="padding: 12px;">СПЛИТТЕР СНИЗУ</div>
                         <oda-splitter align="horizontal"></oda-splitter>
                     </div>
                     <div class="flex"></div>

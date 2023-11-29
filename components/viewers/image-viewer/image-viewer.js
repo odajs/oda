@@ -13,7 +13,7 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         :host > .img:active {
             cursor: grabbing;
         }
-        :host .image{
+        :host .image {
             width: 100%;
             height: 100%;
             background: no-repeat center;
@@ -25,16 +25,16 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         <oda-button icon="image:rotate-right" fill="white" @tap="_rotateRight"></oda-button>
         <oda-button icon="icons:file-download" fill="white" @tap="_download"></oda-button>
     </div>
-    <div ref="img" class="img flex" ~style="_imageStyle">
+    <div id="img" class="img flex" ~style="_imageStyle">
         <div class="image" ~style="\`background-image: url('\${src}');\`"></div>
     </div>
     `,
-    props: {
+    $public: {
         src: {
+            $def: '',
             set() {
                 this._reset();
             },
-            default: ''
         },
         alt: '',
         title: '',
@@ -43,31 +43,30 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         _scale: 1,
         _rotate: 0,
         _imageStyle: {
-            type: String,
+            $type: String,
             get() {
                 return `transform: translate3d(${this._x || 0}px, ${this._y || 0}px, 0) scale(${this._scale || 0}) rotate(${this._rotate || 0}deg)`;
             }
         }
     },
-    listeners: {
+    $listeners: {
         'track': '_onTrack',
         'wheel': '_onScroll',
         'dblclick': '_reset'
     },
     _onTrack(e, d) {
+        if (!this.img) return;
         switch (d.state) {
             case 'start': {
                 this._x += d.ddx || 0;
                 this._y += d.ddy || 0;
-            }
-                break;
+            } break;
             case 'track': {
                 this._x += d.ddx || 0;
                 this._y += d.ddy || 0;
-            }
-                break;
+            } break;
             case 'end': {
-                const img = this.$refs.img;
+                const img = this.img;
                 const halfWidth = img.offsetWidth * 0.5 * this._scale;
                 const halfHeight = img.offsetHeight * 0.5 * this._scale;
                 const x = Math.max(Math.min(this._x + (d.ddx || 0), halfWidth), -halfWidth);
@@ -77,8 +76,13 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
             }
         }
     },
+    get img(){
+        return this.$('img');
+    },
     _onScroll(e) {
-        const img = this.$refs.img;
+        const img = this.img;
+        if (!img)
+            return
         const scale = Math.max(1, this._scale + -e.deltaY * 0.005);
         if (scale === 1) {
             this._reset();

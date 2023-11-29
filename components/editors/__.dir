@@ -1,0 +1,34 @@
+{
+    "$DIR": [
+        {
+            "path": "ace-editor",
+        },
+        {
+            "path": "monaco-editor",
+        },
+        {
+            "path": "pell-editor",
+        },
+        {
+            "path": "executable-editor",
+        },
+        {
+            "path": "code-editor",
+        },
+        {
+            "path": "markdown-editor",
+        },
+        {
+            "path": "simplemde-editor",
+        },
+        {
+            "path": "wysiwyg",
+        },
+        {
+            "path": "html-editor",
+        },
+        {
+            "path": "xml-editor",
+        }
+    ]
+}

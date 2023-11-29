@@ -1,0 +1,5 @@
+{
+  "--content-background": "var(--content-background)",
+  "--content-color": "var(--content-color)",
+  "--header-background": "var(--content-color)"
+}

@@ -24,9 +24,9 @@ ODA.console.«модификатор»(«список параметров»)
     template: `
         <label>Текст сообщения: <input ::value></label>
     `,
-    props: {
+    $public: {
         value: {
-            default: 'Введите сообщение',
+            $def: 'Введите сообщение',
             set (n) {
                 ODA.console.log(n);
             }
@@ -37,15 +37,15 @@ ODA.console.«модификатор»(«список параметров»)
 
 При отправки первого сообщения внизу страницы появляется специальная панель, на которой изначально отображается только строка заголовка окна консоли. Для того, чтобы отобразить сам список сообщений, необходимо нажать на кнопку с изображения стрелки вверх, расположенную в этом заголовке.
 
-![Отображение списка сообщений](learn/guide/api/commands/images/ExpandConsole.png "Отобразить список сообщений")
+![Отображение списка сообщений](learn/guide/api/commands/_images/ExpandConsole.png "Отобразить список сообщений")
 
 В этом случае список всех сообщений будет развернут. Его можно свернуть обратно, нажав на туже самую кнопку, на которой изображение стрелки вверх изменится на изображение со стрелкой вниз.
 
-![Сворачивание списка сообщений](learn/guide/api/commands/images/CollapsConsole.png "Свернуть список сообщений")
+![Сворачивание списка сообщений](learn/guide/api/commands/_images/CollapsConsole.png "Свернуть список сообщений")
 
 Нажатие на кнопку с изображением минуса очищает весь список сообщений.
 
-![Очистка списка сообщений](learn/guide/api/commands/images/ClearConsole.png "Очистить список сообщений")
+![Очистка списка сообщений](learn/guide/api/commands/_images/ClearConsole.png "Очистить список сообщений")
 
 В этом случае область консоли со списком сообщений будет автоматически свернута.
 
@@ -61,9 +61,9 @@ ODA.console.«модификатор»(«список параметров»)
         <label>Текст 2: <input ::value='text[1]'> </label></br>
         <button @tap="onTap">Добавить сообщения</button>
     `,
-    props: {
+    $public: {
         text: {
-            default: ['Текст 1', 'Текст 2'],
+            $def: ['Текст 1', 'Текст 2'],
             reactive: true
         },
         onTap() {
@@ -84,9 +84,9 @@ ODA({
     is: 'my-component',
     template: `
         <label>Текст сообщения: <input ::value='text'></label>
-        <p ~for="item in items"><input name="console" type="radio" :value='item' @tap="onTap">{{item}}</p>
+        <p ~for="items"><input name="console" type="radio" :value='$for.item' @tap="onTap">{{$for.item}}</p>
     `,
-    props: {
+    $public: {
         text: 'Мое сообщение',
         items: ['log', 'error', 'warn', 'status', 'success'],
     },
@@ -100,7 +100,7 @@ ODA({
 
 Нажатие на кнопку с изображением списка открывает или закрывает дополнительную панель фильтрации сообщений.
 
-![Фильтрация сообщений](learn/guide/api/commands/images/FilterConsole.png "Отфильтровать сообщения")
+![Фильтрация сообщений](learn/guide/api/commands/_images/FilterConsole.png "Отфильтровать сообщения")
 
 На этой панели изначально отображаются сообщения любого типа (**all**). Щелкая по соответствующим кнопкам на этой панели, можно отобразить в окне только сообщения определенного типа:
 
@@ -112,7 +112,7 @@ ODA({
 
 При завершении работы с консолью её можно закрыть нажатием на кнопку с изображением крестика, расположенным в строке его заголовка.
 
-![Закрытие консоли](learn/guide/api/commands/images/CloseConsole.png "Закрыть консоль")
+![Закрытие консоли](learn/guide/api/commands/_images/CloseConsole.png "Закрыть консоль")
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/gaN6WnNQiOQ?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen

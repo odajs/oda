@@ -1,7 +1,9 @@
 <meta charset="utf-8">
 <oda-tester>
 
-    <oda-property-grid>
+    <oda-property-grid id="grid" filter-by-flags="$save, getter">
+        <oda-ttt></oda-ttt>
+         <oda-button icon="class"></oda-button>
         <oda-array-test></oda-array-test>
         <oda-array-test num="300" my-prop="34"></oda-array-test>
         <oda-array-test num="100"></oda-array-test>
@@ -10,66 +12,61 @@
 </oda-tester>
 <script type="module">
     import '../../oda.js';
-    import '../styles/styles.js';
     import './property-grid.js';
-    KERNEL({is: 'ArrayItem', $typeEditor: 'oda-button',
-        ctor(name){
-            this.name = name;
-        },
-        name: ''
-    })
-    ODA({
-        is: 'oda-array-test',
-        template: `
-            TEST
+    ODA({is: 'oda-ttt',
+        template:`
+                <input ::value="attestationObject">
         `,
-        props: {
-            bb: Boolean,
-            num: 100,
-            text: 'А это текст',
-            array: {
-                default: [1, 2, 3, 4, 5],
-                extEditor: '[oda-pg-array-editor]'
-            },
-            arrayForClass: {
-                type: Array,
+        $public:{
+            // obj:{
+            //     ss:33,
+            //     rr:55,
+            // },
+            // arr:[
+            //     1,2,3,4,5,6
+            // ],
+            // fff:{
+            //     $pdp: true,
+            //     $def: 'saved',
+            //     $save: true,
+            // },
+            attestationObject:{
+                $def: 33,
                 get(){
-                    return [new ArrayItem('Первый'), new ArrayItem('Второй')]
-                }
-            },
-            array1: [44, 66],
-            promise: {
-                get() {
-                    return new Promise(resolve => {
-                        this.async(() => {
-                            resolve(100);
-                        })
-                    })
-                }
-            },
-            asyncProp: {
-                get() {
-                    return new Promise(resolve => {
-                        resolve([1, 2, 3, 4, 5, 6, 7, 8])
-                    });
-                }
-            },
-            myProp: {
-                label: 'Мое свойство',
-                default: 100
-            },
-            color: {
-                default: 'red',
-                editor: '@oda/color-picker[oda-color-picker]'
+                    return 100;
+                },
+                set (n, o){
+                    console.log(n, o);
+                },
+                $save: true,
             }
         }
     })
-
-    ODA({is: 'oda-pg-array-editor', imports: '@oda/button',
-        template: `
-        <label class="horizontal flex" style="align-items: center; color: red">{{value}}</label>
-        <oda-button class="no-flex" icon="icons:close" title="add link" style="margin-left: auto"></oda-button>
-    `,
-        value: null
-    })
+    // class TestCls extends ROCKS({
+    //     $public:{
+    //         // obj:{
+    //         //     ss:33,
+    //         //     rr:55,
+    //         // },
+    //         // arr:[
+    //         //     1,2,3,4,5,6
+    //         // ],
+    //         // fff:{
+    //         //     $pdp: true,
+    //         //     $def: 'saved',
+    //         //     $save: true,
+    //         // },
+    //         attestationObject:{
+    //             $def: 33,
+    //             get(){
+    //                 return 100;
+    //             },
+    //             set (n){
+    //                 console.log(n);
+    //             },
+    //             $save: true,
+    //         }
+    //     }
+    // }){}
+    // grid.inspectedObject = new TestCls();
 </script>

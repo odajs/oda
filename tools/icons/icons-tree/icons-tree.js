@@ -1,6 +1,6 @@
 const ODA_ICON_PATH = '/oda/buttons/icon/icon.js';
 let iconsPath = import.meta.url;
-iconsPath = iconsPath.slice(0, iconsPath.lastIndexOf('/')) + '/../../icons/svg/';
+iconsPath = iconsPath.replace('icons-tree/icons-tree.js', 'lib/svg/');
 const pars = new DOMParser();
 function getIconItem(el, group) {
     const obj = {};
@@ -12,73 +12,80 @@ function getIconItem(el, group) {
 }
 function getIconFolder(template) {
     const content = template.content;
-    const obj = { disabled: true };
+    const obj = {};
     obj.name = template.getAttribute('name');
     obj.label = obj.name;
     obj.icon = 'odant:folder';
     obj.subIcon = `${obj.name}:${template.getAttribute('icon')}`;
     obj.search = [obj.name, obj.label, ...[...content.children].map(c => ` ${c.name || ''} ${c.label || ''}`)].join(' ');
     obj.items = Array.prototype.map.call(content.children, g => getIconItem(g, obj.name));
-    obj.disabled = true;
+    // obj.disabled = true;
     return obj;
 }
 async function loadIcons(items) {
-    return (await Promise.all(items.map(async i => {
-        const res = await fetch(iconsPath + i.name);
-        const text = await res.text();
-        const html = pars.parseFromString(text, 'text/html');
-        const template = html.querySelector('template');
-        return getIconFolder(template);
-    })));
+    items = items?.map?.(i => {
+        return fetch(iconsPath + i.name).then(res=>{
+            return res.text().then(text=>{
+                const html = pars.parseFromString(text, 'text/html');
+                const template = html.querySelector('template');
+                return getIconFolder(template);
+            })
+        }).catch(error=>{
+            return getIconFolder(document.createElement('template'));
+        })
+    }) || []
+    return Promise.all(items);
 }
-ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
+
+ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
     template: /*html*/`
-    <style>
-        :host input {
-            outline: none;
-            min-width: 0;
-            background-color: inherit;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            padding: 0px;
-            font-family: inherit;
-            font-size: inherit;
-            text-align: inherit;
-            font-weight: inherit;
-            padding-left: 4px;
-        }
-    </style>
-    <div class="horizontal" ~style="{height: filterHeight}">
-        <input class="flex" type="search" ::value="filterVal">
-        <oda-button :icon-size icon="icons:search"></oda-button>
-    </div>
+        <style>
+            :host{
+                overflow: hidden;
+                padding-left: 8px;
+            }
+            input{
+                width: 0px;
+            }
+        </style>
+        <div class="horizontal" style="padding: 4px; align-items: center;">
+            <input class="flex" ::value="filterVal" type="search"  style="outline: none" placeholder="Search...">
+<!--            <oda-button :icon-size icon="icons:search" @tap="_keypress($event, true)"></oda-button>-->
+        </div>
     `,
-    props: {
+    async attached(){
+        const list = await this.iconsList;
+        this.dataSet = await loadIcons(list);
+    },
+    $public: {
         allowFocus: true,
+        autoFixRows: true,
         lazy: true,
         allowDrag: true,
         allowSort: true,
         iconsList: {
-            type: Array,
-            async set(v) {
-                this.dataSet = await loadIcons(v);
+            $type: Array,
+            get(){
+                return  fetch(iconsPath + 'info.json').then(res=>{
+                    return res.json();
+                })
             }
         },
         filterVal: {
-            default: '',
+            $def: '',
             set(filter) {
                 this.debounce('filterVal', () => {
-                    this.columns[1].$filter = filter === '*' ? '' : filter.split(':').join('&&');
+                    this.columns[1].$filter = (!filter || filter === '*') ? '' : filter.split(':').join('&&');
                     this.hideRoot = Boolean(filter);
-                }, 150);
+                }, 300);
             }
         },
-        filterHeight: '',
         cellTemplate: 'oda-icons-icon',
-        rootPath: '/',
+        rootPath: '/'
     },
-    columns: [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', $hidden: true, }],
+    get columns() {
+        return [{ name: 'label', treeMode: true, $sort: 1 }, { name: 'search', $hidden: true, $filter: '' }]
+    },
     async _onDragStart(e) {
         const el = e.path.find(p => p.row);
         if (el.row.subIcon) {
@@ -98,22 +105,17 @@ ODA({is: 'oda-icons-tree', extends: 'this, oda-tree', imports: '@oda/tree',
             e.dataTransfer.setData('odant/icon', el.row.icon);
         }
     },
-    detached() {
-        this.columns[1].$filter = '';
-    },
-    async ready() {
-        this.iconsList = await (await fetch(iconsPath + 'info.json')).json();
-    },
     focus() {
         this.$('input').focus();
     }
-});
+})
 
-ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
+ODA({ is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
     template: /*html*/`
     <style>
         :host {
             cursor: default;
+            overflow: hidden;
         }
         :host(:not(:hover)) > oda-button {
             display: none;
@@ -130,40 +132,61 @@ ODA({is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
         label{
             align-self: center;
             padding-left: 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        :host .ellipsis {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .badge {
+            margin: 4px;
+            font-size: x-small;
+            text-align: center;
+            padding: 2px 6px;
+            border-radius: 8px;
         }
     </style>
     <label class="label flex">{{item.label}}</label>
-    <oda-button ~if="!subIcon" icon="icons:content-copy" @tap.stop="_copyToClipboard"></oda-button>`,
+    <div ~if="subIcon" class="badge no-flex ellipsis">{{badge}}</div>
+    <oda-button ~if="!subIcon" icon="icons:content-copy" @tap.stop="_copyToClipboard(icon)"></oda-button>`,
     set item(item) {
         this.icon = item?.icon;
         this.fill = item?.subIcon && 'orange';
     },
-    props:{
-        subIcon:{
-            get() {
-                return this.item?.subIcon;
-            }
-        }
+    get subIcon() {
+        return this.item?.subIcon;
     },
-
-    listeners: {
+    get badge() {
+        return this.item?.items?.length || 0;
+    },
+    $listeners: {
         tap(e) {
-            if (this.item.$hasChildren) {
-                e.stopPropagation()
-                this.item.$expanded = !this.item.$expanded;
+            if (!this.item.$hasChildren) {
+                this.selectedIcon = this.icon;
             }
+        },
+        dblclick(e) {
+            e.stopPropagation();
+            this.selectedIcon = this.icon;
+            copyToClipboard(this.icon);
+            this.dispatchEvent(new CustomEvent("ok", { detail: this.selectedIcon, bubbles: true, composed: true }));
         }
     },
     _copyToClipboard() {
-        const s = this.icon;
-        const input = document.createElement('input');
-        input.style.opacity = '0';
-        input.style.display = 'fixed';
-        document.body.appendChild(input);
-        input.value = s;
-        input.focus();
-        input.select();
-        document.execCommand("Copy");
-        input.remove();
+        copyToClipboard(this.icon);
     }
-});
+})
+
+export function copyToClipboard(s) {
+    const el = document.createElement('textarea');
+    el.value = s;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+}

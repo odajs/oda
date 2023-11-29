@@ -1,0 +1,227 @@
+<meta charset="UTF-8">
+<title>fractal-brain</title>
+<oda-fractal-brain></oda-fractal-brain>
+<script type="module">
+    import '../../../oda.js';
+    import './fractal-brain-table.js';
+    import {buildBrain, FractalNetItem, FractalBrain, FractalBrainSegment, FractalBrainZone, FractalBrainNeuron} from './fractal-brain.js';
+    ODA({is: 'oda-fractal-brain', imports:'@oda/app-layout', extends: 'oda-app-layout',
+        template:`
+            <style>
+                .tools>*{
+                  margin: 2px;
+                }
+                input{
+                    width: 30px;
+                }
+
+            </style>
+
+            <div class="horizontal flex" slot="left-panel"  opened style="overflow: hidden">
+                <div class="vertical no-flex" style="width: 60px;">
+                    <button  @tap="addSection">+</button>
+                    <div class="horizontal"  ~for="model">
+                        <input class="flex" ::value="model[$for.index]" type="number" style="width: 0px;">
+                        <button @tap="removeSection($for.index)">-</button>
+                    </div>
+                </div>
+                <div class="vertical flex" style="overflow: hidden">
+                     <div style="padding: 2px; align-items: center;" class="shadow horizontal tools">
+                        <fieldset class="horizontal no-flex" style="padding: 4px;">
+                            <legend>delay</legend>
+                            <input flex style="width: 0px;" ::value="delay" type="number">
+                        </fieldset>
+                        <fieldset class="horizontal no-flex" style="padding: 4px;">
+                            <legend>plastic</legend>
+                            <input flex style="width: 0px;" ::value="plastic" type="number">
+                        </fieldset>
+                        <div class="flex vertical">
+                            <button @tap="build">BUILD</button>
+                            <button flex @tap="random" :disabled="!brain">RANDOM</button>
+                        </div>
+
+                    </div>
+                    <div class="flex header vertical" style="overflow: auto; padding-top: 8px; align-items: center; font-size: xx-small;">
+                        <oda-fractal-neuron-values ~if="brain" vert></oda-fractal-neuron-values>
+                        <oda-fractal-segment ~for="brain?.children" :segment="$for.item"></oda-fractal-segment>
+                    </div>
+                </div>
+
+            </div>
+<!--            <oda-fractal-brain-table slot="main" :brain></oda-fractal-brain-table>-->
+        `,
+        addSection(){
+            const size = this.model.last || 3;
+            this.model.push(size);
+            this.model = [...this.model]
+        },
+        removeSection(idx){
+            this.model.splice(idx, 1)
+            this.model = [...this.model];
+        },
+        model:{
+            $def: [],
+            $save: true
+        },
+        delay:{
+            $save: true,
+            $def: 0,
+            set(n){
+                if (this.brain)
+                    this.brain.delay = n;
+            }
+        },
+        plastic:{
+            $save: true,
+            $def: 0,
+            set(n){
+                if (this.brain)
+                    this.brain.neuroPlastic = n;
+            }
+        },
+        build(){
+            this.async(()=>{
+                this.brain = new FractalBrain(buildBrain(this.model));
+                this.brain.delay = this.delay;
+                this.brain.neuroPlastic = this.plastic;
+            })
+        },
+        random(){
+            this.brain.edge.forEach(n=>{
+                const v = Math.random();
+                if (v>.5)
+                    n.inValue = v;
+            })
+        },
+        $pdp:{
+            focusedNeuron: null,
+            get neuron(){
+                return this.brain;
+            },
+            right: false,
+            brain: Object,
+            links: []
+        }
+    })
+    ODA({is: 'oda-fractal-segment',
+        template:`
+            <style>
+                :host{
+                    font-size: xx-small;
+                    @apply --horizontal;
+                    align-self: center;
+                    /*@apply --border;*/
+                }
+            </style>
+            <oda-fractal-zone :zone="segment.children[0]"></oda-fractal-zone>
+<!--            <oda-fractal-neuron-values vert></oda-fractal-neuron-values>-->
+            <oda-fractal-zone :zone="segment.children[1]"></oda-fractal-zone>
+        `,
+
+        $pdp:{
+            get neuron(){
+                return this.segment;
+            },
+            segment: Object
+        }
+    })
+    ODA({is: 'oda-fractal-zone',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                    @apply --no-flex;
+                    /*@apply --border;*/
+                    /*flex-direction: {{right?'row-reverse':'row'}} !important;*/
+                }
+            </style>
+<!--            <oda-fractal-neuron-values></oda-fractal-neuron-values>-->
+            <div class="vertical">
+                <oda-fractal-neuron ~for="zone.children" :neuron="$for.item"></oda-fractal-neuron>
+            </div>
+        `,
+
+        $pdp:{
+            zone: Object,
+            get neuron(){
+                return this.zone;
+            },
+            get right(){
+                return  this.neuron.even;
+            }
+        }
+    })
+    ODA({is: 'oda-fractal-neuron',
+        template:`
+            <style>
+                :host{
+                    @apply --shadow;
+                    box-sizing: content-box;
+                    outline: 1px solid silver;
+                    @apply --content;
+                    @apply --horizontal;
+                    @apply --no-flex;
+                    flex-direction: {{right?'row-reverse':'row'}} !important;
+                }
+            </style>
+            <oda-fractal-neuron-values :success-invert="focusedNeuron?.inputs0?.includes(neuron)" :error-invert="focusedNeuron?.inputs1?.includes(neuron)" :active="neuron === focusedNeuron"></oda-fractal-neuron-values>
+            <div class="vertical">
+                <oda-fractal-neuron ~for="neuron.children" :neuron="$for.item"></oda-fractal-neuron>
+            </div>
+        `,
+        $pdp:{
+            neuron: Object,
+            get item(){
+                return this.neuron;
+            }
+        }
+    })
+    ODA({is: 'oda-fractal-neuron-values',
+        template:`
+            <style>
+                :host{
+                    align-items: center;
+                    padding: 1px;
+                }
+                :host(:not([vert])){
+                    @apply --horizontal;
+                    flex-direction: {{right?'row-reverse':'row'}} !important;
+                }
+                :host([vert]){
+                    @apply --vertical;
+                }
+                span{
+                    margin: 1px;
+                    border-radius: 50% !important;
+                    width: 5px;
+                    height: 5px;
+                }
+            </style>
+            <span success-invert ~style="{opacity: outValue}"></span>
+            <span error-invert ~style="{opacity: inValue}"></span>
+        `,
+        get outValue(){
+            return this.neuron?.outValue
+        },
+        get inValue(){
+            return this.neuron?.inValue
+        },
+        vert:{
+            $def: false,
+            $attr: true,
+        },
+        $listeners:{
+            tap(e){
+                if (this.neuron.isEdge){
+                    this.neuron.inValue = Math.random();
+                }
+
+                if (this.focusedNeuron === this.neuron)
+                    this.focusedNeuron = null;
+                else
+                    this.focusedNeuron = this.neuron;
+
+            }
+        }
+    })
+</script>

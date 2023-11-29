@@ -1,29 +1,24 @@
-import * as L from './lib/leaflet-src.esm.js';
+const url = import.meta.url.toString().split('/').slice(0, -1).join('/');
 
-const iconRetinaUrl = '/web/oda/components/viewers/leaflet/lib/images/marker-icon-2x.png';
-const iconUrl = '/web/oda/components/viewers/leaflet/lib/images/marker-icon.png';
-const shadowUrl = '/web/oda/components/viewers/leaflet/lib/images/marker-shadow.png';
-const iconDefault = L.icon({
-    iconRetinaUrl, iconUrl, shadowUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    tooltipAnchor: [16, -28],
-    shadowSize: [41, 41]
-});
-L.Marker.prototype.options.icon = iconDefault;
+const iconRetinaUrl = `${url}/lib/images/marker-icon-2x.png`;
+const iconUrl = `${url}/lib/images/marker-icon.png`;
+const shadowUrl = `${url}/lib/images/marker-shadow.png`;
 
-ODA({ is: 'oda-leaflet', template: `
+ODA({ is: 'oda-leaflet',
+    template: `
         <style>
             :host {
                 display:block;
                 height: 100%;
             }
         </style>
-        <link rel="stylesheet" href="/web/oda/components/viewers/leaflet/lib/leaflet.css">
+        <link rel="stylesheet" :href="styleHref">
         <div id="mapid" style="height: 100%"></div>
     `,
-    props: {
+    get styleHref() {
+        return url + '/lib/leaflet.css';
+    },
+    $public: {
         latitude: { type: Number },
         longitude: { type: Number },
         zoom: 13,
@@ -33,7 +28,18 @@ ODA({ is: 'oda-leaflet', template: `
         circles: [],
         polylines: []
     },
-    attached() {
+    async attached() {
+
+        const L = (await import(`${url}/lib/leaflet-src.esm.js`));
+        const iconDefault = L.icon({
+            iconRetinaUrl, iconUrl, shadowUrl,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            tooltipAnchor: [16, -28],
+            shadowSize: [41, 41]
+        });
+        L.Marker.prototype.options.icon = iconDefault;
         this._map = L.map(this.$('#mapid'));
         this._map.setView([this.latitude, this.longitude], this.zoom);
         let urlTemplate = 'https://{s}.tile.osm.org/{z}/{x}/{y}.png';
@@ -63,9 +69,9 @@ ODA({ is: 'oda-leaflet', template: `
             }
         });
     },
-    observers: [
+    $observers: [
         function _observers(latitude, longitude, zoom) {
-            this._map.setView([latitude, longitude], zoom);
+            this._map?.setView([latitude, longitude], zoom);
         }
     ]
 })

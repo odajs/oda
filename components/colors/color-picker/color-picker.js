@@ -1,17 +1,17 @@
-export default ODA({ is: 'oda-color-picker', imports: '@oda/palette, @oda/button, @tools/containers', extends: 'oda-button',
+ODA({ is: 'oda-color-picker', imports: '@oda/palette, @oda/button, @tools/containers', extends: 'oda-button',
     template: /*html*/`
         <style>
             :host {
                 @apply --no-flex;
                 flex-grow: 0;
                 opacity: 1;
-                margin: 4px;
                 background-image: {{gradientMode?value:''}};
                 background-color: {{gradientMode?'':value}};
                 font-size: small;
                 color: {{value}};
+                margin: 4px;
             }
-            :host([read-only]){
+            :host([read-only]) {
                 pointer-events: none;
             }
             :host(:hover) {
@@ -19,22 +19,27 @@ export default ODA({ is: 'oda-color-picker', imports: '@oda/palette, @oda/button
             }
         </style>
     `,
-    props: {
+    $public: {
         value: '',
         gradientMode: false,
         readOnly: {
-            type: Boolean,
-            default: false,
-            reflectToAttribute: true
+            $type: Boolean,
+            $def: false,
+            $attr: true
         }
     },
-    listeners:{
-        async tap(e){
-            try{
-                let res = await ODA.showDropdown('oda-palette', { gradientMode: this.gradientMode }, { parent: this.$refs.btn, resolveEvent: 'value-changed' });
-                this.value = res.value;
+    $listeners: {
+        async click(e) {
+            try {
+                const { control } = await ODA.showDropdown('oda-palette', { gradientMode: this.gradientMode,
+                    'value-changed'(e){
+                        this.fire('ok');
+                    }}, { parent: this });
+                this.value = control?.value;
             }
-            catch (e){}
+            catch (e) {
+                console.log(e);
+            }
         }
     },
 })

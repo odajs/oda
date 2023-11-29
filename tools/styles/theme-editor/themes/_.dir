@@ -1,0 +1,21 @@
+[
+  {
+    "name": "blue",
+    "execute": "setStyle",
+    "path": "themes/blue",
+    "src": "blue.json"    
+  },
+  {
+    "name": "orange",
+    "execute": "setStyle",
+    "path": "themes/orange",
+    "src": "orange.json"
+  },
+  {
+    "name": "green",
+    "execute": "setStyle",
+    "path": "themes/green",
+    "src": "green.json"
+    
+  }
+]

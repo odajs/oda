@@ -36,24 +36,29 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             cursor: inherit;
         }
         :host(:active), :host([toggled]) {
-            @apply --content;
-            opacity: 0.999;
+            filter: contrast(.6);
+            outline: 1px dotted silver;
+            @apply --active;
+            outline-offset: -1px;
         }
+    </style>
+    <style>
         .icon {
             display: {{icon?'block':'none'}};
         }
     </style>
     <label ~if="label">{{label}}</label><slot></slot>`,
-    props: {
+
+    $public: {
         iconPos: {
-            default: 'left',
-            list: ['left', 'right', 'top', 'bottom'],
-            reflectToAttribute: true
+            $def: 'left',
+            $list: ['left', 'right', 'top', 'bottom'],
+            $attr: true,
         },
         label: String,
         toggled: {
-            default: false,
-            reflectToAttribute: true,
+            $def: false,
+            $attr: true,
             set(n, o) {
                 if (n && this.toggleGroup) {
                     for (let button of Groups[this.toggleGroup]) {
@@ -65,7 +70,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
         },
         allowToggle: false,
         toggleGroup: {
-            type: String,
+            $type: String,
             set(n, o) {
                 if (o) {
                     (Groups[o] || []).remove(this);
@@ -77,7 +82,7 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             }
         }
     },
-    listeners: {
+     $listeners: {
         tap(e) {
             if (this.allowToggle) {
                 e.preventDefault();

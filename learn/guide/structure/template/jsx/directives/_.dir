@@ -10,11 +10,6 @@
         "status": "check"
     },
     {
-        "name": "~for-multilevel.md",
-        "label": "<b style='color: brown'>~for</b>: Вложенные директивы цикла",
-        "status": "check"
-    },
-    {
         "name": "~for-advantage.md",
         "label": "<b style='color: brown'>~for</b>: Преимущества директивы цикла",
         "status": "check"

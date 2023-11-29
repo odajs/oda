@@ -3,27 +3,24 @@ ODA({is: "oda-checkbox", extends: 'oda-icon',
     attached(){ // todo: временное решение
         this.icon = this.icons[this.state];
     },
-    props: {
-        // icon(){
-        //     return this.icons[this.state];
-        // },
+    $public: {
         value: {
-            type: Boolean,
+            $type: Boolean,
             set(n) {
                 if (!this.threeStates)
                     this.state = n ? 'checked' : 'unchecked';
             }
         },
         state: {
-            list: ['unchecked', 'checked', 'indeterminate'],
-            default: 'unchecked',
+            $list: ['unchecked', 'checked', 'indeterminate'],
+            $def: 'unchecked',
             set(n){
                 this.value = n === 'checked';
                 this.icon = this.icons[n]; // todo: временное решение
             }
         },
         threeStates: {
-            default: false,
+            $def: false,
             set(n, o){
                 if (o && this.state === 'indeterminate')
                     this.state = 'unchecked';
@@ -38,7 +35,7 @@ ODA({is: "oda-checkbox", extends: 'oda-icon',
         unchecked: 'icons:check-box-outline-blank',
         indeterminate: 'icons:check-box-indeterminate'
     },
-    listeners: {
+     $listeners: {
         tap(e) {
             // e.stopPropagation();
             if (this.threeStates) {

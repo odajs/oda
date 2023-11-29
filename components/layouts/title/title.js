@@ -33,10 +33,10 @@ ODA({is: 'oda-title', imports: '@oda/button',
         <label class="label flex" ~html="title" style="margin: 4px;"></label>
         <div class="horizontal no-flex" style="margin-left: 8px;">
             <oda-button ~if="help" :icon-size icon="icons:help" @tap="_help"></oda-button>
-            <oda-button ~if="allowClose" :icon-size icon="icons:close" @tap="fire('cancel')" style="background-color: red"></oda-button>
+            <oda-button ~if="allowClose" :icon-size icon="icons:close" @tap="close" style="background-color: red"></oda-button>
         </div>
     </div>`,
-    props: {
+    $public: {
         title: '',
         icon: '',
         allowClose: false
@@ -44,5 +44,8 @@ ODA({is: 'oda-title', imports: '@oda/button',
     help: '',
     _help(e) {
 
+    },
+    close(e){
+        this.fire('cancel')
     }
 });

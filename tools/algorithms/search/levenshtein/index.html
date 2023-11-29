@@ -3,26 +3,26 @@
 <script type="module">
     import '../../../../oda.js';
     import {levenshteinList} from './levenshtein.js';
-    ODA({
-        is: 'oda-levenshtein-test',
-        template:`
-            <style>
-                div{
-                    max-width: 200px;
-                }
-            </style>
-            <input ::value>
-            <div class="horizontal" ~for="results">
-                <span class="flex">{{item.value}}</span>
-                <span>{{item.distance}}</span>
-            </div>
+    ODA({is: 'oda-levenshtein-test',
+        template:/*html*/`
+        <style>
+            div {
+                max-width: 200px;
+            }
+        </style>
+        <input ::value>
+        <div class="horizontal" ~for="results">
+            <span class="flex">{{item.value}}</span>
+            <span>{{item.distance}}</span>
+        </div>
         `,
-        props:{
+        $public: {
             value: '',
-            data:[],
+            data: [],
             results: {
-                default: Array,
-                get(){
+                //$default: Array,
+                $type: Array,
+                get() {
                     return levenshteinList(this.value, this.data, true)
                 }
             }

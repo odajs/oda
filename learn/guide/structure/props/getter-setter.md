@@ -11,9 +11,9 @@
         <input :value="fullName">
         <div>{{fullName}}</div>
     `,
-    props: {
+    $public: {
         fullName: {
-            default: 'Иванов Николай',
+            $def: 'Иванов Николай',
             get() {
                 return this.fullName;
             },
@@ -37,7 +37,7 @@
         <div>Фамилия {{lastName}}</div>
         <div>Имя {{firstName}}</div>
     `,
-    props: {
+    $public: {
         firstName: 'Николай',
         lastName: 'Иванов',
         fullName: {

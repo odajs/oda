@@ -1,8 +1,4 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="./chart.js"></script>
-
 <!-- <oda-tester> -->
     <div style="display:flex;flex-direction: column">
         <div style="display:flex">
@@ -15,8 +11,9 @@
         </div>
     </div>
 <!-- </oda-tester> -->
-
 <script type="module">
+    import '../../../oda.js';
+    import './chart.js';
     chart1.type = 'line';
     chart2.type = 'bar';
     chart3.type = 'pie';
@@ -49,15 +46,16 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-            yAxes: [{
+            yAxes: {
                 ticks: {
                     beginAtZero: true
                 }
-            }]
+            }
         }
     }
     const types = ['line', 'bar', 'pie', 'radar', 'doughnut', 'polarArea'];
     setInterval(() => {
+        chart1.type = chart2.type = chart3.type = chart4.type = ''
         chart1.type = types[Math.round(-0.5 + Math.random() * 6)];
         chart2.type = types[Math.round(-0.5 + Math.random() * 6)];
         chart3.type = types[Math.round(-0.5 + Math.random() * 6)];

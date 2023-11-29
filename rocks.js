@@ -1,607 +1,787 @@
-/*
-    ROCKS.js v1.0
-    (c) 2021-2022 Roman Perepelkin, Vadim Biryuk, Alexander Uvarov
-    Under the MIT License.
-
-    Reactive
-    Objective
-    Constructive
-    Kernel with
-    Smart optimization
-*/
-
-if (!globalThis.KERNEL) {
-
-    const regExpCheck = /^__.*__$/g;
-    function makeReactive(target) {
-        if (!isObject(target) || !Object.isExtensible(target)) return target;
-        const op = target.__op__;
-        if (op){
-            let val = op.hosts.get(this);
-            if (val === undefined){
-                val = isNativeObject(target)?op.proxy:target;
-                op.hosts.set(this, val);
+if (!globalThis.ROCKS) {
+    if (typeof requestAnimationFrame === 'undefined')
+        globalThis.requestAnimationFrame = setTimeout;
+    const _addEventListener = EventTarget.prototype.addEventListener
+    const _removeEventListener = EventTarget.prototype.removeEventListener;
+    let _curId = 0;
+    function incrementId(){
+        return ++_curId;
+    }
+    Object.defineProperties(EventTarget.prototype, {
+        addEventListener: {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function addEventListener(event, handler, ...args) {
+                if (!this.__events) {
+                    this.__events = new Map();
+                }
+                let /**@type {Set<Function>} */ handlers = this.__events.get(event);
+                if (!handlers) {
+                    handlers = new Set;
+                    this.__events.set(event, handlers);
+                }
+                handlers.add(handler);
+                return _addEventListener.call(this, event, handler, ...args)
             }
-            return val;
-        }
-        else if (target !== this) {
-            if (Array.isArray(target)) {
-                target.forEach((val, i)=>{
-                    target[i] = makeReactive.call(this, val);
-                })
-            }
-            else if (!isNativeObject(target) && !(target instanceof Promise))
-                return target;
-        }
-        else if (target.$proxy)
-            return target;
-        const options = op || Object.create(null);
-        const handlers = {
-            get: (target, key, resolver) => {
-                if (!key) return;
-                let val = options.target[key];
-                if (val !== undefined){
-                    if (options === val || options.target === val || typeof key === 'symbol' || regExpCheck.test(key) )
-                        return val;
-                    if (typeof val === 'function'){
-                        if (key === 'constructor')
-                            return val;
-                        return (...args) => val.apply(options.target, args);
+        },
+        removeEventListener: {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function removeEventListener(event, handler, ...args) {
+                if (this.__events && this.__events.has(event)) {
+                    const /**@type {Set<Function>} */ handlers = this.__events.get(event);
+                    const curHandler = Array.from(handlers).find(h => h === handler);
+                    if (curHandler) {
+                        handlers.delete(curHandler);
                     }
-
-                    if (options.target.$proxy && KERNEL.reservedWords.includes(key))
-                        return val;
-
+                    if (!handlers.size)
+                        this.__events.delete(event);
                 }
-                else if (options.target instanceof Promise){
-                    options.target.then(res=>{
-                        res = makeReactive.call(this, res);
-                        options.target[key] = res?.[key];
-                    })
-                    return undefined;
-                }
-                const block = getBlock.call(this, options, key);
-                if (KERNEL.dpTarget !== block && !block.obs && KERNEL.dpTarget && !block.deps.includes(KERNEL.dpTarget)) {
-                    block.deps.push(KERNEL.dpTarget);
-                    KERNEL.dpTarget.count++;
-                }
-                if (val === undefined) {
-                    if (block.getter) {
-                        // block.count = block.count || 0;
-                        targetStack.push(KERNEL.dpTarget);
-                        KERNEL.dpTarget = block;
-                        val = block.getter.call(target);
-                        if (val instanceof Promise) {
-                            val = makeReactive.call(this, val);
-                        }
-                        else if (block.prop)
-                            val = toType(block.prop.type, val)
-                        KERNEL.dpTarget = targetStack.pop();
-                        if (target === val) {
-                            block.count = -1;
-                            return makeReactive.call(this, val);
-                        }
-                        return (block.old = getProxyValue.call(this, block, val, block.count?undefined:block.old));
-                    }
-                }
-                if (val && !block.prop?.freeze)
-                    val = makeReactive.call(this, val);
-                return val;
-            },
-            set: (target, key, value) => {
-                const old = Array.isArray(options.target) && key === 'length'?undefined:options.target[key];
-                if (Object.equal(old, value)) return true;
-                const block = getBlock.call(this, options, key);
-                getProxyValue.call(this, block, value, old, true);
-                return true;
+                return _removeEventListener.call(this, event, handler, ...args)
             }
-            // ,
-            // getPrototypeOf(target){
-            //     return target;
-            // }
-
-        };
-        const proxy = new Proxy(options?.target || target, handlers);
-        if (!target.__op__) {
-            options.target = target;
-            options.hosts = new Map();
-            options.proxy = proxy;
-            options.blocks = Object.create(null);
-            Object.defineProperty(target, '__op__', {
-                enumerable: false,
-                configurable: true,
-                writable: true,
-                value: options
-            });
-        }
-        options.hosts.set(this, proxy);
-        return proxy;
-    }
-    let _blockId = 0;
-    function getBlockId(){
-        return ++_blockId;
-    }
-
-    function getBlock(options, key) {
-       const block = options.blocks[key] ??= Object.assign({
-               count: 0,
-               id: getBlockId(),
-               options,
-               key,
-               deps: [],
-               obs: key.startsWith?.(`#$obs$`),
-           }, this.constructor?.__model__?.$system?.blocks[key] || {});
-        return  block;
-    }
-    function getProxyValue(block, val, old, setter) {
-        if (Object.equal(val, old)) return val;
-        const target = block.options.target;
-        const key = block.key;
-        if (!block.prop?.freeze)
-            val = makeReactive.call(this, val);
-        target[key] = (block.prop?.type)?toType(block.prop?.type, val):val;
-        if (block.obs) return val;
-        if (setter && block.setter) {
-            const v = block.setter.call(target, val, old);
-            if (v !== undefined && !block.prop?.freeze)
-                val = makeReactive.call(this, v);
-        }
-        const reset = resetDeps(block, [], setter);
-        for (let host of block.options.hosts.keys()){
-            (host.notify || host.bubble)?.call(host, block, val);
-        }
-        return val;
-    }
-    let _currentBlock = 0;
-    function resetDeps(block, stack = [], recurse) {
-        if (_currentBlock === block.id)
-            return false;
-        _currentBlock = block.id;
-        if (!block.deps?.length)
-            return false;
-        block.deps?.forEach(i => {
-            if (i === block) return;
-            if (i.prop?.freeze) return;
-            i.options.target[i.key] = undefined;
-            if (!recurse || stack.includes(i)) return;
-            stack.add(i)
-            resetDeps(i, stack, recurse);
-        })
-        return true;
-    }
-    function KERNEL(model = {}, statics = {}) {
-        model.async = function (handler, delay = 0) {
-            delay ? setTimeout(handler, delay) : (globalThis.requestAnimationFrame || setTimeout)(handler);
-        }
-        model.bubble = function () {
-            if (this.bubble.run) return;
-            this.bubble.run = true;
-            for (let host of this.__op__.hosts.keys()){
-                if (this === host) continue;
-                if (host.notify)
-                    host.notify?.();
-                else if (host.bubble)
-                    host.bubble?.();
-                else if (host.__op__) {
-                    const hosts = [...host.__op__.hosts.keys()];
-                    const hostsWithNotify = hosts.filter(h => typeof h.notify === 'function');
-                    if (hostsWithNotify.length) {
-                        hostsWithNotify.forEach(h => h.notify());
-                    } else {
-                        hosts.forEach(h => h.bubble?.());
-                    }
-                }
-            }
-            this.updated?.([]);
-            this.bubble.run = false;
-        }
-
-        model.$system = {blocks: Object.create(null), observers: []};
-        model.listeners = model.listeners || Object.create(null);
-        model.props = model.props || Object.create(null);
-        model.observers = model.observers || [];
-
-        //todo - здесь есть ошибка!!! Интервал должен создавать для каждого екземпляра
-        model.interval = function (key, handler, delay = 0) {
-            let task = this.__customCache__[key];
-            if (task) {
-                task.handler = handler;
-            } else {
-                const fn = delay ? setTimeout : (globalThis.requestAnimationFrame || setTimeout);
-                const clearFn = delay ? clearTimeout : (globalThis.cancelAnimationFrame || clearTimeout);
-                task = {
-                    handler,
-                    id: fn(() => {
-                        this.__customCache__[key] = undefined;
-                        delete this.__customCache__[key];
-                        clearFn(task.id);
-                        task.handler.call(this);
-                    }, delay)
-                };
-                this.__customCache__[key] = task;
-            }
-        }
-
-        const name = model?.is || '$' + this?.name;
-        if (globalThis[name]) {
-            console.error(new Error(`class named "${name}" already exist!!!`));
-            return globalThis[name];
-        }
-
-        const cls = class extends (this || Object) {
+        },
+    })
+    const OBS_PREFIX = '__obs__';
+    const ID_KEY = Symbol('__id__')
+    globalThis.CORE_KEY = Symbol('core');
+    const THROTTLES = Object.create(null);
+    globalThis.ROCKS = function (prototype){
+        const rocks = class extends (this || EventTarget) {
             constructor() {
                 super(...arguments);
-                if (!this.$proxy){
-                    for (let def in this.constructor.defaults) {
-                        this['#' + def] = this.constructor.defaults[def];
-                    }
-                    if (Object.keys(this.constructor?.lists||{}).length) {
-                        this.$system ??= {};
-                        this.$system.lists = {};
-                        for (let l in this.constructor.lists) {
-                            // TODO: кеширование?
-                            this.$system.lists[l] = this.constructor.lists[l].bind(this);
+                this[ID_KEY] = incrementId();
+                if (Object.keys(this.constructor.__rocks__.prototype.$observers).length){
+                    this.async(()=>{
+                        for(let obs in this.constructor.__rocks__.prototype.$observers){
+                            this[OBS_PREFIX+obs];
                         }
+                    })
+                }
+            }
+            toJSON() {
+                const props = Object.values(this.constructor.__rocks__.descrs).filter(i => i.enumerable);
+                const result =  props.reduce((res, i) => {
+                    const val = this[i.name];
+                    res[i.name] = this[i.name];
+                    return res;
+                }, {})
+                return result;
+            }
+            [CORE_KEY] = {
+                events: new Map(),
+                callbacks: new Map(),
+                attributes: new Map(),
+                debounces: new Map(),
+            }
+            async(handler, delay = 0) {
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
+                // this.throttle('', handler, delay)
+                const fn = (delay? setTimeout : requestAnimationFrame) || setTimeout;
+                return fn(()=>{
+                    handler();
+                }, delay)
+            }
+            debounce(key, handler, delay = 0) {
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
+                key += '.' + delay;
+                let db = this[CORE_KEY].debounces.get(key);
+                if (db){
+                    const clr = (delay ? clearTimeout : cancelAnimationFrame) || clearTimeout;
+                    clr(db);
+                }
+                const fn = (delay ? setTimeout : requestAnimationFrame) || setTimeout;
+                const t = fn(() => {
+                    this[CORE_KEY].debounces.delete(key);
+                    handler();
+                }, delay);
+                this[CORE_KEY].debounces.set(key, t);
+            }
+            throttle(key, handler, delay = 0) {
+                key += '.' + delay;
+                let handlers = THROTTLES[key];
+                if (handlers){
+                    handlers.add(handler);
+                }
+                else{
+                    THROTTLES[key] = handlers = [handler];
+                    const fn = (delay ? setTimeout : requestAnimationFrame) || setTimeout;
+                    fn(() => {
+                        delete THROTTLES[key];
+                        handlers.forEach(h=>h());
+                        handlers.clear();
+                    }, delay)
+                }
+            }
+            listen(event, callback, props = { target: this, once: false, useCapture: false }) {
+
+                if (typeof callback === 'string')
+                    callback = this[callback];
+                if (!callback) throw new Error (`Undefined event handler for "${event}"`);
+                if(this[CORE_KEY].callbacks.has(callback))
+                    callback = this[CORE_KEY].callbacks.get(callback)
+                else
+                    this[CORE_KEY].callbacks.set(callback, (callback = callback.bind(this)))
+                if (!this[CORE_KEY].events.has(props.target)) {
+                    this[CORE_KEY].events.set(props.target, {});
+                }
+                const handlers = this[CORE_KEY].events.get(props.target)[event] ??= [];
+                if (handlers.includes(callback)) return;
+                if (!props.once)
+                    handlers.push(callback);
+                (props.target || this).addEventListener?.(event, callback, props);
+            }
+            unlisten(event, callback, props = { target: this }) {
+                const handlers = this[CORE_KEY].events.get(props.target)?.[event];
+                if (!handlers) return;
+                if (typeof callback === 'string')
+                    callback = this[callback];
+                callback = this[CORE_KEY].callbacks.get(callback)
+                if (callback){
+                    const idx = handlers.indexOf(callback)
+                    if (~idx) handlers.splice(idx, 1);
+                    (props.target || this).removeEventListener?.(event, callback);
+                }
+                else{
+                    while (callback = handlers.pop()){
+                        (props.target || this).removeEventListener?.(event, callback);
                     }
-                    this.$proxy = makeReactive.call(this, this);
+                }
+            }
+            fire(event, value){
+                if (!this.__events?.has(event)) return;
+                const ev = new CustomEvent(event, { detail: { value, target: this }, composed: true });
+                this.dispatchEvent(ev);
+            }
+            $super(name, ...args) {
+                //                  rocks     class     rocks     class
+                let proto = super.__proto__.__proto__;
+                const myDs = Object.getOwnPropertyDescriptor(this.__proto__.__proto__, name);
+                let ds;
+                while (!ds && proto) {
+                    ds = Object.getOwnPropertyDescriptor(proto, name);
+                    if (ds){
+                        if(ds.set?.setter && args.length && ds.set?.setter !== myDs.set?.setter )
+                            return ds.set.setter.call(this, ...args);
 
+                        if (ds.get?.getter && ds.get?.getter !== myDs.get?.getter )
+                            return ds.get.getter.call(this);
+
+                        if (typeof ds.value === "function" && ds.value !== myDs.value)
+                            return ds.value.call(this, ...args);
+                        ds = null;
+                    }
+                    proto = proto.__proto__;
                 }
 
-                cls.ctor?.call(this, ...arguments);
-
-                if (this.constructor.__model__ !== model) return;
-                this.__id__ = nextId();
-                Object.defineProperty(this, '__customCache__', {
-                    value: {}
-                })
-                this.created?.();
             }
-        };
-
-        const fn = function () {
-            if (!new.target)
-                return KERNEL.call(fn.cls, ...arguments);
-            return new fn.cls(...arguments);
-        }
-        fn.cls = cls;
-        Object.defineProperty(fn, Symbol.hasInstance, { value: (obj) => obj instanceof fn.cls });
-        Object.defineProperty(fn, '__model__', {
-            value: model
-        })
-        Object.defineProperty(cls, '__model__', {
-            value: model
-        })
-        Object.defineProperty(fn, '__statics__', {
-            value: statics
-        })
-        Object.defineProperty(cls, '__statics__', {
-            value: statics
-        })
-        if (name) {
-            Object.defineProperty(fn, 'name', {value: name})
-            Object.defineProperty(cls, 'name', { value: name });
-            Object.defineProperty(cls.prototype, Symbol.toStringTag, { value: name });
-        }
-        model?.is && (globalThis[model?.is] = fn);
-
-        const parents = (typeof model.extends === 'string'
-            ? model.extends.replace(/ /g, '').split(',').map((e) => {
-                if (globalThis[e])
-                    return globalThis[e];
-                throw Error(`Parent class '${e}' for inherit to '${model.is}' not found!`)
-            }) : [model.extends]).filter(Boolean);
-
-        while (model.observers.length > 0) {
-            let func = model.observers.shift();
-            let expr;
-            let fName;
-            if (typeof func === 'function') {
-                fName = func.name;
-                expr = func.toString();
-                expr = expr.substring(0, expr.indexOf('{')).replace('async', '').replace('function', '').replace(fName, '');
-            }
-            else {
-                fName = func.slice(0, func.indexOf('(')).trim();
-                expr = func.substring(func.indexOf('(')).trim();
-            }
-            expr = expr.replace('(', '').replace(')', '').trim();
-            const vars = expr.split(',').map((prop, idx) => {
-                prop = prop.trim();
-                return { prop, func: createFunc('', prop, model), arg: 'v' + idx };
-            });
-            if (typeof func === 'string') {
-                const args = vars.map(i => {
-                    const idx = func.indexOf('(');
-                    func = func.slice(0, idx) + func.slice(idx).replace(i.prop, i.arg);
-                    return i.arg;
-                }).join(',');
-                func = createFunc(args, func, model);
-            }
-            if (!func) throw new Error(`function "${fName}" for string observer not found!!`)
-            const obsName = `$obs$${fName}`;
-            function funcObserver() {
-                let params = vars.map(v => {
-                    return v.func.call(this);
-                });
-                if (!params.includes(undefined)) {
-                    this.async(() => {
-                        params = vars.map(v => {
-                            return v.func.call(this);
-                        });
-                        let target = KERNEL.dpTarget;
-                        KERNEL.dpTarget = undefined;
-                        func.call(this, ...params)
-                        KERNEL.dpTarget = target;
-                    });
+            static get name() {
+                let parent = this.prototype.__proto__.constructor
+                let name = parent.name;
+                while (name === 'rocks') {
+                    parent = parent.prototype.__proto__.constructor
+                    name = parent.name
                 }
+                return name;
+            }
+        }
+        const descrs = {}
+        prototype.extends = str2arr(prototype.extends);
+        prototype.extends.forEach(ext => {
+            joinProps.call(this,  descrs, prototype, ext.__rocks__);
+        })
+        joinProps.call(this, descrs, prototype, this?.__rocks__)
+        if (prototype.$observers) {
+            for (const name in prototype.$observers) {
+                let func = prototype.$observers[name]
+                let expr;
+                let args;
+
+                if (Array.isArray(func) || typeof func === 'string') {
+                    args = str2arr(func);
+                    func = prototype[name] || descrs[name]?.value;
+                }
+                if (!args) {
+                    expr = func.toString();
+                    const argsStart = expr.indexOf('(') + 1;
+                    const argsEnd = expr.indexOf(')', argsStart);
+                    args = str2arr(expr.slice(argsStart, argsEnd));
+                }
+
+                const checkArgs = args.map(a => a.split('.')[0].replace('?', ''));
+                const obsName = `${OBS_PREFIX}${name}`
+                prototype[obsName] = {
+                    get() {
+                        checkArgs.forEach(a => {
+                            if (!(a in this)) {
+                                let message = `undefined property "${a}" in ${prototype.is ? `<${prototype.is}>` : this.constructor.name} for observer ${name}`;
+                                let host = this.domHost;
+                                while (host){
+                                    if (a in host){
+                                        message += `
+But this problem can be fixed by set
+the property modifier $pdp: true
+in the <${host.localName}>`;
+                                        break;
+                                    }
+                                    host = host.domHost;
+                                }
+                                throw new Error(message);
+                            }
+                        })
+                        const props = args.map(a => this[a]);
+                        if (props.every(p => p !== undefined)) {
+                            this.debounce(obsName, () => {
+                                this[name](...props);
+                            })
+                        }
+                        return true;
+                    }
+                };
+                if (func) prototype[name] = func;
+            }
+        }
+
+        joinProps.call(this,  descrs, prototype, {descrs: convertor(prototype)}, true)
+        Object.defineProperty(rocks, '__rocks__', {configurable: false, value: {descrs, prototype}})
+        try{
+            Object.defineProperties(rocks.prototype, rocks.__rocks__.descrs);
+        }
+        catch (e){
+            switch (e.name){
+                case 'TypeError':{
+                    const err = Object.values(rocks.__rocks__.descrs).find(i=>{
+                        return i.value && (i.get || i.set || i.writable)
+                    })
+                    if (err)
+                        throw new Error(e.name +' on "' + err.name+'" property: '+e.message)
+                    else
+                        throw e;
+                } break;
+            }
+        }
+        return rocks;
+    }
+    const ROCKS = globalThis.ROCKS;
+    Object.defineProperty(Object.__proto__, 'ROCKS', {enumerable: false, configurable: false, value: ROCKS})
+    function joinProps(descrs, proto, source, last = false){
+        for (let d in source?.descrs){
+            if (PROTOTYPE_SPECIAL_GROUPS.includes(d))
+                continue;
+            if (!descrs[d] || descrs[d].configurable) {
+                if (!last || !descrs[d]){
+                    descrs[d] ??= Object.create(null);
+                }
+                else if (source.descrs[d]?.$def){
+                    descrs[d].getter = undefined;
+                }
+                Object.assign(descrs[d], source.descrs[d]);
+                continue;
+            }
+            throw new Error(`Cannot override protected property "${d}"`); //todo указывать первоисточник где protected
+        }
+        for (let p of PROTOTYPE_SPECIAL_GROUPS)
+            proto[p] = Object.assign({}, source?.prototype?.[p] || {}, proto[p] || {})
+    }
+    function str2arr(str) {
+        if (typeof str === 'string') {
+            str = str.split(',').map(s => s.trim());
+        }
+        if (Array.isArray(str)) {
+            str = str.filter(Boolean);
+        }
+        if (!str) {
+            str = [];
+        }
+        return str;
+    }
+    globalThis.str2arr = str2arr;
+    const KEY = Symbol('ROCKS-PROPS');
+    ROCKS.KEY = KEY;
+    function reactor(target) {
+        if (!Object.isExtensible(target) || (target.constructor !== Object &&  target.constructor !== Array ) || target?.constructor === Promise)
+            return target;
+
+        let op = target[KEY];
+        if (op){
+            op.hosts.add(this);
+            return op.proxy;
+        }
+        op = Object.create(null);
+        const handlers = {
+            get: (target, key, resolver) => {
+                if (key === KEY) return op;
+                let val = op.target[key];
+                if (val){
+                    if (op === val || op.target === val || key.constructor === Symbol || (val instanceof Object && val.constructor?.prototype === val) || val instanceof Function)
+                        return val;
+                }
+                const $prop = op.props[key] ??= {deps: new Set()}
+                $prop.deps.add(ROCKS.DEP_TARGET || target);
+                return reactor.call(this, val);
+            },
+            set: (target, key, value) => {
+                const old = (Array.isArray(op.target) && key === 'length')?undefined:op.target[key];
+                if (Object.equal(old, value)) return true;
+                const $prop = op.props[key] ??= {deps: new Set()}
+                op.target[key] = reactor.call(this, value);
+                ROCKS.resetDeps($prop);
                 return true;
             }
-            if (!fName) throw new Error('ERROR: no function name!');
-            model.props[obsName] = {
-                get: funcObserver
-            };
-            model.$system.observers.push(obsName);
+        };
+        const proxy = new Proxy(op?.target || target, handlers);
+        if (!target[KEY]) {
+            op.target = target;
+            op.hosts = new Set();
+            op.proxy = proxy;
+            op.props = Object.create(null);
+            Object.defineProperty(target, KEY, {
+                enumerable: false,
+                configurable: false,
+                value: op
+            });
         }
-        let descriptors = Object.getOwnPropertyDescriptors(model.props);
-        for (let key in descriptors) {
-            let prop = descriptors[key].value;
-            if (typeof prop === 'function')
-                prop = (prop.name === key) ? { get: prop } : { type: prop };
-            if (Array.isArray(prop))
-                prop = { default: prop, type: Array };
-            else if (prop === null || typeof prop !== "object")
-                prop = { default: prop, type: prop ? prop.__proto__.constructor : Object };
-            else if (Object.keys(prop).length === 0 || (!prop.get && !prop.set && prop.default === undefined && !prop.type))
-                prop = { default: prop, type: Object };
-            if (typeof prop.get === 'string')
-                prop.get = model[prop.get];
-            if (typeof prop.set === 'string')
-                prop.set = model[prop.set];
-            if (!prop.type && prop.default !== undefined)
-                prop.type = prop.default === null ? Object : prop.default.__proto__.constructor;
-            model.props[key] = prop;
+        op.hosts.add(this);
+        return proxy;
+    }
+    ROCKS.reactor = reactor;
+    Object.equal ??= function (a, b, recurse) {
+        if (a === b) return true;
+        if (!(a instanceof Object) || !(b instanceof Object))
+            return false;
+        if ((a?.[KEY] || a) === (b?.[KEY] || b))
+            return true;
+        if (a instanceof Function && a.constructor === b.constructor)
+            return a.toString() === b.toString();
+        if (a instanceof Date && a.constructor === b.constructor) {
+            return a.valueOf() === b.valueOf();
         }
-        if (this) {
-            parents.unshift(this);
-            for (const key in this.__model__.listeners) {
-                 model.listeners[key] = model.listeners[key] || this.__model__.listeners[key];
+        if (recurse) {
+            try{
+                const join = Object.assign({}, a, b)
+                for (let key in join)
+                    if (!Object.equal(b[key], a[key], recurse)) return false;
+                return true;
             }
-        }
-        for (let parent of parents) {
-            descriptors = Object.getOwnPropertyDescriptors(model.props);
-            const parentDescrs = Object.getOwnPropertyDescriptors(parent.__model__.props);
-            for (let key in parentDescrs) {
-                const parentProp = parentDescrs[key].value;
-                const targetProp = descriptors[key]?.value;
-                if (targetProp) {
-                    const p_attrDescrs = Object.getOwnPropertyDescriptors(parentProp);
-                    const t_attrDescrs = Object.getOwnPropertyDescriptors(targetProp);
-                    for (const k in p_attrDescrs) {
-                        if (['get', 'default'].includes(k) && ('get' in t_attrDescrs || 'default' in t_attrDescrs)) continue;
-                        if(!(k in t_attrDescrs)) Object.defineProperty(targetProp, k, p_attrDescrs[k]);
-                    }
-                }
-                model.props[key] = targetProp || parentProp;
-            }
-            for (const key in parent.__model__.listeners) {
-                model.listeners[key] = model.listeners[key] || parent.__model__.listeners[key];
-            }
-            for (let key in parent.__model__) {
-                if (key in model || key === 'ctor') continue;
-                Object.defineProperty(model, key, Object.getOwnPropertyDescriptor(parent.__model__, key));
-            }
-            for (let s in parent.__statics__){
-                statics[s] = statics[s] || parent.__statics__[s];
-            }
-        }
+            catch (e){
 
-        Object.defineProperties(cls.prototype, {
-            $super: {
-                enumerable: true,
-                value: function (name, ...args) {
-                    let prot = this.__proto__.__proto__;
-                    let pd;
-                    while (prot && !pd){
-                        pd = Object.getOwnPropertyDescriptor(prot.constructor.__model__, name) || Object.getOwnPropertyDescriptor(prot.constructor.__model__?.props || {}, name);
-                        prot = prot.__proto__;
-                    }
-                    if (!pd) return;
-                    if (pd.get)
-                        return pd.get.call(this);
-                    if (typeof pd.value === "function")
-                        return pd.value.call(this, ...args)
-                    if (pd.value?.get)
-                        return pd.value.get.call(this);
-                    return  pd.value;
-                }
-            },
-            listen: {
-                enumerable: false,
-                value: function (event, handler) {
-                    if (typeof event === "function"){
-                        handler = event;
-                        event = '__any__';
-                    }
-                    const ev = this.__handlers__ ??= {};
-                    (ev[event] || (ev[event] = [])).add(handler);
-                }
-            },
-            unlisten: {
-                enumerable: false,
-                value: function (event, handler) {
-                    if (typeof event === "function"){
-                        handler = event;
-                        event = '__any__';
-                    }
-                    const list = this.__handlers__?.[event];
-                    if (!list) return;
-                    handler ? list.remove(handler) : list.clear();
-                }
-            }, //todo возможно надо убрать addEventListener removeEventListener
-            addEventListener: {
-                enumerable: false,
-                value: cls.prototype.listen
-            },
-            removeEventListener: {
-                enumerable: false,
-                value: cls.prototype.unlisten
-            },
-            fire: {
-                enumerable: false,
-                value: async function (event, value) {
-                    const ev = new CustomEvent(event, { detail: { value, target: this }, composed: true });
-                    (this.__handlers__?.[event] || []).forEach(i => i(ev));
-                    (this.__handlers__?.['__any__'] || []).forEach(i => i(ev))
-                }
-            },
-        })
-        Object.defineProperty(cls.prototype, 'props', {
-            get() { return model.props }
-        })
-        if (model.is && !globalThis[model.is]) {
-            globalThis[model.is] = cls;
-        }
-        cls.defaults = {};
-        cls.lists = {};
-        descriptors = Object.getOwnPropertyDescriptors(model.props);
-        for (let name in descriptors) {
-            const prop = descriptors[name].value;
-            prop.name = name;
-            const key = `#${name}`;
-            const desc = { enumerable: !name.startsWith('_'), configurable: true };
-            model.$system.blocks[key] = Object.create(null);
-            model.$system.blocks[key].getter = prop.get;
-            model.$system.blocks[key].setter = prop.set;
-            model.$system.blocks[key].prop = prop;
-            model.$system.blocks[key].key = key;
-            desc.get = function () {
-                let val = this[key];
-                if (val === undefined) {
-                    val = this.$proxy[key];
-                }
-                else if (KERNEL.dpTarget) {
-                    const block = this.__op__.blocks[key];
-                    if (!block?.deps.includes(KERNEL.dpTarget)) {
-                        val = this.$proxy[key];
-                    }
-                }
-                return val;
-            }
-            desc.set = function (val) {
-                this.$proxy[key] = toType(prop.type, val);
-            }
-            desc.set.set = prop.set;
-            Object.defineProperty(cls.prototype, name, desc);
-            if ('list' in prop) {
-                const desc = Object.getOwnPropertyDescriptor(prop, 'list');
-                if (desc?.get) {
-                    cls.lists[name] = desc.get;
-                }
-            }
-            if (prop.default !== undefined) {
-                Object.defineProperty(cls.defaults, name, {
-                    configurable: true,
-                    enumerable: true,
-                    get() {
-                        if (typeof prop.default === "function")
-                            return prop.default.call(this);
-                        else if (Array.isArray(prop.default))
-                            return Array.from(prop.default);
-                        else if (isObject(prop.default))
-                            return Object.assign({}, prop.default);
-                        return toType(prop.type, prop.default);
-                    }
-                });
             }
         }
-        descriptors = Object.getOwnPropertyDescriptors(model)
-        for (let name in descriptors) {
-            const desc = descriptors[name];
-            if (typeof desc.value === 'function' && name !== 'ctor') {
-                Object.defineProperty(cls.prototype, name, {
-                    enumerable: true,
-                    writable: true,
-                    value: function (...args) {
-                        return desc.value.call(this, ...args);
-                    }
-                });
-            }
-            else if (!KERNEL.reservedWords.includes(name)) {
-                if ('value' in desc){
-                    const def = desc.value;
-                    Object.defineProperty(cls.defaults, name, {
-                        enumerable: true,
-                        get() {
-                            if (Array.isArray(def))
-                                return Array.from(def);
-                            else if (isObject(def))
-                                return Object.assign({}, def);
-                            return def;
-                        }
-                    });
-                    desc.value = undefined;
-                    delete desc.value;
-                    delete desc.writable;
-                    delete desc.enumerable;
-                }
-                const key = '#' + name;
-                model.$system.blocks[key] = {key, getter:desc.get, setter: desc.set};
-                desc.enumerable = true;
-                desc.get = function () {
-                    let val = this[key];
-                    if (val === undefined) {
-                        val = this.$proxy[key];
-                    }
-                    else if (KERNEL.dpTarget) {
-                        const block = this.__op__.blocks[key];
-                        if (!block?.deps.includes(KERNEL.dpTarget)) {
-                            val = this.$proxy[key];
-                        }
-                    }
-                    return val;
-                }
-                desc.set = function (v) {
-                    this.$proxy[key] = v;
-                }
-                Object.defineProperty(cls.prototype, name, desc);
-            }
-        }
-        const prefix = model.props?.prefix?.default;
-        if (prefix) {
-            KERNEL.__factory__[prefix] = KERNEL.__factory__[prefix] || cls;
-        }
-        const ctor = model.ctor;
-        cls.ctor = function (...args) {
-            ctor?.call(this, ...args);
-        }
-        cls.__id__ = nextClsId();
-        if (statics){
-            for (let i in statics)
-                fn[i] = statics[i];
-        }
-        return fn;
-    }
-    globalThis.CLASS = KERNEL;
-    KERNEL.makeReactive = makeReactive;
-    const targetStack = [];
-    // KERNEL.targets = [];
-    globalThis.KERNEL = KERNEL;
-    let obj_counter = 0;
-    let cls_counter = 0;
-    KERNEL.reservedWords = [
-        '__proto__', 'is', 'template', 'props', 'extends', 'keys', 'observers', 'listeners', 'hostAttributes', 'keyBindings', 'imports', '$system', '$core', '$proxy', 'ctor'
-    ]
-    function nextId() {
-        return ++obj_counter;
-    }
-    function nextClsId() {
-        return ++cls_counter;
-    }
+        return false;
+    };
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
-    String:{
+    function isNativeObject(obj) {
+        return obj && (obj.constructor === Object);
+    }
+    function convertor(proto, decor, result){
+        const descriptors = Object.getOwnPropertyDescriptors(proto);
+        result ??= Object.create(null);
+        for (let name in descriptors){
+            if (PROTOTYPE_RESERVED_WORDS.includes(name))
+                continue;
 
+            if (decor && PROTOTYPE_SPECIAL_GROUPS.includes(name))
+                continue;
+            if (decor && PROPERTY_ATTRIBUTES.includes(name))
+                continue;
+            const d = descriptors[name];
+            let prop = Object.create(null);
+
+            switch (typeof d.value){
+                case 'object':{
+                    if(d.value === null){
+                        prop.$type = Object;
+                        prop.$def = null;
+                    }
+                    else if (Array.isArray(d.value)){
+                        prop.$type = Array;
+                        prop.$def = d.value;
+                    }
+                    else{
+                        const attrs = Object.keys(d.value);
+                        if (attrs.some(i=>PROPERTY_SIGNS.includes(i))) { // it is property
+                            for (let attr of attrs){
+                                if (!PROPERTY_ATTRIBUTES.includes(attr) && !PROPERTY_SIGNS.includes(attr)){
+                                    throw new Error(`Unknown attribute "${attr}" in description for property "${name}".`)
+                                }
+                                prop[attr] ??= d.value[attr];
+                            }
+                            if (!prop.$type && prop.$def !== undefined){
+                                switch (typeof prop.$def){
+                                    case 'object':{
+                                        if (Array.isArray(prop.$def))
+                                            prop.$type = Array;
+                                        else if(prop.$def === null)
+                                            prop.$type = Object;
+                                        else{
+                                            if(prop.$def.__proto__?.constructor === Object){
+                                                let isStructure = false;
+                                                for (let n in prop.$def){
+                                                    const obj = prop.$def[n]
+                                                    if (obj?.constructor === Object){
+                                                        if (Object.keys(obj).some(i=>PROPERTY_SIGNS.includes(i))){
+                                                            obj.$public ??= true;
+                                                            isStructure = true;
+                                                        }
+                                                    }
+                                                }
+                                                if (isStructure){
+                                                    class RocksObject extends ROCKS(prop.$def){
+                                                        constructor(parent) {
+                                                            super();
+                                                            this.$parent = parent;
+                                                        }
+                                                    }
+                                                    prop.$def = function (){
+                                                        return new RocksObject(this)
+                                                    }
+                                                }
+                                            }
+                                            prop.$type = prop.$def.__proto__?.constructor || Object;
+                                        }
+                                    } break;
+                                    default:{
+                                        prop.$type = prop.$def.__proto__.constructor;
+                                    }
+                                }
+                            }
+                        }
+                        else if (ROCKS.PROPERTY_FLAGS.includes(name)){
+                            for (let attr of attrs){
+                                if (ROCKS.PROPERTY_FLAGS.includes(attr)){
+                                    prop[attr] ??= d.value[attr];
+                                }
+                            }
+                            prop[name] = true;
+                            convertor(d.value, prop, result);
+                            continue;
+                        }
+                        else if (attrs.some(i => PROPERTY_ATTRIBUTES.includes(i))) {  // it is group
+                            for (let attr of attrs){
+                                if (PROPERTY_ATTRIBUTES.includes(attr)){
+                                    prop[attr] ??= d.value[attr];
+                                }
+                            }
+                            prop.$group ??= name;
+                            convertor(d.value, prop, result);
+                            continue;
+                        }
+                        else{
+                            prop.$type = d.value.__proto__?.constructor || Object;
+                            prop.$def = d.value;
+                        }
+                    }
+                } break;
+                case 'function':{
+                    if (PROPERTY_TYPES.includes(d.value.name))
+                        prop.$type = globalThis[d.value.name];
+                    else
+                        prop.value = d.value;
+                } break;
+                case 'undefined':{
+                    if (d.get)
+                        prop.get = d.get;
+                    if (d.set)
+                        prop.set = d.set;
+                } break;
+                default:{
+                    prop.$type = d.value.__proto__.constructor;
+                    prop.$def = d.value;
+                }
+            }
+            if (name in result)
+                throw new Error(`${prop.value?'Method':'Property'} "${name}" redeclared.`);
+
+            prop = Object.assign(prop, decor || {})
+            prop.name = name;
+            if (name.startsWith(OBS_PREFIX)){
+                prop.isObserver = true;
+            }
+            if (prop.$attr){
+                if (prop.$attr === true)
+                    prop.$attr = name.toKebabCase();
+            }
+            if (!prop.value){
+                if (prop.$def !== undefined){
+                    const def = prop.$def;
+                    switch (prop.$type) {
+                        case Object: {
+                            prop.$def = function () { return def?Object.assign({}, def):def};
+                        } break;
+                        case Array: {
+                            prop.$def = function () { return Array.from(def)};
+                        } break;
+                        default:{
+                            if (typeof prop.$def !== 'function') {
+                                if (def !== undefined)
+                                    prop.$def = function () {
+                                        return def
+                                    };
+                            }
+                        }
+                    }
+                }
+                const typeFunc = getTypeConverter(prop.$type);
+                prop.toType = (val)=>{
+                    return val === undefined?val:typeFunc(val);
+                }
+                prop.event = name.toKebabCase()+'-changed';
+                const key = '#'+name;
+                if ('get' in prop)
+                    prop.getter = prop.get;
+                prop.get = function (){
+                    let $prop = joinPropDescriptors.call(this, name);
+                    if (this === this.constructor.prototype)
+                        return $prop.$def?.call(this);
+                    let val = this[key];
+                    if (val === undefined){
+                        if($prop.getter){
+                            $prop.depTarget = ROCKS.DEP_TARGET;
+                            ROCKS.DEP_TARGET = $prop;
+                            val = $prop.getter.call(this);
+                            if ($prop.$type && val?.then && $prop.$type !== Promise){
+                                if (val.result === undefined){
+                                    setTimeout(resetDepTarget);
+                                    const prom = val;
+                                    prom.then(res=>{
+                                        // if (ROCKS.DEP_TARGET === $prop)
+                                        //
+                                        // resetDepTarget();
+                                        prom.result = this[key] = res;
+                                        if (!$prop.$freeze)
+                                            ROCKS.resetDeps($prop);
+                                    })
+                                    .catch(error=>{
+                                        console.warn(error)
+                                        prom.result = this[key] = $prop.$def?.() || null;
+                                        if (!$prop.$freeze)
+                                            ROCKS.resetDeps($prop);
+                                    })
+                                }
+                                else {
+                                    val = this[key] = val.result;
+                                }
+                            }
+                            ROCKS.DEP_TARGET = $prop.depTarget;
+                        }
+                        if (!(key in this)){
+                            const def = $prop.$def?.call(this);
+                            if($prop.$save && this.$loadPropValue){
+                                let saved = this.$loadPropValue(name);
+                                if (saved !== undefined && def !== saved){
+                                    $prop.old = val; //todo подумать
+                                    val = saved;
+                                    $prop.setter?.call(this, val, $prop.old);
+                                }
+                            }
+                            if (def !== undefined && (val === undefined || Number.isNaN(val))) {
+                                val = def;
+                            }
+                            if (!$prop.$freeze)
+                                val = reactor.call(this, val);
+                            val = $prop.toType(val)
+                            $prop.old = this[key] = val;
+                            this.fire($prop.event, val);
+                            // this.$notify?.($prop, val);
+                        }
+
+                        if (Object.equal(val, $prop.old)){
+                            this[key] = $prop.old;
+                            // this.$notify?.($prop, val);
+                        }
+                        else if (!(val instanceof Promise)){
+                            if (!$prop.$freeze)
+                                val = reactor.call(this, val);
+                            val = $prop.toType(val)
+                            $prop.old = this[key] = val;
+                            if (!$prop.$freeze)
+                                ROCKS.resetDeps($prop);
+                            if($prop.$public)
+                            this.fire($prop.event, val);
+
+                        }
+                        else
+                            $prop.old = this[key] = val;
+                        this.$notify?.($prop, val);
+
+                        if (Array.isArray(val))
+                            val?.length; //todo никогда не удалять
+                    }
+                    if (!$prop.isObserver)
+                        $prop.deps.add(ROCKS.DEP_TARGET || this);
+                    return $prop.toType(val);
+                }
+                // нужно в $supper
+                prop.get.getter = prop.getter;
+                if ('set' in prop)
+                    prop.setter = prop.set;
+                prop.set = function (val){
+                    let $prop = joinPropDescriptors.call(this, name);
+                    if (!$prop.setter && $prop.$readOnly && this.constructor.prototype !== this)
+                        throw new Error('Read only!!! ' + name);
+                    val = $prop.toType(val);
+
+                    $prop.old = this[key];
+                    if ($prop.old === undefined && !(key in this))
+                        $prop.old = $prop.$def?.call(this);
+                    if (Object.equal(val, $prop.old)) return;
+                    if (!$prop.$freeze)
+                        val = reactor.call(this, val);
+                    this[key] = val;
+                    $prop.setter?.call(this, val, $prop.old);
+                    if($prop.$save && this.$savePropValue)
+                        this.$savePropValue(name, val);
+                    if (!$prop.$freeze)
+                        ROCKS.resetDeps($prop);
+                    this.fire($prop.event, val);
+                    this.$notify?.($prop, val);
+                }
+                // нужно в $supper
+                prop.set.setter = prop.setter;
+            }
+            else{
+                if (name.startsWith('__'))
+                    prop.$final = true;
+                else if (!name.startsWith('_')){
+                    prop.$public = true;
+                    prop.$pdp = true;
+                }
+            }
+            prop.enumerable = prop.$public || prop.$pdp || false;
+            prop.configurable = !prop.$final;
+            result[name] = prop;
+        }
+        return result;
+    }
+    function resetDepTarget(){
+        ROCKS.DEP_TARGET = null;
+    }
+    function joinPropDescriptors(name){
+        const prop = this.constructor.__rocks__.descrs[name];
+        prop.hosts ??= new WeakMap();
+        let res = prop.hosts.get(this);
+        if (!res){
+            res = Object.assign({host: this, key: '#'+name, deps: new Set()}, prop);
+            prop.hosts.set(this, res);
+        }
+        return  res;
+    }
+    ROCKS.resetDeps = ($prop, stack = new WeakSet) =>{
+        for (let p of $prop.deps || []){
+            if (p === $prop || p.$freeze)
+                continue;
+            if (p.host && typeof p.host === 'object') // todo опасно привязываться к хосту
+                p.host[p.key] = undefined;
+            if (stack.has(p)) continue;
+            stack.add(p);
+            ROCKS.resetDeps(p, stack);
+        }
+        if (($prop.isObserver || $prop.$attr) && $prop.host[$prop.key] === undefined){
+            $prop.host.throttle($prop.name, ()=>{
+                $prop.host[$prop.name];
+            })
+        }
+        if ($prop?.$render){
+            $prop.throttle('$render', ()=> {
+                $prop.$render();
+            })
+        }
+        else{
+            for (let h of $prop[KEY]?.hosts || []){
+                if (h?.$render){
+                    h.throttle('$render', ()=>{
+                        h.$render();
+                    })
+                }
+            }
+        }
+    }
+    function toDate(v){return new Date(v)}
+    function toString(v){return v?.toString() || ''}
+    function toNumber(v){return (typeof v === 'string' ? parseFloat(v) : Number(v)) || 0}
+    function toBigInt(v) {
+        if( typeof v === 'bigint' )
+            return v;
+        if( typeof v === 'string' ) {
+            const val = /^[\-\+]?[0-9]+/.exec(v);
+            return val===null ? undefined : BigInt(val[0]);
+        }
+        const val = Math.round( Number(v) );
+        return isFinite(val) ? BigInt(val): undefined;
+    }
+    const toBool = globalThis.toBool = (v, def = false) => {
+        if (v === undefined || v === null)
+            return def;
+        switch (typeof v) {
+            case 'object': return true;
+            case 'string': return v.toLowerCase() === 'true';
+            case 'boolean': return v;
+            case 'number': return v !== 0;
+            case 'bigint': return v !== 0n;
+        }
+        return false;
+    }
+    function getTypeConverter(type){
+        switch (type) {
+            case Boolean: return toBool;
+            case Number: return toNumber;
+            case String: return toString;
+            case Date: return toDate;
+            case BigInt: return toBigInt;
+        }
+        return (val)=>{
+            return val;
+        }
+    }
+    // let DEP_TARGET;
+    const PROTOTYPE_RESERVED_WORDS = ['is', 'imports', 'extends'];
+    ROCKS.PROPERTY_FLAGS = ['$save', '$final', '$public', '$pdp', '$readOnly', '$freeze', '$group'];
+    const PROTOTYPE_SPECIAL_GROUPS = ['$listeners', '$observers', '$keyBindings', '$innerEvents'];
+    const PROPERTY_TYPES = ['Boolean', 'Number', 'String', 'Array', 'Object', 'Date', 'BigInt'];
+    const PROPERTY_SIGNS = ['$def', '$type', 'get', 'set'];
+    const PROPERTY_ATTRIBUTES = [...ROCKS.PROPERTY_FLAGS, '$label', '$list', '$multiSelect', '$attr', '$hidden', '$editor', '$description'];
+    Array:{
+        Object.defineProperty(Array.prototype, 'has', {
+            enumerable: false, configurable: true, value: Array.prototype.includes
+        });
+        Object.defineProperty(Array.prototype, 'clear', {
+            enumerable: false, configurable: true, value: function () {
+                this.splice(0);
+            }
+        });
+        Object.defineProperty(Array.prototype, 'last', {
+            enumerable: false, configurable: true, get() {
+                return this[this.length - 1];
+            }
+        });
+        Object.defineProperty(Array.prototype, 'add', {
+            enumerable: false, configurable: true, value: function (...item) {
+                let index = -1;
+                for (let i of item) {
+                    index = this.indexOf(i);
+                    if (index>-1) continue;
+                    index = this.push(i);
+                    index--;
+                }
+                return index;
+            }
+        });
+        Object.defineProperty(Array.prototype, 'remove', {
+            enumerable: false, configurable: true, value: function (...items) {
+                for (const item of items) {
+                    let idx = this.indexOf(item);
+                    if (~idx)
+                        this.splice(idx, 1);
+                }
+            }
+        });
+    }
+    String:{
         const kebabGlossary = Object.create(null);
         function toKebab(str) {
             return kebabGlossary[str] ??= str.replace(/\B([A-Z])/g, '-$1').toLowerCase();
@@ -646,8 +826,7 @@ if (!globalThis.KERNEL) {
                     return this.toLowerCase().split(' ')
                     .map((s, i) => {
                         if (i === 0) return (s === 'the') ? '' : s;
-                        if (s.length < 5) return s;
-                        return s.substring(0, 5);
+                        return s;
                     })
                     .join('-')
                     .replace(/-{2,}/g, '-')
@@ -657,201 +836,5 @@ if (!globalThis.KERNEL) {
             })
         }
     }
-    Object:{
-        Object.equal = Object.equal || function (a, b, recurse) {
-            if (a === b) return true;
-            if (!isObject(a) || !isObject(b)) return false;
-            if ((a?.__op__ || a) === (b?.__op__ || b)) return true;
-            if (recurse) {
-                for (let key in Object.assign({}, a, b))
-                    if (!Object.equal(b[key], a[key], recurse)) return false;
-                return true;
-            }
-            return false;
-        };
-    }
-    Array:{
-        const fnIncl = Array.prototype.includes;
-        Object.defineProperty(Array.prototype, 'includes', {
-            enumerable: false, configurable: true, value: function (item) {
-                return fnIncl.call(this, item) || this.indexOf(item) > -1;
-            }
-        });
-        if (!Array.prototype.nativeIndexOf) {
-            Object.defineProperty(Array.prototype, 'nativeIndexOf', { enumerable: false, configurable: true, value: Array.prototype.indexOf });
-            Object.defineProperty(Array.prototype, 'indexOf', {
-                enumerable: false, configurable: true, value: function (item) {
-                    let idx = Array.prototype.nativeIndexOf.call(this, item);
-                    if (!~idx)
-                        idx = this.findIndex(i => {
-                            return Object.equal(i, item);
-                        })
-                    return idx;
-                }
-            });
-            const push = Array.prototype.push;
-            Object.defineProperty(Array.prototype, 'push', {enumerable: false, configurable: true,
-                value: function (...args) {
-                    const old_length = this.length;
-                    const res = push.call(this, ...args);
-                    if (this.__op__){
-                        for (let i = old_length; i<this.length; i++){
-                            this[i] = makeReactive.call(this, this[i]);
-                        }
-
-                        // this[]
-                        this.__op__.proxy.length = this.length;
-                    }
-
-                    return res;
-                }
-            });
-            const pop = Array.prototype.pop;
-            Object.defineProperty(Array.prototype, 'pop', {enumerable: false, configurable: true,
-                value: function (...args) {
-                    const old_length = this.length;
-                    const res = pop.call(this, ...args);
-                    if (this.__op__){
-                        for (let i = old_length; i<this.length; i++){
-                            this[i] = makeReactive.call(this, this[i]);
-                        }
-
-                        // this[]
-                        this.__op__.proxy.length = this.length;
-                    }
-
-                    return res;
-                }
-            });
-
-            const unshift = Array.prototype.unshift;
-            Object.defineProperty(Array.prototype, 'unshift', {enumerable: false, configurable: true,
-                value: function (...args) {
-                    const old_length = this.length;
-                    const res = unshift.call(this, ...args);
-                    if (this.__op__){
-                        for (let i = old_length; i<this.length; i++){
-                            this[i] = makeReactive.call(this, this[i]);
-                        }
-
-                        // this[]
-                        this.__op__.proxy.length = this.length;
-                    }
-
-                    return res;
-                }
-            });
-
-            const splice = Array.prototype.splice;
-            Object.defineProperty(Array.prototype, 'splice', {enumerable: false, configurable: true,
-                value: function (...args) {
-                    const res = splice.call(this, ...args);
-                    if (this.__op__)
-                        this.__op__.proxy.length = this.length;
-                    return res;
-                }
-            });
-
-            const slice = Array.prototype.slice;
-            Object.defineProperty(Array.prototype, 'slice', {enumerable: false, configurable: true,
-                value: function (...args) {
-                    const res = slice.call(this, ...args);
-                    if (this.__op__)
-                        this.__op__.proxy.length = this.length;
-                    return res;
-                }
-            });
-
-            Object.defineProperty(Array.prototype, 'has', {
-                enumerable: false, configurable: true, value: Array.prototype.includes
-            });
-            Object.defineProperty(Array.prototype, 'clear', {
-                enumerable: false, configurable: true, value: function () {
-                    this.splice(0);
-                }
-            });
-            Object.defineProperty(Array.prototype, 'last', {
-                enumerable: false, configurable: true, get() {
-                    return this[this.length - 1];
-                }
-            });
-            Object.defineProperty(Array.prototype, 'add', {
-                enumerable: false, configurable: true, value: function (...item) {
-                    let index = -1;
-                    for (let i of item) {
-                        index = this.indexOf(i);
-                        if (index>-1) continue;
-                        index = this.push(i);
-                        index--;
-                    }
-                    return index;
-                }
-            });
-            Object.defineProperty(Array.prototype, 'remove', {
-                enumerable: false, configurable: true, value: function (...items) {
-                    for (const item of items) {
-                        let idx = this.indexOf(item);
-                        if (~idx)
-                            this.splice(idx, 1);
-                    }
-                }
-            });
-            if (!Array.prototype.findLast) {
-                function findLastPolyfill (cb) {
-                    if (this === null) {
-                      throw new TypeError('Array.prototype.findLast called on null or undefined');
-                    } else if (typeof cb !== 'function') {
-                      throw new TypeError('callback must be a function');
-                    }
-                    var list = Object(this);
-                    var length = list.length >>> 0;
-                    if (length === 0) return;
-                    var thisArg = arguments[1];
-                    for (var i = length-1; i >=0; i--) {
-                      var element = list[i];
-                      if ( cb.call(thisArg, element, i, list) ) {
-                        return element;
-                      }
-                    }
-                  };
-                Object.defineProperty(Array.prototype, 'findLast', {
-                    enumerable: false, configurable: true, value: findLastPolyfill
-                });
-            }
-        }
-    }
-
-    function isNativeObject(obj) {
-        return obj && (obj.constructor === Object);//toString.call(obj) === '[object Object]';
-    }
-    globalThis.toBool =  globalThis.toBool || function toBool(v, def = false) {
-        if (v === undefined || v === null)
-            return def;
-        switch (typeof v) {
-            case 'object': return true;
-            case 'string': return v.toLowerCase() === 'true';
-            case 'boolean': return v;
-            case 'number': return v !== 0;
-        }
-        return false;
-    }
-    function toType(type, value) {
-        switch (type) {
-            case Boolean: return toBool(value);
-            case Number: return parseFloat(value) || 0;
-            case String: return value?.toString() || '';
-            case Date: return new Date(value);
-            default: return value;
-        }
-    }
-    globalThis.toType = toType;
-    function createFunc(vars, expr, prototype = {}) {
-        try {
-            return new Function(vars, `with (this) {return (${expr})}`);
-        }
-        catch (e) {
-            console.error('%c' + expr + '\r\n', 'color: black; font-weight: bold; padding: 4px;', prototype.is, prototype.url, e);
-        }
-    }
 }
-export default globalThis.KERNEL;
+export default globalThis.ROCKS;

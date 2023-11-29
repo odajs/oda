@@ -1,100 +1,62 @@
 ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     template: /*html*/`
-    <oda-dialog-footer ~if="control" ref="footer" :control class="no-flex" slot="*" :buttons :hide-ok-button :hide-cancel-button>
-    </oda-dialog-footer>
+        <oda-dialog-footer ~if="control && (buttons?.length || !hideOkButton || !hideCancelButton)" class="no-flex" slot="*"></oda-dialog-footer>
     `,
-    buttons: [],
-    get focusedButton() {
-        return this.buttons.find(b => b.focused) || null;
-    },
-    set focusedButton(n){
-
-    },
-    props: {
-        title: 'Dialog'
-    },
-    hideOkButton: false,
-    hideCancelButton: false,
-    okDisabled: false,
-    listeners: {
-        dblclick(e) {
-            e.stopPropagation();
-            this.ok();
-        }
-    },
-    _onKeyDown(e) {
-        switch (e.keyCode) {
-            case 13 /* enter */: this.ok(); break;
-            case 27 /* esc */: this.cancel(); break;
-        }
-    },
-    attached() { this.listen('keydown', '_onKeyDown', { target: window}) },
-    detached() { this.unlisten('keydown', '_onKeyDown', { target: window}) },
-    async ok(item = this.focusedButton) {
-        if (typeof item?.execute === 'function')
-            await item?.execute();
-        (this.domHost || this).fire('ok', item)
-    },
-    cancel() { (this.domHost || this).fire('cancel') }
-})
-ODA({is: 'oda-dialog-footer',
-    template: /*html*/`
-    <style>
-        :host{
-            @apply --horizontal;
-            @apply --header;
-            @apply --shadow;
-            padding: 4px;
-        }
-        oda-button{
-            margin: 4px;
-            padding: 4px;
-            min-width: 50px;
-            opacity: .7;
-            @apply --content;
-            @apply --raised;
-            transition: opacity .2s;
-            border-radius: 4px;
-        }
-        oda-button:hover{
-            opacity: 1;
-        }
-        :host>div{
-            flex-wrap: wrap;
-        }
-    </style>
-    <div class="flex horizontal" style="justify-content: space-around">
-        <slot class="flex"></slot>
-        <slot class="flex" name="footer"></slot>
-        <oda-button ~is="item?.is || 'oda-button'" class="flex" ~props="item" :focused="item === focusedButton?.item" ~for="buttons" @tap="clickBtn($event)" :item :tabindex="index+1" @focusin="onFocusIn" :label="item?.label?.call?.(this, control) || item?.label" :disabled="item?.disabled?.call(this, control)"></oda-button>
-    </div>
-    <div class="no-flex horizontal" style="margin-left: 16px">
-        <oda-button hide-icon ~if="!hideOkButton" @tap="ok" :disabled="okDisabled" style="font-weight: bold;" tabindex="0" @focusin="onFocusIn" >OK</oda-button>
-        <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="0" @focusin="onFocusIn" >Cancel</oda-button>
-    </div>
-    `,
-    clickBtn(e) {
-        if (e.target.hasAttribute('disabled'))
-            return;
-
-        this.ok(e.target)
-    },
-    control: {},
-    props: {
+    title: 'Dialog',
+    $pdp:{
         buttons: [],
         hideOkButton: false,
         hideCancelButton: false,
-    },
-    onFocusIn(e) {
-        this.focusedButton = e.target
-        // console.log(this.focusedButton)
-    },
-    onBlur(e) {
-        this.focusedButton = null
-    },
-    listeners:{
-        pointerdown(e){
-            e.stopPropagation();
+        okDisabled: false,
+        okLabel: 'OK',
+        get focusedButton() {
+            return this.buttons.find(b => b.focused) || null;
         }
+    },
+    $keyBindings:{
+        enter(e){
+            this.ok(this.focusedButton)
+        }
+    },
+    ok(item) {
+        this.container.fire('ok', item)
     }
+})
+ODA({is: 'oda-dialog-footer',
+    template: /*html*/`
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --header;
+                @apply --shadow;
+                padding: 4px;
+            }
+            oda-button {
+                margin: 4px;
+                padding: 4px;
+                min-width: 50px;
+                opacity: .7;
+                @apply --content;
+                @apply --raised;
+                transition: opacity .2s;
+                border-radius: 4px;
+                outline: none;
+            }
+            oda-button:hover {
+                opacity: 1;
+            }
+            :host > div {
+                flex-wrap: wrap;
+            }
+        </style>
+        <div class="flex horizontal">
+            <slot class="flex"></slot>
+            <slot class="flex" name="footer"></slot>
+            <oda-button ~is="$for.item?.is || 'oda-button'" class="no-flex" ~props="$for.item" @tap="ok($for.item)" :icon="$for.item.icon" :sub-icon="$for.item.subIcon" :focused="$for.item === focusedButton" ~for="buttons"  :item="$for.item" :tabindex="$for.index+1" @focus="focusedButton = $for.item" :label="$for.item?.label?.call?.(this, control) || $for.item?.label" :disabled="$for.item?.disabled?.call?.(this, control) ?? $for.item?.disabled"></oda-button>
+        </div>
+        <div class="no-flex horizontal">
+            <oda-button hide-icon ~if="!hideOkButton" @tap.stop="ok" :disabled="okDisabled" style="font-weight: bold;" :focused="!focusedButton"  tabindex="0" @focus="focusedButton = null">{{okLabel}}</oda-button>
+            <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px">Cancel</oda-button>
+        </div>
+    `,
 })

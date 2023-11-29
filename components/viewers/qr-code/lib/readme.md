@@ -1,0 +1,1 @@
+## [https://www.webcomponents.org/element/webcomponent-qr-code](https://www.webcomponents.org/element/webcomponent-qr-code)

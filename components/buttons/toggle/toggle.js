@@ -41,11 +41,11 @@ ODA({is: 'oda-toggle', template: /*html*/`
         }
     </style>
     <input type="checkbox" ::checked="toggled">`,
-    props: {
+    $public: {
         toggled: false,
         size: {
-            type: Number,
-            default: 24,
+            $type: Number,
+            $def: 24,
             set(size) {
                 this.style.setProperty('--toggle-size', String(size));
             }

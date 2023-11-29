@@ -1,12 +1,13 @@
 /* * oda.js v3.0
- * (c) 2019-2022 Roman Perepelkin, Vadim Biryuk, Alexander Uvarov
+ * (c) 2019-2022 Roman Perepyolkin, Vadim Biryuk, Alexander Uvarov
  * Under the MIT License.
  */
 import './rocks.js';
+import aliases from './aliases.js';
+import ODAStyles from './tools/styles/styles.js'
 'use strict';
 if (!window.ODA?.IsReady) {
-    // window.document.body.style.visibility = 'hidden';
-    const makeReactive = KERNEL.makeReactive;
+    // document.body.style.visibility = 'hidden';
     const domParser = new DOMParser();
     const pointerDownListen = (win = window) => {
         try { //cross-origin
@@ -18,7 +19,7 @@ if (!window.ODA?.IsReady) {
             win.addEventListener('pointerdown', (e) => {
                 ODA.mousePos = new DOMRect(e.pageX, e.pageY);
             }, true)
-            Array.from(win).forEach(w => pointerDownListen(w));
+            // Array.from(win).forEach(w => pointerDownListen(w));
         } catch (err) {
             console.error(err);
         }
@@ -26,35 +27,47 @@ if (!window.ODA?.IsReady) {
     function isObject(obj) {
         return obj && typeof obj === 'object';
     }
-    async function regComponent(prototype, context) {
-        let regTime = Date.now();
-        // console.log(prototype.is, '==>')
-        if (window.customElements.get(prototype.is)) return prototype.is;
-        try {
-            if (prototype.imports){
-                if (typeof prototype.imports === 'string')
-                    prototype.imports = prototype.imports.split(',').map(i=>i.trim());
-                for (let imp of prototype.imports){
-                    const i = ODA.import(imp, context, prototype);
-                    if (i?.then)
-                        await i;
-                }
-            }
-            clearExtends(prototype);
-            let parents = prototype.extends.reduce((res, ext) => {
-                ext = ext.trim();
-                if (ext === 'this')
-                    res.push(ext)
-                else if (ext.includes('-')) {
-                    let parent = ODA.telemetry.components[ext] || ODA.tryReg(ext, context);
-                    res.push(parent)
-                }
-                return res
-            }, [])
-            if (parents.some(p => p.then)) {
-                parents = await Promise.all(parents)
-            }
 
+    function loadImports(prototype) {
+        if (prototype.imports) {
+            if (!Array.isArray(prototype.imports)) {
+                prototype.imports = prototype.imports.split(',').map(i => i.trim());
+            }
+            const imports = prototype.imports.map(s => s.trim()).filter(Boolean).map(i => ODA.import(i, prototype));
+            if (imports.some(i => i.then)) {
+                return Promise.all(imports);
+            }
+            else {
+                return imports;
+            }
+        }
+        else {
+            return [];
+        }
+    }
+
+    function getParents(prototype) {
+        clearExtends(prototype);
+        let parents = prototype.extends.map(s => s.trim()).filter(Boolean).reduce((res, ext) => {
+            ext = ext.trim();
+            if (ext === 'this')
+                res.push(ext);
+            else if (ext.includes('-')) {
+                let parent = ODA.telemetry.components[ext] || ODA.waitDependence(ext);
+                res.push(parent);
+            }
+            return res;
+        }, []);
+        if (parents.some(p => p.then)) {
+            return Promise.all(parents);
+        }
+        else {
+            return parents;
+        }
+    }
+
+    function finalizeRegistration(prototype, imports = [], parents = []) {
+        try{
             let template = prototype.template || '';
             if (parents.length) {
                 let templateExt = '';
@@ -64,981 +77,243 @@ if (!window.ODA?.IsReady) {
                         template = null;
                     }
                     else
-                        templateExt += parent.prototype.template;
+                        templateExt += parent.prototype.$template;
                 }
                 if (template)
                     templateExt += template;
                 template = templateExt;
+                parents = parents.filter(i => i?.constructor === Object);
+                prototype.extends = parents.map(i => i.el);
+
             }
             const doc = domParser.parseFromString(`<template>${template || ''}</template>`, 'text/html');
             template = doc.querySelector('template');
-            //
             const styles = Array.prototype.filter.call(template.content.children, i => i.localName === 'style');
-            const static_rules = [];
-            const recalc_rules = [];
             for (let style of styles) {
-                let css = style.textContent.trim();
+                let css = style.textContent;//.split('\n')
                 while (css.includes('@apply'))
-                    css = ODA.applyStyleMixins(css);
-
+                    css = ODAStyles.applyStyleMixins(css);
                 let ss = new CSSStyleSheet();
                 ss.replaceSync(css);
-                style.textContent = css
-                if (!css.startsWith('{{')){
-                    for (let i of ss.rules){
-                        if (INLINE_EXPRESSION.test(i))
-                            recalc_rules.push(i);
-                        else
-                            static_rules.push(i);
-                    }
-                    // style.remove();
-                }
+                style.textContent = css;
+                // template.content.insertBefore(style, template.content.children[0])
+                // todo доделать слияние стилей
             }
-            // if (recalc_rules.length){
-            //     const el = document.createElement('style');
-            //     el.setAttribute('scope', 'recalc');
-            //     el.textContent = recalc_rules.map(rule => {
-            //         return rule.cssText;
-            //     }).join('\r');
-            //     template.content.insertBefore(el, template.content.firstChild);
-            // }
-            //
-            // if (static_rules.length){
-            //     const el = document.createElement('style');
-            //     el.setAttribute('scope', 'static');
-            //     el.textContent = static_rules.map(rule => {
-            //         const i = rule.selectorText;
-            //         if (Array.isArray(rule))
-            //             return '\r' + i + '{\r\t' + rule.join('\r\t') + '\r}';
-            //         return '\r' + i + '{\r\t' + Object.keys(static_rules).map(i => {
-            //             return i + '{\r\t\t' + rule[i].join('\r\t\t') + '\r\t}';
-            //         }).join('\r') + '\r}';
-            //     }).join('\r');
-            //     template.content.insertBefore(el, template.content.firstChild);
-            // }
-            //
+            while (styles.length) {
+                template.content.insertBefore(styles.pop(), template.content.firstChild);
+            }
 
-            // const keys = Object.keys(rules);
-            // if (keys.length) {
-            //     const el = document.createElement('style');
-            //     el.textContent = keys.map(i => {
-            //         const rule = rules[i];
-            //         if (Array.isArray(rule))
-            //             return '\r' + i + '{\r\t' + rule.join('\r\t') + '\r}';
-            //         return '\r' + i + '{\r\t' + Object.keys(rule).map(i => {
-            //             return i + '{\r\t\t' + rule[i].join('\r\t\t') + '\r\t}';
-            //         }).join('\r') + '\r}';
-            //     }).join('');
-            //     template.content.insertBefore(el, template.content.firstElementChild);
-            // }
-            prototype.template = template.innerHTML.trim();
-            ODA.telemetry.components[prototype.is] = { prototype: prototype, count: 0, render: 0 };
-            convertPrototype(prototype, parents);
-            let options;
-            let el;
-            if (prototype.extends.length === 1 && !prototype.extends[0].includes('-')) {
-                el = document.createElement(prototype.extends[0]).constructor
-                prototype.native = prototype.extends[0];
-                el = ComponentFactory(prototype, el);
-                options = { extends: prototype.extends[0] }
+            prototype.$template = template.innerHTML.trim();
+            delete prototype.template;
+            prototype.$system.$styles = [...(ODAStyles.adopted || [])]
+            const children = parseJSX(prototype, prototype.$template);
+
+            const sk = Object.getOwnPropertyDescriptor(prototype, '$saveKey');
+
+            Object.defineProperty(prototype, '$saveKey', {
+                configurable: true,
+                enumerable: false,
+                get() {
+                    let value = sk?.get?.call(this);
+                    if (value === undefined)
+                        value = '';
+                    return value;
+                },
+                set(n) {
+                    this[CORE_KEY].loaded = {};
+                    this['#$savePath'] = undefined;
+                    Object.values(this.constructor.__rocks__.descrs).filter(i => i.$save).forEach(i => {
+                        const val = this.$loadPropValue(i.name);
+                        if (val !== undefined)
+                            this[i.name] = val;
+                    });
+                }
+            });
+
+
+            const el = class extends odaComponent.ROCKS(prototype) {
+                constructor() {
+                    super(...arguments);
+                    Object.assign(this[CORE_KEY], {
+                        test: {},
+                        children,
+                        pdp,
+                        attributes: new Map(),
+                        slotted: new Set()
+                    });
+                    if (this.isConnected) {
+                        for (let i in this.constructor.__rocks__.descrs) {
+                            const desc = Object.getOwnPropertyDescriptor(this, i);
+                            if (desc) {
+                                delete this[i];
+                                this[i] = desc.value;
+                            }
+                        }
+                    }
+                    this[CORE_KEY].shadowRoot = this.attachShadow({ mode: 'closed' });
+                    this[CORE_KEY].shadowRoot.adoptedStyleSheets = prototype.$system.$styles;
+
+
+                    this.async(() => {
+                        for (let a of this.attributes) {
+                            let val = a.value;
+                            val = (val === '') ? true : (val === undefined ? false : val);
+                            const key = a.name.toCamelCase();
+                            const prop = this.constructor.__rocks__.descrs[key];
+                            if (prop && !prop.$readOnly)
+                                this[key] = prop.toType(val);
+                        }
+                        prototype.$listeners.keydown = function (e) {
+                            const e_key = e.key.toLowerCase();
+                            const e_code = e.code.toLowerCase();
+                            const key = Object.keys(this.$keys).find(key => {
+                                return key.toLowerCase().split(',').some(v => {
+                                    return v.split('+').every(s => {
+                                        if (!s) return false;
+                                        const k = s.trim() || ' ';
+                                        switch (k) {
+                                            case 'ctrl':
+                                                return e.ctrlKey;
+                                            case 'shift':
+                                                return e.shiftKey;
+                                            case 'alt':
+                                                return e.altKey;
+                                            default:
+                                                return k === e_key || k === e_code || `key${k}` === e_code;
+                                        }
+                                    })
+                                });
+                            });
+                            if (key) {
+                                let handler = this.$keys[key];
+                                if (typeof handler === 'string')
+                                    handler = prototype[handler];
+                                handler.call(this, e);
+                            }
+                        }
+                        for (let n in prototype.$listeners) {
+                            const fn = prototype.$listeners[n];
+                            let args = false;
+                            if (fn.constructor === String) {
+                                prototype.$listeners[n] = this.__proto__[fn];
+                            }
+                            // if(n === 'mousewheel' || n === 'wheel') args = {passive: true}
+                            this.addEventListener(n, prototype.$listeners[n].bind(this), args);
+                        }
+                        for (let n in prototype.$innerEvents) {
+                            const fn = prototype.$innerEvents[n];
+                            if (fn.constructor === String) {
+                                prototype.$innerEvents[n] = this.__proto__[fn];
+                            }
+                            this[CORE_KEY].shadowRoot.addEventListener(n, prototype.$innerEvents[n].bind(this));
+                        }
+                        observedAttrProps.forEach(i => { //инициализация $attrs свойств ВАЖНО!!!
+                            this[i.name];
+                        });
+                        this.ready?.();
+                    });
+                }
+                static get observedAttributes() {
+                    return observedAttributes;
+                }
+                attributeChangedCallback(name, o, n) {
+                    if (name === 'slot') {
+                        this.throttle('$render', ()=>{
+                            this.$render();
+                        }, 16)
+                    }
+                    else {
+                        n = (n === '') ? true : n;
+                        observedAttrProps.filter(i => i.$attr === name).forEach(i => {
+                            this[i.name] = n;
+                        });
+                    }
+                }
+                $super(parentName, name, ...args) {
+                    const components = ODA.telemetry.components;
+                    if (parentName && components[parentName]) {
+                        const proto = components[parentName].prototype;
+                        const descriptor = Object.getOwnPropertyDescriptor(proto, name);
+                        if (!descriptor) {
+                            throw new Error(`Not found super: "${name}" `);
+                        }
+                        if (typeof descriptor.value === 'function')
+                            return descriptor.value.call(this, ...args);
+                        if (descriptor.get)
+                            return descriptor.get.call(this);
+                        return undefined;
+                    }
+                }
+            };
+            const pdp = Object.values(el.__rocks__.descrs).filter(i => i.$pdp && !COMPONENT_HOOKS.includes(i.name)).map(i => {
+                const name = i.name;
+                return (i.value?.constructor === Function) ?
+                    { name, value: i.value } :
+                    {
+                        name, get() { return this.domHost[name]; },
+                        set(val) { this.domHost[name] = val; }
+                    };
+            });
+            const observedAttrProps = Object.values(el.__rocks__.descrs).filter(i => i.$attr);
+            const observedAttributes = observedAttrProps.filter(i => !i.$readOnly).map(i => {
+                if (i.$attr === true)
+                    return i.name;
+                return i.$attr;
+            });
+            observedAttributes.push('slot');
+            Object.defineProperty(el, 'name', { value: prototype.is });
+            Object.defineProperty(el, Symbol.toStringTag, { value: '<' + prototype.is + '>', enumerable: false, configurable: false });
+
+            window.customElements.define(prototype.is, el);
+            if (!el) {
+                console.warn(`No custom element class in "${prototype.is}"`);
             }
-            else
-                el = ComponentFactory(prototype);
-            window.customElements.define(prototype.is, el, options);
+            const component = ODA.telemetry.components[prototype.is] = { prototype, el };
             ODA.telemetry.last = prototype.is;
-            console.log(prototype.is, (Date.now() - regTime) + ' ms', '- ok')
+            if (ODA.wait?.[prototype.is]?.reg) {
+                ODA.wait[prototype.is].reg(component);
+                delete ODA.wait[prototype.is];
+            }
+            return prototype.is;
         }
+        catch (e){
+            console.error(prototype.is, e);
+        }
+    }
+
+    function regComponent(prototype) {
+        if (window.customElements.get(prototype.is)) return prototype.is;
+        // try {
+            const imports = loadImports(prototype);
+            if (imports.then){
+                return imports.then(imp=>{
+                    let parents = getParents(prototype);
+                    if(parents.then){
+                        return parents.then(par =>{
+                            return finalizeRegistration(prototype, imp, par);
+                        })
+                    }
+                    return finalizeRegistration(prototype, imp, parents);
+                })
+            }
+            let parents = getParents(prototype);
+            if(parents.then){
+                return parents.then(par =>{
+                    return finalizeRegistration(prototype, imports, par);
+                })
+            }
+            return finalizeRegistration(prototype, imports, parents);
+
+
+/*        }
         catch (e) {
             console.error(prototype.is, e);
         }
         finally {
-            delete ODA.deferred[prototype.is];
             delete prototype.$system.reg;
-        }
+        }*/
     }
-    function ComponentFactory(prototype, proto = HTMLElement) {
-        function callHook(hook, ...args) {
-            // this.fire(hook, ...args);
-            try {
-                prototype[hook]?.call(this, ...args);
-            } catch (err) {
-                console.warn(err);
-            }
-        }
-        const core = {
-            reflects: [],
-            prototype: prototype,
-            node: { tag: '#document-fragment', id: 0, dirs: [] },
-            defaults: {},
-            intersect: new IntersectionObserver(entries => {
-                let wakes = [];
-                for (let i = 0, entry, l = entries.length; i < l; i++) {
-                    entry = entries[i];
-                    entry.target.$rect = entry.boundingClientRect;
-                    entry.target.$sleep = !entry.isIntersecting && !entry.target.$wake;
-                    if (!entry.target.$sleep && entry.target.$core)
-                        wakes.push(entry.target.domHost);
-                }
-                if (!wakes.length) return;
-                // ODA.mutate(()=>{
-                wakes.forEach(i=>i.render())
-                // })
-            }, { rootMargin: '10%', threshold: 0.0 }),
-            resize: new ResizeObserver(entries => {
-                for (const entry of entries) {
-                    entry.target.$rect = entry.contentRect;
-                    if (entry.target.__events?.has('resize'))
-                        entry.target.fire('resize');
-                }
-            })
-        };
-        class odaComponent extends proto {
-            constructor() {
-                super();
-                Object.defineProperty(this, '$$id', {
-                    value: nextId()
-                })
-                Object.defineProperty(this, '$proxy', {
-                    value: makeReactive.call(this, this)
-                })
-                Object.defineProperty(this, '$core', {
-                    value: Object.assign({}, core)
-                })
-                this.$core.slotted = [];
-                this.$core.slotRefs = Object.create(null);
-                this.$core.events = Object.create(null);
-                this.$core.debounces = new Map();
-                this.$core.intervals = Object.create(null);
-                this.$core.listeners = Object.create(null);
-                Object.defineProperty(this, 'props', {
-                    value: prototype.props
-                })
-                for (let list in prototype.$system.lists){
-                    this.$system ??= {};
-                    this.$system.lists ??={};
-                    this.$system.lists[list] = prototype.$system.lists[list].bind(this)
-                }
 
-                const defs = Object.create(null);
-                for (let i in core.defaults) {
-                    const desc = Object.getOwnPropertyDescriptor(this, i);
-                    if (desc) {
-                        defs[i] = makeReactive.call(this, desc.value);
-                        delete this[i];
-                    }
-                    this['#' + i] =  makeReactive.call(this, core.defaults[i]);
-                }
-
-                try {
-                    this.$core.root = this.$core.shadowRoot = this.attachShadow({ mode: 'closed' });
-                    this.$core.root.adoptedStyleSheets =  [...(prototype.$system.$styles || []), ...(ODA.adopted || [])];
-                }
-                catch (e) {
-                    this.$core.root = this.$core.shadowRoot = new DocumentFragment()
-                }
-                callHook.call(this, 'created');
-                ODA.telemetry.components[prototype.is].count++;
-                ODA.telemetry.components.count++;
-                if (prototype.hostAttributes) {
-                    this.async(() => {
-                        for (let a in prototype.hostAttributes) {
-                            let val = prototype.hostAttributes[a];
-                            val = (val === '') ? true : (val === undefined ? false : val);
-                            this.setProperty(a, val);
-                        }
-                    });
-                }
-                for (let a of this.attributes) {
-                    let val = a.value;
-                    val = (val === '') ? true : (val === undefined ? false : val);
-                    this.setProperty(a.name, val);
-                }
-                for (let i in defs) {
-                    this[i] = defs[i];
-                }
-                // this.$core.renderer = render.bind(this);
-                if (this.$core.shadowRoot) {
-                    this.$core.resize.observe(this);
-                    for (let i in this.$core.saveProps){
-                        const val = this.$loadPropValue(i);
-                        if (val !== undefined)
-                            this[i] = val;
-                    }
-                    callHook.call(this, 'ready');
-                    // this.render();
-                }
-            }
-            connectedCallback() {
-                if (this._on_disconnect_timer){
-                    clearTimeout(this._on_disconnect_timer)
-                    this._on_disconnect_timer = 0;
-                    return;
-                }
-                if (!this.$core.pdp) {
-                    this.$core.pdp = {}
-                    if (this.domHost){
-                        let pdp = Object.assign({}, Object.getOwnPropertyDescriptors(this.domHost.constructor.prototype), Object.getOwnPropertyDescriptors(this.domHost))
-                        for (const key in pdp) {
-                            let desc = pdp[key]
-                            if (
-                                key in this
-                                || (!desc.get && !desc.set && (typeof desc.value !== 'function'))
-                                || key.startsWith('_')
-                                || key.startsWith('#')
-                                || key.startsWith('$obs$')
-                                || key.startsWith('$$style')
-                                || hooks.includes(key)
-                            ) continue
-
-
-                            this.$core.pdp[key] = desc
-                            if (typeof desc.value === 'function') {
-                                desc = Object.assign({}, desc, { value: desc.value.bind(this) })
-                            }
-                            else {
-                                desc = {
-                                    get() {
-                                        return this.domHost[key]
-                                    },
-                                    set(val) {
-                                        this.domHost[key] = val;
-                                    }
-                                }
-                            }
-                            Object.defineProperty(this, key, desc)
-                        }
-                    }
-                }
-                for (const key in this.$core.observers) {
-                    for (const h of this.$core.observers[key])
-                        h.call(this);
-                }
-                for (let event in prototype.listeners) {
-                    this.$core.listeners[event] = (e) => {
-                        prototype.listeners[event].call(this, e, e.detail);
-                    };
-                    this.addEventListener(event, this.$core.listeners[event]);
-                }
-                this.async(()=>{
-                    this.render();
-                    callHook.call(this, 'attached');
-                    Array.prototype.forEach.call(this.attributes, a=>{
-                        let val = a.value;
-                        val = (val === '') ? true : (val === undefined ? false : val);
-                        this.setProperty(a.name, val);
-                    })
-                })
-            }
-            disconnectedCallback() {
-                this._on_disconnect_timer = setTimeout(() => {
-                    this.__op__.hosts = new Map();
-                    this.__op__.blocks = Object.create(null);
-                    for (let event in prototype.listeners) {
-                        this.removeEventListener(event, this.$core.listeners[event]);
-                        delete this.$core.listeners[event];
-                    }
-                    callHook.call(this, 'detached');
-                    this._on_disconnect_timer = 0;
-                }, 100)
-                if (this.$core.slotted?.length) {
-                    requestAnimationFrame(()=>{
-                        this.render();
-                    })
-                }
-            }
-
-            static get observedAttributes() {
-                if (!prototype.$system.observedAttributes) {
-                    prototype.$system.observedAttributes = Object.keys(prototype.props).map(key => prototype.props[key].attrName);
-                    prototype.$system.observedAttributes.add('slot');
-                }
-                return prototype.$system.observedAttributes;
-            }
-            attributeChangedCallback(name, o, n) {
-                if (o === n) return;
-                const descriptor = this.props[name.toCamelCase()];
-                if (Array.isArray(descriptor?.list) && !descriptor.list.includes(n)) {
-                    return;
-                }
-                switch (descriptor?.type) {
-                    case Object: {
-                        n = createFunc('', n, prototype);
-                    } break;
-                    case Boolean: {
-                        n = (n === '') ? true : (((o === '' && n === undefined) || (n === 'false')) ? false : n);
-                    } break;
-                    default: {
-                        n = toType(descriptor?.type, n);
-                        if (n === null)
-                            return;
-                    }
-                }
-                if (name === 'slot') {
-                    this.render()
-                }
-                if (this[name.toCamelCase()] !== n)
-                    this[name.toCamelCase()] = n;
-            }
-            updateStyle(styles = {}) {
-                this.$core.style = Object.assign({}, this.$core.style, styles);
-                this.render();
-            }
-            notify(block, value) {
-                if (block?.options.target === this) {
-                    const prop = block.prop;
-                    if (prop && this.__events?.has(prop.attrName + '-changed')){
-                        this.fire(prop.attrName + '-changed', value);
-                    }
-                }
-                this.interval('render-interval', () => {
-                    for (const prop of this.$core.reflects) {
-                        const val = this[prop.name]
-                        if (val || val === 0)
-                            this.setAttribute(prop.attrName, val === true ? '' : val);
-                        else
-                            this.removeAttribute(prop.attrName);
-                    }
-                    this.render();
-                })
-                this.updated?.();
-
-
-            }
-            render(src) {
-                if (!src && this.domHost?.__render)
-                    return this.domHost?.render();
-                return this.__render ??= new Promise(async resolve =>{
-                    const time = Date.now();
-                    this.$core.prototype.$system.observers?.forEach(name => {
-                        return this[name];
-                    });
-                    // const doc = new DocumentFragment();
-                    await renderChildren.call(this, this.$core.shadowRoot /*doc*/);
-                    // let el, idx = 0;
-                    // const array = Array.from(doc.childNodes)
-                    // while (el = array[idx]){
-                    //     const old = this.$core.shadowRoot.childNodes[idx];
-                    //     if(!old)
-                    //         this.$core.shadowRoot.appendChild(el);
-                    //     else if (el.$node === old.$node){
-                    //        this.$core.shadowRoot.replaceChild(el, old);
-                    //
-                    //     }
-                    //     else{
-                    //         this.$core.shadowRoot.replaceChild(el, old);
-                    //     }
-                    //     idx++;
-                    // }
-                    this.__render = undefined;
-                    resolve(this);
-                    ODA.telemetry.add(this.localName, {' time': Date.now() - time, ' count':1});
-                    this.onRender?.();
-                    // console.log('render', this.localName, this.$$id);
-                })
-            }
-            resolveUrl(path) {
-                return prototype.$system.path + path;
-            }
-            fire(event, detail) {
-                event = new odaCustomEvent(event, { detail: { value: detail, src: this }, composed: true });
-                this.dispatchEvent(event);
-            }
-            listen(event = '', callback, props = { target: this, once: false, useCapture: false }) {
-                props.target = props.target || this;
-                if (typeof callback === 'string') {
-                    callback = this.$core.events[callback] ??= this[callback].bind(this);
-                }
-                event.split(',').forEach(i => {
-                    props.target.addEventListener(i.trim(), callback, props);
-                    if (props.once) {
-                        const once = () => {
-                            props.target.removeEventListener(i.trim(), callback, props)
-                            props.target.removeEventListener(i.trim(), once)
-                        }
-                        props.target.addEventListener(i.trim(), once)
-                    }
-                });
-            }
-            unlisten(event = '', callback, props = { target: this, useCapture: false }) {
-                props.target = props.target || this;
-                if (props.target) {
-                    if (typeof callback === 'string')
-                        callback = this.$core.events[callback];
-                    if (callback) {
-                        event.split(',').forEach(i => {
-                            props.target.removeEventListener(i.trim(), callback, props)
-                        });
-                    }
-                }
-            }
-            createElement(tagName, props = {}, inner) {
-                return this.create(...arguments);
-            }
-            create(tagName, props = {}, inner) {
-                const el = ODA.createElement(tagName, props);
-                if (inner) {
-                    if (inner instanceof HTMLElement)
-                        el.appendChild(inner);
-                    else
-                        el.textContent = inner;
-                }
-                return el;
-            }
-            get $keys(){
-                if (!this['#$keys']){
-                    this['#$keys'] = {};
-                    for (let i in prototype.keyBindings || {}){
-                        this['#$keys'][i] = prototype.keyBindings[i].bind(this);
-                    }
-                }
-                return this['#$keys'];
-            }
-            get $body(){
-                return this.domHost?.body || this.parentNode?.body || this.parentElement;
-            }
-            $loadPropValue(key){
-                this.$core.loaded ??={};
-                this.$core.loaded[key] = true;
-                return ODA.LocalStorage.create(this.$savePath).getItem(key);
-            }
-            $savePropValue(key, value){
-                if (!this.$core.loaded?.[key]) return;
-                ODA.LocalStorage.create(this.$savePath).setItem(key, value);
-            }
-            $resetSettings(){
-                ODA.LocalStorage.create(this.$savePath).clear();
-            }
-            debounce(key, handler, delay = 0) {
-                if (typeof handler === 'string')
-                    handler = this[handler].bind(this);
-                let db = this.$core.debounces.get(key);
-                if (db)
-                    delay ? clearTimeout(db) : cancelAnimationFrame(db);
-                const fn = delay ? setTimeout : requestAnimationFrame;
-                const t = fn(() => {
-                    this.$core.debounces.delete(key);
-                    handler();
-                }, delay);
-                this.$core.debounces.set(key, t)
-            }
-            interval(key, handler, delay = 0) {
-                if (typeof handler === 'string')
-                    handler = this[handler].bind(this);
-                let task = this.$core.intervals[key];
-                if (task) {
-                    task.handler = handler;
-                } else {
-                    const fn = delay ? setTimeout : requestAnimationFrame;
-                    const clearFn = delay ? clearTimeout : cancelAnimationFrame;
-                    task = {
-                        handler,
-                        id: fn(() => {
-                            clearFn(task.id);
-                            this.$core.intervals[key] = undefined;
-                            task.handler();
-                        }, delay)
-                    };
-                    this.$core.intervals[key] = task;
-                }
-            }
-            $(path){
-                return this.$core.shadowRoot.querySelector(path) || undefined;
-            }
-            $$(path){
-                return Array.from(this.$core.shadowRoot.querySelectorAll(path));
-            }
-            get $url() {
-                return prototype.$system.url;
-            }
-            // get $dir() {
-            //     return prototype.$system.dir;
-            // }
-            get $$parents() {
-                return prototype.$system.parents.filter(i=>typeof i === 'object').map(i => i.prototype.is);
-            }
-            get $$modules() {
-                return ODA.telemetry.modules[this.$url]?.filter(i => i !== prototype.is) || []
-            }
-            get $refs() {
-                if (!this.$core.refs || Object.keys(this.$core.refs).length === 0) {
-                    this.$core.refs = Object.assign({}, this.$core.slotRefs);
-                    let els = [...this.$core.shadowRoot.querySelectorAll('*'), ...this.querySelectorAll('*')];
-                    els = Array.prototype.filter.call(els, i => i.$ref);
-                    for (let el of els) {
-                        let ref = el.$ref;
-                        let arr = this.$core.refs[ref];
-                        if (Array.isArray(arr))
-                            arr.push(el);
-                        else if (el.$for)
-                            this.$core.refs[ref] = [el];
-                        else
-                            this.$core.refs[ref] = el;
-                    }
-                }
-                return this.$core.refs;
-            }
-            async(handler, delay = 0) {
-                if (typeof handler === 'string')
-                    handler = this[handler].bind(this);
-                const fn = delay?setTimeout:requestAnimationFrame;
-                return fn(()=>{
-                    handler();
-                }, delay)
-            }
-            $next(handler, tacts = 0){
-                if (tacts>0)
-                    requestAnimationFrame(()=>{
-                        this.$next(handler, tacts - 1)
-                    })
-                else {
-                    if (typeof handler === 'string')
-                        handler = this[handler].bind(this);
-                    requestAnimationFrame(handler);
-                }
-            }
-            $super(parentName, name, ...args) {
-                const components = ODA.telemetry.components;
-
-                if (parentName && components[parentName]) {
-                    const proto = components[parentName].prototype;
-                    const descriptor = Object.getOwnPropertyDescriptor(proto, name);
-                    if (!descriptor){
-                        throw new Error(`Not found super: "${name}" `);
-                    }
-                    if (typeof descriptor.value === 'function')
-                        return descriptor.value.call(this, ...args);
-                    if (descriptor.get)
-                        return descriptor.get.call(this);
-                    return undefined;
-                    // const method = proto[name];
-                    // if (typeof method === 'function') return method.call(this, ...args);
-                }
-
-            }
-        }
-        Object.defineProperty(odaComponent, 'name', {value: 'odaComponent'})
-        odaComponent.__model__ = prototype;
-        for(const name in prototype.props){
-            const prop = prototype.props[name];
-            if (prop.save) {
-                core.saveProps ??= {};
-                core.saveProps[name] = JSON.stringify(typeof prop.default === 'function'?prop.default():prop.default);
-            }
-        }
-        while (prototype.observers.length > 0) {
-            let func = prototype.observers.shift();
-            let expr;
-            let fName;
-            if (typeof func === 'function') {
-                fName = func.name;
-                expr = func.toString();
-                expr = expr.substring(0, expr.indexOf('{')).replace('async', '').replace('function', '').replace(fName, '');
-            }
-            else {
-                fName = func.slice(0, func.indexOf('(')).trim();
-                expr = func.substring(func.indexOf('(')).trim();
-            }
-            expr = expr.replace('(', '').replace(')', '').trim();
-            const vars = expr.split(',').map((prop, idx) => {
-                prop = prop.trim();
-                return { prop, func: createFunc('', prop, prototype), arg: 'v' + idx };
-            });
-            if (typeof func === 'string') {
-                const args = vars.map(i => {
-                    const idx = func.indexOf('(');
-                    func = func.slice(0, idx) + func.slice(idx).replace(i.prop, i.arg);
-                    return i.arg;
-                }).join(',');
-                func = createFunc(args, func, prototype)// prototype[fName];
-            }
-            if (!func) throw new Error(`function "${fName}" for string observer not found!!`)
-            const obsName = `$obs$${fName}`;
-            function funcObserver() {
-                let params = vars.map(v => {
-                    return v.func.call(this);
-                });
-                if (!params.includes(undefined)) {
-                    this.async(() => {
-                        params = vars.map(v => {
-                            return v.func.call(this);
-                        });
-                        func.call(this, ...params)
-                    });
-                }
-                return true;
-            }
-            if (!fName) throw new Error('ERROR: no function name!');
-            // Object.defineProperty(prototype.props, obsName, {
-            //     get: funcObserver
-            // })
-            prototype.props[obsName] = {
-                get: funcObserver
-            };
-            prototype.$system.observers.push(obsName);
-        }
-        for (let name in prototype.props) {
-            const prop = prototype.props[name];
-            prop.name = name;
-            prop.attrName = prop.attrName || name.toKebabCase();
-            if (prop.reflectToAttribute)
-                core.reflects.add(prop)
-            const key = '#' + name;
-            const desc = { enumerable: !name.startsWith('_'), configurable: true };
-            prototype.$system.blocks[key] = Object.create(null);
-            prototype.$system.blocks[key].getter = prop.get;
-            prototype.$system.blocks[key].setter = prop.set;
-            prototype.$system.blocks[key].prop = prop;
-            prototype.$system.blocks[key].key = key;
-            desc.get = function () {
-                let val = this[key];
-                if (val === undefined) {
-                    val = this.$proxy[key];
-                }
-                else if (KERNEL.dpTarget) {
-                    const block = this.__op__.blocks[key];
-                    if (!block?.deps.includes(KERNEL.dpTarget))
-                        val = this.$proxy[key];
-                }
-
-                return val;
-            }
-            desc.set = function (val) {
-                const old = this[key];
-                if (val == old) return;
-                val = toType(prop.type, val);
-                if (val === old) return;
-
-                this.$proxy[key] = val;
-                if (prop.reflectToAttribute){
-                    this.interval(key+'-attr', ()=>{
-                        // ODA.mutate(()=>{
-                        if (val || val === 0)
-                            this.setAttribute(prop.attrName, val === true ? '' : val);
-                        else
-                            this.removeAttribute(prop.attrName);
-                        // })
-
-                    })
-                }
-
-            }
-            Object.defineProperty(odaComponent.prototype, name, desc);
-
-            Object.defineProperty(core.defaults, name, {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    if (prop.get)
-                        return undefined;
-                    if (typeof prop.default === "function")
-                        return prop.default.call(this);
-                    else if (Array.isArray(prop.default))
-                        return Array.from(prop.default);
-                    else if (isObject(prop.default))
-                        return Object.assign({}, prop.default);
-                    return toType(prop.type, prop.default);
-                }
-            })
-        }
-        core.node.children = prototype.template ? parseJSX(prototype, prototype.template) : [];
-        let descriptors = Object.getOwnPropertyDescriptors(prototype);
-        for (let name in descriptors) {
-            const desc = descriptors[name];
-            if (typeof desc.value === 'function') {
-                Object.defineProperty(odaComponent.prototype, name, {
-                    enumerable: true,
-                    writable: true,
-                    value: function (...args) {
-                        return desc.value.call(this, ...args);
-                    }
-                });
-            }
-            else if (!KERNEL.reservedWords.includes(name)) {
-                if ('value' in desc) {
-                    const def = desc.value;
-                    Object.defineProperty(core.defaults, name, {
-                        configurable: true,
-                        enumerable: true,
-                        get() {
-                            if (Array.isArray(def))
-                                return Array.from(def);
-                            else if (isObject(def))
-                                return Object.assign({}, def);
-                            return def;
-                        }
-                    });
-                    desc.value = undefined;
-                    delete desc.value;
-                    delete desc.writable;
-                    delete desc.enumerable;
-                }
-                const key = '#' + name;
-                prototype.$system.blocks[key] = Object.create(null);
-                Object.assign(prototype.$system.blocks[key], { key, getter: desc.get, setter: desc.set, prop: { attrName: name.toKebabCase() } });
-                desc.get = function () {
-                    let val = this[key];
-                    if (val === undefined) {
-                        val = this.$proxy[key];
-                    }
-                    else if (KERNEL.dpTarget) {
-                        const block = this.__op__.blocks[key];
-                        if (!block?.deps.includes(KERNEL.dpTarget)) {
-                            val = this.$proxy[key];
-                        }
-                    }
-                    return val;
-                }
-                desc.set = function (v) {
-                    this.$proxy[key] = v;
-                }
-                Object.defineProperty(odaComponent.prototype, name, desc);
-
-                if(name in core.prototype){
-                    // console.log(name);
-                    Object.defineProperty(core.defaults, name, {
-                        configurable: true,
-                        enumerable: true,
-                    })
-                }
-            }
-        }
-        Object.defineProperty(odaComponent, 'name', {
-            writable: false,
-            value: prototype.is
-        });
-        return odaComponent
-    }
-    function convertPrototype(prototype, parents) {
-        prototype.$system.parents = parents;
-        prototype.$system.blocks = Object.create(null);
-        prototype.$system.lists = {};
-        prototype.props = prototype.props || {};
-        prototype.observers = prototype.observers || [];
-        prototype.$system.observers = prototype.$system.observers || [];
-
-
-        for (let key in prototype.props) {
-            let prop = prototype.props[key];
-            let getter = prop && (prop.get || (typeof prop === 'function' && !prop.prototype && prop));
-            if (getter) {
-                if (typeof prop === 'function')
-                    prototype.props[key] = prop = {};
-                if (typeof getter === 'string')
-                    getter = prototype[getter];
-                prop.get = getter;
-            }
-            let setter = prop?.set;
-            if (setter) {
-                if (typeof setter === 'string')
-                    setter = prototype[setter];
-                delete prop.observe;
-                prop.set = setter;
-            }
-            if (prop?.save){
-                let  old_set = prop.set;
-                prop.set = function (n){
-                    old_set?.call(this, n);
-                    this.$savePropValue(key, n);
-                }
-            }
-            if (typeof prop === "function") {
-                prop = { type: prop };
-            }
-            else if (Array.isArray(prop)) {
-                prop = { default: prop, type: prop.__proto__.constructor };
-            }
-            else if (prop !== null && typeof prop !== "object") {
-                prop = { default: prop, type: prop.__proto__.constructor };
-            }
-            else if (prop === null) {
-                prop = { type: Object, default: null };
-            }
-            else if (Object.keys(prop).length === 0 || (!getter && !setter && prop.default === undefined && !prop.type && !('shared' in prop))) {
-                prop = { default: prop, type: Object };
-            }
-            if (prop.shared) {
-                prototype.$system.shared = prototype.$system.shared || [];
-                prototype.$system.shared.add(key)
-            }
-            const def = (prop.default === undefined) ? (prop.value || prop.def) : prop.default;
-            if (def !== undefined){
-                if (typeof def === 'function')
-                    console.warn('Error default value type', prototype.is, prop)
-
-                prop.default = def;
-            }
-
-            delete prop.value;
-            if (prop.default !== undefined && typeof prop.default !== 'function') {
-                switch (prop.type) {
-                    case undefined: {
-                        if (Array.isArray(prop.default)) {
-                            const array = [].concat(prop.default);
-                            prop.default = function () { return [].concat(array) };
-                            prop.type = Array;
-                        }
-                        else if (isNativeObject(prop.default)) {
-                            const obj = Object.assign({}, prop.default);
-                            prop.default = function () { return Object.assign({}, obj) };
-                            prop.type = Object;
-                        }
-                        else if (prop.default === null)
-                            prop.type = Object;
-                        else {
-                            prop.type = prop.default.__proto__.constructor;
-                        }
-                    } break;
-                    case Object: {
-                        if (prop.default) {
-                            const obj = Object.assign({}, prop.default);
-                            prop.default = function () { return Object.assign({}, obj) };
-                        }
-                    } break;
-                    case Array: {
-                        const array = Array.from(prop.default);
-                        prop.default = function () { return Array.from(array) };
-                    } break;
-                }
-            }
-
-            if ('list' in prop) {
-                const desc = Object.getOwnPropertyDescriptor(prop, 'list');
-                if (desc?.get) {
-                    prototype.$system.lists[key] = desc.get;
-                }
-            }
-            prototype.props[key] = prop;
-        }
-        prototype.listeners ??= {};
-        prototype.keyBindings ??= {};
-        prototype.listeners.keydown = function (e) {
-            const e_key = e.key.toLowerCase();
-            const e_code = e.code.toLowerCase();
-            const key = Object.keys(prototype.keyBindings).find(key => {
-                return key.toLowerCase().split(',').some(v => {
-                    return v.split('+').every(s => {
-                        if (!s) return false;
-                        const k = s.trim() || ' ';
-                        switch (k) {
-                            case 'ctrl':
-                                return e.ctrlKey;
-                            case 'shift':
-                                return e.shiftKey;
-                            case 'alt':
-                                return e.altKey;
-                            default:
-                                return k === e_key || k === e_code || `key${k}` === e_code;
-                        }
-                    })
-                });
-            });
-            if (key) {
-                let handler = prototype.keyBindings[key];
-                if (typeof handler === 'string')
-                    handler = prototype[handler];
-                handler.call(this, e);
-            }
-        }
-
-        for (let event in prototype.listeners) {
-            const handler = prototype.listeners[event];
-            prototype.listeners[event] = (typeof handler === 'string') ? prototype[handler] : handler;
-        }
-
-        parents.forEach(parent => {
-            if (typeof parent === 'object') {
-                prototype.$system.observers.add(...parent.prototype.$system.observers);
-                if (parent.prototype.$system.shared) {
-                    prototype.$system.shared = prototype.$system.shared || [];
-                    prototype.$system.shared.add(...parent.prototype.$system.shared)
-                }
-                for (let key in parent.prototype.props) {
-                    let p = parent.prototype.props[key];
-                    let me = prototype.props[key];
-                    if (!me) {
-                        p = Object.assign({}, p);
-                        p.extends = parent.prototype.is;
-                        prototype.props[key] = p;
-                    }
-                    else {
-
-                        for (let k in p) {
-                            if (!(k in me)) {
-                                me[k] = p[k];
-                            }
-                            else if (k === 'type' && p[k] && me[k] !== p[k]) {
-                                const _types = new Set([...(Array.isArray(me[k]) ? me[k] : [me[k]]), ...(Array.isArray(p[k]) ? p[k] : [p[k]])]);
-                                me[k] = [..._types];
-                            }
-                        }
-                        if (!me.extends)
-                            me.extends = parent.prototype.is;
-                        else
-                            me.extends = me.extends + ', ' + parent.prototype.is;
-                    }
-                }
-                for (let key in parent.prototype.keyBindings) {
-                    if (!Object.getOwnPropertyDescriptor(prototype.keyBindings, key)) {
-                        const par = Object.getOwnPropertyDescriptor(parent.prototype.keyBindings, key);
-                        prototype.keyBindings[key] = par.value;
-                    }
-                }
-                for (let key in parent.prototype.listeners) {
-                    if (!Object.getOwnPropertyDescriptor(prototype.listeners, key)) {
-                        const par = Object.getOwnPropertyDescriptor(parent.prototype.listeners, key);
-                        prototype.listeners[key] = par.value;
-                    }
-                }
-                for (let key in parent.prototype) {
-                    const p = Object.getOwnPropertyDescriptor(parent.prototype, key);
-                    const self = Object.getOwnPropertyDescriptor(prototype, key);
-                    if (typeof p.value === 'function') {
-                        if (!self) {
-                            prototype[key] = function (...args) {
-                                return p.value.call(this, ...args);
-                            }
-                        }
-                        else if (hooks.includes(key)) {
-                            prototype[key] = function () {
-                                p.value.apply(this);
-                                if (self)
-                                    self.value.apply(this);
-                            }
-                        }
-                    }
-                    else if (!self && !KERNEL.reservedWords.includes(key)) {
-                        Object.defineProperty(prototype, key, p)
-                    }
-                }
-            }
-        });
-        Object.defineProperty(prototype, '$savePath', {
-            get() {
-                return `${this.localName}${this.$saveKey && ('/'+this.$saveKey)}`;
-            }
-        })
-        const sk = Object.getOwnPropertyDescriptor(prototype, '$saveKey')
-
-        Object.defineProperty(prototype, '$saveKey', {
-            get() {
-                let value = sk?.get?.call(this);
-                if (value === undefined)
-                    value = '';
-                return  value;
-            },
-            set(n){
-                this.$core.loaded = {};
-                this['#$savePath'] = undefined;
-                for (let i in this.$core.saveProps){
-                    const val = this.$loadPropValue(i);
-                    if (val !== undefined)
-                        this[i] = val;
-                }
-
-            }
-        })
-    }
-    const regExImport = /import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?<name>(?:".*?")|(?:'.*?'))[\s]*?(?:;|$|)/g;
     const regexUrl = /https?:\/\/(?:.+\/)[^:?#&]+/g
     const clearExtends = (proto, exts) => {
         const toRemove = [];
@@ -1064,47 +339,225 @@ if (!window.ODA?.IsReady) {
         }
         return toRemove;
     }
-    async function ODA(prototype = {}, stat = {}) {
-        if (!ODA.telemetry.components[prototype.is]) {
-            prototype.is = prototype.is.toLowerCase();
-            prototype.$system ??= Object.create(null)
-            const matches = (new Error()).stack.match(regexUrl);
-            prototype.$system.url = matches[matches.length - 1];
-            prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
-            prototype.extends = Array.isArray(prototype.extends) ? prototype.extends : prototype.extends?.split(',') || [];
-            ODA.telemetry.prototypes[prototype.is] = prototype;
-            ODA.deferred[prototype.is] = {
-                url: prototype.$system.url,
-                is: prototype.is,
-                reg: (context) => {
-                    if (ODA.telemetry.components[prototype.is]) {
-                        return ODA.telemetry.components[prototype.is]
+    class odaComponent extends HTMLElement{
+        connectedCallback() {
+            ODA.resizeObserver.observe(this);
+            ODA.intersectionObserver.observe(this);
+            this.__pdp?.forEach(i=>{
+                if(i.name in this)
+                    return;
+                Object.defineProperty(this, i.name, i)
+            })
+            if (this._on_disconnect_timer){
+                clearTimeout(this._on_disconnect_timer)
+                this._on_disconnect_timer = 0;
+                return;
+            }
+            this.async(()=>{
+                this.$render();
+                this.attached?.();
+            })
+        }
+        disconnectedCallback() {
+            ODA.resizeObserver.unobserve(this);
+            ODA.intersectionObserver.unobserve(this);
+            this._on_disconnect_timer = setTimeout(() => {
+                this._on_disconnect_timer = 0;
+                this.detached?.();
+            }, 100)
+            if (this[CORE_KEY].slotted?.size) {
+                this.async(()=>{
+                    this.$render(true);
+                })
+            }
+        }
+        setProperty(name, v){
+            if (name.includes('.')) {
+                let path = name.split('.');
+                let step;
+                for (let i = 0; i < path.length; i++) {
+                    let key = path[i].toCamelCase();
+                    if (i === 0) {
+                        if (this.props && key in this.props) {
+                            step = this[key] ??= {}
+                        }
+                        else break;
                     }
-                    else {
-                        return prototype.$system.reg ??= regComponent(prototype, context).then(() => {
-                            return ODA.telemetry.components[prototype.is]
-                        })
+                    else if (isObject(step)) {
+                        if (i < path.length - 1) {
+                            step = step[key] ??= {};
+                        } else {
+                            step[key] = v;
+                            return;
+                        }
                     }
                 }
             }
-            requestAnimationFrame(() => {
-                ODA.calledDeferred.reduce((res, d, i) => {
-                    if (d.tagName === prototype.is) {
-                        res.push(i);
-                        ODA.deferred[d.tagName]?.reg(d.context);
-                    }
-                    return res;
-                }, []).forEach(i => ODA.calledDeferred.splice(i, 1));
-            });
+            else if (name in this.__proto__) {
+                this[name] = v;
+            }
+            else if (!isObject(v)){
+                try{
+                    name = name.toKebabCase();
+                    if (v || v === 0)
+                        this.setAttribute(name, v === true ? '' : v);
+                    else
+                        this.removeAttribute(name);
+                }
+                catch (e){
+                    console.log(e)
+                }
+            }
+            else{
+                this[name] = v;
+            }
         }
-        return prototype;
+        get __pdp() {
+            const pdps = this.domHost?.__pdp || [];
+            pdps.push(...(this.domHost?.[CORE_KEY].pdp || []));
+            return pdps?.filter(desc => {
+                return  !Object.keys(this.constructor.__rocks__.descrs).some(key => key === desc.name);
+            })
+        }
+        $updateStyle(styles = {}) {
+            this[CORE_KEY].style = Object.assign({}, this[CORE_KEY].style, styles);
+            this.$render();
+        }
+        $notify($prop, val) {
+            if($prop?.$attr){
+                if (val || val === 0)
+                    this.setAttribute($prop?.$attr, val === true ? '' : val);
+                else
+                    this.removeAttribute($prop?.$attr);
+            }
+            this.updated?.();
+        }
+        $render(force) {
+
+            if(this.isConnected || force) {
+                if(this.domHost?.__render && !force)
+                    return this.domHost?.__render;
+                return this.__render ??= new Promise(async resolve =>{
+                    await renderChildren.call(this, this[CORE_KEY].shadowRoot)
+                    this[CORE_KEY].test['render'] = (this[CORE_KEY].test['render'] || 0) + 1;
+                    this.onRender?.();
+                    resolve(this);
+                    this.__render = undefined;
+                })
+            }
+            return this.__render;
+        }
+        get $keys(){
+            if (!this['#$keys']){
+                this['#$keys'] = {};
+                for (let i in this.constructor.__rocks__.prototype.$keyBindings || {}){
+                    this['#$keys'][i] = this.constructor.__rocks__.prototype.$keyBindings[i].bind(this);
+                }
+            }
+            return this['#$keys'];
+        }
+        get $body(){
+            return this.domHost?.body || this.parentNode?.body || this.parentElement;
+        }
+
+        get $savePath(){
+            return `${this.localName}${this.$saveKey && ('/'+this.$saveKey) || ''}`;
+        }
+        $loadPropValue(key){
+            this[CORE_KEY].loaded ??={};
+            this[CORE_KEY].loaded[key] = true;
+            const value = ODA.LocalStorage.create(this.$savePath).getItem(key);
+            if (value && typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    return Array.from(value);
+                }
+                return { ...value };
+            }
+            return value;
+        }
+        $savePropValue(key, value){
+            if (!this[CORE_KEY].loaded?.[key]) return;
+            ODA.LocalStorage.create(this.$savePath).setItem(key, value);
+        }
+        $resetSettings(){
+            ODA.LocalStorage.create(this.$savePath).clear();
+        }
+        get $slotted() {
+            return Array.prototype.reduce.call(this[CORE_KEY].shadowRoot.childNodes, (res, i) => {
+                if (i?.slotTarget?.parentElement)
+                    res.add(i.slotTarget.parentElement);
+                return res;
+            }, [])
+        }
+        $(path) {
+            if (!path) return null;
+            let result = this[CORE_KEY].shadowRoot?.querySelector(path);
+            if(!result){
+                for(let i of this.$slotted){
+                    result = i.querySelector(path);
+                    if(result && result.domHost === this)
+                        break;
+                    else
+                        result = null;
+                }
+            }
+            return result
+        }
+        $$(path) {
+            if (!path) return [];
+            let result =  Array.from(this[CORE_KEY].shadowRoot.querySelectorAll(path));
+            for(let i of this.$slotted){
+                const res = i.querySelectorAll(path);
+                for(let el of res){
+                    if(el.domHost === this);
+                        result.add(el)
+                }
+            }
+            return result;
+        }
+        get $url() {
+            this.constructor.__rocks__.prototype.$system.url;
+        }
+        $next(handler, tacts = 0){
+            if (tacts>0)
+                requestAnimationFrame(()=>{
+                    this.$next(handler, tacts - 1)
+                })
+            else {
+                if (typeof handler === 'string')
+                    handler = this[handler].bind(this);
+                requestAnimationFrame(handler);
+            }
+        }
     }
+    function ODA(prototype = {}, stat = {}) {
+        return ODA.telemetry.prototypes[prototype.is] ??= (() => {
+            if (ODA.telemetry.components[prototype.is]) return ODA.telemetry.components[prototype.is];
+            prototype.is = prototype.is.toLowerCase();
+            prototype.$system ??= Object.create(null);
+            const matches = (new Error()).stack.match(regexUrl);
+            prototype.$system.url = matches[matches.length - 1];
+            prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
+            prototype.extends = str2arr(prototype.extends);
+            const res = regComponent(prototype);
+            if (res.then) {
+                return res.then(() => {
+                    ODA.telemetry.prototypes[prototype.is] = prototype;
+                    return prototype.is;
+                })
+            }
+            else {
+                return res;
+            }
+        })();
+    }
+    // ODA.isHidden = true;
     ODA.regHotKey = function (key, handle){
         ODA.$hotKeys = ODA.$hotKeys || {};
         ODA.$hotKeys[key] =  handle;
     }
     document.addEventListener('keydown', async (e) =>{
-        if (!e.code.startsWith('Key')) return;
+        if (!e.code?.startsWith?.('Key')) return;
         let key = (e.ctrlKey ? 'ctrl+' : '') + (e.altKey ? 'alt+' : '') + (e.shiftKey ? 'shift+' : '') + e.code.replace('Key', '').toLowerCase();
         ODA.$hotKeys?.[key]?.(e);
     });
@@ -1112,15 +565,29 @@ if (!window.ODA?.IsReady) {
         return ODA[name] || (ODA[name] = Object.create(null));
     }
     ODA.rootPath = import.meta.url;
-    ODA.rootPath = ODA.rootPath.split('/').slice(0,-1).join('/'); //todo что-то убрать
+    ODA.rootPath = ODA.rootPath.split('/').slice(0, -1).join('/');
+    /** @type {{[key: string]: {promise: Promise<string>|undefined, reg: function|undefined}}} */
+    ODA.wait = {};
+    /** @param {string} tag */
+    ODA.waitDependence = function (tag) {
+        if (tag in ODA.telemetry.components) {
+            return ODA.telemetry.components[tag].prototype;
+        }
+        ODA.wait[tag] ??= {promise: undefined, reg: undefined};
+        ODA.wait[tag].promise ??= new Promise(resolve => {
+            ODA.wait[tag].reg = prototype => resolve(prototype);
+        });
+        return ODA.wait[tag].promise;
+    }
+    /** @param {string} tag */
+    ODA.waitReg = function (tag) {
+        return ODA.telemetry.prototypes[tag] || ODA.waitDependence(tag);
+    }
     window.ODA = ODA;
     const apples = ['Mac68K', 'MacPPC', 'MacIntel', 'iPhone', 'iPod', 'iPad',]
     ODA.isApple = apples.includes(navigator.platform);
     localStorage:{
-        ODA.LocalStorage = CLASS({id: 'odaLocalStorage',
-            ctor(path){
-                this.path = path;
-            },
+        ODA.LocalStorage = class odaLocalStorage extends ROCKS({
             get data(){
                 try{
                     const data = JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
@@ -1165,12 +632,16 @@ if (!window.ODA?.IsReady) {
                 globalThis.localStorage.removeItem(this.path);
 
             }
-        },{
-            items:{},
-            create(path){
+        }){
+            constructor(path) {
+                super();
+                this.path = path;
+            }
+            static items = {}
+            static create(path){
                 return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
             }
-        });
+        }
     }
 
     Object.defineProperty(ODA, 'top',  {
@@ -1202,6 +673,7 @@ if (!window.ODA?.IsReady) {
     //var localizationPhrase = {}
     const INLINE_EXPRESSION = /\{\{((?:.|\n)+?)\}\}/;
     function parseJSX(prototype, el, vars = []) {
+        if (!el) return []
         if (typeof el === 'string') {
             let tmp = document.createElement('template');
             tmp.innerHTML = el;
@@ -1219,40 +691,34 @@ if (!window.ODA?.IsReady) {
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
                 if(el.parentElement?.localName === 'style'){
-                    let key = '$$style' + el.$node.id;
-                    Object.defineProperty(prototype, key, {
-                        enumerable: true,
-                        configurable: false,
+                    let name = '_style' + el.$node.id;
+                    const key = '#'+name;
+                    prototype[name] = {
                         get(){
-                            return exec.call(this, fn/*, $el.$for*/);
+                            return exec.call(this, fn);
                         }
-                    })
+                    }
                     src.text.push(function ($el) {
-                        const st = this[key] || '';
-                        if ($el.textContent == st) return;
-                        $el.textContent = st;
+                        if(this[key]) return;
+                        $el.textContent = this[name] || '';
+
                     })
                 }
                 else{
                     src.text.push(function ($el) {
-                        const st = exec.call(this, fn, $el.$for);
-                        if ($el.textContent == st) return;
-                        $el.textContent = st;
+                        let res = exec.call(this, fn, $el, $el.__for)
+                        $el.textContent =  res ??= '';
                     })
                 }
             }
-            else if(el.parentElement?.localName === 'style'){
-                // el.parentElement.$node.$remove = true;
-                // prototype.$system.$styles ??=[];
-                // let ss = new CSSStyleSheet();
-                // while(value.includes('@apply'))
-                //     value = ODA.applyStyleMixins(value);
-                // ss.replaceSync(value);
-                // prototype.$system.$styles.push(ss);
-                // return;
-                // requestAnimationFrame(()=>{
-                src.textContent = value;
-                // })
+            else if(el.parentElement?.localName === 'style' && !el.parentElement.parentElement){
+                el.parentElement.$node.$remove = true;
+                let ss = new CSSStyleSheet();
+                while(value.includes('@apply'))
+                    value = ODA.applyStyleMixins(value);
+                ss.replaceSync(value);
+                prototype.$system.$styles.push(ss);
+                return;
             }
             else
                 src.textContent = value;
@@ -1293,27 +759,27 @@ if (!window.ODA?.IsReady) {
                             target.addEventListener('blur', handle);
                             target.dispatchEvent(new CustomEvent(name + '-changed', { detail: { value } }));
                         };
-                        const func = new Function(params.join(','), `with (this) {${expr} = $value}`);
+                        const func = new Function('$this,'+params.join(','), `with (this) {${expr} = $value}`);
                         src.listeners[name + '-changed'] = function func2wayBind(e, d) {
                             if (!e.target.parentNode) return;
                             let res = e.detail.value === undefined ? e.target[name] : e.detail.value;
                             if (e.target.$node.vars.length) {
                                 let idx = e.target.$node.vars.indexOf(expr);
                                 if (idx % 2 === 0) {
-                                    const array = e.target.$for[idx + 2];
-                                    const index = e.target.$for[idx + 1];
+                                    const array = e.target.__for[idx + 2];
+                                    const index = e.target.__for[idx + 1];
                                     array[index] = e.target[name];
                                     return;
                                 }
                             }
-                            if (res !== undefined || e.target.$for !== undefined) //todo понаблюдать
-                                exec.call(this, func, [res, ...(e.target.$for || [])]);
+                            if (res !== undefined || e.target.__for !== undefined) //todo понаблюдать
+                                exec.call(this, func, e.target, [res,  ...(e.target.__for || [])]);
                         };
                         src.listeners[name + '-changed'].notify = name;
                         src.listeners[name + '-changed'].expr = expr;
                     }
-                    const h = function (params) {
-                        return exec.call(this, fn, params);
+                    const h = function (params, $el) {
+                        return exec.call(this, fn, params, $el);
                     };
                     h.modifiers = modifiers;
                     src.bind = src.bind || {};
@@ -1337,7 +803,7 @@ if (!window.ODA?.IsReady) {
                     if (expr === (attr.value +'()'))
                         expr = attr.value + '($event, $detail)';
                     name = name.replace(/^@/g, '');
-                    const params = ['$event', '$detail', ...(vars || [])];
+                    const params = ['$this','$event', '$detail',  ...(vars || [])];
                     const fn = new Function(params.join(','), `with (this) {${expr}}`);
                     src.listeners = src.listeners || {};
                     // const handler = prototype[expr];
@@ -1352,7 +818,7 @@ if (!window.ODA?.IsReady) {
                         if (typeof handler === 'function')
                             result = handler.call(this, e, e.detail);
                         else
-                            result = exec.call(this, fn, [e, e.detail, ...(e.target.$for || [])]);
+                            result = exec.call(this, fn, e.target,  [e, e.detail, ...(e.target.__for || [])]);
                         if (result?.then){
                             try{
                                 await result;
@@ -1365,9 +831,6 @@ if (!window.ODA?.IsReady) {
                 }
                 else if (name === 'is')
                     src.tag = expr.toUpperCase();
-                else if (name === 'ref') {
-                    new Directive(src, name, "\'" + expr + "\'", vars);
-                }
                 else {
                     src.attrs = src.attrs || {};
                     src.attrs[name] = expr;
@@ -1394,8 +857,8 @@ if (!window.ODA?.IsReady) {
                     if (src.bind?.[key] === undefined) {
                         src.bind = src.bind || {};
                         let fn = createFunc(vars.join(','), key, prototype);
-                        src.bind[key] = function (params, $el) {
-                            let result = exec.call(this, fn, params);
+                        src.bind[key] = function ($el, params) {
+                            let result = exec.call(this, fn, $el, params);
                             if (result === undefined)
                                 result = $el[key];
                             if (result === undefined)
@@ -1409,78 +872,63 @@ if (!window.ODA?.IsReady) {
                 return parseJSX(prototype, el, vars)
             }).filter(i => i);
         }
+        if(src.children.length === 1 && src.children[0].tag === '#text')
+            src.ignoreChildren = true;
+        if(src.bind?.slot || src.attrs?.slot)
+            src.isSlotted = true;
         return src;
     }
     const tags = {
         if(tag, fn, p, $el) {
-            return  exec.call(this, fn, p)? tag : false;
+            return  exec.call(this, fn, $el, p)? tag : false;
         },
         'else-if'(tag, fn, p, $el) {
             if ($el.previousElementSibling?.nodeType !== 1)
-                return exec.call(this, fn, p) ? tag : false;
+                return exec.call(this, fn, $el, p) ? tag : false;
         },
         else(tag, fn, p, $el) {
             if ($el.previousElementSibling?.nodeType !== 1)
                 return tag;
         },
-        is(tag, fn, p) {
+        is(tag, fn, p, $el) {
             if (tag.startsWith('#'))
                 return tag;
-            return (exec.call(this, fn, p) || '')?.toUpperCase() || tag;
+            return (exec.call(this, fn, $el, p) || '')?.toUpperCase() || tag;
         }
     };
     const directives = {
         wake($el, fn, p) {
-            $el.$wake = exec.call(this, fn, p);
+            $el.$wake = exec.call(this, fn, $el, p);
         },
         'save-key'($el, fn, p) {
-            if ($el.$core) {
-                // const key =
-                $el.$saveKey =  exec.call(this, fn, p);
-                // if ($el.$core.saveKey === key) return;
-                // $el.$core.saveKey = key;
+            if ($el[CORE_KEY]) {
+                $el.$saveKey =  exec.call(this, fn, $el, p);
             }
         },
         props($el, fn, p) {
-            const props = exec.call(this, fn, p);
+            const props = exec.call(this, fn, $el,  p);
             if (Object.equal($el.__dir_props__, props, true))
-                // if ($el.__dir_props__ === props)
                 return;
             $el.__dir_props__ = props;
-            for (let i in props) {
-                if (i.startsWith('#') || i.startsWith('$')) continue;
-                let val = props[i];
-                if (val === undefined) continue;
-                const map = { class: ' ', style: ';' };
-                if (Object.keys(map).includes(i)) {
-                    const oldVal = $el.getAttribute(i);
-                    // список уникальных значений из старого и нового значения
-                    if (oldVal) val = [...new Set([...oldVal.trim().replace(/ +/g, ' ').split(map[i]), ...val.trim().replace(/ +/g, ' ').split(map[i])])].join(map[i]);
-                }
-                $el.setProperty(i, val);
-            }
-        },
-        ref($el, fn, p) {
-            const ref = exec.call(this, fn, p);
-            if ($el.$ref === ref) return;
-            $el.$ref = ref;
-            this.$core.refs = null;
+            $el.assignProps(props);
         },
         show($el, fn, p) {
-            $el.style.display = exec.call(this, fn, p) ? '' : 'none';
+            $el.style.display = exec.call(this, fn, $el, p) ? '' : 'none';
         },
         html($el, fn, p) {
-            const html = exec.call(this, fn, p) ?? '';
-            if ($el.___innerHTML == html) return;
+            const html = exec.call(this, fn, $el, p) ?? '';
+            if ($el.___innerHTML == html)
+                return;
             $el.innerHTML = $el.___innerHTML = html;
         },
         text($el, fn, p) {
-            const text =  exec.call(this, fn, p) ?? '';
-            if ($el.___textContent == text) return;
+            const text =  exec.call(this, fn, $el, p) ?? '';
+            if ($el.___textContent == text)
+                return;
             $el.textContent = $el.___textContent = text;
         },
         class($el, fn, p) {
-            let s = exec.call(this, fn, p) ?? '';
+            let s = exec.call(this, fn, $el, p) ?? '';
             if (!Object.equal($el.$class, s)) {
                 $el.$class = s;
                 if (Array.isArray(s))
@@ -1489,11 +937,13 @@ if (!window.ODA?.IsReady) {
                     s = Object.keys(s).filter(i => s[i]).join(' ');
                 if ($el.$node?.vals?.class)
                     s = (s ? (s + ' ') : '') + $el.$node.vals.class;
-                $el.setAttribute('class', s);
+                // this.throttle('set-class', ()=>{
+                    $el.setAttribute('class', s);
+                // })
             }
         },
         style($el, fn, p) {
-            let s = exec.call(this, fn, p) ?? '';
+            let s = exec.call(this, fn, $el, p) ?? '';
             if (!Object.equal($el.$style, s, true)) {
                 $el.$style = s;
                 if (typeof s === 'string') s = styleStringToArray(s);
@@ -1508,7 +958,9 @@ if (!window.ODA?.IsReady) {
                 const cur = styleStringToObject($el.getAttribute('style'));
                 s = { ...def, ...cur, ...s };
                 s = styleObjectToString(s);
-                $el.setAttribute('style', s);
+                // this.throttle('set-style', ()=>{
+                    $el.setAttribute('style', s);
+                // })
             }
         }
     };
@@ -1530,66 +982,53 @@ if (!window.ODA?.IsReady) {
         }
     }
     function forDirective(prototype, src, name, expr, vars, attrName) {
-        const newVars = expr.replace(/\s(in|of)\s/, '\n').split('\n');
-        expr = newVars.pop();
-        const params = (newVars.shift() || '').replace('(', '').replace(')', '').split(',').map(s => s.trim());
-        forVars.forEach((varName, i) => {
-            let p = (params[i] || forVars[i]).trim();
-            let pp = p;
-            let idx = 1;
-            while (vars.find(v => p === v)) {
-                p = pp + idx; ++idx;
-            }
-            newVars.push(p);
-        });
-        src.vars = [...vars];
-        src.vars.push(...newVars);
+        const idx = vars.length + 1;
+        src.vars = [...vars, '$'.repeat(idx)+'for'];
         src.el.removeAttribute(attrName);
         const child = parseJSX(prototype, src.el, src.vars);
         const fn = createFunc(src.vars.join(','), expr, prototype);
-        function createForArray(items, p){
+        const h = function (p = []) {
+            let items = exec.call(this, fn, undefined, p);
+            if (typeof items === 'string')
+                items = items.split('');
+            else if (isObject(items) && !Array.isArray(items)){
+                return Object.keys(items).map((key, index)=>{
+                    return {child, params: [...p, {item: items[key], index, items, key}]}
+                });
+            }
             if (!Array.isArray(items)) {
                 items = +items || 0;
                 if (items < 0)
                     items = 0
                 items = new Array(items);
-                if (items < 0)
-                    items = 0;
                 for (let i = 0; i < items.length; items[i++] = i);
             }
-            const forFunc = (item, index)=>{
-                return { child, params: [...p, item, index, items, index] }
-            }
-            return items.map(forFunc);
-        }
-        const h = function (p = []) {
-            let items = exec.call(this, fn, p);
-            if (items?.then){
-                return items.then(res=>{
-                    return createForArray(res, p)
-                })
-            }
-            else if (typeof items === 'string')
-                items = items.split('');
-            else if (isObject(items) && !Array.isArray(items)){
-                const forFunc = (key, index)=>{
-                    return {child, params: [...p, items[key], index, items, key]}
-                }
-                return Object.keys(items).map(forFunc);
-            }
-            return createForArray(items, p);
-
+            return items.map((item, index)=>{
+                return { child, params: [...p, {item, index, items, key: index}] }
+            });
         };
         h.src = child;
         return h;
     }
 
-    const  _createElement = document.createElement;
-    document.createElement = function (tag, ...args){
-        ODA.tryReg(tag);
+    const _createElement = document.createElement;
+    document.createElement = function (tag, ...args) {
+        if(tag.includes('-')){
+            const prototype = ODA.telemetry.prototypes[tag];
+            if (prototype?.then) {
+                prototype.then(prototype => {
+                    ODA.wait?.[tag]?.reg?.({ prototype });
+                    delete ODA.wait?.[tag]
+                })
+            }
+            else {
+                ODA.wait?.[tag]?.reg?.({ prototype });
+                delete ODA.wait?.[tag]
+            }
+        }
         return _createElement.call(this, tag, ...args);
     }
-    function createElement(src, tag, old) {
+    function createElement(src, tag, old, __for) {
         let $el;
         if (tag === '#comment')
             $el = document.createComment((src.textContent || src.id) + (old ? (': ' + old.tagName) : ''));
@@ -1599,7 +1038,7 @@ if (!window.ODA?.IsReady) {
             if (src.isSvg)
                 $el = document.createElementNS(svgNS, tag.toLowerCase());
             else {
-                $el = ODA.createElement.call(this, tag, undefined, this.context);
+                $el = ODA.createElement.call(this, tag);
             }
             switch (tag){
                 case 'STYLE':{
@@ -1619,8 +1058,8 @@ if (!window.ODA?.IsReady) {
                 } break;
                 default:{
                     if (!src.isSvg && !src.isSlot){
-                        this.$core.intersect.observe($el);
-                        this.$core.resize.observe($el);
+                        ODA.intersectionObserver.observe($el);
+                        ODA.resizeObserver.observe($el);
                     }
                 }
             }
@@ -1636,31 +1075,31 @@ if (!window.ODA?.IsReady) {
         }
         $el.$node = src;
         $el.domHost = this;
+        if (__for) $el.__for = __for;
         return $el;
     }
 
     async function renderChildren(root){
-        if (!root.$sleep){
+        if (!root.$sleep || root.$wake){
             let el, idx = 0;
-            for (let h of (root?.$node || this.$core?.node).children || []){
+            for (let h of (root?.$node || this[CORE_KEY]).children || []){
                 if (h.call){ // table list
-                    let items = h.call(this, root.$for);
-                    if (items.then)
-                        items = await items;
+                    let items = h.call(this, root.__for);
+                    let i = 0;
                     for(let i = 0; i<items.length; i++){
                         const node = items[i];
-                        while (el = root.childNodes[idx]){
-                            if (el.$node === node.child) break;
-                            if (!el.$node) {
-                                idx++;
-                                continue;
+                        if(node){
+                            while (el = root.childNodes[idx]){
+                                if (el.$node === node.child) break;
+                                if (!el.$node) {
+                                    idx++;
+                                    continue;
+                                }
+                                root.removeChild(el);
                             }
-                            root.removeChild(el);
+                            el = root.childNodes[idx+i];
+                            el = await renderElement.call(this, node.child, el, root, node.params);
                         }
-                        el = root.childNodes[idx+i];
-                        el = renderElement.call(this, node.child, el, root, node.params);
-                        if (el.then)
-                            await el;
                     }
                     idx += items.length;
                 }
@@ -1673,21 +1112,19 @@ if (!window.ODA?.IsReady) {
                         }
                         root.removeChild(el);
                     }
-                    el = renderElement.call(this, h, el, root, root.$for);
-                    if (el.then)
-                        await el;
+                    el = await renderElement.call(this, h, el, root, root.__for);
                     idx++;
                 }
             }
-            if (root.$core && root.isConnected){
-                await root.render(this);
+            if (root[CORE_KEY] && root.isConnected){
+                await root.$render(this);
             }
-            else if (root?.$node?.isSlot){
-                for (let el of root.assignedElements?.() || []){
-                    if (el.$sleep || !el.$core) continue;
-                    await el.render(this);
-                }
-            }
+            // else if (root?.$node?.isSlot){
+            //     // for (let el of root.assignedElements?.() || []){
+            //     //     if (el.$sleep || !el[CORE_KEY]) continue;
+            //     //     /*await*/ el.$render(this);
+            //     // }
+            // }
             else{
                 while (el = root.childNodes[idx]){
                     if (!el?.$node) {
@@ -1700,40 +1137,51 @@ if (!window.ODA?.IsReady) {
         }
         return root;
     }
-    function renderElement(src, $el, $parent, $for){
+    async function renderElement(src, $el, $parent, __for) {
         if ($parent) {
             let tag = src.tag;
             if (src.tags) {
                 for (let h of src.tags)
-                    tag = h.call(this, tag, src.fn[h.name], $for, $el) || '#comment';
+                    tag = h.call(this, tag, src.fn[h.name], __for, $el) || '#comment';
             }
             if (!$el) {
-                $el = createElement.call(this, src, tag);
+                $el = createElement.call(this, src, tag, __for);
+                $el.__for = __for || $el.__for;
                 $parent.appendChild($el);
                 if ($el.nodeType === 3)
                     $el.textContent = src.textContent;
             }
-            else if ($el.$node?.id !== src.id) {
-                const el = createElement.call(this, src, tag);
+            else if ($el.$node && $el.$node?.id !== src.id) {
+                const el = createElement.call(this, src, tag, undefined, __for);
                 if ($parent.contains($el))
                     $parent.insertBefore(el, $el);
                 else
                     $parent.replaceChild(el, $el);
                 $el = el;
             }
-            else if ($el.slotTarget)
+            else if ($el.slotTarget){
+                if($el.slotTarget.nodeName !== tag){
+                    const old = $el.slotTarget;
+                    old.__before ??= Object.create(null);
+                    const el = old.__before[tag] ??= createElement.call(this, src, tag, old, __for);
+                    el.__before ??= Object.create(null);
+                    el.__before[el.nodeName] = old;
+                    old.parentElement.replaceChild(el, old);
+                    el.slotProxy = $el;
+                    $el.slotTarget = el;
+                }
                 $el = $el.slotTarget;
+            }
             else if ($el.nodeName !== tag) {
                 $el.__before ??= Object.create(null);
-                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el);
+                const el = $el.__before[tag] ??= createElement.call(this, src, tag, $el, __for);
                 el.__before ??= Object.create(null);
                 el.__before[$el.nodeName] = $el;
                 $parent.replaceChild(el, $el);
-                el.$ref = $el.$ref;
                 $el = el;
             }
         }
-        $el.$for = $for || $el.$for;
+        $el.__for = __for || $el.__for;
         switch ($el.nodeType) {
             case 3:
             case 8: {
@@ -1744,11 +1192,11 @@ if (!window.ODA?.IsReady) {
         }
         if (src.dirs)
             for (let h of src.dirs)
-                h.call(this, $el, src.fn[h.name], $for);
+                h.call(this, $el, src.fn[h.name], __for);
         if (src.bind) {
             for (let key in src.bind) {
-                const val = src.bind[key].call(this, $for, $el);
-                if (key.includes('.')/* && listener*/) {
+                let val = src.bind[key].call(this, $el, __for);
+                if (key.includes('.')) {
                     const listener = src.listeners[key.toKebabCase() + '-changed'];
                     if (listener) {
                         const pathToObj = key.slice(0, key.lastIndexOf('.'));
@@ -1762,11 +1210,25 @@ if (!window.ODA?.IsReady) {
                         }
                     }
                 }
-                $el.setProperty(key, val);
+                if(val?.then){
+                    if ('result' in val.then){
+                        val = val.then.result;
+                    }
+                    else{
+                        const _key = key;
+                        val?.then(res=>{
+                            $el.setProperty(_key, res);
+                        })
+                    }
+                }
+                else
+                    $el.setProperty(key, val);
             }
         }
-
-        renderSlottedElement.call(this, src, $el, $parent);
+        if(src.isSlotted)
+            renderSlottedElement.call(this, src, $el, $parent);
+        if(src.ignoreChildren && !$el?.[CORE_KEY])
+            return renderElement.call(this, src.children[0], $el.childNodes[0], $el, __for);
         return renderChildren.call(this, $el);
     }
     function renderSlottedElement(src, $el, $parent){
@@ -1776,17 +1238,7 @@ if (!window.ODA?.IsReady) {
                 $el.slotProxy.slotTarget = $el;
                 $el.slotProxy.textContent += `-- ${$el.localName} (slot: "${$el.slot}")`;
 
-                this.$core.slotted.add($el);
-
-                if ($el.$ref) {
-                    let arr = this.$core.slotRefs[$el.$ref];
-                    if (Array.isArray(arr))
-                        arr.push($el);
-                    else if ($el.$for)
-                        this.$core.slotRefs[$el.$ref] = [$el];
-                    else
-                        this.$core.slotRefs[$el.$ref] = $el;
-                }
+                this[CORE_KEY].slotted.add($el);
 
                 $parent.replaceChild($el.slotProxy, $el);
                 if ($el.slot === '*')
@@ -1795,8 +1247,8 @@ if (!window.ODA?.IsReady) {
                 requestAnimationFrame(() => {
                     let host;
                     const filter = `slot[name='${$el.slot}']`;
-                    for (host of this.$core.shadowRoot?.querySelectorAll('*')) {
-                        if (host.$core?.shadowRoot?.querySelector(filter)) {
+                    for (host of this[CORE_KEY].shadowRoot?.querySelectorAll('*')) {
+                        if (host[CORE_KEY]?.shadowRoot?.querySelector(filter)) {
                             applySlotByOrder($el, host);
                             return;
                         }
@@ -1804,25 +1256,31 @@ if (!window.ODA?.IsReady) {
                     host = this;
                     while (host) {
                         for (let ch of host.children) {
-                            if(ch.$core?.shadowRoot?.querySelector(filter)){
+                            if(ch[CORE_KEY]?.shadowRoot?.querySelector(filter)){
                                 applySlotByOrder($el, ch);
                                 return;
                             }
                         }
-                        if (host.$core?.shadowRoot?.querySelector(filter)) {
+                        if (host[CORE_KEY]?.shadowRoot?.querySelector(filter)) {
                             applySlotByOrder($el, host);
                             return;
                         }
-                        host = host.domHost || (host.parentElement?.$core && host.parentElement);
+                        host = host.domHost || (host.parentElement?.[CORE_KEY] && host.parentElement);
                     }
                     applySlotByOrder($el, this);
                 })
 
             }
+            if ($el.parentElement?.$render && !$el.parentElement?.__render && !$el.parentElement[CORE_KEY]?.shadowRoot?.contains?.($el.domHost)) {
+                this.async(()=>{
+                    $el.parentElement?.$render?.();
+                })
+            }
         }
         else {
-            while (this.$core.slotted?.length) {
-                const el = this.$core.slotted.shift();
+            while (this[CORE_KEY].slotted?.size) {
+                const el = this[CORE_KEY].slotted.values().next().value;
+                this[CORE_KEY].slotted.delete(el);
                 el.slotProxy?.parentNode?.replaceChild(el, el.slotProxy);
                 el._slotProxy = el.slotProxy;
                 el.slotProxy = undefined;
@@ -1844,17 +1302,33 @@ if (!window.ODA?.IsReady) {
     }
     function createFunc(vars, expr, prototype = {}) {
         try {
-            return new Function(vars, `with (this) {return (${expr})}`);
+            return new Function('$this,'+vars, `with (this) {return (${expr})}`);
         }
         catch (e) {
             console.error('%c' + expr + '\r\n', 'color: black; font-weight: bold; padding: 4px;', prototype.is, prototype.$system.url, e);
         }
     }
-    function exec(fn, p = []) {
+    function exec(fn, $el, p = []) {
         try {
-            return fn.call(this, ...p);
+            return fn.call(this, $el, ...p);
         }
         catch (e) {
+            switch (e.name){
+                case 'ReferenceError':{
+                    const prop = e.message.split(' ')[0];
+                    let host = this.domHost;
+                    while (host){
+                        if(prop in host){
+                            console.error(`${e.name}: ${e.message} in <${this.localName}>.
+But this problem can be fixed by set
+the property modifier $pdp: true
+in the <${host.localName}>`);
+                            return;
+                        }
+                        host = host.domHost;
+                    }
+                } break;
+            }
             console.error(e, this);
         }
     }
@@ -1862,20 +1336,8 @@ if (!window.ODA?.IsReady) {
     const svgNS = "http://www.w3.org/2000/svg";
     const modifierRE = /\.[^.]+/g;
     ODA.origin = origin;
-    ODA.deferred = {};
     ODA.calledDeferred = [];
-    ODA.tryReg = async function (tagName, context) {
-        tagName = tagName.toLowerCase();
-        if (!tagName?.includes('-') || window.customElements.get(tagName)) return;
-        let def = ODA.deferred[tagName];
-        if (def)
-            def = await def.reg(context);
-        if (!ODA.calledDeferred.some(d => d.tagName === tagName && d.context === context)){
-            ODA.calledDeferred.push({tagName, context});
-        }
-        return def;
-    }
-    ODA.updateStyle=(changes = ODA.cssRules, el)=>{
+    ODA.updateStyle=(changes = ODAStyles.cssRules, el)=>{
         if (el?.style) {
             for (let p in changes)
                 el.style.setProperty(p, changes[p])
@@ -1893,15 +1355,11 @@ if (!window.ODA?.IsReady) {
         }
     }
 
-    const cache = {
-        fetch: {},
-        file: {}
-    };
-    ODA.loadURL = async function (url, context, prototype) {
+    ODA.convertOdaUrl = function (url, prototype){
         try{
             url = url.trim();
-            if (ODA.aliases && url in ODA.aliases)
-                url = ODA.rootPath + '/' + ODA.aliases[url];
+            if (aliases && url in aliases)
+                url = ODA.rootPath + '/' + aliases[url];
             else if (prototype){
                 if (url.startsWith('./'))
                     url = prototype.$system.dir + url.substring(1);
@@ -1914,72 +1372,50 @@ if (!window.ODA?.IsReady) {
         catch (e){
             console.log(e)
         }
-        if (!cache.fetch[url])
-            cache.fetch[url] = fetch(url);
-        return cache.fetch[url];
-    };
-    ODA.loadJSON = async function (url, context, prototype) {
-        if (!cache.file[url]) {
-            cache.file[url] = new Promise(async (resolve, reject) => {
-                try {
-                    const file = await ODA.loadURL(url, context, prototype);
-                    const text = await file.json();
-                    resolve(text)
-                }
-                catch (e) {
-                    reject(e)
-                }
-            });
+        return url;
+    }
+    ODA.resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            if (entry.target.__events?.has('resize'))
+                entry.target.fire('resize');
+            if (entry.target[CORE_KEY]?.shadowRoot?.__events?.has('resize'))
+                entry.target[CORE_KEY].shadowRoot.fire('resize');
         }
-        return cache.file[url];
-    };
-    ODA.loadHTML = async function (url) {
-        if (!cache.file[url]) {
-            cache.file[url] = new Promise(async (resolve, reject) => {
-                try {
-                    const file = await ODA.loadURL(url);
-                    const text = await file.text();
-                    resolve(domParser.parseFromString(text, 'text/html'))
-                } catch (e) {
-                    reject(e)
-                }
-            });
+    })
+    ODA.intersectionObserver = new IntersectionObserver(entries => {
+        let wake;
+        for (let i = 0, entry, l = entries.length; i < l; i++) {
+            entry = entries[i];
+            entry.target.$sleep = !entry.isIntersecting && !entry.target.$wake;
+            if (!entry.target.$sleep){
+                wake ??= [];
+                wake.add(entry.target.domHost || entry.target)
+            }
         }
-        return cache.file[url];
-    };
-    const hooks = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender', 'onVisible'];
+        if(!wake) return;
+        for(let t of wake)
+            t.$render?.()
+    }, { rootMargin: '10%', threshold: 0})
+
+
+    ODA.cache = {};
+    ODA.import = function (url, prototype){
+        url = ODA.convertOdaUrl(url, prototype);
+        return ODA.cache[url] ??= import(url);
+    }
+    ODA.fetch = function (url, prototype) {
+        url = ODA.convertOdaUrl(url, prototype);
+        return ODA.cache[url] ??= fetch(url);
+    }
+    ODA.loadJSON = function (url, prototype) {
+        return ODA.cache['json:'+url] ??= ODA.fetch(url, prototype).then(file=>{
+            return file.json();
+        })
+    }
+    const COMPONENT_HOOKS = ['created', 'ready', 'attached', 'detached', 'updated', 'afterLoadSettings', 'destroyed', 'onRender', 'onVisible'];
     const toString = Object.prototype.toString;
     function isNativeObject(obj) {
         return obj && (obj.constructor === Object);// ||  toString.call(c) === '[object Object]';
-    }
-    class odaEvent {
-        constructor(target, handler, ...args) {
-            this.handler = handler;
-            target.__listeners = target.__listeners || {};
-            target.__listeners[this.event] = target.__listeners[this.event] || new Map();
-            target.__listeners[this.event].set(handler, this);
-            this._target = target;
-            this._events = {};
-        }
-        static remove(name, target, handler) {
-            const event = target.__listeners?.[name]?.get(handler);
-            event?.delete();
-        }
-        get event() {
-            return 'event'
-        }
-        addSubEvent(name, handler, useCapture) {
-            this._events[name] = handler;
-            this._target.addEventListener(name, handler, useCapture);
-        }
-        delete() {
-            for (const name in this._events) {
-                if (this._events.hasOwnProperty(name)) {
-                    this._target.removeEventListener(name, this._events[name]);
-                }
-            }
-            delete this._events;
-        }
     }
     if (!("path" in Event.prototype))
         Object.defineProperty(Event.prototype, "path", {
@@ -1997,6 +1433,7 @@ if (!window.ODA?.IsReady) {
                 return path;
             }
         });
+
     class odaCustomEvent extends CustomEvent {
         constructor(name, params, source) {
             super(name, params);
@@ -2023,137 +1460,6 @@ if (!window.ODA?.IsReady) {
                 };
                 Object.defineProperties(this, props);
             }
-        }
-    }
-    class odaEventTap extends odaEvent {
-        constructor(target, handler, ...args) {
-            super(target, handler, ...args);
-            this.addSubEvent('click', (e) => {
-                const ce = new odaCustomEvent("tap", { detail: { sourceEvent: e } }, e);
-                this.handler(ce, ce.detail);
-            });
-        }
-        get event() {
-            return 'tap'
-        }
-    }
-    class odaEventDown extends odaEvent {
-        constructor(target, handler, ...args) {
-            super(target, handler, ...args);
-            this.addSubEvent('mousedown', (e) => {
-                const ce = new odaCustomEvent("down", { detail: { sourceEvent: e } }, e);
-                this.handler(ce, ce.detail);
-            });
-        }
-        get event() {
-            return 'down'
-        }
-    }
-    class odaEventUp extends odaEvent {
-        constructor(target, handler, ...args) {
-            super(target, handler, ...args);
-            this.addSubEvent('mouseup', (e) => {
-                const ce = new odaCustomEvent("up", { detail: { sourceEvent: e } }, e);
-                this.handler(ce, ce.detail);
-            });
-        }
-        get event() {
-            return 'up'
-        }
-    }
-    class odaEventTrack extends odaEvent {
-        static removeBack(){
-            if (odaEventTrack.back){
-                // ODA.mutate(()=>{
-                odaEventTrack.back.style.cursor = ''
-                odaEventTrack.back?.remove();
-                // })
-
-            }
-            odaEventTrack.handler = undefined;
-            odaEventTrack.detail = undefined;
-        }
-        constructor(target, handler, ...args) {
-            super(target, handler, ...args);
-            this.addSubEvent('pointerdown', (e) => {
-                if(e.buttons !== 1) return;
-                odaEventTrack.handler ??= handler;
-                odaEventTrack.detail ??= {
-                    start: {
-                        x: e.clientX,
-                        y: e.clientY
-                    }, ddx: 0, ddy: 0, dx: 0, dy: 0,
-                    target: target,
-                    startButton: e.button
-                };
-                window.addEventListener('pointermove', moveHandler);
-                window.addEventListener('pointerup', upHandler);
-                target.addEventListener('pointerleave', leaveHandler, {once: true});
-            });
-            const leaveHandler = (e) =>{
-                if(e.buttons !== 1) {
-                    upHandler(e);
-                    return;
-                }
-                if (!odaEventTrack.back){
-                    odaEventTrack.back = document.createElement('div');
-                    odaEventTrack.back.style.setProperty('width', '100%');
-                    odaEventTrack.back.style.setProperty('height', '100%');
-                    odaEventTrack.back.style.setProperty('position', 'fixed');
-                    odaEventTrack.back.classList.add('odaTrackBack');
-                    odaEventTrack.back.addEventListener('pointerdown', () => {
-                        odaEventTrack.removeBack()
-                    }, {once: true});
-                    odaEventTrack.back.addEventListener('pointerup', upHandler, {once: true});
-                    odaEventTrack.back.style.setProperty('z-index', '1000000');
-                }
-                if (!odaEventTrack.back.isConnected){
-                    // ODA.mutate(()=>{
-                    document.body.appendChild(odaEventTrack.back);
-                    // })
-                }
-
-            }
-
-            const moveHandler = (e) => {
-                if (odaEventTrack.detail && !odaEventTrack.detail.state) {
-                    const x = Math.abs(odaEventTrack.detail.start.x - e.clientX);
-                    const y = Math.abs(odaEventTrack.detail.start.y - e.clientY)
-                    if (Math.max(x,y)>2 || e.type === 'pointerleave') {
-                        // target.removeEventListener('mouseleave', moveHandler);
-                        odaEventTrack.detail.state = 'start'
-                        let ce = new odaCustomEvent("track", {detail: Object.assign({}, odaEventTrack.detail)}, e);
-                        odaEventTrack.handler (ce, ce.detail);
-                    }
-                }
-                else if (odaEventTrack.detail) {
-                    odaEventTrack.detail.state = 'track';
-                    odaEventTrack.detail.x = e.clientX;
-                    odaEventTrack.detail.y = e.clientY;
-                    odaEventTrack.detail.ddx = -(odaEventTrack.detail.dx - (e.clientX - odaEventTrack.detail.start.x));
-                    odaEventTrack.detail.ddy = -(odaEventTrack.detail.dy - (e.clientY - odaEventTrack.detail.start.y));
-                    odaEventTrack.detail.dx = e.clientX - odaEventTrack.detail.start.x;
-                    odaEventTrack.detail.dy = e.clientY - odaEventTrack.detail.start.y;
-                    const ce = new odaCustomEvent("track", { detail: Object.assign({}, odaEventTrack.detail) }, e);
-                    odaEventTrack.handler (ce, ce.detail);
-                }
-            };
-            const upHandler = (e) => {
-                window.removeEventListener('pointermove', moveHandler);
-                window.removeEventListener('pointerup', upHandler);
-                target.removeEventListener('pointerleave', leaveHandler);
-                if (odaEventTrack.detail?.state){
-                    odaEventTrack.detail.ddx = 0;
-                    odaEventTrack.detail.ddy = 0;
-                    odaEventTrack.detail.state = 'end';
-                    const ce = new odaCustomEvent("track", { detail: Object.assign({}, odaEventTrack.detail) }, e);
-                    odaEventTrack.handler (ce, ce.detail);
-                }
-                odaEventTrack.removeBack()
-            };
-        }
-        get event() {
-            return 'track'
         }
     }
     ODA.getDirInfo = async function (url) {
@@ -2211,161 +1517,103 @@ if (!window.ODA?.IsReady) {
             e.target.dispatchEvent(new MouseEvent('menu', e));
             return false;
         };
-        await import('./tools/styles/styles.js');
-        ODA.aliases = await ODA.loadJSON(ODA.rootPath + '/aliases.json');
+        // let sleep = 0;
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
-                // window.document.body.style.visibility = 'hidden';
+                document.body.style.visibility = 'hidden';
+                document.body.firstElementChild.$wake = true;
+                document.body.firstElementChild.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
-                // await ODA.tryReg('oda-tester');
-
+                setTimeout(()=>{
+                    document.body.firstElementChild.style.visibility = '';
+                    // ODA.isHidden = false;
+                    document.body.style.visibility = '';
+                }, 200)
+                // sleep = 500;
             }
-
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
         }
-        ODA.init();
 
     });
-    ODA.init = ()=>{
-        for (let tag in ODA.deferred){
-            const el = document.querySelector(tag);
-            if (el)
-                ODA.tryReg(tag);
-        }
-        // ODA.mutate(()=>{
-        //     window.document.body.style.visibility = 'visible';
-        // })
 
-    }
     Node:{
         const ob_types = ['function', 'object'];
+        const only_getters = ['viewBox'];
         Node.prototype.setProperty = function (name, v) {
-            // if (this.__lockBind === name) return;
-            if (this.$core) {
-                if (name.includes('.')) {
-                    let path = name.split('.');
-                    let step;
-                    for (let i = 0; i < path.length; i++) {
-                        let key = path[i].toCamelCase();
-                        if (i === 0) {
-                            if (this.props && key in this.props) {
-                                step = this[key] ??= {}
-                            }
-                            else break;
-                        }
-                        else if (isObject(step)) {
-                            if (i < path.length - 1) {
-                                step = step[key] ??= {};
-                            } else {
-                                step[key] = v;
-                                return;
-                            }
-                        }
-                    }
+            if ((name in this || ob_types.includes(typeof v) || this.nodeType !== 1) && !only_getters.includes(name)) {
+                try{
+                    if (!(this.attributes?.[name]?.value == v || this[name] == v))
+                        this[name] = v;
                 }
-                else if (name in this.__proto__) { // понаблюдать 👀
-                    try{
-                        if (this[name] != v)
-                            this[name] = v;
-                    }
-                    catch (e){
-                    }
-                    return;
+                catch (e){
+                    console.warn(e, 'Error on set value ', v, name, this)
                 }
-
-                // else if ((name in (this.props || {})) || (name in (this.$core?.prototype || {}) /*Object.getOwnPropertyDescriptor(this.__proto__, name) ||*/ )/* || name in this.__proto__*/) { // понаблюдать 👀
-                //     if (this[name] != v)
-                //         this[name] = v;
-                //     return;
-                // }
             }
-            // понаблюдать 👀
-            if (ob_types.includes(typeof v) || this.nodeType !== 1) {
-                if (this[name] != v)
-                    this[name] = v;
-            }
-            else {
-                const d = !this.$core && (Object.getOwnPropertyDescriptor(this.__proto__, name) || name in this);
-
-                if (d){
-                    if (d === true || (d.set && v !== undefined)) {
-                        try{
-                            // if (!(name === 'src' && this.localName === 'iframe' && decodeURIComponent(this[name]) === decodeURIComponent(v)))
-                            if (this[name] != v)//{
-                                this[name] = v;
-                            // if (this.__events?.has(name+'-changed'))
-                            //     this.dispatchEvent(new odaCustomEvent(name+'-changed', { detail: { value: v }, composed: true}))
-                            // }
-
-                            if (d !== true) //todo надо думать
-                                return;
-                        }
-                        catch (e){
-
-                        }
-
-
-                    }
-                }
-                else
+            if (!ob_types.includes(typeof v)){ // todo лишняя проверка
+                if(this.localName !== 'svg')
                     name = name.toKebabCase();
-                // ODA.mutate(()=>{
                 if (!v && v !== 0)
                     this.removeAttribute(name);
-                else if (this.getAttribute(name) != v)
+                else if (this.attributes?.[name]?.value != v)
                     this.setAttribute(name, v === true ? '' : v);
-                // })
-
             }
 
             if (!this.assignedElements) return;
             for (const ch of this.assignedElements())
                 ch.setProperty(name, v)
-
         };
+        SVGElement.prototype.setProperty = function (name, v) {
+            let desc, proto = this;
+            while (proto && !desc) {
+                desc = Object.getOwnPropertyDescriptor(proto, name);
+                proto = Object.getPrototypeOf(proto);
+            }
+            if (desc && (desc.set || desc.writable)) {
+                Node.prototype.setProperty.call(this, name, v);
+            }
+            else {
+                if (!v && v !== 0)
+                    this.removeAttribute(name);
+                else if (this.attributes?.[name]?.value != v)
+                    this.setAttribute(name, v === true ? '' : v);
+            }
+        }
         Node.prototype.fire = function (event, detail, options = {}) {
             if (!this.$wake && this.$sleep) return;
             event = new odaCustomEvent(event, { detail: { value: detail }, composed: true, ...options});
             this.dispatchEvent(event);
         };
-        Node.prototype.render = function (src) {
-            this.domHost?.render(src);
+        Node.prototype.$render = function (src) {
+            this.domHost?.$render?.(src);
         };
     }
     Element:{
-        const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
-        const oh = Object.assign({}, offsetHeight);
-        oh.get = function (){
-            if (this.$rect)
-                return this.$rect.height;
-            return offsetHeight.get.call(this);
-        }
-        Object.defineProperty(HTMLElement.prototype, 'offsetHeight', oh);
-
-        const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
-        const ow = Object.assign({}, offsetWidth);
-        ow.get = function (){
-            if (this.$rect)
-                return this.$rect.width;
-            return offsetWidth.get.call(this);
-        }
-        Object.defineProperty(HTMLElement.prototype, 'offsetWidth', ow);
         Element.prototype.assignProps = function (props = {}){
             for (let i in props){
                 const p = props[i];
-                if (typeof p === 'function')
-                    this.addEventListener(i, p.bind(this), true)
+                if (typeof p === 'function') {
+                    this.__propsHandlers ??= {};
+                    const fn = this.__propsHandlers[i] ??= p.bind(this);
+                    // если не кешировать функцию после bind, то каждый раз будет новая подписка
+                    this.addEventListener(i, fn, true);
+                    // todo: отписка?
+                }
             }
             for (let i in props){
                 const p = props[i];
-                if (typeof p !== 'function')
-                    this[i] = p;
+                if (typeof p !== 'function'){
+                    if(i in this)
+                        this[i] = p;
+                    else if(i[0] !== '#')
+                        this.setProperty(i, p)
+                }
+
             }
         }
         Element.prototype.getClientRect = function (host) {
-            let rect = /*this.$rect || */this.getBoundingClientRect.call(this);
+            let rect = this.getBoundingClientRect.call(this);
             if (host) {
-                const rectHost = /*host.$rect || */host.getBoundingClientRect?.() || host;
+                const rectHost = host.getBoundingClientRect?.() || host;
                 const res = { x: 0, y: 0, top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 };
                 for (let n in res)
                     res[n] = rect[n];
@@ -2382,59 +1630,88 @@ if (!window.ODA?.IsReady) {
             return rect;
         }
         if (!Element.prototype.__addEventListener) {
-            const func = Element.prototype.addEventListener;
-            Element.prototype.addEventListener = function (name, handler, ...args) {
-                let event;
-                switch (name) {
-                    case 'tap':
-                        event = new odaEventTap(this, handler, ...args);
-                        break;
-                    case 'down':
-                        event = new odaEventDown(this, handler, ...args);
-                        break;
-                    case 'up':
-                        event = new odaEventUp(this, handler, ...args);
-                        break;
-                    case 'track':
-                        event = new odaEventTrack(this, handler, ...args);
-                        break;
-                    default:
-                        // console.log('event', name)
-                        event = func.call(this, name, handler, ...args);
-                        break;
-                }
-                if (!this.__events){
-                    Object.defineProperty(this, '__events', {
-                        value: new Map()
-                    })
-                }
-                let array = this.__events.get(name);
-                if (!array) {
-                    array = [];
-                    this.__events.set(name, array);
-                }
-                array.push({ handler, event: event });
-                return event;
+            const EVENT_MAP = {
+                'tap': 'click',
+                'down': 'mousedown',
+                'up': 'mouseup',
+                'm_down': 'mousedown',
+                'm_up': 'mouseup',
+                'p_down': 'pointerdown',
+                'p_up': 'pointerup',
+                'k_down': 'keydown',
+                'k_up': 'keyup',
+            }
+            const func = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.__addEventListener = func
+            EventTarget.prototype.addEventListener = function (name, handler, ...args) {
+                if (name === 'track')
+                    return listenTrack(this, handler, ...args)
+
+                const type = EVENT_MAP[name] || name
+                return func.call(this, type, handler, ...args)
             };
-        }
-        if (!Element.prototype.__removeEventListener) {
-            const func = Element.prototype.removeEventListener;
-            Element.prototype.removeEventListener = function (name, handler, ...args) {
-                if (this.__events) {
-                    const array = this.__events.get(name) || [];
-                    const event = array.find(i => i.handler === handler)
-                    if (event) {
-                        odaEvent.remove(name, this, handler);
-                        const idx = array.indexOf(event);
-                        if (idx > -1) {
-                            array.splice(idx, 1);
-                        }
+            function listenTrack(target, handler, params) {
+                let detail;
+                target.addEventListener('pointerdown', (e) => {
+                    if ((target !== e.target && !(target.contains(e.target)))|| e.buttons !== 1) return;
+                    detail = {
+                        start: {
+                            x: e.clientX,
+                            y: e.clientY
+                        }, ddx: 0, ddy: 0, dx: 0, dy: 0,
+                        target,
+                        startButton: e.button
                     }
-                    if (!array.length)
-                        this.__events.delete(name);
+                    window.addEventListener('pointermove', moveHandler)
+                    window.addEventListener('dragstart', upHandler)
+                    window.addEventListener('pointerup', upHandler)
+                    target.addEventListener('pointerleave', leave, {once: true})
+                })
+                function leave(e) {
+                    if ((target === e.target || target.contains(e.target)) && detail && !detail.state)
+                        start(e);
                 }
-                func.call(this, name, handler, ...args);
-            };
+                function start(e){
+                    target.removeEventListener('pointerleave', leave);
+                    target.setPointerCapture(e.pointerId);
+                    detail.state = 'start'
+                    fireTrack(e)
+                }
+                function moveHandler(e) {
+                    if (detail && !detail.state) {
+                        const x = Math.abs(detail.start.x - e.clientX)
+                        const y = Math.abs(detail.start.y - e.clientY)
+                        if (Math.max(x, y) > 2)
+                            start(e);
+                    }
+                    else if (detail) {
+                        detail.state = 'track'
+                        detail.x = e.clientX
+                        detail.y = e.clientY
+                        detail.ddx = -(detail.dx - (e.clientX - detail.start.x))
+                        detail.ddy = -(detail.dy - (e.clientY - detail.start.y))
+                        detail.dx = e.clientX - detail.start.x
+                        detail.dy = e.clientY - detail.start.y
+                        fireTrack(e)
+                    }
+                }
+                function fireTrack(e) {
+                    const ce = new odaCustomEvent('track', { detail: Object.assign({}, detail) }, e)
+                    handler(ce, ce.detail)
+                }
+
+                function upHandler(e) {
+                    window.removeEventListener('pointermove', moveHandler)
+                    window.removeEventListener('pointerup', upHandler)
+                    target.removeEventListener('pointerleave', leave);
+                    if (detail?.state) {
+                        detail.ddx = 0
+                        detail.ddy = 0
+                        detail.state = 'end'
+                        fireTrack(e)
+                    }
+                }
+            }
         }
     }
     Object.defineProperty(ODA, 'language', {
@@ -2447,31 +1724,9 @@ if (!window.ODA?.IsReady) {
             window.dispatchEvent(event);
         }
     });
-    ODA.translate = (val)=>{
-        return val;
-    }
-    ODA.import = function (url, context, prototype){
-        url = url.trim();
-        if (url in ODA.aliases)
-            url = ODA.rootPath + '/' + ODA.aliases[url];
-        else if (prototype){
-            if (url.startsWith('./'))
-                url = prototype.$system.dir + url.substring(1);
-            else if (url.startsWith('../'))
-                url = prototype.$system.dir +'/'+url;
-        }
-        url = url.replace(/\/\//g, '/');
-        const imports = ODA['#imports'] ??= {};
-        imports[url] ??= import(url).then(res=>{
-            imports[url] = res;
-        }).catch(err=>{
-            imports[url] = err;
-        })
-        return imports[url];
-    }
+
     Qarantine:{
-        ODA.createComponent = ODA.createElement = (id, props , context) => {
-            ODA.tryReg(id, context);
+        ODA.createComponent = ODA.createElement = (id, props) => {
             let el = document.createElement(id);
             if(props)
                 el.assignProps(props);
@@ -2612,153 +1867,117 @@ if (!window.ODA?.IsReady) {
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
     }
-    CSS:{
-        ODA.cssRules = [];
-        const VAR_REG_EXP = /^--[\w-]*\w+/;
-        ODA.extractCSSRules = function (style){
-            const result = []
-            const adds = []
-            if (typeof style === 'string'){
-                let ss = new CSSStyleSheet();
-                ss.replaceSync(style);
-                style = ss;
-            }
-            for (let i of style.cssRules) {
-                if (i?.selectorText)
-                    result.push(i.selectorText+ '{');
-                else{
-                    adds.unshift(ODA.applyStyleMixins(i.cssText));
-                    continue
-                }
-                for (let key of i.style || []) {
-                    let val = i.style.getPropertyValue(key).toString().trim();
-                    if (!val) continue;
-                    if (!VAR_REG_EXP.test(key) || !/^{.+}/.test(val)) {
-                        result.push('\t' + key+': '+val+';')
-                        continue;
-                    }
-                    val = val.replace(/^{|}$/g, '');
-                    val = ODA.applyStyleMixins(val);
-                    ODA.cssRules[key] = val;
-                    key = key.substring(2);
-                    adds.push(`.${key}, [${key}] {`)
-                    adds.push(`\t${val}`)
-                    adds.push(`}`)
-                }
-                result.push('}');
-            }
-            result.push(...adds);
-            return result.join('\r\n');
+    ODA.Worker = class{
+        constructor(url, props) {
+            this.worker = new ((typeof SharedWorker !== 'undefined')?SharedWorker:Worker)(url, props);
+            this.worker = this.worker.port || this.worker;
+            this.worker.start?.();
         }
-        const APPLY_REG_EXP = /@apply\s*/gm;
-        const COMMENT_REG_EXP = /\/\*[^*/]*\*\//igm;
-        ODA.applyStyleMixins = function (styleText) {
-            styleText = styleText.replace(COMMENT_REG_EXP, '');
-            return styleText.split(APPLY_REG_EXP).map(i=>{
-                let v = i.match(VAR_REG_EXP)?.[0];
-                return v ? i.replace(v, ODA.cssRules[v]) : i;
-            }).join('');
+        set onmessage(v){
+            this.worker.onmessage = v;
         }
-        const PARSE_RULE_REG_EXP = /([a-z-]+)\s*:\s*((?:[^;]*url\(.*?\)[^;]*|[^;]*)*)\s*(?:;|$)/gi;
-        ODA.cssRuleParse = function (rules, res, host = false) {
-            for (let rule of rules) {
-                switch (rule.type){
-                    case CSSRule.KEYFRAMES_RULE:{
-                        let key = rule.cssText;
-                        let r = res[key] = res[key] || {};
-                        ODA.cssRuleParse(rule.cssRules, r);
-                    } break;
-                    case CSSRule.MEDIA_RULE:{
-                        let key = '@media ' + rule.media.mediaText;
-                        let r = res[key] = res[key] || {};
-                        ODA.cssRuleParse(rule.cssRules, r);
-                    } break;
-                    default:{
-                        if (rule.cssText.includes(':host') && !host) continue;
-                        const ss = rule.cssText.replace(rule.selectorText, '').match(PARSE_RULE_REG_EXP);
-                        if (!ss) continue;
-                        let sel = rule.selectorText?.split(',').join(',\r');
-                        let r = res[sel] = res[sel] || [];
-                        r.add(...ss);
-                    } break;
-                }
-            }
+        get onmessage(){
+            return this.worker.onmessage;
+        }
+        set onmessageerror(v){
+            this.worker.onmessageerror = v
+        }
+        get onmessageerror(){
+            return this.worker.onmessageerror;
+        }
+        postMessage(...args){
+            this.worker.postMessage(...args);
         }
     }
-    ODA.Worker = typeof SharedWorker !== 'undefined' ? SharedWorker : Worker;
-    if (typeof SharedWorker !== 'undefined') {
-        telemetry:{
-            let telId = 0;
-            CLASS({is:'odaTelemetry',
-                ctor(){
-
-                },
-                resolves: {},
-                get(path){
-                    return new Promise(resolve=>{
-                        this.resolves[path] = resolve;
-                        worker.postMessage({type: 'get', path})
-                    }).then(res=>{
-                        console.log(res);
-                    })
-                },
-                set(path, value){
-                    worker.postMessage({type: 'set', path, value})
-                },
-                add(path, value){
-                    worker.postMessage({type: 'add', path, value})
-                },
-                clear(path){
-                    worker.postMessage({type: 'clear', path})
-                },
-                async measure(path, handle){
-                    let time = Date.now();
-                    await handle();
-                    worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
-                },
-                prototypes: {},
-                components: {}
-            })
-            ODA.telemetry = new odaTelemetry();
-
-            let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
-            worker = worker.port || worker;
-            worker.start?.();
-            worker.onmessage = function (e){
-                switch (e.data.type){
-                    case 'get':{
-                        ODA.telemetry.resolves[e.data.path]?.(e.data.result);
-                        delete ODA.telemetry.resolves[e.data.path];
-                    } break;
-                }
+    telemetry:{
+        let telId = 0;
+        class odaTelemetry extends ROCKS({
+            get(path){
+                return new Promise(resolve=>{
+                    this.resolves[path] = resolve;
+                    worker.postMessage({type: 'get', path})
+                }).then(res=>{
+                    console.log(res);
+                })
+            },
+            set(path, value){
+                worker.postMessage({type: 'set', path, value})
+            },
+            add(path, value){
+                worker.postMessage({type: 'add', path, value})
+            },
+            clear(path){
+                worker.postMessage({type: 'clear', path})
+            },
+            async measure(path, handle){
+                let time = Date.now();
+                await handle();
+                worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
             }
-            worker.onmessageerror = function (e) {
-                console.error(e);
+        }){
+            prototypes = {}
+            components = {}
+            resolves = {}
+        }
+        ODA.telemetry = new odaTelemetry();
+        let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
+        worker.onmessage = function (e){
+            switch (e.data.type){
+                case 'get':{
+                    ODA.telemetry.resolves[e.data.path]?.(e.data.result);
+                    delete ODA.telemetry.resolves[e.data.path];
+                } break;
             }
         }
-
+        worker.onmessageerror = function (e) {
+            console.error(e);
+        }
     }
-    else {
-        ODA.telemetry = {
-            rendering: {id:0,time: 0, calls: 0, self: 0, tasks: {}},
-            proxy: 0, modules: {}, imports: {}, regs: {}, domUpdates: {}, get countUpdates(){
-                return Object.values(ODA.telemetry.domUpdates).reduce((res,i)=>{
-                    return res+=i;
-                },0);
-            },
-            components: { count: 0 }, prototypes: {}, clear: () => {
-                for (const i of Object.keys(ODA.telemetry)) {
-                    if (typeof ODA.telemetry[i] === 'number')
-                        ODA.telemetry[i] = 0;
-                }
-            },
-            statictics: {},
-            add(path, val) {
-                this.statictics[path] = val
-                this.last = path
-            }
-        };
+
+    isoLocale:{
+        const exclusionsLangFlag = {
+            'en': 'gb',
+            'zh': 'cn',
+            'uk': 'ua',
+            'be': 'by',
+        }
+        ODA.getFlags = isoLocale => {
+            let regExp = new RegExp( Object.keys(exclusionsLangFlag).join('|'),'g')
+            let parts = isoLocale.toLowerCase().replace(regExp, (m)=> exclusionsLangFlag[m]).split('-')
+            return `flags:${(parts[1] || parts[0]).toUpperCase()}`
+        }
+        ODA.getLangLabel  = isoLocale => {
+            let [language, region, variant] = isoLocale.split('-');
+            let langLang = new Intl.DisplayNames(isoLocale, {type: "language"}).of(language)
+            let label = langLang
+            if (region) label +=  ` (${ new Intl.DisplayNames(isoLocale, {type: "region", style: "short"}).of(region) })`
+            if (variant)  label += ` ${ variant }`
+            let langCur = new Intl.DisplayNames(ODA.language, {type: "language"}).of(language)
+            if (langLang!==langCur) label +=  ` - ${langCur}`
+            return label
+        }
+    }
+
+
+    const getData = DataTransfer.prototype.getData;
+    DataTransfer.prototype.getData = function (type){
+        return top.dataTransfer?._items[type] || getData.call(this,  type);
+    }
+    const setData = DataTransfer.prototype.setData;
+    DataTransfer.prototype.setData = function (type, data){
+        top.dataTransfer = this;
+        this._items ??= {};
+        this._items[type] ??= [];
+        this._items[type].push(data);
+        if(data instanceof Object){
+            data = JSON.stringify(data);
+        }
+        return setData.call(this,  type, data);
+    }
+    DataTransfer.prototype.checkData = function (type){
+        return getData.call(this,  type);
     }
     window.ODA.IsReady = true;
 }
+
 export default ODA;

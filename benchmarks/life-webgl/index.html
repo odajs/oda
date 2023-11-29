@@ -1,11 +1,7 @@
 <html>
-    <script type="module" src="../../tools/monitor/monitor.js"></script>
-
     <body>
-
         <oda-life></oda-life>
         <oda-monitor></oda-monitor>
-
         <script type="module">
             import '../../oda.js';
             ODA({
@@ -47,19 +43,18 @@
                 get _i1() { return this.$$('input')[0] },
                 get _i2() { return this.$$('input')[1] },
                 attached() {
-                    canvas = this.$('canvas');
-                    gl = canvas.getContext("webgl2");
-                    texture = document.createElement("canvas");
-                    tx = texture.getContext("webgl2");
-                    this._i1.value = speed_factor = this.speed_factor || 3;
-                    this._i2.value = precision = this.precision || .25;
-                    canvas.addEventListener("click", reset_game_of_life);
-                    initialize_game_of_life();
+                    this.async(() => {
+                        canvas = this.$('canvas');
+                        gl = canvas.getContext("webgl2");
+                        texture = document.createElement("canvas");
+                        tx = texture.getContext("webgl2");
+                        this._i1.value = speed_factor = this.speed_factor || 3;
+                        this._i2.value = precision = this.precision || .25;
+                        canvas.addEventListener("click", reset_game_of_life);
+                        initialize_game_of_life();
+                    }, 100)
                 },
-                observers: [
-                    function _speed_factor(speed_factor) { this._updateGame() },
-                    function _myObserver(precision) { this._updateGame() }
-                ],
+                observers: ['_updateGame(precision, speed_factor)'],
                 _updateGame() {
                     if (!this._i1 || !this._i2) return;
                     this._i1.value = speed_factor = this.speed_factor;
@@ -84,7 +79,7 @@
                 gl_vsource = `
     attribute vec4 vertices;
     varying vec2 texel_coord;
-    
+
     void main () {
         gl_Position = vertices;
         texel_coord = (vertices.xy + 1.0) / 2.0;
@@ -93,17 +88,17 @@
                 gl_fsource = `
     precision mediump float;
     varying vec2 texel_coord;
-    
+
     uniform sampler2D texture_image;
     uniform vec2 resolution;
-    
+
     int get (vec2 offset) {
         vec4 texel = texture2D(texture_image, (gl_FragCoord.xy + offset) / resolution);
         return int(dot(texel, vec4(1)) / 3.0);
     }
-    
+
     void main () {
-        int n = 
+        int n =
             get(vec2(-1, -1)) +
             get(vec2(-1,  0)) +
             get(vec2(-1,  1)) +
@@ -114,26 +109,26 @@
             get(vec2( 1, -1)) +
             get(vec2( 1,  0)) +
             get(vec2( 1,  1));
-        
+
         bool pre_state = get(vec2(0, 0)) == 1;
         bool new_state;
-        
-        /* GAME OF LIFE */ 
+
+        /* GAME OF LIFE */
         if (pre_state && (n < 2 || n > 3)) { new_state = false; }
         if (pre_state && (n == 2 || n == 3)) { new_state = true; }
         if (!pre_state && n == 3) { new_state = true; }
-        
+
         /* GANE OF CHAOS (?) */
         /* LOOKS LIKE REACTION DIFFUSION */
         // if (pre_state && (n < 3 || n > 4)) { new_state = false; }
         // if (pre_state && (n == 3 || n == 4 || n == 1)) { new_state = true; }
         // if (!pre_state && n == 3) { new_state = true; }
-        
+
         /* ANOTHER WEIRD ONE */
         // if (pre_state && (n < 2 || n > 4)) { new_state = false; }
         // if (pre_state && (n == 3 || n == 4 || n == 2)) { new_state = true; }
         // if (!pre_state && n == 3) { new_state = true; }
-        
+
         gl_FragColor = vec4(vec3(int(new_state)), 1);
     }
 `,
@@ -162,7 +157,7 @@
                 tx_random,
                 tx_random_vsource = `
     attribute vec4 vertices;
-    
+
     void main () {
         gl_Position = vertices;
     }

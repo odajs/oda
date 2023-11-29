@@ -16,7 +16,7 @@
 
 В первом примере координаты рассчитанных точек и их цвет хранятся в массиве **dots** явно объявленном в разделе **props**. Благодаря явному объявлению массив **dots** обернут в **Proxy**-объект.
 
-```javascript run_edit_[my-component.js]_eh=250_h=110
+```javascript run_edit_[my-component.js]_eh=250_h=110_maxLines=13_
 ODA({
     is: 'my-component',
     template: `
@@ -24,8 +24,8 @@ ODA({
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
         <div style="width:100px; height:100px; float:left">
-            <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" ~style="'fill:'+dots[index].color"></circle>
+            <svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
+                <circle ~for="dots.length" :cx="dots[$for.index].x" :cy="dots[$for.index].y" :r="1" ~style="'fill:'+dots[$for.index].color"></circle>
             </svg>
         </div>
         <div style="float:left">
@@ -35,15 +35,16 @@ ODA({
             <div ~if="renderingCount">Average rendering time: {{Math.round(totalTime / renderingCount)}} ms</div>
         </div>
         `,
-    props: {
+    $public: {
         maxQuantityDots: 50000,
         activeButton: true,
         dots: [], //Рассчитанные точки треугольника. Точка описывается координатами "x", "y" и цветом "color".
-        renderingCount: 0, //Счетчик операций рендеринга
         creatingTriangleTime: 0,
+        renderingCount: 0, //Счетчик операций рендеринга
+        startMeasuringRenderingTime: true,
         previousTime: 0,
         totalTime: 0
-   },
+    },
     start() {
         this.activeButton = false;
         this.dots = [];
@@ -52,12 +53,17 @@ ODA({
         this.totalTime = 0;
         this.$next( ()=>{
             this.createTriangle();
-            this.$next( ()=>{ this.previousTime = Date.now();
-                requestAnimationFrame( this.loop.bind(this) );
-            }, 1 );
+            this.startMeasuringRenderingTime = true;
+            requestAnimationFrame( this.loop.bind(this) );
         }, 1 );
     },
     loop() {
+        if( this.startMeasuringRenderingTime ) {
+            this.startMeasuringRenderingTime = false;
+            this.previousTime = Date.now();
+            requestAnimationFrame(this.loop.bind(this));
+            return;
+        }
         if( this.renderingCount < 10 ) {
             ++this.renderingCount;
             const currentTime = Date.now();
@@ -77,8 +83,8 @@ ODA({
     },
     createTriangle() {
         const start = Date.now();
-        const maxX = this.$refs.svg?.viewBox.baseVal.width;
-        const maxY = this.$refs.svg?.viewBox.baseVal.height;
+        const maxX = this.$("svg").viewBox.baseVal.width;
+        const maxY = this.$("svg").viewBox.baseVal.height;
         //Создание вершин треугольника
         this.dots[0] = { x: maxX / 2, y: 0,                     color:"rgb(255,0,0)" };
         this.dots[1] = { x: 0,        y: maxY * Math.sqrt(3/4), color:"rgb(0,255,0)" };
@@ -102,9 +108,9 @@ ODA({
 
 На компьютере, на котором написана данная статья, для расчета 50000 точек требуется 788 миллисекунд. Среднее время, затрачиваемое на рендеринг всех точек треугольника, составляет примерно 659 миллисекунд.
 
-Изменим наш пример. Уберем объявление массива **dots** из раздела **props**. Теперь массив будет создаваться динамически в методе **Start**, который выполняется при нажатии на кнопку **Start**. Динамически создаваемые массивы не оборачиваются в объект **Proxy**.
+Изменим наш пример. Уберем объявление массива **dots** из раздела **props**. Теперь массив будет создаваться динамически в методе **start**, который выполняется при нажатии на кнопку **Start**. Динамически создаваемые массивы не оборачиваются в объект **Proxy**.
 
-```javascript run_edit_[my-component.js]_eh=250_h=110
+```javascript run_edit_[my-component.js]_eh=250_h=110_maxLines=13_
 ODA({
     is: 'my-component',
     template: `
@@ -112,8 +118,8 @@ ODA({
             <button @tap="start" :disabled="!activeButton"> <b>Start</b> </button>
         </div>
         <div style="width:100px; height:100px; float:left">
-            <svg ~ref="'svg'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
-                <circle ~for="dots.length" :cx="dots[index].x" :cy="dots[index].y" :r="1" ~style="'fill:'+dots[index].color"></circle>
+            <svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="background: #ccc;">
+                <circle ~for="dots.length" :cx="dots[$for.index].x" :cy="dots[$for.index].y" :r="1" ~style="'fill:'+dots[$for.index].color"></circle>
             </svg>
         </div>
         <div style="float:left">
@@ -123,14 +129,15 @@ ODA({
             <div ~if="renderingCount">Average rendering time: {{Math.round(totalTime / renderingCount)}} ms</div>
         </div>
         `,
-    props: {
+    $public: {
         maxQuantityDots: 50000,
         activeButton: true,
-        renderingCount: 0, //Счетчик операций рендеринга
         creatingTriangleTime: 0,
+        renderingCount: 0, //Счетчик операций рендеринга
+        startMeasuringRenderingTime: true,
         previousTime: 0,
         totalTime: 0
-   },
+    },
     start() {
         this.activeButton = false;
         this.dots = []; //Рассчитанные точки треугольника. Точка описывается координатами "x", "y" и цветом "color".
@@ -139,12 +146,17 @@ ODA({
         this.totalTime = 0;
         this.$next( ()=>{
             this.createTriangle();
-            this.$next( ()=>{ this.previousTime = Date.now();
-                requestAnimationFrame( this.loop.bind(this) );
-            }, 1 );
+            this.startMeasuringRenderingTime = true;
+            requestAnimationFrame( this.loop.bind(this) );
         }, 1 );
     },
     loop() {
+        if( this.startMeasuringRenderingTime ) {
+            this.startMeasuringRenderingTime = false;
+            this.previousTime = Date.now();
+            requestAnimationFrame(this.loop.bind(this));
+            return;
+        }
         if( this.renderingCount < 10 ) {
             ++this.renderingCount;
             const currentTime = Date.now();
@@ -164,8 +176,8 @@ ODA({
     },
     createTriangle() {
         const start = Date.now();
-        const maxX = this.$refs.svg?.viewBox.baseVal.width;
-        const maxY = this.$refs.svg?.viewBox.baseVal.height;
+        const maxX = this.$("svg").viewBox.baseVal.width;
+        const maxY = this.$("svg").viewBox.baseVal.height;
         //Создание вершин треугольника
         this.dots[0] = { x: maxX / 2, y: 0,                     color:"rgb(255,0,0)" };
         this.dots[1] = { x: 0,        y: maxY * Math.sqrt(3/4), color:"rgb(0,255,0)" };

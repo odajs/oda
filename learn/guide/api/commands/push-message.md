@@ -22,11 +22,11 @@ ODA.push(title = 'Warning!', {tag = 'message', body, icon = '/web/res/icons/warn
 
 При первом посещении HTML-страницы пользователь должен разрешить отображение уведомлений для данного сайта, нажав на соответствующую кнопку в диалогом окне.
 
-![Разрешение отображать уведомления](learn/guide/api/commands/images/requestNotification.png "Разрешить уведомления")
+![Разрешение отображать уведомления](learn/guide/api/commands/_images/requestNotification.png "Разрешить уведомления")
 
 Если диалоговое окно будет закрыто или будет нажата кнопка **«Блокировать»**, то механизм отображения уведомлений для данного сайта будет заблокирован. Включить этот механизм снова можно будет только в настройках параметров безопасности сайта в браузере.
 
-![Отключение блокировки уведомлений](learn/guide/api/commands/images/SiteSetting.png "Отключение блокировки уведомлений").
+![Отключение блокировки уведомлений](learn/guide/api/commands/_images/SiteSetting.png "Отключение блокировки уведомлений").
 
 Например,
 
@@ -40,12 +40,12 @@ ODA({
         <label>Иконка</label> <input ::value='icon'> <br>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         title: 'Заголовок сообщения',
         body: 'Тело сообщения',
         tag: 'MyMessage 1',
-        icon: 'https://odajs.org/learn/guide/api/commands/images/icon.png',
-        image: 'https://odajs.org/learn/guide/api/commands/images/odajs.png',
+        icon: 'https://odajs.org/learn/guide/api/commands/_images/icon.png',
+        image: 'https://odajs.org/learn/guide/api/commands/_images/odajs.png',
     },
     onTap() {
         ODA.pushMessage(this.title, {tag: this.tag, body: this.body, icon: this.icon, image: this.image});

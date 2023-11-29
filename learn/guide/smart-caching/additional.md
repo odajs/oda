@@ -10,7 +10,7 @@ ODA({
         <div>Счетчик из геттера: {{getterCount}}</div>
         <div>Счетчик из метода: {{methodCount()}}</div>
     `,
-    props: {
+    $public: {
         count1: 0,
         count2: 0,
         getterCount: {
@@ -40,7 +40,7 @@ ODA({
         <div>Счетчик из геттера 1: {{getterCount1}}</div>
         <div>Счетчик из геттера 2: {{getterCount2}}</div>
     `,
-    props: {
+    $public: {
         count: 0,
         getterCount1: {
             get() {
@@ -67,7 +67,7 @@ ODA({
         <input ::value="change">
         <div>Время: {{getterTime}}</div>
     `,
-    props: {
+    $public: {
         change: "Измени меня",
         getterTime: {
             get() {
@@ -98,7 +98,7 @@ ODA({
         <button @tap="permission=!permission">Permit={{permission}}</button>
         <div>Время из геттера: {{getterTime}}</div>
     `,
-    props: {
+    $public: {
         count: 0,
         permission: false,
         getterTime: {

@@ -1,0 +1,28 @@
+{
+  "label": {
+      "ru": "Компоненты"
+  },
+  "defaultLanguage":"ru",
+  "items": [{
+          "label": {
+            "ru": "Описание"
+          },
+          "name": "description.md"
+        }, {
+            "label": {
+              "ru": "Демо"
+            },
+            "name": "demo.html"
+        }, {
+            "label": {
+              "ru": "API"
+            },
+            "name": "api.html"
+        }, {
+            "label": {
+              "ru": "Исходный код"
+            },
+            "name": "source-code.html"
+        }
+  ]
+}

@@ -1,338 +1,464 @@
+import('../containers/containers.js');
+import {translate as translateDict} from './localization-ww.js';
+
 /* Регистрация Инструмента */
 const Localization = ODA.regTool('localization');
-ODA.localization.saveMethod = async  (phrases, dictionary)=>{
-    // console.log('СОХРАНЕНИЕ СЛОВАРЕЙ')
-    ODA.top.location.reload();
+ODA.localization.saveMethod = async (wwObj) => {
     //todo сделать стандартный метод сохранения словарей
+    const link = document.createElement('a');
+    link.download = wwObj.lang + '.json'
+    const data = new Blob([JSON.stringify(wwObj.dictionary, null, 1)])
+    link.href = URL.createObjectURL(data, { type: "application/json", encoding: "UTF-8" })
+    // link.click(); //! Строка закомментирована для удобства отладки
 }
-const domParser = new DOMParser();
+Localization.translateTagList = ['label', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9',  'slot']
+Localization.updateDictionary = paths => worker.postMessage({ type: 'update_paths', paths })
 
-Localization.path = import.meta.url.split('/').slice(0, -1).join('/'); // locales path
-Localization.translateTagList = ['label', 'h3']
+Localization.translateString = translateString
 
-ODA.top.addEventListener('change-language', e => window.location.reload() )
+ODA.top.addEventListener('change-language', async e => await reTranslate())
 
+let path = import.meta.url.split('/').slice(0, -1).join('/'); // locales path
+let translateElemSet = [];
+let allTranslates = {}; // Все переводы страницы
 
-
-/* Ф-я перевода */
-function translateWord(word, uppercases, toStorage = true){
-    let key = word.toLowerCase().trim();
-    if (key !== '' && toStorage)
-        sessionStorage.setItem(key, '.');
-    let value = Localization.dictionary[key] || '';
-    if (!value || typeof value !== 'string'){
-        value = word;
+async function reTranslate() {
+    for (let element of translateElemSet) {
+        const bak = element.__bak
+        const tr = await translateString(element[bak.src])
+        element[bak.name] = tr;
+        bak.set.call(element, tr);
     }
-    else if (uppercases) {
-        if (uppercases === 1)
-            value = value.toCapitalCase();
-        else if(word.length === uppercases)
-            value = value.toUpperCase();
-    }
-
-    return value;
-}
-const regExp = /([A-Za-z]|\s)+/gi;
-Localization.translate = function (text = '', toStorage = true){
-    let result = ''
-    let prase = ''
-    for (let ch of text){
-        if (!ch.match(regExp)){
-            result += translatePhrase(prase, toStorage) + ch;
-            prase = ''
-        }
-        else
-            prase += ch;
-    }
-    result += translatePhrase(prase, toStorage);
-    return result;
-}
-function translatePhrase(phrase, toStorage){
-    if (!phrase.trim())
-        return phrase
-    let key = phrase.toLowerCase().trim();
-    if (toStorage){
-        sessionStorage.setItem(key, '.')
-    }
-    let value =  key.split(' ').length>1?Localization.dictionary[key] || '':'';
-    if (!value){
-        let word = '';
-        let uc = 0;
-        for (let ch1 of phrase){
-            if (ch1 === ' '){
-                value += translateWord(word, uc, toStorage) + ch1;
-                uc = 0;
-                word  = ''
-            }
-            else{
-                const lch = ch1.toLowerCase()
-                uc +=  (lch !== ch1)?1:0
-                word += ch1;
-            }
-        }
-        if(word)
-            value += translateWord(word, uc, toStorage);
-    }
-    return value;
-}
-function _newVal(val) {
-    // console.log(val)
-    // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
-    if (!this.isConnected || !val)
-        return val;
-
-    switch (this.__translate) {
-        case false:
-            return val;
-        case undefined:
-            this.__translate_src = val;
-            break;
-        default: {
-            return this.__translate;
-        }
-    }
-    this.__translate = false;
-    switch (this.nodeType) {
-        case 3: {
-            if (!Localization.translateTagList.includes(this.parentElement?.localName)) {
-                return val;
-            }
-            this.__translate = Localization.translate(val);
-        } break;
-        case 1: {
-            if (!Localization.translateTagList.includes(this.localName)) {
-                // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
-                return val;
-            }
-            // if ((typeof val == 'string')&&(val.includes('AlligatorTor'))) console.log('all', val)
-            
-            // const doc = domParser.parseFromString(val, 'text/html');
-
-            // this.__translate = HtmlToText(doc.body.childNodes);
-
-            function replacer(_, p1, p2) {  return ( (p1.trim()==='')?p1:Localization.translate(p1) ) + p2 }
-            this.__translate = val.replace(/([^<]*?)(<[^>]*>|$)/g, replacer )
-
-
-        } break;
-        default:
-            return val;
-    }
-    return this.__translate;
 }
 
-function HtmlToText(nodes, toStorage = true){
-    let result = ''
-    for (let i of nodes){
-        switch (i.nodeType) {
+function translate(val, bak) {
+    if ( !val || this[bak.name] !== undefined)
+        return;
+
+    if (this.hasAttribute?.('no-translate') ||  this.parentElement?.hasAttribute?.('no-translate')) return;
+
+    let element = this;
+    if (bak.test) {
+        switch (this.nodeType) {
             case 3: {
-                result += Localization.translate(i.textContent, toStorage);
+                if (this.parentElement?.hasAttribute?.('no-translate') || !Localization.translateTagList.includes(this.parentElement?.localName)) {
+                    this[bak.name] = val;
+                    return;
+                }
+                element = this.parentElement;
             } break;
             case 1: {
-                result += `<${i.localName}>${HtmlToText(i.childNodes, false)}</${i.localName}>`
+                if (this.hasAttribute?.('no-translate') || !Localization.translateTagList.includes(this.localName)) {
+                    this[bak.name] = val;
+                    return;
+                }
             } break;
+            default: return;
         }
     }
-    return result;
-}
-/* Переопределение Геттера и Сеттера */
-const textContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent') //Node.textContent
-const textSet = textContent.set;
-const textGet = textContent.get;
+    element.__bak = bak
+    translateElemSet.add(element);
+    element[bak.src] ??= val; // сохраняем исходное
 
-textContent.set = function (val) {
-    if (this.__translate && this.__translate_src !== val){
-        this.__translate = undefined;
+    Promise.resolve( translateString(val) ).then(res => {
+        element[bak.name] = res;
+        bak.set.call(element, res)
+    })
+}
+
+function translateString(val, html = false, lang = ODA.language) {
+    allTranslates[lang] ??= {};
+    allTranslates[lang][val] ??= {}
+    const cache = allTranslates[lang][val];
+    if (cache?.translate) return cache.translate
+    if (cache?.promise) return cache.promise
+    worker.postMessage({ type: 'translate', key: val, html, lang });
+    return cache.promise = new Promise(resolve => cache.resolver = resolve)
+}
+
+function getHandler(bak) {    
+    const valDef = bak.get.call(this);
+     
+    if (this[bak.src] !== valDef) {
+        this[bak.src] = valDef;
+        bak.set.call(this, valDef);
     }
-    const newVal = _newVal.call(this, val)
-    textSet.call(this, newVal)  // переводим, перевод сохраняем
+    let val = (this[bak.src] !== undefined) ? this[bak.src] : bak.get.call(this)
+    const tr = this[bak.name]
+    if (tr === undefined) translate.call(this, val, bak)
+    else if (typeof tr === 'string') val = tr
+    
+    return valDef
 }
-// textContent.get = function () {
-//     const val = textGet.call(this)
-//     let newVal = _newVal.call(this, val)
-//     if (newVal?.then) {
-//         newVal.then (val => {
-//             textSet.call(this,val)
-//         })
-//         return '' // проверить заход
-//     }
-//     return newVal
-// }
 
-textContent.get = function () {
-    const val = textGet.call(this)
-    const newVal = _newVal.call(this, val)
-    return newVal
+function setHandler(val, bak) {
+     
+    if (this[bak.src] !== val) {
+        this[bak.name] = undefined;
+        if (!val) this[bak.src] = undefined;
+        translate.call(this, val, bak)
+    }
+    
+    bak.set.call(this, val);
 }
-Object.defineProperty(Node.prototype, 'textContent', textContent)
 
-const innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')
-const innerSet = innerHTML.set;
-const innerGet = innerHTML.get;
+/* Переопределение Геттеров и Сеттеров */
+[
+    [Node, 'textContent', true],
+    [Element, 'innerHTML', true],
+    [HTMLElement, 'title', false],
+    [HTMLInputElement, 'placeholder', false]
+].forEach(([ctor, propName, test]) => {
+    const propertyDesc = Object.getOwnPropertyDescriptor(ctor.prototype, propName);
 
-innerHTML.set = function (val) {
-    if (this.__translate && this.__translate_src !== val)
-        this.__translate = undefined;
-    const newVal = _newVal.call(this, val)
-    innerSet.call(this, newVal)  // переводим, перевод сохраняем
+    const propertyDescBak = {
+        get: propertyDesc.get,
+        set: propertyDesc.set,
+        name: `__translate_${propName}`,
+        src: `__translate_${propName}_src`,
+        test
+    };
+
+    propertyDesc.get = function () {
+        return getHandler.call(this, propertyDescBak);
+    };
+    propertyDesc.set = function (val) {
+        setHandler.call(this, val, propertyDescBak);
+    };
+
+    Object.defineProperty(ctor.prototype, propName, propertyDesc);
+})
+
+
+
+const worker = new ODA.Worker(path + '/localization-ww.js', {type:'module'} );
+worker.onmessage = async function (e) {
+    switch (e.data?.type) {
+        case 'translate': {
+            const cache = allTranslates[e.data.lang][e.data.key];
+            cache.translate = e.data.translate;
+            cache.resolver(e.data.translate);
+        } break;
+        case 'dictionary': {
+            editDictionary_resolve(e.data)
+        } break;
+        case 'log': {
+            console.log(e.data.log)
+        } break;
+        case 'update': {
+            delete allTranslates[e.data.lang]
+            await reTranslate()
+        } break;
+        case 'edit_translate': {
+            console.log(e.data)
+        } break;
+    }
 }
-innerHTML.get = function () {
-    const val = innerGet.call(this)
-    const newVal = _newVal.call(this, val)
-    return newVal
+worker.onmessageerror = function (e) { console.error(e); }
+worker.postMessage({ type: 'init', url: path, lang:ODA.language })
+
+let editDictionary_resolve;
+function editDictionary(lang = ODA.language) {
+    worker.postMessage({ type: 'dictionary', 'lang': lang })
+    return new Promise(resolve => editDictionary_resolve = resolve)
 }
-Object.defineProperty(Element.prototype, 'innerHTML', innerHTML)
 
 /* Нажатие клавиши */
+ODA.localization.showDialog = false
 window.addEventListener('keydown', async e => {
-    if (e.code !== 'KeyL' || !e.altKey) return;
-    await import('../containers/containers.js');
-    const result = await ODA.top.ODA.showDialog('oda-localization-tree', {style: 'margin: 32px'}, {fullSize: true,
-        icon: 'icons:flag',
-         title: 'Dictionaries',
-         autosize: false})
-    const phrases = Object.entries(sessionStorage).filter(i=>{
-        return i[1] === '.'
-    }).map(i=>{
-        return i[0];
-    })
+    if (e.code !== 'KeyL' || !e.altKey || ODA.localization.showDialog) return;
+    ODA.localization.showDialog = true;
+    let changedEvent;
+    try{
+        const { control: result } = await ODA.top.ODA.showDialog('oda-localization', {},
+            {
+                minHeight: '90%', minWidth: '90%', maxWidth: '90%', icon: ODA.getFlags(ODA.language),  title: 'Dictionaries: ' + ODA.language,
+                buttons: [
+                    {
+                        is: 'div',
+                        class: 'flex',
+                        // tap: e => e.stopPropagation(),
+                        style: 'pointer-events: none;'
+                    },
+                    {
+                        label: 'Save dictionary',
+                        icon: 'icons:save',
+                        class: 'success-invert no-flex',
+                        disabled() {
+                            if (!changedEvent){
+                                changedEvent = (e)=>{
+                                    this.$render();
+                                }
+                                this.control.addEventListener('is-changed-changed', changedEvent)
+                            }
+                            return !this.control?.isChanged;
+                        },
+                        tap: async e => {
+                            e.stopPropagation();
+                            const btn = e.target;
+                            const _icon = btn.icon;
+                            await btn.control._save();
+                            btn.icon = _icon;
+                        },
 
+                    }]
+            }
+        )
+        result._save()
+    }
+    catch (e){
 
-    const dictionary = result.dataSet.filter(i=>{
-        return i.translate;
-    }).reduce((res, i)=>{
-        res[i.word] = i.translate;
-        return res;
-    }, {})
-    await ODA.top.ODA.localization.saveMethod(phrases, dictionary);
-
+    }
+    finally {
+        ODA.localization.showDialog = false;
+    }
 })
 
-/*  */
-ODA({ is: 'oda-localization-tree', imports: '@oda/table', extends: 'oda-table',
-    template:`
-        <style>
-            :host{
-                @apply --shadow;    
-            }
-        </style
+
+ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
+    <style>
+        :host {
+            @apply --vertical;
+            @apply --flex;
+            overflow: hidden;
+        }
+        .head {
+            color: var(--dark-color);
+            fill: var(--dark-color);
+            background-color: var(--dark-background);
+            align-items: center;
+            padding:4px;
+            grid-area:head;
+        }
+        .letters {
+            white-space: break-spaces;
+            text-align:center;
+            padding:0 8px;
+        }
+        .letters oda-button {
+            display: inline-flex;
+            padding:4px;
+            margin:0 4px;
+        }
+        .separator {
+            width:.5em;
+        }
+        .part{
+            overflow: hidden;
+            @apply --flex;
+            @apply --vertical;  
+            min-width: 50%;
+        }
+        .scroll{
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0px 8px;
+            @apply --flex;
+        }
+        .title{
+            @apply --header;
+            @apply --horizontal;
+            align-items: center;
+        }
+        b{
+            padding: 12px;
+        }
+    </style> 
+    <div class='head horizontal'>
+        <oda-button icon-size='20' icon='lineawesome:long-arrow-alt-down-solid' @tap='sortAZ=!sortAZ'>
+            {{sortAZ?"AZ":"ZA"}}</oda-button>
+        <div class='separator'></div>
+        <input style="font-size:inherit;padding:4px" type="search" ::value='searchVal' :placeholder='"quick search"' autofocus>
+        <div class='separator'></div>
+        <oda-button icon-size='20' :icon='hideModes[hideMode].icon' :label='hideModes[hideMode].label' @tap='showMod($event)'></oda-button>
+        <div class='flex'></div>
+        <div class='letters'>
+            <oda-button ~for='fLetters' :title='$for.item.amount' @tap='firstLetter=$for.item.label' ~class='$for.item.error?"error":""'
+                :focused='firstLetter===$for.item.label' >{{$for.item.label}}</oda-button></div>
+        <oda-button label='All' title='All' @tap='firstLetter=""' :active='firstLetter===""'></oda-button>
+    </div>
+    <!-- <oda-localization-panel :target='screen?.words' is-word='true'></oda-localization-panel>
+    <oda-localization-panel :target='screen?.phrases' is-word='false'> </oda-localization-panel> -->
+    <div class="flex horizontal" style="overflow: hidden;">
+        <div  class="part">
+            <div class="title">
+                <b class="flex">Words</b>
+                <div class="no-flex horizontal border info"  ~if="focusedWord" style="align-items: center; padding: 2px 2px 2px 8px">
+                    <span>{{focusedWord}}</span>
+                    <oda-button icon="icons:close" @tap="focusedWord = ''" style="padding: 0px;"></oda-button>
+                </div>
+            </div>
+            <div class="scroll">
+                <oda-localization-fieldset ~for='screen?.words' :legend='$for.item' ::value='words[$for.item]' is-word></oda-localization-fieldset>
+            </div>
+        </div>
+        <div class="part">
+            <div class="title">
+                <b>Phrases</b>
+            </div>
+            <div class="scroll">
+                 <oda-localization-fieldset ~for='screen?.phrases' :legend='$for.item' ::value='phrases[$for.item]'></oda-localization-fieldset> 
+            </div>
+        </div>    
+    </div>
+
     `,
-    props: {
-        showHeader: true,
-        colLines: true,
-        rowLines: true,
-        allowFocus: true,
-        allowSort: true,
-        lazy: true,
-        showFilter: true,
-        autoSize: true,
-        autoWidth: true, //sort: [[letter]],
+    dictionary:{
+        $type: Object,
+        get(){ // { type:, dictionary: { w:{}, p:{}, r:[] }, phrases: { w:{}, p:{} }, structure: {}, lang:, funTr: }
+            worker.postMessage({ type: 'dictionary', 'lang': ODA.language})
+            return new Promise(resolve => editDictionary_resolve = resolve);
+        }
     },
-    columns: [{ name: 'word', treeMode: true, $sort: 1, fix: 'left', width: 200 },
-              { name: 'translate', cellTemplate: 'oda-localization-input' },
-              { name: 'letter', hidden: true, $sortGroups: 1, $expanded: true, $hideExppander: true }],
-    attached(){
-        this.groups = [this.columns.find(c => c.name === 'letter')];
-        this.async(()=>{
-            this.dataSet = Object.keys(sessionStorage).filter(w=>{
-                return sessionStorage.getItem(w) === '.';
-            }).map(w=>{
-                return {word: w, letter: w[0], translate: Localization.dictionary[w] || ''}
-            })
+
+    get fLetters() {
+        return Object.entries(
+            Object.keys({ ...this.words, ...this.phrases }).reduce((a,c)=> {
+                a[c.slice(0, 1).toUpperCase()] ??= 0;
+                a[c.slice(0, 1).toUpperCase()] += 1
+                return a
+            }, {})
+        ).sort((a, b) => (a[0] > b[0]) ? 1 : -1).map(e => {
+            const [label, amount, charCode] = [e[0], e[1], e[0].charCodeAt(0)]
+            return { label, amount, error: (charCode < 65) || (charCode > 90) }
         })
-    }
-})
-
-ODA({ is: 'oda-localization-input', template: /*html*/ `
-        <style>
-            :host{
-                @apply --horizontal;
-                @apply --header;
-                align-self: center;
-                @apply --flex;
-                height: 100%;
+    },
+    get screen() {
+        const compare = (a, b) => ((a > b) ? 1 : -1) * (this.sortAZ ? 1 : -1)
+        const filTers = (fList) => { return ([s,v]) => { 
+            let ff =  {
+                searchVal: s.toUpperCase().includes(this.searchVal.toUpperCase()),
+                hideMode: ( !(this.hideMode===1) || (v!=='')) && ( !(this.hideMode===2) || (v==='')),
+                firstLetter: ((this.firstLetter === '') || (s.toUpperCase().slice(0, 1) === this.firstLetter))
             }
-        </style>
-    <input @input="onInput" :value="getValue" class="flex" style="padding: 4px; border: none; outline: none;" :header="item?.translate" :placeholder="getPlaceholder()">
+            return fList.map(fName=>ff[fName]).every(a=>a)
+        }}
+        const chain = (x,fList) => Object.entries(x).filter(filTers(fList)).map(l => l[0]).sort(compare)
+        return { 
+            words: chain(this.words, ['searchVal', 'hideMode', 'firstLetter']), 
+            phrases: (this.focusedWord)? Object.keys(this?.dictionary?.structure[this.focusedWord]||{}) : chain(this.phrases,['searchVal','hideMode'])
+        }
+    },
+
+    firstLetter: '',
+    sortAZ: true,   
+    searchVal: '',
+
+    $pdp: {        
+        get words() {
+            return { ...this.dictionary?.phrases?.w, ...this.dictionary?.dictionary?.w };
+        },
+        get phrases() {
+            return { ...this.dictionary?.phrases?.p, ...this.dictionary?.dictionary?.p };
+        },
+
+        focusedWord: '',
+        isChanged: false,
+
+        async _save() {
+            if (!this.isChanged) return;
+            this.isChanged = false;
+
+            let newDictionary = { p: {}, w: {}, r: this.dictionary.dictionary.r}
+            for (let k in this.phrases) if (this.phrases !== '') newDictionary.p[k] = this.phrases[k]
+            for (let k in this.words) if (this.words !== '') newDictionary.w[k] = this.words[k]
+
+            // this.wwObject.dictionary = newDictionary
+           
+            await ODA.localization.saveMethod({structure: this.dictionary.structure, phrases:this.dictionary.phrases, dictionary:newDictionary,lang: ODA.language});
+            worker.postMessage({ type: 'update', lang: ODA.language }) //? посылаем в worker, возможно нужно обернуть в promise
+            // // console.log(this.word)
+            // this.word.def = { ...this.word.def, ...newDictionary.w }
+            // this.phrase.def = { ...this.phrase.def, ...newDictionary.p }
+
+            return 'Ok'
+        },
+    },
+
+    hideMode:0,
+    hideModes:[
+        {label: "show All", icon:'bootstrap:eye', mode:0},
+        {label: "hide Empty", icon:'bootstrap:eye-slash', mode:1},
+        {label: "hide Filled", icon:'bootstrap:eye-slash-fill', mode:2},
+    ],
+    async showMod(e) {
+            const { control } = await ODA.showDropdown('oda-menu', { items: this.hideModes},
+            { animation: 500, parent: e.target, intersect: true, align:'right'});
+            if (control?.focusedItem?.mode!=undefined) this.hideMode = control.focusedItem.mode
+        },
+})
+
+ODA({
+    is: 'oda-localization-fieldset', template: /*html*/ `
+    <style>
+        :host {
+            margin:12px 0;
+            padding: 2px 0px;
+            box-sizing: border-box;
+        }
+        legend{
+            white-space: break-spaces;
+            text-align: left;
+            margin-left: 4px;
+            opacity: .5;
+        }
+        fieldset {
+            margin: 12px 0;
+            border-radius: 4px;
+            border: 1px solid var(--dark-background);
+            background-color: var(--content-background, white);
+            color: var(--content-color, black);
+            fill: var(--content-color, black);
+        }
+        .content {
+            @apply --horizontal;
+            @apply --flex;
+        }
+        input {
+            border: none;
+            outline-color: silver;
+            font-size: larger;
+            text-overflow: ellipsis;
+            padding: 4px;
+        }
+    </style>
+    <fieldset class="horizontal" :focused>
+        <legend bold @tap="editLegend" no-translate>{{legend}}</legend>
+        <input no-translate class="flex"  @focus="onFocus" @blur="onBlur" :value @input="onInpot" :placeholder>
+    </fieldset>
     `,
-    onInput(e){
-        this.item.translate = Localization.dictionary[this.item?.word] =  (e.target.value || '').toLowerCase();
+    onInpot(e){
+        this.value = e.target.value;
+        this.isChanged = true;
     },
-    getValue(){
-        return this.item?.translate;
+    editLegend(e) {
+        e.target.setAttribute('contenteditable', true);
     },
-    getPlaceholder(){
-        return Localization.translate(this.item?.word);
+    onFocus(e) {
+        if (this.isWord) {
+            this.focusedWord = this.legend;
+        }
+        if (this.value==='') {
+            this.value = this.placeholder
+        }
+    },
+    onBlur(e) {
+        if (!this.isWord) {
+            let oldVal = this.value
+            this.value = ''
+            if (oldVal!== this.placeholder) this.value = oldVal
+        }
+    },
+    legend: String,
+    value: String,
+    isWord: false,
+
+    get focused() {
+        return this.focusedWord === this.legend;
+    },
+    get placeholder ()  {
+        if (this.isWord) return ''
+        let tr = translateDict(this.legend, {p:this.phrases, w:this.words, t:[]} ).tr
+        return (this.legend !== tr)? tr : ''
     }
 })
-
-
-setTimeout(()=>{
-    ODA.loadJSON(Localization.path + '/dictionary/phrases.json').then(res=>{
-        res.forEach(i => sessionStorage.setItem(i, '.'))
-    }).catch(e=>{
-
-    })
-    ODA.loadJSON(Localization.path + '/dictionary/' + ODA.language + '.json').then(res=>{
-        // console.log(res)
-        Localization.dictionary = Object.assign(Object.create(null),res)
-    }).catch(e=>{
-        console.log(e)
-        Localization.dictionary = Object.create(null)
-    })
-})
-
-function tr(str){
-    let object = new Promise((resolve, reject)=>{
-        resolves[str] = resolve;
-        worker.str({type: 'translate', 'str':str });
-        return icons[n];
-    })
-    return object;
-}
-
-// function loadIcon(n){
-//     if (/:[0-9]+$/.test(n)) {
-//         let s = n.match(/:[0-9]+$/)[0];
-//         n = n.replace(s, '');
-//     }
-//     let object = icons[n] ??= new Promise((resolve, reject)=>{
-//         resolves[n] = resolve;
-//         worker.postMessage(n);
-//         return icons[n];
-//     })
-//     return object;
-// }
-// const resolves = {};
-// const icons = {};
-let worker = new Worker('localizationW.js'); // SharedWorker
-worker = worker.port || worker;
-worker.start?.();
-// worker.onmessage = function (e){
-//     switch (e.data?.type){
-//         case 'svg':{
-//             const dom = parser.parseFromString(e.data.doc, 'text/html');
-//             const template = dom.querySelector('template');
-//             const size = +template.getAttribute('size') || 0
-//             e.data.svg = Array.prototype.reduce.call(template.content.children, (res, i)=>{
-//                 res[i.id] = {body: {body: i.outerHTML, size: (+i.getAttribute('size') || size)}};
-//                 return res
-//             }, {})
-//             worker.postMessage(e.data);
-//         } break;
-//         case 'request':{
-//             worker.postMessage(e.data.icon);
-//         } break;
-//         default:{
-//             icons[e.data.icon] = e.data;
-//             resolves[e.data.icon]?.(e.data);
-//             delete resolves[e.data.icon];
-//         } break;
-//     }
-// }
-// worker.onmessageerror = function (e) {
-//     console.error(e);
-// }
-
-worker.postMessage({type: 'init', language: ODA.language})
-worker.postMessage({type: 'setlanguage', language: ODA.language})

@@ -1,0 +1,58 @@
+[
+    {
+        "name": "figure-digit",
+        "label": "Распознование рукописных цифр",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "in-yan",
+        "label": "In-Yan",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "sierpinski-triangle",
+        "label": "Sierpinski Triangle",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "date-timer",
+        "label": "ODA Timer",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "html-live",
+        "label": "ODA HTML Editor with live preview",
+        "content": {
+            "link": "demo.html"
+        }
+    },
+    {
+        "name": "web-gl",
+        "label": "WebGL Demo (different line thicknesses)",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "map",
+        "label": "Russia map",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "slider",
+        "label": "Ryazan city (oda-slider)",
+        "content": {
+            "link": "index.html"
+        }
+    }
+]

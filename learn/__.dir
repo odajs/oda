@@ -1,0 +1,10 @@
+{
+    "$DIR": [
+        {
+            "path": "guide"
+        },
+        {
+            "path": "video-lessons"
+        }
+    ]
+}

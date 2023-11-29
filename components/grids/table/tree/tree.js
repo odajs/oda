@@ -1,27 +1,11 @@
-ODA({ is: 'oda-tree', imports: '@oda/table', extends: 'oda-table',
-    props: {
+ODA({is: 'oda-tree', imports: '@oda/table', extends: 'oda-table',
+    $public: {
         icon: 'icons:tree-structure',
-        focusedNode: Object,
+        focusedRow: Object,
         autoWidth: true,
         keyName: 'name',
     },
-    attached() {
-        if (!this.columns?.length) this.columns = [{name: this.keyName, treeMode: true/*, $sort: 1*/}];
-    },
-    observers: [
-        function setFocusedNode(focusedRow) {
-            if (focusedRow !== this.focusedNode) {
-                this.focusedNode = focusedRow;
-            }
-        },
-        function setFocusedRow(focusedNode) {
-            if (focusedNode !== this.focusedRow) {
-                this.focusedRow = focusedNode;
-            }
-        }
-    ],
-    // async expandAll() {
-    // },
-    // async collapseAll() {
-    // }
+    get columns() {
+        return [{ name: this.keyName, treeMode: true }];
+    }
 });

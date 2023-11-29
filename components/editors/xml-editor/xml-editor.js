@@ -1,9 +1,9 @@
 ODA({ is: "oda-xml-editor", imports: '@oda/ace-editor', extends: 'oda-ace-editor',
     // template:`<!--<script src="./sax-min.js"></script>-->`,
-    props: {
+    $public: {
         mode: 'xml',
         xml: {
-            type: String,
+            $type: String,
             set(xml) {
                 this._parseXML(xml);
             }

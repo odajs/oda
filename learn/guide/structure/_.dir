@@ -35,17 +35,17 @@
     },
     {
         "name": "observers.md",
-        "label": "<b style='color:blue'>observers</b>: Обозреватели свойств компонента",
+        "label": "<b style='color:blue'>$observers</b>: Обозреватели свойств компонента",
         "status": "check"
     },
     {
         "name": "listeners.md",
-        "label": "<b style='color:blue'>listeners</b>: Слушатели событий компонента",
+        "label": "<b style='color:blue'>$listeners</b>: Слушатели событий компонента",
         "status": "check"
     },
     {
         "name": "key-bindings.md",
-        "label": "<b style='color:blue'>keyBindings</b>: Обработка нажатий клавиш клавиатуры",
+        "label": "<b style='color:blue'>$keyBindings</b>: Обработка нажатий клавиш клавиатуры",
         "status": "check"
     },
     {

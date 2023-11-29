@@ -11,7 +11,7 @@
         <div>Число {{count}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         count: 0,
         text: {
             get() {
@@ -38,7 +38,7 @@
         <div>Число {{items[0]}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         items: [1, 2, 3],
         text: {
             reactive: true,
@@ -66,7 +66,7 @@
         <div>Число {{items.a}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         items: {a: 1, b: 2, c: 3},
         text: {
             get() {
@@ -93,10 +93,10 @@
         <div>Число {{items.a}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         items: {
-            freeze: true,
-            default: {a: 1, b: 2, c: 3}
+            $freeze: true,
+            $def: {a: 1, b: 2, c: 3}
         },
         text: {
             get() {
@@ -124,10 +124,10 @@
         <button @tap="onTap">Нажми на меня</button>
         <div>Число {{items.a}} – {{text}}</div>
     `,
-    props: {
+    $public: {
         items: {
-            freeze: true,
-            default: {a: 1, b: 2, c: 3}
+            $freeze: true,
+            $def: {a: 1, b: 2, c: 3}
         },
         text: {
             get() {
@@ -159,10 +159,10 @@
         <div>Число {{items.a}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         items: {
-            freeze: true,
-            default: {a: 1, b: 2, c: 3}
+            $freeze: true,
+            $def: {a: 1, b: 2, c: 3}
         },
         text: {
             get() {
@@ -188,13 +188,13 @@
         <div>Число {{count}} – {{text}}</div>
         <button @tap="onTap">Нажми на меня</button>
     `,
-    props: {
+    $public: {
         count: {
-            freeze: true,
-            default: 0
+            $freeze: true,
+            $def: 0
         },
         text: {
-            freeze: true,
+            $freeze: true,
             get() {
                 return this.count & 1 ? "нечетное число" : "четное число";
             }

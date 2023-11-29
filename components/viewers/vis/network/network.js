@@ -1,5 +1,5 @@
-import '../lib/vis-network/dist/vis-network.js';
-ODA({ is: 'oda-network', template: /*html*/`
+// import '../lib/vis-network/dist/vis-network.js';
+ODA({ is: 'oda-network', imports: '../lib/vis-network/dist/vis-network.js', template: /*html*/`
     <style>
         :host {
             @apply --flex;
@@ -14,35 +14,130 @@ ODA({ is: 'oda-network', template: /*html*/`
             background: white;
         }
     </style>
-    <div ref="network"></div>
+    <div id="network-div"></div>
     `,
-    props: {
-        dataSet: Array,
-        items: Array,
-        // options: {
-        //     type: Object,
-        //     set(options) {
-        //         if (this._network) this._network.setOptions(options);
-        //     }
-        // },
-        focusedItem: Object,
-        physics: {
-            type: Boolean,
-            default: true,
-            set(physics) {
-                if (this._network) this._network.setOptions({ physics: { enabled: physics } });
+    _getNewItemId() {
+        return this.itemId++;
+    },
+    $public: {
+        get networkDiv() {
+            return this.$('#network-div')
+        },
+        get rootItem() {
+            return this.items?.[0];
+        },
+        dataSet: {
+            $type: Array
+        },
+        items: {
+            $type: Array,
+            get() {
+                const array = Object.assign([], this.dataSet);
+                let expanding = (data, level) => {
+                    let children = data.filter(i => i[this.parentKey] && i[this.idKey] !== i[this.parentKey]);
+                    children.forEach(i => {
+                        let item = data.find(p => p[this.idKey] === i[this.parentKey]);
+                        delete i[this.parentKey];
+                        if (item) {
+                            item.items = item.items || [];
+                            if (!item.items.includes(i))
+                                item.items.push(i);
+                        } else {
+                            data.push(i);
+                            // children.splice(children.indexOf(i),1);
+                        }
+                        data.splice(data.indexOf(i), 1);
+                    });
+
+                    let expands = data.filter(i => {
+                        i.id = (typeof i.id !== 'undefined') ? i.id : this._getNewItemId();
+                        if (!i.expanded) {
+                            this.fire('expand', i);
+                            i.expanded = true;
+                        }
+                        return i.expanded && i.items && i.items.length;
+                    });
+                    level++;
+                    expands.forEach(e => {
+                        let idx = array.indexOf(e);
+                        array.splice(idx + 1, 0, ...e.items);
+                        expanding(e.items, level);
+                    });
+                };
+                if (array.length > 0)
+                    expanding(array, 0);
+                return array;
+            },
+            set(items) {
+                [...this.nodes._data.values()].forEach(node => {
+                    if (!items.some(i => i.id === node.id))
+                        this.nodes.remove(node);
+                });
+                let lines = [];
+                items.forEach(i => {
+                    if (i.items && i.items.length > 0) {
+                        i.items.forEach(s => {
+                            lines.push({ id: s.id, from: i.id, to: s.id });
+                        })
+                    }
+                });
+                Object.values(this.edges._data).forEach(edge => {
+                    if (!items.some(i => i.id === edge.id))
+                        this.edges.remove(edge);
+                });
+                items.forEach(i => {
+                    if (!this.nodes._data.has(i.id)) {
+                        this.nodes.add(i);
+                    }
+                    this.nodes.update(i);
+                });
+                lines.forEach(i => {
+                    if (!this.edges._data.has(i.id))
+                        this.edges.add({ id: i.id, from: i.from, to: i.to });
+                });
+                if (this.network && !this.focusedItem) {
+                    this.network.setData({ nodes: this.nodes, edges: this.edges });
+                    let clusterOptionsByData = {
+                        processProperties: (clusterOptions, childNodes) => {
+                            clusterOptions.label = "[ Cluster " + childNodes.length + " ]";
+                            return clusterOptions;
+                        },
+                        clusterNodeProperties: { borderWidth: 2, shape: 'box', font: { size: 30 } }
+                    };
+                    this.network.clusterByHubsize(undefined, clusterOptionsByData);
+                    this.network.stabilize();
+                }
             }
         },
-        _networkEvents: ['click', 'doubleClick', 'oncontext', 'dragStart', 'dragging', 'dragEnd', 'zoom', 'showPopup', 'hidePopup', 'select', 'selectNode', 'selectEdge', 'deselectNode', 'deselectEdge', 'hoverNode', 'hoverEdge', 'blurNode', 'blurEdge', 'startStabilizing', 'stabilizationProgress', 'stabilizationIterationsDone', 'stabilized', /*'resize',*/ 'initRedraw', 'beforeDrawing', 'afterDrawing', 'animationFinished', 'configChange'],
-        _network: {
-            type: Object,
+        // options: {
+        //     $type: Object,
+        //     set(options) {
+        //         if (this.network) this.network.setOptions(options);
+        //     }
+        // },
+        focusedItem: {
+            $type: Object
+        },
+        physics: {
+            $type: Boolean,
+            $def: true,
+            set(physics) {
+                if (this.network) this.network.setOptions({ physics: { enabled: physics } });
+            }
+        },
+        networkEvents: {
+            $type: Array,
+            $def: ['click', 'doubleClick', 'oncontext', 'dragStart', 'dragging', 'dragEnd', 'zoom', 'showPopup', 'hidePopup', 'select', 'selectNode', 'selectEdge', 'deselectNode', 'deselectEdge', 'hoverNode', 'hoverEdge', 'blurNode', 'blurEdge', 'startStabilizing', 'stabilizationProgress', 'stabilizationIterationsDone', 'stabilized', /*'resize',*/ 'initRedraw', 'beforeDrawing', 'afterDrawing', 'animationFinished', 'configChange']
+        },
+        network: {
+            $type: Object,
             set(network, old) {
                 if (old) {
-                    this._networkEvents.forEach(e => this._network.off(e));
+                    this.networkEvents.forEach(e => this.network.off(e));
                 }
                 if (network) {
-                    this._networkEvents.forEach(e => {
-                        this._network.on(e, detail => {
+                    this.networkEvents.forEach(e => {
+                        this.network.on(e, detail => {
                             if (detail && detail.nodes && detail.nodes.length) {
                                 detail.nodes.forEach(id => {
                                     detail.id = id;
@@ -56,50 +151,87 @@ ODA({ is: 'oda-network', template: /*html*/`
                 }
             }
         },
-        _nodes: Object,
-        _edges: Object,
-        _itemId: 0,
-        _refresh: 0,
+        nodes: {
+            $type: Object
+        },
+        edges: {
+            $type: Object
+        },
+        itemId: 0,
+        refreshCount: 0,
         idKey: 'id',
         parentKey: 'parent'
     },
-    listeners: {
-        'dragStart': '_onDragStart',
-        'dragging': '_onDragging',
-        'dragEnd': '_onDragEnd',
-        'selectNode': '_onSelectNode',
-        'deselectNode': '_onDeselectNode',
-        'doubleClick': '_onDblClick',
-        'contextmenu': '_onContextMenu',
-        'oncontext': '_onContextMenu',
-        'resize': '_onResize',
-        'stabilizationIterationsDone': '_onStabilized'
+    $listeners: {
+        'dragStart': 'onDragStart',
+        'dragging': 'onDragging',
+        'dragEnd': 'onDragEnd',
+        'selectNode': 'onSelectNode',
+        'deselectNode': 'onDeselectNode',
+        'doubleClick': 'onDoubleClick',
+        'contextmenu': 'onContextmenu',
+        'oncontext': 'onContextmenu',
+        'resize': 'onResize',
+        'stabilizationIterationsDone': 'onStabilizationIterationsDone'
     },
-    _onSelectNode(event, d) {
-        if (this._network && event.detail.value.nodes && event.detail.value.nodes.length > 0) {
-            if (this._network.isCluster(event.detail.value.nodes[0]) === true) {
+    onDragStart(event, d) {
+        if (this.network && event.detail.value.nodes && event.detail.value.nodes.length > 0) {
+            if (this.network.isCluster(event.detail.value.nodes[0]) === true) {
                 this.physics = true;
-                this._network.openCluster(event.detail.value.nodes[0]);
-                // this._network.stabilize();
+                this.network.openCluster(event.detail.value.nodes[0]);
+                // this.network.stabilize();
+            } else {
+                this.network.setOptions({ nodes: { physics: false } });
+                this.focusedItem = this.items.find(i => i.id === event.detail.value.id);
+            }
+        }
+    },
+    onDragging(event, d) {
+        if (event.detail.value.nodes && event.detail.value.nodes.length) {
+            const weight = 20;
+            const positions = this.network.getPositions();
+            for (let i in positions) {
+                if (
+                    positions.hasOwnProperty(i) &&
+                    Math.abs(event.detail.value.pointer.canvas.x - positions[i].x) < weight &&
+                    Math.abs(event.detail.value.pointer.canvas.y - positions[i].y) < weight &&
+                    parseInt(i) !== event.detail.value.id
+                ) {
+                    this.network.selectNodes([event.detail.value.id, parseInt(i)]);
+                } else {
+                    this.network.selectNodes([event.detail.value.id]);
+                }
+            }
+        }
+    },
+    onDragEnd(event, d) {
+        if (this.network && event.detail.value.nodes && event.detail.value.nodes.length) this.network.setOptions({ nodes: { physics: true } });
+    },
+    onSelectNode(event, d) {
+        if (this.network && event.detail.value.nodes && event.detail.value.nodes.length > 0) {
+            if (this.network.isCluster(event.detail.value.nodes[0]) === true) {
+                this.physics = true;
+                this.network.openCluster(event.detail.value.nodes[0]);
+                // this.network.stabilize();
             } else {
                 this.focusedItem = this.items.find(i => i.id === event.detail.value.id);
                 /*if( this.focusedItem && this.focusedItem.links && this.focusedItem.links.length > 0 ) {
-                    if( this._network )
-                        this._network.setOptions( { nodes: { physics: false } } );
+                    if( this.network )
+                        this.network.setOptions( { nodes: { physics: false } } );
                     this.focusedItem.links.forEach( link => {
                         let toItem = this.items.find( toItem => toItem.item.Root[ this.idKey ] === link );
-                        this._edges.add( { from: this.focusedItem.id, to: toItem.id, arrows: 'to', dashes: true } );
+                        this.edges.add( { from: this.focusedItem.id, to: toItem.id, arrows: 'to', dashes: true } );
                     } );
                 }*/
                 // if (this.focusedItem.item instanceof odaObject &&
                 //     this.focusedItem.item.Root.$gant &&
                 //     this.focusedItem.item.Root.$gant[0].$dependens &&
                 //     this.focusedItem.item.Root.$gant[0].$dependens.length > 0) {
-                //     this._network.setOptions({ nodes: { physics: false } });
+                //     this.network.setOptions({ nodes: { physics: false } });
                 //     this.focusedItem.item.Root.$gant[0].$dependens.forEach(depend => {
                 //         let toItem = this.items.find(toItem => toItem.item.Root[this.idKey] === depend.link);
-                //         if (!Object.values(this._edges._data).some(edge => edge.from === this.focusedItem.id && edge.to === toItem.id))
-                //             this._edges.add({
+                //         if (!Object.values(this.edges._data).some(edge => edge.from === this.focusedItem.id && edge.to === toItem.id))
+                //             this.edges.add({
                 //                 from: this.focusedItem.id,
                 //                 to: toItem.id,
                 //                 arrows: 'to',
@@ -111,63 +243,30 @@ ODA({ is: 'oda-network', template: /*html*/`
             }
         }
     },
-    _onDeselectNode(event, d) {
-        Object.values(this._edges._data).filter(edge => !Number.isInteger(edge.id)).forEach(edge => {
-            this._edges.remove(edge);
+    onDeselectNode(event, d) {
+        Object.values(this.edges._data).filter(edge => !Number.isInteger(edge.id)).forEach(edge => {
+            this.edges.remove(edge);
         });
         if (this.focusedItem && event.detail.value.nodes && !event.detail.value.nodes.length && this.focusedItem.id !== this.rootItem.id) {
             this.focusedItem = this.items.find(i => i.id === this._getParentNode(this.focusedItem).id);
             this.camOnNode(this.focusedItem.id);
-            this._network.selectNodes([this.focusedItem.id]);
+            this.network.selectNodes([this.focusedItem.id]);
         } else if (this.focusedItem && event.detail.value.nodes && !event.detail.value.nodes.length && this.focusedItem.id === this.rootItem.id) {
             this.focusedItem = null;
             this.camOnNode(0, 0.5);
         }
     },
-    _onDragStart(event, d) {
-        if (this._network && event.detail.value.nodes && event.detail.value.nodes.length > 0) {
-            if (this._network.isCluster(event.detail.value.nodes[0]) === true) {
-                this.physics = true;
-                this._network.openCluster(event.detail.value.nodes[0]);
-                // this._network.stabilize();
-            } else {
-                this._network.setOptions({ nodes: { physics: false } });
-                this.focusedItem = this.items.find(i => i.id === event.detail.value.id);
-            }
-        }
-    },
-    _onDragging(event, d) {
-        if (event.detail.value.nodes && event.detail.value.nodes.length) {
-            const weight = 20;
-            const positions = this._network.getPositions();
-            for (let i in positions) {
-                if (
-                    positions.hasOwnProperty(i) &&
-                    Math.abs(event.detail.value.pointer.canvas.x - positions[i].x) < weight &&
-                    Math.abs(event.detail.value.pointer.canvas.y - positions[i].y) < weight &&
-                    parseInt(i) !== event.detail.value.id
-                ) {
-                    this._network.selectNodes([event.detail.value.id, parseInt(i)]);
-                } else {
-                    this._network.selectNodes([event.detail.value.id]);
-                }
-            }
-        }
-    },
-    _onDragEnd(event, d) {
-        if (this._network && event.detail.value.nodes && event.detail.value.nodes.length) this._network.setOptions({ nodes: { physics: true } });
-    },
-    _onDblClick(event, d) {
+    onDoubleClick(event, d) {
         if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaObject) {
             this.focusedItem.item.show();
         } else if (event.detail.value.nodes && event.detail.value.nodes.length && this.focusedItem.item instanceof odaStorage) {
             this.focusedItem.item.navigate();
         }
     },
-    async _onContextMenu(event, d) {
+    async onContextmenu(event, d) {
         if (event.detail.value?.pointer) {
             const weight = 20;
-            const positions = this._network.getPositions();
+            const positions = this.network.getPositions();
             for (let i in positions) {
                 if (
                     positions.hasOwnProperty(i) &&
@@ -175,18 +274,23 @@ ODA({ is: 'oda-network', template: /*html*/`
                     Math.abs(event.detail.value.pointer.canvas.y - positions[i].y) < weight
                 ) {
                     const nodeId = parseInt(i);
-                    const item = this._nodes._data.get(nodeId).item;
-                    ODA.showDropdown('odant-item-menu', { contextItem: item });
-                    this.listen('event', '_onEvent', { target: item });
-                    this.focusedItem = this.items.find(item => item.id === nodeId);
+                    const item = this.nodes._data.get(nodeId).item;
+                    item.showMenu({ contextItem: item });
+                    if(item) {
+                        this.listen('event', '_onEvent', { target: item });
+                        this.focusedItem = this.items.find(item => item.id === nodeId);
+                    }
                     this.focusNode(nodeId);
                 }
             }
         }
     },
-    _onResize(e, d) {
-        if (this._network) this._network.setOptions({ height: '100%' });
-        //this._network.stabilize();
+    onResize(e, d) {
+        if (this.network) this.network.setOptions({ height: '100%' });
+        //this.network.stabilize();
+    },
+    onStabilizationIterationsDone() {
+        this.physics = false;
     },
     _onEvent(event, d) {
         switch (event.source) { //create before-save saved after-save update changed change
@@ -256,100 +360,12 @@ ODA({ is: 'oda-network', template: /*html*/`
                 break;
         }
     },
-    _onStabilized() {
-        this.physics = false;
-    },
-    _getNewItemId() {
-        return this._itemId++;
-    },
-    get rootItem() {
-        return this.items[0];
-    },
-    observers: [
-        function _setItems(dataSet, _refresh) {
-            const array = Object.assign([], dataSet);
-            let expanding = (data, level) => {
-                let children = data.filter(i => i[this.parentKey] && i[this.idKey] !== i[this.parentKey]);
-                children.forEach(i => {
-                    let item = data.find(p => p[this.idKey] === i[this.parentKey]);
-                    delete i[this.parentKey];
-                    if (item) {
-                        item.items = item.items || [];
-                        if (!item.items.includes(i))
-                            item.items.push(i);
-                    } else {
-                        data.push(i);
-                        // children.splice(children.indexOf(i),1);
-                    }
-                    data.splice(data.indexOf(i), 1);
-                });
-
-                let expands = data.filter(i => {
-                    i.id = (typeof i.id !== 'undefined') ? i.id : this._getNewItemId();
-                    if (!i.expanded) {
-                        this.fire('expand', i);
-                        i.expanded = true;
-                    }
-                    return i.expanded && i.items && i.items.length;
-                });
-                level++;
-                expands.forEach(e => {
-                    let idx = array.indexOf(e);
-                    array.splice(idx + 1, 0, ...e.items);
-                    expanding(e.items, level);
-                });
-            };
-            if (array.length > 0)
-                expanding(array, 0);
-            this.items = array;
-        },
-        function _updateNetwork(items, _network) {
-            [...this._nodes._data.values()].forEach(node => {
-                if (!items.some(i => i.id === node.id))
-                    this._nodes.remove(node);
-            });
-            let lines = [];
-            items.forEach(i => {
-                if (i.items && i.items.length > 0) {
-                    i.items.forEach(s => {
-                        lines.push({ id: s.id, from: i.id, to: s.id });
-                    })
-                }
-            });
-            Object.values(this._edges._data).forEach(edge => {
-                if (!items.some(i => i.id === edge.id))
-                    this._edges.remove(edge);
-            });
-            items.forEach(i => {
-                if (!this._nodes._data.has(i.id)) {
-                    this._nodes.add(i);
-                }
-                this._nodes.update(i);
-            });
-            lines.forEach(i => {
-                if (!this._edges._data.has(i.id))
-                    this._edges.add({ id: i.id, from: i.from, to: i.to });
-            });
-            if (this._network && !this.focusedItem) {
-                this._network.setData({ nodes: this._nodes, edges: this._edges });
-                let clusterOptionsByData = {
-                    processProperties: (clusterOptions, childNodes) => {
-                        clusterOptions.label = "[ Cluster " + childNodes.length + " ]";
-                        return clusterOptions;
-                    },
-                    clusterNodeProperties: { borderWidth: 2, shape: 'box', font: { size: 30 } }
-                };
-                this._network.clusterByHubsize(undefined, clusterOptionsByData);
-                this._network.stabilize();
-            }
-        }
-    ],
     attached() {
-        this._nodes = this._nodes || new vis.DataSet([]);
-        this._edges = this._edges || new vis.DataSet([]);
+        this.nodes ??= new vis.DataSet([]);
+        this.edges ??= new vis.DataSet([]);
         let data = {
-            nodes: this._nodes,
-            edges: this._edges
+            nodes: this.nodes,
+            edges: this.edges
         };
         let opts = {
             //width: (this.offsetWidth) + 'px',
@@ -395,31 +411,31 @@ ODA({ is: 'oda-network', template: /*html*/`
         };
         Object.assign(opts, options);
 
-        this._network = new vis.Network(this.$refs.network, data, opts);
+        this.network = new vis.Network(this.networkDiv, data, opts);
     },
     _getParentNode(node) {
         const nodeId = typeof node === 'object' ? node.id : node || node;
-        let parentEdge = [...this._edges._data.values()].find(edge => edge.to === nodeId);
-        return [...this._nodes._data.values()].find(node => node.id === parentEdge.from);
+        let parentEdge = [...this.edges._data.values()].find(edge => edge.to === nodeId);
+        return [...this.nodes._data.values()].find(node => node.id === parentEdge.from);
     },
     focusNode(node = 0) {
         const nodeId = typeof node === 'object' ? node.id : node || node;
-        this._network.selectNodes([nodeId]);
+        this.network.selectNodes([nodeId]);
     },
     camOnNode(node = 0, scale) {
         const nodeId = typeof node === 'object' ? node.id : node || node;
-        const calcScale = scale ? scale : (this._nodes._data.get(nodeId).items && this._nodes._data.get(nodeId).items.length > 1) ? 2 - (1 - 1 / this._nodes._data.get(nodeId).items.length) * 1.5 : 2;
+        const calcScale = scale ? scale : (this.nodes._data.get(nodeId).items && this.nodes._data.get(nodeId).items.length > 1) ? 2 - (1 - 1 / this.nodes._data.get(nodeId).items.length) * 1.5 : 2;
         const options = {
             animation: {
                 duration: 500,
             },
             scale: calcScale,
         };
-        this._network.focus(nodeId, options);
+        this.network.focus(nodeId, options);
     },
     refresh() {
         this.debounce('refresh', () => {
-            this._refresh++;
+            this.refreshCount++;
         }, 10);
     }
 });

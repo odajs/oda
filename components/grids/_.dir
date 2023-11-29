@@ -1,34 +1,16 @@
 [
-  {
-    "name": "list",
-    "label": "<b style='color: #42b983'>oda-list:</b> Простой список",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "table",
+        "label": "<b style='color: #42b983'>oda-table:</b> Таблица",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  },
-  {
-    "name": "listbox",
-    "label": "<b style='color: #42b983'>oda-list-box:</b> Список-контейнер",
-    "content": {
-      "link": "index.html"
-    },
-    "status": "ok"
-  },
-  {
-    "name": "table",
-    "label": "<b style='color: #42b983'>oda-table:</b> Таблица",
-    "content": {
-      "link": "index.html"
-    },
-    "status": "ok"
-  },
-  {
-    "name": "tree",
-    "label": "<b style='color: #42b983'>oda-tree:</b> Дерево",
-    "content": {
-      "link": "index.html"
-    },
-    "status": "ok"
-  }
+        {
+        "name": "canvas-table",
+        "label": "<b style='color: #42b983'>oda-canvas-table:</b> Вариант таблицы на canvas",
+        "content": {
+            "link": "index.html"
+        }
+    }
 ]

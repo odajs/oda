@@ -1,23 +1,22 @@
 <meta charset="utf-8">
-<oda-tester>
+<!-- <oda-tester> -->
     <oda-combo-box fadein id="box" placeholder="search..."></oda-combo-box>
-</oda-tester>
+<!-- </oda-tester> -->
 
 <script type="module">
-    import '/web/oda/oda.js';
-    import '/web/oda/tools/styles/styles.js';
+    import '../../../oda.js';
+    import '../../../tools/styles/styles.js';
     import './combo-box.js';
     const el = ODA.createElement('oda-combo-list', {
         items: [
-            {label: 'label 1'}, {label: 'label 2'}, {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
-            {label: 'label 2'}, {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
-            {label: 'label 3'}, {label: 'label 4'}, {label: 'label 5'},
-            {label: 'label 4'}, {label: 'label 5'},
-            {label: 'label 5'}
+            { label: 'label 1' }, { label: 'label 2' }, { label: 'label 3' }, { label: 'label 4' }, { label: 'label 5' },
+            { label: 'label 2' }, { label: 'label 3' }, { label: 'label 4' }, { label: 'label 5' },
+            { label: 'label 3' }, { label: 'label 4' }, { label: 'label 5' },
+            { label: 'label 4' }, { label: 'label 5' },
+            { label: 'label 5' }
         ]
     });
-    setTimeout(()=>{
+    setTimeout(() => {
         box.dropDownControl = el;
     }, 10)
-
 </script>

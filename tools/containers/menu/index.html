@@ -1,0 +1,66 @@
+<meta charset="UTF-8">
+<oda-menu-tester></oda-menu-tester>
+<script type="module">
+    import '../../../oda.js';
+    import "../containers.js";
+    ODA({is:'oda-menu-tester',
+        template:`
+            MENU TESTER
+        `,
+        $listeners:{
+            contextmenu(e){
+                e.preventDefault();
+                ODA.showMenu({
+                    title: 'MENU',
+                    items: [{
+                            icon: 'icons:warning',
+                            label: 'first'
+                        },{
+                            label: 'second',
+                            items: [
+                                {
+                                    label: '1. second',
+                                    items: [
+                                        {
+                                            label: '1. second',
+                                        },
+                                        {
+                                            label: '2. second',
+                                            items: [
+                                                {
+                                                    label: '1. second',
+                                                },
+                                                {
+                                                    label: '2. second',
+                                                    items: [
+                                                        {
+                                                            label: '1. second',
+                                                        },
+                                                        {
+                                                            label: '2. second',
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    label: '2. second',
+                                    items: [
+                                        {
+                                            label: '1. second',
+                                        },
+                                        {
+                                            label: '2. second',
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        }
+    })
+</script>

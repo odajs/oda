@@ -1,0 +1,16 @@
+{
+    "$DIR": [
+        {
+            "path": "color-input",
+        },
+        {
+            "path": "color-picker",
+        },
+        {
+            "path": "hsla-picker",
+        },
+        {
+            "path": "palette",
+        }
+    ]
+}

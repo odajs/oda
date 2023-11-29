@@ -1,10 +1,23 @@
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="./pell-editor.js"></script>
+<!DOCTYPE html>
+<html lang="en">
 
-<oda-pell-editor id="html_editor"></oda-pell-editor>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="ODA Framework - designed for rapid development of websites, mobile PWAs and web applications using web components technology - https://odajs.org/" />
+        <title>oda-pell-editor</title>
+    </head>
 
-<script type="module">
-    html_editor.src = `
-    <h3 style="color: blue;">Pell-HTML editor ...</h3>
-    `;
-</script>
+    <body>
+        <oda-tester>
+            <oda-pell-editor id="editor" edit-mode syspanel></oda-pell-editor>
+        </oda-tester>
+
+        <script type="module">
+            import '../../../oda.js';
+            import './pell-editor.js';
+            editor.src = `<h3 style="color: blue;">Pell-HTML editor ...</h3>`;
+        </script>
+    </body>
+
+</html>

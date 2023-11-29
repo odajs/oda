@@ -10,7 +10,7 @@ ODA({
         <div>Время из геттера: {{getterTime}}</div>
         <div>Время из метода: {{methodTime()}}</div>
     `,
-    props: {
+    $public: {
         change: "Измени меня",
         getterTime: {
             get() {
@@ -31,7 +31,7 @@ ODA({
 
 В примере при каждом изменении значения в строке ввода геттер **getterTime** и метод **methodTime** обновляют время на странице. Кроме того геттер и метод для контроля записывают метки времени в консоль.
 
-![Метки времени в консоли](learn/images/smart-rendering-features-001.png "Метки времени в консоли")
+![Метки времени в консоли](learn/_images/smart-rendering-features-001.png "Метки времени в консоли")
 
 Эти метки показывают, что при изменении значения свойства **change** геттер выполняется один раз, а метод выполняется два раза. Это означает, что рендеринг компонента происходит два раза при одном изменении свойства.
 
@@ -78,7 +78,7 @@ ODA({
         var d = new Date();
         return d.toLocaleTimeString() + '.' + d.getMilliseconds();
     },
-    listeners: {
+    $listeners: {
         tap() {
             this.$refs.div.textContent = "Нажата левая кнопка";
         },
@@ -105,7 +105,7 @@ ODA({
         var d = new Date();
         return d.toLocaleTimeString() + '.' + d.getMilliseconds();
     },
-    keyBindings: {
+    $keyBindings: {
         a: '_keyA',
         b: '_keyB'
     },

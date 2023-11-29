@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="ODA Framework - designed for rapid development of websites, mobile PWAs and web applications using web components technology - https://odajs.org/" />
+        <title>oda-excalidraw-editor</title>
+    </head>
+
+    <body>
+        <oda-excalidraw-editor  id="excalidraw" lang-code="ru-RU"></oda-excalidraw-editor >
+
+        <script type="module">
+            import '../../../oda.js';
+            import './excalidraw-editor.js';
+            const init = async () => {
+                const { demo } = await import('./demo.js');
+                const { lib } = await import('./lib.js');
+                const { google } = await import('./google-icons.js');
+                excalidraw.data = demo;
+                excalidraw.lib = [...lib, ...google];
+            }
+            init();
+        </script>
+    </body>
+
+</html>

@@ -5,22 +5,23 @@
 <button id="btn3" slot="buttons">showDropdown</button>
 
 <script type="module">
+    import '../../../oda.js';
     import "../containers.js"
     btn1.onclick = e => {
         ODA.showModal('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true }, {
-            animation: 500, title: 'ЗАГОЛОВОК', help: 'sjdkafkjhfkjhasfdk', dblclick: (e) => {
+            animation: 500, title: 'ЗАГОЛОВОК', icon: 'icons:error', help: 'sjdkafkjhfkjhasfdk', dblclick: (e) => {
                 alert(e);
             }
         })
     }
     btn2.onclick = e => {
-        ODA.showModal('iframe', { src: 'https://current.odant.org/api/~/client/pages/navigator/index.html', width: '1200px', height: '600px' }, { animation: 500, title: 'ЗАГОЛОВОК', fullSize: true })
+        ODA.showModal('iframe', { src: 'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D163F90CEC93D4/C:1D163F9191B17AC/~/client/pages/form/index.html#view=object-table', width: '1200px', height: '600px' }, { animation: 500, title: 'ЗАГОЛОВОК', fullSize: true })
     }
     btn3.onclick = e => {
-        ODA.showModal('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true }, {
-            animation: 500, title: 'click me for showDropdown ', help: 'sjdkafkjhfkjhasfdk', click: async (e) => {
+        ODA.showModal('oda-button', { icon: 'icons:warning', iconSize: 100, allowToggle: true, click: async (e) => {
                 await ODA.showDropdown('oda-button', { icon: 'icons:android', iconSize: 60, fill: 'green' }, { align: 'bottom' });
-            }
+            } }, {
+            animation: 500, title: 'click me for showDropdown ', help: 'sjdkafkjhfkjhasfdk',
         })
     }
 </script>

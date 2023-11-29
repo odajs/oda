@@ -1,0 +1,254 @@
+<meta charset="UTF-8">
+<oda-spike-test id="tester"></oda-spike-test>
+<script type="module">
+  import '../../../../oda.js';
+  ODA({is: 'oda-spike-test', imports: '@oda/button',
+      template:`
+          <style>
+              :host{
+                  @apply --vertical;
+              }
+              oda-button{
+                  margin: 4px;
+                  @apply --border;
+              }
+          </style>
+           <div class="horizontal">
+              <oda-button allow-toggle ::toggled="play">Play, Spikes: {{spikes}}</oda-button>
+              <oda-button @tap="step">Steps: {{steps}}</oda-button>
+              <oda-button @tap="genNet()">Gen net</oda-button>
+              <oda-button @tap="save">Save</oda-button>
+           </div>
+
+           <div class="horizontal" style="flex-wrap: wrap; ">
+                <oda-button @tap="signal" style="width: 50px; margin: 2px; text-align: center;" class="no-flex border" ~for="map" ~class="{dark: spiked.has(item)}"  :ii="item">{{item}}</oda-button>
+            </div>
+
+      `,
+      set play(n){
+          if (n)
+              worker.postMessage({type: 'play'});
+          else
+              worker.postMessage({type: 'stop'});
+      },
+      save(){
+          worker.postMessage({type: 'save'})
+      },
+      signal(e){
+
+          e.target.toggled = !e.target.toggled;
+          const val = e.target.toggled?40:0;
+          worker.postMessage({type: 'signal', id: e.target.getAttribute('ii'), val})
+      },
+      genNet(neurons = 4, layers = 2){
+          const net = {};
+          for (let l = 0; l<layers; l++){
+              const synapses = {}
+              for (let n = 1; n<=neurons; n++){
+                  synapses[n + neurons * (l + 1)] = Math.random();
+              }
+              for (let n = 1; n<=neurons; n++){
+                  net[n + neurons * l] = synapses;
+              }
+          }
+          worker.postMessage({type: 'load', net})
+          // return net;
+      },
+      step(){
+          worker.postMessage({type: 'step'});
+      },
+      spike(id){
+          this.spiked.push(id);
+          this.spikes++;
+          this.async(()=>{
+              this.spiked = []
+          },100)
+      },
+      spiked: [],
+      map: [],
+      steps: 0,
+      spikes: 0,
+  })
+
+  async function save(data){
+      let filename = "MB Net";
+      const opts = {
+          types: [{
+              description: 'MicroBrain Net file',
+              accept: {'application/json': ['.json']},
+              startIn: 'documents'
+          }],
+          suggestedName: filename,
+          excludeAcceptAllOption: true
+      };
+      const fileHandle = await window.showSaveFilePicker(opts);
+      const writable = await fileHandle.createWritable();
+      filename = fileHandle.name.split('.')[0]
+      const contents = JSON.stringify(data);
+      await writable.write(contents);
+      await writable.close();
+  }
+  const worker = new Worker('./spike-net-ww.js', {type: 'module'});
+  worker.onmessage = function (e){
+      switch (e.data?.type){
+          case 'spike':{
+              tester.spike(e.data.id);
+          } break;
+          case 'step':{
+              tester.steps++;
+          } break;
+          case 'map':{
+              tester.map = e.data.map;
+          } break;
+          case 'save':{
+              save(e.data.data);
+          } break;
+      }
+  }
+  worker.onmessageerror = function (e) {
+      console.error(e);
+  }
+  const net = {name: 'layers',
+      items:[
+          {name: 1, w: 4, h: 4, items:[
+                  {name: '1.1', w: 4, h: 4, links: {
+                          2:[
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                          ]
+                      }},
+                  {name: '1.2', w: 4, h: 4, links: {
+                          3:[
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],           [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],           [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],           [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],           [.5,.5,.5,.5],
+                              [.5,.5,.5,.5],
+                              [.5,.5,-.5,.5],
+                              [.5,0,.5,.5],
+
+
+
+
+
+
+                          ]
+                      }}
+              ],
+              links:{
+                 1.1:[
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                     [.5,.5,.5,.5],
+                 ],
+                  1.2:[
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                  ],
+              }
+          },
+          {name: 2, w: 4, h: 4, links:{
+                    3:[
+                        [.5,.5,.5,.5],
+                        [.5,.5,.5,.5],
+                        [.5,.5,.5,.5],
+                        [.5,.5,.5,.5],
+                    ]
+              }},
+          {name: 3, w: 4, h: 4, links:{
+                  4:[
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                      [.5,.5,.5,.5],
+                  ],
+                  1:[
+                      [-.5,.5,-.5,-.5],
+                      [.5,-.5,-.5,.5],
+                      [.5,-.5,.5,-.5],
+                      [.5,.5,-.5,-.5],
+                  ],
+              }},
+          {name: 4, w: 4, h: 4}
+      ]
+  }
+  worker.postMessage({type: 'load', net})
+</script>

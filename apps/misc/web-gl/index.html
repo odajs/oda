@@ -1,0 +1,25 @@
+<meta charset="utf-8">
+
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./webgl.js"></script>
+
+<oda-tester>
+    <oda-webgl id="wbgl"></oda-webgl>
+</oda-tester>
+
+<script type="module">
+    wbgl.data =
+    {
+        'size': { x: 5, y: 5, z: 3 },
+        'pointSize': 12.0,
+
+        6: { links: [{ p: 31, c: [1, 0, 0, 1], w: 0.008 }, 33, { p: 41, c: [0, 0, 1, 1], w: 0.015 }, 43], color: [0, 0, 1, 1], size: 24 },
+        8: { links: [31, 33, 41, 43], color: [1, 1, 0, 1] },
+        31: { links: [74, 70], color: [1, 0, 0, 1], linkColor: [1, 1, 0, 1] },
+        33: { links: [74, 70], color: [0, 0, 1, 1], linkColor: [0, 0, 1, 1] },
+        41: { links: [74, 70], color: [0, 1, 0, 1], linkColor: [0, 1, 0, 1] },
+        43: { links: [74, 70], color: [0, 1, 0, 1], linkColor: [0, 1, 0, 1] },
+        74: { color: [1, 1, 0, 1] },
+        70: { color: [1, 1, 0, 1] }
+    }
+</script>

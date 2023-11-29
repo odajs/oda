@@ -29,16 +29,22 @@ onmessage = async function (e) {
                     this.postMessage(icon);
                 }
                 else if (isSVG(n)) {
+                    icons[n] ??= {icon: n};
                     n = n.split(':');
                     let name = n.shift();
-                    await loadIcons(name, this);
+                    const result = await loadIcons(name, this);
                     this.postMessage({icon: e.data, type: 'request'});
                 }
                 else {
-                    if (!n.includes('.'))
-                        n += '.png';
+                    let type = 'png';
+                    if (n.startsWith('@')) {
+                        n = n.split('/');
+                        type = n.shift().substring(1);
+                        n = n[0];
+
+                    }
                     if (!n.includes('/'))
-                        n = url + '/tools/icons/png/' + n;
+                        n = url + `/tools/icons/lib/${type}/${n}.${type}`;
                     let file = await fetch(n);
                     if (!file.ok)
                         throw new Error(`icon file "${n}" not found!`)
@@ -66,7 +72,7 @@ function isSVG(str) {
     return (str.includes(':') && !str.includes('/'));
 }
 function loadIcons(name, port) {
-    return libs[name] ??= fetch(url + '/tools/icons/svg/' + name + '.html').then(doc=>{
+    return libs[name] ??= fetch(url + '/tools/icons/lib/svg/' + name + '.html').then(doc=>{
         return doc.text().then(doc=>{
             return new Promise((resolve, reject) =>{
                 resolves[++resId] = resolve;

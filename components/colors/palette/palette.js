@@ -4,40 +4,40 @@ ODA({ is: 'oda-palette', imports: '@oda/button',
             :host {
                 @apply --horizontal;
             }
-            ::slotted(div){
+            ::slotted(div) {
                 @apply --horizontal;
                 @apply --flex;
             }
         </style>
         <div class="horizontal flex" style="overflow: hidden">
-            <oda-color-line ::color ~for="_hues" :hue="item" saturation="100" :size :gradients :grays=false></oda-color-line>
+            <oda-color-line ::color ~for="_hues" :hue="$for.item" saturation="100" :size :gradients :grays=false></oda-color-line>
             <oda-color-line ::color hue="0" saturation="0" :size :gradients :grays=true></oda-color-line>
-            <oda-gradient-preview ref="preview" ~if="gradientMode" ::value :color></oda-gradient-preview>
+            <oda-gradient-preview ~if="gradientMode" ::value :color></oda-gradient-preview>
         </div>
     `,
-    props: {
+    $public: {
         colors: 15,
         gradients: 20,
         size: 20,
         value: String,
         color: {
-            type: String,
-            default: '',
+            $type: String,
+            $def: '',
             set(n) {
                 if (!this.gradientMode)
                     this.value = n;
             }
         },
         gradientMode: false,
-        _hues: {
-            type: Array,
-            get() {
-                const step = 360 / (this.colors || 1), hues = [];
-                for (let i = 0; i < this.colors; i++) hues.push(step * i);
-                return hues;
-            }
-        },
-    }
+    },
+    _hues: {
+        $type: Array,
+        get() {
+            const step = 360 / (this.colors || 1), hues = [];
+            for (let i = 0; i < this.colors; i++) hues.push(step * i);
+            return hues;
+        }
+    },
 });
 
 ODA({ is: 'oda-gradient-preview', template: /*html*/`
@@ -52,7 +52,7 @@ ODA({ is: 'oda-gradient-preview', template: /*html*/`
                 justify-content: space-between;
                 cursor: pointer;
             }
-            :host>div {
+            :host > div {
                 margin: 2px;
                 width: 24px;
                 display: flex;
@@ -60,23 +60,23 @@ ODA({ is: 'oda-gradient-preview', template: /*html*/`
                 justify-content: space-around;
             }
         </style>
-        <div ref="markers"></div>
+        <div id="markers"></div>
         <oda-button icon="icons:close" @tap.stop="_removeMarker" size=16 style="height:16px;background:white;border-radius:50%;margin:2px"></oda-button>
     `,
-    props: {
+    $public: {
         markers: [],
         value: {
-            type: String,
+            $type: String,
             set(n) { this.style.background = n; }
         },
         color: {
-            default: '',
+            $def: '',
             set(n) {
                 this.setColor(n);
             }
         }
     },
-    listeners: {
+    $listeners: {
         'tap': '_onTap',
         'tap-marker': '_onTapMarker'
     },
@@ -127,9 +127,9 @@ ODA({ is: 'oda-gradient-preview', template: /*html*/`
             color = this.markers[this.markers.length - 1].color;
         this.selected = this.markers.length;
         this.markers.forEach(o => o.selected = false);
-        let arrow = this.create('oda-gradient-preview-marker', { color: color, id: this.selected });
+        let arrow = ODA.createElement('oda-gradient-preview-marker', { color: color, id: this.selected });
         this.markers.push(arrow);
-        this.$refs.markers.appendChild(arrow);
+        this.$('#markers').appendChild(arrow);
         this.setPreviewColor();
     },
     setColor(color) {
@@ -160,18 +160,18 @@ ODA({ is: 'oda-gradient-preview-marker', template: /*html*/`
         </style>
     `,
     extends: 'oda-icon',
-    props: {
+    $public: {
         id: 0,
         size: 24,
         icon: { get() { return this.selected ? 'av:play-arrow' : 'icons:chevron-right' } },
         selected: true,
         fill: "",
         color: {
-            type: String,
+            $type: String,
             set(n) { this.fill = n }
         }
     },
-    listeners: {
+    $listeners: {
         'tap': '_onTap'
     },
     _onTap(e) {
@@ -196,11 +196,11 @@ ODA({ is: 'oda-color-line', template: /*html*/`
             transform: scale(1.5);
         }
     </style>
-    <div ~for="light in lightness" ~style="_getStyle(light)" @tap="_tap"></div> `,
-    props: {
+    <div ~for="lightness" ~style="_getStyle($for.item)" @tap="_tap"></div> `,
+    $public: {
         size: Number, hue: Number, saturation: Number, gradients: Number, grays: false,
         lightness: {
-            type: Array,
+            $type: Array,
             get() {
                 const step = 100 / (this.gradients + (this.grays ? -1 : 1)), lightness = [];
                 if (this.grays) for (let i = this.gradients - 1; i >= 0; i--) lightness.push(step * i);

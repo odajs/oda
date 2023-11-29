@@ -5,7 +5,7 @@
 
 Для этого каждый компонент следует располагать в отдельной папке, каждая из которых может находится в одной и той же родительской папке.
 
-![Папка с компонентами](https://odajs.org/learn/images/components/component1.png "Папка с компонентами")
+![Папка с компонентами](https://odajs.org/learn/_images/components/component1.png "Папка с компонентами")
 
 Структура этой родительской папки с компонентами должна быть описана в ее служебном файла «**_.dir**» следующим образом:
 
@@ -50,7 +50,7 @@
 
 Например, пусть компонент «**oda-calculator**» решено расположить  в папке «**tools**».
 
-![Папка tools](https://odajs.org/learn/images/components/component0.png "Папка tools")
+![Папка tools](https://odajs.org/learn/_images/components/component0.png "Папка tools")
 
 Тогда в этой папке должны находится поместить покрайней мере два элемента:
 
@@ -59,24 +59,24 @@
 
 Служебный файл «**_.dir**» в этом случае должен выглядеть следующим образом:
 
-![Код примера использования компонента](https://odajs.org/learn/images/components/component5.png "Код примера использования компонента")
+![Код примера использования компонента](https://odajs.org/learn/_images/components/component5.png "Код примера использования компонента")
 
 В нем говорится, что
 
 1. В папке «**tools**» находится только одна подпапка «**calculator**».
 1. Пункт «**calculator**» на сайте должен отображаться под именем «**Калькулятор**».
 
-![Отображение подпункта в оглавлении](https://odajs.org/learn/images/components/component5.1.png "Отображение подпункта в оглавлении")
+![Отображение подпункта в оглавлении](https://odajs.org/learn/_images/components/component5.1.png "Отображение подпункта в оглавлении")
 
 1. Под пунктом «**Калькулятор**» в оглавлении на сайте должно отображаться краткое описание, указанное в ключе **abstract**.
 
-![Отображение краткого описания](https://odajs.org/learn/images/components/component5.2.png "Отображение краткого описания")
+![Отображение краткого описания](https://odajs.org/learn/_images/components/component5.2.png "Отображение краткого описания")
 
 1. При нажатии на этот пункт должен отображаться пример работы компонента, находящийся внутри папки **calculator**» и хранящийся в файле с именем «**index.html**».
 
 Кроме файла с примером работы компонента в его папке должны находится и другие элементы.
 
-![JavaScript код компонента](https://odajs.org/learn/images/components/component2.png "JavaScript код компонента")
+![JavaScript код компонента](https://odajs.org/learn/_images/components/component2.png "JavaScript код компонента")
 
 К таким элементам относятся:
 
@@ -85,24 +85,24 @@
 
 Файл с кодом компонента определяет его работу и должен быть написан на языке «**JavaScript**».
 
-![JavaScript код компонента] (https://odajs.org/learn/images/components/component3.png "JavaScript код компонента")
+![JavaScript код компонента] (https://odajs.org/learn/_images/components/component3.png "JavaScript код компонента")
 
 Имя этого файла принято задавать по имени компонента без приставки «**oda**».
 
 Например, для компонента «**oda-calculator**» его файл должен называться «**calculator.js**».
 
-![JavaScript код компонента] (https://odajs.org/learn/images/components/component2.png "JavaScript код компонента")
+![JavaScript код компонента] (https://odajs.org/learn/_images/components/component2.png "JavaScript код компонента")
 
 
 Существует негласное соглашение, что папка компонента должна иметь такое же имя, как и его файл, но без расширения «**.js**».
 
 Например, для компонента «**oda-calculator**» его папку желательно назвать «**calculator**».
 
-![JavaScript файл компонента] (https://odajs.org/learn/images/components/component.png "JavaScript файл компонента")
+![JavaScript файл компонента] (https://odajs.org/learn/_images/components/component.png "JavaScript файл компонента")
 
 Для документирования работы компонента в его папку необходимо поместить файл с примером его использования.
 
-![Код примера использования компонента] (https://odajs.org/learn/images/components/component5.png "Код примера использования компонента")
+![Код примера использования компонента] (https://odajs.org/learn/_images/components/component5.png "Код примера использования компонента")
 
 Этот файл записывается в формате «**HTML**». Его имя может быть любым, но общепринято использовать имя «**index.html**». В любом случае его имя нужно указать в атрибуте «**link**» файла «**_.dir**» с описанием структуры родительской папки.
 
@@ -123,15 +123,15 @@
 
 В этом случае содержимое этого файла будет загружаться справочной системой при выборе ссылки на этот компонент в главном меню сайта.
 
-![Отображение примера с использованием компонента] (https://odajs.org/learn/images/components/component6.png "Отображение примера с использованием компонента")
+![Отображение примера с использованием компонента] (https://odajs.org/learn/_images/components/component6.png "Отображение примера с использованием компонента")
 
 В нашей системе все компоненты находятся в разделе «**Component**», и ссылки на них хранятся именно в данном разделе меню.
 
-![Отображение примера с использованием компонента] (https://odajs.org/learn/images/components/component61.png "Отображение примера с использованием компонента")
+![Отображение примера с использованием компонента] (https://odajs.org/learn/_images/components/component61.png "Отображение примера с использованием компонента")
 
 Имя этого файла может быть любым, но его принято называть по имени самого компонента, без приставки «**oda**». Например,
 
-![JavaScript код компонента] (https://odajs.org/learn/images/components/component3.png "JavaScript код компонента")
+![JavaScript код компонента] (https://odajs.org/learn/_images/components/component3.png "JavaScript код компонента")
 
 ```html run_edit
 <!DOCTYPE html>
@@ -149,7 +149,7 @@
                 template: `
                     <span>{{text}}</span>
                 `,
-                props:{
+                $public:{
                     text: 'Hello, world!'
                 }
             });

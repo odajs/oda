@@ -8,7 +8,7 @@
     import "https://cdn.jsdelivr.net/gh/odajs/oda-framework/oda.js";
     ODA({is: 'oda-welcome', template: `
         <span>{{myProperty}}</span>`,
-        props: {
+        $public: {
             myProperty: 'Hello, property!'
         }
     });

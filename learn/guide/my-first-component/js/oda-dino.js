@@ -83,7 +83,7 @@ ODA({ is: 'oda-dino',
     },
     attached() {
         this.polygons = new Map();
-        this.svg = this.$core.root.querySelector("svg");
+        this.svg = this[CORE_KEY].root.querySelector("svg");
         this.polygons.set('dino-body', createPolygon(this.svg,'#body'));
         this.polygons.set('dino-first-leg-up', createPolygon(this.svg,'#first-leg-up'));
         this.polygons.set('dino-first-leg-down', createPolygon(this.svg,'#first-leg-down'));

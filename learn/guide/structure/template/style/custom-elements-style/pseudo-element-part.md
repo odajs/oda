@@ -30,7 +30,7 @@
                 template: `
                     <span part="my-style">{{text}}</span>
                 `,
-                props:{
+                $public:{
                     text: 'Hello, part!'
                 }
             });
@@ -66,7 +66,7 @@
                     <span part="my-style">{{text}}</span>
                     <div part="my-style">{{text}}</div>
                 `,
-                props:{
+                $public:{
                     text: 'Hello, part!'
                 }
             });
@@ -105,7 +105,7 @@
                     <div part="my-style">{{text}}</div>
                     <input part="my-input" placeholder="Введите текст">
                 `,
-                props:{
+                $public:{
                     text: 'Hello, part!'
                 }
             });
@@ -147,7 +147,7 @@
                         <span part="my-style">{{text}}</span>
                     </div>
                 `,
-                props:{
+                $public:{
                     text: 'Ошибка. Стиль не применен!'
                 }
             });
@@ -182,7 +182,7 @@
                 template: `
                     <span part="my-span my-style">{{text}}</span>
                 `,
-                props:{
+                $public:{
                     text: 'Hello, part!'
                 }
             });

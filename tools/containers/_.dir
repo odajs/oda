@@ -1,23 +1,58 @@
 [
     {
-      "name": "modal"
+        "name": "all-containers",
+        "label": "<span style='color: blue; font-weight: bold;'>Все контейнеры: </span>ODA.showAllContainers()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "dialog"
+        "name": "modal",
+        "label": "<span style='color: blue; font-weight: bold;'>Modal: </span>ODA.showModal()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "dropdown"
+        "name": "dialog",
+        "label": "<span style='color: blue; font-weight: bold;'>Dialog: </span>ODA.showDialog()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "hierarchy"
+        "name": "dropdown",
+        "label": "<span style='color: blue; font-weight: bold;'>Dropdown: </span>ODA.showDropdown()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "mobile"
+        "name": "mobile",
+        "label": "<span style='color: blue; font-weight: bold;'>Mobile: </span>ODA.showMobile()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "udal"
+        "name": "confirm",
+        "label": "<span style='color: blue; font-weight: bold;'>Confirm: </span>ODA.showConfirm()",
+        "content": {
+            "link": "index.html"
+        }
     },
     {
-      "name": "confirm"
+        "name": "warning",
+        "label": "<span style='color: blue; font-weight: bold;'>Warning: </span>ODA.showWarning()",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "menu",
+        "label": "<span style='color: blue; font-weight: bold;'>Menu: </span>ODA.showMenu()",
+        "content": {
+            "link": "index.html"
+        }
     }
 ]

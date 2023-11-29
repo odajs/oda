@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>oda selector</title>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+            }
+
+            html * {
+                font-family: Arial;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div style="display: flex;">
+            <oda-selector id="oda_list" icon="bootstrap:list-task" width="200px" style="width: 200px; display: block; border: 1px solid gray; margin: 8px; position: relative"></oda-selector>
+            <oda-selector id="oda_list2" show-ok label="Set table" icon="bootstrap:table" icon2="false" width="140px" style="width: 28px; display: block; margin: 8px;"></oda-selector>
+            <oda-selector id="oda_list3" show-ok label="LaTeX" icon="carbon:function-math" icon2="false" width="280px" style="width: 28px; display: block; margin: 8px;"></oda-selector>
+            <oda-selector id="oda_list4" show-ok label="Block" icon="bootstrap:display" icon2="false" width="280px" style="width: 28px; display: block; margin: 8px;"></oda-selector>
+            <oda-selector id="oda_list5" show-ok label="Hyperlink" icon="bootstrap:link" icon2="false" width="280px" style="width: 28px; display: block; margin: 8px;"></oda-selector>
+            <oda-selector id="oda_list6" width="120px" style="width: 100px; border: 1px solid gray; background: white; padding: 1px;  margin: 8px;"></oda-selector>
+            <oda-selector id="oda_list7" width="100px" style="width:60px; border: 1px solid gray; background: white; padding: 1px;  margin: 8px;"></oda-selector>
+        </div>
+
+        <script type="module">
+            import '../../../oda.js';
+            import './selector.js';
+            oda_list.items = [
+                { label: '111', icon: 'bootstrap:list-ol', iconSize: 24, lblClass: `fontSize: '16px'` },
+                { label: '222', icon: 'bootstrap:list-stars' },
+                { label: '333', icon: 'bootstrap:list-task' },
+                { label: '444', icon: 'bootstrap:list-ul', style: 'border-bottom: 1px solid lightgray' },
+                { label: 'Hidden icon', hideIcon: true, icon: 'bootstrap:list-check' }
+            ]
+            oda_list2.items = [
+                { label: 'column', lblStyle: { minWidth: '60px' }, url: '', type: 'number', value: 5 },
+                { label: 'row', lblStyle: { minWidth: '60px' }, url: '', type: 'number', value: 3 }
+            ]
+            oda_list3.items = [
+                { label: 'latex', type: 'textarea', value: '', style: { height: '200px' } },
+            ]
+            oda_list4.items = [
+                { label: 'iframe', lblStyle: { minWidth: '70px', maxWidth: '70px' }, type: 'checkbox', value: 'true' },
+                { label: 'width', inpStyle: { borderBottom: '1px solid gray' }, lblStyle: { minWidth: '70px', maxWidth: '70px' }, type: 'number', value: '300' },
+                { label: 'height', inpStyle: { borderBottom: '1px solid gray' }, lblStyle: { minWidth: '70px', maxWidth: '70px' }, type: 'number', value: '200' },
+                { label: 'code:', isLabel: true, hideIcon: true },
+                { label: 'value', type: 'textarea', value: '', style: { height: '200px' } },
+            ]
+            oda_list5.items = [
+                { label: 'text', lblStyle: { maxWidth: '30px' }, inpStyle: { borderBottom: '1px solid gray', margin: '0 4px' }, type: 'text', value: '' },
+                { label: 'link', lblStyle: { maxWidth: '30px' }, inpStyle: { borderBottom: '1px solid gray', margin: '0 4px' }, type: 'text', value: '' },
+            ]
+            oda_list6.items = [
+                { label: 'Yahei', style: { fontFamily: 'Yahei' } },
+                { label: 'Arial', style: { fontFamily: 'Arial' } },
+                { label: 'Georgia', style: { fontFamily: 'Georgia' } },
+                { label: 'Cursive', style: { fontFamily: 'cursive' } },
+                { label: 'Monospace', style: { fontFamily: 'monospace' } },
+                { label: 'Serif', style: { fontFamily: 'serif' } },
+                { label: 'Sans-serif', style: { fontFamily: 'sans-serif' } },
+                { label: 'Segoe UI', style: { fontFamily: 'Segoe UI' } },
+                { label: 'Ink Free', style: { fontFamily: 'Ink Free' } },
+                { label: 'Fantasy', style: { fontFamily: 'Fantasy' } },
+                { label: 'Helvetica', style: { fontFamily: 'Helvetica' } },
+                { label: 'Times', style: { fontFamily: 'Times' } },
+            ]
+            oda_list7.items = [
+                { title: '', label: 'Text', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'first', label: 'H1', is: 'H1', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'second', label: 'H2', is: 'H2', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'third', label: 'H3', is: 'H3', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'fourth', label: 'H4', is: 'H4', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'fifth', label: 'H5', is: 'H5', lblStyle: { padding: '2px', margin: 0 } },
+                { title: 'sixth', label: 'H6', is: 'H6', lblStyle: { padding: '2px', margin: 0 } }
+            ]
+        </script>
+
+    </body>
+
+</html>

@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <button id="btn1" slot="buttons">dialogs</button>
 <button id="btn2" slot="buttons">buttons</button>
+<div id="ddd"><button>fffff</button></div>
 <script type="module">
     import '../../../oda.js'
     import "../containers.js";
@@ -8,15 +9,32 @@
         const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {animation: 500, help:'Привет'})
     }
     btn2.onclick = async e => {
-        const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true}, {hideOkButton:true, icon:'icons:warning', animation: 500,
+        const res = await ODA.showDialog('oda-button', {icon: 'icons:warning', label: "1111", iconSize: 100, allowToggle: true,
+            tap(e){
+                this.fire('ok')
+            }
+        }, {hideOkButton:true, icon:'icons:warning', animation: 500,
             buttons: [
-                {is: 'input', icon: 'icons:warning', label: 'Class 1', iconPos: 'top', tap:(e)=>{
+                {icon: 'icons:warning', label: 'Class 1', iconPos: 'left', "tap":(e)=>{
+                        e.stopPropagation();
+                        alert(' e.stopPropagation()')
                         console.log('1 кнопка')
-                    }},{icon: 'icons:warning', label: 'Class 2', iconPos: 'top', execute:(e)=>{
+                    }},
+                {icon: 'icons:warning', label: 'Class 2', iconPos: 'top', "tap":(e)=>{
+                        e.stopPropagation();
                         console.log('2 кнопка')
                     }},
+                {icon: 'icons:warning', label: '3 кнопка', iconPos: 'top', "execute":(e)=>{
+                        console.log('3 кнопка')
+                    }},
+
             ]
         })
         console.log(res);
+        res.result?.execute?.();
+    }
+    ddd.onclick = (e)=>{
+        console.log('currentTarget', e.currentTarget);
+        console.log('target', e.target);
     }
 </script>

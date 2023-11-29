@@ -1,18 +1,38 @@
+
 [
-  {
-    "name": "qr-code",
-    "label": "<b style='color: #43846b'>oda-qr-code:</b> просмотр QR-кода",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "qr-code",
+        "label": "<b style='color: #43846b'>oda-qr-code:</b> Просмотр QR-кода",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  },
-  {
-    "name": "chart",
-    "label": "<b style='color: #43846b'>oda-chart:</b> графики",
-    "content": {
-      "link": "index.html"
+    {
+        "name": "chart",
+        "label": "<b style='color: #43846b'>oda-chart:</b> Графики ChartJS",
+        "content": {
+            "link": "index.html"
+        }
     },
-    "status": "ok"
-  }
+    {
+        "name": "md-viewer",
+        "label": "<b style='color: #43846b'>oda-md-viewer:</b> Просмотор markdown документов",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "docx-viewer",
+        "label": "<b style='color: #43846b'>oda-docx-viewer:</b> Просмотор docx документов",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "leaflet",
+        "label": "<b style='color: #43846b'>oda-leaflet:</b> Просмотор карт",
+        "content": {
+            "link": "index.html"
+        }
+    }
 ]

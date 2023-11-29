@@ -1,37 +1,38 @@
 [
-  {
-    "name": "buttons",
-    "label": "Кнопки",
-    "content": {
-      "abstract": "\n~~~md\n<b>Components:</b> button, checkbox, icon, icon-ext, toggle\n~~~"
+    {
+        "name": "buttons",
+        "label": "Кнопки"
+    },
+    {
+        "name": "inputs",
+        "label": "Inputs"
+    },
+    {
+        "name": "colors",
+        "label": "Цвета"
+    },
+    {
+        "name": "editors",
+        "label": "Редакторы"
+    },
+    {
+        "name": "grids",
+        "label": "Grids & Trees"
+    },
+    {
+        "name": "layouts",
+        "label": "Layouts & Containers"
+    },
+    {
+        "name": "menus",
+        "label": "Меню"
+    },
+    {
+        "name": "viewers",
+        "label": "Просмотрщики"
+    },
+    {
+        "name": "tools",
+        "label": "Инструменты"
     }
-  },
-  {
-    "name": "colors",
-    "label": "Цвета"
-  },
-  {
-    "name": "editors",
-    "label": "Редакторы"
-  },
-  {
-    "name": "grids",
-    "label": "Grids & Trees"
-  },
-  {
-    "name": "layouts",
-    "label": "Layouts & Containers"
-  },
-  {
-    "name": "menus",
-    "label": "Меню"
-  },
-  {
-    "name": "viewers",
-    "label": "Просмотрщики"
-  },
-  {
-    "name": "tools",
-    "label": "Инструменты"
-  }
 ]

@@ -25,21 +25,23 @@
             <div>
                 <input type="number" ::value="period" @change="_period" min="100" max="2000" step="100"/> Sample period (output fps in ...ms)
             </div>
-            <canvas ref="c"></canvas> <canvas ref="c2"></canvas>
+            <canvas id="c"></canvas> <canvas id="c2"></canvas>
         `,
-        props: {
+        $public: {
             results: '',
             fps: 60,
             period: 1000
         },
         attached() {
-            this.canvas = this.$refs.c;
-            this.canvas_timed = this.$refs.c2;
-            this.canvas_timed.width = this.canvas.width = 400;
-            this.canvas_timed.height = this.canvas.height = 400;
-            this.ctx = this.canvas.getContext("2d");
-            this.ctx2 = this.canvas_timed.getContext("2d");
-            this.startAnimating(this.fps, this.period);
+            this.async(() => {
+                this.canvas = this.$('#c');
+                this.canvas_timed = this.$('#c2');
+                this.canvas_timed.width = this.canvas.width = 400;
+                this.canvas_timed.height = this.canvas.height = 400;
+                this.ctx = this.canvas.getContext("2d");
+                this.ctx2 = this.canvas_timed.getContext("2d");
+                this.startAnimating(this.fps, this.period);
+            }, 100)
         },
         _fps(e) {
             if (this.fps > 0)

@@ -1,30 +1,31 @@
 ODA({ is: 'oda-gradient-preview', imports: '@oda/icon',
     template: `
-    <style>
-        :host {
-            @apply --border;
-            flex-grow: 0;
-            flex-shrink: 0;
-            width: 60px;
-            display: flex;
-            flex-direction: row;
-            justify-content: flex-start;
-            cursor: pointer;
-        }
+        <style>
+            :host {
+                @apply --border;
+                flex-grow: 0;
+                flex-shrink: 0;
+                width: 60px;
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+                cursor: pointer;
+            }
 
-        :host>div {
-            margin: 2px;
-            width: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-        }
-    </style>
-    <div ref="markers"></div>`,
-    props: {
+            :host>div {
+                margin: 2px;
+                width: 24px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+        </style>
+        <div id="markers"></div>
+    `,
+    $public: {
         markers: [],
         color: {
-            type: String,
+            $type: String,
             set(color) {
                 this.host.style.background = color;
             }
@@ -33,7 +34,7 @@ ODA({ is: 'oda-gradient-preview', imports: '@oda/icon',
     hostAttributes: {
         tabindex: 1
     },
-    listeners: {
+     $listeners: {
         'tap': '_onTap',
         'keydown': '_onKeyDown'
     },
@@ -81,7 +82,7 @@ ODA({ is: 'oda-gradient-preview', imports: '@oda/icon',
             color = this.markers[this.markers.length - 1].color;
         let arrow = this.create('oda-gradient-preview-marker', { selected: true, color: color });
 
-        this.$refs.markers.appendChild(arrow);
+        this.$('#markers').appendChild(arrow);
         this.markers.push(arrow);
         this.setPreviewColor();
     },
@@ -99,23 +100,24 @@ ODA({ is: 'oda-gradient-preview', imports: '@oda/icon',
                 this.color = markerWithColor.color;
         }
     }
-});
+})
 
-ODA({ is: 'oda-gradient-preview-marker', template: `
-    <style>
-        :host {
-            @apply --border;
-            @apply --raised;
-            border-radius: 50%;
-            background: white;
-        }
-    </style>`,
-    extends: 'oda-icon',
-    props: {
+ODA({ is: 'oda-gradient-preview-marker', extends: 'oda-icon',
+    template: `
+        <style>
+            :host {
+                @apply --border;
+                @apply --raised;
+                border-radius: 50%;
+                background: white;
+            }
+        </style>
+    `,
+    $public: {
         icon: 'icons:chevron-right',
         size: 24,
         selected: {
-            type: Boolean,
+            $type: Boolean,
             set(selected) {
                 this.icon = selected ? 'av:play-arrow' : 'icons:chevron-right';
                 if (selected && this.domHost && this.domHost.markers) {
@@ -126,17 +128,17 @@ ODA({ is: 'oda-gradient-preview-marker', template: `
             }
         },
         color: {
-            type: String,
+            $type: String,
             set(color) {
                 this.host.style.fill = color;
             }
         }
     },
-    listeners: {
+     $listeners: {
         'tap': '_onTap'
     },
     _onTap(e) {
         e.stopPropagation();
         this.selected = true;
     }
-});
+})

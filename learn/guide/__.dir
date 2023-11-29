@@ -1,0 +1,90 @@
+{
+    "$DIR": [
+        {
+            "path": "introduction"
+        },
+        {
+            "path": "structure"
+        },
+        {
+            "path": "api"
+        },
+        {
+            "path": "smart-caching"
+        },
+        {
+            "path": "smart-rendering"
+        }
+    ]
+}
+
+{
+    "name": "introduction",
+    "label": "White Book",
+    "status": "ok"
+},
+{
+    "name": "install.md",
+    "label": "Установка",
+    "status": "ok"
+},
+{
+    "name": "hello-world.md",
+    "label": "Компонент «Hello, World!»",
+    "status": "ok"
+},
+{
+    "name": "structure",
+    "label": "Структура компонента",
+    "status": "temp"
+},
+{
+    "name": "api",
+    "label": "API фреймворка",
+    "status": "check"
+},
+{
+    "name": "spa-routing.md",
+    "label": "SPA-роутинг",
+    "status": "check"
+},
+{
+    "name": "spa-routing2.md",
+    "label": "SPA-роутинг. Дополнительные сведения",
+    "status": "check"
+},
+{
+    "name": "smart-caching",
+    "label": "Smart-кэширование",
+    "status": "check"
+},
+{
+    "name": "smart-rendering",
+    "label": "Smart-рендеринг",
+    "status": "check"
+},
+{
+    "name": "my-first-component.md",
+    "label": "Мой первый компонент",
+    "status": "check"
+},
+{
+    "name": "ai.md",
+    "label": "Искусственный интеллект",
+    "status": "check"
+},
+{
+    "name": "doc-principles",
+    "label": "Принципы документирования",
+    "status": "check"
+},
+{
+    "name": "redundant-reactivity.md",
+    "label": "Оптимизация реактивности",
+    "status": "check"
+},
+{
+    "name": "new-framework",
+    "label": "Новый фреймворк",
+    "status": "ok"
+}

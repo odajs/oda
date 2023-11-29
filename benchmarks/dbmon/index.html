@@ -33,7 +33,7 @@
         <script src="./lib/ENV.js"></script>
         <script src="./lib/memory-stats.js"></script>
         <script src="./lib/monitor.js"></script>
-         <script src="./lib/ga.js"></script>
+        <script src="./lib/ga.js"></script>
     </body>
 
     <script type="module">
@@ -168,15 +168,15 @@
                 </style>
                 <table class="table table-striped lastest-data">
                     <tbody>
-                        <tr oda-for="(db, $index) in databases">
-                            <td class="dbname">{{db.dbname}}</td>
+                        <tr oda-for="databases">
+                            <td class="dbname">{{$for.item.dbname}}</td>
                             <td class="query-count">
-                                <span ~class="db.lastSample.countClassName">{{db.lastSample.nbQueries}} </span>
+                                <span ~class="$for.item.lastSample.countClassName">{{$for.item.lastSample.nbQueries}} </span>
                             </td>
-                            <td ~for="(q, $index1) in db.lastSample.topFiveQueries" ~class="q.elapsedClassName">
-                                {{q.formatElapsed}}
+                            <td ~for="$for.item.lastSample.topFiveQueries" ~class="$$for.item.elapsedClassName">
+                                {{$$for.item.formatElapsed}}
                                 <div class="popover left">
-                                    <div class="popover-content">{{q.query}}</div>
+                                    <div class="popover-content">{{$$for.item.query}}</div>
                                     <div class="arrow"></div>
                                 </div>
                             </td>
@@ -184,9 +184,14 @@
                     </tbody>
                 </table>
             `,
-            databases: [],
+            databases: {
+                $def: [],
+                // $freeze: true
+            },
             attached() {
-                setInterval(() => this.databases = ENV.generateData(Monitoring.renderRate.ping()).toArray(), ENV.timeout);
+                setInterval(() => {
+                    this.databases = ENV.generateData(Monitoring.renderRate.ping()).toArray()
+                }, ENV.timeout);
             }
         })
     </script>

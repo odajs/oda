@@ -1,0 +1,78 @@
+<meta charset="utf-8">
+
+<script type="module" src="../../../oda.js"></script>
+
+<oda-slider-test id="slider"></oda-slider-test>
+
+<script type="module">
+    ODA({
+        is: 'oda-slider-test', imports: '@oda/button',
+        template: `
+        <style>
+            :host {
+                @apply --horizontal;
+                height: 100vh;
+            }
+            div {
+                @apply --vertical;
+                height: 100vh;
+                overflow: hidden;
+                overflow-y: auto;
+                text-align: center;
+            }
+            img {
+                height: 140px;
+                width: 200px;
+                margin: 2px;
+                object-fit: cover;
+                opacity: .5;
+            }
+            img.selected {
+                opacity: 1;
+            }
+            label {
+                border-bottom: 1px solid gray;
+                opacity: 1!important;
+                z-index: 1;
+            }
+        </style>
+        <div>
+            <label style="position: sticky; top : 0;background: white; padding: 4px;">ODA ~for</label>
+            <img ~for="images || []" :src="$for.item" :id="'oda-'+$for.index" ~class="{ selected: $for.index === 0 ||  $for.index === this.images.length - 1}"/>
+        </div>
+        <div id="div-images">
+            <label style="position: sticky; top : 0;background: white; padding: 4px">Native JS</label>
+        </div>
+        <oda-button :disabled="!btnEnabled" style="width: 140px; height: 60px; text-align: center; border: 1px solid lightgray; margin: 2px;" @tap="_tap">Выбрать {{idx === 0 ? 'последнее' : 'первое'}} изображение</oda-button>
+    `,
+        images: Array,
+        idx: 0,
+        btnEnabled: true,
+        attached() {
+            setTimeout(() => {
+                let div = this.$('#div-images');
+                this.images.map((i, idx) => {
+                    const img = document.createElement('img');
+                    img.setAttribute('src', i);
+                    img.setAttribute('id', 'img-' + idx);
+                    if (idx === 0 || idx === this.images.length - 1)
+                        img.className = 'selected';
+                    div.appendChild(img);
+                })
+            }, 100)
+        },
+        _tap () {
+            this.btnEnabled = false;
+            this.idx = this.idx === 0 ? this.images.length - 1 : 0;
+            this.async(() => {
+                this.$('#img-' + this.idx).scrollIntoView({ block: 'center',  behavior: 'smooth' });
+                this.async(() => {
+                    this.btnEnabled = true;
+                }, 2000)
+            }, 5000)
+            this.$('#oda-' + this.idx).scrollIntoView({ block: 'center',  behavior: 'smooth' });
+        }
+    })
+    import { source } from './images.js';
+    slider.images = source.images;
+</script>

@@ -1,45 +1,44 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="module" src="../../../oda.js"></script>
-<oda-test-layout></oda-test-layout>
+<oda-tester>
+    <oda-test-layout left-panel.showPin></oda-test-layout>
+</oda-tester>
+
 <script type="module">
-    // import './app-layout.js';
     ODA({is:'oda-test-layout', imports:'@oda/app-layout', extends:'oda-app-layout',
-        template:`
-            <app-layout-toolbar slot="header">
-                    <oda-button icon="class" slot="header-left">left toolbar</oda-button>
-            </app-layout-toolbar>
-            <app-layout-toolbar slot="top">
-                <oda-button icon="class" slot="left">left toolbar</oda-button>
-                <oda-button icon="class" slot="right">right toolbar</oda-button>
-                <oda-button icon="class" slot="center">center toolbar</oda-button>
-            </app-layout-toolbar>
+        template: /*html*/`
+        <app-layout-toolbar slot="header">
+                <oda-button icon="class" slot="header-left">left toolbar</oda-button>
+        </app-layout-toolbar>
+        <app-layout-toolbar slot="top">
+            <oda-button icon="class" slot="left">left toolbar</oda-button>
+            <oda-button icon="class" slot="right">right toolbar</oda-button>
+            <oda-button icon="class" slot="center">center toolbar</oda-button>
+        </app-layout-toolbar>
 
-            <div slot="top">TOP qw erpiqwerop iqwpeopoqweirpqpowporq ikqwep wepp oeqpiqwer
-                <oda-button>fff</oda-button>
-            </div>
-            <input slot="top" value="100">
-            <div slot="top-left">TOP-LEFT</div>
-            <iframe slot="main" src="../../grids/table/index.html">MAIN</iframe>
-            <div slot="bottom">BOTTOM</div>
-    <!--        <div slot="leftbar">LEFT BAR</div>-->
-            <div  icon="odant:class" allow-pin title="ПППП"  slot="left-panel">ссссс</div>
-            <iframe  slot="left-panel" bar-opened label="надпись" src="../../../_sandbox/simple/index.html">LEFT1</iframe>
-            <div  style="font-weight: bolder; color: red;" :slot="mySlot">LEFT2</div>
-            <div slot="left-panel">LEFT3</div>
-            <div slot="right-panel">RIGHT</div>
-            <div slot="header">HEADER</div>
-            <div slot="footer">FOOTER</div>
+        <div slot="top">TOP qw erpiqwerop iqwpeopoqweirpqpowporq ikqwep wepp oeqpiqwer
+            <oda-button>fff</oda-button>
+        </div>
+        <input slot="top" value="100">
+        <div slot="top-left">TOP-LEFT</div>
+        <iframe slot="main" src="../../grids/table/index.html">MAIN</iframe>
+        <div slot="bottom">BOTTOM</div>
+        <div  icon="odant:class" allow-pin title="ПППП"  slot="left-panel">ссссс</div>
+        <iframe  slot="left-panel" bar-opened label="надпись" src="../../../_sandbox/simple/index.html">LEFT1</iframe>
+        <div  style="font-weight: bolder; color: red;" :slot="mySlot">LEFT2</div>
+        <div slot="left-panel">LEFT3</div>
+        <div slot="right-panel">RIGHT</div>
+        <div slot="header">HEADER</div>
+        <div slot="footer">FOOTER</div>
 
-
-            <app-layout-toolbar slot="footer">
-                <div slot="left">left footer</div>
-                <div slot="right">right footer</div>
-                <div slot="center">center footer</div>
-            </app-layout-toolbar>
-
+        <app-layout-toolbar slot="footer">
+            <div slot="left">left footer</div>
+            <div slot="right">right footer</div>
+            <div slot="center">center footer</div>
+        </app-layout-toolbar>
         `,
         mySlot: 'left-panel',
-        leftButtons:[{icon: 'icons:warning', bubble: 10, allowToggle: true, toggleGroup: 'views'}, {icon: 'icons:error', bubble: 3, allowToggle: true, toggleGroup: 'views'}]
+        leftButtons: [{ icon: 'icons:warning', bubble: 10, allowToggle: true, toggleGroup: 'views' }, { icon: 'icons:error', bubble: 3, allowToggle: true, toggleGroup: 'views' }]
     })
 </script>

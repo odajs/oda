@@ -2,7 +2,7 @@
 
 Она создает новый компонент на основе его прототипа, указанного в списке ее параметров.
 
-![Диаграмма жизненного цикла для хука created](./learn/images/hook-created.svg "Хук создания created")
+![Диаграмма жизненного цикла для хука created](./learn/_images/hook-created.svg "Хук создания created")
 
 Сам компонент представляет собой объект с типом пользовательского класса **odaComponent**, который является наследником класса **HTMLElement** языка JavaScript. В результате этого он наследует все его [элементы](https://html.spec.whatwg.org/multipage/dom.html#htmlelement "Interface класса HTMLElement").
 
@@ -22,7 +22,7 @@ ODA({
     template: `
         <div>{{text}}</div>
     `,
-    props: {
+    $public: {
         text: "Привет, Хук created!"
     },
     created() {

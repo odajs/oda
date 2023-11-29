@@ -1,16 +1,14 @@
 <meta charset="UTF-8">
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="../../../components/buttons/button/button.js"></script>
-<script type="module" src="../containers.js"></script>
+
 <style>
     body{
         overflow: hidden;
     }
 </style>
     <oda-dropdown-tester></oda-dropdown-tester>
-    <iframe srcdoc="НИЖНИЙ ФРЕЙМ<iframe srcdoc='НИЖНИЙ 2'></iframe>"></iframe>
 <script type="module">
-
+    import '../../../oda.js';
+    import "../containers.js";
     ODA({is:'oda-dropdown-tester',
         template:`
             <style>
@@ -19,36 +17,33 @@
                     @apply --flex;
                 }
             </style>
+            <label>Use parent width</label>
+            <input type="checkbox" ::checked="useParentWidth">
             <div class="flex horizontal">
                 <div ~for="type" class="flex vertical shadow" style="margin: 12px; border: 1px solid transparent; border-radius: 4px; align-items: center;">
-                    <h3>{{item}}</h3>
+                    <h3>{{$for.item}}</h3>
                     <div class="flex vertical" style=" justify-content: space-around;">
-                        <button ~for="align" style="width: 60px; margin: 20px;" @tap="run($event, item, item1)">{{item1}}</button>
+                        <button ~for="modes" style="width: 100px; margin: 20px;" @tap="run($event, $for.item, $$for.item)">{{Object.values($$for.item)}}</button>
                     </div>
-
                 </div>
             </div>
-            <div style="height: 50%" class="flex horizontal">
-                <iframe class="flex" src="./index.html"></iframe>
-                <iframe  class="flex" src="./index-2.html"></iframe>
-                <iframe  class="flex" src="./index-3.html"></iframe>
-            </div>
-
         `,
+        useParentWidth: false,
         type: ['No parent', 'Parent', 'Parent + intersect'],
-        align: ['top', 'bottom', 'left', 'right'],
+        modes: [{align: 'left', drop: 'up'}, {align: 'left', drop: 'down'}, {align: 'right', drop: 'up'}, {align: 'right', drop: 'down'}],
         async run(e, type, align){
             try {
                 const res = await ODA.showDropdown('oda-test', { icon: 'icons:warning', iconSize: 100},
-                    { animation: 500, parent: type.startsWith('Parent')?e.target:null, intersect: type.includes('intersect') , align, title: type+` (${align})`, icon: 'icons:info'});
+                    {useParentWidth: this.useParentWidth, animation: 500, parent: type.startsWith('Parent')?e.target:null, intersect: type.includes('intersect') ,
+                        align: align.align, drop: align.drop, title: type+` (${Object.values(align)})`, icon: 'icons:info'});
                 console.log(res);
             }
             catch (e) {
-                console.log(e);
+                // console.error(e);
             }
         }
     })
-    ODA({is: 'oda-test',
+    ODA({is: 'oda-test', imports: '@oda/button',
         template:`
             <style>
                 :host{
@@ -58,7 +53,7 @@
             </style>
             <oda-button :icon-size :icon></oda-button>
             <div class="vertical" style="overflow: auto">
-                <h4 ~for="5">Запись № {{item}}</h4>
+                <h4 ~for="5">Запись № {{$for.item}}</h4>
             </div>
 
        `,

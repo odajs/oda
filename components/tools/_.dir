@@ -1,10 +1,24 @@
 [
-  {
-    "name": "calculator",
-    "label": "Калькулятор",
-    "content": {
-      "abstract": "\n~~~md\n<b>Components:</b> calculator\n~~~",
-      "link": "index.html"
+    {
+        "name": "rating",
+        "label": "<b style='color: #4f34f0'>oda-rating:</b> Рейтинг",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "calculator",
+        "label": "<b style='color: #4f34f0'>oda-calculator:</b> Калькулятор",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "jupyter",
+        "path": "tools/jupyter",
+        "label": "<b style='color: #4f34f0'>oda-jupyter:</b> Блокнот jupyter",
+        "content": {
+            "link": "index.html"
+        }
     }
-  }
 ]

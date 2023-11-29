@@ -48,7 +48,7 @@ ODA({is: 'my-component',
         <div>{{text}}</div>
         <oda-button label="Нажми на меня" @tap="onTap"></oda-button>
     `,
-    props: {
+    $public: {
         text: 'Обычный импорт',
     },
     onTap(e) {
@@ -97,7 +97,7 @@ ODA({
         <button @tap="onNext">Вперед</button>
         <div>URL-адрес: {{url}}</div>
     `,
-    props: {
+    $public: {
         url: '',
         radius: 0,
     },
@@ -169,7 +169,7 @@ ODA({
         <button @tap="onNext">Вперед</button>
         <div>URL-адрес: {{window.location.href}}</div>
     `,
-    props: {
+    $public: {
         radius: 0
     },
     onTap(e) {
@@ -251,9 +251,9 @@ ODA({
         <button @tap="onNext">Вперед</button>
         <div>URL-адрес: {{window.location.href}}</div>
     `,
-    props: {
+    $public: {
         shape: {
-            default: '',
+            $def: '',
             set(n) {
                 if (!n)
                     return;

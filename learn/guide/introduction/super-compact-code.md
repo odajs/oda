@@ -51,7 +51,7 @@ items.forEach( (value, index) => {
 **Декларативный подход (JSX)**
 
 ```javascript
-<div ~for='100'>Элемент[{{index}}] = {{item}}</div>
+<div ~for='100'>Элемент[{{$for.index}}] = {{$for.item}}</div>
 ```
 
 Разница в объеме кода налицо.

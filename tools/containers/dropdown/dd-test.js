@@ -17,7 +17,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
                 cursor: pointer;
             }
             oda-button {
-                width: 240px; 
+                width: 240px;
                 margin: 2px;
                 border: 1px solid gray
             }
@@ -25,7 +25,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
                 position: absolute;
                 top: 4px;
                 left: calc(50% - 60px);
-                width: 120px; 
+                width: 120px;
                 z-index: 100;
                 background: white;
             }
@@ -40,6 +40,7 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
             <oda-button @tap="run">right</oda-button>
             <oda-button @tap="run">bottom</oda-button>
             <oda-button @tap="run">modal</oda-button>
+            <oda-button @tap="run">full</oda-button>
             <div class="vertical" style="margin-top: 10px; align-items: left;justify-content: center;">
                 <div class="horizontal" style="align-items:center"><oda-checkbox ::value="parent"></oda-checkbox>- Parent</div>
                 <div class="horizontal" style="align-items:center"><oda-checkbox ::value="intersect"></oda-checkbox> - Intersect</div>
@@ -49,33 +50,33 @@ ODA({ is: 'oda-dropdown-tester', imports: '@oda/button, @oda/icon, @oda/checkbox
         </div>
     `,
     get title() { return this.showTitle ? 'Заголовок' : '' },
-    props: {
+    $public: {
         label: 'no iFrame',
         left: {
-            type: Number,
-            default: 10,
-            save: true
+            $type: Number,
+            $def: 10,
+            $save: true
         },
         top: {
-            type: Number,
-            default: 50,
-            save: true
+            $type: Number,
+            $def: 50,
+            $save: true
         },
         parent: {
-            type: Boolean,
-            save: true
+            $type: Boolean,
+            $save: true
         },
         intersect: {
-            type: Boolean,
-            save: true
+            $type: Boolean,
+            $save: true
         },
         useParentWidth: {
-            type: Boolean,
-            save: true
+            $type: Boolean,
+            $save: true
         },
         showTitle: {
-            type: Boolean,
-            save: true
+            $type: Boolean,
+            $save: true
         },
     },
     get saveKey() { return this.label },
@@ -122,9 +123,9 @@ ODA({ is: 'oda-test-menu', imports: '@oda/button',
                 background-color: silver;
             }
         </style>
-        <h4 ~for="6" class="horizontal center lbl" style="cursor: pointer" @tap.stop="_isOk(index)">
-            Запись - {{item}}
-            <oda-button :id="'Title - ' + item" @tap.stop="ontap" icon="icons:add" icon-size="32" fill="gray"></oda-button>
+        <h4 ~for="6" class="horizontal center lbl" style="cursor: pointer" @tap.stop="_isOk($for.index)">
+            Запись - {{$for.item}}
+            <oda-button :id="'Title - ' + $for.item" @tap.stop="ontap" icon="icons:add" icon-size="32" fill="gray"></oda-button>
         </h4>
         <oda-button :icon-size :icon fill="red"></oda-button>
     `,

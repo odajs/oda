@@ -1,0 +1,9 @@
+<meta charset="UTF-8">
+<button id="btn1" slot="buttons">Show warning</button>
+<script type="module">
+    import '../../../oda.js';
+    import "../containers.js";
+    btn1.onclick = async e => {
+        const res = await ODA.showWarning("1111")
+    }
+</script>

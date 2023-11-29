@@ -3,7 +3,7 @@
 <script type="module" src="../../../oda.js"></script>
 <script type="module" src="./menu.js"></script>
 <oda-tester>
-    <oda-menu id="menu" style="flex: 1" show-sub-title></oda-menu>
+    <oda-menu style="max-width: 300px; align-self: center;" id="menu" show-sub-title></oda-menu>
 </oda-tester>
 <script type="module">
     const selectedItem = { label: "4 строка" };
@@ -121,7 +121,7 @@
             }
         </style>
         {{item.label}}`,
-        props: {
+        $public: {
             item: {}
         }
     });
@@ -132,7 +132,7 @@
             }
         </style>
         <span ~text="item?.label"></span>`,
-        props: {
+        $public: {
             item: null
         }
     })

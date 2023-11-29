@@ -4,7 +4,7 @@
     import './containers.js';
     ODA({is:'oda-containers-test',
         template:`
-            <button ~for="ODA.containers.items" @tap="show(item)">{{item}}</button>
+            <button ~for="ODA.containers.items" @tap="show($for.item)">{{$for.item}}</button>
         `,
         show(item){
             ODA[('show-' + item).toCamelCase()]('oda-containers-test')

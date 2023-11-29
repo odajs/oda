@@ -11,7 +11,7 @@
         <span id="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'Теневое дерево'
     },
     onTap() {
@@ -31,7 +31,7 @@
         <span id="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'querySelector'
     },
     onTap() {
@@ -53,7 +53,7 @@
         <span id="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'Глобальный объект window'
     },
     onTap() {
@@ -75,7 +75,7 @@
         <span ref="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'Внутренний идентификатор'
     },
     onTap() {
@@ -95,7 +95,7 @@
         <span ~ref="'spn'">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'JavaScript-выражение'
     },
     onTap() {
@@ -115,7 +115,7 @@
         <span ~ref="'my-spn'">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'У меня сложное имя'
     },
     onTap() {
@@ -135,7 +135,7 @@
         <span ref="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'У меня есть псевдоним'
     },
     onTap() {
@@ -155,7 +155,7 @@
         <span ref="spn">{{label}}</span> <br>
         <button @tap="onTap">Найди меня</button>
     `,
-    props: {
+    $public: {
         label: 'Найди меня'
     },
     onTap() {

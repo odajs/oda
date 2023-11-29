@@ -1,0 +1,10 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<oda-tester>
+    <oda-simplemde-editor id="mdviewer"></oda-simplemde-editor>
+</oda-tester>
+<script type="module">
+    import '../../../oda.js';
+    import './simplemde-editor.js';
+    mdviewer.value = await fetch('./lib/readme.md').then(r => r.text());
+</script>

@@ -49,12 +49,12 @@ ODA({ is: 'oda-pterodactyl',
     },
     stopMove(){
         this.style.animationPlayState="paused";
-        const svg = this.$core.root.querySelector("svg");
+        const svg = this[CORE_KEY].root.querySelector("svg");
         svg.pauseAnimations();
     },
     continueMove(){
         this.style.animationPlayState="running";
-        const svg = this.$core.root.querySelector("svg");
+        const svg = this[CORE_KEY].root.querySelector("svg");
         svg.unpauseAnimations();
     },
 })

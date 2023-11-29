@@ -1,6 +1,3 @@
-const STYLES = ODA.regTool('styles');
-STYLES.path = import.meta.url.split('/').slice(0,-1).join('/');
-// const style = document.createElement('style');
 let style = /*css*/`
 ::-webkit-scrollbar {
     width: 8px;
@@ -100,6 +97,7 @@ let style = /*css*/`
     };
     --border:{
         border: 1px solid;
+        box-sizing: border-box;
     };
 
     --toolbar:{
@@ -148,7 +146,6 @@ let style = /*css*/`
         align-content: center;
         text-overflow: ellipsis;
         font-family: var(--font-family);
-        overflow: hidden;
     };
 
     --cover:{
@@ -244,10 +241,10 @@ body[context-menu-show] *:not(oda-context-menu){
         filter: invert(1);
     };
     --error: {
-        color: var(--error-color);
+        color: var(--error-color) !important;
         border-color: var(--error-color) !important;
         fill: var(--error-color) !important;
-        background-color: var(--error-background);
+        background-color: var(--error-background) !important;
 
     };
     --error-before: {
@@ -364,15 +361,20 @@ body[context-menu-show] *:not(oda-context-menu){
         fill: var(--selected-color) !important;
         filter: brightness(0.8) contrast(1.2);
     };
+    --outlined: {
+        outline: var(--content-color) dashed .5px;
+        outline-offset: -1px;
+    };
     --focused:{
         box-shadow: inset 0 -2px 0 0  var(--focused-color) !important;
     };
     --dimmed: {
-        opacity: 0.4;
+        opacity: 0.7;
         filter: grayscale(80%);
     };
     --disabled: {
         @apply --dimmed;
+        opacity: 0.3;
         cursor: default !important;
         user-focus: none;
         user-focus-key: none;
@@ -438,18 +440,108 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 `;
+globalThis.cssRules = [];
+globalThis.adopted = [];
 
-style = ODA.extractCSSRules(style)
+const APPLY_REG_EXP = /@apply\s*/gm;
+const COMMENT_REG_EXP = /\/\*[^*/]*\*\//igm;
+const VAR_REG_EXP = /^--[\w-]*\w+/;
+const RULE_BODY_REG_EXP = /^\s*{\s*[^{}]*\s*}\s*$/;
+
+function extractCSSRules (style){
+    const result = []
+    const adds = []
+    if (typeof style === 'string'){
+        let ss = new CSSStyleSheet();
+        ss.replaceSync(style);
+        style = ss;
+    }
+    for (let i of style.cssRules) {
+        if (i?.selectorText)
+            result.push(i.selectorText+ '{');
+        else{
+            adds.unshift(applyStyleMixins(i.cssText));
+            continue
+        }
+        for (let key of i.style || []) {
+            let val = i.style.getPropertyValue(key).toString().trim();
+            const priority = i.style.getPropertyPriority(key);
+            if (priority) {
+                val = `${val} !${priority}`;
+            }
+            if (!val) continue;
+            if (!VAR_REG_EXP.test(key) || !RULE_BODY_REG_EXP.test(val)) {
+                result.push(key+': '+val+';')
+                continue;
+            }
+            val = val.replace(/^{|}$/g, '');
+            val = applyStyleMixins(val);
+            val = val.trim().split(';').map(i => {
+                return i.trim();
+            }).join(';\n\t').trim();
+            cssRules[key] ??= val;
+            key = key.substring(2);
+            adds.push(`.${key}, [${key}] {`)
+            adds.push(`${val}`)
+            adds.push(`}`)
+        }
+        result.push('}');
+    }
+    result.push(...adds);
+    return result.join('');
+}
+function applyStyleMixins (styleText) {
+    styleText = styleText.replace(COMMENT_REG_EXP, '');
+    styleText =  styleText.split(APPLY_REG_EXP);
+    styleText =  styleText.map(i=>{
+        let v = i.match(VAR_REG_EXP)?.[0];
+        if(!v)
+            return i;
+        return i.replace(v+';', cssRules[v]);
+    });
+    styleText = styleText.join('');
+    return styleText;
+}
+const PARSE_RULE_REG_EXP = /([a-z-]+)\s*:\s*((?:[^;]*url\(.*?\)[^;]*|[^;]*)*)\s*(?:;|$)/gi;
+function cssRuleParse (rules, res, host = false) {
+    for (let rule of rules) {
+        switch (rule.type){
+            case CSSRule.KEYFRAMES_RULE:{
+                let key = rule.cssText;
+                let r = res[key] = res[key] || {};
+                cssRuleParse(rule.cssRules, r);
+            } break;
+            case CSSRule.MEDIA_RULE:{
+                let key = '@media ' + rule.media.mediaText;
+                let r = res[key] = res[key] || {};
+                cssRuleParse(rule.cssRules, r);
+            } break;
+            default:{
+                if (rule.cssText.includes(':host') && !host) continue;
+                const ss = rule.cssText.replace(rule.selectorText, '').match(PARSE_RULE_REG_EXP);
+                if (!ss) continue;
+                let sel = rule.selectorText?.split(',').join(',\n');
+                let r = res[sel] = res[sel] || [];
+                r.add(...ss);
+            } break;
+        }
+    }
+}
+style = extractCSSRules(style)
 const ss = document.createElement('style');
 ss.textContent = style;
-// ODA.mutate(()=>{
-    document.head.appendChild(ss);
-// })
+document.head.appendChild(ss);
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {
     let ss = new CSSStyleSheet();
     ss.replaceSync(style);
-    ODA.adopted = [ss];
+    globalThis.adopted = [ss];
 }
 console.log('styles is loaded.');
-export default STYLES;
+export default {
+    cssRules: globalThis.cssRules,
+    adopted: globalThis.adopted,
+    extractCSSRules,
+    applyStyleMixins,
+    cssRuleParse
+};

@@ -20,37 +20,34 @@ ODA({
         
     </div>
     <table>
-        <tr><th ~class="(index==sortI)?'act':''" @tap="_chSort(index)" ~for="names">{{item}}</th></tr>
-        <tr ~for="row in area"> <td ~for="row">{{item}}</td> </tr>
+        <tr><th ~class="($for.index==sortI)?'act':''" @tap="_chSort($for.index)" ~for="names">{{$for.item}}</th></tr>
+        <tr ~for="area"> <td ~for="$for.item">{{$$for.item}}</td> </tr>
     </table>
     `,
-    async attached() {
-        this.names = this.tTab  ? ['№ сертификата', 'ФИО Слушателя', 'Компания Партнер',
-                                    'Дата начала сертификата', 'Дата окончания сертификата']
-                                : ['№ лицензии', 'Владелец Лицензии', 'Тип лицензии',
-                                    'Дата выдачи лицензии', 'Дата окончания лицензии']
-        let row = await this._dlRaw()
-        let rows = row.$rows.map(o => this.tTab
-            ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
-            : [o.ID, o.OwnerLicense, o.Type, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
-        )
-        this.raws = rows
-        this.search = ''
-        this.sortI = this.names.length - 1
+    attached() {
+        let tTab = window.location.hash=='#1' // -- организации --> false (),  -- люди -> true
+        console.log(this.offsetHeight)
+        this.names = tTab 
+            ? ['№ сертификата', 'ФИО Слушателя', 'Компания Партнер', 'Дата начала сертификата', 'Дата окончания сертификата']
+            : ['№ лицензии', 'Владелец Лицензии', 'Тип лицензии', 'Дата выдачи лицензии', 'Дата окончания лицензии']
+        this._dlRaw(tTab).then( row =>{
+            this.raws = row.$rows.map(o => tTab
+                ? [o.ID, o.OwnerLicense, o.Partner, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']
+                : [o.ID, o.OwnerLicense, o.Type, o.DateOn ? this._hData(o.DateOn) : '', o.DateOf ? this._hData(o.DateOf) : '']  )
+            this.sortI = this.names.length - 1
+        })
     },
-    observers: ['_screenSet(sortI,search)'],
-    props: {
-        sortI:1,
-        raws: [],
-        tTab: 0, // 0 -- организации, 1 -- люди
-        finrows: {},
-        names: [],
-        area:[],
-        search: '0'
-    },
-    async _dlRaw() { // 1D839FFCCA3D6FF -- организации, 1D839FFD97FF621 -- люди
+    $observers: {_screenSet:['sortI','search'] }, // ['_screenSet(sortI,search)'],
+
+    sortI:0,
+    raws: [],
+    names: [],
+    area:[],
+    search: '',
+
+    async _dlRaw(tTab) { // 1D839FFCCA3D6FF -- организации, 1D839FFD97FF621 -- люди
         const url = 'https://business.odant.org/api/H:1CC832F557A4600/P:WORK/B:1D7472723D6F2CD/C:' +
-            (this.tTab ? '1D839FFD97FF621' : '1D839FFCCA3D6FF') + '/I:table?dataset'
+            (tTab ? '1D839FFD97FF621' : '1D839FFCCA3D6FF') + '/I:table?dataset'
         const raw = await (await fetch(url)).json();
         return raw
     },
@@ -59,5 +56,9 @@ ODA({
     _screenSet(sortI,search) {
         let area = this.raws.filter(r => r.join(' ').toLowerCase().includes(search.toLowerCase()))
         this.area = area.sort( (x,y) => x[sortI].localeCompare(y[sortI]) )
-    }
+        setInterval(()=>{
+            top.postMessage('height:'+this.offsetHeight, '*');    
+            // window.location.hash = this.offsetHeight
+        },1);        
+    },
 });

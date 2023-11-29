@@ -1,22 +1,17 @@
-<script type="module" src="../../tools/monitor/monitor.js"></script>
 <oda-life></oda-life>
-<oda-monitor></oda-monitor>
 
 <script type="module">
     import '../../oda.js';
     ODA({
         is: 'oda-life', template: `
 <!--                    <div style="font-size: large;font-weight:700;color:red">ODA LIFE</div>-->
-                    <canvas ref="canvas" :width="(cols*resolution) || offsetWidth" :height="(rows*resolution) || offsetHeight"/>
+                    <canvas :width="(cols*resolution) || offsetWidth" :height="(rows*resolution) || offsetHeight"/>
                 `,
-        props: {
-            cols: 190,
-            rows: 90,
+        $public: {
+            cols: 60,
+            rows: 60,
             resolution: 10,
-            grid: {
-                type: Array,
-                freeze: true
-            }
+            grid: []
         },
         ready() {
             // this.cols = 190;
@@ -29,11 +24,13 @@
 
         },
         attached(){
-            this.canvas = this.$refs.canvas;
-            if (this.canvas?.getContext) {
-                this.ctx = this.canvas.getContext('2d');
-            }
-            this.draw();
+            this.async(() =>{
+                this.canvas = this.$('canvas');
+                if (this.canvas?.getContext) {
+                    this.ctx = this.canvas.getContext('2d');
+                }
+                this.draw();
+            }, 100)
         },
         make2DArray(cols = this.cols, rows = this.rows) {
             let arr = new Array(cols);

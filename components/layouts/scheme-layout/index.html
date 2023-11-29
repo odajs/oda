@@ -1,27 +1,42 @@
 <meta charset="utf-8">
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./scheme-layout.js"></script>
 <oda-tester>
     <!-- <oda-scheme-layout edit-mode id="layout" show-scale="false" inputs.top inputs.bottom inputs.right inputs.left="false"></oda-scheme-layout> -->
-    <oda-scheme-layout edit-mode id="layout"></oda-scheme-layout>
+    <oda-scheme-layout design-mode allow-links id="layout" style="width: 100%; height: 100%" ></oda-scheme-layout>
 </oda-tester>
 
 <script type="module">
-    import '/web/oda/oda.js'
-    import './scheme-layout.js'
+    layout.pins = {right: [{icon: 'icons:arrow'}, {icon: 'icons:delete'}]}
     layout.items = [
             {
                 is: "oda-button", block: 1,  x: 280, y: 180,
                 props: {
                     label: "1:oda-button", icon: "icons:extension", fill: "blue", iconSize: 64
                 },
-                interfaces: {
-                    $top: [
-                        { props:{
-                            icon: 'icons:error'
-                        }},
-                        {link: 5, pin: 2}],
-                    $right: [
-                            {link: 5, pin: 1},
-                            {link: 2, pin: 1}, 
+                pins: {
+                    top: [
+                        {
+                            props:{
+                                icon: 'icons:error'
+                            }
+                        },
+                        {
+                            bind: [{
+                                block: 1, top: 0
+                            }]
+                        }],
+                    right: [
+                            {
+                                bind: [{
+                                    block: 2, left: 0
+                                }]
+                            },
+                            {
+                                bind: [{
+                                    block: 1, bottom: 0
+                                }]
+                            },
                             {
                                 props: {
                                     my: 'dfkjlsfjl',
@@ -29,21 +44,14 @@
                                     iconSize: 30,
                                     style:'background: red;',
                                 },
-                                tap(e) {
-                                    console.log('tap on 1-r3', this);
-                                    this.$$pin.interface.push({})
-                                },
-                                contextmenu(e) {
-                                    console.log('contextmenu 1-r3');
-                                },
-                                link: 3, pin: 0
+                                3:{top: 0}
                             }
                     ],
-                    $left: [
+                    left: [
                         {link: 5, pin: 3},
                         {link: 5, pin: 1}
                     ],
-                    $bottom: [
+                    bottom: [
                         {link: 5, pin: 2},
                         {}
                     ],
@@ -54,25 +62,25 @@
                 props: {
                     label: "2:oda-button", icon: "icons:android", fill: "green", iconSize: 64
                 },
-                interfaces: {
-                    $top: [{}],
-                    $left: [{}],
-                    $right: [{}, {}],
-                    $bottom: [{}, {link: 3, pin: 1}]
+                pins: {
+                    top: [{}],
+                    left: [{}],
+                    right: [{}, {}],
+                    bottom: [{}, {link: 3, pin: 1}]
                 }
             }, {
                 is: 'oda-button', block: 3, x: 100, y: 360,
                 props: {
                     label: '3:oda-button', iconSize: 30
                 },
-                interfaces: {
-                    $top: [
+                pins: {
+                    top: [
                         {}
                     ],
-                    $left: [
+                    left: [
                         {}
                     ],
-                    $right: [
+                    right: [
                         {},{}
                     ]
                 }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="ODA Framework - designed for rapid development of websites, mobile PWAs and web applications using web components technology - https://odajs.org/" />
+        <title>oda-rich-text-editor</title>
+    </head>
+
+    <body>
+        <!-- <oda-tester> -->
+        <oda-rich-text-editor id="editor" src="./template.json"></oda-rich-text-editor>
+        <!-- </oda-tester> -->
+
+        <script type="module">
+            import '../../../oda.js';
+            import './rich-text-editor.js';
+
+            editor.fillData = {
+                orgName: 'ООО "БИС"',
+                orgFullName: '"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "БИЗНЕСИНТЕРСОФТ"',
+                orgShortName: 'ООО "БИС"',
+                orgUridAddress: '390000, Рязанская область, город Рязань, ул. Ленина, д. 47',
+                orgFactAddress: '390000, Рязанская область, город Рязань, ул. Ленина, д. 47',
+                orgOGRN: '1076234013712',
+                orgINN: '6234049193',
+                orgKPP: '623401001',
+                orgDirector: 'Перепелкин Роман Александрович',
+                orgRasChet: '...',
+                orgPhone: '+7 (4912) 75-76-59',
+                currDate: new Date().toLocaleString('ru', { year: 'numeric', month: 'long', day: 'numeric' }),
+                'tb1-sum': '385.00',
+                'tb2-itogo': '385.00'
+            }
+            editor.fillDataTables = {
+                table1: {
+                    main: [
+                        { '№': '1', name: 'Товар 001', kol: '1', cost: '1', sum: '1', note: 'Примечание 001' },
+                        { '№': '2', name: 'Товар 002', kol: '2', cost: '2', sum: '4', note: 'Примечание 002' },
+                        { '№': '3', name: 'Товар 003', kol: '3', cost: '3', sum: '9', note: 'Примечание 003' },
+                        { '№': '4', name: 'Товар 004', kol: '4', cost: '4', sum: '16', note: 'Примечание 004' },
+                        { '№': '5', name: 'Товар 005', kol: '5', cost: '5', sum: '25', note: 'Примечание 005' },
+                        { '№': '6', name: 'Товар 006', kol: '6', cost: '6', sum: '36', note: 'Примечание 006' },
+                        { '№': '7', name: 'Товар 007', kol: '7', cost: '7', sum: '49', note: 'Примечание 007' },
+                        { '№': '8', name: 'Товар 008', kol: '8', cost: '8', sum: '64', note: 'Примечание 008' },
+                        { '№': '9', name: 'Товар 009', kol: '9', cost: '9', sum: '81', note: 'Примечание 009' },
+                        { '№': '10', name: 'Товар 010', kol: '10', cost: '10', sum: '100', note: 'Примечание 010' },
+                    ],
+                    footer: [
+
+                    ]
+                },
+                table2: {
+                    main: [
+                        { '№': '1', date: '2023-09-26', doc: 'Платежка 123', sum: '99' },
+                        { '№': '2', date: '2023-09-27', doc: 'Платежка 456', sum: '101' },
+                        { '№': '3', date: '2023-09-28', doc: 'Платежка 789', sum: '102' },
+                        { '№': '4', date: '2023-09-29', doc: 'Платежка 987', sum: '83' },
+                    ],
+                    footer: [
+
+                    ]
+                }
+            }
+            editor.watermark = {
+                data: '', // 'ODA-RICH-TEXT-EDITOR',
+                color: '#AEB5C0',
+                opacity: '0.3',
+                size: 80,
+                font: 'Yahei'
+            }
+        </script>
+    </body>
+
+</html>

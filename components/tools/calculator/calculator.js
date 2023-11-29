@@ -27,32 +27,36 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
         <oda-button class="raised flex" @tap="chooseAccuracy">Acc <span disabled>{{Acc}}</span></oda-button>
     </div>
     <div class="horizontal" ::data="calc.data">
-        <div class="vertical flex" ~for="col in data?.cols" style="margin: 0px 8px" >
-            <div ~for="row in col?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="row.props" ~style="{height: buttonHeight + 'px'}">
-                <oda-button class="raised flex" ~for="btnProps, a1, a2, btnName in row.buttons" ~html="btnProps?.key || btnName" @tap="tap" :item="btnProps" ~props="button.props" ~style="{width: 100/Object.keys(row.buttons).length + '%'}"></oda-button>
+        <div class="vertical flex" ~for="data?.cols" style="margin: 0px 8px" >
+            <div ~for="$for.item?.rows" class="horizontal flex" style="margin-top: 8px;" ~props="$$for.item.props" ~style="{height: buttonHeight + 'px'}">
+                <oda-button class="raised flex" ~for="$$for.item.buttons" ~html="$$$for.item?.key || $$$for.key" @tap="tap" :item="$$$for.item" ~props="$$$for.item.props" ~style="{width: 100/Object.keys($$for.item.buttons).length + '%'}"></oda-button>
             </div>
         </div>
     </div>
     `,
-    keyBindings: {
-        Enter() {
-            this.calc();
+    data: {},
+    error: undefined,
+    hints: [], // unclosed brackets
+    stack: [],
+    timerClear: '', // a variable containing a timer to clear the monitor
+    operation: '0', // the value of the previous expression
+    result: 0,
+    answer: '0',
+    $public: {
+        accuracy: {
+            $def: 2,
+            $label: 'Точность',
+            $save: true,
+            $list: [0, 1, 2, 3, 4, 5],
         },
-        Backspace() {
-            this.back();
-        },
-        Escape() {
-            this.clear();
-        },
+        buttonHeight: {
+            $def: 32,
+            $label: 'Высота кнопки',
+            $save: true,
+        }
     },
-    attached() {
-        this.listen('keydown', '_onKeyDown', { target: document });
-    },
-    detached() {
-        this.unlisten('keydown', '_onKeyDown', { target: document });
-    },
-    _onKeyDown(e) {
-        e.key.match(/[0-9().*/+-]/) ? this.tap(e.key) : false;
+    hostAttributes: {
+        tabindex: 1
     },
     get hint() {
         return this.hints.map(i => i?.hint).join('');
@@ -71,29 +75,25 @@ ODA({is: 'oda-calculator', imports: '@oda/button',
     get value() {
         return this.result.toFixed(this.Acc.match(/\d$/))
     },
-    data: {},
-    error: undefined,
-    hints: [], // unclosed brackets
-    stack: [],
-    timerClear: '', // a variable containing a timer to clear the monitor
-    operation: '0', // the value of the previous expression
-    result: 0,
-    answer: '0',
-    props: {
-        accuracy: {
-            default: 2,
-            label: 'Точность',
-            save: true,
-            list: [0, 1, 2, 3, 4, 5],
+    $keyBindings: {
+        Enter() {
+            this.calc();
         },
-        buttonHeight: {
-            default: 32,
-            label: 'Высота кнопки',
-            save: true,
-        }
+        Backspace() {
+            this.back();
+        },
+        Escape() {
+            this.clear();
+        },
     },
-    hostAttributes: {
-        tabindex: 1
+    attached() {
+        this.listen('keydown', '_onKeyDown', { target: document });
+    },
+    detached() {
+        this.unlisten('keydown', '_onKeyDown', { target: document });
+    },
+    _onKeyDown(e) {
+        e.key.match(/[0-9().*/+-]/) ? this.tap(e.key) : false;
     },
     tap(e) {
         this.error = undefined; // on any input, the error is cleared

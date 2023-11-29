@@ -3,200 +3,148 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         <style>
             @keyframes fadin {
                 from {background-color: rgba(0, 0, 0, 0)}
-                to {background-color: rgba(0, 0, 0, 0.4)}
+                to {background-color: rgba(0, 0, 0, 0.1)}
             }
             :host {
                 pointer-events: none;
-                z-index: 1000;
                 height: 100%;
-                visibility: {{isVisible?'visible':'hidden'}};
-
             }
             :host([fadein]){
                 animation: fadin 5s ease-in-out;
-                background-color: rgba(0, 0, 0, 0.4);
+                background-color: rgba(0, 0, 0, 0.1);
             }
             :host>div{
-                pointer-events: auto;
+                left: 0px;
+                top: 0px;
+                transform: translate({{_left}}px, {{_top}}px);
+                pointer-events: {{isVisible ? 'auto' : 'none'}};
+                visibility: {{isVisible ? 'visible' : 'hidden'}};
                 position: fixed;
                 overflow: hidden;
-            }
-            oda-title {
-                min-height: 34px;
-                max-height: 34px;
+                max-height: {{maxHeight?maxHeight:'100%'}};
+                max-width: {{maxWidth?maxWidth:'100%'}};
+                min-width: {{minWidth?minWidth:'100px'}};
+                min-height: {{minHeight?minHeight:'0px'}};
             }
         </style>
-        <div @resize="setSize"  class="vertical raised content" ~style="_style">
-            <div class="vertical flex" style="overflow: hidden;">
-                <oda-title ~if="title" allow-close :icon :title>
-                    <div slot="title-left">
-                        <slot class="no-flex" name="dropdown-title"></slot>
-                    </div>
-                </oda-title>
-                <div class="flex vertical" style="overflow: hidden;">
-                    <slot @slotchange="onSlot"></slot>
+        <div class="vertical raised content" style="overflow: hidden;" @resize="onResize">
+            <div ~if="title" class="horizontal no-flex accent-invert" style="align-items: center; overflow: hidden">
+                <oda-icon ~if="icon" no-flex :icon :icon-size :sub-icon style="margin-left: 8px;"></oda-icon>
+                <label ~if="title" class="flex" ~html="title" style="text-overflow: ellipsis; white-space: nowrap; padding: 8px; overflow: hidden;"></label>
+                <div class="flex" style="overflow: hidden;">
+                    <slot class="no-flex" name="modal-title"></slot>
                 </div>
+                <oda-button :icon-size="iconSize + 4" icon="icons:close" @tap.stop="cancel" style="background-color: red; align-self: flex-start;"></oda-button>
+            </div>
+            <div class="flex vertical" style="overflow: auto;" >
+                <slot @slotchange="onSlotChange"></slot>
             </div>
         </div>
     `,
-    onSlot(e) {
-        this.controls = e.target.assignedNodes();
-        if (this.focused && this.controls?.length) {
-            this.controls[0].setAttribute('tabindex', 0);
-            this.controls[0].setAttribute('autofocus', true);
-            this.controls?.[0]?.focus();
-
+    get _left(){
+        let left = 0;
+        switch (this.align){
+            case 'right':
+                left =  this._startPoint.x;
+                break;
+            case 'left':
+                left = this._startPoint.x - (this._contentRect?.width || 0);
+                break;
         }
-        this.setSize();
-
+        if (left<0)
+            left = 0;
+        if (this._contentRect && left + this._contentRect.width>window.innerWidth){
+            left = window.innerWidth - this._contentRect.width;
+        }
+        return left;
     },
-    set controls(n){
-        for (let i of (n || [])){
-            i.render();
+    get _top(){
+        let top = 0;
+        switch (this.drop){
+            case 'down':
+                top = this._startPoint.y;
+                break;
+            case 'up':
+                top = this._startPoint.y - (this._contentRect?.height || 0);
+                break;
+        }
+        if (top < 0)
+            top = 0;
+        if (this._contentRect && top + this._contentRect.height>window.innerHeight)
+            top = window.innerHeight - this._contentRect.height;
+        return top;
+    },
+    get _startPoint(){
+        const anchor = this.anchor || (this.align === 'left'?'right-bottom':'left-bottom');
+        switch (anchor){
+            case 'top-left':
+            case 'left-top':
+                return {x: this._parentRect.x, y: this._parentRect.y}
+            case 'right-top':
+            case 'top-right':
+                return {x: this._parentRect.x + (this._parentRect.width || 0), y: this._parentRect.y}
+            case 'left-bottom':
+            case 'bottom-left':
+                return {x: this._parentRect.x, y: this._parentRect.y + (this._parentRect.height || 0)}
+            case 'right-bottom':
+            case 'bottom-right':
+                return {x: this._parentRect.x + (this._parentRect.width || 0), y: this._parentRect.y + (this._parentRect.height || 0)}
         }
     },
-    parent: undefined,
-    props: {
-        fadein: {
-            default: false,
-            reflectToAttribute: true
-        },
-        intersect: false,
-        cascade: false,
-        align: {
-            default: 'bottom',
-            list: ['bottom', 'top', 'left', 'right', 'modal']
-        },
-        useParentWidth: false,
-        title: '',
-        icon: '',
-        iconSize: 24,
-        minWidth: 100,
-        minHeight: 0,
+    get _parentRect(){
+        return this.parent?.getBoundingClientRect() || ODA.mousePos;
     },
-    contentRect: null,
-    get _style() {
-        this.isVisible = false;
-        if (!this.control || !this.isConnected)
-            return {};
-        const rect = this.parent?.getBoundingClientRect()/*$rect */ || ODA.mousePos;
-        let height = this.contentRect?.height || 0;
-        let width = this.contentRect?.width || 0;
-        let winWidth = window.innerWidth;
-        let winHeight = window.innerHeight;
-        let top = this.align === 'modal' ? winHeight / 2 - height / 2 : rect.top;
-        let left = this.align === 'modal' ? winWidth / 2 - width / 2 : rect.left
-        // if (!height || !width)
-        //     return { top: top + 'px', left: left + 'px' };
-        height = height + (this.title ? 34 : 0)
-        let maxHeight = winHeight;
-        let maxWidth = winWidth;
-        let minHeight = height || this.minHeight;
-        let minWidth = width || this.minWidth;
-        let right = left + width;
-        let bottom = top + height;
-
-        let parentWidth = rect.width;
-        if (rect.right > winWidth)
-            parentWidth += winWidth - rect.right;
-        if (rect.left < 0)
-            parentWidth += rect.left;
-        let size = {};
-        this._steps = this._steps || [];
-        this.align = ['left', 'right', 'top', 'bottom', 'modal'].includes(this.align) ? this.align : 'bottom';
-        switch (this.align) {
-            case 'left': {
-                right = this.intersect ? rect.right : rect.left;
-                left = right - width;
-                if (this.parent) {
-                    if (left < 0) {
-                        this.align = this._steps.includes('right') ? 'bottom' : 'right';
-                        this._steps.push('left');
-                        return undefined;
-                    }
-                }
-            } break;
-            case 'right': {
-                left = this.intersect ? rect.left : rect.right;
-                right = left + width;
-                if (this.parent) {
-                    if (right > winWidth) {
-                        this.align = this._steps.includes('left') ? 'bottom' : 'left';
-                        this._steps.push('right');
-                        return undefined;
-                    }
-                }
-            } break;
-            case 'top': {
-                bottom = this.intersect ? rect.bottom : rect.top;
-                top = bottom - height;
-                if (this.parent) {
-                    top = top < 0 ? 0 : top;
-                    maxHeight = bottom - top;
-                    if (height > maxHeight && winHeight - rect.bottom > rect.top) {
-                        this.align = this._steps.includes('bottom') ? 'top' : 'bottom';
-                        if (this.align === 'bottom') {
-                            this._steps.push('top');
-                            return undefined;
-                        }
-                    }
-                }
-            } break;
-            case 'bottom': {
-                top = this.intersect ? rect.top : rect.bottom;
-                bottom = top + height;
-                if (this.parent) {
-                    top = top < 0 ? 0 : top;
-                    maxHeight = winHeight - top;
-                    if (height > maxHeight && rect.top > winHeight - rect.bottom) {
-                        this.align = this._steps.includes('top') ? 'bottom' : 'top';
-                        if (this.align === 'top') {
-                            this._steps.push('bottom');
-                            return undefined;
-                        }
-                    }
-                }
-            } break;
+    onResize(e){
+        this._contentRect = e.target?.getBoundingClientRect();
+        if (this.parent){
+            if (this.useParentWidth || !this.anchor.includes(this.align))
+                this.minWidth ??= this._parentRect.width + 'px';
+            if (this.useParentWidth)
+                this.maxWidth ??= this._parentRect.width + 'px';
         }
-
-        top = top < 0 ? 0 : top;
-        left = left < 0 ? 0 : left;
-        if (bottom > winHeight) size.bottom = 0;
-        if (right > winWidth) size.right = 0;
-
-        if (this.parent && this.useParentWidth)
-            minWidth  = maxWidth  = parentWidth;
-
-        minWidth = minWidth > maxWidth ? maxWidth : minWidth;
-        minHeight = minHeight > maxHeight ? maxHeight : minHeight;
-
-        size = { ...size, ...{ maxWidth, minWidth, minHeight, maxHeight } };
-        Object.keys(size).forEach(k => size[k] += 'px');
-        size.top = size.hasOwnProperty('bottom') ? 'unset' : top + 'px';
-        size.left = size.hasOwnProperty('right') ? 'unset' : left + 'px';
-        this._steps = [];
-        return size;
-    },
-    get control() {
-        const ctrl = this.controls?.[0];
-        ctrl?.addEventListener('resize', e => {
-            this.setSize();
-        })
-        return ctrl;
-    },
-    isVisible: false,
-    setSize(e) {
-        this.isVisible = false;
-        if (!this.control) return;
-        if (!this.control) return;
-        this['#_style'] = undefined;
-        this.contentRect = this.control?.getBoundingClientRect();
-
-    },
-    onRender(){
-        if (this.isVisible) return;
-        this.debounce('d-setSize', ()=>{
+        this.debounce('isVisible', ()=>{
             this.isVisible = true;
         }, 100)
-    }
+    },
+    cancel(e){
+        this.fire('cancel')
+    },
+    onSlotChange(e) {
+        this.controls = e.target.assignedNodes();
+    },
+    isVisible: false,
+    $public: {
+        fadein: {
+            $def: false,
+            $attr: true
+        },
+        align: {
+            $def: 'right',
+            $list: ['left', 'right']
+        },
+        drop:{
+            $def: 'down',
+            $list: ['down', 'up']
+        },
+        anchor:{
+            $def: 'left-bottom',
+            $list: ['left-bottom', 'right-bottom', 'right-bottom', "right-top"]
+        },
+        useParentWidth: false,
+        minWidth: undefined,
+        maxWidth: undefined,
+        minHeight: undefined,
+        maxHeight: undefined,
+    },
+    $pdp: {
+        get control() {
+            return this.controls?.[0];
+        },
+        iconSize: 24,
+        title: undefined,
+        icon: '',
+        subIcon: '',
+        parent: null,
+    },
+    _contentRect: null,
 })

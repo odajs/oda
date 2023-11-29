@@ -60,13 +60,13 @@
         "status": "check"
     },
     {
-        "name": "example",
-        "label": "Пример раздела",
-        "status": "ok"
-    },
-    {
         "name": "redundant-reactivity.md",
         "label": "Оптимизация реактивности",
         "status": "check"
+    },
+    {
+        "name": "new-framework",
+        "label": "Новый фреймворк",
+        "status": "ok"
     }
 ]

@@ -4,10 +4,10 @@
 </body>
 
 <script type="module">
-
+    import '../../oda.js';
     import './sierpinski.js';
+
     ODA({is: 'oda-over-tests',
-      imports: '@tools/styles, @oda/button',
       template:`
         <style>
           :host{
@@ -17,19 +17,28 @@
           }
         </style>
         <div class="horizontal">
-            <oda-button allow-toggle toggle-group="1" toggled @tap="size=1000">1000</oda-button>
-            <oda-button allow-toggle  toggle-group="1"  @tap="size=2000">2000</oda-button>
-            <oda-button allow-toggle  toggle-group="1"  @tap="size=4000">4000</oda-button>
-            <oda-button allow-toggle  toggle-group="1"  @tap="size=8000">8000</oda-button>
+            <h3 style="text-align: left; font-weight: bold; margin:0px; padding-right: 16px">Other frameworks</h3>
+            <button @tap="size/=2">-</button>
+            <label style="padding: 4px;">{{size}}</label>
+            <button @tap="size*=2">+</button>
+            <input type="checkbox" ::checked="fun"><label style="padding: 4px;">have fun</label>
         </div>
 
-        <h3 style="text-align: left; font-weight: bold;">Other frameworks</h3>
-        <a ~for="items" :href="item.href" target="_blank">{{item.label}}</a>`,
-        props:{
+        <a ~for="items" :href="$for.item.href" target="_blank">{{$for.item.label}}</a>`,
+        attached(){
+          this.size = 1000;
+        },
+            fun:{
+              $def: false,
+              set(n){
+                  test.fun = n
+              }
+            },
             size: {
-               default: 1000,
+               $def: 0,
                set(n){
-                  this.fire('size-changed', n);
+                 test.size = n
+                  // this.fire('size-changed', n);
                }
             },
             items:[{
@@ -42,10 +51,7 @@
                 href: "https://imba-perf-demo.firebaseapp.com/", label: "Imba"}, {
                 href: "https://radi.js.org/perf-test.html", label: "Radi"}
             ]
-        }
+
     })
 
-    admin.addEventListener('size-changed', (e, d)=>{
-      test.size = e.detail.value
-    })
 </script>

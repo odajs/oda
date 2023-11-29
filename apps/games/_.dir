@@ -1,0 +1,45 @@
+[
+
+    {
+        "name": "oda-doom",
+        "label": "ODA Doom",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "t-rex",
+        "label": "T.Rex Dino",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "minesweeper",
+        "label": "Сапер",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "flips",
+        "label": "Перевертыши",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "tetris",
+        "label": "TETRIS",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "raccoon",
+        "label": "Raccoon",
+        "content": {
+            "link": "index.html"
+        }
+    }
+]

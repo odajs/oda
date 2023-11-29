@@ -4,7 +4,7 @@
 
 Диаграмма жизненного цикла компонента до этого момента имеет следующий вид:
 
-![Диаграмма для хука attached](./learn/images/hook-attached.svg "Хук присоединения attached")
+![Диаграмма для хука attached](./learn/_images/hook-attached.svg "Хук присоединения attached")
 
 В отличие от хука **ready**, здесь:
 
@@ -20,18 +20,18 @@ ODA({
     template: `
         <div>{{text}}</div>
     `,
-    props: {
+    $public: {
         text: {
-            default: "Привет, хук attached!",
-            reflectToAttribute: true
+            $def: "Привет, хук attached!",
+            $attr: true
         }
     },
-    listeners: {
+    $listeners: {
         attached() {
             console.log('Слушатель задан')
         }
     },
-    observers: [
+    $observers: [
         function observer(text) {
             console.log('Обозреватель выполнен');
         }

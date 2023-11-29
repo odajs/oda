@@ -1,0 +1,22 @@
+[
+    {
+        "name": "function-rocks.md",
+        "label": "<b style='color:blue'>Функция ROCKS</b>"
+    },
+    {
+        "name": "list-of-modifiers.md",
+        "label": "<b style='color:blue'>Модификаторы свойств</b>"
+    },
+    {
+        "name": "class-reactivity.md",
+        "label": "<b style='color:blue'>Реактивность классов</b>"
+    },
+    {
+        "name": "property-categories.md",
+        "label": "<b style='color:blue'>Категории свойств</b>"
+    },
+    {
+        "name": "access-modifiers.md",
+        "label": "<b style='color:blue'>Модификаторы доступа</b>"
+    }
+]

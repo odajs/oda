@@ -1,0 +1,30 @@
+[
+    {
+        "name": "bugs",
+        "label": "Жуки",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "fractal-brain",
+        "label": "Fractal brain",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "morpheus",
+        "label": "Morpheus",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
+        "name": "stable-diffusion",
+        "label": "Stable Diffusion",
+        "content": {
+            "link": "index.html"
+        }
+    }
+]

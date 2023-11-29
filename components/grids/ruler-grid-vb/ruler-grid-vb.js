@@ -14,8 +14,8 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
     <oda-ruler-vb ~if="showScale"></oda-ruler-vb>
     <div class="flex horizontal">
         <oda-ruler-vb ~if="showScale" vertical></oda-ruler-vb>
-        <div class="flex vertical" style="overflow: hidden; position: relative;" ref="grid">
-            <svg xmlns="http://www.w3.org/2000/svg" :view-box="vb.x * scale + ' ' + vb.y * scale + ' ' + vb.w * scale + ' ' + vb.h * scale">
+        <div class="flex vertical" style="overflow: hidden; position: relative;" id="grid-div">
+            <svg id="svggrid" xmlns="http://www.w3.org/2000/svg" :view-box="vb.x * scale + ' ' + vb.y * scale + ' ' + vb.w * scale + ' ' + vb.h * scale">
                 <defs>
                     <pattern id="smallGrid" :width="gridSize" :height="gridSize" patternUnits="userSpaceOnUse">
                         <path :d="'M '+ gridSize + ' 0 L 0 0 0 ' + gridSize" fill="none" stroke="gray" :stroke-width="gridStrokeWidth * step / 5" />
@@ -27,69 +27,99 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
                 </defs>
 
                 <rect ~if="showGrid" :x="vb.x * scale" :y="vb.y * scale" :width="vb.w * scale" :height="vb.h * scale" fill="url(#bigGrid)" />
-                <path ~for="el in elements" ~is="el.is" ~props="el.props" ref="elements"></path>
+                <path ~for="elements" ~is="$for.item.is" ~props="$for.item.props"></path>
             </svg>
             <div ~style="{position: 'absolute', transform: 'scale('+(1 / scale)+')', left: -vb.x+'px', top: -vb.y+'px'}">
-                <slot name="content"></slot>
+                <slot @slotchange="_slotchange" name="content"></slot>
             </div>
         </div>
     </div>
     `,
-    get svg() {
-        return this.$('svg');
+    svg: {
+        $pdp: true,
+        get() {
+            return this.$('#svggrid')
+        }
     },
-    get slotLayout() {
-        return this.$('div > slot');
+    blockElements: null,
+    _slotchange(e) {
+        this.blockElements = e.target.assignedNodes();
     },
-    props: {
-        iconSize: 32,
+    $public: {
+        vb: {
+            $pdp: true,
+            $def: { x: 0, y: 0, w: 0, h: 0 }
+        },
         zoomIntensity: 0.2,
         minScale: 0.05,
         maxScale: 20,
         backgroundColor: {
-            default: 'white',
-            editor: '@oda/color-picker[oda-color-picker]',
-            save: true
+            $def: 'white',
+            $editor: '@oda/color-picker[oda-color-picker]',
+            $save: true
         },
         showGrid: {
-            default: true,
-            save: true
+            $pdp: true,
+            $def: true,
+            $save: true
         },
         showScale: {
-            default: false,
-            save: true
+            $pdp: true,
+            $def: false,
+            $save: true
         },
         scale: {
-            default: 1,
-            save: true
-        }
+            $pdp: true,
+            $def: 1,
+            $save: true
+        },
+        get _grid() {
+            return this.$('#grid-div')
+        },
+        step: {
+            $pdp: true,
+            get() {
+                return this.scale < 0.5 ? 1 : this.scale > 5 ? 100 : 10;
+            }
+        },
+        gridSize: {
+            $pdp: true,
+            get() {
+                return this.step;
+            }
+        },
+        bigGridSize: {
+            $pdp: true,
+            get() {
+                return this.gridSize * 10;
+            }
+        },
+        unit: {
+            $pdp: true,
+            get() {
+                if (this.step === 1)
+                    return 'mm';
+                if (this.step === 10)
+                    return 'cm';
+                if (this.step === 100)
+                    return 'm';
+                return 'km';
+            }
+        },
+        gridStrokeWidth: {
+            $pdp: true,
+            $def: 0.5
+        },
+        bigGridStrokeWidth: {
+            $pdp: true,
+            $def: 1
+        },
     },
-    vb: { x: 0, y: 0, w: 0, h: 0 },
-    gridStrokeWidth: 0.5,
-    bigGridStrokeWidth: 1,
     elements: [],
-    get step() {
-        return this.scale < 0.5 ? 1 : this.scale > 5 ? 100 : 10;
-    },
-    get gridSize() {
-        return this.step;
-    },
-    get bigGridSize() {
-        return this.gridSize * 10;
-    },
-    get unit() {
-        if (this.step === 1)
-            return 'mm';
-        if (this.step === 10)
-            return 'cm';
-        if (this.step === 100)
-            return 'm';
-        return 'km';
-    },
     attached() {
-        this.reset();
+        // this.reset();
     },
-    listeners: {
+    $listeners: {
         resize(e) {
             this.vb.w = this.svg.clientWidth;
             this.vb.h = this.svg.clientHeight;
@@ -139,7 +169,7 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
         this.vb.h += h;
     },
     reset() {
-        if(this.slotLayout.assignedNodes().length) this.focusOnLayout();
+        if(this.blockElements?.length) this.focusOnLayout();
         else {
             this.scale = 1;
             this.vb.x = 0;
@@ -149,9 +179,9 @@ ODA({ is: 'oda-ruler-grid-vb', template: /*template*/`
         this.vb.h = this.svg.clientHeight;
     },
     focusOnLayout() {
-        const slot = this.slotLayout;
+        // const slot = this.slotLayout;
         const layoutSize = {left: 0, top: 0, right: 0, bottom: 0};
-        slot.assignedNodes().forEach(i => {
+        this.blockElements.forEach(i => {
             if(i.offsetLeft < layoutSize.left) layoutSize.left = i.offsetLeft;
             if(i.offsetTop < layoutSize.top) layoutSize.top = i.offsetTop;
             if(i.offsetLeft > layoutSize.right) layoutSize.right = i.offsetLeft + i.offsetWidth;
@@ -193,10 +223,10 @@ ODA({ is: 'oda-ruler-vb', template: /*template*/`
         <rect ~if="showGrid" :x="vertical ? 0 : vb.x * scale" :y="!vertical ? 0 : vb.y * scale" :width="(vertical ? 24 : vb.w) * scale" :height="(vertical ? vb.h : 24) * scale" fill="url(#rullerBigLines)" />
     </svg>
     `,
-    props: {
+    $public: {
         vertical: {
-            type: Boolean,
-            reflectToAttribute: true
+            $type: Boolean,
+            $attr: true
         }
     }
 });

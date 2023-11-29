@@ -24,7 +24,7 @@ ODA({
         <div>Время из геттера: {{getterTime}}</div>
         <div>Время из метода: {{methodTime()}}</div>
     `,
-    props: {
+    $public: {
         change: "Измени меня",
         getterTime: {
             get() {
@@ -58,7 +58,7 @@ ODA({
         <div>Время из геттера: {{getterTime}}</div>
         <div>Время из метода: {{methodTime()}}</div>
     `,
-    props: {
+    $public: {
         change: "Измени меня",
         getterTime: {
             get() {
@@ -88,7 +88,7 @@ ODA({
         <input ::value="change.a">
         <div>Время: {{getterTime}}</div>
     `,
-    props: {
+    $public: {
         change: {a: "Измени свойство объекта"},
         getterTime: {
             get() {
@@ -114,7 +114,7 @@ ODA({
         <input ::value="change[0]">
         <div>Время: {{getterTime}}</div>
     `,
-    props: {
+    $public: {
         change: ["Измени элемент массива"],
         getterTime: {
             get() {

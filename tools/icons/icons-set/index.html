@@ -1,0 +1,18 @@
+<meta charset="utf-8">
+
+<oda-tester>
+    <oda-icons-set id="set"></oda-icons-set>
+</oda-tester>
+
+<script type="module">
+    import "../../../oda.js";
+    import "./icons-set.js";
+    setTimeout(() => {
+        set.icons = [
+            { name: 'magnet', icon: 'tools:magnet' },
+            { name: 'magnify', icon: 'tools:magnify' },
+            { name: 'scissors', icon: 'tools:scissors' },
+            { name: 'settings', icon: 'tools:settings' },
+        ]
+    }, 300);
+</script>

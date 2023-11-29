@@ -1,24 +1,26 @@
-ODA({is: 'oda-color-line', template: `
-    <style>
-        :host {
-            display: flex;
-            flex-direction: column;
-        }
+ODA({ is: 'oda-color-line',
+    template: `
+        <style>
+            :host {
+                display: flex;
+                flex-direction: column;
+            }
 
-        div {
-            margin: 1px;
-            cursor: pointer;
-            @apply --shadow;
-        }
+            div {
+                margin: 1px;
+                cursor: pointer;
+                @apply --shadow;
+            }
 
-        div:hover {
-            outline: 1px solid darkred;
-            transform: scale(1.5);
-        }
-    </style>
-    <div ~for="light in lightness" ~style="_getStyle(size, light, hue, saturation)" @tap="_tap"></div> `,
-    props: {
-        size:  Number,
+            div:hover {
+                outline: 1px solid darkred;
+                transform: scale(1.5);
+            }
+        </style>
+        <div ~for="lightness" ~style="_getStyle(size, $for.item, hue, saturation)" @tap="_tap"></div>
+    `,
+    $public: {
+        size: Number,
         hue: Number,
         saturation: Number,
         lightness: Array
@@ -29,4 +31,4 @@ ODA({is: 'oda-color-line', template: `
     _tap(e, d) {
         this.fire('color-tap', e.target.style.backgroundColor);
     }
-});
+})
