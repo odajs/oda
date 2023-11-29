@@ -15,13 +15,7 @@ ODA({
             const template = await readFileIntoArrayBuffer(src);
             report = await createReport({
                 template,
-                data: {
-                    project: {
-                        name: 'docx-templates',
-                        details: { year: '2016' },
-                        people: [{ name: 'John', since: 2015 }, { name: 'Robert', since: 2010 }],
-                    },
-                },
+                data: this.data,
                 cmdDelimiter: ['{', '}']
             })
         }
