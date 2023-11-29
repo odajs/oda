@@ -1977,6 +1977,7 @@ in the <${host.localName}>`);
     DataTransfer.prototype.checkData = function (type){
         return getData.call(this,  type);
     }
+
     window.ODA.IsReady = true;
 }
 
