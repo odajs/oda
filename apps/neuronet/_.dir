@@ -14,13 +14,6 @@
         }
     },
     {
-        "name": "morpheus",
-        "label": "Morpheus",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
         "name": "stable-diffusion",
         "label": "Stable Diffusion",
         "content": {
