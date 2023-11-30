@@ -43,7 +43,8 @@
                         <div>{{$for.key}}</div>
                         <button @tap="showLinks" :token="$for.key" style="width: 50%;">{{Object.keys(model.tokens[$for.key].map).length}}</button>
                     </div>
-                    <div border class="flex" ~style="getBackGradient($for.item.emb[0])"></div>
+                    <div border class="flex" ~style="getBackGradient($for.item.emb)"></div>
+                    <div style="width: 50px; text-align: right; padding: 4px 8px;">{{Math.round($for.item.error * 1000)/10}}%</div>
               </div>
           </div>
           <div class="horizontal header bold" slot="footer">
@@ -53,8 +54,9 @@
                     font-size: small;
                 }
               </style>
-              <div>TOKENS: {{Object.keys(model.tokens).length.toLocaleString()}}</div>
+              <div>TOKENS: {{size.toLocaleString()}}</div>
               <div>TRAINED: {{model.count.toLocaleString()}}</div>
+              <div>ERROR: {{Math.round(error * 1000)/10}}%</div>
           </div>
         `,
         async loadFile(e){
@@ -82,6 +84,18 @@
                 reader.readAsText(file);
             }
         },
+        get size(){
+            return Object.keys(this.tokens).length;
+        },
+        get error(){
+            if (!this.size)
+                return 1;
+            const sum = Object.values(this.tokens).reduce((res,i)=>{
+                res += i.error;
+                return res;
+            }, 0);
+            return sum/this.size;
+        },
         async showLinks(e){
             const token = e.target.getAttribute('token')
             const {result} = await ODA.showDropdown('oda-token-links', {token}, {title: token, parent: e.target, align: 'right', anchor: 'top-right'});
@@ -95,9 +109,9 @@
             const join = [];
             for (let t = 0; t < text.length; t++){
                 const token = text.substr(t, this.winSize);
-                if (!token) continue;
+                if (token.length<2) continue;
                 const next =  this.model.tokens[token];
-                const emb = next.emb[0];
+                const emb = next.emb;
                 for(let i = 0; i < emb.length; i++){
                     join[i] ??= emb[i];
                     join[i] = (join[i] + emb[i]) / 2;
@@ -139,19 +153,27 @@
             return cosSimilar(t1, t2);
         },
         set corpus(n){
-            scan(n);
-            this.$render();
+            this.scan(n);
+        },
+        scan(word){
+            scan(word);
+            this.predicate = undefined;
+            this.size = undefined;
+            this.error = undefined;
+            this.similar = undefined;
         },
         join(word){
-            scan(word, .1);
+            this.scan(word);
             const result = [];
             for (let t = 0; t < word.length; t++){
                 const token = word.substr(t, this.winSize);
-                if (!token) continue;
-                const emb = this.model.tokens[token].emb[0];
+                if (token.length<2) continue;
+                const emb = this.model.tokens[token].emb;
                 for(let i = 0; i < emb.length; i++){
-                    result[i] ??= emb[i];
-                    result[i] = (result[i] + emb[i]) / 2;
+                    if (result[i] === undefined)
+                        result[i] = emb[i];
+                    else
+                        result[i] = (result[i] + emb[i])/2;
                 }
             }
             return result;
@@ -159,8 +181,7 @@
         set train(n){
             if (n){
                 this._interval = setInterval(()=>{
-                    scan(this.corpus);
-                    this.predicate = undefined;
+                    this.scan(this.corpus);
                 },10)
             }
             else{
@@ -216,11 +237,8 @@
         count: 0,
         winSize: 2,
         negSize,
-        dimension: 32,
+        dimension: 4,
         tokens: Object.create(null),
-        // embedding: Object.create(null),
-        // context: Object.create(null),
-        // tracer: Object.create(null),
     }
     gpt.model = model;
     let tokenList;
@@ -236,87 +254,114 @@
         tokenList ??= Object.keys(model.tokens);
         for (let i = 0; i < text.length; i++){
             const token = text.substr(i, winSize);
-            tokenItem = model.tokens[token];
-            if (!tokenItem){
-                tokenItem = model.tokens[token] = Object.create(null);
-                tokenItem.map = Object.create(null);
-                tokenItem.emb = [array.map(i=>(Math.random() - .5)), array.map(i=>(0))];
-                tokenItem.cnt = [array.map(i=>(Math.random() - .5)), array.map(i=>(0))];
-                tokenItem.net = [array.map(i => array1.map(i=>(Math.random() - .5))), array.map(i => array1.map(i=>(Math.random() - .5))), array.map(i=>(0)), array.map(i=>(0))];
-                tokenList = Object.keys(model.tokens);
-            }
-            if (prevToken){
-                let prevTokenItem = model.tokens[prevToken];
-                prevTokenItem.map[token] ??= 0;
-                prevTokenItem.map[token]++;
-                const trainData = [{cur: prevTokenItem, next: tokenItem, target: 1, sum: 0}]
-                for (let n = 0; n<negSize; n++){ // поиск негативных токенов
-                    if (negPos >= tokenList.length)
-                        negPos = 0;
-                    while(++negPos < tokenList.length){
-                        const neg = tokenList[negPos];
-                        if (!prevTokenItem.map[neg]){
-                            trainData.push({next: model.tokens[neg], target: 0, sum: 0});
-                            break;
+            if (token.length === 2){
+                tokenItem = model.tokens[token];
+                if (!tokenItem){
+                    tokenItem = model.tokens[token] = Object.create(null);
+                    tokenItem.error = 1;
+                    tokenItem.map = Object.create(null);
+                    tokenItem.emb = array.map(i=>(Math.random() - .5));
+                    tokenItem.cnt = array.map(i=>(Math.random() - .5));
+                    tokenItem.net = [array1.map(i => array.map(i=>(Math.random() - .5))), array.map(i => array1.map(i=>(Math.random() - .5)))];
+                    tokenList = Object.keys(model.tokens);
+                }
+                if (prevToken?.length){
+                    let prevTokenItem = model.tokens[prevToken];
+                    prevTokenItem.map[token] ??= 0;
+                    prevTokenItem.map[token]++;
+                    const trainData = [{cur: prevTokenItem, next: tokenItem, target: 1, sum: 0}]
+                    for (let n = 0; n<negSize; n++){ // поиск негативных токенов
+                        if (negPos >= tokenList.length)
+                            negPos = 0;
+                        while(++negPos < tokenList.length){
+                            const neg = tokenList[negPos];
+                            if (!prevTokenItem.map[neg]){
+                                trainData.push({next: model.tokens[neg], target: 0, sum: 0});
+                                break;
+                            }
                         }
                     }
+                    train(trainData, predPredicate);
                 }
-                train(trainData);
             }
             prevToken = token;
         }
         Object.assign(model, {winSize, dimension, negPos});
     }
-    function train(data){
+    function train(data, pp){
         if (data.length < negSize + 1)
             return;
         model.count++;
-        const emb = data[0].cur.emb[0];
-        const emb1 = data[0].cur.emb[1];
+        let emb = data[0].cur.emb;
         for (let d of data){
-            d.cnt ??= d.next.cnt[0];
-            d.cnt1 ??= d.next.cnt[1];
+            d.cnt ??= d.next.cnt;
         }
         for (let i = 0; i <emb.length; i++) {
-            const embVal = emb[i];
+            const e = emb[i];
             for (let d of data){
-                d.sum += d.cnt[i] * embVal;
+                d.sum += d.cnt[i] * e;
             }
         }
+        let error = 1;
         for (let d of data){
             d.predicate = 1 / (1 + Math.exp(-d.sum));
             d.loss = d.target - d.predicate;
-            d.sigma = d.loss * d.predicate * (1 - d.predicate);
+            error = (error + Math.abs(d.loss))/2;
+            d.sigma = d.loss * d.predicate * (1 - d.predicate)
         }
+
         for (let i = 0; i <emb.length; i++) {
+            const e = emb[i];
             let sum = 0;
-            const embVal = emb[i];
             for (let d of data){
-                const cntVal = d.cnt[i];
-                const delta =  cntVal * d.sigma;
-                d.cnt1[i] = (d.cnt1[i] / 2) + delta;
-                d.cnt[i] += d.cnt1[i];
-                sum += delta;
+                const c = d.cnt[i];
+                sum += c * d.sigma;
+                d.cnt[i] +=  d.sigma * e * .1;
             }
-            const delta =  embVal * sum;
-            emb1[i] = (emb1[i] / 2) + delta;
-            emb[i] += emb1[i];
+            emb[i] += sum *  .1;
+            pp[i] ??= emb[i];
+            pp[i] = (pp[i] + emb[i])/2;
+
         }
-        // const tr = data[0].tr;
-        // const next = data[0].next;
-        // for (let i = 0; i <emb.length; i++) {
-        //     let sum = 0;
-        //     const embVal = emb[i];
-        //     for (let i = 0; i <tr.length; i++) {
-        //         sum += embVal * tr[i];
-        //     }
-        //     const predicate = 1 / (1 + Math.exp(-sum)) - .5;
-        //     const loss = next[i] - predicate;
-        //     const correct =  loss * predicate * (1 - predicate) * embVal;
-        //     for (let i = 0; i <tr.length; i++) {
-        //         tr[i] += correct * plastic * tr[i];
-        //     }
-        // }
+        data[0].cur.error = error;
+
+        const net = data[0].cur.net;
+        let layer1 = net[0];
+        const res1 = [];
+        for (let l = 0; l < layer1.length; l++){
+            const ww = layer1[l];
+            let sum = 0;
+            for (let i = 0; i <emb.length; i++){
+                sum += emb[i] * ww[i];
+            }
+            res1[l] = 1/(1 + Math.exp(-sum));
+        }
+        let layer2 = net[1];
+        const loss = [];
+        const res2 = [];
+        emb = data[0].next.emb;
+        for (let l = 0; l < layer2.length; l++){
+            const ww = layer2[l];
+            let sum = 0;
+            for (let i = 0; i <res1.length; i++){
+                sum += res1[i] * ww[i];
+            }
+            res2[l] = sum;
+            loss[l] = sum - emb[l];
+        }
+
+        for (let l = 0; l < layer2.length; l++){
+            const ww = layer2[l];
+            let sum = 0;
+            const err = loss[l];
+            for (let i = 0; i <ww.length; i++){
+                sum += err * ww[i];
+            }
+            for (let i = 0; i <ww.length; i++){
+                ww[i] += sum  * res1[i] * .1;
+            }
+        }
+
     }
     function cosSimilar(A, B) { //На входе 2 вектора
         if (!A || !B) return 0;
