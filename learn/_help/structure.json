@@ -1119,6 +1119,12 @@
                         },
                         {
                             "label": {
+                                "ru": "<b style='color:blue'>$pdp</b>: Модификатор доступности свойства"
+                            },
+                            "name": "rocks-framework-$pdp-modifier.md"
+                        },
+                        {
+                            "label": {
                                 "ru": "<b style='color:blue'>$final</b>: Модификатор запрета переопределения"
                             },
                             "name": "rocks-framework-$final-modifier.md"

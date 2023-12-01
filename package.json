@@ -23,7 +23,7 @@
     "applications"
   ],
   "files": [ 
-    "LICENSE", "oda.js", "README.md", "rocks.js", "aliases.js",  "fastdom.js",
+    "oda.js",  "rocks.js", "LICENSE", "README.md", "path.json",
     "components/*", "icons/*", "tools/*"
   ],
   "license": "MIT",
@@ -37,5 +37,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "url": "https://odajs.org",
-  "version": "0.1.80367.2"
+  "version": "0.1.72616"
 } 

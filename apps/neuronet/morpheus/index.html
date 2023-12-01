@@ -1,0 +1,239 @@
+<meta charset="UTF-8">
+<title>Morpheus GPT</title>
+<oda-gpt id="gpt"></oda-gpt>
+<script type="module">
+    import '../../../oda.js';
+    import '../../../tools/containers/containers.js';
+    import * as GPT from './morpheus.js';
+    ODA({is: 'oda-gpt', imports: '@oda/app-layout', extends: 'oda-app-layout',
+        template: `
+
+          <div class="flex vertical" slot="left-panel" opened>
+                <style>
+                    fieldset{
+                        margin: 8px;
+                    }
+                </style>
+              <div class="horizontal dark" style="padding:4px;">
+<!--                  <oda-button icon="icons:note-add" :icon-size @tap="create"></oda-button>-->
+<!--                  <oda-button icon="icons:file-upload" :icon-size @tap="load"></oda-button>-->
+
+                  <oda-button class="dark" icon="icons:add" @tap="loadFile">Add corpus</oda-button>
+                  <div flex></div>
+                  <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
+                  <oda-button :disabled="!corpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
+              </div>
+              <fieldset class="vertical"  style="border-radius: 4px; min-width: 0px;">
+                  <legend bold>SIMILAR:{{Math.round(similar * 100)}}%</legend>
+                  word 1:
+                  <div horizontal>
+                      <input ::value="w1">
+                      <div border flex style="height: 20px;" ~style="grad1"></div>
+                  </div>
+                  word 2:
+                  <div horizontal>
+                      <input ::value="w2">
+                      <div border flex style="height: 20px;" ~style="grad2"></div>
+                  </div>
+              </fieldset>
+              <fieldset class="flex vertical"  style="border-radius: 4px; min-width: 0px;">
+                  <legend bold>PREDICATE</legend>
+                  text:
+                  <textarea ::value="text"></textarea>
+                  <div border style="height: 20px;" ~style="grad3"></div>
+                  predicate:
+                  <textarea flex>{{predicate}}</textarea>
+              </fieldset>
+          </div>
+          <div slot="main" class="flex vertical" style="overflow-y: auto">
+              <div dark border ~for="tokens" class="horizontal" >
+                    <div class="horizontal" style="width: 80px; text-align: left; padding: 4px 8px; justify-content: space-between">
+                        <div>{{$for.item.id}}</div>
+                        <button @tap="showLinks" :token="$for.key" style="width: 50%;">{{Object.keys(model.tokens[$for.key].next).length}}</button>
+                    </div>
+                    <div border class="flex" ~style="getBackGradient($for.item.emb)"></div>
+                    <div style="width: 50px; text-align: right; padding: 4px 8px;">{{Math.round($for.item.error * 1000)/10}}%</div>
+              </div>
+          </div>
+          <div class="horizontal header bold" slot="footer">
+              <style>
+                div{
+                    padding: 4px;
+                    font-size: small;
+                }
+              </style>
+              <div>TOKENS: {{size.toLocaleString()}}</div>
+              <div>TRAINED: {{model?.trainCount.toLocaleString()}}</div>
+              <div>ERROR: {{Math.round(error * 1000)/10}}%</div>
+              <div class="flex"></div>
+              <div><progress progress max="100" :value="progress"></progress></div>
+          </div>
+        `,
+        get progress(){
+            return this.model.progress;
+        },
+        async loadFile(e){
+            const opts = {
+                types: [{
+                    description: 'text file',
+                    accept: {'text/plain': ['.txt']},
+                },
+                {
+                    description: 'JS file',
+                    accept: {'text/javascript': ['.js'] },
+                }
+            ],
+                excludeAcceptAllOption: true,
+                multiple: true
+            };
+
+            const files = await window.showOpenFilePicker(opts);
+            for (let fileHandle of files) {
+                const file = await fileHandle.getFile();
+                const reader = new FileReader();
+                reader.onload = (e) =>{
+                    this.corpus = e.target.result;
+                }
+                reader.readAsText(file);
+            }
+        },
+        get size(){
+            return Object.keys(this.tokens).length;
+        },
+        get error(){
+            if (!this.size)
+                return 1;
+            this.progress;
+            const sum = this.tokens.reduce((res,i)=>{
+                res += i.error;
+                return res;
+            }, 0);
+            return sum/this.size;
+        },
+        async showLinks(e){
+            const token = e.target.getAttribute('token')
+            const {result} = await ODA.showDropdown('oda-token-links', {token, model: this.model}, {title: token, parent: e.target, align: 'right', anchor: 'top-right'});
+        },
+        getBackGradient(vector){
+            return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
+        },
+        get predicate(){
+            if (!this.size) return;
+            let text = this.text;
+            const result = Object.create(null);
+            const join = [];
+            for (let t = 0; t < text.length; t++){
+                const token = text.substr(t, this.scanWindow);
+                if (token.length<2) continue;
+                const next =  this.model.tokens[token];
+                const emb = next.emb;
+                for(let i = 0; i < emb.length; i++){
+                    join[i] ??= emb[i];
+                    join[i] = (join[i] + emb[i]) / 2;
+                }
+                result[token] = next.map;
+            }
+            return JSON.stringify(result, null, 2);
+        },
+        text: {
+            $def: '',
+            set(n){
+                this.scan(n, .1);
+            },
+            $save: true,
+        },
+        get grad1(){
+            return this.getBackGradient(this.model.join(this.w1));
+        },
+        get grad2(){
+            return this.getBackGradient(this.model.join(this.w2));
+        },
+        get grad3(){
+            return this.getBackGradient(this.model.join(this.text));
+        },
+        w1:{
+            $def: '',
+            $save: true,
+        },
+        w2:{
+            $def: '',
+            $save: true,
+        },
+        get similar(){
+            return this.model.similarWords(this.w1, this.w2);
+        },
+        set corpus(n){
+            this.scan(n);
+        },
+        scan(word){
+            return this.model.scan(word).then(res=>{
+                this.tokens = undefined;
+            })
+        },
+        train:{
+            async set (n){
+                if (n){
+                    const tr = ()=>{
+                        return new Promise(async (resolve)=>{
+                            await this.scan(this.corpus);
+                            if (!this.train){
+                                resolve();
+                            }
+                            else{
+                                this.async(async ()=>{
+                                    await tr();
+                                    resolve();
+                                }, 10)
+                            }
+                        })
+                    }
+                    await tr();
+                }
+            }
+        },
+        getColors(items){
+            const getColor = (val)=>{
+                return 360 * val;
+            }
+            return items?.map((val, idx, items)=>{
+                return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
+            }).join(', ');
+        },
+        get tokens(){
+            return this.model.tokens;
+        },
+        get scanWindow(){
+            return this.model.scanWindow;
+        },
+        get model(){
+            return new GPT.gptModel();
+        }
+    })
+    ODA({is: 'oda-token-links',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                }
+                div{
+                    padding: 4px 8px;
+                    border-bottom: 1px solid silver;
+                }
+                div:hover{
+                    @apply --active;
+                }
+            </style>
+            <div @tap="result = $for.key" ~for="links" class="horizontal">
+                <span class="flex">{{$for.key}}</span>
+                <span>{{$for.item}}</span>
+            </div>
+        `,
+        token: '',
+        get links(){
+            return this.model.tokens[this.token].next;
+        },
+        set result(n){
+            this.fire('ok', n);
+        }
+    })
+</script>
