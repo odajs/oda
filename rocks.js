@@ -703,7 +703,7 @@ in the <${host.localName}>`;
     }
     function toDate(v){return new Date(v)}
     function toString(v){return v?.toString() || ''}
-    function toNumber(v){return (typeof v === 'string' ? parseFloat(v) : Number(v)) || 0}
+    function toNumber(v){return (v !== undefined)?Number(v):undefined}
     function toBigInt(v) {
         if( typeof v === 'bigint' )
             return v;
