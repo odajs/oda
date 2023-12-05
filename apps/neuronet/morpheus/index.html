@@ -42,7 +42,9 @@
               <fieldset class="flex vertical"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>PREDICATE</legend>
                   text:
-                  <textarea ::value="text"></textarea>
+                  <div class="horizontal">
+                      <textarea class="flex" ::value="text"></textarea><oda-button class="no-flex"  icon="box:i-right-arrow" :icon-size @tap="prompt">prompt</oda-button>
+                  </div>
                   <div border style="height: 20px;" ~style="grad3"></div>
                   predicate:
                   <textarea flex>{{predicate}}</textarea>
@@ -75,6 +77,9 @@
               <div><progress ~show="progress" max="100" :value="progress"></progress></div>
           </div>
         `,
+        async prompt(){
+            this.predicate = await this.model.prompt(this.text);
+        },
         get progress(){
             return this.model.progress;
         },
@@ -133,18 +138,19 @@
         getBackGradient(vector){
             return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
         },
-        get predicate(){
-            this.model?.trainCount;
-            let text = this.text;
-            const result = Object.create(null);
-            let count = 0;
-            for (let t = 0; t < text.length - 1; t++){
-                const token = text.substr(t, 2);
-                const next =  this.model.getTokenItem(token);
-                result[token] = next.next;
-            }
-            return JSON.stringify(result, null, 2);
-        },
+        predicate: '',
+        // get predicate(){
+        //     this.model?.trainCount;
+        //     let text = this.text;
+        //     const result = Object.create(null);
+        //     let count = 0;
+        //     for (let t = 0; t < text.length - 1; t++){
+        //         const token = text.substr(t, 2);
+        //         const next =  this.model.getTokenItem(token);
+        //         result[token] = next.next;
+        //     }
+        //     return JSON.stringify(result, null, 2);
+        // },
         text: {
             $def: '',
             set(n){

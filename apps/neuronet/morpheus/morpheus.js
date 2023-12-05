@@ -2,12 +2,44 @@ import './gpu-browser.min.js';
 const gpu = new GPU.GPU();
 
 export class gptModel extends ROCKS({
+    async prompt(text){
+        let {input, current} = await this.scan(text);
+        const step = (token) => {
+            let item = this.getTokenItem(token);
+            let next = Object.keys(item.next).sort((a,b)=>{
+                return item.next[a]>item.next[b]?-1:1;
+            })
+            if(next.length === 0)
+                return token;
+            if(next.length > 1) {
+                const predict = this.forward(item.layers, input);
+                next = next.map(t=>{
+                    const nextItem = this.getTokenItem(t);
+                    const s = cosSimilar(predict, nextItem.emb) * (item.next[t] / item.count);
+                    return {t, s};
+                });
+                next = next.sort((a,b)=>{
+                    return a.s>b.s?-1:1;
+                })
+                next = next.map(i=>i.t);
+
+            }
+            next = next[0];
+            item = this.getTokenItem(next);
+            for (let i = 0; i <item.emb.length; i++) {
+                input[i] = input[i] * .9 + item.emb[i];
+            }
+            return token + step(next);
+        }
+        return step(current);
+
+    },
     $public:{
         tokens: {
             $def: [],
             $freeze: true,
         },
-        vectorSize: 16,
+        vectorSize: 32,
         negativeSize: 5,
         trainCount: 0,
         trainKoef: .1
@@ -119,7 +151,7 @@ export class gptModel extends ROCKS({
                     });
                     this.train(trainData, input);
                     this.progress = 0;
-                    resolve();
+                    resolve({input, current});
                 }
             }
             scanner();
@@ -130,6 +162,7 @@ export class gptModel extends ROCKS({
         this.trainCount++;
         const main = data[0];
         let emb = main.curItem.emb;
+        let eVal;
         for (let d of data){
             const cnt = d.nextItem.cnt;
             let sum = 0;
@@ -140,36 +173,12 @@ export class gptModel extends ROCKS({
             const loss = d.t - pred;
             const correct = loss * pred * (1 - pred) * this.trainKoef;
             for (let i = 0; i <emb.length; i++) {
+                eVal = emb[i];
                 emb[i] += correct * cnt[i];
-                cnt[i] += correct * emb[i];
+                cnt[i] += correct * eVal;
             }
             main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
         }
-        // const cnts = data.map(i=>{
-        //     return i.nextItem.cnt;
-        // })
-        // const func = this.fns[cnts.length] ??= gpu.createKernel(function(emb, cnts, size) {
-        //     let sum = 0;
-        //     for(let i = 0; i<size; i++)
-        //         sum += cnts[this.thread.x][i] * emb[i];
-        //     // }
-        //     return sum;
-        // }).setOutput([cnts.length]);
-        // const res = func(emb, cnts, this.vectorSize);
-        // let eVal;
-        // for(let c = 0; c<cnts.length; c++){
-        //     const cnt = cnts[c];
-        //     const pred = 1 / (1 + Math.exp(-res[c]));
-        //     const loss = data[c].t - pred;
-        //     const correct = loss * pred * (1 - pred) * this.trainKoef;
-        //     for (let i = 0; i <emb.length; i++) {
-        //         eVal = emb[i];
-        //         emb[i] += correct * cnt[i];
-        //         cnt[i] += correct * eVal;
-        //     }
-        //     main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
-        // }
-
         if (data.length<2)
             return;
 
@@ -179,11 +188,11 @@ export class gptModel extends ROCKS({
 
         let error = 0;
         const layers = main.curItem.layers;
-        const outputs = this.predicate(layers, input);
+        const outputs = this.forward(layers, input);
         const targets = main.nextItem.emb;
         let neurons = layers[layers.length-1][NEURONS];
         for (let i = 0; i<targets.length; i++){
-            const x = outputs[i] ;
+            const x = 1 / (1 + Math.exp(-outputs[i]));
             const y =  1 / (1 + Math.exp(-targets[i]));
             const loss = (y - x);
             error += Math.abs(loss);
@@ -193,7 +202,7 @@ export class gptModel extends ROCKS({
         main.curItem.predicateError = (main.curItem.predicateError + error) / 2;
         this.back(layers, input);
     },
-    predicate(layers, inputs){
+    forward(layers, inputs){
         let outputs;
         for(let l = 0; l<layers.length; l++){
             outputs = [];
@@ -213,7 +222,7 @@ export class gptModel extends ROCKS({
                 const x = outputs[out];
                 neurons[out] = inputs[out] = 1 / (1 + Math.exp(-x));
             }
-            outputs = neurons;
+            // outputs = neurons;
         }
         return outputs;
     },
