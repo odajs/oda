@@ -23,7 +23,7 @@
                   <oda-button :disabled="!corpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
               </div>
               <fieldset class="horizontal"  style="border-radius: 4px; min-width: 0px;">
-                  <legend bold>SIMILAR:{{Math.round(simRes * 100)}}%</legend>
+                  <legend bold>SIMILAR:{{Math.round(simRes * 10000)/100}}%</legend>
                   <div class="vertical flex">
 
                       word 1:
@@ -50,8 +50,9 @@
           </div>
           <div slot="main" class="flex vertical" style="overflow-y: auto">
               <div dark border ~for="tokens" class="horizontal" >
-                    <div class="horizontal" style="width: 80px; text-align: left; padding: 4px 8px; justify-content: space-between">
+                    <div class="horizontal" style="width: 120px; text-align: left; padding: 4px 8px; justify-content: space-between">
                         <span>{{$for.item.id}}</span>
+                        <span class="flex" style="text-align: right; padding: 4px; font-size: xx-small;"> {{$for.item.count.toLocaleString()}}</span>
                         <button @tap="showLinks" :token="$for.item.id" style="width: 50%;">{{Object.keys(model.tokens[$for.key].next).length}}</button>
                     </div>
                     <div border class="flex" ~style="getBackGradient($for.item.emb)"></div>
@@ -133,51 +134,43 @@
             return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
         },
         get predicate(){
-            if (!this.size) return;
+            this.model?.trainCount;
             let text = this.text;
             const result = Object.create(null);
-            const join = this.model.array.map(i=>0);
             let count = 0;
-            for (let t = 0; t < text.length; t++){
-                const token = text.substr(t, this.scanWindow);
-                if (token.length<2) continue;
-                const next =  this.model.tokens.find(i=>i.id === token);
-                if(!next) continue;
-                const emb = next.emb;
-                for(let i = 0; i < emb.length; i++){
-                    join[i] += emb[i];
-                }
-                count++;
+            for (let t = 0; t < text.length - 1; t++){
+                const token = text.substr(t, 2);
+                const next =  this.model.getTokenItem(token);
                 result[token] = next.next;
-            }
-            for(let i = 0; i < join.length; i++){
-                join[i] /= count;
             }
             return JSON.stringify(result, null, 2);
         },
         text: {
             $def: '',
             set(n){
-                if (n)
-                this.scan(n);
+                // if (n)
+                    // this.scan(n);
             },
             $save: true,
         },
         grad1:{
             $type: Object,
             get(){
+                this.model?.trainCount;
                 return this.getBackGradient(this.model.join(this.w1));
             }
         },
         grad2: {
             $type: Object,
             get() {
+                this.model?.trainCount;
                 return this.getBackGradient(this.model.join(this.w2));
             }
         },
         grad3: {
             $type: Object,
             get(){
+                this.model?.trainCount;
                 return this.getBackGradient(this.model.join(this.text));
             }
         },

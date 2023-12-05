@@ -1,3 +1,9 @@
+import './gpu-browser.min.js';
+const gpu = new GPU.GPU();
+const settings = {output: [100]};
+const exampleKernel = gpu.createKernel(function() {
+
+}, settings);
 export class gptModel extends ROCKS({
     $public:{
         tokens: {
@@ -5,13 +11,9 @@ export class gptModel extends ROCKS({
             $freeze: true,
         },
         vectorSize: 16,
-        negativeSize: 2,
-        scanWindow: 2,
+        negativeSize: 5,
         trainCount: 0,
-        trainKoef: .33,
-        reLuKoef: .01,
-        updateStep: 20000,
-        quant: 1000
+        trainKoef: .1
     },
     get size(){
         return this.tokens.length;
@@ -23,22 +25,14 @@ export class gptModel extends ROCKS({
         return cosSimilar(t1, t2);
     },
     join(word){
-        const result = [];
-        let count = 0;
-        for (let t = 0; t < word.length; t++){
-            const token = word.substr(t, this.scanWindow);
-            if (token.length<2) continue;
-            const emb = tokenMap[token]?.emb;
+        const result = this.array.map(i=>0.0);
+        for (let t = 0; t < word.length - 1; t++){
+            const token = word.substr(t, 2);
+            const emb = this.getTokenItem(token).emb;
             if (emb){
                 for(let i = 0; i < emb.length; i++){
-                    result[i] = (result[i] || 0) + emb[i];
+                    result[i] = result[i] * .9 + emb[i];
                 }
-                count++;
-            }
-        }
-        if (count){
-            for(let i = 0; i < result.length; i++){
-                result[i] /= count;
             }
         }
         return result;
@@ -46,7 +40,7 @@ export class gptModel extends ROCKS({
     get array(){
         return [...Array(this.vectorSize)];
     },
-    get hArray(){
+    get halfArray(){
         return  [...Array(this.vectorSize/2)];
     },
     initWeight(){
@@ -57,43 +51,55 @@ export class gptModel extends ROCKS({
         if (!item){
             item = tokenMap[token] = Object.create(null);
             item.id = token;
-
-            item.emb = this.array.map(i=>this.initWeiht());
-            item.cnt = this.array.map(i=>this.initWeiht());
+            item.emb = this.array.map(i=>this.initWeight());
+            item.cnt = this.array.map(i=>this.initWeight());
             item.layers = [this.array.map(i=>{
-                return this.hArray.map(i=>this.initWeiht());
-            }), this.hArray.map(i=>{
-                return this.array.map(i=>this.initWeiht());
+                return this.halfArray.map(i=>this.initWeight());
+            }), this.halfArray.map(i=>{
+                return this.array.map(i=>this.initWeight());
             })]
             item.next = Object.create(null);
             item.tokenError = 1;
+            item.count = 0;
             item.predicateError = 1;
             this.tokens.push(item);
             this.size = undefined;
-            item.emb[PREV] ??= this.array.map(i=>0);
-            item.cnt[PREV] ??= this.array.map(i=>0);
         }
         return item;
+    },
+    getNegatives(token){
+        const negatives = [];
+        const curItem = this.getTokenItem(token);
+        const size = this.size;
+        for (let i = 0; i < size; i++){
+            const nextItem = this.tokens[Math.floor(Math.random() * size)];
+            if (curItem.next[nextItem.id]) continue;
+            negatives.add(nextItem);
+            if (negatives.length === this.negativeSize) break;
+        }
+        return negatives;
     },
     scan(text){
         if (!text) return;
         let current = '';
-        let input = [...Array(this.vectorSize)];
+        let input = this.array.map(i=>0.0);
         let i = 0;
         let trainData;
         const limit = 10000;
         return new Promise((resolve)=>{
             const scanner = ()=>{
-                for (i; i < text.length - 1; i++){
-                    let next = text.substr(i, this.scanWindow);
+                for (i; i < text.length-1; i++){
+                    let next = text.substr(i, 2);
                     let nextItem = this.getTokenItem(next);
                     if (current){
                         let curItem = tokenMap[current];
-                        curItem.next[next] = (curItem.next[next] || 0) + 1;
-                        trainData = [{curItem, nextItem, target: 1, sum: 0}];
+                        curItem.count++;
+                        curItem.next[next] ??= 0;
+                        curItem.next[next]++;
+                        trainData = next.length>1?[{curItem, nextItem, t: 1}]:[];
                         const neg = this.getNegatives(current);
                         trainData.push(...neg.map(nextItem =>{
-                            return {nextItem, target: 0, sum: 0}
+                            return {curItem, nextItem, t: 0}
                         }));
                         this.train(trainData, input);
                     }
@@ -108,6 +114,12 @@ export class gptModel extends ROCKS({
                     })
                 }
                 else{
+                    let curItem = tokenMap[current];
+                    const neg = this.getNegatives(current);
+                    trainData = neg.map(nextItem =>{
+                        return {curItem, nextItem, t: 0}
+                    });
+                    this.train(trainData, input);
                     this.progress = 0;
                     resolve();
                 }
@@ -115,27 +127,7 @@ export class gptModel extends ROCKS({
             scanner();
         })
     },
-    getNegatives(token){
-        const negatives = [];
-        const curItem = tokenMap[token];
-        for (let i = negativePos; i < this.size; i++){
-            negativePos++;
-            const next = this.tokens[i];
-            if (curItem.next[next.id]) continue;
-            negatives.add(next);
-            if (negatives.length === this.negativeSize) break;
-        }
-        if (negativePos === this.size){
-            negativePos = 0;
-        }
-        return negatives;
-    },
-    initWeiht(){
-        return Math.random() -.5;
-    },
     train(data, input){
-        if (data.length < 2)
-            return;
         this.trainCount++;
         const main = data[0];
         let emb = main.curItem.emb;
@@ -147,66 +139,35 @@ export class gptModel extends ROCKS({
                 sum += emb[i] * cnt[i];
             }
             const pred = 1 / (1 + Math.exp(-sum));
-            const loss = d.target - pred;
+            const loss = d.t - pred;
             const correct = loss * pred * (1 - pred) * this.trainKoef;
             for (let i = 0; i <emb.length; i++) {
                 emb[i] += correct * cnt[i];
                 cnt[i] += correct * emb[i];
             }
+            main.curItem.tokenError = (main.curItem.tokenError + loss * loss) / 2;
+        }
+        if (data.length<2)
+            return;
 
-            if (d.target)
-                main.curItem.tokenError = (main.curItem.tokenError + loss) / 2
+        for (let i = 0; i <emb.length; i++) {
+            input[i] = input[i] * .9 + emb[i];
         }
 
-        //
-        // for (let i = 0; i <emb.length; i++) {
-        //     const e = emb[i];
-        //     for (let d of data){
-        //         d.sum += d.nextItem.cnt[i] * e;
-        //     }
-        // }
-        //
-        // for (let d of data){
-        //     d.pred = 1 / (1 + Math.exp(-d.sum));/*x >= 0 ? x : x * this.reLuKoef;*/
-        //     d.loss = d.target - d.pred;
-        //     // error +=  d.loss * d.loss;
-        //     d.sigma = d.loss * d.pred * (1 - d.pred) //(x>=0 ? 1 : this.reLuKoef);
-        //     main.curItem.tokenError = (main.curItem.tokenError + d.loss * d.loss) / 2
-        // }
-        //
-        // // main.curItem.tokenError = (main.curItem.tokenError + error / data.length) / 2;
-        // let delta;
-        // for (let i = 0; i <emb.length; i++) {
-        //     const e = emb[i];
-        //     let sum = 0;
-        //     for (let d of data){
-        //         const c = d.nextItem.cnt[i];
-        //         sum += c * d.sigma;
-        //         delta = d.sigma * e * this.trainKoef + d.nextItem.cnt[PREV][i];
-        //         d.nextItem.cnt[PREV][i] = delta * this.trainKoef;
-        //         d.nextItem.cnt[i] += delta;
-        //     }
-        //     delta = sum * this.trainKoef + emb[PREV][i];
-        //     emb[PREV][i] = delta * this.trainKoef;
-        //     emb[i] += delta;
-        //     input[i] ??= emb[i];
-        //     input[i] = (input[i] + emb[i])/2;
-        //
-        // }
-        // error = 1;
+        // error = 0;
         // const layers = main.curItem.layers;
         // const outputs = this.predicate(layers, input);
-        // const targets = [...main.nextItem.emb];
+        // const targets = main.nextItem.emb;
         // let neurons = layers[layers.length-1][NEURONS];
         // for (let i = 0; i<targets.length; i++){
         //     const x = outputs[i];
         //     const y = targets[i] ;
         //     const loss = (y - x);
-        //     error += Math.abs(loss);
-        //     neurons[i] =  loss;
+        //     error += loss * loss;
+        //     neurons[i] = loss;
         // }
         // error /= targets.length;
-        // main.curItem.predicateError = error;
+        // main.curItem.predicateError = (main.curItem.predicateError + error) / 2;
         // this.back(layers, input);
     },
     predicate(layers, inputs){
@@ -227,7 +188,7 @@ export class gptModel extends ROCKS({
             inputs = [];
             for(let out = 0; out<outputs.length; out++){
                 const x = outputs[out];
-                neurons[out] = inputs[out] = 1 / (1 + Math.exp(-x));//x >= 0 ? x: x * this.reLuKoef;
+                neurons[out] = inputs[out] = 1 / (1 + Math.exp(-x));
             }
         }
         return outputs;
@@ -245,15 +206,13 @@ export class gptModel extends ROCKS({
                     error +=  neuron[i] * weights[i];
                     weights[i] += neuron[i] * y * this.trainKoef;
                 }
-                l && (prev[out] = error *= y * (1 - y))////(y>=0 ? 1 : this.reLuKoef));
+                l && (prev[out] = error *= y * (1 - y))
             }
         }
     }
 }){}
-const PREV = Symbol('p');
 const NEURONS = Symbol('n');
 const tokenMap = Object.create(null);
-let negativePos = 0;
 function cosSimilar(A, B) { //На входе 2 вектора
     if (!A || !B) return 0;
     const m = A?.length || 0;
