@@ -7,7 +7,7 @@ export class gptModel extends ROCKS({
             $def: [],
             $freeze: true,
         },
-        vectorSize: 32,
+        vectorSize: 16,
         negativeSize: 5,
         trainCount: 0,
         trainKoef: .1
@@ -64,6 +64,7 @@ export class gptModel extends ROCKS({
         }
         return item;
     },
+
     getNegatives(token){
         const negatives = [];
         const curItem = this.getTokenItem(token);
@@ -124,11 +125,11 @@ export class gptModel extends ROCKS({
             scanner();
         })
     },
+    fns: {},
     train(data, input){
         this.trainCount++;
         const main = data[0];
         let emb = main.curItem.emb;
-        let error = 0;
         for (let d of data){
             const cnt = d.nextItem.cnt;
             let sum = 0;
@@ -144,26 +145,39 @@ export class gptModel extends ROCKS({
             }
             main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
         }
+        // const cnts = data.map(i=>{
+        //     return i.nextItem.cnt;
+        // })
+        // const func = this.fns[cnts.length] ??= gpu.createKernel(function(emb, cnts, size) {
+        //     let sum = 0;
+        //     for(let i = 0; i<size; i++)
+        //         sum += cnts[this.thread.x][i] * emb[i];
+        //     // }
+        //     return sum;
+        // }).setOutput([cnts.length]);
+        // const res = func(emb, cnts, this.vectorSize);
+        // let eVal;
+        // for(let c = 0; c<cnts.length; c++){
+        //     const cnt = cnts[c];
+        //     const pred = 1 / (1 + Math.exp(-res[c]));
+        //     const loss = data[c].t - pred;
+        //     const correct = loss * pred * (1 - pred) * this.trainKoef;
+        //     for (let i = 0; i <emb.length; i++) {
+        //         eVal = emb[i];
+        //         emb[i] += correct * cnt[i];
+        //         cnt[i] += correct * eVal;
+        //     }
+        //     main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
+        // }
 
-        const exampleKernel = gpu.createKernel(function(emb, cnt, size) {
-            let sum = 0;
-            for (let i = 0; i < size; i++) {
-                sum += this.thread.x + this.thread.y;
-            }
-            return sum;
-        }).setOutput([2, emb.length]);
-
-        const res = exampleKernel(emb, main.nextItem.cnt, emb.length)
-        console.log(res);
-
-        // if (data.length<2)
+        if (data.length<2)
             return;
 
         for (let i = 0; i <emb.length; i++) {
             input[i] = input[i] * .9 + emb[i];
         }
 
-        error = 0;
+        let error = 0;
         const layers = main.curItem.layers;
         const outputs = this.predicate(layers, input);
         const targets = main.nextItem.emb;
@@ -220,7 +234,9 @@ export class gptModel extends ROCKS({
             }
         }
     }
-}){}
+}){
+
+}
 const NEURONS = Symbol('n');
 const tokenMap = Object.create(null);
 function cosSimilar(A, B) { //На входе 2 вектора
