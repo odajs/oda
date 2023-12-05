@@ -352,6 +352,139 @@ ODA({
 
 В данном примере видно, что из трех объявленных хуков **ready** остался только тот, который был определен в наследнике. В результате действия по инициализации свойств, унаследованных от родителей, выполнены не были.
 
+```info_md
+Во фреймворке используются псевдообъекты $listeners, $observers, $keyBindings и $innerEvents. Они служат только для регистрации методов специального назначения, поэтому при наследовании эти объекты не замещают друг друга, а объединяют свое содержимое.
+```
+
+Наследование одноименных методов, являющихся обозревателями свойств, отличается порядком наследования. В этом случае используется метод из родителя, находящегося ближе к началу списка **extends**. Естественно, если одноименный обозреватель объявлен в наследнике, то используется именно он.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'base-component-1',
+    template: `
+        <div>{{message1}}</div>
+    `,
+    message1: "",
+    $observers: {
+        observer( counter ) {
+            this.message1 = "Родитель №1 counter: " + counter;
+        }
+    }
+});
+
+ODA({
+    is: 'base-component-2',
+    template: `
+        <div>{{message2}}</div>
+    `,
+    message2: "",
+    $observers: {
+        observer( counter ) {
+            this.message2 = "Родитель №2 counter: " + counter;
+        }
+    }
+});
+
+ODA({
+    is: 'my-component',
+    extends: 'base-component-1, base-component-2',
+    template: `
+        <button @tap="++counter">Increment</button>
+    `,
+    counter: 0
+});
+```
+
+В данном примере видно, что метод обозревателя берется из родителя №1, который находится ближе к началу списка **extends**.
+
+Если одноименные методы обозревателей вынести за пределы объекта **$observers**, то будет использоваться метод, объявленный в родителе, находящемся ближе к концу списка **extends**.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'base-component-1',
+    template: `
+        <div>{{message1}}</div>
+    `,
+    message1: "",
+    $observers: {
+        observer: 'counter'
+    },
+    observer( counter ) {
+        this.message1 = "Родитель №1 counter: " + counter;
+    }
+});
+
+ODA({
+    is: 'base-component-2',
+    template: `
+        <div>{{message2}}</div>
+    `,
+    message2: "",
+    $observers: {
+        observer: 'counter'
+    },
+    observer( counter ) {
+        this.message2 = "Родитель №2 counter: " + counter;
+    }
+});
+
+ODA({
+    is: 'my-component',
+    extends: 'base-component-1, base-component-2',
+    template: `
+        <button @tap="++counter">Increment</button>
+    `,
+    counter: 0
+});
+```
+
+Наследование одноименных методов, являющихся слушателями, также отличается порядком наследования. В этом случае используется метод из родителя, находящегося ближе к началу списка **extends**. Естественно, если одноименный обозреватель объявлен в наследнике, то используется именно он.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'base-component-1',
+    $listeners: {
+        tap() {
+            this.message = "Родитель №1: Нажата левая кнопка";
+        },
+        contextmenu() {
+            this.message = "Родитель №1: Нажата правая кнопка";
+        }
+    }
+});
+
+ODA({
+    is: 'base-component-2',
+    $listeners: {
+        tap() {
+            this.message = "Родитель №2: Нажата левая кнопка";
+        },
+        contextmenu() {
+            this.message = "Родитель №2: Нажата правая кнопка";
+        }
+    }
+});
+
+ODA({
+    is: 'my-component',
+    extends: 'base-component-1, base-component-2',
+    template: `
+        <button>{{message}}</button>
+    `,
+    message: "Нажми на меня левой или правой кнопкой мыши"
+});
+```
+
+В данном примере видно, что методы слушателей берутся из родителя №1, который находится ближе к началу списка **extends**.
+
+Однако, как и в случае с обозревателями, если одноименные методы слушателей вынести за пределы объекта **$listeners**, то будет использоваться метод, объявленный в родителе, находящемся ближе к концу списка **extends**.
+
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/zCwMK7TGCD8?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
