@@ -149,6 +149,12 @@
                         },
                         {
                             "label": {
+                                "ru": "Наследование свойств и методов"
+                            },
+                            "name": "structure-extends-inheritance.md"
+                        },
+                        {
+                            "label": {
                                 "ru": "<b style='color:blue'>imports</b>: Отложенный импорт модулей"
                             },
                             "name": "structure-imports.md"
