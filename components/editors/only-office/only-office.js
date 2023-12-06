@@ -1,3 +1,4 @@
+const path = import.meta.url.split('only-office.js')[0]+'frame.html'
 ODA({is: 'oda-only-office',
     template:`
         <style>
@@ -7,9 +8,9 @@ ODA({is: 'oda-only-office',
                 @apply --flex;
             }
         </style>
-        <div class="flex vertical">
-            <iframe class="flex" src="./frame.html"></iframe>
-        </div>
-        
-    `
+        <iframe class="flex" :src="frameUrl"></iframe>      
+    `,
+    get frameUrl(){
+        return path;
+    }
 })
