@@ -3,7 +3,7 @@
 // docker run -i -t -d -p 8080:80 --restart=always -v .:/var/log/onlyoffice -v .:/var/www/onlyoffice/Data -v .:/var/lib/onlyoffice -v .:/var/lib/postgresql -e JWT_ENABLED=false onlyoffice/documentserver
 // docker run -i -t -d -p 8080:80 --restart=always -v .:/var/log/onlyoffice -v .:/var/www/onlyoffice/Data -v .:/var/lib/onlyoffice -v .:/var/lib/postgresql -e JWT_SECRET=my_jwt_secret onlyoffice/documentserver
 
-ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
+ODA({ is: 'oda-onlyoffice-editor',
     template: `
         <style>
             :host {
@@ -12,6 +12,7 @@ ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
                 position: relative;
             }
         </style>
+        <script type="text/javascript" src="http://localhost:8080/web-apps/apps/api/documents/api.js"></script>
     `,
     $public: {
         url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
@@ -83,7 +84,7 @@ ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
     attached() {
         this.async(()=>{
             this.docEditor = new DocsAPI.DocEditor(this, this.config);
-        })
+        }, 100)
     },
     onDocumentStateChange(e) {
         if (e.data) {
@@ -91,3 +92,20 @@ ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
         }
     }
 })
+// const srcdoc = () => {
+//     return `
+// <meta charset="UTF-8">
+// <meta http-equiv="X-UA-Compatible" content="IE=edge">
+// <meta name="viewport" content="width=device-width, initial-scale=1.0">
+// <script type="text/javascript" src="http://localhost:8080/web-apps/apps/api/documents/api.js"></script>
+// <title>ODA ONLYOFFICE Editor</title>
+//
+// <oda-onlyoffice-editor></oda-onlyoffice-editor>
+//
+// <script type="module">
+//     import '../../../oda.js';
+//     import './onlyoffice-editor.js';
+// </script>
+//
+// `
+// }
