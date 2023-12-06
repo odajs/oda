@@ -1,40 +1,10 @@
-// import './gpu-browser.min.js';
-// const gpu = new GPU.GPU();
+import './gpu-browser.min.js';
+const gpu = new GPU.GPU();
 
-export class gptModel{
-    tokens = [];
-    vectorSize = 16;
-    negativeSize = 5;
-    trainCount = 0;
-    trainKoef = .1;
-    sampleKoef = .9;
-    progress = 0;
-    size = 0;
-    get predicateError(){
-        if (!this.size)
-            return 1;
-        const sum = this.tokens.reduce((res,i)=>{
-            res += i.predicateError;
-            return res;
-        }, 0);
-        return sum/this.size;
-    }
-    get tokenError(){
-        if (!this.size)
-            return 1;
-        const sum = this.tokens.reduce((res,i)=>{
-            res += i.tokenError;
-            return res;
-        }, 0);
-        return sum/this.size;
-    }
-    constructor(tokens = []) {
-        this.tokens = tokens;
-        this.size = this.tokens.length;
-    }
+export class gptModel extends ROCKS({
     async prompt(text, plastic = .1){
         const scan = this.scan(text, plastic);
-        if (!scan?.then)
+        if (!scan.then)
             return '';
         let {input, current} = await scan;
         let item = this.getTokenItem(current);
@@ -42,11 +12,11 @@ export class gptModel{
         let next = Object.keys(item.next);
         let count = 1000;
         while (count-- && next.length){
+            next = next.sort((a,b)=>{
+                return item.next[a]>item.next[b]?-1:1;
+            })
             if(next.length > 1) {
                 const predict = this.forward(item.layers, input);
-                next = next.sort((a,b)=>{
-                    return item.next[a]>item.next[b]?-1:1;
-                })
                 next = next.map(t=>{
                     const nextItem = this.getTokenItem(t);
                     const s = cosSimilar(predict, nextItem.emb);
@@ -56,7 +26,6 @@ export class gptModel{
                     return a.s>b.s?-1:1;
                 })
                 next = next.map(i=>i.t);
-
             }
             current = next[0];
             const character = current[1];
@@ -64,18 +33,33 @@ export class gptModel{
             if (character === '.')
                 break;
             item = this.getTokenItem(current);
+            next = Object.keys(item.next);
             for (let i = 0; i <item.emb.length; i++) {
                 input[i] = input[i] * this.sampleKoef + item.emb[i];
             }
-            next = Object.keys(item.next);
         }
         return output.trim();
-    }
+    },
+    $public:{
+        tokens: {
+            $def: [],
+            $freeze: true,
+        },
+        vectorSize: 32,
+        negativeSize: 5,
+        trainCount: 0,
+        trainKoef: .1,
+        sampleKoef: .6
+    },
+    get size(){
+        return this.tokens.length;
+    },
+    progress: 0,
     similarWords(t1, t2){
         t1 = this.join(t1);
         t2 = this.join(t2);
         return cosSimilar(t1, t2);
-    }
+    },
     join(word){
         const result = this.array.map(i=>0.0);
         for (let t = 0; t < word.length - 1; t++){
@@ -88,16 +72,16 @@ export class gptModel{
             }
         }
         return result;
-    }
+    },
     get array(){
         return [...Array(this.vectorSize)];
-    }
+    },
     get halfArray(){
         return  [...Array(this.vectorSize/2)];
-    }
+    },
     initWeight(){
         return Math.random() - .5;
-    }
+    },
     getTokenItem(token){
         let item = tokenMap[token] ??= this.tokens.find(i=>i.id === token)
         if (!item){
@@ -105,10 +89,9 @@ export class gptModel{
             item.id = token;
             item.emb = this.array.map(i=>this.initWeight());
             item.cnt = this.array.map(i=>this.initWeight());
-            // item.layers = [];
             item.layers = [this.array.map(i=>{
-                return this.array.map(i=>this.initWeight());
-            }), this.array.map(i=>{
+                return this.halfArray.map(i=>this.initWeight());
+            }), this.halfArray.map(i=>{
                 return this.array.map(i=>this.initWeight());
             })]
             item.next = Object.create(null);
@@ -116,10 +99,11 @@ export class gptModel{
             item.count = 0;
             item.predicateError = 1;
             this.tokens.push(item);
-            this.size = this.tokens.length;
+            this.size = undefined;
         }
         return item;
-    }
+    },
+
     getNegatives(token){
         const negatives = [];
         const curItem = this.getTokenItem(token);
@@ -131,9 +115,9 @@ export class gptModel{
             if (negatives.length === this.negativeSize) break;
         }
         return negatives;
-    }
-    scan(text = '', plastic = 1){
-        if (text.length<2) return;
+    },
+    scan(text, plastic = 1){
+        if (!text) return;
         let current = '';
         let input = this.array.map(i=>0.0);
         let i = 0;
@@ -161,10 +145,10 @@ export class gptModel{
                 }
                 i++;
                 if (i < text.length - 1){
-                    setTimeout(()=> {
+                    this.async(()=> {
                         this.progress = (Math.round(i/text.length * 100));
                         scanner();
-                    }, 10)
+                    })
                 }
                 else{
                     let curItem = tokenMap[current];
@@ -179,7 +163,8 @@ export class gptModel{
             }
             scanner();
         })
-    }
+    },
+    fns: {},
     train(data, input, plastic = 1){
         this.trainCount++;
         const main = data[0];
@@ -223,7 +208,7 @@ export class gptModel{
         error /= targets.length;
         main.curItem.predicateError = (main.curItem.predicateError + error) / 2;
         this.back(layers, input, plastic);
-    }
+    },
     forward(layers, inputs){
         let outputs;
         for(let l = 0; l<layers.length; l++){
@@ -247,7 +232,7 @@ export class gptModel{
             // outputs = neurons;
         }
         return outputs;
-    }
+    },
     back(layers, inputs, plastic){
         for(let l = layers.length-1; l>=0; l--){
             const layer = layers[l];
@@ -265,6 +250,8 @@ export class gptModel{
             }
         }
     }
+}){
+
 }
 const NEURONS = Symbol('n');
 const tokenMap = Object.create(null);

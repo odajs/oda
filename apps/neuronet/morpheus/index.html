@@ -69,19 +69,16 @@
                     font-size: small;
                 }
               </style>
-              <div>tokens: {{size.toLocaleString()}}</div>
+              <div>tokens: {{model.size.toLocaleString()}}</div>
               <div>trained: {{model?.trainCount.toLocaleString()}}</div>
-              <div>token-error: {{Math.round(tokenError * 10000)/100}}%</div>
-              <div>predicate-error: {{Math.round(predicateError * 10000)/100}}%</div>
+              <div>token-error: {{Math.round(model.tokenError * 10000)/100}}%</div>
+              <div>predicate-error: {{Math.round(model.predicateError * 10000)/100}}%</div>
               <div class="flex"></div>
-              <div><progress ~show="progress" max="100" :value="progress"></progress></div>
+              <div><progress max="100" :value="model.progress"></progress></div>
           </div>
         `,
         async prompt(){
             this.predicate = await this.model.prompt(this.text);
-        },
-        get progress(){
-            return this.model.progress;
         },
         async loadFile(e){
             const opts = {
@@ -111,26 +108,6 @@
         get size(){
             return this.model.size;
         },
-        get tokenError(){
-            if (!this.size)
-                return 1;
-            this.progress;
-            const sum = this.tokens.reduce((res,i)=>{
-                res += i.tokenError;
-                return res;
-            }, 0);
-            return sum/this.size;
-        },
-        get predicateError(){
-            if (!this.size)
-                return 1;
-            this.progress;
-            const sum = this.tokens.reduce((res,i)=>{
-                res += i.predicateError;
-                return res;
-            }, 0);
-            return sum/this.size;
-        },
         async showLinks(e){
             const token = e.target.getAttribute('token')
             const {result} = await ODA.showDropdown('oda-token-links', {token, model: this.model}, {title: token, parent: e.target, align: 'right', anchor: 'top-right'});
@@ -139,25 +116,11 @@
             return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
         },
         predicate: '',
-        // get predicate(){
-        //     this.model?.trainCount;
-        //     let text = this.text;
-        //     const result = Object.create(null);
-        //     let count = 0;
-        //     for (let t = 0; t < text.length - 1; t++){
-        //         const token = text.substr(t, 2);
-        //         const next =  this.model.getTokenItem(token);
-        //         result[token] = next.next;
-        //     }
-        //     return JSON.stringify(result, null, 2);
-        // },
-        text: {
+        text:{
             $def: '',
             set(n){
-                // if (n)
-                    // this.scan(n);
-            },
-            $save: true,
+                this.prompt();
+            }
         },
         grad1:{
             $type: Object,
