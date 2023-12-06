@@ -12,7 +12,6 @@ ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
                 position: relative;
             }
         </style>
-        <div id="placeholder" class="flex"></div>
     `,
     $public: {
         url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
@@ -82,7 +81,9 @@ ODA({ is: 'oda-onlyoffice-editor', imports: './lib/api.js',
         }
     },
     attached() {
-        this.docEditor = new DocsAPI.DocEditor(this.$('#placeholder'), this.config);
+        this.async(()=>{
+            this.docEditor = new DocsAPI.DocEditor(this, this.config);
+        })
     },
     onDocumentStateChange(e) {
         if (e.data) {
