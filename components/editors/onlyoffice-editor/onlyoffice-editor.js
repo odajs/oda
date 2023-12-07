@@ -1,4 +1,5 @@
 // docker run -i -t -d -p 8080:80 --restart=always -e JWT_ENABLED=false onlyoffice/documentserver
+// docker run -i -t -d -p 8080:80 --restart=always -e JWT_ENABLED=false -v "d:\d":"/var/lib/onlyoffice/documentserver/App_Data/cache/files/forgotten/" onlyoffice/documentserver
 // docker run -i -t -d -p 8080:80 --restart=always -e JWT_SECRET=my_jwt_secret onlyoffice/documentserver
 // docker run -i -t -d -p 8080:80 --restart=always -v .:/var/log/onlyoffice -v .:/var/www/onlyoffice/Data -v .:/var/lib/onlyoffice -v .:/var/lib/postgresql -e JWT_ENABLED=false onlyoffice/documentserver
 // docker run -i -t -d -p 8080:80 --restart=always -v .:/var/log/onlyoffice -v .:/var/www/onlyoffice/Data -v .:/var/lib/onlyoffice -v .:/var/lib/postgresql -e JWT_SECRET=my_jwt_secret onlyoffice/documentserver
