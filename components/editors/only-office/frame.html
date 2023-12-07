@@ -11,7 +11,8 @@
         {
             "document": {
                 "fileType": "docx",
-                "url": window.location.hash.slice(1),
+                // "url": window.location.hash.slice(1),
+                "url": window.location.href.replace('frame.html', 'empty.docx'),
                 "title": window.location.hash.split('/').pop(),
             },
             "documentType": "word",
