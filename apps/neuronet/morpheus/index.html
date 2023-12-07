@@ -45,7 +45,6 @@
                   <div class="horizontal">
                       <textarea class="flex" ::value="text"></textarea><oda-button class="no-flex"  icon="box:i-right-arrow" :icon-size @tap="prompt">prompt</oda-button>
                   </div>
-                  <div border style="height: 20px;" ~style="grad3"></div>
                   predicate:
                   <textarea flex>{{predicate}}</textarea>
               </fieldset>
@@ -118,9 +117,7 @@
         predicate: '',
         text:{
             $def: '',
-            set(n){
-                this.prompt();
-            }
+            $save: true,
         },
         grad1:{
             $type: Object,
@@ -134,13 +131,6 @@
             get() {
                 this.model?.trainCount;
                 return this.getBackGradient(this.model.join(this.w2));
-            }
-        },
-        grad3: {
-            $type: Object,
-            get(){
-                this.model?.trainCount;
-                return this.getBackGradient(this.model.join(this.text));
             }
         },
         w1:{

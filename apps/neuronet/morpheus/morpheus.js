@@ -3,7 +3,7 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 64;
+    vectorSize = 32;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = .1;
@@ -65,13 +65,17 @@ export class gptModel{
             if (character === '.')
                 break;
             item = this.getTokenItem(current);
-            for (let i = 0; i <item.code.length; i++) {
-                input[i] = input[i] * this.sampleKoef + item.code[i];
-            }
+            this.updateInput(item.code, input);
             next = Object.keys(item.next);
         }
         return output.trim();
     }
+    updateInput(code, input){
+        for (let i = 0; i <code.length; i++) {
+            input[i] = input[i] * this.sampleKoef + code[i];
+        }
+    }
+
     similarWords(t1, t2){
         t1 = this.join(t1);
         t2 = this.join(t2);
@@ -143,7 +147,7 @@ export class gptModel{
         let input = this.array(this.vectorSize).map(i=>0.0);
         let i = 0;
         let trainData;
-        const limit = 10000;
+        const limit = Math.round(text.length/20);
         return new Promise((resolve)=>{
             const scanner = ()=>{
                 for (i; i < text.length-1; i++){
@@ -209,9 +213,7 @@ export class gptModel{
         if (data.length<2)
             return;
         const code = main.curItem.code;
-        for (let i = 0; i <code.length; i++) {
-            input[i] = input[i] * this.sampleKoef + code[i];
-        }
+        this.updateInput(main.curItem.code, input)
 
         let error = 0;
         const layers = main.curItem.layers;
