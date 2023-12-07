@@ -103,6 +103,7 @@ export class gptModel{
         if (!item){
             item = tokenMap[token] = Object.create(null);
             item.id = token;
+            item.code =
             item.emb = this.array.map(i=>this.initWeight());
             item.cnt = this.array.map(i=>this.initWeight());
             // item.layers = [];
