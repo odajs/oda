@@ -3,13 +3,14 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 16;
+    vectorSize = 64;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = .1;
     sampleKoef = .9;
     progress = 0;
     size = 0;
+    _array = [];
     get predicateError(){
         if (!this.size)
             return 1;
@@ -64,8 +65,8 @@ export class gptModel{
             if (character === '.')
                 break;
             item = this.getTokenItem(current);
-            for (let i = 0; i <item.emb.length; i++) {
-                input[i] = input[i] * this.sampleKoef + item.emb[i];
+            for (let i = 0; i <item.code.length; i++) {
+                input[i] = input[i] * this.sampleKoef + item.code[i];
             }
             next = Object.keys(item.next);
         }
@@ -77,7 +78,7 @@ export class gptModel{
         return cosSimilar(t1, t2);
     }
     join(word){
-        const result = this.array.map(i=>0.0);
+        const result = this.array(this.vectorSize).map(i=>0.0);
         for (let t = 0; t < word.length - 1; t++){
             const token = word.substr(t, 2);
             const emb = this.getTokenItem(token).emb;
@@ -89,11 +90,8 @@ export class gptModel{
         }
         return result;
     }
-    get array(){
-        return [...Array(this.vectorSize)];
-    }
-    get halfArray(){
-        return  [...Array(this.vectorSize/2)];
+    array(size){
+        return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
         return Math.random() - .5;
@@ -103,21 +101,27 @@ export class gptModel{
         if (!item){
             item = tokenMap[token] = Object.create(null);
             item.id = token;
-            item.code =
-            item.emb = this.array.map(i=>this.initWeight());
-            item.cnt = this.array.map(i=>this.initWeight());
-            // item.layers = [];
-            item.layers = [this.array.map(i=>{
-                return this.array.map(i=>this.initWeight());
-            }), this.array.map(i=>{
-                return this.array.map(i=>this.initWeight());
-            })]
+            item.code = this.array(this.vectorSize).map(i=>0);
+            item.emb = this.array(this.vectorSize).map(i=>this.initWeight());
+            item.cnt = this.array(this.vectorSize).map(i=>this.initWeight());
+            item.layers = [];
+            item.layers.push(this.array(this.vectorSize).map(i=>{
+                return this.array(this.vectorSize/2).map(i=>this.initWeight());
+            }));
+            item.layers.push(this.array(this.vectorSize/2).map(i=>{
+                return this.array(this.vectorSize).map(i=>this.initWeight());
+            }));
+
             item.next = Object.create(null);
             item.tokenError = 1;
             item.count = 0;
             item.predicateError = 1;
             this.tokens.push(item);
             this.size = this.tokens.length;
+            const code = (this.size + 256).toString(2);
+            for(let i = 0; i<code.length; i++){
+                item.code[i] = +code[i];
+            }
         }
         return item;
     }
@@ -136,7 +140,7 @@ export class gptModel{
     scan(text = '', plastic = 1){
         if (text.length<2) return;
         let current = '';
-        let input = this.array.map(i=>0.0);
+        let input = this.array(this.vectorSize).map(i=>0.0);
         let i = 0;
         let trainData;
         const limit = 10000;
@@ -204,9 +208,9 @@ export class gptModel{
         }
         if (data.length<2)
             return;
-
-        for (let i = 0; i <emb.length; i++) {
-            input[i] = input[i] * this.sampleKoef + emb[i];
+        const code = main.curItem.code;
+        for (let i = 0; i <code.length; i++) {
+            input[i] = input[i] * this.sampleKoef + code[i];
         }
 
         let error = 0;
