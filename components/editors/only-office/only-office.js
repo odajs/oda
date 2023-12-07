@@ -15,6 +15,7 @@ ODA({
         // return 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx';
         return path + 'document.docx';
     },
+    key: '',
     attached() {
         this.iframe = this.$('iframe');
         this.iframe.addEventListener('load', () => {
@@ -22,7 +23,7 @@ ODA({
                 {
                     "document": {
                         "fileType": "docx",
-                        // "key": this.url.split('/').pop(),
+                        "key": this.key || '', // this.url.split('/').pop(),
                         "title": this.url.split('/').pop(),
                         "url": this.url
                     },
