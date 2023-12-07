@@ -1,5 +1,6 @@
-const path = import.meta.url.split('only-office.js')[0] + 'frame.html';
-ODA({ is: 'oda-only-office',
+const path = import.meta.url.split('only-office.js')[0];
+ODA({
+    is: 'oda-only-office',
     template: `
         <style>
             :host{
@@ -8,29 +9,27 @@ ODA({ is: 'oda-only-office',
                 @apply --flex;
             }
         </style>
-        <iframe class="flex"></iframe>      
+        <iframe class='flex'></iframe>      
     `,
     get url() {
-        return "https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx";
+        // return 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx';
+        return path + 'document.docx';
     },
     attached() {
         this.iframe = this.$('iframe');
         this.iframe.addEventListener('load', () => {
-            this.docEditor = new this.iframe.contentWindow.DocsAPI.DocEditor("placeholder",
+            this.docEditor = new this.iframe.contentWindow.DocsAPI.DocEditor('placeholder',
                 {
                     "document": {
                         "fileType": "docx",
-                        "url": this.url,
+                        // "key": this.url.split('/').pop(),
                         "title": this.url.split('/').pop(),
+                        "url": this.url
                     },
-                    "documentType": "word",
-                    // "type": "embedded",
-                    "editorConfig": {
-                        // "mode": 'view',
-                    }
+                    "documentType": "word"
                 }
             )
         })
-        this.iframe.src = path;
+        this.iframe.src = path + 'frame.html';
     }
 })
