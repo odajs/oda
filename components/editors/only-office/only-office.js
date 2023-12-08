@@ -37,11 +37,17 @@ ODA({ is: 'oda-only-office',
         },
         lang: {
             $def: 'ru',
-            $list: ['en', 'ru', 'de', 'fr']
+            $list: ['en', 'ru', 'de', 'fr'],
+            get() {
+                return ODA.language.split('-')[0];
+            }
         },
         region: {
             $def: 'ru-RU',
-            $list: ['en-US', 'ru-RU', 'de-DE', 'fr-FR']
+            $list: ['en-US', 'ru-RU', 'de-DE', 'fr-FR'],
+            get() {
+                return ODA.language
+            }
         }
     },
     get words() { return '.djvu, .doc, .docm, .docx, .docxf, .dot, .dotm, .dotx, .epub, .fb2, .fodt, .htm, .html, .mht, .mhtml, .odt, .oform, .ott, .oxps, .pdf, .rtf, .stw, .sxw, .txt, .wps, .wpt, .xml, .xps' },
