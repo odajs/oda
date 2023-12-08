@@ -1,5 +1,6 @@
 // import './gpu-browser.min.js';
 // const gpu = new GPU.GPU();
+
 export class gptModel{
     tokens = [];
     vectorSize = 32;
@@ -74,6 +75,7 @@ export class gptModel{
             input[i] = input[i] * this.sampleKoef + code[i];
         }
     }
+
     similarWords(t1, t2){
         t1 = this.join(t1);
         t2 = this.join(t2);
