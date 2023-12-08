@@ -2,11 +2,11 @@
 // const gpu = new GPU.GPU();
 export class gptModel{
     tokens = [];
-    vectorSize = 32;
+    vectorSize = 16;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = .1;
-    sampleKoef = .9;
+    sampleKoef = .8;
     progress = 0;
     size = 0;
     _array = [];
@@ -108,16 +108,22 @@ export class gptModel{
             item.cnt = this.array(this.vectorSize).map(i=>this.initWeight());
             item.layers = [];
             item.layers.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize/2).map(i=>this.initWeight());
+                return this.array(this.vectorSize /2).map(i=>this.initWeight());
             }));
-            item.layers.push(this.array(this.vectorSize/2).map(i=>{
+            item.layers.push(this.array(this.vectorSize /2).map(i=>{
                 return this.array(this.vectorSize).map(i=>this.initWeight());
             }));
+            // item.layers.push(this.array(this.vectorSize - 8).map(i=>{
+            //     return this.array(this.vectorSize - 4).map(i=>this.initWeight());
+            // }));
+            // item.layers.push(this.array(this.vectorSize - 4).map(i=>{
+            //     return this.array(this.vectorSize).map(i=>this.initWeight());
+            // }));
 
             item.next = Object.create(null);
             item.tokenError = 1;
             item.count = 0;
-            item.predicateError = 1;
+            item.predicateError = 0;
             this.tokens.push(item);
             this.size = this.tokens.length;
             const code = (this.size + 256).toString(2);
@@ -157,10 +163,10 @@ export class gptModel{
                         curItem.next[next] ??= 0;
                         curItem.next[next]++;
                         trainData = next.length>1?[{curItem, nextItem, t: 1}]:[];
-                        const neg = this.getNegatives(current);
-                        trainData.push(...neg.map(nextItem =>{
-                            return {curItem, nextItem, t: 0}
-                        }));
+                        // const neg = this.getNegatives(current);
+                        // trainData.push(...neg.map(nextItem =>{
+                        //     return {curItem, nextItem, t: 0}
+                        // }));
                         this.train(trainData, input);
                     }
                     current = next;
@@ -175,10 +181,10 @@ export class gptModel{
                 }
                 else{
                     let curItem = tokenMap[current];
-                    const neg = this.getNegatives(current);
-                    trainData = neg.map(nextItem =>{
-                        return {curItem, nextItem, t: 0}
-                    });
+                    // const neg = this.getNegatives(current);
+                    // trainData = neg.map(nextItem =>{
+                    //     return {curItem, nextItem, t: 0}
+                    // });
                     this.train(trainData, input, plastic);
                     this.progress = 0;
                     resolve({input, current});
@@ -191,87 +197,55 @@ export class gptModel{
         this.trainCount++;
         const main = data[0];
         let emb = main.curItem.emb;
-        let eVal;
-        for (let d of data){
-            const cnt = d.nextItem.cnt;
-            let sum = 0;
-            for (let i = 0; i <emb.length; i++) {
-                sum += emb[i] * cnt[i];
-            }
-            const pred = 1 / (1 + Math.exp(-sum));
-            const loss = d.t - pred;
-            const correct = loss * pred * (1 - pred) * this.trainKoef * plastic;
-            for (let i = 0; i <emb.length; i++) {
-                eVal = emb[i];
-                emb[i] += correct * cnt[i];
-                cnt[i] += correct * eVal;
-            }
-            main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
-        }
-        if (data.length<2)
-            return;
         const code = main.curItem.code;
-        this.updateInput(main.curItem.code, input)
-
-        let error = 0;
+        this.updateInput(main.curItem.code, input);
         const layers = main.curItem.layers;
-        const outputs = this.forward(layers, input);
         const targets = main.nextItem.emb;
-        let neurons = layers[layers.length-1][NEURONS];
-        for (let i = 0; i<targets.length; i++){
-            const x = 1 / (1 + Math.exp(-outputs[i]));
-            const y =  1 / (1 + Math.exp(-targets[i]));
-            const loss = (y - x);
-            error += Math.abs(loss);
-            neurons[i] = loss;
+        let cache = [];
+        let outputs = this.forward(layers, input, cache, 1 - main.curItem.predicateError);
+        let similar = cosSimilar(outputs, targets);
+        if(similar<main.curItem.predicateError){
+            let next = 0
+            while(similar > next){
+                outputs = this.forward(layers, input, cache, 1 - similar);
+                next = cosSimilar(outputs, targets);
+            }
+            similar = next;
         }
-        error /= targets.length;
-        main.curItem.predicateError = (main.curItem.predicateError + error) / 2;
-        this.back(layers, input, plastic);
+        main.curItem.predicateError = similar;
     }
-    forward(layers, inputs){
+    forward(layers, inputs, cache, step){
         let outputs;
         for(let l = 0; l<layers.length; l++){
             outputs = [];
             const layer = layers[l];
-
+            if(cache){
+                const old = cache[l];
+                if(old){
+                    layer[old.l][old.w] = old.v;
+                }
+                const rndL = Math.floor(Math.random() * layer.length);
+                const rndW = Math.floor(Math.random() * layer[0].length);
+                cache[l] = {l: rndL, w: rndW, v: layer[rndL][rndW]};
+                layer[rndL][rndW] = layer[rndL][rndW] + (Math.random() - .5) * step * 2;
+            }
             for(let i = 0; i<layer.length; i++){
                 const inVal = inputs[i];
                 const weights = layer[i];
-
-                for(let out = 0; out<weights.length; out++){
-                    outputs[out] = (outputs[out] || 0) + inVal * weights[out];
+                for(let w = 0; w<weights.length; w++){
+                    outputs[w] = (outputs[w] || 0) + inVal * weights[w];
                 }
             }
-            const neurons = layer[NEURONS] ??= [];
             inputs = [];
+            if(l === layers.length - 1) continue;
             for(let out = 0; out<outputs.length; out++){
                 const x = outputs[out];
-                neurons[out] = inputs[out] = 1 / (1 + Math.exp(-x));
+                inputs[out] = 1 / (1 + Math.exp(-x));
             }
-            // outputs = neurons;
         }
         return outputs;
     }
-    back(layers, inputs, plastic){
-        for(let l = layers.length-1; l>=0; l--){
-            const layer = layers[l];
-            const neuron = layer[NEURONS];
-            const prev = layers[l-1]?.[NEURONS] || inputs;
-            for(let out = 0; out<layer.length; out++){
-                const weights = layer[out];
-                let error = 0;
-                const y = prev[out];
-                for(let i = 0; i<weights.length; i++){
-                    error +=  neuron[i] * weights[i];
-                    weights[i] += neuron[i] * y * this.trainKoef * plastic;
-                }
-                l && (prev[out] = error *= y * (1 - y))
-            }
-        }
-    }
 }
-const NEURONS = Symbol('n');
 const tokenMap = Object.create(null);
 function cosSimilar(A, B) { //На входе 2 вектора
     if (!A || !B) return 0;
