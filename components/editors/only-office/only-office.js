@@ -8,7 +8,7 @@ ODA({ is: 'oda-only-office',
                 @apply --flex;
             }
         </style>
-        <iframe class='flex'></iframe>      
+        <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
         apiUrl: 'https://docker-office.odant.org/web-apps/apps/api/documents/api.js',
@@ -98,6 +98,7 @@ const html = (apiUrl) => {
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style> body { margin: 0; padding: 0; }</style>
 <script type="text/javascript" src="${apiUrl}"></script>
 <div style="height: 100%; width: 100%; position: relative;" id="placeholder"></div>
 `
