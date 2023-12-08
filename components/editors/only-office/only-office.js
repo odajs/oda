@@ -11,7 +11,7 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex'></iframe>      
     `,
     $public: {
-        apiUrl: 'https://docker-office.odant.org//web-apps/apps/api/documents/api.js',
+        apiUrl: 'https://docker-office.odant.org/web-apps/apps/api/documents/api.js',
         url: path + 'document.docx',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
         key: '',
@@ -88,7 +88,7 @@ ODA({ is: 'oda-only-office',
         this.iframe.src = URL.createObjectURL(blob);
     },
     _onDocumentStateChange(e) {
-        console.log(e);
+        // console.log(e);
         this.isChanged = true;
     }
 })
