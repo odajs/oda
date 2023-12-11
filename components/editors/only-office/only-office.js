@@ -11,7 +11,7 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        apiUrl: 'https://current.odant.org/docker/onlyoffice/web-apps/apps/api/documents/api.js',
+        ooUrl: 'https://current.odant.org/docker/onlyoffice/',
         url: path + 'document.docx',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
         key: '',
@@ -52,6 +52,8 @@ ODA({ is: 'oda-only-office',
         userName: '',
         userID: ''
     },
+    get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
+    get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
     get words() { return '.djvu, .doc, .docm, .docx, .docxf, .dot, .dotm, .dotx, .epub, .fb2, .fodt, .htm, .html, .mht, .mhtml, .odt, .oform, .ott, .oxps, .pdf, .rtf, .stw, .sxw, .txt, .wps, .wpt, .xml, .xps' },
     get cells() { return '.csv, .et, .ett, .fods, .ods, .ots, .sxc, .xls, .xlsb, .xlsm, .xlsx, .xlt, .xltm, .xltx, .xml' },
     get slides() { return '.dps, .dpt, .fodp, .odp, .otp, .pot, .potm, .potx, .pps, .ppsm, .ppsx, .ppt, .pptm, .pptx, .sxi' },
