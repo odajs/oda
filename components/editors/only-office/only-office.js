@@ -11,7 +11,7 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        apiUrl: 'https://docker-office.odant.org/web-apps/apps/api/documents/api.js',
+        apiUrl: 'https://current.odant.org/docker/onlyoffice/web-apps/apps/api/documents/api.js',
         url: path + 'document.docx',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
         key: '',
@@ -48,7 +48,9 @@ ODA({ is: 'oda-only-office',
             get() {
                 return ODA.language
             }
-        }
+        },
+        userName: '',
+        userID: ''
     },
     get words() { return '.djvu, .doc, .docm, .docx, .docxf, .dot, .dotm, .dotx, .epub, .fb2, .fodt, .htm, .html, .mht, .mhtml, .odt, .oform, .ott, .oxps, .pdf, .rtf, .stw, .sxw, .txt, .wps, .wpt, .xml, .xps' },
     get cells() { return '.csv, .et, .ett, .fods, .ods, .ots, .sxc, .xls, .xlsb, .xlsm, .xlsx, .xlt, .xltm, .xltx, .xml' },
@@ -64,6 +66,10 @@ ODA({ is: 'oda-only-office',
             mode: this.mode || 'edit',
             lang: this.lang || 'ru',
             region: this.region || 'ru-RU',
+            user: {
+                id: this.userID || '',
+                name: this.userName || 'anonymous'
+            }
             // callbackUrl : ''
         }
     },
