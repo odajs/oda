@@ -169,7 +169,7 @@
         },
         getColors(items){
             const getColor = (val)=>{
-                return 360 * val;
+                return 360 * val / this.model.quant;
             }
             return items?.map((val, idx, items)=>{
                 return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
