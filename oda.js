@@ -187,7 +187,10 @@ if (!window.ODA?.IsReady) {
                             if (key) {
                                 let handler = this.$keys[key];
                                 if (typeof handler === 'string')
-                                    handler = prototype[handler];
+                                    handler = this[handler];
+                                if (!handler) {
+                                    throw new Error('no keybinding handler')
+                                }
                                 handler.call(this, e);
                             }
                         }
