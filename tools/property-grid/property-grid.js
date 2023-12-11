@@ -377,7 +377,7 @@ cells: {
             <oda-button :title="item.defaultValue" ~if="showDefaultButton" :disabled="disabledReset" @tap.stop.prevent="resetValue" icon="av:replay"></oda-button>
          `,
         get showDefaultButton() {
-            return this.item.defaultValue && typeof this.item.defaultValue !== 'object';
+            return this.item.defaultValue !== undefined && typeof this.item.defaultValue !== 'object';
         },
         title: {
             get() {
@@ -423,10 +423,10 @@ cells: {
             if (!Array.isArray(io)) {
                 io = [io]
             }
-            
+
             this.items.forEach(item => {
-                if (item.prop?.default === undefined) return;
-                item.value = (typeof item.prop.default === 'function') ? item.prop.default() : item.prop.default;
+                if (item.defaultValue === undefined) return;
+                item.value = (typeof item.defaultValue === 'function') ? item.defaultValue() : item.defaultValue;
             })
         }
     })
