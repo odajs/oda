@@ -92,7 +92,7 @@ export class gptModel{
         return cosSimilar(t1, t2);
     }
     join(word){
-        const result = this.array(this.vectorSize).map(i=>0.0);
+        const result = this.array().map(i=>0.0);
         for (let t = 0; t < word.length - 1; t++){
             const token = word.substr(t, 2);
             const emb = this.getTokenItem(token).emb;
@@ -104,7 +104,7 @@ export class gptModel{
         }
         return result;
     }
-    array(size){
+    array(size = this.vectorSize){
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
@@ -115,9 +115,9 @@ export class gptModel{
         if (!item){
             item = tokenMap[token] = Object.create(null);
             item.id = token;
-            item.code = this.array(this.vectorSize).map(i=>0);
-            item.emb = this.array(this.vectorSize).map(i=>this.initWeight());
-            item.cnt = this.array(this.vectorSize).map(i=>this.initWeight());
+            item.code = this.array().map(i=>0);
+            item.emb = this.array().map(i=>this.initWeight());
+            item.cnt = this.array().map(i=>this.initWeight());
             item.layers = [];
             item.layers.push(this.array(this.vectorSize).map(i=>{
                 return this.array(this.vectorSize - 2).map(i=>this.initWeight());
@@ -160,7 +160,7 @@ export class gptModel{
     scan(text = '', plastic = 1){
         if (text.length<2) return;
         let current = '';
-        let input = this.array(this.vectorSize).map(i=>0.0);
+        let input = this.array().map(i=>0.0);
         let i = 0;
         let trainData;
         const limit = Math.round(text.length/20);
@@ -211,6 +211,7 @@ export class gptModel{
         const main = data[0];
         let emb = main.curItem.emb;
         let eVal;
+        const losses = this.array().map(i=>0)
         for (let d of data){
             const cnt = d.nextItem.cnt;
             let sum = 0;
@@ -221,11 +222,13 @@ export class gptModel{
             const loss = d.t - p;
             const correct = loss * (sum < 0 ? .01 : 1);
             for (let i = 0; i <emb.length; i++) {
-                eVal = emb[i];
-                emb[i] += correct * cnt[i];
-                cnt[i] += correct * eVal;
+                losses[i] += correct * cnt[i];
+                cnt[i] += correct * emb[i];
             }
             main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
+        }
+        for(let i = 0; i<this.vectorSize; i++){
+            emb[i] += losses[i] * emb[i];
         }
         return;
         this.updateInput(main.curItem.code, input)
