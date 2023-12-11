@@ -52,6 +52,7 @@ ODA({ is: 'oda-only-office',
         userName: '',
         userID: ''
     },
+    get path() { return path },
     get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
     get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
     get words() { return '.djvu, .doc, .docm, .docx, .docxf, .dot, .dotm, .dotx, .epub, .fb2, .fodt, .htm, .html, .mht, .mhtml, .odt, .oform, .ott, .oxps, .pdf, .rtf, .stw, .sxw, .txt, .wps, .wpt, .xml, .xps' },
