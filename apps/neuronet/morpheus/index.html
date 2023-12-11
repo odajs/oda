@@ -149,9 +149,9 @@
             this.scan(n);
         },
         scan(word){
-            return this.model.scan(word).then(res=>{
-                this.tokens = undefined;
-            })
+            /*return*/ this.model.scan(word);//.then(res=>{
+/*                this.tokens = undefined;
+            })*/
         },
         train:{
             async set (n){
@@ -182,8 +182,14 @@
             return this.model.scanWindow;
         },
         get model(){
-            return new GPT.gptModel();
-        }
+            const model = new GPT.gptModel();
+            model.onScan = ()=>{
+                this.async(()=>{
+                    this.tokens = undefined;
+                })
+            }
+            return model;
+        },
     })
     ODA({is: 'oda-token-links',
         template:`

@@ -3,15 +3,25 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 32;
+    vectorSize = 16;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = .1;
-    sampleKoef = .8;
+    trainKoef = .3;
+    sampleKoef = .9;
     progress = 0;
     size = 0;
-    quant = 1000;
+    quant = 1;
     _array = [];
+    EXP_TABLE_SIZE = 1000;
+    MAX_EXP = 6;
+    expTable = (()=>{
+        const tab = [];
+        for (let i = 0; i<this.EXP_TABLE_SIZE; i++){
+            tab[i] = Math.exp((i / this.EXP_TABLE_SIZE * 2 - 1) * this.MAX_EXP);
+            tab[i] = tab[i] / (tab[i] + 1);
+        }
+        return tab;
+    })()
     get predicateError(){
         if (!this.size)
             return 1;
@@ -35,10 +45,7 @@ export class gptModel{
         this.size = this.tokens.length;
     }
     async prompt(text, plastic = .1){
-        const scan = this.scan(text, plastic);
-        if (!scan?.then)
-            return '';
-        let {input, current} = await scan;
+        let {input, current} = this.scan(text, plastic);
         let item = this.getTokenItem(current);
         let output = '';
         let next = Object.keys(item.next);
@@ -75,14 +82,14 @@ export class gptModel{
             if (character === '.')
                 break;
             item = this.getTokenItem(current);
-            this.updateInput(item.code, input);
+            this.updateInput(item.emb, input);
             next = Object.keys(item.next);
         }
         return output.trim();
     }
-    updateInput(code, input){
-        for (let i = 0; i <code.length; i++) {
-            input[i] = input[i] * this.sampleKoef +  code[i];
+    updateInput(emb, input){
+        for (let i = 0; i <emb.length; i++) {
+            input[i] = input[i] * this.sampleKoef  +  emb[i];
         }
     }
 
@@ -98,7 +105,7 @@ export class gptModel{
             const emb = this.getTokenItem(token).emb;
             if (emb){
                 for(let i = 0; i < emb.length; i++){
-                    result[i] = result[i] * this.sampleKoef + emb[i];
+                    result[i] = ((result[i] || emb[i]) + emb[i])/2;
                 }
             }
         }
@@ -108,26 +115,27 @@ export class gptModel{
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
-        return Math.round((Math.random() - .5)  * this.quant);
+        return (Math.random() - .5);
+        // return Math.round((Math.random() - .5)  * this.quant);
     }
     getTokenItem(token){
         let item = tokenMap[token] ??= this.tokens.find(i=>i.id === token)
         if (!item){
             item = tokenMap[token] = Object.create(null);
             item.id = token;
-            item.code = this.array().map(i=>0);
+            // item.code = this.array().map(i=>0);
             item.emb = this.array().map(i=>this.initWeight());
             item.cnt = this.array().map(i=>this.initWeight());
             item.layers = [];
             item.layers.push(this.array(this.vectorSize).map(i=>{
                 return this.array(this.vectorSize - 2).map(i=>this.initWeight());
             }));
-            item.layers.push(this.array(this.vectorSize - 2).map(i=>{
-                return this.array(this.vectorSize - 4).map(i=>this.initWeight());
-            }));
-            item.layers.push(this.array(this.vectorSize - 4).map(i=>{
-                return this.array(this.vectorSize - 2).map(i=>this.initWeight());
-            }));
+            // item.layers.push(this.array(this.vectorSize - 2).map(i=>{
+            //     return this.array(this.vectorSize - 4).map(i=>this.initWeight());
+            // }));
+            // item.layers.push(this.array(this.vectorSize - 4).map(i=>{
+            //     return this.array(this.vectorSize - 2).map(i=>this.initWeight());
+            // }));
             item.layers.push(this.array(this.vectorSize - 2).map(i=>{
                 return this.array(this.vectorSize).map(i=>this.initWeight());
             }));
@@ -138,10 +146,10 @@ export class gptModel{
             item.predicateError = 1;
             this.tokens.push(item);
             this.size = this.tokens.length;
-            const code = (this.size + 256).toString(2);
-            for(let i = 0; i<code.length; i++){
-                item.code[i] = +code[i];
-            }
+            // const code = (this.size + 256).toString(2);
+            // for(let i = 0; i<code.length; i++){
+            //     item.code[i] = +code[i];
+            // }
         }
         return item;
     }
@@ -163,48 +171,50 @@ export class gptModel{
         let input = this.array().map(i=>0.0);
         let i = 0;
         let trainData;
-        const limit = Math.round(text.length/20);
-        return new Promise((resolve)=>{
-            const scanner = ()=>{
-                for (i; i < text.length-1; i++){
-                    let next = text.substr(i, 2);
-                    let nextItem = this.getTokenItem(next);
-                    if (current){
-                        let curItem = tokenMap[current];
-                        curItem.count++;
-                        curItem.next[next] ??= 0;
-                        curItem.next[next]++;
-                        trainData = next.length>1?[{curItem, nextItem, t: 1}]:[];
-                        // const neg = this.getNegatives(current);
-                        // trainData.push(...neg.map(nextItem =>{
-                        //     return {curItem, nextItem, t: 0}
-                        // }));
-                        this.train(trainData, input, plastic);
-                    }
-                    current = next;
-                    if (i && i%limit === 0) break;
-                }
-                i++;
-                if (i < text.length - 1){
-                    setTimeout(()=> {
-                        this.progress = (Math.round(i/text.length * 100));
-                        scanner();
-                    }, 10)
-                }
-                else{
-                    let curItem = tokenMap[current];
-                    // const neg = this.getNegatives(current);
-                    // trainData = neg.map(nextItem =>{
-                    //     return {curItem, nextItem, t: 0}
-                    // });
-                    // trainData = next.length>1?[{curItem, null, t: 1}]:[];
-                    this.train(trainData, input, plastic);
-                    this.progress = 0;
-                    resolve({input, current});
-                }
+        // const limit = 10000;//Math.round(text.length/20);
+        // return new Promise((resolve)=>{
+        //     const scanner = ()=>{
+        for (i; i < text.length-1; i++){
+            let next = text.substr(i, 2);
+            let nextItem = this.getTokenItem(next);
+            if (current){
+                let curItem = tokenMap[current];
+                curItem.count++;
+                curItem.next[next] ??= 0;
+                curItem.next[next]++;
+                trainData = next.length>1?[{curItem, nextItem, t: 1}]:[];
+                const neg = this.getNegatives(current);
+                trainData.push(...neg.map(nextItem =>{
+                    return {nextItem, t: 0};
+                }));
+                this.train(trainData, input, plastic);
             }
-            scanner();
-        })
+            current = next;
+            // if (i && i%limit === 0) break;
+        }
+        // i++;
+        // if (i < text.length - 1){
+        //     setTimeout(()=> {
+        //         this.progress = (Math.round(i/text.length * 100));
+        //         scanner();
+        //     }, 10)
+        // }
+        // else{
+        //     let curItem = tokenMap[current];
+        //     const neg = this.getNegatives(current);
+        //     trainData = neg.map(nextItem =>{
+        //         return {curItem, nextItem, t: 0}
+        //     });
+        //     // trainData = next.length>1?[{curItem, null, t: 1}]:[];
+        //     this.train(trainData, input, plastic);
+        //     this.progress = 0;
+        //     resolve({input, current});
+        // }
+            // }
+            // scanner();
+        // })
+        this.onScan();
+        return {input, current};
     }
     train(data, input, plastic = 1){
         this.trainCount++;
@@ -212,30 +222,32 @@ export class gptModel{
         let emb = main.curItem.emb;
         let eVal;
         const losses = this.array().map(i=>0)
+        let err = 0;
         for (let d of data){
             const cnt = d.nextItem.cnt;
             let sum = 0;
             for (let i = 0; i <emb.length; i++) {
-                sum += emb[i] * cnt[i] / this.quant / this.quant;
+                sum += emb[i] * cnt[i];
             }
-            const p = sum < 0 ? sum * .01 : sum;
+            const p = 1/(1 + Math.exp(-sum));
             const loss = d.t - p;
-            const correct = loss * (sum < 0 ? .01 : 1);
+            err += loss;
+            const correct =  loss * p * (1 - p) * this.trainKoef;
             for (let i = 0; i <emb.length; i++) {
                 losses[i] += correct * cnt[i];
-                cnt[i] += correct * emb[i];
+                cnt[i] = cnt[i] + correct * emb[i];
             }
-            main.curItem.tokenError = (main.curItem.tokenError + Math.abs(loss)) / 2;
         }
         for(let i = 0; i<this.vectorSize; i++){
-            emb[i] += losses[i] * emb[i];
+            emb[i] = emb[i]  + losses[i];
         }
-        return;
-        this.updateInput(main.curItem.code, input)
+        main.curItem.tokenError = err / data.length;
+        this.updateInput(emb, input)
         const layers = main.curItem.layers;
         const targets = main.nextItem.emb;
         const {error} =  this.forward(layers, input, targets, plastic);
         main.curItem.predicateError = error;
+
     }
     forward(layers, inputs, targets, plastic){
         let outputs = [];

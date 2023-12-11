@@ -65,7 +65,7 @@ function translate(val, bak) {
             element[bak.name] = res;
             bak.set.call(element, res)
         }
-        else  translate(val, bak) 
+        else translate.call(this, element[bak.src], bak)
     })
 
 }
@@ -80,9 +80,9 @@ function translateString(val, html = false, lang = ODA.language) {
     return cache.promise = new Promise(resolve => cache.resolver = resolve)
 }
 
-function getHandler(bak) {    
+function getHandler(bak) {
     const valDef = bak.get.call(this);
-     
+
     if (this[bak.src] !== valDef) {
         this[bak.src] = valDef;
         bak.set.call(this, valDef);
@@ -91,18 +91,18 @@ function getHandler(bak) {
     const tr = this[bak.name]
     if (tr === undefined) translate.call(this, val, bak)
     else if (typeof tr === 'string') val = tr
-    
+
     return valDef
 }
 
 function setHandler(val, bak) {
-     
+
     if (this[bak.src] !== val) {
         this[bak.name] = undefined;
         if (!val) this[bak.src] = undefined;
         translate.call(this, val, bak)
     }
-    
+
     bak.set.call(this, val);
 }
 
@@ -250,7 +250,7 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
         .part{
             overflow: hidden;
             @apply --flex;
-            @apply --vertical;  
+            @apply --vertical;
             min-width: 50%;
         }
         .scroll{
@@ -267,7 +267,7 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
         b{
             padding: 12px;
         }
-    </style> 
+    </style>
     <div class='head horizontal'>
         <oda-button icon-size='20' icon='lineawesome:long-arrow-alt-down-solid' @tap='sortAZ=!sortAZ'>
             {{sortAZ?"AZ":"ZA"}}</oda-button>
@@ -301,9 +301,9 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
                 <b>Phrases</b>
             </div>
             <div class="scroll">
-                 <oda-localization-fieldset ~for='screen?.phrases' :legend='$for.item' ::value='phrases[$for.item]'></oda-localization-fieldset> 
+                 <oda-localization-fieldset ~for='screen?.phrases' :legend='$for.item' ::value='phrases[$for.item]'></oda-localization-fieldset>
             </div>
-        </div>    
+        </div>
     </div>
 
     `,
@@ -329,7 +329,7 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
     },
     get screen() {
         const compare = (a, b) => ((a > b) ? 1 : -1) * (this.sortAZ ? 1 : -1)
-        const filTers = (fList) => { return ([s,v]) => { 
+        const filTers = (fList) => { return ([s,v]) => {
             let ff =  {
                 searchVal: s.toUpperCase().includes(this.searchVal.toUpperCase()),
                 hideMode: ( !(this.hideMode===1) || (v!=='')) && ( !(this.hideMode===2) || (v==='')),
@@ -338,17 +338,17 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
             return fList.map(fName=>ff[fName]).every(a=>a)
         }}
         const chain = (x,fList) => Object.entries(x).filter(filTers(fList)).map(l => l[0]).sort(compare)
-        return { 
-            words: chain(this.words, ['searchVal', 'hideMode', 'firstLetter']), 
+        return {
+            words: chain(this.words, ['searchVal', 'hideMode', 'firstLetter']),
             phrases: (this.focusedWord)? Object.keys(this?.dictionary?.structure[this.focusedWord]||{}) : chain(this.phrases,['searchVal','hideMode'])
         }
     },
 
     firstLetter: '',
-    sortAZ: true,   
+    sortAZ: true,
     searchVal: '',
 
-    $pdp: {        
+    $pdp: {
         get words() {
             return { ...this.dictionary?.phrases?.w, ...this.dictionary?.dictionary?.w };
         },
@@ -368,7 +368,7 @@ ODA({is: 'oda-localization', imports:'@oda/menu', template:/*html*/ `
             for (let k in this.words) if (this.words !== '') newDictionary.w[k] = this.words[k]
 
             // this.wwObject.dictionary = newDictionary
-           
+
             await ODA.localization.saveMethod({structure: this.dictionary.structure, phrases:this.dictionary.phrases, dictionary:newDictionary,lang: ODA.language});
             worker.postMessage({ type: 'update', lang: ODA.language }) //? посылаем в worker, возможно нужно обернуть в promise
             // // console.log(this.word)
