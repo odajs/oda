@@ -450,8 +450,11 @@ if (!window.ODA?.IsReady) {
         get $keys(){
             if (!this['#$keys']){
                 this['#$keys'] = {};
-                for (let i in this.constructor.__rocks__.prototype.$keyBindings || {}){
-                    this['#$keys'][i] = this.constructor.__rocks__.prototype.$keyBindings[i].bind(this);
+                for (let i in this.constructor.__rocks__.prototype.$keyBindings || {}) {
+                    let handler = this.constructor.__rocks__.prototype.$keyBindings[i];
+                    this['#$keys'][i] = (typeof handler === 'function')
+                        ? handler.bind(this)
+                        : handler;
                 }
             }
             return this['#$keys'];

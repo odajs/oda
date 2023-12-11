@@ -61,9 +61,13 @@ function translate(val, bak) {
     element[bak.src] ??= val; // сохраняем исходное
 
     Promise.resolve( translateString(val) ).then(res => {
-        element[bak.name] = res;
-        bak.set.call(element, res)
+        if (element[bak.src]===val) {
+            element[bak.name] = res;
+            bak.set.call(element, res)
+        }
+        else  translate(val, bak) 
     })
+
 }
 
 function translateString(val, html = false, lang = ODA.language) {

@@ -85,7 +85,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                         // e.stopPropagation();
                         return;
                     let host = containerHost;
-                    if (e.target !== window){
+                    if (e.target instanceof Node){
                         while(host && host.isContainer){
                             if (host.contains(e.target)){
                                 e.stopPropagation();

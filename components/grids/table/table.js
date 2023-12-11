@@ -25,12 +25,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (el)
             this.table.fire('row-dblclick', el.row);
     },
-    async openSettings(e) {
+    async openSettings(parent) {
         await ODA.import('@tools/containers');
         await ODA.showDropdown(
             'oda-table-settings',
             { table: this.table },
-            { parent: e.target, align: 'left', minHeight: '100%', maxWidth: 300, title: 'Settings', hideCancelButton: true }
+            { parent, align: 'left', minHeight: '100%', maxWidth: 300, title: 'Settings', hideCancelButton: true }
         );
     },
     get storage() {
@@ -1311,7 +1311,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
 
 ODA({is: 'oda-table-header', extends: 'oda-table-cols',
     template: /*html*/`
-         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings"></oda-button>
+         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings($this)"></oda-button>
     `,
     getTemplate(col) {
         return col.headerTemplate || this.headerTemplate
@@ -2397,6 +2397,7 @@ settings: {
                 @apply --flex;
                 /*min-height: 100vh;*/
                 min-width: 200px;
+                overflow: hidden;
             }
             div > div {
                 align-items: center;
@@ -2412,7 +2413,7 @@ settings: {
             }
         </style>
         <oda-splitter ::width></oda-splitter>
-        <div class="content flex vertical" style="overflow: hidden;">
+        <div class="content flex vertical" style="overflow: auto;">
             <oda-table-columns-tree class="border" ~show="focusedTab === 0"></oda-table-columns-tree>
             <oda-property-grid class="flex" ~if="focusedTab === 2" only-save :inspected-object="table"></oda-property-grid>
         </div>
