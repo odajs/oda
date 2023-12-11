@@ -62,6 +62,7 @@ ODA({ is: 'oda-only-office',
         return {
             customization: {
                 autosave: this.autosave,
+                forcesave: true,
                 comments: false,
                 compactHeader: this.compactHeader || false,
                 compactToolbar: this.compactToolbar || false
