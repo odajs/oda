@@ -1,5 +1,3 @@
-// docker run -i -t -d -p 8080:80 --restart=always -e JWT_ENABLED=false -v "d:\d":"/var/lib/onlyoffice/documentserver/App_Data/cache/files/" onlyoffice/documentserver
-
 const path = import.meta.url.split('only-office.js')[0];
 ODA({ is: 'oda-only-office',
     template: `
@@ -15,7 +13,6 @@ ODA({ is: 'oda-only-office',
     $public: {
         ooUrl: 'https://current.odant.org/docker/onlyoffice/',
         url: path + 'document.docx',
-        // ooUrl: 'http://localhost:8080/',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
         key: '',
         title: '',
@@ -53,8 +50,7 @@ ODA({ is: 'oda-only-office',
             }
         },
         userName: '',
-        userID: '',
-        callbackUrl: ''
+        userID: ''
     },
     get path() { return path },
     get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
@@ -76,8 +72,8 @@ ODA({ is: 'oda-only-office',
             user: {
                 id: this.userID || '',
                 name: this.userName || 'anonymous'
-            },
-            callbackUrl : this.callbackUrl || ''
+            }
+            // callbackUrl : ''
         }
     },
     get config() {
