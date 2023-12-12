@@ -13,11 +13,11 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        // ooUrl: 'https://current.odant.org/docker/onlyoffice/',
-        // url: path + 'document.docx',
-        ooUrl: 'http://localhost:8080/',
-        url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
-        key: '999',
+        ooUrl: 'https://current.odant.org/docker/onlyoffice/',
+        url: path + 'document.docx',
+        // ooUrl: 'http://localhost:8080/',
+        // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
+        key: '',
         title: '',
         mode: {
             $def: 'edit',
@@ -53,7 +53,8 @@ ODA({ is: 'oda-only-office',
             }
         },
         userName: '',
-        userID: ''
+        userID: '',
+        callbackUrl: ''
     },
     get path() { return path },
     get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
@@ -76,7 +77,7 @@ ODA({ is: 'oda-only-office',
                 id: this.userID || '',
                 name: this.userName || 'anonymous'
             },
-            callbackUrl : 'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/M:1DA2842785F3562/C:1DA2842C580CDEE/O:1DA2C3587D46A49?execute=only-office-after-save'
+            callbackUrl : this.callbackUrl || ''
         }
     },
     get config() {
