@@ -17,10 +17,10 @@
 <!--                  <oda-button icon="icons:note-add" :icon-size @tap="create"></oda-button>-->
 <!--                  <oda-button icon="icons:file-upload" :icon-size @tap="load"></oda-button>-->
 
-                  <oda-button class="dark" icon="icons:add" @tap="loadFile">Add corpus</oda-button>
+                  <oda-button class="dark" icon="icons:add" @tap="loadFile">Add textCorpus</oda-button>
                   <div flex></div>
                   <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
-                  <oda-button :disabled="!corpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
+                  <oda-button :disabled="!textCorpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
               </div>
               <fieldset class="horizontal"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>SIMILAR:{{Math.round(simRes * 10000)/100}}%</legend>
@@ -99,7 +99,7 @@
                 const file = await fileHandle.getFile();
                 const reader = new FileReader();
                 reader.onload = (e) =>{
-                    this.corpus = e.target.result;
+                    this.textCorpus = e.target.result;
                 }
                 reader.readAsText(file);
             }
@@ -122,14 +122,14 @@
         grad1:{
             $type: Object,
             get(){
-                this.model?.trainCount;
+                this.tokens;
                 return this.getBackGradient(this.model.join(this.w1));
             }
         },
         grad2: {
             $type: Object,
             get() {
-                this.model?.trainCount;
+                this.tokens;
                 return this.getBackGradient(this.model.join(this.w2));
             }
         },
@@ -142,16 +142,15 @@
             $save: true,
         },
         get simRes(){
-            this.tokenError;
+            this.tokens;
             return this.model.similarWords(this.w1, this.w2);
         },
-        set corpus(n){
-            this.scan(n);
+        tokenizeCorpus: [],
+        set textCorpus(n){
+            this.tokenizeCorpus = this.model.tokenize(n);
         },
-        scan(word){
-            /*return*/ this.model.scan(word);//.then(res=>{
-/*                this.tokens = undefined;
-            })*/
+        scan(corpus){
+            return this.model.scan(corpus);
         },
         train:{
             async set (n){
@@ -161,11 +160,13 @@
             }
         },
         async tr(){
-            if(!this.train) return;
-            await this.scan(this.corpus);
-            this.async(()=>{
-                this.tr();
-            })
+            let e  = 1;
+            while(this.train && e){
+                const {current, error}  = this.scan(this.tokenizeCorpus);
+                e = error;
+                await new Promise(resolve => this.async(resolve));
+            }
+            this.train = false;
         },
         getColors(items){
             const getColor = (val)=>{
@@ -176,7 +177,11 @@
             }).join(', ');
         },
         get tokens(){
-            return this.model.tokens;
+            return this.model.tokens.sort((a,b)=>{
+                if(a.count > b.count)
+                    return -1;
+                return 1;
+            });
         },
         get scanWindow(){
             return this.model.scanWindow;

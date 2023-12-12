@@ -16,27 +16,83 @@ let style = /*css*/`
     @apply --dark;
     width: 16px;
 }
+@media (prefers-color-scheme: dark) {
+    :root{
+        --content-background: rgb(40 40 40);
+        --bar-background: var(--content-background);
+        --stroke-color: transparent;
+        --content-color: rgb(200 200 200);
+        --header-color: var(--header-color);
+        --border-color: darkgray;
+        --border-radius: 0px;
+
+        --accent-color: rgb(0 60 255);
+        --success-color: green;
+        --error-color: yellow;
+        --error-background: red;
+        --info-color: lightyellow;
+        --info-background: blueviolet;
+        --warning-color: orange;
+        --disabled-color: silver;
+
+        --focused-color: var(--accent-color);
+        --selected-color: rgb(0 153 255);
+        --selected-background: rgb(60 60 60);
+        --dark-color: rgb(20, 20, 20);
+        --dark-background: gray;
+
+        --body-background: transparent;
+        --body-color: var(--content-background);
+        --header-background:  rgb(60 60 60);
+
+
+        --section-background: rgb(26 26 26);
+        --section-color: rgb(200 200 200);
+
+        --layout-background: rgb(26 26 26);
+        --layout-color: rgb(200 200 200);
+    }
+}
+@media (prefers-color-scheme: light) {
+    :root{
+        --content-background: white;
+        --bar-background: var(--content-background);
+        --stroke-color: transparent;
+        --content-color: black;
+        --header-color: var(--header-color);
+        --border-color: darkgray;
+        --border-radius: 0px;
+
+        --accent-color: blue;
+        --success-color: green;
+        --error-color: red;
+        --error-background: yellow;
+        --info-color: blueviolet;
+        --info-background: lightyellow;
+        --warning-color: orange;
+        --disabled-color: silver;
+
+        --focused-color: var(--accent-color);
+        --selected-color: navy;
+        --selected-background: silver;
+        --dark-color: white;
+        --dark-background: gray;
+
+        --body-background: transparent;
+        --body-color: var(--content-background);
+        --header-background: silver;
+
+
+        --section-background: lightgrey;
+        --section-color: black;
+
+        --layout-background: whitesmoke;
+        --layout-color: black;
+    }
+}
 
 :root{
     --font-family: Roboto, Noto, sans-serif;
-    --bar-background: white;
-    --stroke-color: transparent;
-    --content-background: white;
-    --content-color: black;
-    --header-color: black;
-    --border-color: darkgray;
-    --border-radius: 0px;
-
-    --body-background: transparent;
-    --body-color: #555555;
-    --header-background: silver;
-
-
-    --section-background: lightgrey;
-    --section-color: black;
-
-    --layout-background: whitesmoke;
-    --layout-color: black;
 
     --content:{
         background-color: var(--content-background, white);
@@ -169,6 +225,16 @@ html {
     height: 100%;
     --my-variable: 100px;
 }
+
+input{
+    background-color: var(--content-background);
+    color: var(--content-color);
+}
+input::placeholder{
+    color: inherit;
+    opacity: .5;
+}
+
 ::part{
     min-width: 0px;
 }
@@ -229,14 +295,6 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 :root {
-    --accent-color: blue;
-    --success-color: green;
-    --error-color: red;
-    --error-background: yellow;
-    --info-color: blueviolet;
-    --info-background: lightyellow;
-    --warning-color: orange;
-    --disabled-color: silver;
     --invert:{
         filter: invert(1);
     };
@@ -340,11 +398,6 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 }
 :root{
-    --focused-color: blue;
-    --selected-color: navy;
-    --selected-background: silver;
-    --dark-color: white;
-    --dark-background: gray;
     --dark: {
         color: var(--dark-color) !important;
         fill: var(--dark-color) !important;

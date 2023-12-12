@@ -57,11 +57,11 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
         paper:{
             $def: {
                 color:{
-                    $def: 'black',
+                    $def: 'var(--content-color)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                 },
                 background:{
-                    $def: 'whitesmoke',
+                    $def: 'var(--content-background)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                     set(v){
                         console.log(v);
