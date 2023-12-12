@@ -5,9 +5,6 @@
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'base-component',
-    template: `
-        <div>{{parent1}}</div>
-    `,
     get thisInParent() {
         return this;
     }
