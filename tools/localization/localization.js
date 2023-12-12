@@ -65,7 +65,10 @@ function translate(val, bak) {
             element[bak.name] = res;
             bak.set.call(element, res)
         }
-        else translate.call(this, element[bak.src], bak)
+        else {
+            element[bak.src] = bak.get.call(this);
+            translate.call(this, element[bak.src], bak);
+        }
     })
 
 }
