@@ -3,7 +3,7 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 64;
+    vectorSize = 32;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = 0.1;
@@ -125,19 +125,19 @@ export class gptModel{
             // item.code = this.array().map(i=>0);
             item.emb = this.array().map(i=>this.initWeight());
             item.cnt = this.array().map(i=>this.initWeight());
-            item.layers = [];
-            item.layers.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize - 2).map(i=>this.initWeight());
-            }));
+            item.net = this.array(this.vectorSize * 2 * this.vectorSize).map(i=>this.initWeight());
+            // item.layers.push(this.array(this.vectorSize * 2).map(i=>{
+            //     return this.array(this.vectorSize).map(i=>this.initWeight());
+            // }));
             // item.layers.push(this.array(this.vectorSize - 2).map(i=>{
             //     return this.array(this.vectorSize - 4).map(i=>this.initWeight());
             // }));
             // item.layers.push(this.array(this.vectorSize - 4).map(i=>{
             //     return this.array(this.vectorSize - 2).map(i=>this.initWeight());
             // }));
-            item.layers.push(this.array(this.vectorSize - 2).map(i=>{
-                return this.array(this.vectorSize).map(i=>this.initWeight());
-            }));
+            // item.layers.push(this.array(this.vectorSize - 2).map(i=>{
+            //     return this.array(this.vectorSize).map(i=>this.initWeight());
+            // }));
 
             item.next = Object.create(null);
             item.tokenError = 1;
@@ -171,13 +171,14 @@ export class gptModel{
         }
         return corpus;
     }
-    scan(corpus= [], plastic = 1){
+    scan(corpus= []){
         let prev, idx, neg, sample, n, token, current, next;
         const size = corpus.length;
         let error = 0;
+        const inputs = [this.array().map(i=>0), this.array().map(i=>0)];
         for (let i = 0; i<size; i++){
-            token = corpus[i];
-            current = this.getTokenItem(token);
+            current = corpus[i];
+            current = this.getTokenItem(current);
             next = corpus[i + 1];
             if (!next)
                 sample = [current.emb];
@@ -195,12 +196,48 @@ export class gptModel{
                 sample.push(neg.cnt);
                 n--;
             }
-            error += this.train(current, sample, plastic);
+            error += this.trainEmb(current, sample);
+            this.trainLink(current, next, inputs);
+            inputs[1] = inputs[0];
+            inputs[0] = current.emb;
+            prev = current;
         }
         this.onScan();
         return {current, error};
     }
-    train(current, sample, plastic = 1){
+    trainLink(current, targets, inputs){
+        const first = inputs[0];
+        const second = inputs[1];
+        const net = current.net;
+        const size = this.vectorSize;
+        const sizeX = size * size;
+        const outputs = this.array().map(i=>0);
+        let loss, sum, target;
+        let err = 0;
+        let pred;
+        for(let i = 0, j = 0; i < sizeX; i += size){
+            sum = 0;
+            for(let w = 0; w<size; w++){
+                sum += first[w] * net[i + w];
+                sum += second[w] * net[i + sizeX + w];
+            }
+            target = expTable[parseInt((targets[i] + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+            if (sum > MAX_EXP)
+                pred = 1;
+            else if (sum < -MAX_EXP)
+                pred = 0;
+            else
+                pred = expTable[parseInt((sum + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+            loss = target - pred;
+            outputs[j] = pred;
+            err += Math.abs(loss);
+            j++;
+        }
+
+        //todo доделать обратный проход;
+
+    }
+    trainEmb(current, sample){
         this.trainCount++;
         let emb = current.emb;
         const losses = this.array().map(i=>0)

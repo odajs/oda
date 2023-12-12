@@ -37,7 +37,7 @@
                           <div border flex style="height: 20px;" ~style="grad2"></div>
                       </div>
                   </div>
-<!--                  <oda-button @tap="similar" icon="lineawesome:equals-solid"></oda-button>-->
+                  <oda-button @tap="similar" icon="lineawesome:equals-solid"></oda-button>
               </fieldset>
               <fieldset class="flex vertical"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>PREDICATE</legend>
@@ -119,20 +119,8 @@
             $def: '',
             $save: true,
         },
-        grad1:{
-            $type: Object,
-            get(){
-                this.tokens;
-                return this.getBackGradient(this.model.join(this.w1));
-            }
-        },
-        grad2: {
-            $type: Object,
-            get() {
-                this.tokens;
-                return this.getBackGradient(this.model.join(this.w2));
-            }
-        },
+        grad1: {},
+        grad2: {},
         w1:{
             $def: '',
             $save: true,
@@ -141,10 +129,12 @@
             $def: '',
             $save: true,
         },
-        get simRes(){
-            this.tokens;
-            return this.model.similarWords(this.w1, this.w2);
+        similar(){
+            this.grad1 = this.getBackGradient(this.model.join(this.w1));
+            this.grad2 = this.getBackGradient(this.model.join(this.w2));
+            this.simRes = this.model.similarWords(this.w1, this.w2);
         },
+        simRes: 0,
         tokenizeCorpus: [],
         set textCorpus(n){
             this.tokenizeCorpus = this.model.tokenize(n);
