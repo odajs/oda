@@ -1,3 +1,5 @@
+// docker run -i -t -d -p 8080:80 --restart=always -e JWT_ENABLED=false -v "d:\d":"/var/lib/onlyoffice/documentserver/App_Data/cache/files/" onlyoffice/documentserver
+
 const path = import.meta.url.split('only-office.js')[0];
 ODA({ is: 'oda-only-office',
     template: `
@@ -11,10 +13,11 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        ooUrl: 'https://current.odant.org/docker/onlyoffice/',
-        url: path + 'document.docx',
-        // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
-        key: '',
+        // ooUrl: 'https://current.odant.org/docker/onlyoffice/',
+        // url: path + 'document.docx',
+        ooUrl: 'http://localhost:8080/',
+        url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
+        key: '999',
         title: '',
         mode: {
             $def: 'edit',
@@ -62,7 +65,6 @@ ODA({ is: 'oda-only-office',
         return {
             customization: {
                 autosave: this.autosave,
-                forcesave: true,
                 comments: false,
                 compactHeader: this.compactHeader || false,
                 compactToolbar: this.compactToolbar || false
@@ -73,8 +75,8 @@ ODA({ is: 'oda-only-office',
             user: {
                 id: this.userID || '',
                 name: this.userName || 'anonymous'
-            }
-            // callbackUrl : ''
+            },
+            callbackUrl : 'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/M:1DA2842785F3562/C:1DA2842C580CDEE/O:1DA2C3587D46A49?execute=only-office-after-save'
         }
     },
     get config() {
