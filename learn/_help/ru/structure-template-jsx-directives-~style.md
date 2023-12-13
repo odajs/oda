@@ -1,8 +1,8 @@
-Директива **~style** используется для реактивной стилизации любого HTML-элемента, объявленного внутри компонента.
+﻿Директива **~style** используется для реактивной стилизации любого HTML-элемента, объявленного внутри компонента.
 
-Значение директивы **~style** автоматически связывается со значение атрибута **style** любого HTML-элемента, задавая стиль его отображения.
+Значение директивы **~style** автоматически связывается со значением атрибута **style** любого HTML-элемента, задавая стиль его отображения.
 
-Пример 1.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -10,40 +10,36 @@ ODA({
     template: `
         <div ~style="myStyle">Директива ~style</div>
     `,
-    $public: {
-        myStyle: "background: yellow; color: green ; padding: 10px"
-    }
+    myStyle: "background: yellow; color: green; padding: 10px"
 });
 ```
 
-В этом примере значение свойства компонента **myStyle** передается через директиву **~style** атрибуту **style** элемента **div**, в следствие чего у него изменяется стиль отображения.
+В этом примере значение свойства компонента **myStyle** передается через директиву **~style** атрибуту **style** элемента **div**, вследствие чего у него изменяется стиль отображения.
 
 В отличие от обычного присвоения директива **~style** позволяет использовать механизм реактивности, т.е. позволяет автоматически изменяет стиль отображения соответствующего HTML-элемента при изменении значения связанного с ним свойства компонента.
 
-Пример 2.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="myStyle" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myStyle: "background: green; color: yellow; padding: 10px"
-    },
-    _changeStyle() {
-        let myStyle1 = "background: green; color: yellow; padding: 10px";
-        let myStyle2 = "background: yellow; color: green; padding: 10px";
-        this.myStyle = this.myStyle === myStyle1 ? myStyle2 : myStyle1;
+    myStyle: "background: green; color: yellow; padding: 10px",
+    changeStyle() {
+        let style1 = "background: green; color: yellow; padding: 10px";
+        let style2 = "background: yellow; color: green; padding: 10px";
+        this.myStyle = this.myStyle === style1 ? style2 : style1;
     }
 });
 ```
 
-Здесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана эта директива **~style**.
+Здесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана директива **~style**.
 
-Значение директивы **~style** можно задать не только в виде свойства компонента, но в виде обычной строки.
+Значение директивы **~style** можно задать не только в виде свойства компонента, но и в виде обычной строки.
 
-Пример 3.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -54,9 +50,9 @@ ODA({
 });
 ```
 
-При использовании шаблонных литералов придется экранировать каждый символ обратной одинарной кавычки (**`**), так как такие кавычки уже используются при задании свойства **template** самого компонента, а использование вложенных кавычек одного и того же типа без их экранирования в языке JavaScript запрещено.
+При использовании шаблонных литералов необходимо экранировать каждый символ обратной одинарной кавычки (**`**), так как такие кавычки уже используются при задании свойства **template** самого компонента, а использование вложенных кавычек одного и того же типа без их экранирования в языке JavaScript запрещено.
 
-Пример 4.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -69,7 +65,7 @@ ODA({
 
 В качестве значения директивы **~style** вместо строковых литералов можно использовать обычный объект. В этом случае каждое свойство этого объекта будет соответствовать отдельному CSS-объявлению правила отображения HTML-элемента.
 
-Пример 5:
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -80,11 +76,11 @@ ODA({
 });
 ```
 
-Обратите внимание, что в отличие от строковых литералов значения свойств у такого объекта необходимо указывать в кавычках, так как они обязательно должны иметь строковый тип. Например, **'green'**.
+Обратите внимание, что в отличие от строковых литералов значения свойств у такого объекта необходимо указывать в кавычках, так как они обязательно должны иметь строковый тип (например, **'green'**).
 
 Если имя в CSS-объявлении имеет неразрешенное с точки зрения языка JavaScript значение, то его тоже необходимо будет записать в кавычках.
 
-Пример 6.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -95,9 +91,9 @@ ODA({
 });
 ```
 
-Однако если использовать верблюжью нотацию (Camel case), то неразрешенное имя будет автоматически преобразовано в правильную форму, с добавлением дефиса (**-**) между словами. Указывать его в апострофах в этом случае уже будет не нужно.
+Однако если использовать верблюжью нотацию (Camel case), то неразрешенное имя будет автоматически преобразовано в правильную форму, с добавлением дефиса (**-**) между словами. Указывать его в апострофах в этом случае уже не нужно.
 
-Пример 7.
+Например,
 
 ```javascript run_edit_[my-component.js]
 ODA({
@@ -110,7 +106,7 @@ ODA({
 
 Также автоматическое преобразование невалидных имен свойств из верблюжьей нотацию в шашлычную (Kebab case) происходит для любого объекта, указанного в директиве **~style**.
 
-Пример 8.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
@@ -118,59 +114,53 @@ ODA({
     template: `
         <div ~style="myStyle">Верблюжья нотация для свойств объекта</div>
     `,
-    $public: {
-        myStyle: {
-            backgroundColor: 'green',
-            color: 'yellow',
-            padding: '10px'
-        }
+    myStyle: {
+        backgroundColor: 'green',
+        color: 'yellow',
+        padding: '10px'
     }
 });
 ```
 
-Следует отметить, что механизм реактивности работает только при изменении значения всего свойства компонента, а не при изменение его отдельных элементов.
+Следует отметить, что механизм реактивности работает только при изменении значения всего свойства компонента, а не при изменении его отдельных элементов.
 
-Пример 9.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="myStyle" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myStyle: {
-            background: 'green',
-            color: 'yellow',
-            padding: '10px'
-        }
+    myStyle: {
+        background: 'green',
+        color: 'yellow',
+        padding: '10px'
     },
-    _changeStyle() {
-        let a = {background: 'green', color: 'yellow', padding: '10px'};
-        let b = {background: 'yellow', color: 'green', padding: '10px'};
-        this.myStyle = JSON.stringify(this.myStyle)===JSON.stringify(a)? b : a;
+    changeStyle() {
+        let style1 = {background: 'green', color: 'yellow', padding: '10px'};
+        let style2 = {background: 'yellow', color: 'green', padding: '10px'};
+        this.myStyle = JSON.stringify(this.myStyle)===JSON.stringify(style1)? style2 : style1;
     }
 });
 ```
 
-При изменение отдельных свойств связанного объекта механизм реактивности работать не будет.
+При изменении отдельных свойств связанного объекта механизм реактивности работать не будет.
 
-Пример 10.
+Например,
 
 ```javascript _error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="myStyle" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myStyle: {
-            background: 'green',
-            color: 'yellow',
-            padding: '10px'
-        }
+    myStyle: {
+        background: 'green',
+        color: 'yellow',
+        padding: '10px'
     },
-    _changeStyle() {
+    changeStyle() {
         this.myStyle.background = this.myStyle.background === 'green' ? 'yellow' : 'green';
     }
 });
@@ -178,18 +168,16 @@ ODA({
 
 Для его включения сам объект необходимо записать в литеральной форме, а в качестве значения его свойства нужно указать имя того свойства компонента, с которым это значение должно быть связанно.
 
-Пример 11.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="{background: myColor, color: 'yellow', padding: '10px'}" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="{background: myColor, color: 'yellow', padding: '10px'}" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myColor: 'green'
-    },
-    _changeStyle() {
+    myColor: 'green',
+    changeStyle() {
         this.myColor = this.myColor === 'green' ?  'red' : 'green';
     }
 });
@@ -199,141 +187,120 @@ ODA({
 
 Если значение директивы **~style** записать в виде строки, то механизм реактивности будет работать только при использовании шаблонных литералов.
 
-Пример 12.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="\`background: \${myColor}; color: yellow; padding: 10px\`" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="\`background: \${myColor}; color: yellow; padding: 10px\`" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myColor: 'green'
-    },
-    _changeStyle() {
+    myColor: 'green',
+    changeStyle() {
         this.myColor = this.myColor === 'green' ?  'red' : 'green';
     }
 });
 ```
 
 ``` warning_md
-В этом случае символ **$** обязательно нужно экранировать, иначе интерполяционное выражение будет применятся к свойству **template** компонента, а не к значению директивы **~style**.
+В шаблонном литерале символ **$** обязательно нужно экранировать, иначе интерполяционное выражение будет применятся к свойству **template** компонента, а не к значению директивы **~style**.
 ```
 
 В интерполяционном выражении можно использовать отдельные свойства объекта.
 
-Пример 11.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="\`background: \${myStyle.background}; color: yellow; padding: 10px\`" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="\`background: \${myStyle.background}; color: yellow; padding: 10px\`" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myStyle: {
-            background: 'green',
-            color: 'yellow',
-            padding: '10px'
-        }
+    myStyle: {
+        background: 'green',
+        color: 'yellow',
+        padding: '10px'
     },
-    _changeStyle() {
-        this.myStyle.background = this.myStyle.background === 'green' ? 'red' : 'green';
+    changeStyle() {
+       this.myStyle.background = this.myStyle.background === 'green' ? 'red' : 'green';
     }
 });
 ```
 
 Заметьте, что если шаблонный литерал записан внутри обычной строки, то механизм реактивности работать не будет.
 
-Пример 12.
+Например,
 
 ```javascript error_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="'background: \`\${myColor}\`'" @tap="_changeStyle">Щелкни по мне</div>
+        <div ~style="'background: \`\${myColor}\`'" @tap="changeStyle">Щелкни по мне</div>
     `,
-    $public: {
-        myColor: 'green'
-    },
-    _changeStyle() {
+    myColor: 'green',
+    changeStyle() {
         this.myColor = this.myColor === 'green' ? 'red' : 'green';
     }
 });
 ```
 
-В этом примере шаблонный литерал рассматривается лишь как часть строки и директивой **~style** как интерполяционное выражение отдельно не воспринимается.
-
-```warning_md
-Не задавайте у самого компонента свойство с именем **style**, так как такое свойство уже задано в классе **HTMLElement**, наследниками которого являются все компоненты. Если это будет сделано по ошибке, то такое свойство перекроет унаследованное родительское свойство **style** со всеми его CSS-объявлениями.
-```
-
-Пример 13.
-
-```javascript _run_edit_error_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="myStyle" @tap="_changeStyle">Не делайте так</div>
-        <div>Свойство style компонента перекрыто по ошибке</div>
-    `,
-    $public: {
-        myStyle: "background: yellow",
-        style: {
-            $def: "background: red; color: yellow",
-            $attr: true
-        }
-    },
-    _changeStyle() {
-        this.myStyle = this.myStyle === "background: yellow" ?  "background: green" : "background: yellow";
-    }
-});
-```
-
-В данном примере свойство **style** компонента перекрывает родительское свойство с тем же самым именем. В результате этого желтый цвет шрифта на желтом фоне становится невидимым. Однако если щелкнуть по первому элементу **div**, то его фон изменится и текст надписи станет читаемым.
-
-В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим значением, заданным в свойстве **myStyle**.
+В этом примере шаблонный литерал рассматривается лишь как часть строки и директивой **~style** не воспринимается как отдельное интерполяционное выражение.
 
 В случае использования одновременно нескольких способов стилизации директива **~style** будет добавлять только новые CSS-объявления к уже существующим, не удаляя предыдущие.
 
-Пример 14.
+Например,
 
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div style="background: green" ~style="myStyle" @tap="_changeStyle">Директива ~style добавила CSS-свойство color</div>
+        <div style="background: green; padding: 10px" ~style="myStyle">Директива ~style добавила CSS-свойство "color: yellow"</div>
     `,
-    $public: {
-        myStyle: "color: yellow",
-    },
-    _changeStyle() {
-        this.myStyle = this.myStyle ==="color: yellow" ?  "color: white" : "color: yellow";
-    }
+    myStyle: "color: yellow"
 });
 ```
 
 ```warning_md
-Если какое-либо CSS-объявление, указанное  в директиве **~style**, совпадет с уже существующим, то оно перекроет его значение.
+Если какое-либо CSS-объявление, указанное в директиве **~style**, совпадет с уже существующим, то оно перекроет его значение.
 ```
 
-Пример 15.
+Например,
 
  ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div style="background: green" ~style="myStyle">Директива ~style перекрыла существующее CSS-свойство</div>
+        <div style="background: green; padding: 10px" ~style="myStyle">Директива ~style перекрыла существующее CSS-свойство "background"</div>
     `,
-    $public: {
-        myStyle: "background: yellow"
-    }
+    myStyle: "background: yellow"
 });
 ```
 
 В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим собственным значением, заданным в свойстве **myStyle**.
 
+У компонента можно объявить свойство с именем **style** и модификатором **$attr**, которое будет определять CSS-стилизацию всего компонента. В этом случае директива **~style** будет перекрывать одноименные CSS-объявления применительно к своему HTML-элементу.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style="myStyle">Директива ~style перекрыла CSS-свойство "background" из свойства style</div>
+        <span>Фон элемента взят из свойства style</span>
+    `,
+    myStyle: "background: green",
+    style: {
+        $def: "background: red; color: yellow",
+        $attr: true
+    }
+});
+```
+
+В этом примере в свойстве **style** задан красный цвет фона для всего компонента. Однако элемент **div** содержит директиву **~style**, которая перекрывает CSS-объявление **background** из свойства **style**. В результате зеленый фон элемента **div** определяется значением, заданным в свойстве **myStyle**.
+
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/RbZrBh4KWbk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
+
