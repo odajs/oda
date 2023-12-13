@@ -18,7 +18,7 @@ let style = /*css*/`
 }
 @media (prefers-color-scheme: dark) {
     :root{
-        --content-background: rgb(40 40 40);
+        --content-background: rgb(60 60 60);
         --bar-background: var(--content-background);
         --stroke-color: transparent;
         --content-color: rgb(200 200 200);
@@ -37,13 +37,13 @@ let style = /*css*/`
 
         --focused-color: var(--accent-color);
         --selected-color: rgb(0 153 255);
-        --selected-background: rgb(60 60 60);
+        --selected-background: rgb(80 80 80);
         --dark-color: rgb(20, 20, 20);
         --dark-background: gray;
 
         --body-background: transparent;
         --body-color: var(--content-background);
-        --header-background:  rgb(60 60 60);
+        --header-background:  rgb(50 50 50);
 
 
         --section-background: rgb(26 26 26);
@@ -412,7 +412,7 @@ body[context-menu-show] *:not(oda-context-menu){
     --selected: {
         color: var(--selected-color) !important;
         fill: var(--selected-color) !important;
-        filter: brightness(0.8) contrast(1.2);
+        filter: brightness(0.8) contrast(1.1);
     };
     --outlined: {
         outline: var(--content-color) dashed .5px;
