@@ -18,6 +18,7 @@ ODA({ is: 'oda-only-office',
         // ooUrl: 'http://localhost:8080/',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
         key: '',
+        fileKey: '',
         title: '',
         mode: {
             $def: 'edit',
@@ -86,7 +87,12 @@ ODA({ is: 'oda-only-office',
                 fileType: this.fileType || 'docx',
                 key: this.key || '',
                 title: this.title || 'document.' + this.fileType,
-                url: this.url
+                url: this.url,
+                referenceData: {
+                    fileKey: this.fileKey || '',
+                    // instanceId: '',
+                    key: this.key || ''
+                }
             },
             documentType: this.documentType || 'word',
             height: '100%',
