@@ -1,9 +1,11 @@
-Директива **~class** используется для связывания атрибута **class** HTML-элемента с одним или несколькими CSS-классами его стилевого оформления или с CSS-классами стилевого оформления родительского компонента.
+﻿Директива **~class** используется для связывания атрибута **class** HTML-элемента с одним или несколькими CSS-классами его стилевого оформления или с CSS-классами стилевого оформления родительского компонента.
 
 ```info_md
 Значение этой директивы должно быть именем или списком имен CSS-классов, разделенных пробелами. Сами CSS-классы, указываемые в директиве, должны быть объявлены заранее в разделе шаблона **style** компонента.
 ```
-Пример 1:
+
+Например,
+
 ```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
@@ -22,7 +24,8 @@ ODA({
 
 При формировании имени или списка CSS-классов можно использовать inline-выражение, свойство или метод компонента.
 
-Пример 2:
+Например,
+
 ```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
@@ -38,9 +41,7 @@ ODA({
         <div ~class="myStyle">Свойство</div>
         <div ~class="myMethod">Метод</div>
     `,
-    $public: {
-        myStyle: 'my-css-class'
-    },
+    myStyle: 'my-css-class',
     myMethod() {
         return this.myStyle;
     }
@@ -49,7 +50,8 @@ ODA({
 
 Директива **~class** поддерживает механизм реактивности, т.е. при любом изменении значения директивы автоматически будет изменяться значение атрибута **class** HTML-элемента, в котором она указана.
 
-Пример 3:
+Например,
+
 ```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
@@ -63,17 +65,15 @@ ODA({
             .my-css-class2 {
                 background: green;
                 color: yellow;
-                padding: 5px;
+                padding: 10px;
             }
         </style>
-        <div ~class="myStyle">Свойство</div>
-        <button @tap="_changeStyle">Изменить</button>
+        <div ~class="myStyle">Образец стиля</div>
+        <button @tap="changeStyle">Изменить стиль</button>
     `,
-    $public: {
-        myStyle: 'my-css-class1'
-    },
-    _changeStyle() {
-        this.myStyle = this.myStyle === 'my-css-class1' ?  'my-css-class2' : 'my-css-class1';
+    myStyle: 'my-css-class1',
+    changeStyle() {
+        this.myStyle = this.myStyle === 'my-css-class1' ? 'my-css-class2' : 'my-css-class1';
     }
 });
 ```
@@ -82,3 +82,4 @@ ODA({
     <iframe src="https://www.youtube.com/embed/H43hAmTDLqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
+
