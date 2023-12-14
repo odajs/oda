@@ -3,15 +3,15 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 32;
+    vectorSize = 256;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = 0.1;
+    trainKoef = .1;
     progress = 0;
     size = 0;
     lookBack = 2;
     _array = [];
-    step = 2;
+    step = 3;
     get predicateError(){
         if (!this.size)
             return 1;
@@ -77,11 +77,15 @@ export class gptModel{
         return output.trim();
     }
     updateInput(emb, input){
-        input.splice(0, this.vectorSize);
-        // for (let i = 0; i<input.length; i++) {
-        //     input[i] /= 2;
-        // }
-        input.push(...emb);
+         // todo брать сигмоиду
+        for(let i = 0; i<input.length; i++){
+            input[i] = input[i] * .8 +  emb[i];
+        }
+        // input.splice(0, this.vectorSize);
+        // // for (let i = 0; i<input.length; i++) {
+        // //     input[i] /= 2;
+        // // }
+        // input.push(...emb);
         return input;
     }
 
@@ -108,7 +112,7 @@ export class gptModel{
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
-        return (Math.random() - .5);
+        return (Math.random() - .5) ;
     }
     getTokenItem(token){
         let item = tokenMap[token] ??= this.tokens.find(i=>i.id === token)
@@ -118,18 +122,17 @@ export class gptModel{
             item.emb = this.array().map(i=>this.initWeight());
             item.cnt = this.array().map(i=>this.initWeight());
             item.net = [];
-            item.net.push(this.array(this.vectorSize * this.lookBack).map(i=>{
+            item.net.push(this.array(this.vectorSize).map(i=>{
                 return this.array(this.vectorSize).map(i=>this.initWeight());
             }));
             item.net.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize / 2).map(i=>this.initWeight());
-            }));
-            item.net.push(this.array(this.vectorSize / 2).map(i=>{
                 return this.array(this.vectorSize).map(i=>this.initWeight());
             }));
-            // item.net.push(this.array(this.vectorSize).map(i=>{
-            //     return this.array(this.vectorSize).map(i=>this.initWeight());
-            // }));
+            item.net.push(this.array(this.vectorSize).map(i=>{
+                return this.array(this.vectorSize).map(i=>this.initWeight());
+            }));
+
+
             item.next = Object.create(null);
             item.tokenError = 1;
             item.count = 0;
@@ -190,7 +193,7 @@ export class gptModel{
         return error;
     }
     trainLinks(corpus= [], plastic){
-        const inputs = this.array(this.vectorSize * this.lookBack).map(i=>.5);
+        const inputs = this.array(this.vectorSize).map(i=>1);
         const size = corpus.length;
         let error = 0;
         let res;
@@ -252,7 +255,9 @@ export class gptModel{
         const layers = current.net;
         const alpha = this.trainKoef;
         let outputs;
-        let predicate = inputs;
+        let predicate = inputs/*.map(x=>{
+            return this.sigm(x);
+        });*/
         let predicates = [predicate];
 
         for(let l = 0; l<layers.length; l++){
@@ -273,6 +278,8 @@ export class gptModel{
         let error = 0;
         if(targets){
             let losses = targets.map((target, i)=>{
+                // let loss = target - outputs[i];
+                // loss = this.sigm(loss);
                 target = this.sigm(target);
                 let pred = predicate[i];
                 let loss = target - pred;
