@@ -156,7 +156,7 @@
         },
         async tr(){
             let e  = 1;
-            while(this.train && e >.005){
+            while(this.train && e > 0.001){
                 e  = this.model.scan(this.tokenizeCorpus);
                 await new Promise(resolve => this.async(resolve));
             }
@@ -164,7 +164,7 @@
         },
         async tr1(){
             let e  = 1;
-            while(this.train1 && e >.005){
+            while(this.train1 && e >.001){
                 const {error}  = this.model.trainLinks(this.tokenizeCorpus);
                 e = error;
                 await new Promise(resolve => this.async(resolve));
