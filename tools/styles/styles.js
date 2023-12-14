@@ -22,11 +22,12 @@ let style = /*css*/`
         --bar-background: var(--content-background);
         --stroke-color: transparent;
         --content-color: rgb(200 200 200);
-        --header-color: var(--header-color);
+        --header-background: rgb(50 50 50);
+        --header-color: var(--content-color);
         --border-color: darkgray;
         --border-radius: 0px;
 
-        --accent-color: rgb(0 60 255);
+        --accent-color: rgb(0 100 255);
         --success-color: green;
         --error-color: yellow;
         --error-background: red;
@@ -37,13 +38,13 @@ let style = /*css*/`
 
         --focused-color: var(--accent-color);
         --selected-color: rgb(0 153 255);
-        --selected-background: rgb(80 80 80);
+        --selected-background: var(--header-background);
+        --selected-filter: brightness(1.2) contrast(0.9);
         --dark-color: rgb(20, 20, 20);
         --dark-background: gray;
 
         --body-background: transparent;
         --body-color: var(--content-background);
-        --header-background:  rgb(50 50 50);
 
 
         --section-background: rgb(26 26 26);
@@ -59,7 +60,8 @@ let style = /*css*/`
         --bar-background: var(--content-background);
         --stroke-color: transparent;
         --content-color: black;
-        --header-color: var(--header-color);
+        --header-background: silver;
+        --header-color: var(--content-color);
         --border-color: darkgray;
         --border-radius: 0px;
 
@@ -74,13 +76,13 @@ let style = /*css*/`
 
         --focused-color: var(--accent-color);
         --selected-color: navy;
-        --selected-background: silver;
+        --selected-background: var(--header-color);
+        --selected-filter: brightness(0.8) contrast(1.2);
         --dark-color: white;
         --dark-background: gray;
 
         --body-background: transparent;
         --body-color: var(--content-background);
-        --header-background: silver;
 
 
         --section-background: lightgrey;
@@ -412,7 +414,7 @@ body[context-menu-show] *:not(oda-context-menu){
     --selected: {
         color: var(--selected-color) !important;
         fill: var(--selected-color) !important;
-        filter: brightness(0.8) contrast(1.1);
+        filter: var(--selected-filter);
     };
     --outlined: {
         outline: var(--content-color) dashed .5px;
