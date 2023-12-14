@@ -76,7 +76,7 @@ let style = /*css*/`
 
         --focused-color: var(--accent-color);
         --selected-color: navy;
-        --selected-background: var(--header-color);
+        --selected-background: var(--header-background);
         --selected-filter: brightness(0.8) contrast(1.2);
         --dark-color: white;
         --dark-background: gray;
