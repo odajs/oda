@@ -21,6 +21,7 @@
                   <div flex></div>
                   <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
                   <oda-button :disabled="!textCorpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
+                  <oda-button :disabled="!textCorpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train1"  @tap="train1 = !train1">{{train1?'stop':'train1'}}</oda-button>
               </div>
               <fieldset class="horizontal"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>SIMILAR:{{Math.round(simRes * 10000)/100}}%</legend>
@@ -139,9 +140,6 @@
         set textCorpus(n){
             this.tokenizeCorpus = this.model.tokenize(n);
         },
-        scan(corpus){
-            return this.model.scan(corpus);
-        },
         train:{
             async set (n){
                 if (n){
@@ -149,14 +147,29 @@
                 }
             }
         },
+        train1:{
+            async set (n){
+                if (n){
+                    this.tr1();
+                }
+            }
+        },
         async tr(){
             let e  = 1;
-            while(this.train && e>.01){
-                const {current, error}  = this.scan(this.tokenizeCorpus);
-                e = error;
+            while(this.train && e >.005){
+                e  = this.model.scan(this.tokenizeCorpus);
                 await new Promise(resolve => this.async(resolve));
             }
             this.train = false;
+        },
+        async tr1(){
+            let e  = 1;
+            while(this.train1 && e >.005){
+                const {error}  = this.model.trainLinks(this.tokenizeCorpus);
+                e = error;
+                await new Promise(resolve => this.async(resolve));
+            }
+            this.train1 = false;
         },
         getColors(items){
             const getColor = (val)=>{
