@@ -1768,10 +1768,10 @@ cells: {
             if (!this.item || this.hideIcon)
                 return '';
             if (this.item.$loading)
-                return this.iconExpanding;
+                return this.item.iconExpanding || this.iconExpanding;
             if (this.item.__expanded__)
-                return this.iconExpanded;
-            return this.iconCollapsed;
+                return this.item.iconExpanded || this.iconExpanded;
+            return this.item.iconCollapsed || this.iconCollapsed;
         },
         _toggleExpand(e, d) {
             this.async(() => {
