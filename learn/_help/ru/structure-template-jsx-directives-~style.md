@@ -197,7 +197,7 @@ ODA({
     `,
     myColor: 'green',
     changeStyle() {
-        this.myColor = this.myColor === 'green' ?  'red' : 'green';
+        this.myColor = this.myColor === 'green' ? 'red' : 'green';
     }
 });
 ```
