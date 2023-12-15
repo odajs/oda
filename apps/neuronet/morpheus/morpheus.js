@@ -3,15 +3,15 @@
 
 export class gptModel{
     tokens = [];
-    vectorSize = 256;
+    vectorSize = 32;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = .1;
+    trainKoef = 0.1;
     progress = 0;
     size = 0;
     lookBack = 2;
     _array = [];
-    step = 3;
+    step = 2;
     get predicateError(){
         if (!this.size)
             return 1;
@@ -37,7 +37,7 @@ export class gptModel{
     }
     async prompt(text){
         const tokens = this.tokenize(text, true);
-        let {inputs, current} = this.trainLinks(tokens, .1);
+        let {inputs, current} = await this.trainLinks(tokens, .1);
         let item = current;
         let output = '';
         let next = Object.keys(item.next);
@@ -66,10 +66,7 @@ export class gptModel{
             }
             current = next[0];
             if(!current) break;
-            const character = current[1];
-            output += character;
-            if (character === '.')
-                break;
+            output += current;
             item = this.getTokenItem(current);
             this.updateInput(item.emb, inputs);
             next = Object.keys(item.next);
@@ -95,15 +92,14 @@ export class gptModel{
         return cosSimilar(t1, t2);
     }
     join(word){
-        const result = this.array().map(i=>0.0);
-        for (let t = 0; t < word.length; t++){
-            const token = word.substr(t, this.step);
-            if (token.length <this.step) break;
-            const emb = this.getTokenItem(token).emb;
-            if (emb){
-                for(let i = 0; i < emb.length; i++){
-                    result[i] += emb[i];
-                }
+        const corpus = this.tokenize(word, true);
+        const result = this.array().map(i=>0);
+        for (let t = 0; t < corpus.length; t++){
+            const token = corpus[t];
+            if (!token) break;
+            const emb = token.emb;
+            for(let i = 0; i < emb.length; i++){
+                result[i] += emb[i];
             }
         }
         return result;
@@ -112,137 +108,148 @@ export class gptModel{
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
-        return (Math.random() - .5) ;
+        return (Math.random() - .5);
     }
     getTokenItem(token){
-        let item = tokenMap[token] ??= this.tokens.find(i=>i.id === token)
+        let item = tokenMap[token];
         if (!item){
-            item = tokenMap[token] = Object.create(null);
-            item.id = token;
-            item.emb = this.array().map(i=>this.initWeight());
-            item.cnt = this.array().map(i=>this.initWeight());
-            item.net = [];
-            item.net.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize).map(i=>this.initWeight());
-            }));
-            item.net.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize).map(i=>this.initWeight());
-            }));
-            item.net.push(this.array(this.vectorSize).map(i=>{
-                return this.array(this.vectorSize).map(i=>this.initWeight());
-            }));
-
-
-            item.next = Object.create(null);
-            item.tokenError = 1;
-            item.count = 0;
-            item.predicateError = 1;
-            this.tokens.push(item);
-            this.size = this.tokens.length;
+            item = tokenMap[token] = this.tokens.find(i=>i.id === token)
+            if (!item){
+                item = tokenMap[token] = Object.create(null);
+                item.id = token;
+                item.emb = this.array().map(i=>this.initWeight());
+                item.cnt = this.array().map(i=>this.initWeight());
+                item.net = [];
+                item.net.push(this.array(this.vectorSize).map(i=>{
+                    return this.array(this.vectorSize).map(i=>this.initWeight());
+                }));
+                // item.net.push(this.array(this.vectorSize).map(i=>{
+                //     return this.array(this.vectorSize).map(i=>this.initWeight());
+                // }));
+                // item.net.push(this.array(this.vectorSize).map(i=>{
+                //     return this.array(this.vectorSize).map(i=>this.initWeight());
+                // }));
+                item.next = Object.create(null);
+                item.tokenError = 1;
+                item.count = 0;
+                item.predicateError = 1;
+                this.tokens.push(item);
+                this.size = this.tokens.length;
+            }
+            // item.cnt['z'] = this.array().map(i=>0);
+            // item.emb['z'] = this.array().map(i=>0);
         }
         return item;
     }
     tokenize(text, prompt){
         const corpus = [];
-        let prev;
         const step = this.step;
         for (let i = 0; i < text.length; i++){
             let token = text.substr(i, step);
             if (token.length < step) break;
-            let tokenItem = this.getTokenItem(token);
-            corpus.push(token);
-            if(prompt)
-                continue;
-            tokenItem.count++;
-            if (prev){
-                let prevItem = tokenMap[prev];
-                prevItem.next[token] ??= 0;
-                prevItem.next[token]++;
-            }
-            prev = token;
+            let item = this.getTokenItem(token);
+            corpus.push(item);
+            if(prompt) continue;
+            item.count++;
+            let prev = corpus[i - step];
+            if (!prev) continue;
+            prev.next[token] ??= 0;
+            prev.next[token]++;
         }
         return corpus;
     }
-    scan(corpus= [], plastic){
-        let sample, current, next;
+    async scan(corpus= [], plastic = 1){
         const size = corpus.length;
-        let error = 0;
+        const alpha = this.trainKoef;
+        let sample, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
+        const limit = 10000;
         for (let i = 0; i<size; i++){
-            let current = corpus[i];
-            current = this.getTokenItem(current);
-            let next = corpus[i + 1];
-            const sample = [];
-            if(next){
-                next = this.getTokenItem(next);
+            current = corpus[i];
+            next = corpus[i + this.step];
+            // prepare samples
+            sample = [];
+            if(next)
                 sample.push({cnt: next.cnt, target: 1});
-            }
+            // prepare negative samples
             let n = this.negativeSize;
             while (n){
                 const idx = Math.floor(Math.random() * size);
                 let neg = corpus[idx];
                 if (neg === current) continue;
-                if (current.next[neg]) continue;
-                neg = this.getTokenItem(neg);
+                if (current.next[neg.id]) continue;
                 sample.add({cnt: neg.cnt, target: 0});
                 n--;
             }
-            error += this.trainEmb(current, sample, plastic);
+            // train
+            this.trainCount++;
+            emb = current.emb;
+            losses = this.array().map(i=>0)
+            err = 0;
+            for (let s = 0; s<sample.length; s++){
+                const cnt = sample[s].cnt;
+                target = sample[s].target;
+                sum = 0;
+                for (let i = 0; i <emb.length; i++) {
+                    sum += emb[i] * cnt[i];
+                }
+                pred = this.sigm(sum);
+                loss = target - pred;
+                if (loss === 0) continue;
+                err += Math.abs(loss);
+                loss *= alpha * pred * plastic;
+                for (let i = 0; i <emb.length; i++) {
+                    losses[i] += loss * cnt[i];
+                    cnt[i] += loss * emb[i];
+                }
+            }
+            if (current.tokenError){
+                for(let i = 0; i<this.vectorSize; i++){
+                    emb[i] += losses[i];
+                }
+            }
+            error += current.tokenError = (err /= sample.length);
+            if (i && i%limit === 0){
+                await new Promise(resolve => {
+                    setTimeout(()=>{
+                        this.onScan();
+                        resolve();
+                    });
+
+                })
+            }
         }
         this.onScan();
         error /= size;
         return error;
     }
-    trainLinks(corpus= [], plastic){
+    async trainLinks(corpus= [], plastic = 1){
         const inputs = this.array(this.vectorSize).map(i=>1);
         const size = corpus.length;
         let error = 0;
         let res;
         let current;
+        let step = this.step;
+        const limit = 10000;
         for (let i = 0; i<size; i++){
             current = corpus[i];
-            current = this.getTokenItem(current);
-            let target = corpus[i + 1];
-            target = target && this.getTokenItem(target);
+            let target = corpus[i + step];
             res = this.forward(current, inputs, target?.emb || this.array().map(i=>1), plastic);
             error += res.error;
             this.updateInput(current.emb, inputs);
+            if (i && i%limit === 0){
+                await new Promise(resolve => {
+                    setTimeout(()=>{
+                        this.onScan();
+                        resolve();
+                    });
+
+                })
+            }
         }
         this.onScan();
         error /= size;
         const outputs = res.outputs;
         return {error, current, inputs};
-    }
-    trainEmb(current, sample, plastic=1){
-        this.trainCount++;
-        let emb = current.emb;
-        const losses = this.array().map(i=>0)
-        let err = 0;
-        const alpha = this.trainKoef;
-        let loss, target, sum, pred;
-        for (let s = 0; s<sample.length; s++){
-            const cnt = sample[s].cnt;
-            target = sample[s].target;
-            sum = 0;
-            for (let i = 0; i <emb.length; i++) {
-                sum += emb[i] * cnt[i];
-            }
-            pred = this.sigm(sum);
-            loss = target - pred;
-            if (loss === 0) continue;
-            err += Math.abs(loss);
-            loss *=  alpha * plastic;
-            for (let i = 0; i <emb.length; i++) {
-                losses[i] += loss * cnt[i];
-                cnt[i] += loss * emb[i];
-            }
-        }
-        current.tokenError = (err /= sample.length);
-        if (current.tokenError){
-            for(let i = 0; i<this.vectorSize; i++){
-                emb[i] += losses[i];
-            }
-        }
-        return err;
     }
     sigm(x){
         if (x > MAX_EXP)
