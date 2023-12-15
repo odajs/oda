@@ -132,7 +132,7 @@ ODA({
 });
 ```
 
-В данном примере задать цвет шрифта с помощью директивы **~class** не удастся. Как видно на экране, задаваемые с помощью нее стилевые классы не добавляются в список классов элемента **div**.
+В данном примере менять цвет шрифта с помощью директивы **~class** не удастся. Как видно на экране, задаваемые с помощью нее стилевые классы не добавляются в список классов элемента **div**.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/H43hAmTDLqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen

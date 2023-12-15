@@ -178,7 +178,7 @@ ODA({
     `,
     myColor: 'green',
     changeStyle() {
-        this.myColor = this.myColor === 'green' ?  'red' : 'green';
+        this.myColor = this.myColor === 'green' ? 'red' : 'green';
     }
 });
 ```
@@ -266,7 +266,7 @@ ODA({
 
 Например,
 
- ```javascript _run_edit_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
@@ -277,6 +277,24 @@ ODA({
 ```
 
 В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим собственным значением, заданным в свойстве **myStyle**.
+
+Однако, если в атрибут **style** данные передаются с помощью биндинга, то директива **~style** игнорируется.
+
+Например,
+
+```javascript _run_edit_error_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div :style="'background: yellow; padding: 10px'" ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: "color: green",
+    changeStyle() {
+        this.myStyle = this.myStyle === 'color: green' ? 'color: red' : 'color: green';
+    }});
+```
+
+В данном примере менять цвет шрифта с помощью директивы **~style** не удастся. Как видно на экране, задаваемые с помощью нее CSS-объявления игнорируются.
 
 У компонента можно объявить свойство с именем **style** и модификатором **$attr**, которое будет определять CSS-стилизацию всего компонента. В этом случае директива **~style** будет перекрывать одноименные CSS-объявления применительно к своему HTML-элементу.
 
