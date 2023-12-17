@@ -3,13 +3,13 @@
 
 export class gptModel{
     tokens = [];
+    positional = [];
     vectorSize = 32;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = 0.1;
+    trainKoef = .1;
     progress = 0;
     size = 0;
-    lookBack = 2;
     _array = [];
     step = 2;
     get predicateError(){
@@ -36,56 +36,61 @@ export class gptModel{
         this.size = this.tokens.length;
     }
     async prompt(text){
+        const thread = {pos:0, plast: .1}
         const tokens = this.tokenize(text, true);
-        let {inputs, current} = await this.trainLinks(tokens, .1);
+        let {current} = await this.train(tokens, thread);
+        let prev = tokens[tokens.length - 2];
         let item = current;
         let output = '';
+        let inputs;
         let next = Object.keys(item.next);
-        let count = 1000;
-        while (count-- && next.length){
+        let count = tokens.length;
+        while (count++ < 1000 && next.length){
             if(next.length > 1) {
-                const {outputs} = this.forward(item, inputs, null, .1);
-                next = next.map(t=>{
+                const {outputs} = this.forward(prev, item, null, thread);
+                next = next.map((t, i)=>{
                     const nextItem = this.getTokenItem(t);
                     const s = cosSimilar(outputs, nextItem.emb);
-                    return {t, s};
+                    return {t, s, w: s * nextItem.count};
                 });
-                // next = next.filter(i => i.s >.5);
-                // if(!next.length){
-                //     next = this.tokens.map(t=>{
-                //         const s = cosSimilar(output, t.emb);
-                //         return {t:t.id, s};
-                //     })
-                //     next = next.filter(i => i.s >.5);
-                // }
                 next = next.sort((a,b)=>{
                     return a.s>b.s?-1:1;
                 })
-                next = next.map(i=>i.t);
+                // next = [next[0].t];
+                let sum = 0;
+                for(let i = 0; i<2; i++){
+                    sum += next[i]?.s || 0;
+                }
+                sum = Math.random() * sum;
+                let result;
+                for(let i of next){
+                    if(sum<0){
+                        result = i;
+                        break;
+                    }
+                    sum -= i.s;
+                    if(sum<0){
+                        result = i;
+                        break;
+                    }
+                }
+                next = [result.t];
 
             }
             current = next[0];
             if(!current) break;
-            output += current;
+            const cn = current[this.step-1];
+            if(!cn) break;
+            output += cn;
+            prev = item;
             item = this.getTokenItem(current);
-            this.updateInput(item.emb, inputs);
             next = Object.keys(item.next);
         }
         return output.trim();
     }
-    updateInput(emb, input){
-         // todo брать сигмоиду
-        for(let i = 0; i<input.length; i++){
-            input[i] = input[i] * .8 +  emb[i];
-        }
-        // input.splice(0, this.vectorSize);
-        // // for (let i = 0; i<input.length; i++) {
-        // //     input[i] /= 2;
-        // // }
-        // input.push(...emb);
-        return input;
+    genPositional(pos = 0){
+        return this.positional[pos] ??= genPositional(this.vectorSize, pos);
     }
-
     similarWords(t1, t2){
         t1 = this.join(t1);
         t2 = this.join(t2);
@@ -108,7 +113,7 @@ export class gptModel{
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
-        return (Math.random() - .5);
+        return (Math.random() - .5) / 5;///10;
     }
     getTokenItem(token){
         let item = tokenMap[token];
@@ -117,16 +122,15 @@ export class gptModel{
             if (!item){
                 item = tokenMap[token] = Object.create(null);
                 item.id = token;
+                if(token[0] === '.')
+                    item.isTerminal = true;
                 item.emb = this.array().map(i=>this.initWeight());
                 item.cnt = this.array().map(i=>this.initWeight());
                 item.net = [];
                 item.net.push(this.array(this.vectorSize).map(i=>{
                     return this.array(this.vectorSize).map(i=>this.initWeight());
                 }));
-                // item.net.push(this.array(this.vectorSize).map(i=>{
-                //     return this.array(this.vectorSize).map(i=>this.initWeight());
-                // }));
-                // item.net.push(this.array(this.vectorSize).map(i=>{
+                // item.net.push(this.array(this.vectorSize/2).map(i=>{
                 //     return this.array(this.vectorSize).map(i=>this.initWeight());
                 // }));
                 item.next = Object.create(null);
@@ -151,21 +155,21 @@ export class gptModel{
             corpus.push(item);
             if(prompt) continue;
             item.count++;
-            let prev = corpus[i - step];
+            let prev = corpus[i - 1];
             if (!prev) continue;
             prev.next[token] ??= 0;
             prev.next[token]++;
         }
         return corpus;
     }
-    async scan(corpus= [], plastic = 1){
+    async scan(corpus= [], thread = {pos: 0, plast: 1}){
         const size = corpus.length;
         const alpha = this.trainKoef;
         let sample, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
-        const limit = 10000;
+        const limit = Math.ceil(size / 10);
         for (let i = 0; i<size; i++){
             current = corpus[i];
-            next = corpus[i + this.step];
+            next = corpus[i + 1];
             // prepare samples
             sample = [];
             if(next)
@@ -192,11 +196,11 @@ export class gptModel{
                 for (let i = 0; i <emb.length; i++) {
                     sum += emb[i] * cnt[i];
                 }
-                pred = this.sigm(sum);
+                pred = this.activate(sum);
                 loss = target - pred;
                 if (loss === 0) continue;
                 err += Math.abs(loss);
-                loss *= alpha * pred * plastic;
+                loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
                     losses[i] += loss * cnt[i];
                     cnt[i] += loss * emb[i];
@@ -222,49 +226,58 @@ export class gptModel{
         error /= size;
         return error;
     }
-    async trainLinks(corpus= [], plastic = 1){
-        const inputs = this.array(this.vectorSize).map(i=>1);
+    async train(corpus= [], thread = {pos: 0, plast: 1}){
+        let input;
         const size = corpus.length;
         let error = 0;
         let res;
-        let current;
+        let current, prev;
         let step = this.step;
-        const limit = 10000;
+        const limit = Math.ceil(size / 100);
         for (let i = 0; i<size; i++){
             current = corpus[i];
-            let target = corpus[i + step];
-            res = this.forward(current, inputs, target?.emb || this.array().map(i=>1), plastic);
+            let target = corpus[i + 1];
+
+            res = this.forward(prev, current, target?.emb || this.array().map(i=>1), thread);
             error += res.error;
-            this.updateInput(current.emb, inputs);
             if (i && i%limit === 0){
                 await new Promise(resolve => {
                     setTimeout(()=>{
                         this.onScan();
                         resolve();
                     });
-
                 })
             }
+            prev = current;
         }
         this.onScan();
         error /= size;
-        const outputs = res.outputs;
-        return {error, current, inputs};
+        return {error, current};
     }
-    sigm(x){
-        if (x > MAX_EXP)
-            return  1;
-        if (x < -MAX_EXP)
-            return  0;
-        return expTable[parseInt((x + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+
+    activate(x){
+        return sigmoid(x);
+        // return leakyReLU(x);
     }
-    forward(current, inputs, targets, plastic= 1){
+    derivative(x, f){
+        return sigmoidD(x, f);
+        // return leakyReLUD(x);
+    }
+    forward(prev, current, targets, thread){
+
+        const inputs = this.genPositional(thread.pos);
+        if(current.isTerminal)
+            thread.pos = 0;
+        else
+            thread.pos++
         const layers = current.net;
         const alpha = this.trainKoef;
         let outputs;
-        let predicate = inputs/*.map(x=>{
-            return this.sigm(x);
-        });*/
+        const emb = current.emb;
+        const eprev = prev?.emb || this.array().map(i=>0);
+        let predicate = inputs.map((x, i)=>{
+            return emb[i] + x;// - eprev[i];
+        });
         let predicates = [predicate];
 
         for(let l = 0; l<layers.length; l++){
@@ -279,19 +292,17 @@ export class gptModel{
             }
             predicate = predicates[l+1] = [];
             for(let out = 0; out<outputs.length; out++){
-                predicate[out] = this.sigm(outputs[out]);
+                predicate[out] = this.activate(outputs[out]);
             }
         }
         let error = 0;
         if(targets){
             let losses = targets.map((target, i)=>{
-                // let loss = target - outputs[i];
-                // loss = this.sigm(loss);
-                target = this.sigm(target);
+                target = this.activate(target);
                 let pred = predicate[i];
                 let loss = target - pred;
                 error += Math.abs(loss);
-                loss = loss * pred * (1 - pred);
+                loss = loss * this.derivative(0, pred);
                 return loss;
             });
             current.predicateError = (error /= losses.length);
@@ -306,9 +317,9 @@ export class gptModel{
                         sum += losses[w] * weights[w];
                     }
                     let pred = predicate[n]
-                    errors[n] = sum * pred * (1 - pred);
+                    errors[n] = sum * this.derivative(0, pred);
                     for(let w = 0; w<weights.length; w++){
-                        weights[w] += losses[w] * pred * alpha * plastic;
+                        weights[w] += losses[w] * pred * alpha * thread.plast;
                     }
                 }
                 losses = errors;
@@ -329,18 +340,79 @@ const expTable = (()=>{
     return tab;
 })()
 const tokenMap = Object.create(null);
-function cosSimilar(A, B) { //На входе 2 вектора
-    if (!A || !B) return 0;
-    const m = A?.length || 0;
-    let scalar = 0;
-    let avgA = 0;
-    let avgB = 0;
-    for (let i = 0; i < m; i++){
-        let a = A[i];
-        let b = B[i];
-        scalar += a * b;
-        avgA += a * a;
-        avgB += b * b;
+function cosSimilar(A, B) {
+    if (A && B) {
+        let scalar = 0;
+        let avgA = 0;
+        let avgB = 0;
+        let a, b
+        for (let i = 0; i < A.length; i++){
+            a = A[i];
+            b = B[i];
+            scalar += a * b;
+            avgA += a * a;
+            avgB += b * b;
+        }
+        if(scalar){
+            avgA = Math.sqrt(avgA);
+            avgB = Math.sqrt(avgB);
+            scalar /= avgA * avgB;
+            return Math.abs(scalar);
+        }
     }
-    return Math.abs((scalar && scalar / (Math.sqrt(avgA) * Math.sqrt(avgB))) || 0) ;
+    return 0;
 }
+function EXP(x){
+    return expTable[parseInt((x + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+}
+function sigmoid(x){
+    // return (1/(1+Math.exp(-x)));
+    if (x > MAX_EXP)
+        return  1;
+    if (x < -MAX_EXP)
+        return  0;
+    return EXP(x);
+}
+function sigmoidD(x, f){
+    f ??= sigmoid(x);
+    return f * (1-f);
+}
+const reluK = .01;
+function leakyReLU(x){
+    if (x < 0)
+        return reluK * x;
+    return x;
+}
+function leakyReLUD(x){
+    if (x < 0)
+        return reluK;
+    return 1;
+}
+
+const ELU_alpha = 1;
+function ELU(x){
+    if (x < 0)
+        return ELU_alpha * (EXP(x) - 1);
+    return x;
+}
+function ELUD(x){
+    if (x < 0)
+        return ELU(x) + ELU_alpha;
+    return 1;
+}
+
+function tanh(x){
+    return sigmoidD(2 * x) * 2 - 1;
+}
+function tanhD(x, th){
+    return  1 - th * th * x;
+}
+function genPositional(dim, pos = 0){
+    const vector = [];
+    for(let i = 0; i < dim; i++){
+        const v = 1/Math.pow(10000, 2 * i/dim) * pos;
+        vector[i] = (i%2)?Math.cos(v):Math.sin(v);
+    }
+    return vector;
+}
+

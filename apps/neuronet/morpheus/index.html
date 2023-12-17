@@ -65,7 +65,7 @@
           <div class="horizontal header bold" slot="footer">
               <style>
                 div{
-                    padding: 4px;
+                    padding: 2px;
                     font-size: small;
                 }
               </style>
@@ -75,6 +75,9 @@
               <div>predicate-error: {{Math.round(model.predicateError * 10000)/100}}%</div>
               <div class="flex"></div>
               <div><progress max="100" :value="model.progress"></progress></div>
+          </div>
+          <div slot="right-panel" class="flex" style="overflow: auto;" opened>
+            <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
           </div>
         `,
         async prompt(){
@@ -164,8 +167,8 @@
         },
         async tr1(){
             let e  = 1;
-            while(this.train1 && e >.001){
-                const {error}  = await this.model.trainLinks(this.tokenizeCorpus);
+            while(this.train1 && e){
+                const {error}  = await this.model.train(this.tokenizeCorpus);
                 e = error;
             }
             this.train1 = false;
