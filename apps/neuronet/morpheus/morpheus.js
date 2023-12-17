@@ -4,10 +4,10 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 128;
+    vectorSize = 64;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = .1;
+    trainKoef = .05;
     progress = 0;
     size = 0;
     attantionSize = 16;
@@ -127,7 +127,7 @@ export class gptModel{
         return this._array[size] ??= [...Array(size)];
     }
     initWeight(){
-        return (Math.random() - .5) /10;///10;
+        return (Math.random() - .5) /5;///10;
     }
     getTokenItem(token){
         let item = tokenMap[token];
@@ -146,7 +146,7 @@ export class gptModel{
                 item.net.push(this.array(this.vectorSize).map(i=>{
                     return this.array(this.vectorSize).map(i=>this.initWeight());
                 }));
-                // item.net.push(this.array(this.vectorSize).map(i=>{
+                // item.net.push(this.array(this.vectorSize/2).map(i=>{
                 //     return this.array(this.vectorSize).map(i=>this.initWeight());
                 // }));
                 // item.net.push(this.array(this.vectorSize).map(i=>{
@@ -307,7 +307,7 @@ export class gptModel{
         let predicate = [];
         for(let i = 0; i< inputs.length; i++){
             thread.emb[i] += emb[i];
-            inputs[i] = predicate[i] = this.activate(emb[i] + inputs[i]);/* + eprev[i] * .8*/;
+            predicate[i] = this.activate(inputs[i]  = emb[i] + inputs[i] * .8); /////* + eprev[i] * .8*/;
         }
         let predicates = [predicate];
 
