@@ -4,10 +4,10 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 64;
+    vectorSize = 256;
     negativeSize = 5;
     trainCount = 0;
-    trainKoef = .05;
+    trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
     size = 0;
     attantionSize = 16;
@@ -17,6 +17,10 @@ export class gptModel{
     KEY = [];
     VALUE = [];
     topK = 1;
+    discrete = 1000;
+    get discreteX(){
+        return this._dx ??= this.discrete * this.discrete;
+    }
     get predicateError(){
         if (!this.size)
             return 1;
@@ -48,8 +52,8 @@ export class gptModel{
         // multiplyA2M(array, matrix)
     }
     async prompt(text){
-        const thread = {pos:0, plast: .1, word: '', w: 0, emb: this.array().map(i=>0), input: this.array().map(i=>0)};
-        const tokens = this.tokenize(text, true);
+        const thread = {pos:0, plast: .1, word: '', w: 0, emb: this.array(), input: this.array()};
+        const tokens = await this.tokenize(text, true);
         let {current} = await this.train(tokens, thread);
         let prev = tokens[tokens.length - 2];
         let item = current;
@@ -103,16 +107,16 @@ export class gptModel{
         return output.trim();
     }
     genPositional(pos = 0){
-        return this.positional[pos] ??= genPositional(this.vectorSize, pos);
+        return this.positional[pos] ??= genPositional(this.vectorSize, pos, this.discrete);
     }
-    similarWords(t1, t2){
-        t1 = this.join(t1);
-        t2 = this.join(t2);
+    async similarWords(t1, t2){
+        t1 = await this.join(t1);
+        t2 = await this.join(t2);
         return cosSimilar(t1, t2);
     }
-    join(word){
-        const corpus = this.tokenize(word, true);
-        const result = this.array().map(i=>0);
+    async join(word){
+        const corpus = await this.tokenize(word, true);
+        const result = this.array();
         for (let t = 0; t < corpus.length; t++){
             const token = corpus[t];
             if (!token) break;
@@ -124,10 +128,10 @@ export class gptModel{
         return result;
     }
     array(size = this.vectorSize){
-        return this._array[size] ??= [...Array(size)];
+        return Array(size).fill(0);
     }
     initWeight(){
-        return (Math.random() - .5) /5;///10;
+        return Math.round((Math.random() - .5) * this.discrete * this.trainKoef) ;
     }
     getTokenItem(token){
         let item = tokenMap[token];
@@ -136,9 +140,12 @@ export class gptModel{
             if (!item){
                 item = tokenMap[token] = Object.create(null);
                 item.id = token;
-                if(TERMINATES.includes(token[0]))
+                const ch = token[0];
+                if(TERMINATES.includes(ch))
                     item.isTerminal = true;
-                else if(DELIMETERS.includes(token[0]))
+
+                //todo еще надо выделять цифры
+                if(ch.toUpperCase() === ch.toLowerCase())
                     item.isDelimeter = true;
                 item.emb = this.array().map(i=>this.initWeight());
                 item.cnt = this.array().map(i=>this.initWeight());
@@ -159,15 +166,15 @@ export class gptModel{
                 this.tokens.push(item);
                 this.size = this.tokens.length;
             }
-            // item.cnt['z'] = this.array().map(i=>0);
-            // item.emb['z'] = this.array().map(i=>0);
         }
         return item;
     }
-    tokenize(text, prompt){
+    async tokenize(text, prompt){
         const corpus = [];
         const step = this.step;
-        for (let i = 0; i < text.length; i++){
+        const size = text.length;
+        const limit = 10000;
+        for (let i = 0; i < size; i++){
             let token = text.substr(i, step);
             if (token.length < step) break;
             let item = this.getTokenItem(token);
@@ -178,10 +185,20 @@ export class gptModel{
             if (!prev) continue;
             prev.next[token] ??= 0;
             prev.next[token]++;
+            if (i && i%limit === 0){
+                await new Promise(resolve => {
+                    setTimeout(()=>{
+                        this.onScan(i/size);
+                        resolve();
+                    });
+
+                })
+            }
         }
+        this.onScan(0);
         return corpus;
     }
-    async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array().map(i=>0), input: this.array().map(i=>0)}){
+    async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array()}){
         const size = corpus.length;
         const alpha = this.trainKoef;
         let sample, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
@@ -206,7 +223,7 @@ export class gptModel{
             // train
             this.trainCount++;
             emb = current.emb;
-            losses = this.array().map(i=>0)
+            losses = this.array()
             err = 0;
             for (let s = 0; s<sample.length; s++){
                 const cnt = sample[s].cnt;
@@ -215,37 +232,42 @@ export class gptModel{
                 for (let i = 0; i <emb.length; i++) {
                     sum += emb[i] * cnt[i];
                 }
+                sum /= this.discreteX;
                 pred = this.activate(sum);
                 loss = target - pred;
                 if (loss === 0) continue;
+                if (isNaN(loss)) {
+                    console.log(sum, target, pred);
+                    throw 'isNaN'
+                }
                 err += Math.abs(loss);
                 loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
-                    losses[i] += loss * cnt[i];
-                    cnt[i] += loss * emb[i];
+                    losses[i] = losses[i] + loss * cnt[i];
+                    cnt[i] = Math.round(cnt[i] + loss * emb[i]);
                 }
             }
             if (current.tokenError){
                 for(let i = 0; i<this.vectorSize; i++){
-                    emb[i] += losses[i];
+                    emb[i] = Math.round(emb[i] + losses[i]);
                 }
             }
             error += current.tokenError = (err /= sample.length);
             if (i && i%limit === 0){
                 await new Promise(resolve => {
                     setTimeout(()=>{
-                        this.onScan();
+                        this.onScan(i/size, error/i);
                         resolve();
                     });
 
                 })
             }
         }
-        this.onScan();
         error /= size;
+        this.onScan(0);
         return error;
     }
-    async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array().map(i=>0), input: this.array().map(i=>0)}){
+    async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array()}){
         let input;
         const size = corpus.length;
         let error = 0;
@@ -262,14 +284,14 @@ export class gptModel{
             if (i && i%limit === 0){
                 await new Promise(resolve => {
                     setTimeout(()=>{
-                        this.onScan();
+                        this.onScan(i/size, undefined, error/i);
                         resolve();
                     });
                 })
             }
             prev = current;
         }
-        this.onScan();
+        this.onScan(0);
         error /= size;
         return {error, current};
     }
@@ -283,37 +305,38 @@ export class gptModel{
         // return leakyReLUD(x);
     }
     forward(prev, current, targets, thread){
-        const inputs = thread.input;//this.genPositional(thread.pos);
-        if(current.isTerminal){
+        const inputs = this.genPositional(thread.pos);///thread.input;//this.genPositional(thread.pos);
+
+        if(current.isDelimeter){
             thread.word = '';
-            thread.emb = this.array().map(i=>0);
+            thread.emb = this.array();
+        }
+        else
+            thread.word += current.id[0];
+
+        if(current.isTerminal){
             thread.pos = 0;
-            // thread.pos++
         }
         else{
             thread.pos++
-            thread.word += current.id[0];
-        }
-        if(current.isDelimeter){
-            thread.emb = this.array().map(i=>0);
-            thread.word = '';
+
         }
 
         const layers = current.net;
         const alpha = this.trainKoef;
         let outputs;
         const emb = current.emb;
-        const eprev = prev?.emb || this.array().map(i=>0);
+        const eprev = prev?.emb || this.array();
         let predicate = [];
         for(let i = 0; i< inputs.length; i++){
             thread.emb[i] += emb[i];
-            predicate[i] = this.activate(inputs[i]  = emb[i] + inputs[i] * .8); /////* + eprev[i] * .8*/;
+            predicate[i] = this.activate(emb[i] + inputs[i]);
         }
         let predicates = [predicate];
 
         for(let l = 0; l<layers.length; l++){
             const layer = layers[l];
-            outputs = this.array(layer[0].length).map(i=>0);
+            outputs = this.array(layer[0].length);
             for(let n = 0; n<layer.length; n++){
                 const inVal = predicate[n];
                 const weights = layer[n];
@@ -359,8 +382,8 @@ export class gptModel{
         return {outputs, error};
     }
 }
-const TERMINATES = '.!?';
-const DELIMETERS = ' \n\r,:';
+const TERMINATES = '.!?…';
+// const DELIMETERS = TERMINATES + ' \n\r,:;-– «»(){}[]+=';
 const EXP_TABLE_SIZE = 1000;
 const MAX_EXP = 6;
 const DEEP = EXP_TABLE_SIZE * EXP_TABLE_SIZE;
@@ -396,7 +419,7 @@ function cosSimilar(A, B) {
     return 0;
 }
 function EXP(x){
-    return expTable[parseInt((x + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+    return expTable[Math.round((x + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
 }
 function sigmoid(x){
     if (x > MAX_EXP)
@@ -439,11 +462,11 @@ function tanh(x){
 function tanhD(x, th){
     return  1 - th * th * x;
 }
-function genPositional(dim, pos = 0){
+function genPositional(dim, pos = 0, discrete = 0){
     const vector = [];
     for(let i = 0; i < dim; i++){
         const v = 1/Math.pow(10000, 2 * i/dim) * pos;
-        vector[i] = (i%2)?Math.cos(v):Math.sin(v);
+        vector[i] = Math.round((i%2)?Math.cos(v):Math.sin(v) * discrete);
     }
     return vector;
 }

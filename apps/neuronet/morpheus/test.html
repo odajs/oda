@@ -1,0 +1,23 @@
+<meta charset="UTF-8">
+<title>Title</title>
+<script>
+    const size = 10000000;
+    // console.time('a1');
+    // const array1 = [...Array(size)].map(i=>{
+    //     return Math.random() - .5;
+    // })
+    // console.timeEnd('a1');
+    console.time('a2');
+    const array2 = Array(size).fill(0).map(i=>{
+        return Math.floor((Math.random() - .5) * size);
+    })
+    console.timeEnd('a2');
+
+    console.time('a3');
+    const array3 = Array(size).fill(0).map(i=>{
+        return parseInt((Math.random() - .5) * size);
+    })
+    console.timeEnd('a3');
+    // console.log(array1)
+    console.log(array2)
+</script>

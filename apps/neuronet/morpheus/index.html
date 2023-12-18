@@ -71,10 +71,10 @@
               </style>
               <div>tokens: {{model.size.toLocaleString()}}</div>
               <div>trained: {{model?.trainCount.toLocaleString()}}</div>
-              <div>token-error: {{Math.round(model.tokenError * 10000)/100}}%</div>
-              <div>predicate-error: {{Math.round(model.predicateError * 10000)/100}}%</div>
+              <div>token-error: {{Math.round(tokenError * 10000)/100}}%</div>
+              <div>predicate-error: {{Math.round(predicateError * 10000)/100}}%</div>
               <div class="flex"></div>
-              <div><progress max="100" :value="model.progress"></progress></div>
+              <div><progress  ~if="progress" max="100" :value="progress"></progress></div>
           </div>
           <div slot="right-panel" class="flex" style="overflow: auto;" opened>
             <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
@@ -83,6 +83,9 @@
         async prompt(){
             this.predicate = await this.model.prompt(this.text);
         },
+        progress: 0,
+        tokenError: 0,
+        predicateError: 0,
         async loadFile(e){
             const opts = {
                 types: [{
@@ -133,15 +136,17 @@
             $def: '',
             $save: true,
         },
-        similar(){
-            this.grad1 = this.getBackGradient(this.model.join(this.w1));
-            this.grad2 = this.getBackGradient(this.model.join(this.w2));
-            this.simRes = this.model.similarWords(this.w1, this.w2);
+        async similar(){
+            this.grad1 = this.getBackGradient(await this.model.join(this.w1));
+            this.grad2 = this.getBackGradient(await this.model.join(this.w2));
+            this.simRes = await this.model.similarWords(this.w1, this.w2);
         },
         simRes: 0,
         tokenizeCorpus: [],
         set textCorpus(n){
-            this.tokenizeCorpus = this.model.tokenize(n);
+            this.model.tokenize(n).then(res=>{
+                this.tokenizeCorpus = res;
+            });
         },
         train:{
             async set (n){
@@ -158,24 +163,24 @@
             }
         },
         async tr(){
-            let e  = 1;
-            while(this.train && e){
-                e  = await this.model.scan(this.tokenizeCorpus);
+            this.tokenError  = 1;
+            // while(this.train && this.tokenError > 0.01){
+                this.tokenError  = await this.model.scan(this.tokenizeCorpus);
                 // await new Promise(resolve => this.async(resolve));
-            }
+            // }
             this.train = false;
         },
         async tr1(){
-            let e  = 1;
-            while(this.train1 && e){
+            this.predicateError  = 1;
+            // while(this.train1 && this.predicateError > 0.01){
                 const {error}  = await this.model.train(this.tokenizeCorpus);
-                e = error;
-            }
+                this.predicateError = error;
+            // }
             this.train1 = false;
         },
         getColors(items){
             const getColor = (val)=>{
-                return 360 * val;
+                return 360 * val / this.model.discrete;
             }
             return items?.map((val, idx, items)=>{
                 return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
@@ -193,7 +198,12 @@
         },
         get model(){
             const model = new GPT.gptModel();
-            model.onScan = ()=>{
+            model.onScan = (progress, tokenError, predicateError)=>{
+                if (tokenError !== undefined)
+                    this.tokenError = tokenError;
+                if (predicateError !== undefined)
+                    this.predicateError = predicateError;
+                this.progress = progress * 100;
                 this.async(()=>{
                     this.tokens = undefined;
                 })
