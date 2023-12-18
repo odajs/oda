@@ -740,11 +740,11 @@ in the <${host.localName}>`;
     }
     // let DEP_TARGET;
     const PROTOTYPE_RESERVED_WORDS = ['is', 'imports', 'extends'];
-    ROCKS.PROPERTY_FLAGS = ['$save', '$final', '$public', '$pdp', '$readOnly', '$freeze', '$group'];
+    ROCKS.PROPERTY_FLAGS = ['$save', '$final', '$public', '$pdp', '$readOnly', '$freeze', '$group', '$attr', '$hidden'];
     const PROTOTYPE_SPECIAL_GROUPS = ['$listeners', '$observers', '$keyBindings', '$innerEvents'];
     const PROPERTY_TYPES = ['Boolean', 'Number', 'String', 'Array', 'Object', 'Date', 'BigInt'];
     const PROPERTY_SIGNS = ['$def', '$type', 'get', 'set'];
-    const PROPERTY_ATTRIBUTES = [...ROCKS.PROPERTY_FLAGS, '$label', '$list', '$multiSelect', '$attr', '$hidden', '$editor', '$description'];
+    const PROPERTY_ATTRIBUTES = [...ROCKS.PROPERTY_FLAGS, '$label', '$list', '$multiSelect', '$editor', '$description'];
     Array:{
         Object.defineProperty(Array.prototype, 'has', {
             enumerable: false, configurable: true, value: Array.prototype.includes
