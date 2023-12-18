@@ -164,18 +164,18 @@
         },
         async tr(){
             this.tokenError  = 1;
-            // while(this.train && this.tokenError > 0.01){
+            while(this.train && this.tokenError > 0.01){
                 this.tokenError  = await this.model.scan(this.tokenizeCorpus);
-                // await new Promise(resolve => this.async(resolve));
-            // }
+                await new Promise(resolve => this.async(resolve));
+            }
             this.train = false;
         },
         async tr1(){
             this.predicateError  = 1;
-            // while(this.train1 && this.predicateError > 0.01){
+            while(this.train1 && this.predicateError > 0.01){
                 const {error}  = await this.model.train(this.tokenizeCorpus);
                 this.predicateError = error;
-            // }
+            }
             this.train1 = false;
         },
         getColors(items){

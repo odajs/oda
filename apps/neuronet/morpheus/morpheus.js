@@ -4,7 +4,7 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 256;
+    vectorSize = 512;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = 1/Math.sqrt(this.vectorSize);
@@ -244,12 +244,12 @@ export class gptModel{
                 loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
                     losses[i] = losses[i] + loss * cnt[i];
-                    cnt[i] = Math.round(cnt[i] + loss * emb[i]);
+                    cnt[i] = Math.round(cnt[i] + loss * emb[i]) || 1;
                 }
             }
             if (current.tokenError){
                 for(let i = 0; i<this.vectorSize; i++){
-                    emb[i] = Math.round(emb[i] + losses[i]);
+                    emb[i] = Math.round(emb[i] + losses[i]) || 1;
                 }
             }
             error += current.tokenError = (err /= sample.length);
@@ -329,8 +329,9 @@ export class gptModel{
         const eprev = prev?.emb || this.array();
         let predicate = [];
         for(let i = 0; i< inputs.length; i++){
-            thread.emb[i] += emb[i];
-            predicate[i] = this.activate(emb[i] + inputs[i]);
+            const embPos = emb[i] + inputs[i] + eprev[i];
+            thread.emb[i] += embPos;
+            predicate[i] = Math.round(embPos);
         }
         let predicates = [predicate];
 
@@ -346,17 +347,20 @@ export class gptModel{
             }
             predicate = predicates[l+1] = [];
             for(let out = 0; out<outputs.length; out++){
-                predicate[out] = this.activate(outputs[out]);
+                predicate[out] = Math.round(this.activate(outputs[out] / this.discreteX) * this.discrete);
             }
         }
+        outputs = predicate.map(i=>{
+            return xTable[i];
+        });
         let error = 0;
         if(targets){
             let losses = targets.map((target, i)=>{
-                target = this.activate(target);
+                target = this.activate(target / this.discrete);
                 let pred = predicate[i];
-                let loss = target - pred;
+                let loss = (target - pred / this.discrete);
                 error += Math.abs(loss);
-                loss = loss * this.derivative(0, pred);
+                // loss = loss * this.derivative(0, pred);
                 return loss;
             });
             current.predicateError = (error /= losses.length);
@@ -370,10 +374,11 @@ export class gptModel{
                     for(let w = 0; w<weights.length; w++){
                         sum += losses[w] * weights[w];
                     }
-                    let pred = predicate[n]
-                    errors[n] = sum * this.derivative(0, pred);
+                    let pred = predicate[n];
+                    sum /= this.discrete;
+                    errors[n] = sum * this.derivative(0, pred / this.discrete) ;
                     for(let w = 0; w<weights.length; w++){
-                        weights[w] += losses[w] * pred * alpha * thread.plast;
+                        weights[w] = Math.round(weights[w] + losses[w] * pred * alpha * thread.plast) || 1;
                     }
                 }
                 losses = errors;
@@ -387,10 +392,13 @@ const TERMINATES = '.!?…';
 const EXP_TABLE_SIZE = 1000;
 const MAX_EXP = 6;
 const DEEP = EXP_TABLE_SIZE * EXP_TABLE_SIZE;
+const xTable = [];
 const expTable = (()=>{
     const tab = [];
-    for (let i = 0; i<EXP_TABLE_SIZE; i++){
-        tab[i] = Math.exp((i / EXP_TABLE_SIZE * 2 - 1) * MAX_EXP);
+    for (let i = 0; i<=EXP_TABLE_SIZE; i++){
+        const x =  (i / EXP_TABLE_SIZE * 2 - 1) * MAX_EXP;
+        xTable[i] = Math.round(x * 1000);
+        tab[i] = Math.exp(x);
         tab[i] = Math.round(tab[i] / (tab[i] + 1) * DEEP)/DEEP;
     }
     return tab;
