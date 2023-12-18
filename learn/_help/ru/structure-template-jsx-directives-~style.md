@@ -296,29 +296,7 @@ ODA({
 
 В данном примере менять цвет шрифта с помощью директивы **~style** не удастся. Как видно на экране, задаваемые с помощью нее CSS-объявления игнорируются.
 
-У компонента можно объявить свойство с именем **style** и модификатором **$attr**, которое будет определять CSS-стилизацию всего компонента. В этом случае директива **~style** будет перекрывать одноименные CSS-объявления применительно к своему HTML-элементу.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="myStyle">Директива ~style перекрыла CSS-свойство "background" из свойства style</div>
-        <span>Фон элемента взят из свойства style</span>
-    `,
-    myStyle: "background: green",
-    style: {
-        $def: "background: red; color: yellow",
-        $attr: true
-    }
-});
-```
-
-В этом примере в свойстве **style** задан красный цвет фона для всего компонента. Однако элемент **div** содержит директиву **~style**, которая перекрывает CSS-объявление **background** из свойства **style**. В результате зеленый фон элемента **div** определяется значением, заданным в свойстве **myStyle**.
-
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/RbZrBh4KWbk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
-
