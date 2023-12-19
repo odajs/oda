@@ -1,10 +1,9 @@
 // import './gpu-browser.min.js';
 // const gpu = new GPU.GPU();
-
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 512;
+    vectorSize = 256;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = 1/Math.sqrt(this.vectorSize);
@@ -153,7 +152,7 @@ export class gptModel{
                 item.net.push(this.array(this.vectorSize).map(i=>{
                     return this.array(this.vectorSize).map(i=>this.initWeight());
                 }));
-                // item.net.push(this.array(this.vectorSize/2).map(i=>{
+                // item.net.push(this.array(this.vectorSize / 2).map(i=>{
                 //     return this.array(this.vectorSize).map(i=>this.initWeight());
                 // }));
                 // item.net.push(this.array(this.vectorSize).map(i=>{
@@ -201,15 +200,15 @@ export class gptModel{
     async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array()}){
         const size = corpus.length;
         const alpha = this.trainKoef;
-        let sample, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
+        let samples, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
         const limit = Math.ceil(size / 10);
         for (let i = 0; i<size; i++){
             current = corpus[i];
             next = corpus[i + 1];
             // prepare samples
-            sample = [];
+            samples = [];
             if(next)
-                sample.push({cnt: next.cnt, target: 1});
+                samples.push({cnt: next.cnt, t: 1});
             // prepare negative samples
             let n = this.negativeSize;
             while (n){
@@ -217,7 +216,7 @@ export class gptModel{
                 let neg = corpus[idx];
                 if (neg === current) continue;
                 if (current.next[neg.id]) continue;
-                sample.add({cnt: neg.cnt, target: 0});
+                samples.add({cnt: neg.cnt, t: 0});
                 n--;
             }
             // train
@@ -225,21 +224,17 @@ export class gptModel{
             emb = current.emb;
             losses = this.array()
             err = 0;
-            for (let s = 0; s<sample.length; s++){
-                const cnt = sample[s].cnt;
-                target = sample[s].target;
+            for (let s = 0; s<samples.length; s++){
+                const sample = samples[s];
+                const cnt = sample.cnt;
                 sum = 0;
                 for (let i = 0; i <emb.length; i++) {
-                    sum += emb[i] * cnt[i];
+                    sum += multiply(emb[i], cnt[i]);
                 }
                 sum /= this.discreteX;
                 pred = this.activate(sum);
-                loss = target - pred;
+                loss = sample.t - pred;
                 if (loss === 0) continue;
-                if (isNaN(loss)) {
-                    console.log(sum, target, pred);
-                    throw 'isNaN'
-                }
                 err += Math.abs(loss);
                 loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
@@ -252,7 +247,7 @@ export class gptModel{
                     emb[i] = Math.round(emb[i] + losses[i]) || 1;
                 }
             }
-            error += current.tokenError = (err /= sample.length);
+            error += current.tokenError = (err /= samples.length);
             if (i && i%limit === 0){
                 await new Promise(resolve => {
                     setTimeout(()=>{
@@ -305,7 +300,7 @@ export class gptModel{
         // return leakyReLUD(x);
     }
     forward(prev, current, targets, thread){
-        const inputs = this.genPositional(thread.pos);///thread.input;//this.genPositional(thread.pos);
+        let inputs = this.genPositional(thread.pos);///thread.input;//this.genPositional(thread.pos);
 
         if(current.isDelimeter){
             thread.word = '';
@@ -314,13 +309,13 @@ export class gptModel{
         else
             thread.word += current.id[0];
 
-        if(current.isTerminal){
-            thread.pos = 0;
-        }
-        else{
+        // if(current.isTerminal){
+        //     thread.pos = 0;
+        // }
+        // else{
             thread.pos++
 
-        }
+        // }
 
         const layers = current.net;
         const alpha = this.trainKoef;
@@ -329,57 +324,51 @@ export class gptModel{
         const eprev = prev?.emb || this.array();
         let predicate = [];
         for(let i = 0; i< inputs.length; i++){
-            const embPos = emb[i] + inputs[i] + eprev[i];
+            const embPos = emb[i] + inputs[i];// + thread.input[i];
+            // thread.input[i] += emb[i];
             thread.emb[i] += embPos;
-            predicate[i] = Math.round(embPos);
+            predicate[i] = this.activate(embPos / this.discrete);
         }
         let predicates = [predicate];
-
         for(let l = 0; l<layers.length; l++){
-            const layer = layers[l];
-            outputs = this.array(layer[0].length);
-            for(let n = 0; n<layer.length; n++){
-                const inVal = predicate[n];
-                const weights = layer[n];
+            const neurons = layers[l];
+            outputs = this.array(neurons[0].length);
+            for (let n = 0; n<neurons.length; n++){
+                const weights = neurons[n];
+                const input = predicate[n];
                 for(let w = 0; w<weights.length; w++){
-                    outputs[w] += inVal * weights[w];
+                    outputs[w] += weights[w] * input;
                 }
             }
             predicate = predicates[l+1] = [];
             for(let out = 0; out<outputs.length; out++){
-                predicate[out] = Math.round(this.activate(outputs[out] / this.discreteX) * this.discrete);
+                predicate[out] = this.activate(outputs[out] / this.discrete);
             }
         }
-        outputs = predicate.map(i=>{
-            return xTable[i];
-        });
         let error = 0;
         if(targets){
             let losses = targets.map((target, i)=>{
                 target = this.activate(target / this.discrete);
                 let pred = predicate[i];
-                let loss = (target - pred / this.discrete);
+                let loss = (target - pred);
                 error += Math.abs(loss);
-                // loss = loss * this.derivative(0, pred);
+                loss = loss * this.derivative(0, pred);
                 return loss;
             });
             current.predicateError = (error /= losses.length);
             for(let l = layers.length-1; l>=0; l--){
-                predicate = predicates[l];
                 const layer = layers[l];
-                const errors = [];
+                predicate = predicates[l];
+                let errors = this.array(layer.length);
                 for(let n = 0; n<layer.length; n++){
                     const weights = layer[n];
-                    let sum = 0;
+                    const input = predicate[n];
+                    let summary = 0;
                     for(let w = 0; w<weights.length; w++){
-                        sum += losses[w] * weights[w];
+                        summary += losses[w] * weights[w];
+                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * /*input **/ alpha * thread.plast) || 1;
                     }
-                    let pred = predicate[n];
-                    sum /= this.discrete;
-                    errors[n] = sum * this.derivative(0, pred / this.discrete) ;
-                    for(let w = 0; w<weights.length; w++){
-                        weights[w] = Math.round(weights[w] + losses[w] * pred * alpha * thread.plast) || 1;
-                    }
+                    errors[n] = summary * this.derivative(0, input) / this.discrete ;
                 }
                 losses = errors;
             }
@@ -479,15 +468,17 @@ function genPositional(dim, pos = 0, discrete = 0){
     return vector;
 }
 function multiplyA2M(array, matrix) {
-    const res = [];
+    const res = Array(matrix[0].length).fill(0);
     let i, j, k;
     for (i = 0; i < matrix.length; i++) {
         let arr = matrix[i];
-        let m = 0;
-        for (j = 0; j < array.length; j++) {
-            m += arr[j] * array[j];
+        const inVal = array[i];
+        for (j = 0; j < arr.length; j++) {
+            res[j] += multiply(arr[j], inVal);
         }
-        res[i] = m;
     }
     return res;
+}
+function multiply(x,y){
+    return x * y;
 }
