@@ -164,7 +164,7 @@
         },
         async tr(){
             this.tokenError  = 1;
-            while(this.train && this.tokenError > 0.01){
+            while(this.train && this.tokenError > 0){
                 this.tokenError  = await this.model.scan(this.tokenizeCorpus);
                 await new Promise(resolve => this.async(resolve));
             }
@@ -187,11 +187,11 @@
             }).join(', ');
         },
         get tokens(){
-            return this.model.tokens.sort((a,b)=>{
+            return this.model.tokens/*.sort((a,b)=>{
                 if(a.count > b.count)
                     return -1;
                 return 1;
-            });
+            });*/
         },
         get scanWindow(){
             return this.model.scanWindow;

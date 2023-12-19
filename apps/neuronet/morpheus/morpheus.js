@@ -3,13 +3,14 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 256;
+    vectorSize = 64;
     negativeSize = 5;
     trainCount = 0;
     trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
     size = 0;
     attantionSize = 16;
+    attantionDivider = Math.sqrt(this.attantionSize);
     _array = [];
     step = 2;
     QUERY = [];
@@ -48,10 +49,9 @@ export class gptModel{
             this.VALUE[i] = this.array().map(i=>this.initWeight());
 
         }
-        // multiplyA2M(array, matrix)
     }
     async prompt(text){
-        const thread = {pos:0, plast: .1, word: '', w: 0, emb: this.array(), input: this.array()};
+        const thread = {pos:0, plast: .1, word: '', w: 0, emb: this.array(), input: this.array(), words: []};
         const tokens = await this.tokenize(text, true);
         let {current} = await this.train(tokens, thread);
         let prev = tokens[tokens.length - 2];
@@ -197,7 +197,7 @@ export class gptModel{
         this.onScan(0);
         return corpus;
     }
-    async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array()}){
+    async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array(), words: []}){
         const size = corpus.length;
         const alpha = this.trainKoef;
         let samples, current, next, emb, losses, err, sum, pred, loss, correct, target, error = 0;
@@ -222,7 +222,7 @@ export class gptModel{
             // train
             this.trainCount++;
             emb = current.emb;
-            losses = this.array()
+            losses = this.array();
             err = 0;
             for (let s = 0; s<samples.length; s++){
                 const sample = samples[s];
@@ -238,11 +238,11 @@ export class gptModel{
                 err += Math.abs(loss);
                 loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
-                    losses[i] = losses[i] + loss * cnt[i];
+                    losses[i] += loss * cnt[i];
                     cnt[i] = Math.round(cnt[i] + loss * emb[i]) || 1;
                 }
             }
-            if (current.tokenError){
+            if (err){
                 for(let i = 0; i<this.vectorSize; i++){
                     emb[i] = Math.round(emb[i] + losses[i]) || 1;
                 }
@@ -262,7 +262,7 @@ export class gptModel{
         this.onScan(0);
         return error;
     }
-    async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array()}){
+    async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array(), words: []}){
         let input;
         const size = corpus.length;
         let error = 0;
@@ -299,23 +299,55 @@ export class gptModel{
         return sigmoidD(x, f);
         // return leakyReLUD(x);
     }
+    calcQuery(emb){
+
+    }
     forward(prev, current, targets, thread){
-        let inputs = this.genPositional(thread.pos);///thread.input;//this.genPositional(thread.pos);
+        let inputs = this.genPositional(thread.pos);
 
         if(current.isDelimeter){
+            if(thread.word){
+                thread.words.push({
+                    w:thread.word,
+                    e:thread.emb,
+                    Q:multiplyA2M(thread.emb, this.QUERY, this.discrete),
+                    K:multiplyA2M(thread.emb, this.KEY, this.discrete),
+                    V:multiplyA2M(thread.emb, this.VALUE, this.discrete),
+                    Z:this.array(this.attantionSize)
+                })
+            }
+
             thread.word = '';
             thread.emb = this.array();
         }
         else
             thread.word += current.id[0];
 
-        // if(current.isTerminal){
-        //     thread.pos = 0;
-        // }
-        // else{
+        if(current.isTerminal){
+            thread.pos = 0;
+            const wSize = thread.words.length;
+            for(let i = 0; i<wSize; i++){
+                const target = thread.words[i];
+                let scores = [];
+                for(let j = 0; j<wSize; j++) {
+                    const word = thread.words[j];
+                    scores[j] = Math.abs(dotProduct(target.Q, word.K) / this.attantionDivider / this.discreteX);
+                }
+                scores = softmax(scores);
+                for(let j = 0; j<wSize; j++) {
+                    const word = thread.words[j];
+                    const score = scores[j];
+                    for(let v = 0; v<word.V.length; v++){
+                        target.Z[v] += word.V[v] * score;
+                    }
+                }
+                console.log(target.Z);
+            }
+            thread.words = [];
+        }
+        else{
             thread.pos++
-
-        // }
+        }
 
         const layers = current.net;
         const alpha = this.trainKoef;
@@ -324,10 +356,10 @@ export class gptModel{
         const eprev = prev?.emb || this.array();
         let predicate = [];
         for(let i = 0; i< inputs.length; i++){
-            const embPos = emb[i] + inputs[i];// + thread.input[i];
+            const embPos = emb[i] + inputs[i] //+ thread.input[i] / 2;
             // thread.input[i] += emb[i];
             thread.emb[i] += embPos;
-            predicate[i] = this.activate(embPos / this.discrete);
+            predicate[i] = /*this.activate(*/embPos / this.discrete/*);*/
         }
         let predicates = [predicate];
         for(let l = 0; l<layers.length; l++){
@@ -366,7 +398,7 @@ export class gptModel{
                     let summary = 0;
                     for(let w = 0; w<weights.length; w++){
                         summary += losses[w] * weights[w];
-                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * /*input **/ alpha * thread.plast) || 1;
+                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
                     }
                     errors[n] = summary * this.derivative(0, input) / this.discrete ;
                 }
@@ -463,22 +495,30 @@ function genPositional(dim, pos = 0, discrete = 0){
     const vector = [];
     for(let i = 0; i < dim; i++){
         const v = 1/Math.pow(10000, 2 * i/dim) * pos;
-        vector[i] = Math.round((i%2)?Math.cos(v):Math.sin(v) * discrete);
+        vector[i] = Math.round(((i%2)?Math.cos(v):Math.sin(v)) * discrete);
     }
     return vector;
 }
-function multiplyA2M(array, matrix) {
-    const res = Array(matrix[0].length).fill(0);
+function multiplyA2M(array, matrix, discrete = 1) {
+    const res = Array(matrix.length).fill(0);
     let i, j, k;
     for (i = 0; i < matrix.length; i++) {
         let arr = matrix[i];
         const inVal = array[i];
         for (j = 0; j < arr.length; j++) {
-            res[j] += multiply(arr[j], inVal);
+            res[i] += multiply(arr[j], inVal) / discrete;
         }
     }
     return res;
 }
 function multiply(x,y){
     return x * y;
+}
+function softmax(arr) {
+    return arr.map(function(value,index) {
+        return Math.exp(value) / arr.map( function(y /*value*/){ return Math.exp(y) } ).reduce( function(a,b){ return a+b })
+    })
+}
+function dotProduct (a, b) {
+    return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 }
