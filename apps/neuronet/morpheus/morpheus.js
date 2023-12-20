@@ -3,7 +3,7 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 32;
+    vectorSize = 300;
     negativeSize = 5;
     trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
@@ -16,7 +16,7 @@ export class gptModel{
     KEY = [];
     VALUE = [];
     topK = 1;
-    discrete = 100;
+    discrete = 100000;
     get discreteX(){
         return this._dx ??= this.discrete * this.discrete;
     }
@@ -151,7 +151,7 @@ export class gptModel{
                 item.net.push(this.array(this.vectorSize).map(i=>{
                     return this.array(this.vectorSize).map(i=>this.initWeight());
                 }));
-                // item.net.push(this.array(this.vectorSize / 2).map(i=>{
+                // item.net.push(this.array(this.vectorSize / 8).map(i=>{
                 //     return this.array(this.vectorSize).map(i=>this.initWeight());
                 // }));
                 // item.net.push(this.array(this.vectorSize).map(i=>{
@@ -327,6 +327,7 @@ export class gptModel{
                     target.Z[v] += word.V[v] * score;
                 }
             }
+            target.Z = layer_norm(target.Z, target.e);
         }
     }
     forward(prev, current, targets, thread){
@@ -336,7 +337,7 @@ export class gptModel{
 
         if(current.isTerminal){
             thread.pos = 0;
-            this.calcAttantion(thread);
+            // this.calcAttantion(thread);
             thread.words = [];
             thread.word = '';
             thread.emb = this.array();
@@ -363,63 +364,63 @@ export class gptModel{
             }
         }
         //
-        // const layers = current.net;
-        // const alpha = this.trainKoef;
+        const layers = current.net;
+        const alpha = this.trainKoef;
         let outputs;
         let error = 0;
-        // const emb = current.emb;
-        // const eprev = prev?.emb || this.array();
-        // let predicate = [];
-        // for(let i = 0; i< inputs.length; i++){
-        //     const embPos = emb[i] + inputs[i] //+ thread.input[i] / 2;
-        //     // thread.input[i] += emb[i];
-        //     thread.emb[i] += embPos;
-        //     predicate[i] = /*this.activate(*/embPos / this.discrete/*);*/
-        // }
-        // let predicates = [predicate];
-        // for(let l = 0; l<layers.length; l++){
-        //     const neurons = layers[l];
-        //     outputs = this.array(neurons[0].length);
-        //     for (let n = 0; n<neurons.length; n++){
-        //         const weights = neurons[n];
-        //         const input = predicate[n];
-        //         for(let w = 0; w<weights.length; w++){
-        //             outputs[w] += weights[w] * input;
-        //         }
-        //     }
-        //     predicate = predicates[l+1] = [];
-        //     for(let out = 0; out<outputs.length; out++){
-        //         predicate[out] = this.activate(outputs[out] / this.discrete);
-        //     }
-        // }
+        const emb = current.emb;
+        const eprev = prev?.emb || this.array();
+        let predicate = [];
+        for(let i = 0; i< inputs.length; i++){
+            const embPos = emb[i] + inputs[i] //+ thread.input[i] / 2;
+            // thread.input[i] += emb[i];
+            thread.emb[i] += embPos;
+            predicate[i] = this.activate(embPos / this.discrete);
+        }
+        let predicates = [predicate];
+        for(let l = 0; l<layers.length; l++){
+            const neurons = layers[l];
+            outputs = this.array(neurons[0].length);
+            for (let n = 0; n<neurons.length; n++){
+                const weights = neurons[n];
+                const input = predicate[n];
+                for(let w = 0; w<weights.length; w++){
+                    outputs[w] += weights[w] * input;
+                }
+            }
+            predicate = predicates[l+1] = [];
+            for(let out = 0; out<outputs.length; out++){
+                predicate[out] = this.activate(outputs[out] / this.discrete);
+            }
+        }
 
-        // if(targets){
-        //     let losses = targets.map((target, i)=>{
-        //         target = this.activate(target / this.discrete);
-        //         let pred = predicate[i];
-        //         let loss = (target - pred);
-        //         error += Math.abs(loss);
-        //         loss = loss * this.derivative(0, pred);
-        //         return loss;
-        //     });
-        //     current.predicateError = (error /= losses.length);
-        //     for(let l = layers.length-1; l>=0; l--){
-        //         const layer = layers[l];
-        //         predicate = predicates[l];
-        //         let errors = this.array(layer.length);
-        //         for(let n = 0; n<layer.length; n++){
-        //             const weights = layer[n];
-        //             const input = predicate[n];
-        //             let summary = 0;
-        //             for(let w = 0; w<weights.length; w++){
-        //                 summary += losses[w] * weights[w];
-        //                 weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
-        //             }
-        //             errors[n] = summary * this.derivative(0, input) / this.discrete ;
-        //         }
-        //         losses = errors;
-        //     }
-        // }
+        if(targets){
+            let losses = targets.map((target, i)=>{
+                target = this.activate(target / this.discrete);
+                let pred = predicate[i];
+                let loss = (target - pred);
+                error += Math.abs(loss);
+                loss = loss * this.derivative(0, pred);
+                return loss;
+            });
+            current.predicateError = (error /= losses.length);
+            for(let l = layers.length-1; l>=0; l--){
+                const layer = layers[l];
+                predicate = predicates[l];
+                let errors = this.array(layer.length);
+                for(let n = 0; n<layer.length; n++){
+                    const weights = layer[n];
+                    const input = predicate[n];
+                    let summary = 0;
+                    for(let w = 0; w<weights.length; w++){
+                        summary += losses[w] * weights[w];
+                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
+                    }
+                    errors[n] = summary * this.derivative(0, input) / this.discrete ;
+                }
+                losses = errors;
+            }
+        }
         return {outputs, error};
     }
 }
@@ -534,4 +535,7 @@ function softmax(arr) {
 }
 function dotProduct (a, b) {
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
+}
+function layer_norm(a, b){
+
 }
