@@ -1,4 +1,7 @@
-import { createReport } from 'https://unpkg.com/docx-templates/lib/browser.js';
+// https://github.com/guigrpa/docx-templates
+// https://guigrpa.github.io/2017/01/01/word-docs-the-relay-way/
+// import { createReport } from 'https://unpkg.com/docx-templates/lib/browser.js';
+import { createReport } from './lib/browser.js';
 
 ODA({
     is: 'oda-docx-template',
