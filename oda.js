@@ -712,8 +712,10 @@ if (!window.ODA?.IsReady) {
                 }
                 else{
                     src.text.push(function ($el) {
-                        let res = exec.call(this, fn, $el, $el.__for)
-                        $el.textContent =  res ??= '';
+                        let text = exec.call(this, fn, $el, $el.__for);
+                        if ($el.___textContent == text)
+                            return;
+                        $el.textContent = $el.___textContent = text;
                     })
                 }
             }

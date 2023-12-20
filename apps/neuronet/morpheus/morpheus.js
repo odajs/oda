@@ -5,7 +5,6 @@ export class gptModel{
     positional = [];
     vectorSize = 64;
     negativeSize = 5;
-    trainCount = 0;
     trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
     size = 0;
@@ -17,7 +16,7 @@ export class gptModel{
     KEY = [];
     VALUE = [];
     topK = 1;
-    discrete = 1000;
+    discrete = 100;
     get discreteX(){
         return this._dx ??= this.discrete * this.discrete;
     }
@@ -172,7 +171,7 @@ export class gptModel{
         const corpus = [];
         const step = this.step;
         const size = text.length;
-        const limit = 10000;
+        const limit = Math.ceil(size / 100);
         for (let i = 0; i < size; i++){
             let token = text.substr(i, step);
             if (token.length < step) break;
@@ -220,7 +219,6 @@ export class gptModel{
                 n--;
             }
             // train
-            this.trainCount++;
             emb = current.emb;
             losses = this.array();
             err = 0;
@@ -413,12 +411,10 @@ const TERMINATES = '.!?…';
 const EXP_TABLE_SIZE = 1000;
 const MAX_EXP = 6;
 const DEEP = EXP_TABLE_SIZE * EXP_TABLE_SIZE;
-const xTable = [];
 const expTable = (()=>{
     const tab = [];
     for (let i = 0; i<=EXP_TABLE_SIZE; i++){
         const x =  (i / EXP_TABLE_SIZE * 2 - 1) * MAX_EXP;
-        xTable[i] = Math.round(x * 1000);
         tab[i] = Math.exp(x);
         tab[i] = Math.round(tab[i] / (tab[i] + 1) * DEEP)/DEEP;
     }
