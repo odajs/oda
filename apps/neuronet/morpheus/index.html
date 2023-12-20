@@ -20,8 +20,8 @@
                   <oda-button class="dark" icon="icons:add" @tap="loadFile">Add text</oda-button>
                   <div flex></div>
                   <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
-                  <oda-button :disabled="!textCorpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
-                  <oda-button :disabled="!textCorpus" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train1"  @tap="train1 = !train1">{{train1?'stop':'train1'}}</oda-button>
+                  <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
+                  <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train1"  @tap="train1 = !train1">{{train1?'stop':'train1'}}</oda-button>
               </div>
               <fieldset class="horizontal"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>SIMILAR:{{Math.round(simRes * 10000)/100}}%</legend>

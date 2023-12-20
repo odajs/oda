@@ -3,7 +3,7 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 64;
+    vectorSize = 32;
     negativeSize = 5;
     trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
@@ -129,7 +129,7 @@ export class gptModel{
         return Array(size).fill(0);
     }
     initWeight(){
-        return Math.round((Math.random() - .5) * this.discrete * this.trainKoef) ;
+        return Math.round((Math.random() - .5) * this.discrete/* * this.trainKoef*/) ;
     }
     getTokenItem(token){
         let item = tokenMap[token];
@@ -171,7 +171,7 @@ export class gptModel{
         const corpus = [];
         const step = this.step;
         const size = text.length;
-        const limit = Math.ceil(size / 100);
+        const limit = Math.ceil(size / 10);
         for (let i = 0; i < size; i++){
             let token = text.substr(i, step);
             if (token.length < step) break;
@@ -267,7 +267,7 @@ export class gptModel{
         let res;
         let current, prev;
         let step = this.step;
-        const limit = Math.ceil(size / 100);
+        const limit = Math.ceil(size / 10);
         for (let i = 0; i<size; i++){
             current = corpus[i];
             let target = corpus[i + 1];
@@ -284,6 +284,7 @@ export class gptModel{
             }
             prev = current;
         }
+        this.calcAttantion(thread);
         this.onScan(0);
         error /= size;
         return {error, current};
@@ -300,109 +301,125 @@ export class gptModel{
     calcQuery(emb){
 
     }
+    calcAttantion(thread){
+        const wSize = thread.words.length;
+        for(let i = 0; i<wSize; i++){
+            const target = thread.words[i];
+            const inputs = this.genPositional(i);
+            target.e = target.e.map((e, i)=>{
+                return (e + inputs[i]);
+            })
+            const Q = multiplyA2M(target.e, this.QUERY, this.discrete);
+
+            let scores = [];
+            for(let j = 0; j<wSize; j++) {
+                const word = thread.words[j];
+                word.K ??= multiplyA2M(word.e, this.KEY, this.discrete);
+                scores[j] = Math.abs(dotProduct(Q, word.K) / this.attantionDivider / this.discreteX);
+            }
+            scores = softmax(scores);
+            target.Z = this.array(this.attantionSize);
+            for(let j = 0; j<wSize; j++) {
+                const word = thread.words[j];
+                word.V ??= multiplyA2M(word.e, this.VALUE, this.discrete);
+                const score = scores[j];
+                for(let v = 0; v<this.attantionSize; v++){
+                    target.Z[v] += word.V[v] * score;
+                }
+            }
+        }
+    }
     forward(prev, current, targets, thread){
         let inputs = this.genPositional(thread.pos);
+
+
+
+        if(current.isTerminal){
+            thread.pos = 0;
+            this.calcAttantion(thread);
+            thread.words = [];
+            thread.word = '';
+            thread.emb = this.array();
+        }
+        else{
+            thread.pos++
+        }
 
         if(current.isDelimeter){
             if(thread.word){
                 thread.words.push({
                     w:thread.word,
                     e:thread.emb,
-                    Q:multiplyA2M(thread.emb, this.QUERY, this.discrete),
-                    K:multiplyA2M(thread.emb, this.KEY, this.discrete),
-                    V:multiplyA2M(thread.emb, this.VALUE, this.discrete),
-                    Z:this.array(this.attantionSize)
                 })
             }
 
             thread.word = '';
             thread.emb = this.array();
         }
-        else
-            thread.word += current.id[0];
-
-        if(current.isTerminal){
-            thread.pos = 0;
-            const wSize = thread.words.length;
-            for(let i = 0; i<wSize; i++){
-                const target = thread.words[i];
-                let scores = [];
-                for(let j = 0; j<wSize; j++) {
-                    const word = thread.words[j];
-                    scores[j] = Math.abs(dotProduct(target.Q, word.K) / this.attantionDivider / this.discreteX);
-                }
-                scores = softmax(scores);
-                for(let j = 0; j<wSize; j++) {
-                    const word = thread.words[j];
-                    const score = scores[j];
-                    for(let v = 0; v<word.V.length; v++){
-                        target.Z[v] += word.V[v] * score;
-                    }
-                }
-                console.log(target.Z);
-            }
-            thread.words = [];
-        }
         else{
-            thread.pos++
+            thread.word += current.id[0];
+            for (let i = 0; i<this.vectorSize; i++){
+                thread.emb[i] += current.emb[i];
+            }
         }
-
-        const layers = current.net;
-        const alpha = this.trainKoef;
+        //
+        // const layers = current.net;
+        // const alpha = this.trainKoef;
         let outputs;
-        const emb = current.emb;
-        const eprev = prev?.emb || this.array();
-        let predicate = [];
-        for(let i = 0; i< inputs.length; i++){
-            const embPos = emb[i] + inputs[i] //+ thread.input[i] / 2;
-            // thread.input[i] += emb[i];
-            thread.emb[i] += embPos;
-            predicate[i] = /*this.activate(*/embPos / this.discrete/*);*/
-        }
-        let predicates = [predicate];
-        for(let l = 0; l<layers.length; l++){
-            const neurons = layers[l];
-            outputs = this.array(neurons[0].length);
-            for (let n = 0; n<neurons.length; n++){
-                const weights = neurons[n];
-                const input = predicate[n];
-                for(let w = 0; w<weights.length; w++){
-                    outputs[w] += weights[w] * input;
-                }
-            }
-            predicate = predicates[l+1] = [];
-            for(let out = 0; out<outputs.length; out++){
-                predicate[out] = this.activate(outputs[out] / this.discrete);
-            }
-        }
         let error = 0;
-        if(targets){
-            let losses = targets.map((target, i)=>{
-                target = this.activate(target / this.discrete);
-                let pred = predicate[i];
-                let loss = (target - pred);
-                error += Math.abs(loss);
-                loss = loss * this.derivative(0, pred);
-                return loss;
-            });
-            current.predicateError = (error /= losses.length);
-            for(let l = layers.length-1; l>=0; l--){
-                const layer = layers[l];
-                predicate = predicates[l];
-                let errors = this.array(layer.length);
-                for(let n = 0; n<layer.length; n++){
-                    const weights = layer[n];
-                    const input = predicate[n];
-                    let summary = 0;
-                    for(let w = 0; w<weights.length; w++){
-                        summary += losses[w] * weights[w];
-                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
-                    }
-                    errors[n] = summary * this.derivative(0, input) / this.discrete ;
-                }
-                losses = errors;
-            }
-        }
+        // const emb = current.emb;
+        // const eprev = prev?.emb || this.array();
+        // let predicate = [];
+        // for(let i = 0; i< inputs.length; i++){
+        //     const embPos = emb[i] + inputs[i] //+ thread.input[i] / 2;
+        //     // thread.input[i] += emb[i];
+        //     thread.emb[i] += embPos;
+        //     predicate[i] = /*this.activate(*/embPos / this.discrete/*);*/
+        // }
+        // let predicates = [predicate];
+        // for(let l = 0; l<layers.length; l++){
+        //     const neurons = layers[l];
+        //     outputs = this.array(neurons[0].length);
+        //     for (let n = 0; n<neurons.length; n++){
+        //         const weights = neurons[n];
+        //         const input = predicate[n];
+        //         for(let w = 0; w<weights.length; w++){
+        //             outputs[w] += weights[w] * input;
+        //         }
+        //     }
+        //     predicate = predicates[l+1] = [];
+        //     for(let out = 0; out<outputs.length; out++){
+        //         predicate[out] = this.activate(outputs[out] / this.discrete);
+        //     }
+        // }
+
+        // if(targets){
+        //     let losses = targets.map((target, i)=>{
+        //         target = this.activate(target / this.discrete);
+        //         let pred = predicate[i];
+        //         let loss = (target - pred);
+        //         error += Math.abs(loss);
+        //         loss = loss * this.derivative(0, pred);
+        //         return loss;
+        //     });
+        //     current.predicateError = (error /= losses.length);
+        //     for(let l = layers.length-1; l>=0; l--){
+        //         const layer = layers[l];
+        //         predicate = predicates[l];
+        //         let errors = this.array(layer.length);
+        //         for(let n = 0; n<layer.length; n++){
+        //             const weights = layer[n];
+        //             const input = predicate[n];
+        //             let summary = 0;
+        //             for(let w = 0; w<weights.length; w++){
+        //                 summary += losses[w] * weights[w];
+        //                 weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
+        //             }
+        //             errors[n] = summary * this.derivative(0, input) / this.discrete ;
+        //         }
+        //         losses = errors;
+        //     }
+        // }
         return {outputs, error};
     }
 }
