@@ -6,7 +6,7 @@
 ODA({
     is: 'my-component',
     template: `
-         <button ~is="myTag" @tap="changeTag">Нажми на меня</button>
+        <button ~is="myTag" @tap="changeTag">Нажми на меня</button>
     `,
     myTag: 'button',
     changeTag()
