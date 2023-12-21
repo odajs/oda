@@ -158,14 +158,37 @@
         get VALUE(){
             return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
         },
+        get WO(){
+            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+        },
+        get FEED_LAYER(){
+            return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
+        },
         join1: {
             $type: Array,
             set(n){
+                const q = multiplyArray2Array(n, this.QUERY);
+                let k = multiplyArray2Array(n, this.KEY);
+                let v = multiplyArray2Array(n, this.VALUE);
 
-                const q = multiplyArray2Array(n,  this.QUERY);
-                const k = multiplyArray2Array(n,  this.KEY);
-                const v = multiplyArray2Array(n,  this.VALUE);
-                const z = v;
+
+
+
+
+                let z = multiplyArray2Array(v, this.WO);
+                z = layer_norm(n, z);
+                const layer = this.FEED_LAYER
+                const out = this.model.array();
+                for(let i = 0; i < this.model.vectorSize; i++){
+                    const val = z[i];
+                    const k = i * this.model.vectorSize;
+                    for(let j = 0; j < this.model.vectorSize; j++){
+                        out[i] += val * layer[k + i];
+                    }
+                }
+                z = layer_norm(out, z);
+                k = multiplyArray2Array(z, this.KEY);
+                v = multiplyArray2Array(z, this.VALUE);
             }
         },
         join2: {
@@ -317,4 +340,20 @@
         }
         return res;
     }
+    function layer_norm(a, b){
+        return norm(a.map((v, i)=> b[i] + v))
+    }
+    function norm(a){
+        let max = a.reduce((r, v)=>{
+            if(v > r)
+                r = v;
+            return r;
+        }, 0)
+        if (max>MAX_EXP){
+            max = MAX_EXP / max;
+            return a.map(v => v * max);
+        }
+        return a;
+    }
+    const MAX_EXP = 6;
 </script>

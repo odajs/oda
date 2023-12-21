@@ -1,6 +1,82 @@
 // import './gpu-browser.min.js';
 // const gpu = new GPU.GPU();
+class gptItem extends ROCKS({
+    get model(){
+        return this.owner.model;
+    },
+    owner: Object,
+}){
+    constructor(owner, data = {}) {
+        super();
+        this.owner = owner;
+        for(let n in data){
+            this[n] = data[n];
+        }
+    }
+}
+class gptHeadAttantion extends gptItem.ROCKS({
+    $public:{
+        get QUERY(){
+            return this.initMatrix();
+        },
+        get KEY(){
+            return this.initMatrix();
+        },
+        get VALUE(){
+            return this.initMatrix();
+        },
+        get FEED_LAYER(){
+            return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
+        }
+    },
+    initMatrix(){
+        return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+    },
+    attantion(sequence){
+        const wSize = sequence.length;
+        const query = [];
+        const key = [];
+        const value = [];
+        for(let i = 0; i<wSize; i++){
+            const word = sequence[i];
+            query.push(...multiplyArray2Array(word, this.QUERY));
+            key.push(...multiplyArray2Array(word, this.KEY));
+            value.push(...multiplyArray2Array(word, this.VALUE));
+        }
+        let scores = multiplyMatrix(query, key, wSize, this.model.attantionSize);
+        scores = scores.map(i=>Math.abs(i / this.model.attantionDivider));
+        scores = softmax(scores, this.model.attantionSize);
+        scores = value.map((v, i)=>{
+            return scores[i] * v;
+        })
+    }
+}){}
+class gptEncoder extends gptItem.ROCKS({
+    get WO(){
+        return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+    },
+    encode(sequence){
+        const matrix = this.heads.reduce((res, head)=>{
+            res.push(...head.attantion(sequence));
+            return res;
+        }, []);
+
+    },
+    get heads(){
+        return Array(this.model.headSize).fill().map(i=>{
+            return new gptHeadAttantion(this);
+        })
+    }
+}){}
+class gptDecoder extends gptItem.ROCKS({
+    get heads(){
+        return Array(this.model.headSize).fill().map(i=>{
+            return new gptHeadAttantion(this);
+        })
+    }
+}){}
 export class gptModel{
+    headSize = 1;
     tokens = [];
     positional = [];
     vectorSize = 8;
@@ -545,6 +621,19 @@ function multiplyArray2Array(array, matrix){
     }
     return res;
 }
+
+
+function multiplyMatrix(m1, m2, height, width, out = width){
+    const res = Array(out * height).fill(0);
+    let h, w, o;
+    for (h = 0; h < height; h += size) {
+        for (w = 0; w < width; w += out) {
+            for (o = 0; o < out; o++)
+                res[h+o] += m1[h+w] * m2[w+o];
+        }
+    }
+    return res;
+}
 function multiply(x,y){
     return x * y;
 }
@@ -552,6 +641,12 @@ function softmax(arr) {
     return arr.map(function(value,index) {
         return Math.exp(value) / arr.map( function(y /*value*/){ return Math.exp(y) } ).reduce( function(a,b){ return a+b })
     })
+}
+function softmaxMatrix(matrix, step) {
+    const res = [];
+    for(let i = 0; i<matrix.length; i+=step){
+        res.push(...softmax(matrix.slice(i, i+step)))
+    }
 }
 function dotProduct (a, b) {
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
