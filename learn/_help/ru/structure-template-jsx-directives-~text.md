@@ -53,7 +53,7 @@ ODA({
     `,
     myText: 'Привет, text!',
     mustache: 'Привет, Mustache!',
-    tap(){
+    tap() {
         this.myText += "!!!";
         this.mustache += "!!!";
     }
