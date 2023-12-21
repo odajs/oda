@@ -3,7 +3,7 @@
 export class gptModel{
     tokens = [];
     positional = [];
-    vectorSize = 300;
+    vectorSize = 8;
     negativeSize = 5;
     trainKoef = 1/Math.sqrt(this.vectorSize);
     progress = 0;
@@ -43,10 +43,11 @@ export class gptModel{
         this.tokens = tokens;
         this.size = this.tokens.length;
         for(let i = 0; i<this.attantionSize; i++){
-            this.QUERY[i] = this.array().map(i=>this.initWeight());
-            this.KEY[i] = this.array().map(i=>this.initWeight());
-            this.VALUE[i] = this.array().map(i=>this.initWeight());
-
+            for(let i = 0; i<this.vectorSize; i++){
+                this.QUERY[i] = this.array().map(i=>this.initWeight());
+                this.KEY[i] = this.array().map(i=>this.initWeight());
+                this.VALUE[i] = this.array().map(i=>this.initWeight());
+            }
         }
     }
     async prompt(text){
@@ -105,31 +106,35 @@ export class gptModel{
         return output.trim();
     }
     genPositional(pos = 0){
-        return this.positional[pos] ??= genPositional(this.vectorSize, pos, this.discrete);
+        return this.positional[pos] ??= genPositional(this.vectorSize, pos);
+    }
+    similar(a1, a2){
+        return cosSimilar(a1, a2);
     }
     async similarWords(t1, t2){
         t1 = await this.join(t1);
         t2 = await this.join(t2);
-        return cosSimilar(t1, t2);
+        return this.similar(t1, t2);
     }
     async join(word){
+        word = word.trim() + ' ';
         const corpus = await this.tokenize(word, true);
-        const result = this.array();
+        let result = this.array();
         for (let t = 0; t < corpus.length; t++){
             const token = corpus[t];
-            if (!token) break;
             const emb = token.emb;
             for(let i = 0; i < emb.length; i++){
                 result[i] += emb[i];
             }
         }
+        result = norm(result);
         return result;
     }
     array(size = this.vectorSize){
         return Array(size).fill(0);
     }
     initWeight(){
-        return Math.round((Math.random() - .5) * this.discrete/* * this.trainKoef*/) ;
+        return Math.random() - .5
     }
     getTokenItem(token){
         let item = tokenMap[token];
@@ -229,7 +234,6 @@ export class gptModel{
                 for (let i = 0; i <emb.length; i++) {
                     sum += multiply(emb[i], cnt[i]);
                 }
-                sum /= this.discreteX;
                 pred = this.activate(sum);
                 loss = sample.t - pred;
                 if (loss === 0) continue;
@@ -237,12 +241,12 @@ export class gptModel{
                 loss = loss * alpha  * thread.plast;
                 for (let i = 0; i <emb.length; i++) {
                     losses[i] += loss * cnt[i];
-                    cnt[i] = Math.round(cnt[i] + loss * emb[i]) || 1;
+                    cnt[i] = cnt[i] + loss * emb[i];
                 }
             }
             if (err){
                 for(let i = 0; i<this.vectorSize; i++){
-                    emb[i] = Math.round(emb[i] + losses[i]) || 1;
+                    emb[i] = emb[i] + losses[i];
                 }
             }
             error += current.tokenError = (err /= samples.length);
@@ -414,7 +418,8 @@ export class gptModel{
                     let summary = 0;
                     for(let w = 0; w<weights.length; w++){
                         summary += losses[w] * weights[w];
-                        weights[w] = Math.round(weights[w] + this.discrete * losses[w] * input * alpha * thread.plast) || 1;
+                        const v = weights[w] + this.discrete * losses[w] * input * alpha * thread.plast
+                        weights[w] = Math.round(v) || Math.sign(v);
                     }
                     errors[n] = summary * this.derivative(0, input) / this.discrete ;
                 }
@@ -505,11 +510,11 @@ function tanh(x){
 function tanhD(x, th){
     return  1 - th * th * x;
 }
-function genPositional(dim, pos = 0, discrete = 0){
+function genPositional(dim, pos = 0){
     const vector = [];
     for(let i = 0; i < dim; i++){
         const v = 1/Math.pow(10000, 2 * i/dim) * pos;
-        vector[i] = Math.round(((i%2)?Math.cos(v):Math.sin(v)) * discrete);
+        vector[i] = (i%2)?Math.cos(v):Math.sin(v);
     }
     return vector;
 }
@@ -521,6 +526,21 @@ function multiplyA2M(array, matrix, discrete = 1) {
         const inVal = array[i];
         for (j = 0; j < arr.length; j++) {
             res[i] += multiply(arr[j], inVal) / discrete;
+        }
+    }
+    return res;
+}
+function multiplyArray2Array(array, matrix){
+    let w = array.length;
+    let h = matrix/w;
+    const res = Array(h).fill(0);
+    let v, p;
+
+    for (let i = 0; i < w; i ++) {
+        v = array[i];
+        p = i * w;
+        for (let j = 0; j < h; j++) {
+            w[j] += v * matrix[p+j];
         }
     }
     return res;
@@ -537,5 +557,17 @@ function dotProduct (a, b) {
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 }
 function layer_norm(a, b){
-
+    return norm(a.map((v, i)=> b[i] + v))
+}
+function norm(a){
+    let max = a.reduce((r, v)=>{
+        if(v > r)
+            r = v;
+        return r;
+    }, 0)
+    if (max>MAX_EXP){
+        max = MAX_EXP / max;
+        return a.map(v => v * max);
+    }
+    return a;
 }

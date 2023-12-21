@@ -30,15 +30,23 @@
                       word 1:
                       <div horizontal>
                           <input ::value="w1">
-                          <div border flex style="height: 20px;" ~style="grad1"></div>
+                          <div class="vertical border flex">
+                              <span flex>{{pred1}}</span>
+                              <div flex style="height: 20px;" ~style="grad1"></div>
+                          </div>
+
                       </div>
+                      <oda-button @tap="similar" icon="lineawesome:equals-solid"></oda-button>
                       word 2:
                       <div horizontal>
                           <input ::value="w2">
-                          <div border flex style="height: 20px;" ~style="grad2"></div>
+                            <div class="vertical border flex">
+                                <span flex>{{pred2}}</span>
+                                <div flex style="height: 20px;" ~style="grad2"></div>
+                            </div>
                       </div>
                   </div>
-                  <oda-button @tap="similar" icon="lineawesome:equals-solid"></oda-button>
+
               </fieldset>
               <fieldset class="flex vertical"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>PREDICATE</legend>
@@ -110,6 +118,8 @@
                 reader.readAsText(file);
             }
         },
+        pred1: '',
+        pred2: '',
         get size(){
             return this.model.size;
         },
@@ -125,8 +135,12 @@
             $def: '',
             $save: true,
         },
-        grad1: {},
-        grad2: {},
+        get grad1(){
+            return this.getBackGradient(this.join1);
+        },
+        get grad2() {
+            return this.getBackGradient(this.join2)
+        },
         w1:{
             $def: '',
             $save: true,
@@ -135,12 +149,48 @@
             $def: '',
             $save: true,
         },
-        async similar(){
-            this.grad1 = this.getBackGradient(await this.model.join(this.w1));
-            this.grad2 = this.getBackGradient(await this.model.join(this.w2));
-            this.simRes = await this.model.similarWords(this.w1, this.w2);
+        get QUERY(){
+            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
         },
-        simRes: 0,
+        get KEY(){
+            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+        },
+        get VALUE(){
+            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+        },
+        join1: {
+            $type: Array,
+            set(n){
+
+                const q = multiplyArray2Array(n,  this.QUERY);
+                const k = multiplyArray2Array(n,  this.KEY);
+                const v = multiplyArray2Array(n,  this.VALUE);
+                const z = v;
+            }
+        },
+        join2: {
+            $type: Array,
+            set(n){
+                // const pos = this.model.genPositional(0);
+                // for (let i = 0; i<n.length; i++){
+                //     n[i] -= pos[i]
+                // }
+                let arr = this.model.tokens.map(i=>{
+                    return {i: i.id, s: this.model.similar(i.emb, n)}
+                })
+                arr = arr.sort((a,b)=>{
+                    return a.s>b.s?-1:1;
+                })
+                this.pred2 =  arr[0].i;
+            }
+        },
+        async similar(){
+            this.join1 = await this.model.join(this.w1);
+            this.join2 = await this.model.join(this.w2);
+        },
+        get simRes(){
+            return this.model.similar(this.join1, this.join2);
+        },
         tokenizeCorpus: [],
         set textCorpus(n){
             this.model.tokenize(n).then(res=>{
@@ -179,7 +229,7 @@
         },
         getColors(items){
             const getColor = (val)=>{
-                return 360 * val / this.model.discrete;
+                return 360 * val/* / this.model.discrete;*/
             }
             return items?.map((val, idx, items)=>{
                 return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
@@ -237,4 +287,34 @@
             this.fire('ok', n);
         }
     })
+
+/*    let count = 2000;
+    const result = []
+    console.time('test1');
+    let n, i, j;
+    for (i = 0; i < count; i++){
+        n = i * count
+        // const v = result[i] ??= [];
+        for (j = 0; j < count; j++){
+            // v[j] = j * j
+            result[n + j] = n * j
+        }
+    }
+    console.timeEnd('test1');
+    console.log(result.length.toLocaleString(), result[436]);*/
+    function multiplyArray2Array(array, matrix){
+        let w = array.length;
+        let h = matrix.length/w;
+        const res = Array(h).fill(0);
+        let v, p;
+
+        for (let i = 0; i < w; i ++) {
+            v = array[i];
+            p = i * h;
+            for (let j = 0; j < h; j++) {
+                res[j] += v * matrix[p+j];
+            }
+        }
+        return res;
+    }
 </script>
