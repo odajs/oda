@@ -1,101 +1,70 @@
-// import './gpu-browser.min.js';
-// const gpu = new GPU.GPU();
-class gptItem extends ROCKS({
+import './gpu-browser.min.js';
+const gpu = new GPU.GPU();
+export class gptModel extends ROCKS({
     get model(){
-        return this.owner.model;
+        return this;
     },
-    owner: Object,
-}){
-    constructor(owner, data = {}) {
-        super();
-        this.owner = owner;
-        for(let n in data){
-            this[n] = data[n];
+    tokens: [],
+    positional: [],
+    vectorSize: 64,
+    negativeSize: 5,
+    get trainKoef(){
+        return 1/Math.sqrt(this.vectorSize);
+    },
+    progress: 0,
+    get size(){
+        return this.tokens.length;
+    },
+    attentionSize: 16,
+    get attentionDivider(){
+        return Math.sqrt(this.attentionSize);
+    },
+    step: 2,
+    topK: 1,
+    encoderSize: 1,
+    decoderSize: 1,
+    headSize: 1,
+    async transform(text){
+        text = text.trim() + ' ';
+        const tokens = await this.tokenize(text, true);
+        let pos = 0;
+        let word = '';
+        let emb = this.array();
+        const thread = [];
+        for (let i = 0; i<tokens.length; i++){
+            const token = tokens[i];
+            if (token.isDelimeter){
+                thread.push({word, emb});
+                word = '';
+                emb = this.array();
+                pos = 0;
+            }
+            else{
+                word += token.id[0];
+                const e = addAndNormalize(token.emb, this.getPositionalVector(pos));
+                emb = addAndNormalize(emb, e);
+                pos++;
+            }
         }
-    }
-}
-class gptHeadAttantion extends gptItem.ROCKS({
-    $public:{
-        get QUERY(){
-            return this.initMatrix();
-        },
-        get KEY(){
-            return this.initMatrix();
-        },
-        get VALUE(){
-            return this.initMatrix();
-        },
-        get FEED_LAYER(){
-            return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
+        if (pos)
+            thread.push({word, emb});
+        console.log(thread);
+        let sequence = thread.map(i=>i.emb);
+        for (let encoder of this.encoders){
+            sequence = encoder.encode(sequence);
         }
+        console.log(sequence);
     },
-    initMatrix(){
-        return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
-    },
-    attantion(sequence){
-        const wSize = sequence.length;
-        const query = [];
-        const key = [];
-        const value = [];
-        for(let i = 0; i<wSize; i++){
-            const word = sequence[i];
-            query.push(...multiplyArray2Array(word, this.QUERY));
-            key.push(...multiplyArray2Array(word, this.KEY));
-            value.push(...multiplyArray2Array(word, this.VALUE));
-        }
-        let scores = multiplyMatrix(query, key, wSize, this.model.attantionSize);
-        scores = scores.map(i=>Math.abs(i / this.model.attantionDivider));
-        scores = softmax(scores, this.model.attantionSize);
-        scores = value.map((v, i)=>{
-            return scores[i] * v;
+    get encoders(){
+        return this.array(this.encoderSize).map(i=>{
+            return new gptEncoder(this);
         })
-    }
-}){}
-class gptEncoder extends gptItem.ROCKS({
-    get WO(){
-        return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
     },
-    encode(sequence){
-        const matrix = this.heads.reduce((res, head)=>{
-            res.push(...head.attantion(sequence));
-            return res;
-        }, []);
-
+    get decoders(){
+        return this.array(this.decoderSize).map(i=>{
+            return new gptDecoder(this);
+        })
     },
-    get heads(){
-        return Array(this.model.headSize).fill().map(i=>{
-            return new gptHeadAttantion(this);
-        })
-    }
-}){}
-class gptDecoder extends gptItem.ROCKS({
-    get heads(){
-        return Array(this.model.headSize).fill().map(i=>{
-            return new gptHeadAttantion(this);
-        })
-    }
-}){}
-export class gptModel{
-    headSize = 1;
-    tokens = [];
-    positional = [];
-    vectorSize = 8;
-    negativeSize = 5;
-    trainKoef = 1/Math.sqrt(this.vectorSize);
-    progress = 0;
-    size = 0;
-    attantionSize = 16;
-    attantionDivider = Math.sqrt(this.attantionSize);
-    _array = [];
-    step = 2;
-    QUERY = [];
-    KEY = [];
-    VALUE = [];
-    topK = 1;
-    discrete = 100000;
-    get discreteX(){
-        return this._dx ??= this.discrete * this.discrete;
-    }
     get predicateError(){
         if (!this.size)
             return 1;
@@ -104,7 +73,7 @@ export class gptModel{
             return res;
         }, 0);
         return sum/this.size;
-    }
+    },
     get tokenError(){
         if (!this.size)
             return 1;
@@ -114,18 +83,7 @@ export class gptModel{
             return res;
         }, 0);
         return sum/tokens.length;
-    }
-    constructor(tokens = []) {
-        this.tokens = tokens;
-        this.size = this.tokens.length;
-        for(let i = 0; i<this.attantionSize; i++){
-            for(let i = 0; i<this.vectorSize; i++){
-                this.QUERY[i] = this.array().map(i=>this.initWeight());
-                this.KEY[i] = this.array().map(i=>this.initWeight());
-                this.VALUE[i] = this.array().map(i=>this.initWeight());
-            }
-        }
-    }
+    },
     async prompt(text){
         const thread = {pos:0, plast: .1, word: '', w: 0, emb: this.array(), input: this.array(), words: []};
         const tokens = await this.tokenize(text, true);
@@ -180,18 +138,18 @@ export class gptModel{
             next = Object.keys(item.next);
         }
         return output.trim();
-    }
-    genPositional(pos = 0){
-        return this.positional[pos] ??= genPositional(this.vectorSize, pos);
-    }
+    },
+    getPositionalVector(pos = 0){
+        return this.positional[pos] ??= getPositionalVector(this.vectorSize, pos);
+    },
     similar(a1, a2){
         return cosSimilar(a1, a2);
-    }
+    },
     async similarWords(t1, t2){
         t1 = await this.join(t1);
         t2 = await this.join(t2);
         return this.similar(t1, t2);
-    }
+    },
     async join(word){
         word = word.trim() + ' ';
         const corpus = await this.tokenize(word, true);
@@ -205,13 +163,13 @@ export class gptModel{
         }
         result = norm(result);
         return result;
-    }
+    },
     array(size = this.vectorSize){
         return Array(size).fill(0);
-    }
+    },
     initWeight(){
         return Math.random() - .5
-    }
+    },
     getTokenItem(token){
         let item = tokenMap[token];
         if (!item){
@@ -247,7 +205,7 @@ export class gptModel{
             }
         }
         return item;
-    }
+    },
     async tokenize(text, prompt){
         const corpus = [];
         const step = this.step;
@@ -276,7 +234,7 @@ export class gptModel{
         }
         this.onScan(0);
         return corpus;
-    }
+    },
     async scan(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array(), words: []}){
         const size = corpus.length;
         const alpha = this.trainKoef;
@@ -339,7 +297,7 @@ export class gptModel{
         error /= size;
         this.onScan(0);
         return error;
-    }
+    },
     async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array(), words: []}){
         let input;
         const size = corpus.length;
@@ -364,60 +322,26 @@ export class gptModel{
             }
             prev = current;
         }
-        this.calcAttantion(thread);
         this.onScan(0);
         error /= size;
         return {error, current};
-    }
-
+    },
     activate(x){
         return sigmoid(x);
         // return leakyReLU(x);
-    }
+    },
     derivative(x, f){
         return sigmoidD(x, f);
         // return leakyReLUD(x);
-    }
-    calcQuery(emb){
-
-    }
-    calcAttantion(thread){
-        const wSize = thread.words.length;
-        for(let i = 0; i<wSize; i++){
-            const target = thread.words[i];
-            const inputs = this.genPositional(i);
-            target.e = target.e.map((e, i)=>{
-                return (e + inputs[i]);
-            })
-            const Q = multiplyA2M(target.e, this.QUERY, this.discrete);
-
-            let scores = [];
-            for(let j = 0; j<wSize; j++) {
-                const word = thread.words[j];
-                word.K ??= multiplyA2M(word.e, this.KEY, this.discrete);
-                scores[j] = Math.abs(dotProduct(Q, word.K) / this.attantionDivider / this.discreteX);
-            }
-            scores = softmax(scores);
-            target.Z = this.array(this.attantionSize);
-            for(let j = 0; j<wSize; j++) {
-                const word = thread.words[j];
-                word.V ??= multiplyA2M(word.e, this.VALUE, this.discrete);
-                const score = scores[j];
-                for(let v = 0; v<this.attantionSize; v++){
-                    target.Z[v] += word.V[v] * score;
-                }
-            }
-            target.Z = layer_norm(target.Z, target.e);
-        }
-    }
+    },
     forward(prev, current, targets, thread){
-        let inputs = this.genPositional(thread.pos);
+        let inputs = this.getPositionalVector(thread.pos);
 
 
 
         if(current.isTerminal){
             thread.pos = 0;
-            // this.calcAttantion(thread);
+            // this.calcAttention(thread);
             thread.words = [];
             thread.word = '';
             thread.emb = this.array();
@@ -504,7 +428,86 @@ export class gptModel{
         }
         return {outputs, error};
     }
+}){}
+class gptItem extends ROCKS({
+    get model(){
+        return this.owner.model;
+    },
+    owner: Object,
+}){
+    constructor(owner, data = {}) {
+        super();
+        this.owner = owner;
+        for(let n in data){
+            this[n] = data[n];
+        }
+    }
 }
+class gptTokenizer extends gptItem.ROCKS({
+
+}){}
+class gptHeadAttention extends gptItem.ROCKS({
+    $public:{
+        get QUERY(){
+            return this.initMatrix();
+        },
+        get KEY(){
+            return this.initMatrix();
+        },
+        get VALUE(){
+            return this.initMatrix();
+        },
+        get FEED_LAYER(){
+            return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
+        }
+    },
+    initMatrix(){
+        return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+    },
+    attention(sequence){
+        const wSize = sequence.length;
+        const query = [];
+        const key = [];
+        const value = [];
+        for(let i = 0; i<wSize; i++){
+            const word = sequence[i];
+            query.push(...multiplyArray2Array(word, this.QUERY));
+            key.push(...multiplyArray2Array(word, this.KEY));
+            value.push(...multiplyArray2Array(word, this.VALUE));
+        }
+        let scores = multiplyMatrix(query, key, wSize, this.model.attentionSize);
+        scores = scores.map(i=>Math.abs(i / this.model.attentionDivider));
+        scores = softmax(scores, this.model.attentionSize);
+        scores = value.map((v, i)=>{
+            return scores[i] * v;
+        })
+        return scores;
+    }
+}){}
+class gptEncoder extends gptItem.ROCKS({
+    get WO(){
+        return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+    },
+    encode(sequence){
+        const matrix = this.heads.reduce((res, head)=>{
+            res.push(...head.attention(sequence));
+            return res;
+        }, []);
+        return matrix;
+    },
+    get heads(){
+        return Array(this.model.headSize).fill().map(i=>{
+            return new gptHeadAttention(this);
+        })
+    }
+}){}
+class gptDecoder extends gptItem.ROCKS({
+    get heads(){
+        return Array(this.model.headSize).fill().map(i=>{
+            return new gptHeadAttention(this);
+        })
+    }
+}){}
 const TERMINATES = '.!?…';
 // const DELIMETERS = TERMINATES + ' \n\r,:;-– «»(){}[]+=';
 const EXP_TABLE_SIZE = 1000;
@@ -586,7 +589,7 @@ function tanh(x){
 function tanhD(x, th){
     return  1 - th * th * x;
 }
-function genPositional(dim, pos = 0){
+function getPositionalVector(dim, pos = 0){
     const vector = [];
     for(let i = 0; i < dim; i++){
         const v = 1/Math.pow(10000, 2 * i/dim) * pos;
@@ -651,7 +654,7 @@ function softmaxMatrix(matrix, step) {
 function dotProduct (a, b) {
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 }
-function layer_norm(a, b){
+function addAndNormalize(a, b){
     return norm(a.map((v, i)=> b[i] + v))
 }
 function norm(a){

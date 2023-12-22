@@ -19,7 +19,7 @@
 
                   <oda-button class="dark" icon="icons:add" @tap="loadFile">Add text</oda-button>
                   <div flex></div>
-                  <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>
+<!--                  <oda-button :disabled="!model?.isChanged" icon="icons:save" :icon-size @tap="save"></oda-button>-->
                   <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
                   <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train1"  @tap="train1 = !train1">{{train1?'stop':'train1'}}</oda-button>
               </div>
@@ -83,12 +83,12 @@
               <div class="flex"></div>
               <div><progress  ~if="progress" max="100" :value="progress"></progress></div>
           </div>
-          <div slot="right-panel" class="flex" style="overflow: auto;" opened>
+          <div slot="right-panel" class="flex" style="overflow: auto;">
             <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
           </div>
         `,
         async prompt(){
-            this.predicate = await this.model.prompt(this.text);
+            this.predicate = await this.model.transform(this.text);
         },
         progress: 0,
         tokenError: 0,
@@ -150,16 +150,16 @@
             $save: true,
         },
         get QUERY(){
-            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
         },
         get KEY(){
-            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
         },
         get VALUE(){
-            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
         },
         get WO(){
-            return this.model.array(this.model.vectorSize * this.model.attantionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
         },
         get FEED_LAYER(){
             return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
@@ -176,7 +176,7 @@
 
 
                 let z = multiplyArray2Array(v, this.WO);
-                z = layer_norm(n, z);
+                z = addAndNormalize(n, z);
                 const layer = this.FEED_LAYER
                 const out = this.model.array();
                 for(let i = 0; i < this.model.vectorSize; i++){
@@ -186,7 +186,7 @@
                         out[i] += val * layer[k + i];
                     }
                 }
-                z = layer_norm(out, z);
+                z = addAndNormalize(out, z);
                 k = multiplyArray2Array(z, this.KEY);
                 v = multiplyArray2Array(z, this.VALUE);
             }
@@ -194,7 +194,7 @@
         join2: {
             $type: Array,
             set(n){
-                // const pos = this.model.genPositional(0);
+                // const pos = this.model.getPositionalVectoral(0);
                 // for (let i = 0; i<n.length; i++){
                 //     n[i] -= pos[i]
                 // }
@@ -340,7 +340,7 @@
         }
         return res;
     }
-    function layer_norm(a, b){
+    function addAndNormalize(a, b){
         return norm(a.map((v, i)=> b[i] + v))
     }
     function norm(a){
