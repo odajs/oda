@@ -1700,7 +1700,7 @@ cells: {
                 text-overflow: ellipsis;
                 min-height: 100%;
                 min-width: 1px;
-                white-space: {{autoRowHeight?'normal':'no-wrap'}};
+                white-space: {{autoRowHeight ? 'normal' : 'nowrap'}};
             }
             :host * {
                 text-overflow: ellipsis;
