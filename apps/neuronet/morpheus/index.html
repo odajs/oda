@@ -150,19 +150,19 @@
             $save: true,
         },
         get QUERY(){
-            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
         },
         get KEY(){
-            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
         },
         get VALUE(){
-            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
         },
         get WO(){
-            return this.model.array(this.model.vectorSize * this.model.attentionSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
         },
         get FEED_LAYER(){
-            return this.model.array(this.model.vectorSize * this.model.vectorSize).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.dim).map(i=>this.model.initWeight());
         },
         join1: {
             $type: Array,
@@ -179,10 +179,10 @@
                 z = addAndNormalize(n, z);
                 const layer = this.FEED_LAYER
                 const out = this.model.array();
-                for(let i = 0; i < this.model.vectorSize; i++){
+                for(let i = 0; i < this.model.dim; i++){
                     const val = z[i];
-                    const k = i * this.model.vectorSize;
-                    for(let j = 0; j < this.model.vectorSize; j++){
+                    const k = i * this.model.dim;
+                    for(let j = 0; j < this.model.dim; j++){
                         out[i] += val * layer[k + i];
                     }
                 }
