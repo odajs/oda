@@ -9,7 +9,7 @@ export class gptModel extends ROCKS({
     dim: 16,
     negativeSize: 5,
     feedLayerK: 4,
-    feedLayerSize(){
+    get feedLayerSize(){
         return this.dim * this.feedLayerK;
     },
     get trainKoef(){
@@ -19,11 +19,11 @@ export class gptModel extends ROCKS({
     get size(){
         return this.tokens.length;
     },
-    get attentionDim(){
+    get attDim(){
         return this.dim/this.headCount;
     },
-    get attentionDiv(){
-        return Math.sqrt(this.attentionDim);
+    get attDiv(){
+        return Math.sqrt(this.attDim);
     },
     step: 2,
     topK: 1,
@@ -57,14 +57,14 @@ export class gptModel extends ROCKS({
         console.log(thread);
         let sequence = thread.map((word, pos)=>addVectors(word.emb, this.getPositionalVector(pos))).flat();
         for (let encoder of this.encoders){
-            sequence = encoder.encode(sequence, thread.length);
+            sequence = encoder.fwd(sequence, thread.length);
         }
         let pred = this.array().fill(0);
         let step = 1;
         while(pred !== true){
             for (let decoder of this.decoders){
-                pred = decoder.decode(pred, sequence, thread.length,  step);
                 pred = addVectors(pred, this.getPositionalVector(step));
+                pred = decoder.fwd(pred, sequence, thread.length,  step);
             }
             step++;
             pred = this.restoreWord(pred);
@@ -116,7 +116,7 @@ export class gptModel extends ROCKS({
         let count = tokens.length;
         while (count++ < 1000 && next.length){
             if(next.length > 1) {
-                const {outputs} = this.forward(prev, item, null, thread);
+                const {outputs} = this.fwd(prev, item, null, thread);
                 next = next.map((t, i)=>{
                     const nextItem = this.getTokenItem(t);
                     const s = cosSimilar(outputs, nextItem.emb);
@@ -330,7 +330,7 @@ export class gptModel extends ROCKS({
             current = corpus[i];
             let target = corpus[i + 1];
 
-            res = this.forward(prev, current, target?.emb || this.array().map(i=>1), thread);
+            res = this.fwd(prev, current, target?.emb || this.array().map(i=>1), thread);
             error += res.error;
             if (i && i%limit === 0){
                 await new Promise(resolve => {
@@ -354,7 +354,7 @@ export class gptModel extends ROCKS({
         return sigmoidD(x, f);
         // return leakyReLUD(x);
     },
-    forward(prev, current, targets, thread){
+    fwd(prev, current, targets, thread){
         let inputs = this.getPositionalVector(thread.pos);
 
 
@@ -468,34 +468,41 @@ class gptTokenizer extends gptItem.ROCKS({
 }){}
 class gptHeadAttention extends gptItem.ROCKS({
     $public:{
-        get QUERY(){
-            return this.initMatrix();
-        },
-        get KEY(){
-            return this.initMatrix();
-        },
-        get VALUE(){
-            return this.initMatrix();
-        },
-        get WO(){
-            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
-        },
+        get QUERY(){return this.init()},
+        get KEY(){return this.init()},
+        get VALUE(){return this.init()},
+        get WO(){return this.init()}
     },
-    initMatrix(){
-        return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
+    init(){
+        return this.model.array(this.model.dim * this.model.attDim).map(i=>this.model.initWeight());
     },
-    attention(sequence, length){
-        const query = multiplyMatrix(sequence, this.QUERY, this.model.dim, this.model.attentionDim, length);
-        const key = multiplyMatrix(sequence, this.KEY, this.model.dim, this.model.attentionDim, length);
-        let scores = multiplyMatrix(query, key, this.model.attentionDim, length, length);
-        scores = scores.map(i=>Math.abs(i / this.model.attentionDiv));
-        const sm = softmaxMatrix(scores, length);
-        const value = multiplyMatrix(sequence, this.VALUE, this.model.dim, this.model.attentionDim, length);
-        let result = multiplyMatrix(sm, value, length, this.model.attentionDim)
-        return result;
+    fwd(input, length){
+        const query = multiplyMatrix(input, this.QUERY, this.model.dim, this.model.attDim, length);
+        const key = multiplyMatrix(input, this.KEY, this.model.dim, this.model.attDim, length);
+        const value = multiplyMatrix(input, this.VALUE, this.model.dim, this.model.attDim, length);
+        let scores = multiplyMatrix(query, key, this.model.attDim, length, length).map(i=>Math.abs(i / this.model.attDiv));
+        scores = softmaxMatrix(scores, length);
+        let output = multiplyMatrix(scores, value, length, this.model.attDim);
+        return output;
     }
 }){}
-class gptEncoder extends gptItem.ROCKS({
+class gptSelfAttention extends gptItem.ROCKS({
+    get heads(){
+        return Array(this.model.headCount).fill().map(i=>{
+            return new gptHeadAttention(this);
+        })
+    },
+    get WO(){
+        return this.heads.map(head=>head.WO).flat();
+    },
+    fwd(input, length){
+        let output = this.heads.map(head => head.fwd(input, length)).flat();
+        output = multiplyMatrix(output, this.WO, this.model.attDim, this.model.dim, length);
+        output = addAndNormalize(input, output);
+        return output
+    }
+}){}
+class gptFeedLayers extends gptItem.ROCKS({
     get bias1(){
         return this.model.array(this.model.feedLayerSize).map(i=>this.model.initWeight());
     },
@@ -508,51 +515,39 @@ class gptEncoder extends gptItem.ROCKS({
     get feedLayer2(){
         return this.model.array(this.model.feedLayerSize * this.model.dim).map(i=>this.model.initWeight());
     },
-    feedForward(input){
+    fwd(input){
         let output = multiplyMatrix(input, this.feedLayer1, this.model.dim, this.model.feedLayerSize, 1);
         output = leakyReLUMatrix(output);
-        output = multiplyMatrix(output, this.feedLayer2, this.model.feedLayerSize, this.model.dim,1);
+        output = multiplyMatrix(output, this.feedLayer2, this.model.feedLayerSize, this.model.dim, 1);
+        output = addAndNormalize(input, output);
         return output;
     },
-    get WO(){
-        return this.heads.map(head=>head.WO).flat();
+}){}
+class gptEncoder extends gptItem.ROCKS({
+    get selfAttention(){
+        return new gptSelfAttention(this);
     },
-    selfAttention(sequence, length = 1){
-        let output = this.heads.map(head => head.attention(sequence, length)).flat();
-        return multiplyMatrix(output, this.WO, this.model.attentionDim, this.model.dim, length);
+    get selfFeed(){
+        return new gptFeedLayers(this);
     },
-    encode(input, length){
-        let output = addAndNormalize(this.selfAttention(input, length), input);
-        output = addAndNormalize(this.feedForward(output), output);
+    fwd(input, length){
+        let output = this.selfAttention.fwd(input, length);
+        output = this.selfFeed.fwd(output);
         return output;
-    },
-    get heads(){
-        return Array(this.model.headCount).fill().map(i=>{
-            return new gptHeadAttention(this);
-        })
     }
 }){}
 class gptDecoder extends gptEncoder.ROCKS({
-    get heads(){
-        return Array(this.model.headCount).fill().map(i=>{
-            return new gptHeadAttention(this);
-        })
+    get mixAttention(){
+        return new gptSelfAttention(this);
     },
-    decode(input, encoderInput, length, step){
-        let output = addAndNormalize(this.selfAttention(input), input);
-        encoderInput.push(...input);
-        output = addAndNormalize(this.edAttention(output, encoderInput, length + step), input);
-        output = addAndNormalize(this.feedForward(output), output);
+    get mixFeed(){
+        return new gptFeedLayers(this);
     },
-    edAttention(input, sequence, length){
-        const query = multiplyMatrix(sequence, this.QUERY, this.model.dim, this.model.attentionDim, length);
-        const key = multiplyMatrix(sequence, this.KEY, this.model.dim, this.model.attentionDim, length);
-        let scores = multiplyMatrix(query, key, this.model.attentionDim, length, length);
-        scores = scores.map(i=>Math.abs(i / this.model.attentionDiv));
-        const sm = softmaxMatrix(scores, length);
-        const value = multiplyMatrix(sequence, this.VALUE, this.model.dim, this.model.attentionDim, length);
-        let result = multiplyMatrix(sm, value, length, this.model.attentionDim)
-        return result;
+    fwd(input, encoderInput, length, step){
+        input = this.$super(input, 1);
+        let output = this.mixAttention.fwd(input, length);
+        output = this.mixFeed.fwd(output);
+        return output;
     }
 }){}
 const TERMINATES = '.!?…';
@@ -660,9 +655,7 @@ function multiplyMatrix(m1, m2, width, out, height){
     return res;
 }
 function softmax(v) {
-    return v.map(a =>{
-        return EXP(a) / v.map(a => EXP(a)).reduce((r, b)=>(r + b))
-    })
+    return v.map(a =>EXP(a) / v.map(a => EXP(a)).reduce((r, b)=>(r + b)))
 }
 function softmaxMatrix(m, step) {
     const res = [];

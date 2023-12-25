@@ -150,16 +150,16 @@
             $save: true,
         },
         get QUERY(){
-            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attDim).map(i=>this.model.initWeight());
         },
         get KEY(){
-            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attDim).map(i=>this.model.initWeight());
         },
         get VALUE(){
-            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attDim).map(i=>this.model.initWeight());
         },
         get WO(){
-            return this.model.array(this.model.dim * this.model.attentionDim).map(i=>this.model.initWeight());
+            return this.model.array(this.model.dim * this.model.attDim).map(i=>this.model.initWeight());
         },
         get FEED_LAYER(){
             return this.model.array(this.model.dim * this.model.dim).map(i=>this.model.initWeight());
