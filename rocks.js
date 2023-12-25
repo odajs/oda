@@ -326,7 +326,8 @@ in the <${host.localName}>`;
             set: (target, key, value) => {
                 const old = (Array.isArray(op.target) && key === 'length')?undefined:op.target[key];
                 if (Object.equal(old, value)) return true;
-                const $prop = op.props[key] ??= {deps: new Set()}
+                const $prop = op.props[key] ??= { deps: new Set() }
+                // $prop.deps.add(ROCKS.DEP_TARGET || target);
                 op.target[key] = reactor.call(this, value);
                 ROCKS.resetDeps($prop);
                 return true;
