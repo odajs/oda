@@ -47,7 +47,7 @@ ODA({ is: 'oda-m4t-test', imports:'@oda/app-layout', extends: 'oda-app-layout', 
         // this.param = {...defParam.t2i}
         const authToken = '8OmcicHiphZar50quinAvShic';
         // this.ws = new WebSocket('ws://127.0.0.1:8765/'+authToken);
-        this.ws = new WebSocket('wss://tesla.odant.org/'+authToken);
+        this.ws = new WebSocket('wss://sdapi.odant.org:8765/'+authToken);
         this.ws.onopen = () => { 
             console.log('подключился к wss'); 
             // this.ws.send(JSON.stringify({test: 'Test' }));
