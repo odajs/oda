@@ -1,3 +1,14 @@
+let settings = {
+    authToken:'8OmcicHiphZar50quinAvShic',
+    protocol:'wss',
+    url:'sdapi.odant.org',
+    port:'8765',
+
+    get ws_url() {return this.protocol + '://' + this.url + ':' + this.port + '/' + this.authToken},
+    get url_path() {return (x)=>{return 'https://' + this.url + '/' + x.slice(5) }} // ! fixme
+}
+
+
 ODA({ is: 'oda-m4t-test', imports:'@oda/app-layout', extends: 'oda-app-layout', template: /*HTML*/ `
     <div class='header' slot="header" style='text-align:center' ><h3>ODANT M4T</h3></div>
     <div vertical icon="iconoir:message-text" title="TextInput"  label="TextInput" slot="left-panel" style='padding:10px;' bar-opened>
@@ -43,14 +54,11 @@ ODA({ is: 'oda-m4t-test', imports:'@oda/app-layout', extends: 'oda-app-layout', 
         // this.codeTab.rus.t  = true
         // this.codeTab.eng.t  = true
         this.codeTab.cmn.t  = true
-        // this.id = this._newID(19)
-        // this.param = {...defParam.t2i}
-        const authToken = '8OmcicHiphZar50quinAvShic';
-        // this.ws = new WebSocket('ws://127.0.0.1:8765/'+authToken);
-        this.ws = new WebSocket('wss://sdapi.odant.org:8765/'+authToken);
+
+        this.ws = new WebSocket(settings.ws_url);
         this.ws.onopen = () => { 
             console.log('подключился к wss'); 
-            // this.ws.send(JSON.stringify({test: 'Test' }));
+
         };
         // обработчик сообщений от сервера
         this.ws.onmessage = (message) => {
@@ -153,12 +161,13 @@ ODA({ is: 'oda-m4t-test-rez', template: /*HTML*/ `
     <div class='border'>
         <oda-button ~class='cls' :label='language' :icon disabled></oda-button>
         <div class='text' ~if='el.tt==="text"'>{{el.text}}</div>
-        <audio ~if='el.tt==="voice"' controls :src="el.path">
-            <a :href="el.path"> Download audio </a>
+        <audio ~if='el.tt==="voice"' controls :src="fixPath">
+            <a :href="fixPath"> Download audio </a>
         </audio>
     </div>
     `,
     el:{},
+    get fixPath() {return settings.url_path(this.el.path)},
     get language() { return this.codeTab[this.el.lang].language },
     get icon() {return (this.el.tt==='text')? 'iconoir:message-text': 'iconoir:mic'},
     get cls() { return (this.el.tt==='text')? 'success-invert': 'info-invert' } 
