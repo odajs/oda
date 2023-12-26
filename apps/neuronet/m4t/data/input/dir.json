@@ -1,0 +1,19 @@
+{
+ "wav": [
+  {
+   "path": "data/input/s_test_1.wav",
+   "name": "s_test_1.wav",
+   "ext": "wav"
+  },
+  {
+   "path": "data/input/s_test_2.wav",
+   "name": "s_test_2.wav",
+   "ext": "wav"
+  },
+  {
+   "path": "data/input/s_test_3.wav",
+   "name": "s_test_3.wav",
+   "ext": "wav"
+  }
+ ]
+}

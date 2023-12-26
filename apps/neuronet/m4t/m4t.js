@@ -28,14 +28,12 @@ ODA({ is: 'oda-m4t-test', imports:'@oda/app-layout', extends: 'oda-app-layout', 
             </div>
         </fieldset> 
     </div>
-    <div  icon="iconoir:orthogonal-view" title="OutPutTab"  label="OutPutTab" slot="right-panel"  bar-opened style='overflow-y:auto;'><table><tbody>
-        <tr><th>language</th><th>text</th><th>voice</th></tr>
-        <tr ~for='Object.keys(codeTab)'>
-            <td>{{codeTab[$for.item].language}}</td>
-            <td><input type="checkbox" ::checked='codeTab[$for.item].t'/></td>
-            <td><input type="checkbox" ::checked='codeTab[$for.item].v'/></td>
-        </tr>
-    </tbody></table></div>
+    <div  icon="iconoir:orthogonal-view" title="OutPutTab"  label="OutPutTab" slot="right-panel"  bar-opened style='overflow-y:auto;'>
+        <div vertical>
+            <div flex horizontal><div flex><b>language</b></div><div style='margin:0 5px'><b>text</b></div><div><b>voice</b></div></div>
+            <oda-tr-opt ~for='Object.keys(codeTab)' :language='codeTab[$for.item].language' ::t='codeTab[$for.item].t' ::v='codeTab[$for.item].v'></oda-tr-opt>
+        </div>
+    </div>
     <oda-button :icon :icon-size="iconSize*1.3" style="font-size:large;" success-invert :disabled="wait" label='GO!' @tap='_go()' slot='footer'></oda-button>
     <div slot='main' style='overflow-y:auto;'>
         <oda-m4t-test-rez ~for='results' :el='$for.item'></oda-m4t-test-rez>
@@ -87,18 +85,6 @@ ODA({ is: 'oda-m4t-test', imports:'@oda/app-layout', extends: 'oda-app-layout', 
         textInput:'Привет мир, здравствуй солнце!',
         inputLang:'rus',
         results:[],
-        // results: [
-        //     {type: 'rez', tt: 'text', lang: 'cmn', text: '请等候运营商的回答为改善服务质量您的谈话将被录取请收请收请收请收请收请收请收请收请收请收请收请收请收…收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收请收'},
-        //     {type: "rez", tt: "text", lang: "rus", text: "Пожалуйста, ждите ответа оператора в целях улучшения качества обслуживания ваше разговор будет записан примите, пожалуйста, 22 сухого тимакова и квартира какая, пожалуйста, 141 не работает сухого тимакова"},
-        //     {type: 'rez', tt: 'voice', lang: 'rus', path: 'data/output/rus.wav'}
-        // ],
-        // results:[{'type': 'rez', 'tt': 'text', 'lang': 'cmn', 'text': '好吧世界,招呼太阳!'},
-        //         {'type': 'rez', 'tt': 'text', 'lang': 'eng', 'text': 'Hello, peace, greetings to the sun!'},
-        //         {'type': 'rez', 'tt': 'text', 'lang': 'rus', 'text': 'Привет мир, здравствуй солнце!'},
-        //         {type: 'rez', tt: 'voice', lang: 'cmn', path: 'data/output/cmn.wav'},
-        //         {type: 'rez', tt: 'voice', lang: 'rus', path: 'data/output/rus.wav'}
-            // ]
-        
     },
     _go() {
         this.results = []
@@ -149,6 +135,30 @@ ODA({ is: 'oda-button-v', extends: 'oda-button', template: /*HTML*/ `
 </style>  
 `,
 get icon() {  return (this.toggled)?"bootstrap:check-circle":"bootstrap:circle" }
+})
+
+ODA({ is: 'oda-tr-opt', template: /*HTML*/ `
+    <style>
+        :host {
+            @apply --flex;
+            @apply --horizontal;
+            padding:1px;
+        }
+        .in {width:35px;}
+    </style>
+    <div flex>{{language}}</div>
+    <div class='in'><input type="checkbox" ::checked='t'/></div>
+    <div class='in'><input type="checkbox" ::checked='v'/></div>
+    `,
+    language:'',
+    t:{
+        $def:false,
+        $save:true,
+    },
+    v:{
+        $def:false,
+        $save:true,
+    },
 })
 
 ODA({ is: 'oda-m4t-test-rez', template: /*HTML*/ `
