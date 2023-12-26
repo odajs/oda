@@ -94,7 +94,8 @@
 
         },
         async prompt(){
-            this.predicate = await this.model.transform(this.text);
+            this.predicate = '';
+            this.model.transform(this.text);
         },
         progress: 0,
         tokenError: 0,
@@ -276,6 +277,13 @@
         },
         get model(){
             const model = new GPT.gptModel();
+            model.addEventListener('predicate', (e)=>{
+                const w = e.detail.value
+                this.async(()=>{
+                    this.predicate += w;
+                })
+
+            })
             model.onScan = (progress, tokenError, predicateError)=>{
                 if (tokenError !== undefined)
                     this.tokenError = tokenError;
