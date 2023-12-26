@@ -1,3 +1,4 @@
+const PROP_PREFIX = 'table-prop:';
 ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/splitter, @oda/menu',
     template: /*html*/`
         <style>
@@ -1651,7 +1652,10 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             return this.groupTemplate;
         if (col.treeMode)
             return 'oda-table-cell-tree';
-        let template = row.templates?.[col] || col.cellTemplate || this.cellTemplate;
+        if (row.templates) {
+            console.warn('!!!row.templates', row);
+        }
+        let template = row[`${PROP_PREFIX}templates`]?.[col] || col.cellTemplate || this.cellTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
@@ -1831,7 +1835,10 @@ cells: {
             <div ~is="item.checkTemplate || checkTemplate" class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></div>
             <div :dark ::color  ~is="subTemplate" :column :item class="flex" @tap="_tap">{{item?.[column[columnId]]}}</div>`,
             get subTemplate() {
-                return this.item?.[this.column[this.columnId] + '.template'] || this.item?.template || this.column?.cellTemplate || this.cellTemplate || 'label';
+                if(this.item.template){
+                    console.warn('!!!item.template', this.item);
+                }
+                return this.item?.[this.column[this.columnId] + `.${PROP_PREFIX}subTemplate`] || this.item?.[`${PROP_PREFIX}subTemplate`] || this.column?.cellTemplate || this.cellTemplate || 'label';
             },
             get expBackground() {
                 return this.item?.['sys:color'] || 'transparent';
