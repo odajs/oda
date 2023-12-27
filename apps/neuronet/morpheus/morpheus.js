@@ -15,13 +15,13 @@ export class gptModel extends ROCKS({
         },
         blockSize: 8,
         tokens: [],
-        dim: 512,
+        dim: 16,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
         topK: 1,
-        deep: 6,
-        headCount: 8,
+        deep: 2,
+        headCount: 1,
     },
     fwd(input){
         console.log('gptModel.fwd');
@@ -73,7 +73,6 @@ export class gptModel extends ROCKS({
         }
         if (pos)
             thread.push({word, emb});
-        // console.log(thread);
         let sequence = thread.map((word, pos)=>addVectors(word.emb, this.getPositionalVector(pos)));
         // let sequence = thread.map(word => word.emb);
         console.timeEnd('PREPARE');
@@ -84,18 +83,16 @@ export class gptModel extends ROCKS({
         console.timeEnd('ENCODE');
         // return
         console.time('DECODE');
-        let pred = this.array().fill(0);
+        let output = [this.getPositionalVector(0)];
         let step = 0;
         while(step < tokens.length){
-            const pos = this.getPositionalVector(step++);
-            pred = addVectors(pred, pos);
+            let input = output;
             for (let decoder of this.decoders){
-                pred = decoder.fwd([pred], sequence);
+                input = decoder.fwd(input, sequence);
             }
-            sequence.push(...pred);
-            pred = pred[0];
+            output = input;
             const stop = await new Promise((resolve, reject)=>{
-                const stop = this.restoreWord(pred);
+                const stop = this.restoreWord(output.last);
                 this.async(()=>{
                     resolve(stop);
                 })
@@ -366,16 +363,18 @@ class gptHeadAttention extends gptItem.ROCKS({
         }
         console.log('key');
         const key = multiplyMatrix(input, this.KEY);
-        console.log('value');
-        const value = multiplyMatrix(input, this.VALUE);
-        console.log('scores');
+        console.log('keyT');
         const keyT = transposeMatrix(key);
+        console.log('scores');
         let scores = multiplyMatrix(query, keyT);
         const attDiv = this.model.attDiv;
         scores = scores.map(x=>{
             return x.map(y=>(y/attDiv))
         })
         scores = softmaxMatrix(scores);
+        console.log('value');
+        const value = multiplyMatrix(input, this.VALUE);
+        console.log('value X scores');
         let output = multiplyMatrix(scores, value);
         return output;
     }
@@ -445,7 +444,7 @@ class gptEncoder extends gptItem.ROCKS({
 }){}
 class gptDecoder extends gptEncoder.ROCKS({
     get mixAttention(){
-        return new gptAttention(this);
+        return new gptMixAttention(this);
     },
     get mixFeed(){
         return new gptFeedLayers(this);

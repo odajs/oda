@@ -13,7 +13,7 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        ooUrl: 'https://current.odant.org/docker/onlyoffice/',
+        // ooUrl: 'https://current.odant.org/docker/onlyoffice/',
         url: path + 'document.docx',
         // ooUrl: 'http://localhost:8080/',
         // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
@@ -57,6 +57,7 @@ ODA({ is: 'oda-only-office',
         userID: '',
         callbackUrl: ''
     },
+    get ooUrl() { return location.origin + '/docker/onlyoffice/' },
     get path() { return path },
     get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
     get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
