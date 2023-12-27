@@ -20,8 +20,46 @@ export class gptModel extends ROCKS({
         feedLayerK: 2,
         step: 2,
         topK: 1,
-        deep: 2,
+        deep: 6,
         headCount: 2,
+    },
+    encodeWord(tokens){
+        return tokens.reduce((r, t, i)=>addAndNormalize(r, addVectors(t.emb,  this.getPositionalVector(i))), this.array());
+    },
+    get QUERY(){return this.init()},
+    get KEY(){return this.init()},
+    get VALUE(){return this.init()},
+    init(){
+        return this.model.array().map(row=>{
+            return  this.model.array(this.model.div).map(i=>this.model.initWeight());
+        })
+    },
+    get WO(){
+        return this.model.array(this.model.div).map(row=>{
+            return  this.model.array().map(i=>this.model.initWeight());
+        })
+    },
+    div: 7,
+    decodeWord(word, input = []){
+        const div = Math.sqrt(this.model.div);
+        input.unshift({emb:this.model.array()})
+        input = input.map((t, i)=>addVectors(t.emb, this.getPositionalVector(i)));
+        // let step = 0;
+        // while(step<10){
+        const query = multiplyMatrix(input, this.QUERY);
+        const key = multiplyMatrix(input, this.KEY);
+        const keyT = transposeMatrix(key);
+        let scores = multiplyMatrix(query, keyT);
+        scores = scores.map(x=>x.map(y=>(y/div)));
+        scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
+        scores = softmaxMatrix(scores);
+
+        const value = multiplyMatrix(input, this.VALUE);
+        let output = multiplyMatrix(scores, value);
+        output = multiplyMatrix(output, this.WO);
+        output = addAndNormalizeMatrix(input, output);
+        console.log(output)
+        // }
     },
     fwd(input){
         console.log('gptModel.fwd');
@@ -164,7 +202,7 @@ export class gptModel extends ROCKS({
         for (let t = 0; t < corpus.length; t++){
             const token = corpus[t];
             const emb = token.emb;
-            result = addAndNormalize(result, addAndNormalize(emb,  this.getPositionalVector(t)));
+            result = addAndNormalize(result, addVectors(emb,  this.getPositionalVector(t)));
         }
         return result;
     },

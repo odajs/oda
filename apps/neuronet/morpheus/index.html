@@ -33,6 +33,7 @@
                           <div class="vertical border flex">
                               <span flex>{{pred1}}</span>
                               <div flex style="height: 20px;" ~style="grad1"></div>
+                              <button @tap="decode" icon="lineawesome:equals-solid">decode</button>
                           </div>
 
                       </div>
@@ -87,6 +88,11 @@
             <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
           </div>
         `,
+        async decode(){
+            const tokens = await this.model.tokenize(this.w1);
+            const word = this.model.encodeWord(tokens);
+            const dec = this.model.decodeWord(word, tokens);
+        },
         genPos(){
             for (let i = 0; i<10000; i++){
                 this.model.getPositionalVector(i)
