@@ -105,8 +105,8 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
             }
             ws.onclose = (e) => {
                 console.log(e)
-                this.ws = undefined;
-                this.ws;
+                // this.ws = undefined;
+                // this.ws;
             }
             return ws
         }
@@ -179,43 +179,76 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
 
     codeLang(lang) { return codeTabConst.find(el => el.language===lang).code },
 
+    // async _go() {
+    //     // this.results = []
+    //     this.wait = true
+    //     await new Promise(resolve=>{
+    //         this.ws
+    //         this.async(()=>{
+    //             resolve();
+    //         }, 100)
+    //     })
+
+
+    //     let mess2ws = {outText:[], outVoice:[], inputLang: this.codeLang(this.inputLang)}
+
+    //     mess2ws[(this.outputType==='text')?'outText':'outVoice' ] = [ this.codeLang(this.outputLang) ]
+    //     mess2ws.inputType = this.inputType
+
+
+    //     if (this.inputType==='text') mess2ws.textInput = this.textInput
+    //     if (this.inputType==='voice') {            
+    //         if (this.currentVoice.path) {
+    //             mess2ws.voicePath = this.currentVoice.path
+    //             mess2ws.voiceExt = this.currentVoice.ext
+    //         }
+    //         else {
+    //             console.log('No Voice select!')
+    //             this.wait = false
+    //             return
+    //         }
+    //     }
+    //     console.log(mess2ws)
+    //     this.ws.send(JSON.stringify(mess2ws));
+    // },
+
     async _go() {
-        // this.results = []
-        this.wait = true
-        await new Promise(resolve=>{
-            this.ws
-            this.async(()=>{
-                resolve();
-            }, 100)
+        let headers = new Headers
+        headers.set('Content-Type', 'application/json');
+        headers.set('Authorization', `Basic ${btoa('m4t:8OmcicHiphZar50quinAvShic')}`);
+
+
+        fetch('https://sdapi.odant.org/upload/t.json', {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+                id: 1,
+                product: 'apple',
+                category: 'fruit',
+            }),
+            headers
+            //: {
+            //     'Accept': 'application/json',
+            //     'Content-Type': 'application/json',
+            //     'Authorization': `Basic ${btoa('m4t:8OmcicHiphZar50quinAvShic')}`,
+            // },
         })
+            .then((res) => res.json())
+            .then((data) => console.log(data))
+            .catch((err) => console.error(err));
 
-
-        let mess2ws = {outText:[], outVoice:[], inputLang: this.codeLang(this.inputLang)}
-
-        mess2ws[(this.outputType==='text')?'outText':'outVoice' ] = [ this.codeLang(this.outputLang) ]
-        mess2ws.inputType = this.inputType
-
-
-        if (this.inputType==='text') mess2ws.textInput = this.textInput
-        if (this.inputType==='voice') {            
-            if (this.currentVoice.path) {
-                mess2ws.voicePath = this.currentVoice.path
-                mess2ws.voiceExt = this.currentVoice.ext
-            }
-            else {
-                console.log('No Voice select!')
-                this.wait = false
-                return
-            }
-        }
-        console.log(mess2ws)
-        this.ws.send(JSON.stringify(mess2ws));
     },
 
     get icon(){ return (this.wait)?'odant:spin':'av:play-arrow'},
     inputFiles:{
-        $type: Object,
+        // $type: Object,
         async get() { 
+
+            let dir = await fetch('https://sdapi.odant.org/input/' )
+            dir = await dir.text()
+            console.log(dir)
+
+
             let response = await fetch('data/input/dir.json')
             return await response.json();
         }
