@@ -82,12 +82,5 @@
         "content": {
             "link": "index.html"
         }
-    },
-    {
-        "name": "onlyoffice-editor",
-        "label": "<b style='color: #e689fe'>oda-onlyoffice-editor:</b> Редактор документов (docx, xlsx, pptx)",
-        "content": {
-            "link": "index.html"
-        }
     }
 ]
