@@ -52,7 +52,7 @@ const codeTabConst = [
 ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
     <div class='header' slot="top_" style='text-align:center' ><h3>ODANT M4T</h3></div>
     <div vertical icon="iconoir:message-text" title="TextInput"  label="TextInput" slot="left-panel" style='padding:10px;' bar-opened>
-        <textarea style='margin:5px 0; width:100%' rows="10" placeholder='input text' ::value='textInput' ></textarea>
+        <textarea class="flex" style='margin:5px 0; width:100%' rows="10" placeholder='input text' ::value='textInput' ></textarea>
     </div>
     <div  icon="iconoir:mic" title="VoiceInput"  label="VoiceInput" slot="left-panel" style='overflow-y:auto;' >
         <fieldset ~for='Object.keys(inputFiles)' style='padding:6px 5px 2px 2px'>
@@ -75,36 +75,42 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
     </div>
 
     `,
-    attached() { 
-        this.ws
-    },    
-    get ws() {
-        let ws = new WebSocket(settings.ws_url);
-        ws.onopen = () => { 
-            console.log('подключился к wss');
-        };
-        // обработчик сообщений от сервера
-        ws.onmessage = (message) => {
-            let mess = {}
-            try { mess = JSON.parse(message.data) } catch (e) { mess.err=message.data}
-            console.log(mess)
+    ws:{
+        $freeze: true,
+        get(){
+            let ws = new WebSocket(settings.ws_url);
+            ws.onopen = () => {
+                console.log('подключился к wss');
+            };
+            // обработчик сообщений от сервера
+            ws.onmessage = (message) => {
+                let mess = {}
+                try {
+                    mess = JSON.parse(message.data)
+                } catch (e) {
+                    mess.err = message.data
+                }
+                console.log(mess)
 
-            if (mess.type === 'rez') { 
-                this.results.push(mess)
+                if (mess.type === 'rez') {
+                    this.results.push(mess)
+                }
+                if (mess.result === "done") {
+                    this.wait = false
+                }
+
+            };
+            ws.onerror = (err) => {
+                console.log(err)
             }
-            if (mess.result === "done") {
-                this.wait = false
-            } 
-
-        };
-        ws.onerror = (err) => {
-            console.log(err)
+            ws.onclose = (e) => {
+                console.log(e)
+                this.ws = undefined;
+                this.ws;
+            }
+            return ws
         }
-        ws.onclose = (e) => {
-            console.log(e)
-            this.ws
-        } 
-        return ws
+
     },
 
     // ws:{},
@@ -133,6 +139,9 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
 
 
     //  },
+    ready(){
+        this.ws;
+    },
 
     iconSize:32,
     get languageNames() {codeTabConst.map(x => x.language)},
@@ -170,10 +179,16 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
 
     codeLang(lang) { return codeTabConst.find(el => el.language===lang).code },
 
-    _go() {
+    async _go() {
         // this.results = []
         this.wait = true
-        this.ws
+        await new Promise(resolve=>{
+            this.ws
+            this.async(()=>{
+                resolve();
+            }, 100)
+        })
+
 
         let mess2ws = {outText:[], outVoice:[], inputLang: this.codeLang(this.inputLang)}
 
