@@ -1279,10 +1279,15 @@ if (!window.ODA?.IsReady) {
                 })
 
             }
-            if ($el.parentElement?.$render && !$el.parentElement?.__render && !$el.parentElement[CORE_KEY]?.shadowRoot?.contains?.($el.domHost)) {
-                this.async(()=>{
+            if ($el.parentElement?.$render && !$el.parentElement?.__render) {
+                let p = $el.domHost; // 👀
+                while (p) {
+                    if (p === $el.parentElement) return;
+                    p = p.parentElement;
+                }
+                this.async(() => {
                     $el.parentElement?.$render?.();
-                })
+                });
             }
         }
         else {
