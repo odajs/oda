@@ -1464,9 +1464,9 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         }
 
     </style>
-    <div ~wake="true" class="no-flex  vertical" ~style="{maxHeight: $scrollHeight+'px', minHeight: $scrollHeight+'px'}">
+    <div ~wake="true" class="no-flex  vertical" ~style="{maxHeight: $scrollHeight*1.75+'px', minHeight: $scrollHeight*1.75+'px'}">
         <div ~wake="true"  class="sticky" style="top: 0px; min-height: 1px; min-width: 100%;" @dblclick.stop="onDblClick" @tap="onTapRows" @pointerdown="focusCell($event)" @contextmenu="_onRowContextMenu" @dragleave="table._onDragLeave($event, $detail)" @dragover="table._onDragOver($event, $detail)"  @drop="table._onDrop($event, $detail)">
-            <div ~for="visibleRows" class="row"  :row="$for.item"
+            <div ~for="visibleRows" class="row" :row="$for.item"
                 ~class="{'group-row':$for.item.__group__}"
                 :drop-mode="$for.item.$dropMode"
                 :dragging="draggedRows.includes($for.item)"
