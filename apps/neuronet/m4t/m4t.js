@@ -1,10 +1,11 @@
 let settings = {
     authToken:'8OmcicHiphZar50quinAvShic',
-    protocol:'wss',
     url:'sdapi.odant.org',
     port:'8765',
+    inputType:['wav', 'mp3', 'ogg'],
 
-    get ws_url() {return this.protocol + '://' + this.url + ':' + this.port + '/' + this.authToken},
+    get ws_url() {return 'wss://' + this.url + ':' + this.port + '/' + this.authToken},
+    get input_url() {return 'https://' + this.url + '/input/' },
     get url_path() {return (x)=>{return 'https://' + this.url + '/' + x.slice(5) }} // ! fixme
 }
 
@@ -58,7 +59,7 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
         <fieldset ~for='Object.keys(inputFiles)' style='padding:6px 5px 2px 2px'>
             <legend>{{$for.item}}</legend>
             <div class='flex' horizontal ~for='inputFiles[$for.item]'>
-                <oda-button-v allow-toggle='true' toggle-group='tgg' @tap='currentVoice=$$for.item'></oda-button-v>
+                <oda-button-v @tap='currentVoice=$$for.item' :toggled='currentVoice.path===$$for.item.path'></oda-button-v>
                 <audio style='width:245px; height:30px; margin-left:5px' controls :src="$$for.item.path"></audio>
             </div>
         </fieldset> 
@@ -152,8 +153,12 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
     },
 
     results:[],
-    currentVoice:{},
+    
     $public: {
+        currentVoice:{
+            $type:Object,
+            $save:true,
+        },
         inputLang: {
             $def:'Russian',
             $type:String,
@@ -242,16 +247,22 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
 
     get icon(){ return (this.wait)?'odant:spin':'av:play-arrow'},
     inputFiles:{
-        // $type: Object,
-        async get() { 
+        $type: Object,
+        async get() {
+            // let url = settings.input_url
 
-            let dir = await fetch('https://sdapi.odant.org/input/' )
-            dir = await dir.text()
-            console.log(dir)
-
-
-            let response = await fetch('data/input/dir.json')
-            return await response.json();
+            let dir = await fetch(settings.input_url)
+            dir = (await dir.text()).match(/(?<=href=")(.*?\....)(?=")/g)
+            let rez = []
+            dir.forEach(el => {
+                let ext = el.slice(-3)
+                if (settings.inputType.includes(ext)) {
+                    rez[ext] ??= []
+                    rez[ext].push( {path:settings.input_url + el, name:el, ext} )   
+                }             
+            });
+            console.log(rez)
+            return rez
         }
     },
 
