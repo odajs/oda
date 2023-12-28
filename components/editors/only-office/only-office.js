@@ -30,7 +30,7 @@ ODA({ is: 'oda-only-office',
         },
         fileType: {
             $def: 'docx',
-            $list: ['.djvu', '.doc', '.docm', '.docx', '.docxf', '.dot', '.dotm', '.dotx', '.epub', '.fb2', '.fodt', '.htm', '.html', '.mht', '.mhtml', '.odt', '.oform', '.ott', '.oxps', '.pdf', '.rtf', '.stw', '.sxw', '.txt', '.wps', '.wpt', '.xml', '.xps', '.csv', '.et', '.ett', '.fods', '.ods', '.ots', '.sxc', '.xls', '.xlsb', '.xlsm', '.xlsx', '.xlt', '.xltm', '.xltx', '.xml', '.dps', '.dpt', '.fodp', '.odp', '.otp', '.pot', '.potm', '.potx', '.pps', '.ppsm', '.ppsx', '.ppt', '.pptm', '.pptx', '.sxi']
+            $list: ['djvu', 'doc', 'docm', 'docx', 'docxf', 'dot', 'dotm', 'dotx', 'epub', 'fb2', 'fodt', 'htm', 'html', 'mht', 'mhtml', 'odt', 'oform', 'ott', 'oxps', 'pdf', 'rtf', 'stw', 'sxw', 'txt', 'wps', 'wpt', 'xml', 'xps', 'csv', 'et', 'ett', 'fods', 'ods', 'ots', 'sxc', 'xls', 'xlsb', 'xlsm', 'xlsx', 'xlt', 'xltm', 'xltx', 'xml', 'dps', 'dpt', 'fodp', 'odp', 'otp', 'pot', 'potm', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'sxi']
         },
         autosave: true,
         compactHeader: false,
@@ -61,9 +61,9 @@ ODA({ is: 'oda-only-office',
     get path() { return path },
     get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
     get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
-    get words() { return '.djvu, .doc, .docm, .docx, .docxf, .dot, .dotm, .dotx, .epub, .fb2, .fodt, .htm, .html, .mht, .mhtml, .odt, .oform, .ott, .oxps, .pdf, .rtf, .stw, .sxw, .txt, .wps, .wpt, .xml, .xps' },
-    get cells() { return '.csv, .et, .ett, .fods, .ods, .ots, .sxc, .xls, .xlsb, .xlsm, .xlsx, .xlt, .xltm, .xltx, .xml' },
-    get slides() { return '.dps, .dpt, .fodp, .odp, .otp, .pot, .potm, .potx, .pps, .ppsm, .ppsx, .ppt, .pptm, .pptx, .sxi' },
+    get word() { return 'djvu, doc, docm, docx, docxf, dot, dotm, dotx, epub, fb2, fodt, htm, html, mht, mhtml, odt, oform, ott, oxps, pdf, rtf, stw, sxw, txt, wps, wpt, xml, xps' },
+    get cell() { return 'csv, et, ett, fods, ods, ots, sxc, xls, xlsb, xlsm, xlsx, xlt, xltm, xltx, xml' },
+    get slide() { return 'dps, dpt, fodp, odp, otp, pot, potm, potx, pps, ppsm, ppsx, ppt, pptm, pptx, sxi' },
     get editorConfig() {
         return {
             customization: {
@@ -80,7 +80,7 @@ ODA({ is: 'oda-only-office',
                 id: this.userID || '',
                 name: this.userName || 'anonymous'
             },
-            callbackUrl : this.callbackUrl || ''
+            callbackUrl: this.callbackUrl || ''
         }
     },
     get config() {
