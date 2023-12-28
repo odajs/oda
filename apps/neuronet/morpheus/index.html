@@ -21,7 +21,6 @@
                   <div flex></div>
 <!--                  <oda-button icon="icons:save" :icon-size @tap="genPos"></oda-button>-->
                   <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train"  @tap="train = !train">{{train?'stop':'train'}}</oda-button>
-                  <oda-button :disabled="!tokenizeCorpus.length" :icon="train?'av:stop':'av:play-circle-filled'" :error="!!train1"  @tap="train1 = !train1">{{train1?'stop':'train1'}}</oda-button>
               </div>
               <fieldset class="horizontal"  style="border-radius: 4px; min-width: 0px;">
                   <legend bold>SIMILAR:{{Math.round(simRes * 10000)/100}}%</legend>
@@ -53,17 +52,21 @@
                   <legend bold>PREDICATE</legend>
                   text:
                   <div class="horizontal">
-                      <textarea class="flex" ::value="text"></textarea><oda-button class="no-flex"  icon="box:i-right-arrow" :icon-size @tap="prompt">prompt</oda-button>
+                      <textarea class="flex" ::value="text"></textarea>
+                      <div class="vertical">
+                        <oda-button class="no-flex"  icon="icons:swap-horiz" :icon-size @tap="training" label="train"></oda-button>
+                        <oda-button class="no-flex"  icon="box:i-right-arrow" :icon-size @tap="prompt" label="predict"></oda-button>
+                      </div>
                   </div>
                   predicate:
-                  <textarea flex>{{predicate}}</textarea>
+                  <textarea flex va>{{predicate}}</textarea>
               </fieldset>
           </div>
           <div slot="main" class="flex vertical" style="overflow-y: auto">
               <div dark border ~for="tokens" class="horizontal" >
                     <div class="horizontal" style="width: 120px; text-align: left; padding: 4px 8px; justify-content: space-between">
                         <span>{{$for.item.id}}</span>
-                        <span class="flex" style="text-align: right; padding: 4px; font-size: xx-small;"> {{$for.item.count.toLocaleString()}}</span>
+                        <span class="flex" style="text-align: right; padding: 4px; font-size: xx-small;"> {{$for.item.count?.toLocaleString()}}</span>
                         <button @tap="showLinks" :token="$for.item.id" style="width: 50%;">{{Object.keys(model.tokens[$for.key].next).length}}</button>
                     </div>
                     <div border class="flex" ~style="getBackGradient($for.item.emb)"></div>
@@ -88,6 +91,10 @@
             <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
           </div>
         `,
+        async training(){
+            this.predicate = '';
+            this.predicate = await this.model.train(this.text);
+        },
         async decode(){
             const tokens = await this.model.tokenize(this.w1);
             const word = this.model.encodeWord(tokens);
@@ -101,7 +108,7 @@
         },
         async prompt(){
             this.predicate = '';
-            this.model.transform(this.text);
+            this.predicate = await this.model.transform(this.text);
         },
         progress: 0,
         tokenError: 0,
@@ -240,13 +247,6 @@
                 }
             }
         },
-        train1:{
-            async set (n){
-                if (n){
-                    this.tr1();
-                }
-            }
-        },
         async tr(){
             this.tokenError  = 1;
             while(this.train && this.tokenError > 0){
@@ -254,14 +254,6 @@
                 await new Promise(resolve => this.async(resolve));
             }
             this.train = false;
-        },
-        async tr1(){
-            this.predicateError  = 1;
-            while(this.train1 && this.predicateError > 0.01){
-                const {error}  = await this.model.train(this.tokenizeCorpus);
-                this.predicateError = error;
-            }
-            this.train1 = false;
         },
         getColors(items){
             const getColor = (val)=>{

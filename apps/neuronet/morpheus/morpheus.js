@@ -5,23 +5,28 @@ export class gptModel extends ROCKS({
         return this;
     },
     $public:{
-        outLayer:{
-            $freeze: true,
-            get (){
-                return this.array().map(i=>{
-                    return this.array(this.tokens.length).map(i=>this.initWeight());
-                })
+        blockSize: 8,
+        tokens: {
+            $type: Array,
+            get(){
+                return [{id: '<>', char: '<>', emb: this.array(), next:{}, cnt:this.array(), out: this.array().map(i=>this.initWeight()) }];
             }
         },
-        blockSize: 8,
-        tokens: [],
         dim: 32,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
         topK: 1,
-        deep: 6,
-        headCount: 2,
+        deep: 1,
+        headCount: 1,
+    },
+    outLayer:{
+        $freeze: true,
+        get (){
+            return this.tokens.map(token=>{
+                return token.out;
+            })
+        }
     },
     encodeWord(tokens){
         return tokens.reduce((r, t, i)=>addAndNormalize(r, addVectors(t.emb,  this.getPositionalVector(i))), this.array());
@@ -86,7 +91,7 @@ export class gptModel extends ROCKS({
     get attDiv(){
         return Math.sqrt(this.attDim);
     },
-    async transform(text){
+    async prepareSec(text){
         console.time('PREPARE');
         text = text.trim() + ' ';
         const tokens = await this.tokenize(text, true);
@@ -103,17 +108,91 @@ export class gptModel extends ROCKS({
                 pos = 0;
             }
             else{
-                word += token.id[0];
+                word += token.char;
                 emb = addVectors(emb, token.emb);//, this.getPositionalVector(pos));
-                // emb = addAndNormalize(emb, emb);
                 pos++;
             }
         }
         if (pos)
             thread.push({word, emb});
         let sequence = thread.map((word, pos)=>addVectors(word.emb, this.getPositionalVector(pos)));
-        // let sequence = thread.map(word => word.emb);
         console.timeEnd('PREPARE');
+        return sequence;
+    },
+    async train(text){
+        const tokens = await this.tokenize(text, true);
+        let pos = 0;
+        let word = '';
+        let emb = this.array();
+        const words = [];
+        let sequence = [];
+        for (let i = 0; i<tokens.length; i++){
+            const token = tokens[i];
+            if (token.isDelimeter){
+                words.push({word, emb, sequence});
+                sequence = [];
+                word = '';
+                emb = this.array();
+                pos = 0;
+            }
+            else{
+                word += token.char;
+                sequence.push(token.emb);
+                emb = addVectors(emb, addVectors(token.emb, this.getPositionalVector(pos)));
+                pos++;
+            }
+        }
+        if (pos)
+            words.push({word, emb, sequence});
+        const result = words.map(w=>{
+            return this.trainWord(w);
+        }).join('');
+        return result;
+    },
+    trainWord(wordObj){
+        let word = wordObj.emb;
+        wordObj.sequence.unshift(this.array());
+        let input = wordObj.sequence.map((emb, i)=>{
+            return addVectors(emb, this.getPositionalVector(i));
+        })
+        //
+        // console.log('word', word);
+        //
+        // for (let encoder of this.encoders){
+        //     word = encoder.fwd([word])[0];
+        // }
+        // console.log('word', word);
+        console.log('input', input);
+
+        for (let decoder of this.decoders){
+            input = decoder.fwd(input, [word]);
+        }
+        console.log('output', input);
+        let linear = multiplyMatrix(input, transposeMatrix(this.outLayer));
+        console.log('linear', linear);
+        const logits = softmaxMatrix(linear);
+        console.log('logits', logits);
+        let output = logits.map(logit=>{
+            let idx = -1;
+            let v = 0 ;
+            for(let i = 0; i < logit.length; i++){
+                if(logit[i] > v){
+                    idx = i;
+                    v = logit[i];
+                }
+            }
+            return idx;
+        })
+        console.log('output', output);
+        const result = output.map(i=>{
+            return this.tokens[i].char
+        }).join('');
+        console.log('result', result);
+        return result;
+    },
+    async transform(text){
+        const tokens = await this.tokenize(text, true);
+        let sequence = await this.prepareSec(text);
         console.time('ENCODE');
         for (let encoder of this.encoders){
             sequence = encoder.fwd(sequence);
@@ -123,7 +202,7 @@ export class gptModel extends ROCKS({
         console.time('DECODE');
         let output = [this.getPositionalVector(0)];
         let step = 0;
-        while(step < tokens.length){
+        while(step < 10){
             let input = output;
             for (let decoder of this.decoders){
                 input = decoder.fwd(input, sequence);
@@ -219,15 +298,15 @@ export class gptModel extends ROCKS({
             if (!item){
                 item = tokenMap[token] = Object.create(null);
                 item.id = token;
-                const ch = token[0];
-                if(TERMINATES.includes(ch))
+                item.char = token[0];
+                if(TERMINATES.includes(item.char))
                     item.isTerminal = true;
-
                 //todo еще надо выделять цифры
-                if(ch.toUpperCase() === ch.toLowerCase())
+                if(item.char.toUpperCase() === item.char.toLowerCase())
                     item.isDelimeter = true;
                 item.emb = this.array().map(i=>this.initWeight());
                 item.cnt = this.array();
+                item.out = this.array().map(i=>this.initWeight());
                 item.next = Object.create(null);
                 item.tokenError = 1;
                 item.count = 0;
@@ -239,6 +318,7 @@ export class gptModel extends ROCKS({
         return item;
     },
     async tokenize(text, prompt){
+        text = text.trim() + ' ';
         const corpus = [];
         const step = this.step;
         const size = text.length;
@@ -329,34 +409,6 @@ export class gptModel extends ROCKS({
         error /= size;
         this.onScan(0);
         return error;
-    },
-    async train(corpus= [], thread = {pos: 0, plast: 1, word: '', w: 0, emb: this.array(), input: this.array(), words: []}){
-        let input;
-        const size = corpus.length;
-        let error = 0;
-        let res;
-        let current, prev;
-        let step = this.step;
-        const limit = Math.ceil(size / 10);
-        for (let i = 0; i<size; i++){
-            current = corpus[i];
-            let target = corpus[i + 1];
-
-            res = this.fwd(prev, current, target?.emb || this.array().map(i=>1), thread);
-            error += res.error;
-            if (i && i%limit === 0){
-                await new Promise(resolve => {
-                    setTimeout(()=>{
-                        this.onScan(i/size, undefined, error/i);
-                        resolve();
-                    });
-                })
-            }
-            prev = current;
-        }
-        this.onScan(0);
-        error /= size;
-        return {error, current};
     }
 }){}
 class gptItem extends ROCKS({
@@ -393,28 +445,28 @@ class gptHeadAttention extends gptItem.ROCKS({
             return  this.model.array(this.model.attDim).map(i=>this.model.initWeight());
         })
     },
-    fwd(input, encoded){
-        console.log('gptHeadAttention.fwd');
-        console.log('query');
+    fwd(input){
         const query = multiplyMatrix(input, this.QUERY);
-        if (encoded)
-            input = encoded;
-        console.log('key');
         const key = multiplyMatrix(input, this.KEY);
-        console.log('keyT');
-        const keyT = transposeMatrix(key);
-        console.log('scores');
-        let scores = multiplyMatrix(query, keyT);
-        const attDiv = this.model.attDiv;
-        scores = scores.map(x=>{
-            return x.map(y=>(y/attDiv))
-        })
-        scores = softmaxMatrix(scores);
-        console.log('value');
         const value = multiplyMatrix(input, this.VALUE);
-        console.log('value X scores');
-        let output = multiplyMatrix(scores, value);
-        return output;
+        const keyT = transposeMatrix(key);
+        let scores = multiplyMatrix(query, keyT);
+        scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
+        scores = softmaxMatrix(scores);
+        return multiplyMatrix(scores, value);
+    }
+}){}
+class gptHeadAttentionDecode extends gptHeadAttention.ROCKS({
+    fwd(input, encoded = input){
+        const query = multiplyMatrix(input, this.QUERY);
+        const key = multiplyMatrix(encoded, this.KEY);
+        const value = multiplyMatrix(encoded, this.VALUE);
+        const keyT = transposeMatrix(key);
+        let scores = multiplyMatrix(query, keyT);
+        scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
+        scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
+        scores = softmaxMatrix(scores);
+        return multiplyMatrix(scores, value);
     }
 }){}
 class gptAttention extends gptItem.ROCKS({
@@ -426,30 +478,17 @@ class gptAttention extends gptItem.ROCKS({
     },
     get heads(){
         return Array(this.model.headCount).fill().map(i=>{
-            return new gptHeadAttention(this);
+            return new this.headItemClass(this);
         })
+    },
+    get headItemClass(){
+        return (this.owner instanceof gptDecoder)?gptHeadAttentionDecode:gptHeadAttention;
     },
     fwd(input, encoded){
         let output = this.heads.map(head => head.fwd(input, encoded));
-        output = output.reduce((r,h)=>{
-            return r.map((w, i)=>{
-                return w.concat(h[i]);
-            })
-        }, input.map(i=>[]))
+        output = output.reduce((r,h)=>r.map((w, i)=>w.concat(h[i])), input.map(i=>[])) //concat
         output = multiplyMatrix(output, this.WO);
-        output = addAndNormalizeMatrix(input, output);
-        return output
-    }
-}){}
-class gptMixAttention extends gptAttention.ROCKS({
-    get head(){
-        return new gptHeadAttention(this);
-    },
-    fwd(input, encoded){
-        let output = this.head.fwd(input, encoded);
-        output = multiplyMatrix(output, this.WO);
-        output = addAndNormalizeMatrix(input, output);
-        return output
+        return addAndNormalizeMatrix(input, output);
     }
 }){}
 class gptFeedLayers extends gptItem.ROCKS({
@@ -492,12 +531,11 @@ class gptEncoder extends gptItem.ROCKS({
 }){}
 class gptDecoder extends gptEncoder.ROCKS({
     get mixAttention(){
-        return new gptMixAttention(this);
+        return new gptAttention(this);
     },
     fwd(input, encoded){
         let output = this.selfAttention.fwd(input);
         output = this.mixAttention.fwd(output, encoded);
-        output = this.feed.fwd(output);
         return output;
     }
 }){}
