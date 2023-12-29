@@ -6,7 +6,7 @@ let settings = {
 
     get ws_url() {return 'wss://' + this.url + ':' + this.port + '/' + this.authToken},
     get input_url() {return 'https://' + this.url + '/input/' },
-    get url_path() {return (x)=>{return 'https://' + this.url + '/' + x.slice(5) }} // ! fixme
+    get url_path() {return (x)=>{return 'https://' + this.url + '/output/' + x }} 
 }
 
 const codeTabConst = [
@@ -76,12 +76,15 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
     </div>
 
     `,
-    ws:{
-        $freeze: true,
-        get(){
+    // ws:{
+    //     $freeze: true,
+    get ws() {
+        return new Promise(resolve=>{
+
             let ws = new WebSocket(settings.ws_url);
             ws.onopen = () => {
                 console.log('подключился к wss');
+                resolve (ws)
             };
             // обработчик сообщений от сервера
             ws.onmessage = (message) => {
@@ -94,6 +97,7 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
                 console.log(mess)
 
                 if (mess.type === 'rez') {
+                    console.log(mess)
                     this.results.push(mess)
                 }
                 if (mess.result === "done") {
@@ -109,9 +113,8 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
                 // this.ws = undefined;
                 // this.ws;
             }
-            return ws
-        }
 
+        })
     },
 
     // ws:{},
@@ -140,9 +143,9 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
 
 
     //  },
-    ready(){
-        this.ws;
-    },
+    // ready(){
+    //     this.ws;
+    // },
 
     iconSize:32,
     get languageNames() {codeTabConst.map(x => x.language)},
@@ -180,41 +183,60 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
             $save:true,
             $list: ['text','voice']
         },
+        mess2ws: {
+            $readOnly: true,
+            get() {
+                let rez = {
+                    inType:this.inputType, 
+                    outType:this.outputType, 
+                    inLang:this.codeLang(this.inputLang), 
+                    outLang:this.codeLang(this.outputLang)
+                }
+                if (this.inputType==='text') rez.text = this.textInput
+                if (this.inputType==='voice') {
+                    rez.ext = this.currentVoice.ext
+                    rez.file = this.currentVoice.name
+                }
+                return JSON.stringify(rez)
+            }
+        }
     },
 
     codeLang(lang) { return codeTabConst.find(el => el.language===lang).code },
 
     async _go() {
         // this.results = []
-        this.wait = true
-        await new Promise(resolve=>{
-            this.ws
-            this.async(()=>{
-                resolve();
-            }, 100)
-        })
+        // this.wait = true
+        // await new Promise(resolve=>{
+        //     this.ws
+        //     this.async(()=>{
+        //         resolve();
+        //     }, 100)
+        // })
+
+        let ws = await this.ws;
 
 
-        let mess2ws = {outText:[], outVoice:[], inputLang: this.codeLang(this.inputLang)}
+        // let mess2ws = {outText:[], outVoice:[], inputLang: this.codeLang(this.inputLang)}
 
-        mess2ws[(this.outputType==='text')?'outText':'outVoice' ] = [ this.codeLang(this.outputLang) ]
-        mess2ws.inputType = this.inputType
+        // mess2ws[(this.outputType==='text')?'outText':'outVoice' ] = [ this.codeLang(this.outputLang) ]
+        // mess2ws.inputType = this.inputType
 
 
-        if (this.inputType==='text') mess2ws.textInput = this.textInput
-        if (this.inputType==='voice') {            
-            if (this.currentVoice.path) {
-                mess2ws.voicePath = this.currentVoice.path
-                mess2ws.voiceExt = this.currentVoice.ext
-            }
-            else {
-                console.log('No Voice select!')
-                this.wait = false
-                return
-            }
-        }
-        console.log(mess2ws)
-        this.ws.send(JSON.stringify(mess2ws));
+        // if (this.inputType==='text') mess2ws.textInput = this.textInput
+        // if (this.inputType==='voice') {            
+        //     if (this.currentVoice.path) {
+        //         mess2ws.voicePath = this.currentVoice.path
+        //         mess2ws.voiceExt = this.currentVoice.ext
+        //     }
+        //     else {
+        //         console.log('No Voice select!')
+        //         this.wait = false
+        //         return
+        //     }
+        // }
+        console.log(this.mess2ws)
+        ws.send(this.mess2ws);
     },
 
     // async _go() {
@@ -261,7 +283,7 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
                     rez[ext].push( {path:settings.input_url + el, name:el, ext} )   
                 }             
             });
-            console.log(rez)
+            // console.log(rez)
             return rez
         }
     },
@@ -286,16 +308,16 @@ ODA({ is: 'oda-m4t-test-rez', template: /*HTML*/ `
     </style>
     <div class='border'>
         <oda-button ~class='cls' :label='language' :icon disabled></oda-button>
-        <div class='text' ~if='el.tt==="text"'>{{el.text}}</div>
-        <audio ~if='el.tt==="voice"' controls :src="fixPath">
+        <div class='text' ~if='el.outType==="text"'>{{el.text}}</div>
+        <audio ~if='el.outType==="voice"' controls :src="fixPath">
             <a :href="fixPath"> Download audio </a>
         </audio>
     </div>
     `,
     el:{},
-    get fixPath() {return settings.url_path(this.el.path)},
-    get language() { return codeTabConst.find(el => el.code===this.el.lang).language  },
-    get icon() {return (this.el.tt==='text')? 'iconoir:message-text': 'iconoir:mic'},
-    get cls() { return (this.el.tt==='text')? 'success-invert': 'info-invert' } 
+    get fixPath() {return settings.url_path(this.el.file)},
+    get language() { return codeTabConst.find(el => el.code===this.el.outLang).language  },
+    get icon() {return (this.el.outType==='text')? 'iconoir:message-text': 'iconoir:mic'},
+    get cls() { return (this.el.outType==='text')? 'success-invert': 'info-invert' } 
 })
 
