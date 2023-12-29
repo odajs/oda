@@ -9,8 +9,8 @@ export class gptModel extends ROCKS({
         tokens: {
             $type: Array,
             get(){
-                return [{idx: 0, id: '<', char: '<', emb: this.array(), next:{}, cnt:this.array(), out: this.array().map(i=>this.initWeight()) },
-                    {idx: 1, id: '>', char: '>', emb: this.array().map(i=>3), next:{}, cnt:this.array(), out: this.array().map(i=>this.initWeight()) },
+                return [{idx: 0, id: '<', char: '<', emb: this.getPositionalVector(0), next:{}, cnt:this.array(), out: this.array().map(i=>this.initWeight()) },
+                    {idx: 1, id: '>', char: '>', emb: this.getPositionalVector(0).reverse(), next:{}, cnt:this.array(), out: this.array().map(i=>this.initWeight()) },
                 ];
             }
         },
@@ -30,9 +30,6 @@ export class gptModel extends ROCKS({
             })
         }
     },
-    encodeWord(tokens){
-        return tokens.reduce((r, t, i)=>addAndNormalize(r, addVectors(t.emb,  this.getPositionalVector(i))), this.array());
-    },
     get QUERY(){return this.init()},
     get KEY(){return this.init()},
     get VALUE(){return this.init()},
@@ -47,27 +44,6 @@ export class gptModel extends ROCKS({
         })
     },
     div: 7,
-    decodeWord(word, input = []){
-        const div = Math.sqrt(this.model.div);
-        input.unshift({emb:this.model.array()})
-        input = input.map((t, i)=>addVectors(t.emb, this.getPositionalVector(i)));
-        // let step = 0;
-        // while(step<10){
-        const query = multiplyMatrix(input, this.QUERY);
-        const key = multiplyMatrix(input, this.KEY);
-        const keyT = transposeMatrix(key);
-        let scores = multiplyMatrix(query, keyT);
-        scores = scores.map(x=>x.map(y=>(y/div)));
-        scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
-        scores = softmaxMatrix(scores);
-
-        const value = multiplyMatrix(input, this.VALUE);
-        let output = multiplyMatrix(scores, value);
-        output = multiplyMatrix(output, this.WO);
-        output = addAndNormalizeMatrix(input, output);
-        console.log(output)
-        // }
-    },
     fwd(input){
         console.log('gptModel.fwd');
         let output = multiplyMatrix([input], this.outLayer);
@@ -88,7 +64,7 @@ export class gptModel extends ROCKS({
         return this.tokens.length;
     },
     get attDim(){
-        return Math.round(this.dim / this.headCount);
+        return 7//Math.round(this.dim / this.headCount);
     },
     get attDiv(){
         return Math.sqrt(this.attDim);
@@ -146,10 +122,9 @@ export class gptModel extends ROCKS({
         }
         if (pos)
             words.push({word, emb, tokens:sequence});
-        const result = words.map(w=>{
-            return this.trainWord(w);
-        }).join('');
-        return result;
+        words.forEach(w=>{
+            this.trainWord(w);
+        })
     },
     trainWord(wordObj){
         let word = wordObj.emb;
@@ -162,7 +137,7 @@ export class gptModel extends ROCKS({
             input = decoder.fwd(input, [word]);
         }
         let output = input;
-        let linear = multiplyMatrix(output, transposeMatrix(this.outLayer));
+        let linear = transposeAndMultiplyMatrix(output, this.outLayer);
         const softmax = softmaxMatrix(linear);
         output = softmax.map(logit=>{
             let idx = -1;
@@ -174,10 +149,7 @@ export class gptModel extends ROCKS({
                 }
             }
             return idx;
-        })
-        const result = output.map(i=>{
-            return this.tokens[i].char
-        }).join('');
+
         const E = softmax.map((logit, t)=>{
             const idx = output[t];
             return logit.map((y, i)=>{
@@ -197,7 +169,11 @@ export class gptModel extends ROCKS({
             const decoder = this.decoders[i];
             back = decoder.back(back);
         }
-        return result;
+        })
+        output.forEach(i=>{
+            this.fire('predicate', this.tokens[i].id);
+            // return this.tokens[i].char
+        });
     },
     async transform(text){
         const tokens = await this.tokenize(text, true);
@@ -459,8 +435,8 @@ class gptHeadAttention extends gptItem.ROCKS({
         const query = multiplyMatrix(input, this.QUERY);
         const key = multiplyMatrix(input, this.KEY);
         const value = multiplyMatrix(input, this.VALUE);
-        const keyT = transposeMatrix(key);
-        let scores = multiplyMatrix(query, keyT);
+        // const keyT = transposeMatrix(key);
+        let scores = transposeAndMultiplyMatrix(query, key);
         scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
         scores = softmaxMatrix(scores);
         return multiplyMatrix(scores, value);
@@ -471,8 +447,8 @@ class gptHeadAttentionDecode extends gptHeadAttention.ROCKS({
         const query = multiplyMatrix(input, this.QUERY);
         const key = multiplyMatrix(encoded, this.KEY);
         const value = multiplyMatrix(encoded, this.VALUE);
-        const keyT = transposeMatrix(key);
-        let scores = multiplyMatrix(query, keyT);
+        // const keyT = transposeMatrix(key);
+        let scores = transposeAndMultiplyMatrix(query, key);
         scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
         scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
         scores = softmaxMatrix(scores);
@@ -649,20 +625,6 @@ function getPositionalVector(d, pos = 0){
     return vector;
 }
 
-// function multiplyMatrix(m1, m2, width, height, out){
-//     console.log('multiplyMatrix', m1.length, m2.length, width, height, out);
-//     console.time('t');
-//     const res = Array(height * out).fill(0);
-//     for (let h = 0; h < height; h ++) {
-//         for (let o = 0; o < out; o++){
-//             for (let w = 0; w < width; w ++){
-//                 res[h * out + o] = m1[h * width + w] * m2[w * out + o];
-//             }
-//         }
-//     }
-//     console.timeEnd('t', width, height, out);
-//     return res;
-// }
 function softmax(arr) {
     return arr.map(function(value,index) {
         return Math.exp(value) / arr.map( function(y /*value*/){ return Math.exp(y) } ).reduce( function(a,b){ return a+b })
@@ -691,15 +653,6 @@ function layerNormalization(v, size = v.length){
     }
     return v;
 }
-// function transposeMatrix(m, width, height = m.length / width){
-//     const res = Array(m.length);
-//     for (let w = 0; w<width; w++){
-//         for (let h = 0; h<height; h++){
-//             res[w * height + h] = m[h * width + w];
-//         }
-//     }
-//     return res;
-// }
 const gpu = new GPU.GPU();
 
 const gpuMultiplyMatrix = gpu.createKernel(function (a, b){
@@ -709,14 +662,6 @@ const gpuMultiplyMatrix = gpu.createKernel(function (a, b){
     }
     return sum;
 }).setOutput([512, 512])
-
-// let multiplyMatrixProduct = (A, B) =>
-//     A.map((row, i) =>
-//         B[0].map((_, j) =>
-//             row.reduce((acc, _, n) => acc + A[i][n] * B[n][j], 0)
-//         )
-//     )
-
 
 function multiplyMatrix(A, B){
     return A.map((row, i) =>
@@ -728,11 +673,9 @@ function multiplyMatrix(A, B){
     )
 }
 
-
-
-// function multiplyMatrix(m1, m2) {
-//     return m1.map(x=>transposeMatrix(m2).map(y=>dotProduct(x, y)));
-// }
+function transposeAndMultiplyMatrix(m1, m2) {
+    return m1.map(x=>m2.map(y=>dotProduct(x, y)));
+}
 function dotProduct(v1, v2) {
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
