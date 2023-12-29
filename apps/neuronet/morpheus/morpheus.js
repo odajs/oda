@@ -187,7 +187,7 @@ export class gptModel extends ROCKS({
         console.time('DECODE');
         let output = [this.getPositionalVector(0)];
         let step = 0;
-        while(step < 10){
+        while(step < tokens.length){
             let input = output;
             for (let decoder of this.decoders){
                 input = decoder.fwd(input, sequence);
