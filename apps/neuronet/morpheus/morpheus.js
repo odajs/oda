@@ -48,6 +48,7 @@ export class gptModel extends ROCKS({
             return  this.model.array().map(i=>this.model.initWeight());
         })
     },
+    loss: 0,
     div: 7,
     fwd(input){
         console.log('gptModel.fwd');
@@ -160,23 +161,29 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
-        const E = softmax.map((logit, t)=>{
-            const idx = output[t];
+        const targets = wordObj.tokens.map((token, i)=>{
+            const logit = this.array(this.tokens.length);
+            logit[token.idx] = 1;
+            return logit;
+        })
+        const loss = crossEntropyMatrix(softmax, targets);
+        this.loss = loss.reduce((r, v)=>r+v)/loss.length;
+        const losses = softmax.map((logit, t)=>{
+            const idx = wordObj.tokens[t].idx;
             return logit.map((y, i)=>{
-                return ((idx === i)?1:0) - y;
+                const error = ((idx === i)?1:0) - y;
+                this.outBias[i] += error * this.trainKoef;
+                return error;
             })
         });
-        let back = multiplyMatrix(E, this.outLayer);
-        const corrects = multiplyMatrix(transposeMatrix(E), input);
-        this.outLayer.forEach((t, i)=>{
-            const correct = corrects[i];
-            for(let j = 0; j < t.length; j++){
-                const cor = correct[j] * this.trainKoef;
-                t[j] -= cor;
-                this.tokens[i].bias -= cor;
-            }
+        let back = multiplyMatrix(losses, this.outLayer);
+        const corrects = multiplyMatrix(transposeMatrix(losses), input);
+        corrects.forEach((correct, c)=>{
+            const weights = this.outLayer[c];
+            correct.forEach((w, i)=>{
+                weights[i] += w * this.trainKoef;
+            })
         })
-
         for (let i = this.decoders.length-1; i>=0; i--) {
             const decoder = this.decoders[i];
             back = decoder.back(back);
@@ -443,31 +450,92 @@ class gptHeadAttention extends gptItem.ROCKS({
             return  this.model.array(this.model.attDim).map(i=>this.model.initWeight());
         })
     },
-    fwd(input){
-        const query = multiplyMatrix(input, this.QUERY);
-        const key = multiplyMatrix(input, this.KEY);
-        const value = multiplyMatrix(input, this.VALUE);
+    fwd(input, encoded = input){
+        this.input = input;
+        this.encoded = encoded;
+        this.query = multiplyMatrix(input, this.QUERY);
+        this.key = multiplyMatrix(encoded, this.KEY);
+        this.value = multiplyMatrix(encoded, this.VALUE);
         // const keyT = transposeMatrix(key);
-        let scores = transposeAndMultiplyMatrix(query, key);
-        scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
-        scores = softmaxMatrix(scores);
-        return multiplyMatrix(scores, value);
+        this.scores = transposeAndMultiplyMatrix(this.query, this.key);
+        let scores = this.scores.map(x=>x.map(y=>(y/this.model.attDiv)));
+        if (encoded !== input)
+            scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
+        this.softmax = softmaxMatrix(scores);
+        return multiplyMatrix(this.softmax, this.value);
     },
     back(losses){
+        let value = multiplyMatrix(transposeMatrix(this.softmax), losses);
+        let softmax = multiplyMatrix(losses, transposeMatrix(this.value));
+        let scores = this.softmax.map((step, s)=>{
+            const errors = softmax[s];
+            return step.map((y, i)=>{
+                const error = errors[i];
+                return error * y * (1 - y);
+            })
+        });
+        if (this.input !== this.encoded)
+            scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
+        scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
+        let key = multiplyMatrix(transposeMatrix(scores), this.query);
+        let query = multiplyMatrix(scores, this.key);
+        let input = transposeAndMultiplyMatrix(query, this.QUERY);
 
+        this.input.forEach((step, s)=>{
+            const loss = input[s];
+            const lossQuery = query[s];
+            step.forEach((x, i)=>{
+                const weights = this.QUERY[i];
+                lossQuery.forEach((sigma, w)=>{
+                    weights[w] += sigma * x * this.model.trainKoef;
+                })
+            })
+        })
+
+        let encodedKey = transposeAndMultiplyMatrix(key, this.KEY);
+        let encodedValue = transposeAndMultiplyMatrix(value, this.VALUE);
+        let encoded = addAndNormalizeMatrix(encodedKey, encodedValue);
+
+        this.encoded.forEach((step, s)=>{
+            const loss = encoded[s];
+            const lossKey = key[s];
+            const lossVal = value[s];
+            step.forEach((x, i)=>{
+                const weightsKey = this.KEY[i];
+                const weightsVal = this.VALUE[i];
+                const correct = x * this.model.trainKoef;
+                lossKey.forEach((sigma, w)=>{
+                    weightsKey[w] += sigma * correct;
+                })
+                lossVal.forEach((sigma, w)=>{
+                    weightsVal[w] += sigma * correct;
+                })
+            })
+        })
+        return {input, encoded};
     }
 }){}
-class gptHeadAttentionDecode extends gptHeadAttention.ROCKS({
-    fwd(input, encoded = input){
-        const query = multiplyMatrix(input, this.QUERY);
-        const key = multiplyMatrix(encoded, this.KEY);
-        const value = multiplyMatrix(encoded, this.VALUE);
-        // const keyT = transposeMatrix(key);
-        let scores = transposeAndMultiplyMatrix(query, key);
-        scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
-        scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
-        scores = softmaxMatrix(scores);
-        return multiplyMatrix(scores, value);
+// class gptHeadAttentionDecode extends gptHeadAttention.ROCKS({
+//     fwd(input, encoded = input){
+//         this.input = input;
+//         this.query = multiplyMatrix(input, this.QUERY);
+//         this.key = multiplyMatrix(encoded, this.KEY);
+//         this.value = multiplyMatrix(encoded, this.VALUE);
+//         // const keyT = transposeMatrix(key);
+//         this.scores = transposeAndMultiplyMatrix(this.query, this.key);
+//         let scores = this.scores.map(x=>x.map(y=>(y/this.model.attDiv)));
+//         if (encoded !== input)
+//             scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
+//         this.softmax = softmaxMatrix(scores);
+//         return multiplyMatrix(this.softmax, this.value);
+//     }
+// }){}
+class gptLayerNormalization extends gptItem.ROCKS({
+    fwd(input1, input2){
+        return this.input = addAndNormalizeMatrix(input1, input2);
+    },
+    back(losses){
+        return losses;
     }
 }){}
 class gptAttention extends gptItem.ROCKS({
@@ -479,20 +547,50 @@ class gptAttention extends gptItem.ROCKS({
     },
     get heads(){
         return Array(this.model.headCount).fill().map(i=>{
-            return new this.headItemClass(this);
+            return new gptHeadAttention(this);
         })
     },
-    get headItemClass(){
-        return (this.owner instanceof gptDecoder)?gptHeadAttentionDecode:gptHeadAttention;
-    },
+    // get headItemClass(){
+    //     return (this.owner instanceof gptDecoder)?gptHeadAttentionDecode:gptHeadAttention;
+    // },
     fwd(input, encoded){
         let output = this.heads.map(head => head.fwd(input, encoded));
-        output = output.reduce((r,h)=>r.map((w, i)=>w.concat(h[i])), input.map(i=>[])) //concat
-        output = multiplyMatrix(output, this.WO);
+        this.input = output.reduce((r,h)=>r.map((w, i)=>w.concat(h[i])), input.map(i=>[])) //concat
+        output = multiplyMatrix(this.input, this.WO);
         return addAndNormalizeMatrix(input, output);
     },
     back(losses){
-
+        let back = multiplyMatrix(losses, transposeMatrix(this.WO));
+        this.input.forEach((step, s)=>{
+            const loss = losses[s];
+            step.forEach((x, i)=>{
+                const weights = this.WO[i];
+                loss.forEach((sigma, w)=>{
+                    weights[w] += sigma * x * this.model.trainKoef;
+                })
+            })
+        })
+        back = this.heads.reduce((r, head) => {
+            const losses = head.back(back);
+            if (!r)
+                r = losses;
+            else{
+                r.input = losses.input.map((step, s)=>{
+                    let input = r.input[s];
+                    return step.map((v ,i)=>{
+                        return input[i]+v;
+                    })
+                })
+                r.encoded = losses.encoded.map((step, s)=>{
+                    let encoded = r.encoded[s];
+                    return step.map((v ,i)=>{
+                        return encoded[i]+v;
+                    })
+                })
+            }
+            return r
+        }, undefined); //todo костыль
+        return back;
     }
 }){}
 class gptFeedLayers extends gptItem.ROCKS({
@@ -509,33 +607,54 @@ class gptFeedLayers extends gptItem.ROCKS({
         },
         get feedLayer2(){
             return this.model.array(this.model.feedLayerSize).map(i=>this.model.array().map(i=>this.model.initWeight()));
-        }
+        },
+        get layerNormalization(){
+            return new gptLayerNormalization(this);
+        },
     },
     fwd(input){
         this.input = input;
         let output = multiplyMatrix(this.input, this.feedLayer1);
         this.activation = leakyReLUMatrix(output);
         this.output = multiplyMatrix(this.activation, this.feedLayer2);
-        output = addAndNormalizeMatrix(this.output, input);
+        output = this.layerNormalization.fwd(this.output, input);//addAndNormalizeMatrix(this.output, input);
         return output;
     },
     back(losses){
-        const corrects = multiplyMatrix(transposeMatrix(this.activation), losses);
-        losses = multiplyMatrix(losses, transposeMatrix(this.feedLayer2));
-        this.feedLayer2.forEach((t, i)=>{
-            const correct = corrects[i];
-            for(let j = 0; j < t.length; j++){
-                const cor = correct[j] * this.model.trainKoef;
-                t[j] -= cor;
-            }
+        losses = this.layerNormalization.back(losses);
+        let back = multiplyMatrix(losses, transposeMatrix(this.feedLayer2));
+        let corrects = multiplyMatrix(transposeMatrix(this.activation), losses);
+        corrects.forEach((correct, c)=>{
+            const weights = this.feedLayer2[c];
+            correct.forEach((err, i)=>{
+                weights[i] += err * this.model.trainKoef;
+            })
         })
-        console.log(losses);
 
-        // let output = multiplyMatrix(input, this.feedLayer1);
-        // output = leakyReLUMatrix(output);
-        // output = multiplyMatrix(output, this.feedLayer2);
-        // output = addAndNormalizeMatrix(input, output);
-        return losses;
+        losses = back.map((step, s)=>{
+            const activations = this.activation[s];
+            return step.map((y, i)=>{
+                return y * leakyReLUD(activations[i]);
+            })
+        })
+        back = multiplyMatrix(losses, transposeMatrix(this.feedLayer1));
+        corrects = multiplyMatrix(transposeMatrix(this.input), losses);
+        corrects.forEach((correct, c)=>{
+            const weights = this.feedLayer1[c];
+            correct.forEach((err, i)=>{
+                weights[i] += err * this.model.trainKoef;
+            })
+        })
+        // this.input.forEach((step, s)=>{
+        //     const loss = losses[s];
+        //     step.forEach((x, i)=>{
+        //         const weights = this.feedLayer1[i];
+        //         loss.forEach((sigma, w)=>{
+        //             weights[w] += sigma * x * this.model.trainKoef;
+        //         })
+        //     })
+        // })
+        return back;
     }
 }){}
 class gptLayer extends gptItem.ROCKS({
@@ -571,9 +690,10 @@ class gptDecoder extends gptEncoder.ROCKS({
     },
     back(losses){
         losses = this.feed.back(losses);
-        losses = this.mixAttention.back(losses);
-        losses = this.selfAttention.back(losses);
         return losses;
+        // let attantion = this.mixAttention.back(losses);
+        // losses = this.selfAttention.back(attantion.input);
+        // return losses.input;
         // losses = losses.reduce((r,x)=>{
         //     for(let i = 0; i<r.length; i++){
         //         r[i] += x[i];
@@ -736,4 +856,16 @@ function dotProduct(v1, v2) {
 
 function transposeMatrix(m) {
     return m[0].map((x,i) =>(m.map(y => y[i])));
+}
+function crossEntropyMatrix(outs, targets){
+    return outs.map((out, i)=>{
+        const target = targets[i];
+        return crossEntropy(out, target);
+    })
+}
+function crossEntropy(out, target){
+    const loss = -out.reduce((r, o, i)=>{
+        return r + target[i] * Math.log(o);
+    })
+    return loss;
 }
