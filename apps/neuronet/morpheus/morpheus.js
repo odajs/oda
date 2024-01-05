@@ -430,6 +430,14 @@ class gptItem extends ROCKS({
         }
     }
 }
+class gptSoftmax extends gptItem.ROCKS({
+    fwd(input){
+
+    },
+    back(losses){
+
+    }
+}){}
 class gptTokenizer extends gptItem.ROCKS({
 
 }){}
@@ -494,7 +502,7 @@ class gptHeadAttention extends gptItem.ROCKS({
 
         let encodedKey = transposeAndMultiplyMatrix(key, this.KEY);
         let encodedValue = transposeAndMultiplyMatrix(value, this.VALUE);
-        let encoded = addAndNormalizeMatrix(encodedKey, encodedValue);
+        let encoded = addMatrix(encodedKey, encodedValue);
 
         this.encoded.forEach((step, s)=>{
             const loss = encoded[s];
@@ -515,26 +523,50 @@ class gptHeadAttention extends gptItem.ROCKS({
         return {input, encoded};
     }
 }){}
-// class gptHeadAttentionDecode extends gptHeadAttention.ROCKS({
-//     fwd(input, encoded = input){
-//         this.input = input;
-//         this.query = multiplyMatrix(input, this.QUERY);
-//         this.key = multiplyMatrix(encoded, this.KEY);
-//         this.value = multiplyMatrix(encoded, this.VALUE);
-//         // const keyT = transposeMatrix(key);
-//         this.scores = transposeAndMultiplyMatrix(this.query, this.key);
-//         let scores = this.scores.map(x=>x.map(y=>(y/this.model.attDiv)));
-//         if (encoded !== input)
-//             scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
-//         this.softmax = softmaxMatrix(scores);
-//         return multiplyMatrix(this.softmax, this.value);
-//     }
-// }){}
+const EPSILON = 1e-5;
 class gptLayerNormalization extends gptItem.ROCKS({
-    fwd(input1, input2){
-        return this.input = addAndNormalizeMatrix(input1, input2);
+    fwd(input){
+        this.input = input;
+        this.output = this.input.map(vec => {
+            const size = vec.length;
+            const mu = vec.reduce((r, x) => (r + x)) / size;
+            if(mu){
+                const sigma = Math.sqrt(vec.reduce((r, x) => (r + Math.pow((x - mu),2))) / size + EPSILON);
+                vec = vec.map(x => ((x - mu) / sigma));
+            }
+            return vec;
+        });
+        return this.output;
     },
     back(losses){
+        losses = this.input.map((vec, v) => {
+            const input = losses[v];
+            const output = this.output[v];
+            const size = vec.length;
+            const mu = vec.reduce((r, x) => (r + x)) / size;
+            if(mu){
+                let n_inv = 1 / size;
+                const sigma2 = vec.reduce((r, x) => (r + Math.pow((x - mu),2))) * n_inv + EPSILON;
+                let sigma2_inv = 1 / sigma2;
+                let sigma = Math.sqrt(sigma2);
+                let sigma_inv = 1 / sigma;
+
+                let data = this.model.array(size);
+                for (let i = 0; i<size; i++) {
+                    let a = vec[i];
+                    let sum = 0;
+                    for (let j = 0; j < size; j++) {
+                        let b = vec[j];
+                        sum += ((i === j) ? (((1 - n_inv) * sigma - Math.pow((a - mu),2) * sigma_inv * n_inv) * sigma2_inv):
+                            ((-n_inv * sigma - (b - mu) * (a - mu) * sigma_inv * n_inv) * sigma2_inv))
+                            * input[j] * output[j];
+                    }
+                    data[i] = sum;
+                }
+                return data;
+            }
+            return vec;
+        });
         return losses;
     }
 }){}
@@ -550,16 +582,19 @@ class gptAttention extends gptItem.ROCKS({
             return new gptHeadAttention(this);
         })
     },
-    // get headItemClass(){
-    //     return (this.owner instanceof gptDecoder)?gptHeadAttentionDecode:gptHeadAttention;
-    // },
+    get layerNormalization(){
+        return new gptLayerNormalization(this);
+    },
     fwd(input, encoded){
         let output = this.heads.map(head => head.fwd(input, encoded));
         this.input = output.reduce((r,h)=>r.map((w, i)=>w.concat(h[i])), input.map(i=>[])) //concat
         output = multiplyMatrix(this.input, this.WO);
-        return addAndNormalizeMatrix(input, output);
+        output = addMatrix(input, output);
+        output = this.layerNormalization.fwd(output);
+        return output;
     },
     back(losses){
+        losses = this.layerNormalization.back(losses);
         let back = multiplyMatrix(losses, transposeMatrix(this.WO));
         this.input.forEach((step, s)=>{
             const loss = losses[s];
@@ -617,7 +652,8 @@ class gptFeedLayers extends gptItem.ROCKS({
         let output = multiplyMatrix(this.input, this.feedLayer1);
         this.activation = leakyReLUMatrix(output);
         this.output = multiplyMatrix(this.activation, this.feedLayer2);
-        output = this.layerNormalization.fwd(this.output, input);//addAndNormalizeMatrix(this.output, input);
+        input = addMatrix(this.output, input);
+        output = this.layerNormalization.fwd(input);//addAndNormalizeMatrix(this.output, input);
         return output;
     },
     back(losses){
@@ -690,6 +726,8 @@ class gptDecoder extends gptEncoder.ROCKS({
     },
     back(losses){
         losses = this.feed.back(losses);
+        losses = this.mixAttention.back(losses);
+        losses = this.selfAttention.back(losses);
         return losses;
         // let attantion = this.mixAttention.back(losses);
         // losses = this.selfAttention.back(attantion.input);
@@ -808,20 +846,7 @@ function addMatrix(m1, m2){
 function addVectors(v1, v2){
     return v1.map((a, i) => v2[i] + a);
 }
-function addAndNormalizeMatrix(m1, m2){
-    return addMatrix(m1, m2).map(v=>layerNormalization(v));
-}
-function addAndNormalize(a, b){
-    return layerNormalization(addVectors(a, b));
-}
-function layerNormalization(v, size = v.length){
-    const mu = v.reduce((r, a) => (r + a)) / size;
-    if(mu){
-        const sigma = Math.sqrt(v.reduce((r, a) => (r + Math.pow((mu - a),2))) / size);
-        v = v.map(a => ((a - mu) / sigma));
-    }
-    return v;
-}
+
 const gpu = new GPU.GPU();
 
 const gpuMultiplyMatrix = gpu.createKernel(function (a, b){
