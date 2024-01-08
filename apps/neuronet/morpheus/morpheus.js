@@ -1,5 +1,5 @@
 import './gpu-browser.min.js';
-
+import * as layers from './layers.js';
 export class gptModel extends ROCKS({
     get model(){
         return this;
@@ -32,7 +32,7 @@ export class gptModel extends ROCKS({
     outLayer:{
         $freeze: true,
         get (){
-            return this.tokens.map(token=>token.out)
+            return transposeMatrix(this.tokens.map(token=>token.out));
         }
     },
     get QUERY(){return this.init()},
@@ -52,7 +52,7 @@ export class gptModel extends ROCKS({
     div: 7,
     fwd(input){
         console.log('gptModel.fwd');
-        let output = multiplyMatrix([input], this.outLayer);
+        let output = multiplyMM([input], this.outLayer);
         return output[0];
     },
     positional: {
@@ -139,18 +139,26 @@ export class gptModel extends ROCKS({
         })
         input.unshift(this.tokens[0].emb);
         wordObj.tokens.push(this.tokens[1]);
-        for (let decoder of this.decoders){
-            input = decoder.fwd(input, [word]);
-        }
+        // for (let decoder of this.decoders){
+        //     input = decoder.fwd(input, [word]);
+        // }
 
-        let linear = multiplyMatrix(input, transposeMatrix(this.outLayer));
-        linear = linear.map(arr=>{
-            return arr.map((v, i)=>{
-                return v + this.outBias[i];
-            })
+        this.layer ??= new layers.Dense(this, this.tokens.length);//LayerFull(this.tokens.length);
+        let output = this.layer.fwd(input);
+        const softmax = new layers.Softmax(this);
+        output = softmax.fwd(output);
+        const targets = wordObj.tokens.map((token, i) => {
+            let logit = Array(this.tokens.length).fill(0);
+            logit[token.idx] = 1;
+            return logit;
         })
-        const softmax = softmaxMatrix(linear);
-        let output = softmax.map(logit=> {
+        const crossEntropy = new CrossEntropy();
+        let losses = crossEntropy.fwd(output, targets);
+        this.loss = losses.reduce((r,v)=>r+v) / losses.length;
+        // losses = crossEntropy.back(losses);
+        losses = softmax.back(targets);
+        losses = this.layer.back(losses);
+        output = output.map(logit=> {
             let idx = -1;
             let v = 0;
             for (let i = 0; i < logit.length; i++) {
@@ -161,33 +169,29 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
-        const targets = wordObj.tokens.map((token, i)=>{
-            const logit = this.array(this.tokens.length);
-            logit[token.idx] = 1;
-            return logit;
-        })
-        const loss = crossEntropyMatrix(softmax, targets);
-        this.loss = loss.reduce((r, v)=>r+v)/loss.length;
-        const losses = softmax.map((logit, t)=>{
-            const idx = wordObj.tokens[t].idx;
-            return logit.map((y, i)=>{
-                const error = ((idx === i)?1:0) - y;
-                this.outBias[i] += error * this.trainKoef;
-                return error;
-            })
-        });
-        let back = multiplyMatrix(losses, this.outLayer);
-        const corrects = multiplyMatrix(transposeMatrix(losses), input);
-        corrects.forEach((correct, c)=>{
-            const weights = this.outLayer[c];
-            correct.forEach((w, i)=>{
-                weights[i] += w * this.trainKoef;
-            })
-        })
-        for (let i = this.decoders.length-1; i>=0; i--) {
-            const decoder = this.decoders[i];
-            back = decoder.back(back);
-        }
+
+        // const loss = crossEntropyMatrix(softmax, targets);
+        // this.loss = loss.reduce((r, v)=>r+v)/loss.length;
+        // const losses = softmax.map((logit, t)=>{
+        //     const idx = wordObj.tokens[t].idx;
+        //     return logit.map((y, i)=>{
+        //         const error = ((idx === i)?1:0) - y;
+        //         this.outBias[i] += error * this.trainKoef;
+        //         return error;
+        //     })
+        // });
+        // let back = multiplyMM(losses, this.outLayer);
+        // const corrects = multiplyMM(transposeMatrix(losses), input);
+        // corrects.forEach((correct, c)=>{
+        //     const weights = this.outLayer[c];
+        //     correct.forEach((w, i)=>{
+        //         weights[i] += w * this.trainKoef;
+        //     })
+        // })
+        // for (let i = this.decoders.length-1; i>=0; i--) {
+        //     const decoder = this.decoders[i];
+        //     back = decoder.back(back);
+        // }
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);
             // return this.tokens[i].char
@@ -416,6 +420,7 @@ export class gptModel extends ROCKS({
         return error;
     }
 }){}
+
 class gptItem extends ROCKS({
     get model(){
         return this.owner.model;
@@ -430,12 +435,149 @@ class gptItem extends ROCKS({
         }
     }
 }
-class gptSoftmax extends gptItem.ROCKS({
-    fwd(input){
-
+class layFeed extends gptItem.ROCKS({
+    fwd(inputs){
+        this.inputs = inputs;
+        this.outputs = multiplyMM(inputs, this.weights);
+        if(this.activation)
+            return this.activation.fwd(this.outputs);
+        return this.outputs;
     },
     back(losses){
+        if(this.activation)
+            losses = this.activation.back(losses);
+        losses = multiplyMM(losses, this.weights);
+        return losses;
+    }
+}){
+    constructor(weights, activation) {
+        super();
+        this.weights = weights;
+        this.activation = activation && new activation(this);
+        
+    }
+}
+class LayerFull extends gptItem.ROCKS({
+    fwd(inputs){
+        this.inputs = inputs;
+        this.outputs = multiplyMT(inputs, this.weights);
+        this.outputs = this.outputs.map(vector => vector.map((val, i) => val + this.bias[i]));
+        return this.outputs;
+    },
+    back(losses){
+        const corrects = multiplyMM(transposeMatrix(losses), this.inputs);
+        losses = multiplyMM(losses, this.weights);
+        return losses;
+    },
+    get inSize(){
+        return this.inputs[0].length;
+    },
+    $public:{
+        $freeze: true,
+        get weights(){
+            return Array(this.outSize).fill(0).map( i=> Array(this.inSize).fill(0).map(j => (Math.random() - .5)));
+        },
+        get bias(){
+            return Array(this.outSize).fill(0).map(i => Math.random() - .5);
+        }
+    }
 
+}){
+    constructor(outSize) {
+        super();
+        this.outSize = outSize;
+    }
+}
+class CrossEntropy extends gptItem.ROCKS({
+    fwd(inputs, targets){
+        this.inputs = inputs;
+        this.targets = targets;
+        return this.outputs = inputs.map((out, i)=>{
+            const target = targets[i];
+            return -out.reduce((r, y, j)=>{
+                const t = target[j];
+                return t?(r + t * Math.log(y)):r
+            })
+        })
+    },
+    back(losses){
+       return this.inputs.map((input, i)=>{
+           const sum = 1 / input.reduce((r,v)=>r+v);
+           return input.map((o, k)=>{
+               let s = 0;
+               for(let j=0; j<input.length; j++){
+                   s += ((k=== j)?(o * (1-o)):-o * input[j]) * losses[i];
+               }
+               return s
+           })
+       })
+    }
+}){}
+class actSoftmax extends gptItem.ROCKS({
+    fwd(inputs){
+        return this.output = (this.inputs = inputs).map((logits, i)=>{
+            const maxLogit = logits.reduce((a, b) => Math.max(a, b), -Infinity);
+            const scores = logits.map((l) => Math.exp(l - maxLogit));
+            const denom = scores.reduce((a, b) => a + b);
+            return scores.map((s) => s / denom);
+        })
+
+    },
+    back(losses, targets){
+        const size = this.output[0].length;
+        let output =  this.output.map((outs, o)=>{
+            const target = targets[o];
+            const loss = losses[o];
+            return outs.map((out, i)=>{
+                return (out - target[i]) * loss;
+                // let sum = 0;
+                // for(let j = 0; j<size; j++){
+                //     let outj = outs[j];
+                //     sum += ((i === j) ? (outi * (1 - outi)) : (-outi * outj));
+                // }
+                // return sum * loss;
+            })
+        });
+        let output1 =  this.output.map((outs, o)=>{
+            const target = targets[o];
+            const loss = losses[o];
+            return outs.map((out, i)=>{
+                let sum = 0;
+                for(let j = 0; j<size; j++){
+                    if(i === j)
+                        sum = sum + (out * (1 - out));
+                    else
+                        sum = sum + (-out * outs[j]);
+                }
+                sum *= loss;
+                return sum;
+            })
+        });
+        return output;
+    },
+    // back(losses){
+    //     const size = this.output[0].length;
+    //     return this.output.map((out, o)=>{
+    //         const loss = losses[o];
+    //         return out.map((si, i)=>{
+    //             let sum = 0;
+    //             for(let j = 0; j<size; j++){
+    //                 let sj = loss[j];
+    //                 sum += ((i === j) ? (si * (1 - si)) : (-si * sj )) * out[j];
+    //             }
+    //             return sum;
+    //         })
+    //     });
+    // },
+    crossEntropy(targets){
+        this.targets = targets;
+        return this.output.map((out, i)=>{
+            const target = targets[i];
+            return -out.reduce((r, y, j)=>{
+                const t = target[j];
+                return t?(r + t * Math.log(y)):r
+            })
+        })
     }
 }){}
 class gptTokenizer extends gptItem.ROCKS({
@@ -458,36 +600,34 @@ class gptHeadAttention extends gptItem.ROCKS({
             return  this.model.array(this.model.attDim).map(i=>this.model.initWeight());
         })
     },
+    get softmaxLayer(){
+        return new actSoftmax(this);
+    },
     fwd(input, encoded = input){
         this.input = input;
         this.encoded = encoded;
-        this.query = multiplyMatrix(input, this.QUERY);
-        this.key = multiplyMatrix(encoded, this.KEY);
-        this.value = multiplyMatrix(encoded, this.VALUE);
+        this.query = multiplyMM(input, this.QUERY);
+        this.key = multiplyMM(encoded, this.KEY);
+        this.value = multiplyMM(encoded, this.VALUE);
         // const keyT = transposeMatrix(key);
-        this.scores = transposeAndMultiplyMatrix(this.query, this.key);
+        this.scores = multiplyMT(this.query, this.key);
         let scores = this.scores.map(x=>x.map(y=>(y/this.model.attDiv)));
         if (encoded !== input)
             scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
-        this.softmax = softmaxMatrix(scores);
-        return multiplyMatrix(this.softmax, this.value);
+        this.softmax = this.softmaxLayer.fwd(scores);
+        this.output = multiplyMM(this.softmax, this.value);
+        return this.output;
     },
     back(losses){
-        let value = multiplyMatrix(transposeMatrix(this.softmax), losses);
-        let softmax = multiplyMatrix(losses, transposeMatrix(this.value));
-        let scores = this.softmax.map((step, s)=>{
-            const errors = softmax[s];
-            return step.map((y, i)=>{
-                const error = errors[i];
-                return error * y * (1 - y);
-            })
-        });
+        let value = multiplyMM(transposeMatrix(this.softmax), losses);
+        let softmax = multiplyMM(losses, transposeMatrix(this.value));
+        let scores =  this.softmaxLayer.back(softmax);
         if (this.input !== this.encoded)
             scores = scores.map((y, i)=>y.map((x,j)=>(j>i)?-Infinity:x)); //mask
         scores = scores.map(x=>x.map(y=>(y/this.model.attDiv)));
-        let key = multiplyMatrix(transposeMatrix(scores), this.query);
-        let query = multiplyMatrix(scores, this.key);
-        let input = transposeAndMultiplyMatrix(query, this.QUERY);
+        let key = multiplyMM(transposeMatrix(scores), this.query);
+        let query = multiplyMM(scores, this.key);
+        let input = multiplyMT(query, this.QUERY);
 
         this.input.forEach((step, s)=>{
             const loss = input[s];
@@ -500,8 +640,8 @@ class gptHeadAttention extends gptItem.ROCKS({
             })
         })
 
-        let encodedKey = transposeAndMultiplyMatrix(key, this.KEY);
-        let encodedValue = transposeAndMultiplyMatrix(value, this.VALUE);
+        let encodedKey = multiplyMT(key, this.KEY);
+        let encodedValue = multiplyMT(value, this.VALUE);
         let encoded = addMatrix(encodedKey, encodedValue);
 
         this.encoded.forEach((step, s)=>{
@@ -588,14 +728,14 @@ class gptAttention extends gptItem.ROCKS({
     fwd(input, encoded){
         let output = this.heads.map(head => head.fwd(input, encoded));
         this.input = output.reduce((r,h)=>r.map((w, i)=>w.concat(h[i])), input.map(i=>[])) //concat
-        output = multiplyMatrix(this.input, this.WO);
+        output = multiplyMM(this.input, this.WO);
         output = addMatrix(input, output);
         output = this.layerNormalization.fwd(output);
         return output;
     },
     back(losses){
         losses = this.layerNormalization.back(losses);
-        let back = multiplyMatrix(losses, transposeMatrix(this.WO));
+        let back = multiplyMM(losses, transposeMatrix(this.WO));
         this.input.forEach((step, s)=>{
             const loss = losses[s];
             step.forEach((x, i)=>{
@@ -649,17 +789,17 @@ class gptFeedLayers extends gptItem.ROCKS({
     },
     fwd(input){
         this.input = input;
-        let output = multiplyMatrix(this.input, this.feedLayer1);
+        let output = multiplyMM(this.input, this.feedLayer1);
         this.activation = leakyReLUMatrix(output);
-        this.output = multiplyMatrix(this.activation, this.feedLayer2);
+        this.output = multiplyMM(this.activation, this.feedLayer2);
         input = addMatrix(this.output, input);
         output = this.layerNormalization.fwd(input);//addAndNormalizeMatrix(this.output, input);
         return output;
     },
     back(losses){
         losses = this.layerNormalization.back(losses);
-        let back = multiplyMatrix(losses, transposeMatrix(this.feedLayer2));
-        let corrects = multiplyMatrix(transposeMatrix(this.activation), losses);
+        let back = multiplyMM(losses, transposeMatrix(this.feedLayer2));
+        let corrects = multiplyMM(transposeMatrix(this.activation), losses);
         corrects.forEach((correct, c)=>{
             const weights = this.feedLayer2[c];
             correct.forEach((err, i)=>{
@@ -673,8 +813,8 @@ class gptFeedLayers extends gptItem.ROCKS({
                 return y * leakyReLUD(activations[i]);
             })
         })
-        back = multiplyMatrix(losses, transposeMatrix(this.feedLayer1));
-        corrects = multiplyMatrix(transposeMatrix(this.input), losses);
+        back = multiplyMM(losses, transposeMatrix(this.feedLayer1));
+        corrects = multiplyMM(transposeMatrix(this.input), losses);
         corrects.forEach((correct, c)=>{
             const weights = this.feedLayer1[c];
             correct.forEach((err, i)=>{
@@ -849,7 +989,7 @@ function addVectors(v1, v2){
 
 const gpu = new GPU.GPU();
 
-const gpuMultiplyMatrix = gpu.createKernel(function (a, b){
+const gpumultiplyMM = gpu.createKernel(function (a, b){
     let sum = 0;
     for (let i = 0; i < 512; i++) {
         sum += a[this.thread.y][i] * b[i][this.thread.x];
@@ -857,23 +997,14 @@ const gpuMultiplyMatrix = gpu.createKernel(function (a, b){
     return sum;
 }).setOutput([512, 512])
 
-function multiplyMatrix(A, B){
+function multiplyMM(A, B){
     if(A[0].length !== B.length)
         throw new Error(`ШМАТРИЦА! ${A[0].length}, ${B.length}`)
-    const res =  A.map((row, i) =>{
-        const arr = B[0].map((_, j) =>{
-            const val = row.reduce((acc, _, n) =>{
-                return (acc + (A[i][n] * B[n][j]))
-            }, 0);
-            return val;
-        })
-        return arr;
-    })
-    return res;
+    return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
 }
 
-function transposeAndMultiplyMatrix(m1, m2) {
-    return m1.map(x=>m2.map(y=>dotProduct(x, y)));
+function multiplyMT(M, T) {
+    return M.map(x=>T.map(y=>dotProduct(x, y)));
 }
 function dotProduct(v1, v2) {
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
