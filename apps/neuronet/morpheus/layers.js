@@ -19,7 +19,7 @@ class Layer extends ROCKS({
         }
     },
     correctWeights(corrects){
-        const alpha = this.alpha;
+        const alpha = this.alpha / this.batch_size;
         return this.weights = corrects.map((batch, b)=>{
             const neuron = this.weights[b];
             return batch.map((correct, i)=>{
@@ -43,7 +43,8 @@ export class Dense extends Layer.ROCKS({
     fwd(inputs){
         if(this.use_bias){
             inputs = inputs.map(batch=>{
-                return [...batch, 1];
+                batch.push(1)
+                return batch;
             });
         }
         this.inputs = inputs;
@@ -53,9 +54,9 @@ export class Dense extends Layer.ROCKS({
         this.outputs = outputs;
         return this.outputs;
     },
-    back(losses){
-        if(this.activation)
-            losses = this.activation.back(losses);
+    back(targets){
+        this.targets = targets;
+        let losses = this.activation?this.activation.back(targets):this.losses;
         const corrects = multiplyMM(transposeMatrix(losses), this.inputs);
         losses = multiplyMM(losses, this.weights);
         this.correctWeights(corrects);
@@ -71,6 +72,19 @@ export class Dense extends Layer.ROCKS({
         get weights(){
             return Array(this.out_size).fill(0).map( i=> Array(this.in_size + (this.use_bias?1:0)).fill(0).map(j => (Math.random() - .5)));
         }
+    },
+    get losses(){
+        return this.targets.map((batch, b)=>{
+            const output = this.outputs[b];
+            return batch.map((t, i)=>{
+                return Math.pow(t - output[i],2);
+            })
+        })
+    },
+    loss(targets){
+        if (this.activation)
+            return this.activation.loss(targets);
+        return this.losses;
     }
 }){
     constructor(owner, out_size  = 64, activation = '', use_bias = true) {
@@ -80,10 +94,11 @@ export class Dense extends Layer.ROCKS({
         this.act_name = activation;
     }
 }
+const EPSILON = 1e-5;
 export class LayerNormalization extends Layer.ROCKS({
     fwd(input){
-        this.input = input;
-        this.output = this.input.map(vec => {
+        this.inputs = input;
+        this.outputs = this.inputs.map(vec => {
             const size = vec.length;
             const mu = vec.reduce((r, x) => (r + x)) / size;
             if(mu){
@@ -92,12 +107,12 @@ export class LayerNormalization extends Layer.ROCKS({
             }
             return vec;
         });
-        return this.output;
+        return this.outputs;
     },
     back(losses){
-        losses = this.input.map((vec, v) => {
+        losses = this.inputs.map((vec, v) => {
             const input = losses[v];
-            const output = this.output[v];
+            const output = this.outputs[v];
             const size = vec.length;
             const mu = vec.reduce((r, x) => (r + x)) / size;
             if(mu){
@@ -129,29 +144,76 @@ export class LayerNormalization extends Layer.ROCKS({
 export class Softmax extends Layer.ROCKS({
     fwd(inputs){
         this.inputs = inputs;
-        this.output = this.inputs.map((logits, i)=>{
+        this.outputs = this.inputs.map((logits, i)=>{
             const maxLogit = logits.reduce((a, b) => Math.max(a, b), -Infinity);
             const scores = logits.map((l) => Math.exp(l - maxLogit));
             const denom = scores.reduce((a, b) => a + b);
             return scores.map((s) => s / denom);
         })
-        return this.output;
+        return this.outputs;
     },
     back(targets){
-        let output =  this.output.map((batch, b)=>{
+        return this.outputs.map((batch, b)=>{
             const target = targets[b];
             return batch.map((out, i)=>{
                 return out - target[i];
             })
         });
-        return output;
+    },
+    crossEntropy(targets){
+        return this.outputs.reduce((result, batch, b)=>{
+            const target = targets[b];
+            const v = -batch.reduce((r, O, i)=>{
+                const t = target[i];
+                return t?(r + t * Math.log(O)):r
+            })
+            return result + v;
+        }, 0) / this.outputs.length;
+    },
+    loss(targets){
+        return this.crossEntropy(targets);
+    }
+}){}
+export class Relu extends Layer.ROCKS({
+    fwd(inputs){
+        this.inputs = inputs;
+        this.outputs = this.inputs.map((batch, b)=>{
+            return batch.map(x=>{
+                return (x < 0) ? reluK * x: x;
+            })
+        })
+        return this.outputs;
+    },
+    back(targets){
+        return this.outputs.map((batch, b)=>{
+            const target = targets[b];
+            return batch.map((x, i)=>{
+                return (x < 0) ? reluK: 1;
+            })
+        });
     },
 }){}
 export class Activation extends Layer.ROCKS({
-
+    get activation(){
+        switch (this.func){
+            case 'softmax':
+                return new Softmax(this);
+            case 'relu':
+                return new Relu(this);
+        }
+    },
+    fwd(inputs){
+        return this.activation.fwd(inputs);
+    },
+    back(targets){
+        return this.activation.back(targets);
+    },
+    loss(target){
+        return this.activation.loss(target)
+    }
 }){
-    constructor(func = 'relu') {
-        super();
+    constructor(owner, func = 'relu') {
+        super(owner);
         this.func = func;
     }
 }
@@ -173,3 +235,4 @@ function dotProduct(v1, v2) {
 function transposeMatrix(m) {
     return m[0].map((x,i) =>(m.map(y => y[i])));
 }
+const reluK = .01;
