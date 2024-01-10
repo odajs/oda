@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 4,
+        dim: 8,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -135,7 +135,7 @@ export class gptModel extends ROCKS({
         // }
 
         let output = this.outLayer.fwd(input);
-        this.losses.push(this.loss);
+
         output = output.map(logit=> {
             let idx = -1;
             let v = 0;
@@ -154,8 +154,15 @@ export class gptModel extends ROCKS({
             logit[token.idx] = 1;
             return logit;
         })
-        this.outLayer.back(targets);
-        this.loss = this.outLayer.loss(targets);
+
+        let losses = this.outLayer.loss(targets);
+        this.loss = losses.reduce((r,x)=>r+x);
+        losses = this.outLayer.back(losses);
+        this.losses.push(this.loss);
+
+        // for (let decoder of this.decoders){
+        //     input = decoder.fwd(input, [word]);
+        // }
 
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);

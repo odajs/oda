@@ -22,8 +22,8 @@ class Layer extends ROCKS({
         const alpha = this.alpha / this.batch_size;
         corrects.map((batch, b)=>{
             const neuron = this.weights[b];
-            batch.forEach((correct, i)=>{
-                neuron[i] -= correct * alpha;
+            return batch.map((correct, i)=>{
+                return (neuron[i] - correct * alpha);
             })
         })
         return this.weights;
@@ -55,13 +55,12 @@ export class Dense extends Layer.ROCKS({
         this.outputs = outputs;
         return this.outputs;
     },
-    back(targets){
-        this.targets = targets;
-        let losses = this.activation?this.activation.back(targets):this.losses;
+    back(gradients){
+        let losses = this.activation?this.activation.back(gradients):this.losses;
         const corrects = multiplyMM(transposeMatrix(this.inputs), losses);
-        losses = multiplyMT(losses, this.weights)
+        gradients = multiplyMT(losses, this.weights)
         this.correctWeights(corrects);
-        return losses;
+        return gradients;
     },
     get activation(){
         if (this.act_name)
@@ -110,9 +109,9 @@ export class LayerNormalization extends Layer.ROCKS({
         });
         return this.outputs;
     },
-    back(losses){
-        losses = this.inputs.map((vec, v) => {
-            const input = losses[v];
+    back(gradients){
+        gradients = this.inputs.map((vec, v) => {
+            const input = gradients[v];
             const output = this.outputs[v];
             const size = vec.length;
             const mu = vec.reduce((r, x) => (r + x)) / size;
@@ -139,38 +138,40 @@ export class LayerNormalization extends Layer.ROCKS({
             }
             return vec;
         });
-        return losses;
+        return gradients;
     }
 }){}
 export class Softmax extends Layer.ROCKS({
     fwd(inputs){
         this.inputs = inputs;
-        this.outputs = this.inputs.map((logits, i)=>{
-            const maxLogit = logits.reduce((a, b) => Math.max(a, b), -Infinity);
-            const scores = logits.map((l) => Math.exp(l - maxLogit));
-            const denom = scores.reduce((a, b) => a + b);
+        this.outputs = this.inputs.map((batch, i)=>{
+            const maxLogit = batch.reduce((r, b) => Math.max(r, b), -Infinity);
+            const scores = batch.map((l) => Math.exp(l - maxLogit));
+            const denom = scores.reduce((r, b) => r + b);
             return scores.map((s) => s / denom);
         })
         return this.outputs;
     },
-    back(targets){
+    back(gradients){
         const outputs = this.outputs.map((batch, b)=>{
-            const target = targets[b];
+            const target = this.targets[b];
+            const grad = gradients[b]
             return batch.map((out, i)=>{
-                return out - target[i];
+                return (out - target[i]);
             })
         });
         return outputs;
     },
     crossEntropy(targets){
-        return this.outputs.reduce((result, batch, b)=>{
+        this.targets = targets;
+        return this.outputs.map((batch, b)=>{
             const target = targets[b];
             const v = -batch.reduce((r, O, i)=>{
                 const t = target[i];
-                return t?(r + t * Math.log(O)):r
-            })
-            return result + v;
-        }, 0) / this.outputs.length;
+                return t?(r + Math.log(O)):r
+            }, 0)
+            return v;
+        });
     },
     loss(targets){
         return this.crossEntropy(targets);
@@ -186,11 +187,11 @@ export class Relu extends Layer.ROCKS({
         })
         return this.outputs;
     },
-    back(targets){
+    back(gradients){
         return this.outputs.map((batch, b)=>{
-            const target = targets[b];
+            const grad = gradients[b];
             return batch.map((x, i)=>{
-                return (x < 0) ? reluK: 1;
+                return ((x < 0) ? reluK: 1) * grad[i];
             })
         });
     },
