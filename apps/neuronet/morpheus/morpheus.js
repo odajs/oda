@@ -10,12 +10,12 @@ export class gptModel extends ROCKS({
             $type: Array,
             $freeze: true,
             get(){
-                return [{idx: 0, id: '<', char: '<', emb: this.getPositionalVector(0), next:{}, cnt:this.array(), out: this.array(this.dim).map(i=>this.initWeight()), bias: 1 },
-                    {idx: 1, id: '>', char: '>', emb: this.getPositionalVector(0).reverse(), next:{}, cnt:this.array(), out: this.array(this.dim).map(i=>this.initWeight()), bias: 1 },
-                ];
+                const start = {idx: 0, id: '<', char: '<', emb: [...this.getPositionalVector(0)], next:{}, cnt:this.array(), out: this.array(this.dim).map(i=>this.initWeight())};
+                const end = {idx: 1, id: '>', char: '>', emb: this.getPositionalVector(0).reverse(), next:{}, cnt:this.array(), out: this.array(this.dim).map(i=>this.initWeight())};
+                return [start, end];
             }
         },
-        dim: 32,
+        dim: 4,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -47,7 +47,7 @@ export class gptModel extends ROCKS({
         return this.dim * this.feedLayerK;
     },
     get trainKoef(){
-        return .1// 1/Math.sqrt(this.dim);
+        return  1/Math.sqrt(this.dim);
     },
     progress: 0,
     get size(){
@@ -122,21 +122,19 @@ export class gptModel extends ROCKS({
             return addVectors(token.emb, this.getPositionalVector(i));
         })
         input.unshift([...this.tokens[0].emb]);
+        // let hidden;
+
+        // for (let encoder of this.encoders){
+        //     hidden = encoder.fwd(hidden, [word]);
+        // }
+
+
         wordObj.tokens.push(this.tokens[1]);
-        for (let decoder of this.decoders){
-            input = decoder.fwd(input, [word]);
-        }
+        // for (let decoder of this.decoders){
+        //     input = decoder.fwd(input, [word]);
+        // }
 
         let output = this.outLayer.fwd(input);
-        // const softmax = new this.outLayer.Softmax(this);
-        // output = softmax.fwd(output);
-        const targets = wordObj.tokens.map((token, i) => {
-            let logit = Array(this.tokens.length).fill(0);
-            logit[token.idx] = 1;
-            return logit;
-        })
-        this.outLayer.back(targets);
-        this.loss = this.outLayer.loss(targets);
         this.losses.push(this.loss);
         output = output.map(logit=> {
             let idx = -1;
@@ -149,6 +147,16 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
+        // const softmax = new this.outLayer.Softmax(this);
+        // output = softmax.fwd(output);
+        const targets = wordObj.tokens.map((token, i) => {
+            let logit = Array(this.tokens.length).fill(0);
+            logit[token.idx] = 1;
+            return logit;
+        })
+        this.outLayer.back(targets);
+        this.loss = this.outLayer.loss(targets);
+
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);
         });
@@ -263,7 +271,6 @@ export class gptModel extends ROCKS({
                 item.idx = this.tokens.length;
                 item.id = token;
                 item.char = token[0];
-                item.bias = 1;
                 if(TERMINATES.includes(item.char))
                     item.isTerminal = true;
                 //todo еще надо выделять цифры

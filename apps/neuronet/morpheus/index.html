@@ -53,7 +53,7 @@
                   <div class="horizontal">
                       <textarea class="flex" ::value="text"></textarea>
                       <div class="vertical">
-                        <oda-button class="no-flex"  icon="icons:swap-horiz" :icon-size @tap="training" label="train"></oda-button>
+                        <oda-button class="no-flex"  icon="icons:swap-horiz" :icon-size allow-toggle ::toggled="isTraining" label="train"></oda-button>
                         <oda-button class="no-flex"  icon="box:i-right-arrow" :icon-size @tap="prompt" label="predict"></oda-button>
                       </div>
                   </div>
@@ -91,9 +91,17 @@
             <div ~for="model.positional" ~style="getBackGradient($for.item)" style="padding: 1px"></div>
           </div>
         `,
+        set isTraining(n){
+            n && this.training();
+        },
         async training(){
-            this.predicate = '';
-            this.model.train(this.text);
+            if (!this.isTraining)
+                return;
+            this.async(async ()=>{
+                this.predicate = '';
+                await this.model.train(this.text);
+                this.training();
+            }, 50)
         },
         genPos(){
             for (let i = 0; i<10000; i++){

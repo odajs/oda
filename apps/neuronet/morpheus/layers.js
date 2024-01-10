@@ -20,12 +20,13 @@ class Layer extends ROCKS({
     },
     correctWeights(corrects){
         const alpha = this.alpha / this.batch_size;
-        return this.weights = corrects.map((batch, b)=>{
+        corrects.map((batch, b)=>{
             const neuron = this.weights[b];
-            return batch.map((correct, i)=>{
-                return neuron[i] - correct * alpha;
+            batch.forEach((correct, i)=>{
+                neuron[i] -= correct * alpha;
             })
         })
+        return this.weights;
     },
     get model(){
         return this.owner?.model;
@@ -48,7 +49,7 @@ export class Dense extends Layer.ROCKS({
             });
         }
         this.inputs = inputs;
-        let outputs = multiplyMT(this.inputs, this.weights);
+        let outputs = multiplyMM(this.inputs, this.weights);
         if(this.activation)
             outputs = this.activation.fwd(outputs);
         this.outputs = outputs;
@@ -57,8 +58,8 @@ export class Dense extends Layer.ROCKS({
     back(targets){
         this.targets = targets;
         let losses = this.activation?this.activation.back(targets):this.losses;
-        const corrects = multiplyMM(transposeMatrix(losses), this.inputs);
-        losses = multiplyMM(losses, this.weights);
+        const corrects = multiplyMM(transposeMatrix(this.inputs), losses);
+        losses = multiplyMT(losses, this.weights)
         this.correctWeights(corrects);
         return losses;
     },
@@ -70,7 +71,7 @@ export class Dense extends Layer.ROCKS({
     $public:{
         $freeze: true,
         get weights(){
-            return Array(this.out_size).fill(0).map( i=> Array(this.in_size + (this.use_bias?1:0)).fill(0).map(j => (Math.random() - .5)));
+            return Array(this.in_size + (this.use_bias?1:0)).fill(0).map( i=> Array(this.out_size).fill(0).map(j => (Math.random() - .5)));
         }
     },
     get losses(){
@@ -87,7 +88,7 @@ export class Dense extends Layer.ROCKS({
         return this.losses;
     }
 }){
-    constructor(owner, out_size  = 64, activation = '', use_bias = true) {
+    constructor(owner, out_size  = 64, activation = '', use_bias = false) {
         super(owner);
         this.out_size = out_size;
         this.use_bias = use_bias;
@@ -153,12 +154,13 @@ export class Softmax extends Layer.ROCKS({
         return this.outputs;
     },
     back(targets){
-        return this.outputs.map((batch, b)=>{
+        const outputs = this.outputs.map((batch, b)=>{
             const target = targets[b];
             return batch.map((out, i)=>{
                 return out - target[i];
             })
         });
+        return outputs;
     },
     crossEntropy(targets){
         return this.outputs.reduce((result, batch, b)=>{
