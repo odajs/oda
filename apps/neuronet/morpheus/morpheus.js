@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 8,
+        dim: 16,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -23,7 +23,7 @@ export class gptModel extends ROCKS({
         deep: 1,
         headCount: 1,
         get outLayer(){
-            return new layers.Dense(this, this.tokens.length, 'softmax');//LayerFull(this.tokens.length);
+            return new layers.Dense(this, this.tokens.length);
         },
     },
     losses: [],
@@ -135,7 +135,26 @@ export class gptModel extends ROCKS({
         // }
 
         let output = this.outLayer.fwd(input);
+        const softmax = new layers.Softmax(this);
+        output = softmax.fwd(output);
+        // const targets = wordObj.tokens.map((token, i) => {
+        //     let logit = Array(this.tokens.length).fill(0);
+        //     logit[token.idx] = 1;
+        //     return logit;
+        // })
+        const targets = wordObj.tokens.map(token => token.idx);
+        const ce = new layers.CrossEntropy(this);
+        let losses = ce.fwd(output, targets);
+        this.loss = losses.reduce((r,x)=>r+x);
+        this.losses.push(this.loss);
 
+        let grad = ce.back(losses);
+        // grad = softmax.back(grad);
+        grad = this.outLayer.back(grad);
+
+        // for (let decoder of this.decoders){
+        //     input = decoder.fwd(input, [word]);
+        // }
         output = output.map(logit=> {
             let idx = -1;
             let v = 0;
@@ -147,23 +166,6 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
-        // const softmax = new this.outLayer.Softmax(this);
-        // output = softmax.fwd(output);
-        const targets = wordObj.tokens.map((token, i) => {
-            let logit = Array(this.tokens.length).fill(0);
-            logit[token.idx] = 1;
-            return logit;
-        })
-
-        let losses = this.outLayer.loss(targets);
-        this.loss = losses.reduce((r,x)=>r+x);
-        losses = this.outLayer.back(losses);
-        this.losses.push(this.loss);
-
-        // for (let decoder of this.decoders){
-        //     input = decoder.fwd(input, [word]);
-        // }
-
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);
         });

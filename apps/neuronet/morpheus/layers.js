@@ -18,16 +18,6 @@ class Layer extends ROCKS({
             }
         }
     },
-    correctWeights(corrects){
-        const alpha = this.alpha / this.batch_size;
-        corrects.map((batch, b)=>{
-            const neuron = this.weights[b];
-            return batch.map((correct, i)=>{
-                return (neuron[i] - correct * alpha);
-            })
-        })
-        return this.weights;
-    },
     get model(){
         return this.owner?.model;
     },
@@ -48,24 +38,15 @@ export class Dense extends Layer.ROCKS({
                 return batch;
             });
         }
-        this.inputs = inputs;
-        let outputs = multiplyMM(this.inputs, this.weights);
-        if(this.activation)
-            outputs = this.activation.fwd(outputs);
-        this.outputs = outputs;
-        return this.outputs;
+        this.inputs = inputs
+        // return this.outputs = transposeMatrix(multiplyMT(this.weights, inputs))
+        return this.outputs = multiplyMM(inputs, this.weights);
     },
     back(gradients){
-        let losses = this.activation?this.activation.back(gradients):this.losses;
-        const corrects = multiplyMM(transposeMatrix(this.inputs), losses);
-        gradients = multiplyMT(losses, this.weights)
+        const corrects = multiplyMM(transposeMatrix(this.inputs), gradients);
+        gradients = multiplyMT(gradients, this.weights)
         this.correctWeights(corrects);
         return gradients;
-    },
-    get activation(){
-        if (this.act_name)
-            return new Activation(this, this.act_name);
-        return null;
     },
     $public:{
         $freeze: true,
@@ -73,25 +54,21 @@ export class Dense extends Layer.ROCKS({
             return Array(this.in_size + (this.use_bias?1:0)).fill(0).map( i=> Array(this.out_size).fill(0).map(j => (Math.random() - .5)));
         }
     },
-    get losses(){
-        return this.targets.map((batch, b)=>{
-            const output = this.outputs[b];
-            return batch.map((t, i)=>{
-                return Math.pow(t - output[i],2);
+    correctWeights(corrects){
+        const alpha = this.alpha / this.batch_size;
+        this.weights = corrects.map((batch, b)=>{
+            const neuron = this.weights[b];
+            return batch.map((correct, i)=>{
+                return (neuron[i] - correct * alpha);
             })
         })
-    },
-    loss(targets){
-        if (this.activation)
-            return this.activation.loss(targets);
-        return this.losses;
+        return this.weights;
     }
 }){
-    constructor(owner, out_size  = 64, activation = '', use_bias = false) {
+    constructor(owner, out_size  = 64, use_bias = true) {
         super(owner);
         this.out_size = out_size;
         this.use_bias = use_bias;
-        this.act_name = activation;
     }
 }
 const EPSILON = 1e-5;
@@ -153,28 +130,38 @@ export class Softmax extends Layer.ROCKS({
         return this.outputs;
     },
     back(gradients){
-        const outputs = this.outputs.map((batch, b)=>{
-            const target = this.targets[b];
+        gradients = this.outputs.map((batch, b)=>{
             const grad = gradients[b]
             return batch.map((out, i)=>{
-                return (out - target[i]);
+                let sum = 0;
+                for (let j = 0; j < this.in_size; j++){
+                    sum += ((i === j)?(out * (1 - out)):(-out * batch[j])) * grad[j];
+                }
+                return sum;
             })
         });
-        return outputs;
-    },
-    crossEntropy(targets){
+        return gradients;
+    }
+}){}
+export class CrossEntropy extends Layer.ROCKS({
+    fwd(inputs, targets){
         this.targets = targets;
-        return this.outputs.map((batch, b)=>{
-            const target = targets[b];
-            const v = -batch.reduce((r, O, i)=>{
-                const t = target[i];
-                return t?(r + Math.log(O)):r
-            }, 0)
-            return v;
-        });
+        this.inputs = inputs;
+        this.outputs = this.inputs.map((batch, b)=>{
+            const tarIdx = targets[b];
+            return -Math.log(batch[tarIdx]);
+        })
+        return this.outputs;
     },
-    loss(targets){
-        return this.crossEntropy(targets);
+    back(gradients){
+        gradients = this.inputs.map((batch, b)=>{
+            const tarIdx = this.targets[b];
+            const grad = gradients[b]
+            return batch.map((out, i)=>{
+                return ((i === tarIdx)?(out - 1):out) * grad;
+            })
+        });
+        return gradients;
     }
 }){}
 export class Relu extends Layer.ROCKS({
@@ -225,7 +212,8 @@ export class Activation extends Layer.ROCKS({
 function multiplyMM(A, B){
     if(A[0].length !== B.length)
         throw new Error(`ШМАТРИЦА! ${A[0].length}, ${B.length}`)
-    return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
+    return A.map(x=>transposeMatrix(B).map(y=>dotProduct(x, y)));
+    // return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
 }
 
 function multiplyMT(M, T) {
