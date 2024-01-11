@@ -40,32 +40,32 @@ export class Dense extends Layer.ROCKS({
         }
         this.inputs = inputs
         // return this.outputs = transposeMatrix(multiplyMT(this.weights, inputs))
-        return this.outputs = multiplyMM(inputs, this.weights);
+        return this.outputs = multiplyMT(inputs, this.weights);
     },
     back(gradients){
-        const corrects = multiplyMM(transposeMatrix(this.inputs), gradients);
-        gradients = multiplyMT(gradients, this.weights)
+        const corrects = multiplyMM(transposeMatrix(gradients), this.inputs);
+        gradients = multiplyMM(gradients, this.weights)
         this.correctWeights(corrects);
         return gradients;
     },
     $public:{
         $freeze: true,
         get weights(){
-            return Array(this.in_size + (this.use_bias?1:0)).fill(0).map( i=> Array(this.out_size).fill(0).map(j => (Math.random() - .5)));
+            return Array(this.out_size).fill(0).map( i=> Array(this.in_size + (this.use_bias?1:0)).fill(0).map(j => (Math.random() - .5)));
         }
     },
     correctWeights(corrects){
         const alpha = this.alpha / this.batch_size;
-        this.weights = corrects.map((batch, b)=>{
-            const neuron = this.weights[b];
-            return batch.map((correct, i)=>{
-                return (neuron[i] - correct * alpha);
+        this.weights = this.weights.map((neuron, n)=>{
+            const correct = corrects[n];
+            return correct.map((delta, i)=>{
+                return (neuron[i] - delta * alpha);
             })
         })
         return this.weights;
     }
 }){
-    constructor(owner, out_size  = 64, use_bias = true) {
+    constructor(owner, out_size  = 64, use_bias = false) {
         super(owner);
         this.out_size = out_size;
         this.use_bias = use_bias;
@@ -147,20 +147,47 @@ export class CrossEntropy extends Layer.ROCKS({
     fwd(inputs, targets){
         this.targets = targets;
         this.inputs = inputs;
-        this.outputs = this.inputs.map((batch, b)=>{
-            const tarIdx = targets[b];
-            return -Math.log(batch[tarIdx]);
+        this.exp_outputs = this.inputs.map((batch, b)=>{
+            return batch.map((v)=>Math.exp(v))
         })
+        this.outputs = this.exp_outputs.map((o_exps, b)=>{
+            const input = this.inputs[b]
+            const tarIdx = targets[b];
+            let sum = o_exps.reduce((r,v)=>r+v);
+            let loss = Math.log(sum) - input[tarIdx];
+            return loss;
+        })
+
+
+
+        // this.outputs = this.inputs.map((batch, b)=>{
+        //     const tarIdx = targets[b];
+        //     return -Math.log(batch[tarIdx]);
+        // })
+
         return this.outputs;
     },
     back(gradients){
-        gradients = this.inputs.map((batch, b)=>{
+        gradients = this.exp_outputs.map((o_exps, b)=>{
+            let sum = o_exps.reduce((r,v)=>r+v);
+            let sum_inv = 1 / sum;
             const tarIdx = this.targets[b];
-            const grad = gradients[b]
-            return batch.map((out, i)=>{
-                return ((i === tarIdx)?(out - 1):out) * grad;
+            const g = gradients[b];
+            let grad = o_exps.map((val,i)=>{
+                return (tarIdx === i)?(val * sum_inv - 1):(val * sum_inv) * g;
             })
-        });
+            return grad;
+        })
+
+
+
+        // gradients = this.inputs.map((batch, b)=>{
+        //     const tarIdx = this.targets[b];
+        //     const grad = gradients[b]
+        //     return batch.map((out, i)=>{
+        //         return ((i === tarIdx)?(out - 1):out) * grad;
+        //     })
+        // });
         return gradients;
     }
 }){}

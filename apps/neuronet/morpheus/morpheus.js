@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 8,
+        dim: 16,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -145,7 +145,7 @@ export class gptModel extends ROCKS({
         const targets = wordObj.tokens.map(token => token.idx);
         const ce = new layers.CrossEntropy(this);
         let losses = ce.fwd(output, targets);
-        this.loss = losses.reduce((r,x)=>r+x);
+        this.loss = losses.reduce((r,x)=>r+x)/losses.length;
         this.losses.push(this.loss);
 
         let grad = ce.back(losses);
