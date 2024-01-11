@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 16,
+        dim: 8,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
