@@ -40,10 +40,10 @@ export class Dense extends Layer.ROCKS({
         }
         this.inputs = inputs
         // return this.outputs = transposeMatrix(multiplyMT(this.weights, inputs))
-        return this.outputs = multiplyMT(inputs, this.weights);
+        return this.outputs = multiplyMM(inputs, this.weights);
     },
     back(gradients){
-        const corrects = multiplyMM(transposeMatrix(gradients), this.inputs);
+        const corrects = multiplyMM(transposeMatrix(this.inputs), gradients);
         gradients = multiplyMM(gradients, this.weights)
         this.correctWeights(corrects);
         return gradients;
@@ -51,7 +51,7 @@ export class Dense extends Layer.ROCKS({
     $public:{
         $freeze: true,
         get weights(){
-            return Array(this.out_size).fill(0).map( i=> Array(this.in_size + (this.use_bias?1:0)).fill(0).map(j => (Math.random() - .5)));
+            return Array(this.in_size + (this.use_bias?1:0)).fill(0).map( i=> Array(this.out_size).fill(0).map(j => (Math.random() - .5)));
         }
     },
     correctWeights(corrects){
@@ -237,10 +237,41 @@ export class Activation extends Layer.ROCKS({
 
 
 function multiplyMM(A, B){
-    if(A[0].length !== B.length)
-        throw new Error(`ШМАТРИЦА! ${A[0].length}, ${B.length}`)
-    return A.map(x=>transposeMatrix(B).map(y=>dotProduct(x, y)));
-    // return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
+    var rowsA = A.length,
+        colsA = A[0].length,
+        rowsB = B.length,
+        colsB = B[0].length,
+        C = [];
+    if (colsA != rowsB) return false;
+    for (var i = 0; i < rowsA; i++) C[i] = [];
+    for (var k = 0; k < colsB; k++) {
+        for (var i = 0; i < rowsA; i++) {
+            var t = 0;
+            for (var j = 0; j < rowsB; j++) t += A[i][j] * B[j][k];
+            C[i][k] = t;
+        }
+    }
+    return C;
+
+    //
+    // const H1 = A.length;
+    // const W1 = A[0].length;
+    // const H2 = B.length;
+    // const W2 = B[0].length;
+    // if(W1 !== H2)
+    //     throw new Error(`ШМАТРИЦА! ${W1}, ${H2}`);
+    // // for (let i = 0; i < H1; ++i)
+    // // {
+    // //     for (let j = 0; W2 < N; ++j)
+    // //     {
+    // //         C[i*W2 + j] = 0;
+    // //         for (let k = 0; k < K; ++k)
+    // //         C[i*W2 + j] += A[i*K + k] * B[k*N + j];
+    // //     }
+    // // }
+    //
+    // // return A.map(x=>transposeMatrix(B).map(y=>dotProduct(x, y)));
+    // return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[j][n]))))
 }
 
 function multiplyMT(M, T) {

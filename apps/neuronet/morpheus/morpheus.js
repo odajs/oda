@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 16,
+        dim: 8,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -150,11 +150,7 @@ export class gptModel extends ROCKS({
 
         let grad = ce.back(losses);
         // grad = softmax.back(grad);
-        grad = this.outLayer.back(grad);
 
-        // for (let decoder of this.decoders){
-        //     input = decoder.fwd(input, [word]);
-        // }
         output = output.map(logit=> {
             let idx = -1;
             let v = 0;
@@ -166,6 +162,15 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
+        console.log('output', output)
+        console.log('targets', targets)
+        console.log('grad', grad)
+        grad = this.outLayer.back(grad);
+
+        // for (let decoder of this.decoders){
+        //     input = decoder.fwd(input, [word]);
+        // }
+
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);
         });
@@ -839,51 +844,52 @@ function softmax(arr) {
         return Math.exp(value) / arr.map( function(y /*value*/){ return Math.exp(y) } ).reduce( function(a,b){ return a+b })
     })
 }
-function softmaxMatrix(m) {
-    return m.map(i=>softmax(i))
-}
-function addMatrix(m1, m2){
-    return m1.map((m, i) => addVectors(m, m2[i]));
-}
+//
+// function softmaxMatrix(m) {
+//     return m.map(i=>softmax(i))
+// }
+// function addMatrix(m1, m2){
+//     return m1.map((m, i) => addVectors(m, m2[i]));
+// }
 function addVectors(v1, v2){
     return v1.map((a, i) => v2[i] + a);
 }
-
-const gpu = new GPU.GPU();
-
-const gpumultiplyMM = gpu.createKernel(function (a, b){
-    let sum = 0;
-    for (let i = 0; i < 512; i++) {
-        sum += a[this.thread.y][i] * b[i][this.thread.x];
-    }
-    return sum;
-}).setOutput([512, 512])
-
-function multiplyMM(A, B){
-    if(A[0].length !== B.length)
-        throw new Error(`ШМАТРИЦА! ${A[0].length}, ${B.length}`)
-    return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
-}
-
-function multiplyMT(M, T) {
-    return M.map(x=>T.map(y=>dotProduct(x, y)));
-}
-function dotProduct(v1, v2) {
-    return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
-}
-
-function transposeMatrix(m) {
-    return m[0].map((x,i) =>(m.map(y => y[i])));
-}
-function crossEntropyMatrix(outs, targets){
-    return outs.map((out, i)=>{
-        const target = targets[i];
-        return crossEntropy(out, target);
-    })
-}
-function crossEntropy(out, target){
-    const loss = -out.reduce((r, o, i)=>{
-        return r + target[i] * Math.log(o);
-    })
-    return loss;
-}
+//
+// const gpu = new GPU.GPU();
+//
+// const gpumultiplyMM = gpu.createKernel(function (a, b){
+//     let sum = 0;
+//     for (let i = 0; i < 512; i++) {
+//         sum += a[this.thread.y][i] * b[i][this.thread.x];
+//     }
+//     return sum;
+// }).setOutput([512, 512])
+//
+// function multiplyMM(A, B){
+//     if(A[0].length !== B.length)
+//         throw new Error(`ШМАТРИЦА! ${A[0].length}, ${B.length}`)
+//     return A.map((row, i) => B[0].map((_, j) => row.reduce((r, _, n) => r + (A[i][n] * B[n][j]))))
+// }
+//
+// function multiplyMT(M, T) {
+//     return M.map(x=>T.map(y=>dotProduct(x, y)));
+// }
+// function dotProduct(v1, v2) {
+//     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
+// }
+//
+// function transposeMatrix(m) {
+//     return m[0].map((x,i) =>(m.map(y => y[i])));
+// }
+// function crossEntropyMatrix(outs, targets){
+//     return outs.map((out, i)=>{
+//         const target = targets[i];
+//         return crossEntropy(out, target);
+//     })
+// }
+// function crossEntropy(out, target){
+//     const loss = -out.reduce((r, o, i)=>{
+//         return r + target[i] * Math.log(o);
+//     })
+//     return loss;
+// }
