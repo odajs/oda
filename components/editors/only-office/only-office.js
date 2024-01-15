@@ -13,11 +13,15 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
-        // ooUrl: 'https://current.odant.org/docker/onlyoffice/',
-        url: path + 'document.docx',
+        // url: 'https://odajs.org/components/editors/only-office/document.docx',
         // ooUrl: 'http://localhost:8080/',
-        // url: 'https://odajs.org/components/editors/onlyoffice-editor/demo/demo.docx',
+        // key: 'test-1',
         key: '',
+        url: path + 'document.docx',
+        get ooUrl() { return location.origin + '/docker/onlyoffice/' },
+        get path() { return path },
+        get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
+        get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
         fileKey: '',
         title: '',
         mode: {
@@ -57,10 +61,6 @@ ODA({ is: 'oda-only-office',
         userID: '',
         callbackUrl: ''
     },
-    get ooUrl() { return location.origin + '/docker/onlyoffice/' },
-    get path() { return path },
-    get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
-    get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
     get word() { return 'djvu, doc, docm, docx, docxf, dot, dotm, dotx, epub, fb2, fodt, htm, html, mht, mhtml, odt, oform, ott, oxps, pdf, rtf, stw, sxw, txt, wps, wpt, xml, xps' },
     get cell() { return 'csv, et, ett, fods, ods, ots, sxc, xls, xlsb, xlsm, xlsx, xlt, xltm, xltx, xml' },
     get slide() { return 'dps, dpt, fodp, odp, otp, pot, potm, potx, pps, ppsm, ppsx, ppt, pptm, pptx, sxi' },
@@ -90,11 +90,11 @@ ODA({ is: 'oda-only-office',
                 key: this.key || '',
                 title: this.title || 'document.' + this.fileType,
                 url: this.url,
-                referenceData: {
-                    fileKey: this.fileKey || '',
-                    // instanceId: '',
-                    key: this.key || ''
-                }
+                // referenceData: {
+                //     fileKey: this.fileKey || '',
+                //     // instanceId: '',
+                //     key: this.key || ''
+                // }
             },
             documentType: this.documentType || 'word',
             height: '100%',
@@ -115,7 +115,6 @@ ODA({ is: 'oda-only-office',
         this.iframe.src = URL.createObjectURL(blob);
     },
     _onDocumentStateChange(e) {
-        // console.log(e);
         this.isChanged = true;
     }
 })
