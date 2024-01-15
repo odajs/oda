@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 8,
+        dim: 64,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -148,7 +148,7 @@ export class gptModel extends ROCKS({
         this.loss = losses.reduce((r,x)=>r+x)/losses.length;
         this.losses.push(this.loss);
 
-        let grad = ce.back(losses);
+        let grad = ce.back(this.loss);
         // grad = softmax.back(grad);
 
         output = output.map(logit=> {

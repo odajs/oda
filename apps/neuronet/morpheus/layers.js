@@ -56,16 +56,16 @@ export class Dense extends Layer.ROCKS({
     },
     correctWeights(corrects){
         const alpha = this.alpha / this.batch_size;
-        this.weights = this.weights.map((neuron, n)=>{
+        this.weights.map((neuron, n)=>{
             const correct = corrects[n];
-            return correct.map((delta, i)=>{
-                return (neuron[i] - delta * alpha);
+            return correct.forEach((delta, i)=>{
+                return neuron[i] -= delta / this.batch_size * alpha;
             })
         })
         return this.weights;
     }
 }){
-    constructor(owner, out_size  = 64, use_bias = false) {
+    constructor(owner, out_size  = 64, use_bias = true) {
         super(owner);
         this.out_size = out_size;
         this.use_bias = use_bias;
@@ -147,34 +147,20 @@ export class CrossEntropy extends Layer.ROCKS({
     fwd(inputs, targets){
         this.targets = targets;
         this.inputs = inputs;
-        this.exp_outputs = this.inputs.map((batch, b)=>{
-            return batch.map((v)=>Math.exp(v))
-        })
-        this.outputs = this.exp_outputs.map((o_exps, b)=>{
-            const input = this.inputs[b]
+        this.outputs = this.inputs.map((bach, b)=>{
             const tarIdx = targets[b];
-            let sum = o_exps.reduce((r,v)=>r+v);
-            let loss = Math.log(sum) - input[tarIdx];
+            let sum = bach[tarIdx];
+            let loss = -Math.log(sum);
             return loss;
         })
-
-
-
-        // this.outputs = this.inputs.map((batch, b)=>{
-        //     const tarIdx = targets[b];
-        //     return -Math.log(batch[tarIdx]);
-        // })
-
         return this.outputs;
     },
-    back(gradients){
-        gradients = this.exp_outputs.map((o_exps, b)=>{
-            let sum = o_exps.reduce((r,v)=>r+v);
-            let sum_inv = 1 / sum;
+    back(loss){
+        let gradients = this.inputs.map((bach, b)=>{
             const tarIdx = this.targets[b];
-            const g = gradients[b];
-            let grad = o_exps.map((val,i)=>{
-                return (tarIdx === i)?(val * sum_inv - 1):(val * sum_inv) * g;
+            // const g = gradients[b];
+            let grad = bach.map((val, i)=>{
+                return (tarIdx === i)?(val - 1):(val);// * loss;
             })
             return grad;
         })
