@@ -1,0 +1,25 @@
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+        <text y='.9em' font-size='90' transform='rotate(-90 50 50)'>🌀</text>
+    </svg>">
+
+<oda-atto-gpt>
+    </oda-oda-atto-gpt>
+
+
+    <script type="module">
+        import '../../../oda.js';
+        import '../../../components/layouts/scheme-layout/scheme-layout.js'
+        import './ag.js'
+        import { Value, simple1, simple2 } from './ag.js';
+
+        ODA({ is: 'oda-atto-gpt', extends: 'oda-scheme-layout',
+            designMode: true,
+            get items() { return simple2.digraph },
+        })
+
+
+
+
+    </script>
