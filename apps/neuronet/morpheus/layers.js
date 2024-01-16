@@ -160,7 +160,7 @@ export class CrossEntropy extends Layer.ROCKS({
             const tarIdx = this.targets[b];
             // const g = gradients[b];
             let grad = bach.map((val, i)=>{
-                return (tarIdx === i)?(val - 1):(val);// * loss;
+                return (tarIdx === i)?(val - 1):(val) * loss;
             })
             return grad;
         })

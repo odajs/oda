@@ -162,15 +162,11 @@ export class gptModel extends ROCKS({
             }
             return idx;
         })
-        console.log('output', output)
-        console.log('targets', targets)
-        console.log('grad', grad)
         grad = this.outLayer.back(grad);
 
         // for (let decoder of this.decoders){
         //     input = decoder.fwd(input, [word]);
         // }
-
         output.forEach(i=>{
             this.fire('predicate', this.tokens[i].id);
         });
