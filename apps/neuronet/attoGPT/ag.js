@@ -55,9 +55,9 @@ export class Value extends ROCKS({
         //console.log(rez)
         // let mapCorr = rez.reduce((akk,cur,i)=>{ akk[cur.block]=i; return akk},{})
 
-        let [dX, dY] = [120, 120]
+        let [dX, dY] = [110, 120]
 
-        console.log(rez)
+        // console.log(rez)
 
         rez.data.forEach(bl=> {
             bl.x = ( (2*bl.x-1) / rez.m[bl.y] ) * rez.yMax * dX
@@ -65,7 +65,7 @@ export class Value extends ROCKS({
             bl.pins.bottom[0].bind.forEach(b => b.block =  rez.n[b.block])
         } )
         
-        console.log(rez)
+        // console.log(rez)
 
 
         return rez.data
@@ -82,7 +82,7 @@ export class Value extends ROCKS({
         super();
         this.data = data
         this.grad = 0
-        this.backward = () => undefined
+        this.backward = () => {}
         this.children = children
         this.op=op
         this.label=label
@@ -107,9 +107,31 @@ export class Value extends ROCKS({
         let t = (Math.exp(2*this.data) - 1)/(Math.exp(2*this.data) + 1)
         let out = new Value(t, [this], 'tanh')
         out.backward = () => {
+            // console.log(this.grad,(1 - t**2) * out.grad)
             this.grad += (1 - t**2) * out.grad
+            console.log(this.grad)
         }
         return out
+    }
+    backwardGo() {
+        let topo = []
+        let viseted = new Set()
+        let build_topo = (v) => {
+            if (!viseted.has(v)) {
+                viseted.add(v)
+                v.children.forEach(ch => build_topo(ch))
+                topo.push(v)
+            }
+            else console.log('!!!!!!')
+        }
+        build_topo(this)
+
+        this.grad = 1.0
+        topo.reverse().forEach(node => {
+            node.backward()
+            // console.log(node.label,node.grag)
+            
+        })
     }
 
 }
@@ -145,22 +167,7 @@ export const simple2 = ( () => {
     return o
 })()
 
-console.log(simple2)
-
-let rez = {data:[], xMax:0, yMax:0, m:{}, n:{} }
-let recur = (el, y) => {
-    rez.m[y]??=0
-    rez.m[y]++
-    rez.n[el.label]=rez.data.length
-    let obj = {id:el.label, x:rez.m[y], y:y+1, i:rez.data.length}
-    rez.xMax = Math.max(rez.xMax,obj.x)
-    rez.yMax = Math.max(rez.yMax,obj.y)
-    rez.data.push(obj)
-
-    el.children.forEach((c, i) => recur(c, obj.y))
-
-
-
-}
-recur(simple2,0)
-console.log(rez)
+// console.log(simple2)
+// let xx = simple2
+// xx.backwardGo()
+// console.log(xx)

@@ -16,7 +16,10 @@
 
         ODA({ is: 'oda-atto-gpt', extends: 'oda-scheme-layout',
             designMode: true,
-            get items() { return simple2.digraph },
+            get items() { 
+                let s = simple2
+                s.backwardGo()
+                return s.digraph },
         })
 
 
