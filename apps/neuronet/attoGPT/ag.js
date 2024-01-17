@@ -1,72 +1,43 @@
 
 export class Value extends ROCKS({
     get digraph() {
-        
-        // let rez = []
-
         let toIcon= (l)=> (l == '+') ? 'icons:add-circle-outline' 
                         : (l == '*') ? 'icons:highlight-off'
                         : (l == 'tanh') ? 'carbon:letter-tt'
                         : (l == '') ? '' 
                         : 'icons:error'
 
-        let rez = {data:[], xMax:0, yMax:0, m:{}, n:{} }
+        let rez = {data:[], xMax:0, yMax:0, m:{}, n: new Map() }
         let addBl = (el, y) => {
-            rez.m[y]??=0
-            rez.m[y]++
-            rez.n[el.label]=rez.data.length
-            let obj = {
-                is: "oda-button", el, x:rez.m[y], y, 
-                props: { label: el.labStr },
-                pins: {
-                    top: [{}],
-                    bottom: [{
-                        bind: el.children.map( (v,i) => { return { block: v.label, top: 0 } }),
-                        props: { icon: toIcon(el.op) }
-                    }]
+            if (rez.n.get(el)==undefined) {
+                rez.m[y]??=0
+                rez.m[y]++
+                rez.n.set(el,rez.data.length)
+                let obj = {
+                    is: "oda-button", x:rez.m[y], y, 
+                    props: { label: el.labStr },
+                    pins: {
+                        top: [{}],
+                        bottom: [{
+                            bind: el.children.map( (v,i) => { return { block: v, top: 0 } }),
+                            props: { icon: toIcon(el.op) }
+                        }]
+                    }
                 }
+                rez.xMax = Math.max(rez.xMax,obj.x)
+                rez.yMax = Math.max(rez.yMax,obj.y)
+                rez.data.push(obj)
+            
+                el.children.forEach((c, i) => addBl(c, obj.y+1))
             }
-            rez.xMax = Math.max(rez.xMax,obj.x)
-            rez.yMax = Math.max(rez.yMax,obj.y)
-            rez.data.push(obj)
-        
-            el.children.forEach((c, i) => addBl(c, obj.y+1))
         }
         addBl(this,0)
-
-        // let addBl = (el, xL, yL) => {
-        //     console.log()
-        //     rez.push( {
-        //         is: "oda-button", block: el.label, x: xL * dX, y: yL * dY,
-        //         props: { label: el.labStr },
-        //         pins: {
-        //             top: [{}],
-        //             bottom: [{
-        //                 bind: el.children.map( (v,i) => { return { block: v.label, top: 0 } }),
-        //                 props: { icon: toIcon(el.op) }
-        //             }]
-        //         }
-        //     })
-
-        //     el.children.forEach((c, i) => addBl(c, xL - 1 + (2 * i), yL + 1))
-        // }
-        // addBl(this, 4, 0.1)
-
-        //console.log(rez)
-        // let mapCorr = rez.reduce((akk,cur,i)=>{ akk[cur.block]=i; return akk},{})
-
-        let [dX, dY] = [110, 120]
-
-        // console.log(rez)
-
+        let [dX, dY] = [110, 130]
         rez.data.forEach(bl=> {
             bl.x = ( (2*bl.x-1) / rez.m[bl.y] ) * rez.yMax * dX
             bl.y = (bl.y+0.1) * dY            
-            bl.pins.bottom[0].bind.forEach(b => b.block =  rez.n[b.block])
+            bl.pins.bottom[0].bind.forEach(b => b.block =  rez.n.get(b.block))
         } )
-        
-        // console.log(rez)
-
 
         return rez.data
     },
@@ -129,25 +100,52 @@ export class Value extends ROCKS({
         this.grad = 1.0
         topo.reverse().forEach(node => {
             node.backward()
-            // console.log(node.label,node.grag)
-            
         })
     }
-
 }
 
-// console.log('ss')
+export class Neuron {
+    constructor(nIn) {
+        // super();
+        this.b = new Value (2*(Math.random()-0.5))
+        this.w = []
+        for (let i=0;i<nIn;i++) this.w[i] = new Value (2*(Math.random()-0.5))
+    }
+    use (xs) {
+        if (this.w.length != xs.length) console.error(`Не та размерность. Входов нейрона: ${this.w.length}. Подаем ${xs.length}.` )
+        else {
+            let act = this.w.map( (w,i) => (w).mul( new Value (xs[i]) )  )
+            return act.reduce((akk,cur) => (akk).add(cur), this.b ).tanh()
+        }
+    }
+    parameters() { return this.w.concat([this.b]) }
+}
+
+export class Layer {
+    constructor(nIn,nOut) {
+        this.neurons = []
+        for (let i=0;i<nOut;i++) this.neurons[i] = new Neuron(nIn)
+    }
+    use (xs) { return this.neurons.map(n => n.use(xs)) }
+    parameters() { return this.neurons.map(n => n.parameters(xs))}
+}
+
+export class MLP {
+    constructor(nIn,nOut) {
+    }
+}
+
+
 export const simple1 = ( () => {
-    let a = new Value (5); a.label = 'a'
+    let a = new Value ( 5); a.label = 'a'
     let b = new Value (-3); b.label = 'b'
     let c = new Value (10); c.label = 'c'
     let e = (a).mul(b); e.label = 'e'
     let d = (e).add(c); d.label = 'd'
-    let f = new Value(-2); f.label='f'
+    let f = new Value (-2); f.label='f'
     let L = (d).mul(f); L.label = 'L'
     return L
 })()
-// console.log(L)
 
 export const simple2 = ( () => {
     // inputs x1,x2
@@ -167,7 +165,22 @@ export const simple2 = ( () => {
     return o
 })()
 
-// console.log(simple2)
-// let xx = simple2
-// xx.backwardGo()
-// console.log(xx)
+export const simple3 = ( () => {
+    let a = new Value(-2); a.label='a'
+    let b = new Value( 3); b.label='b'
+    let d = (a).mul(b); d.label = 'd'
+    let e = (a).add(b); e.label = 'e'
+    let f = (d).mul(e); f.label = 'f'
+    return f
+})()
+
+export const simple4 = ( () => {
+    let n = new Neuron(6)
+    return n.use([1,2,3,4,3,3])
+})()
+
+export const simple5 = ( () => {
+    let l = new Layer(2,2)
+    let rez = l.use([-1,1])
+    return (rez[0]).add(rez[1])
+})()

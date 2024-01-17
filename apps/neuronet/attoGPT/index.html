@@ -12,12 +12,12 @@
         import '../../../oda.js';
         import '../../../components/layouts/scheme-layout/scheme-layout.js'
         import './ag.js'
-        import { Value, simple1, simple2 } from './ag.js';
+        import * as AG from './ag.js';
 
         ODA({ is: 'oda-atto-gpt', extends: 'oda-scheme-layout',
             designMode: true,
             get items() { 
-                let s = simple2
+                let s = AG.simple4
                 s.backwardGo()
                 return s.digraph },
         })
