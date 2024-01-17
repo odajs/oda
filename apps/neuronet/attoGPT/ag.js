@@ -80,7 +80,7 @@ export class Value extends ROCKS({
         out.backward = () => {
             // console.log(this.grad,(1 - t**2) * out.grad)
             this.grad += (1 - t**2) * out.grad
-            console.log(this.grad)
+            // console.log(this.grad)
         }
         return out
     }
@@ -93,7 +93,7 @@ export class Value extends ROCKS({
                 v.children.forEach(ch => build_topo(ch))
                 topo.push(v)
             }
-            else console.log('!!!!!!')
+            // else console.log('!!!!!!')
         }
         build_topo(this)
 
@@ -114,7 +114,7 @@ export class Neuron {
     use (xs) {
         if (this.w.length != xs.length) console.error(`Не та размерность. Входов нейрона: ${this.w.length}. Подаем ${xs.length}.` )
         else {
-            let act = this.w.map( (w,i) => (w).mul( new Value (xs[i]) )  )
+            let act = this.w.map( (w,i) => (w).mul(xs[i])  )
             return act.reduce((akk,cur) => (akk).add(cur), this.b ).tanh()
         }
     }
@@ -131,7 +131,13 @@ export class Layer {
 }
 
 export class MLP {
-    constructor(nIn,nOut) {
+    constructor(nIn,nOuts) {
+        let sz = [nIn].concat(nOuts)
+        this.layers = []
+        for (let i=0;i<nOuts.length;i++) this.layers[i] = new Layer(sz[i],sz[i+1])
+    }
+    use(xs) {
+        return this.layers.reduce((akk,cur)=>cur.use(akk),xs)
     }
 }
 
@@ -176,11 +182,21 @@ export const simple3 = ( () => {
 
 export const simple4 = ( () => {
     let n = new Neuron(6)
-    return n.use([1,2,3,4,3,3])
+    let input = [1,2,3,4,3,3].map(i=> new Value(i))
+    return n.use(input)
 })()
 
 export const simple5 = ( () => {
     let l = new Layer(2,2)
-    let rez = l.use([-1,1])
+    let input = [-1,1].map(i=> new Value(i))
+    let rez = l.use(input)
     return (rez[0]).add(rez[1])
 })()
+
+export const simple6 = ( () => {
+    let input = [2.0, 3.0, -1.0].map(i=> new Value(i))
+    let n = new MLP(3, [4, 1])
+    let rez = n.use(input)[0]
+    return rez
+})()
+
