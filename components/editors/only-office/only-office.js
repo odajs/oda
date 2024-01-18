@@ -13,27 +13,21 @@ ODA({ is: 'oda-only-office',
         <iframe class='flex' style="border: none"></iframe>      
     `,
     $public: {
+        key: '',
         // url: 'https://odajs.org/components/editors/only-office/document.docx',
         // ooUrl: 'http://localhost:8080/',
-        // key: 'test-1',
-        key: '',
         url: path + 'document.docx',
         get ooUrl() { return location.origin + '/docker/onlyoffice/' },
         get path() { return path },
         get apiUrl() { return this.ooUrl + 'web-apps/apps/api/documents/api.js' },
         get commandServiceUrl() { return this.ooUrl + 'coauthoring/CommandService.ashx' },
-        fileKey: '',
         title: '',
         mode: {
             $def: 'edit',
             $list: ['view', 'edit']
         },
-        documentType: {
-            $def: 'word',
-            $list: ['word', 'cell', 'slide']
-        },
-        fileType: {
-            $def: 'docx',
+        ext: {
+            $def: '',
             $list: ['djvu', 'doc', 'docm', 'docx', 'docxf', 'dot', 'dotm', 'dotx', 'epub', 'fb2', 'fodt', 'htm', 'html', 'mht', 'mhtml', 'odt', 'oform', 'ott', 'oxps', 'pdf', 'rtf', 'stw', 'sxw', 'txt', 'wps', 'wpt', 'xml', 'xps', 'csv', 'et', 'ett', 'fods', 'ods', 'ots', 'sxc', 'xls', 'xlsb', 'xlsm', 'xlsx', 'xlt', 'xltm', 'xltx', 'xml', 'dps', 'dpt', 'fodp', 'odp', 'otp', 'pot', 'potm', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'sxi']
         },
         autosave: true,
@@ -61,9 +55,19 @@ ODA({ is: 'oda-only-office',
         userID: '',
         callbackUrl: ''
     },
-    get word() { return 'djvu, doc, docm, docx, docxf, dot, dotm, dotx, epub, fb2, fodt, htm, html, mht, mhtml, odt, oform, ott, oxps, pdf, rtf, stw, sxw, txt, wps, wpt, xml, xps' },
-    get cell() { return 'csv, et, ett, fods, ods, ots, sxc, xls, xlsb, xlsm, xlsx, xlt, xltm, xltx, xml' },
-    get slide() { return 'dps, dpt, fodp, odp, otp, pot, potm, potx, pps, ppsm, ppsx, ppt, pptm, pptx, sxi' },
+    get fileType() {
+        this.ext ||= this.url?.split('.').at(-1).split('?')[0];
+        return this.ext;
+    },
+    get documentType() {
+        return Object.keys(types).map(key => {
+            if (types[key].includes(this.ext))
+                return key;
+        }).filter(Boolean)[0];
+    },
+    get types() {
+        return types;
+    },
     get editorConfig() {
         return {
             customization: {
@@ -90,11 +94,20 @@ ODA({ is: 'oda-only-office',
                 key: this.key || '',
                 title: this.title || 'document.' + this.fileType,
                 url: this.url,
-                // referenceData: {
-                //     fileKey: this.fileKey || '',
-                //     // instanceId: '',
-                //     key: this.key || ''
-                // }
+                permissions: {
+                    chat: true,
+                    copy: true,
+                    deleteCommentAuthorOnly: false,
+                    download: true,
+                    edit: true,
+                    editCommentAuthorOnly: false,
+                    fillForms: true,
+                    modifyContentControl: true,
+                    modifyFilter: true,
+                    print: true,
+                    protect: true,
+                    review: true
+                }
             },
             documentType: this.documentType || 'word',
             height: '100%',
@@ -118,6 +131,12 @@ ODA({ is: 'oda-only-office',
         this.isChanged = true;
     }
 })
+
+const types = {
+    word: 'djvu,doc,docm,docx,docxf,dot,dotm,dotx,epub,fb2,fodt,htm,html,mht,mhtml,odt,oform,ott,oxps,pdf,rtf,stw,sxw,txt,wps,wpt,xml,xps'.split(','),
+    cell: 'csv,et,ett,fods,ods,ots,sxc,xls,xlsb,xlsm,xlsx,xlt,xltm,xltx,xml'.split(','),
+    slide: 'dps,dpt,fodp,odp,otp,pot,potm,potx,pps,ppsm,ppsx,ppt,pptm,pptx,sxi'.split(',')
+}
 
 const html = (apiUrl) => {
     return `
