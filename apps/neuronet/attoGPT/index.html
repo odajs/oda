@@ -4,9 +4,9 @@
         <text y='.9em' font-size='90' transform='rotate(-90 50 50)'>🌀</text>
     </svg>">
 
-<oda-atto-gpt>
-    </oda-atto-gpt>
-
+    <oda-tester>
+        <oda-atto-gpt style="height: 100%;"></oda-oda-atto-gpt>
+    </oda-tester>
 
     <script type="module">
         import '../../../oda.js';
@@ -16,11 +16,68 @@
 
         ODA({ is: 'oda-atto-gpt', extends: 'oda-scheme-layout',
             designMode: true,
-            get items() { 
-                let s = AG.simple6
-                s.backwardGo()
-                return s.digraph },
+            items:{
+                $type:Array,
+                async get() {
+
+
+                return await this?.simpleNet?.digraph
+
+                },
+            },
+            
+
+            $public: {
+                simple:{
+                    $def:'simple1',
+                    $save:true,
+                    $list: ['simple1','simple2','simple3','simple4','simple5'],
+                    //set(e) {
+                    //    this.simpleNet = AG[e]
+                    //}
+                }
+            },
+            simpleNet: {
+                $pdp:true,
+                get () {
+                    let newSimple = AG[this.simple]
+                    return newSimple
+                }
+            },
+           
+
         })
+        //return this.label + ' | data: ' + this.data.toFixed(2) + ' | grad: ' + this.grad.toFixed(2) 
+        ODA({ is: 'oda-ag-value',  template: /*HTML*/ `
+        <style>
+            :host {border:2px solid {{border}};}
+            #label {margin-right:20px;}
+            input {border:none; width:5em; background:#00000022 !important; outline:none;font-size: inherit; text-align:right;}
+        </style> 
+        <div style='padding:5px'>
+            <div horizontal><b id='label'>{{el.label}}</b><i flex> </i> <i>grad: {{el.grad.toFixed(2)}}</i> </div>
+            <div horizontal><i>data:</i> <i flex></i> <input flex ~if='isInput' :value='el.data' @input="onInput" /> <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>           
+        </div> 
+        `,
+        get isInput() {
+            if (this.el.children.length!==0) return false
+            if (this.el.t === 'param') return false
+            return true
+
+        },
+        get border() {
+            if (this.el.t === 'param') return 'green'
+            if (this.isInput) return 'blue'
+            return 'silver'
+        },
+        onInput(e){
+            this.el.data = e.target.value;
+            this.simpleNet.step()
+
+        },
+        })
+
+        
 
 
 
