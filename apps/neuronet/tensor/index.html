@@ -1,0 +1,15 @@
+<meta charset="UTF-8">
+<title>TENSOR</title>
+<script type="module">
+    import '../../../oda.js';
+    import Tensor from './tensor.js';
+
+    const a = new Tensor([1,2,3], 'a');
+    const b = new Tensor(3, 'b');
+    const d = new Tensor(8, 'd');
+    const c = a.mul(b);
+    const e = c.add(d);
+    console.log(a.data, b.data, c.data, d.data, e.data);
+    e.back();
+    console.log(a.grad, b.grad, c.grad, d.grad, e.grad);
+</script>
