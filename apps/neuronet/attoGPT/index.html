@@ -31,10 +31,10 @@
                 simple:{
                     $def:'simple1',
                     $save:true,
-                    $list: ['simple1','simple2','simple3','simple4','simple5'],
-                    //set(e) {
-                    //    this.simpleNet = AG[e]
-                    //}
+                    $list: ['simple1','simple2','simple3','simple4','simple5','simple6'],
+                    set(e) {
+                        this.simpleNet = undefined
+                    }
                 }
             },
             simpleNet: {
@@ -56,7 +56,7 @@
         </style> 
         <div style='padding:5px'>
             <div horizontal><b id='label'>{{el.label}}</b><i flex> </i> <i>grad: {{el.grad.toFixed(2)}}</i> </div>
-            <div horizontal><i>data:</i> <i flex></i> <input flex ~if='isInput' :value='el.data' @input="onInput" /> <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>           
+            <div horizontal><i>data:</i> <i flex></i> <input type='number' flex ~if='isInput' :value='el.data'   @input="onInput" > <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>           
         </div> 
         `,
         get isInput() {
@@ -67,6 +67,8 @@
         },
         get border() {
             if (this.el.t === 'param') return 'green'
+            if (this.el.t === 'fictive') return 'white'
+            if (this.el.t === 'output') return 'orange'
             if (this.isInput) return 'blue'
             return 'silver'
         },

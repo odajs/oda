@@ -3,13 +3,15 @@
 <script type="module">
     import '../../../oda.js';
     import Tensor from './tensor.js';
+    let vars = {};
 
-    const a = new Tensor([1,2,3], 'a');
-    const b = new Tensor(3, 'b');
-    const d = new Tensor(8, 'd');
-    const c = a.mul(b);
-    const e = c.add(d);
-    console.log(a.data, b.data, c.data, d.data, e.data);
-    e.back();
-    console.log(a.grad, b.grad, c.grad, d.grad, e.grad);
+    vars.v1 = new Tensor([1,2,3], 'v1');
+    vars.v2 = new Tensor(3, 'v2');
+    vars.v3 = vars.v1.mul(vars.v2);
+    vars.v4 = new Tensor(8, 'v4');
+    vars.v5 = vars.v3.add(vars.v4);
+    vars.v6 = vars.v2.mul(vars.v1);
+    vars.v5.back();
+    for (let i in vars)
+        console.log(i + ':', vars[i].data.toString(),'grad:',vars[i].grad.toString());
 </script>

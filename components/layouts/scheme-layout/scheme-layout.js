@@ -370,7 +370,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
                         return;
                     const pin_idx = bind[dir];
                     const target = pin[pin_idx];
-                    if (target)
+                    if (target?.pin)
                         return (startPoint.call(this) + endPoint.call(target.pin));
                 }).filter(i=>i);
             }

@@ -61,7 +61,7 @@ export default class Tensor extends ROCKS({
         let mode = '' + this.dim + other.dim;
         switch (mode){
             case '00':{
-                result = this.data * other.data
+                result = this.data * other.data;
             } break;
             case '01':{
                 result = other.data.reduce((r, v)=>r + v) * this.data;
@@ -94,7 +94,7 @@ export default class Tensor extends ROCKS({
         let mode = '' + this.dim + other.dim;
         switch (mode){
             case '00':{
-                result = this.data + other.data
+                result = this.data + other.data;
             } break;
             case '01':{
                 result = this.data + other.data.reduce((r, v)=>r + v);
