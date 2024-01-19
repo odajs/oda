@@ -56,18 +56,26 @@ export default class Tensor extends ROCKS({
         }
         return v;
     },
-    mul(other){
+    multiply(other, type='dot'){ //умножение
         let result;
         let mode = '' + this.dim + other.dim;
         switch (mode){
-            case '00':{
+            case '00':{ // число на число
                 result = this.data * other.data;
             } break;
-            case '01':{
+            case '01':{ // число на вектор
                 result = other.data.reduce((r, v)=>r + v) * this.data;
             } break;
-            case '10':{
+            case '10':{ // вектор на число
                 result = this.data.map(v=>v * other.data);
+            } break;
+            case '11':{ // вектор на вектор поэлементно
+                result = this.data.map((v,i)=>v * other.data[i]);
+            } break;
+            case '12':{ // вектор на матрицу
+                if (this.data.length !== other.data.length)
+                    throw new Error(SIZE_MISMATCH);
+                result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]))
             } break;
         }
         let out = new Tensor(result, '*', [this, other]);
@@ -102,6 +110,11 @@ export default class Tensor extends ROCKS({
             case '10':{
                 result = this.data.map(v=>v + other.data);
             } break;
+            case '11':{
+                if (this.data.length !== other.data.length)
+                    throw new Error(SIZE_MISMATCH);
+                result = this.data.map((v, i)=>v + other.data[i]);
+            } break;
         }
         let out = new Tensor(result, '+', [this, other]);
         out._back = () => {
@@ -112,11 +125,15 @@ export default class Tensor extends ROCKS({
                 } break;
                 case '01':{
                     this.grad += out.grad;
-                    other.grad = other.grad.map(v=>v + out.grad)
+                    other.grad = other.grad.map(v=>v + out.grad);
                 } break;
                 case '10':{
-                    this.grad = this.grad.map((v, i)=>v + out.grad[i])
+                    this.grad = this.grad.map((v, i)=>v + out.grad[i]);
                     other.grad += this.data.reduce((r, v, i)=>r + v + out.grad[i]);
+                } break;
+                case '11':{
+                    this.grad = this.grad.map((v, i)=>v + out.grad[i]);
+                    other.grad = other.grad.map((v, i)=>v + out.grad[i]);
                 } break;
             }
         }
@@ -132,3 +149,5 @@ export default class Tensor extends ROCKS({
         this.children = children;
     }
 }
+
+const SIZE_MISMATCH = 'Несогласованность размеров';

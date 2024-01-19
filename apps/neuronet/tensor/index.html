@@ -1,17 +1,18 @@
 <meta charset="UTF-8">
 <title>TENSOR</title>
+<oda-tensor></oda-tensor>
 <script type="module">
     import '../../../oda.js';
     import Tensor from './tensor.js';
-    let vars = {};
-
-    vars.v1 = new Tensor([1,2,3], 'v1');
-    vars.v2 = new Tensor(3, 'v2');
-    vars.v3 = vars.v1.mul(vars.v2);
-    vars.v4 = new Tensor(8, 'v4');
-    vars.v5 = vars.v3.add(vars.v4);
-    vars.v6 = vars.v2.mul(vars.v1);
-    vars.v5.back();
-    for (let i in vars)
-        console.log(i + ':', vars[i].data.toString(),'grad:',vars[i].grad.toString());
+    ODA({is: 'oda-tensor', imports: '@oda/app-layout', extends: 'oda-app-layout',
+        template:`
+            <div vertical slot="left-panel" opened>
+               <textarea flex ::value="program"></textarea>
+            </div>
+        `,
+        program:{
+            $save: true,
+            $def: ''
+        }
+    })
 </script>

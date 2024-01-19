@@ -5,7 +5,7 @@
     </svg>">
 
     <oda-tester>
-        <oda-atto-gpt style="height: 100%;"></oda-oda-atto-gpt>
+        <oda-atto-gpt></oda-atto-gpt>
     </oda-tester>
 
     <script type="module">
@@ -15,6 +15,14 @@
         import * as AG from './ag.js';
 
         ODA({ is: 'oda-atto-gpt', extends: 'oda-scheme-layout',
+            template:`
+                <style>
+                    :host{
+                        @apply --flex;
+                        height: 100%;
+                    }
+                </style>
+            `,
             designMode: true,
             items:{
                 $type:Array,

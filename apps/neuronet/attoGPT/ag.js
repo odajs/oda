@@ -219,8 +219,8 @@ export const simple3 = ( () => {
     let d = (new Value(0,'d')).mul(a,b)
     let e = (new Value(0,'e')).sum([a,b])
     let f = (new Value(0,'f')).mul(d,e)
-
-    let nv = new NetValue([f])
+    let x = new Value(35, 'x');
+    let nv = new NetValue([f, x])
     nv.step()
     return nv
 })()
