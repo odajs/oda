@@ -592,7 +592,6 @@ if ('adoptedStyleSheets' in Document.prototype) {
     ss.replaceSync(style);
     globalThis.adopted = [ss];
 }
-console.log('styles is loaded.');
 export default {
     cssRules: globalThis.cssRules,
     adopted: globalThis.adopted,
