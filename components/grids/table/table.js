@@ -573,7 +573,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     focus() { this.body.focus?.() },
     $listeners: {
         dragend: 'onDragEnd',
-        dragleave: 'onDragEnd',
+        // dragleave: 'onDragEnd',
     },
     isHighlightedRow(row) { // вынесено в функцию для возможности переопределения
         return this.compareRows(row, this.highlightedRow);
@@ -989,19 +989,16 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         })
     },
-    _getDragData(rows) {
-        return rows.map(r => {
-            return { mime: 'application/json', data: r }
-        })
-    },
+    //#region drag & drop
     _onDragStart(e) {
         const el = e.path.find(p => p.row);
         if (el && (this.allowDrag || el.row.drag)) {
+            e.dataTransfer.clearData();
             this._setDragImage(e);
             this.draggedRows = this.selectedRows.includes(el.row) ? this.selectedRows : [el.row];
             this._getDragData(this.draggedRows).forEach(data => {
                 e.dataTransfer.setData(data.mime, data.data);
-            })
+            });
         }
     },
     _setDragImage(e) {
@@ -1012,7 +1009,11 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             e.dataTransfer.setDragImage(new Image(), 0, 0);
         }
     },
-    _dropCheckWait: null,
+    _getDragData(rows) {
+        return rows.map(r => {
+            return { mime: 'application/json', data: r };
+        });
+    },
     _onDragLeave(e) {
         const el = e.path.find(p => p.row);
         if (el)
@@ -1020,25 +1021,32 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         clearTimeout(this._expandTimer);
         this._expandTimer = null;
     },
+    _checkDropWait: null,
     _onDragOver(e) {
         if (!this.allowDrop) return;
         e.stopPropagation();
         if (this._draggableColumn) return;
+
         const target = e.path.find(p => p.row);
         if (!target) return;
+
         const row = target.row;
-        let r = row;
-        while (r) {
-            if (this.draggedRows.includes(r)) return;
-            r = r.__parent__;
+        if (this.draggedRows?.length) {
+            let r = row;
+            while (r) {
+                if (this.draggedRows.includes(r)) return;
+                r = r.__parent__;
+            }
+            if (this.draggedRows.some(i => i.__parent__ === row)) return;
         }
-        if (this.draggedRows.some(i => i.__parent__ === row)) return;
+
         e.preventDefault();
-        if (/* !row.__expanded__ &&  */!this._expandTimer) {
+
+        if (!this._expandTimer) {
             this._expandTimer = setTimeout(() => {
                 clearTimeout(this._expandTimer);
                 this._expandTimer = null;
-                row.__expanded__ = true;//!row.__expanded__;
+                row.__expanded__ = true;
             }, 1000);
         }
         if (this.sorts.length)
@@ -1059,11 +1067,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     _getDropEffect(source, target, event) {
         return event.ctrlKey ? 'copy' : 'move';
-    },
-    _checkAllowDropIn(row) {
-        const contains = !!(this.draggedRows && row.items && Array.isArray(row.items) && row.items.find(i => this.draggedRows.includes(i)));
-        const isLoading = !!(row.items && row.items.length === 1 && !Object.keys(row.items[0]).length); // is not tested
-        return contains || isLoading;
     },
     _onDrop(e) {
         e.stopPropagation();
@@ -1099,6 +1102,18 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         }
     },
+    onDragEnd(e) {
+        this.draggedRows = [];
+        this._checkDropWait = null;
+        e.dataTransfer.clearData();
+    },
+    _onDropToEmptySpace() {
+
+    },
+    _onDragOverToEmptySpace() {
+
+    },
+    //#endregion & drop
     _find(callback) {
         const find = (items) => {
             let res = items.find(callback);
@@ -1124,22 +1139,11 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         };
         return find(this.dataSet);
     },
-    onDragEnd(e) {
-        this.draggedRows = [];
-        this._dropCheckWait = null;
-    },
-
     // _onRowContextMenu(e) {
     //     const el = e.path.find(p => p.row);
     //     if (el)
     //         this.fire('row-contextmenu', el.row);
     // },
-    _onDropToEmptySpace() {
-
-    },
-    _onDragOverToEmptySpace() {
-
-    },
     _onDownToEmptySpace(e) {
         if (e.button)
             return;
@@ -1479,7 +1483,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             </div>
         </div>
     </div>
-    <div class="flex" style="visibility: hidden;" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)"></div>
+    <div class="flex empty-space" style="visibility: hidden;" @drop.stop.prevent="table._onDropToEmptySpace($event, $detail)" @dragover.stop.prevent="table._onDragOverToEmptySpace($event, $detail)"></div>
     `,
     attached() {
         this.setScreen();

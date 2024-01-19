@@ -1970,26 +1970,6 @@ in the <${host.localName}>`);
             return label
         }
     }
-
-
-    const getData = DataTransfer.prototype.getData;
-    DataTransfer.prototype.getData = function (type){
-        return top.dataTransfer?._items[type] || getData.call(this,  type);
-    }
-    const setData = DataTransfer.prototype.setData;
-    DataTransfer.prototype.setData = function (type, data){
-        top.dataTransfer = this;
-        this._items ??= {};
-        this._items[type] ??= [];
-        this._items[type].push(data);
-        if(data instanceof Object){
-            data = JSON.stringify(data);
-        }
-        return setData.call(this,  type, data);
-    }
-    DataTransfer.prototype.checkData = function (type){
-        return getData.call(this,  type);
-    }
     window.ODA.IsReady = true;
 }
 
