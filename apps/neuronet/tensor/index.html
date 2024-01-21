@@ -3,16 +3,22 @@
 <oda-tensor></oda-tensor>
 <script type="module">
     import '../../../oda.js';
-    import Tensor from './tensor.js';
+    import Tensor from  './tensor.js';
     ODA({is: 'oda-tensor', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <div vertical slot="left-panel" opened>
                <textarea flex ::value="program"></textarea>
+               <oda-button no-flex @tap="build"  style="text-align: center; padding: 8px;">BUILD</oda-button>
             </div>
         `,
         program:{
             $save: true,
             $def: ''
+        },
+        build(){
+            const func = new Function('Tensor', this.program);
+            const res = func(Tensor);
+            console.log(res)
         }
     })
 </script>

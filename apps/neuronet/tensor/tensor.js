@@ -4,7 +4,6 @@ export default class Tensor extends ROCKS({
             $freeze: true,
         },
         label: '',
-
     },
     grad:{
         $freeze: true,
@@ -70,6 +69,8 @@ export default class Tensor extends ROCKS({
                 result = this.data.map(v=>v * other.data);
             } break;
             case '11':{ // вектор на вектор поэлементно
+                if (this.data.length !== other.data.length)
+                    throw new Error(SIZE_MISMATCH);
                 result = this.data.map((v,i)=>v * other.data[i]);
             } break;
             case '12':{ // вектор на матрицу
@@ -90,8 +91,12 @@ export default class Tensor extends ROCKS({
                     other.grad = other.grad.map(v=>v + this.data * out.grad);
                 } break;
                 case '10':{
-                    this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i])
+                    this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
                     other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
+                } break;
+                case '11':{
+                    this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
+                    other.grad = other.grad.map((v, i)=>v + this.data * out.grad[i]);
                 } break;
             }
         }
@@ -110,10 +115,16 @@ export default class Tensor extends ROCKS({
             case '10':{
                 result = this.data.map(v=>v + other.data);
             } break;
-            case '11':{
-                if (this.data.length !== other.data.length)
-                    throw new Error(SIZE_MISMATCH);
-                result = this.data.map((v, i)=>v + other.data[i]);
+            default:{
+                if(this.shape === other.shape){
+                    function add(self, other){
+                        if(Array.isArray(self))
+                            return self.map((s, i )=>add(s, other[i]));
+                        return self + other;
+                    }
+                    result = add(this.data, other.data);
+                }
+                else throw new Error(SIZE_MISMATCH);
             } break;
         }
         let out = new Tensor(result, '+', [this, other]);
@@ -131,9 +142,14 @@ export default class Tensor extends ROCKS({
                     this.grad = this.grad.map((v, i)=>v + out.grad[i]);
                     other.grad += this.data.reduce((r, v, i)=>r + v + out.grad[i]);
                 } break;
-                case '11':{
-                    this.grad = this.grad.map((v, i)=>v + out.grad[i]);
-                    other.grad = other.grad.map((v, i)=>v + out.grad[i]);
+                default:{
+                    function grad(self, o = out.grad){
+                        if(Array.isArray(self))
+                            return self.map((v, i )=>grad(v, o[i]));
+                        return self + o;
+                    }
+                    this.grad = grad(this.grad);
+                    other.grad = grad(other.grad);
                 } break;
             }
         }
