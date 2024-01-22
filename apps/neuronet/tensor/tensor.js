@@ -76,8 +76,9 @@ export default class Tensor extends ROCKS({
             case '12':{ // вектор на матрицу
                 if (this.data.length !== other.data.length)
                     throw new Error(SIZE_MISMATCH);
-                result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]))
+                result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
             } break;
+
         }
         let out = new Tensor(result, '*', [this, other]);
         out._back = () => {
@@ -94,9 +95,12 @@ export default class Tensor extends ROCKS({
                     this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
                     other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
                 } break;
-                case '11':{
+                case '11':{ // вектор на вектор поэлементно
                     this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
                     other.grad = other.grad.map((v, i)=>v + this.data * out.grad[i]);
+                } break;
+                case '12':{ // вектор на матрицу
+                    result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
                 } break;
             }
         }
