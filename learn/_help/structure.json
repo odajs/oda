@@ -185,7 +185,7 @@
                                         "label": {
                                             "ru": "<b style='color: brown'>{{}}</b>: Интерполяционная подстановка"
                                         },
-                                        "name": "structure-template-jsx-directives-{{}}.md"
+                                        "name": "structure-template-jsx-{{}}.md"
                                     },
                                     {
                                         "label": {
