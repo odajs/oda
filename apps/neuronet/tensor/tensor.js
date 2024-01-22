@@ -153,11 +153,34 @@ export default class Tensor extends ROCKS({
                 } break;
             }
         }
-        return out
+        return out;
     },
+    tanh(){
+        function fn(d){
+            if(Array.isArray(d))
+                return d.map(v => fn(v));
+            let expr = Math.exp(2 * d);
+            return (expr - 1)/(expr + 1);
+        }
+        let result = fn((this.dim)?this.data:[this.data]);
+        let out = new Tensor(result, 'tanh', [this]);
+        out._back = () => {
+            function fn(d){
+                // d.forEach((v, i) => {
+                //     if(Array.isArray(v))
+                //         fn(v);
+                //     else{
+                //         (1 - this.data**2) * this.grad }
+                //     }
+                // });
+            }
+            fn((this.dim)?this.grad:[this.grad]);
+        }
+        return out;
+    }
 }){
     _back = () => {};
-    constructor(data, label='tenzor', children=[], op) {
+    constructor(data, label='tenzor', children= [], op) {
         super();
         this.data = data;
         this.label = label;

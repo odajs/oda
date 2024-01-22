@@ -71,7 +71,7 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
         </div>
     </div>
     <oda-button :icon :icon-size="iconSize*1.3" style="font-size:large;" success-invert :disabled="wait" label='GO!' @tap='_go()' slot='footer'></oda-button>
-    <div slot='top' style='overflow-y:auto;'>
+    <div class="flex" style='overflow-y:auto;'>
         <oda-m4t-test-rez ~for='results' :el='$for.item'></oda-m4t-test-rez>
     </div>
 
