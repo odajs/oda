@@ -156,25 +156,19 @@ export default class Tensor extends ROCKS({
         return out;
     },
     tanh(){
-        function fn(d){
-            if(Array.isArray(d))
-                return d.map(v => fn(v));
-            let expr = Math.exp(2 * d);
-            return (expr - 1)/(expr + 1);
+        function fn(data){
+            return data?.map?.(d => fn(d)) || (()=>{
+                let expr = Math.exp(2 * data);
+                return (expr - 1)/(expr + 1);
+            })()
         }
         let result = fn((this.dim)?this.data:[this.data]);
         let out = new Tensor(result, 'tanh', [this]);
         out._back = () => {
-            function fn(d){
-                // d.forEach((v, i) => {
-                //     if(Array.isArray(v))
-                //         fn(v);
-                //     else{
-                //         (1 - this.data**2) * this.grad }
-                //     }
-                // });
+            function fn(grad, data){
+                return (grad?.map?.((g, i) => fn(g, data[i])) || ((1 - data ** 2) * grad));
             }
-            fn((this.dim)?this.grad:[this.grad]);
+            this.grad = fn(this.grad, this.data);
         }
         return out;
     }
