@@ -22,7 +22,7 @@
     },
     {
         "name": "executable-editor",
-        "label": "<b style='color: #e689fe'>oda-executable-editor:</b> Исполняемый редактор HTML кода",
+        "label": "<b style='color: #e689fe'>oda-executable-editor:</b> Исполняемый редактор",
         "content": {
             "link": "index.html"
         }
@@ -43,7 +43,7 @@
     },
     {
         "name": "simplemde-editor",
-        "label": "<b style='color: #e689fe'>oda-simplemde-editor:</b> simplemde редактор",
+        "label": "<b style='color: #e689fe'>oda-simplemde-editor:</b> simpleMDE редактор",
         "content": {
             "link": "index.html"
         }
@@ -78,7 +78,7 @@
     },
     {
         "name": "excalidraw-editor",
-        "label": "<b style='color: #e689fe'>oda-excalidraw-editor:</b> Интерактивная доска для создания графиков и диаграмм",
+        "label": "<b style='color: #e689fe'>oda-excalidraw-editor:</b> Редактор диаграмм",
         "content": {
             "link": "index.html"
         }
