@@ -55,7 +55,16 @@ export default class Tensor extends ROCKS({
         }
         return v;
     },
+    concat(other){
+        other = checkTensor(other);
+        function fn(self, other){
+
+        }
+        const res = fn(this.data, other.data)
+
+    },
     multiply(other, type='dot'){ //умножение
+        other = checkTensor(other);
         let result;
         let mode = '' + this.dim + other.dim;
         switch (mode){
@@ -107,6 +116,7 @@ export default class Tensor extends ROCKS({
         return out;
     },
     add(other){
+        other = checkTensor(other);
         let result;
         let mode = '' + this.dim + other.dim;
         switch (mode){
@@ -166,7 +176,7 @@ export default class Tensor extends ROCKS({
                 return (expr - 1)/(expr + 1);
             })()
         }
-        let result = fn((this.dim)?this.data:[this.data]);
+        let result = fn(this.data);
         let out = new Tensor(result, 'tanh', [this]);
         out._back = () => {
             function fn(grad, data){
@@ -186,5 +196,11 @@ export default class Tensor extends ROCKS({
         this.children = children;
     }
 }
+function checkTensor(data){
+    if (data instanceof Tensor)
+        return data
+    return new Tensor(data);
+}
+
 
 const SIZE_MISMATCH = 'Несогласованность размеров';
