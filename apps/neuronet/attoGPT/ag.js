@@ -54,7 +54,7 @@ export class NetValue extends ROCKS({
         if (this.inputs.length != xs.length) console.error(`Не та размерность. Входов: ${this.inputs.length}. Подаем ${xs.length}.` )
         else {
             this.inputs.forEach((inp,i)=> inp.data=xs[i] )
-            console.log( this.inputs)
+            // console.log( this.inputs)
             this.step()
             let rez = []
             this.outputs.forEach((out,i)=> rez[i]=out.data)
@@ -228,7 +228,7 @@ export const simple3 = ( () => {
 export const simple4 = ( () => {
     let n = new Neuron(3)
     n.use([1,2,3])
-    console.log(n)
+    // console.log(n)
     return n
 })()
 
