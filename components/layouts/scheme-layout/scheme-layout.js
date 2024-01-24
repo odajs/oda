@@ -270,6 +270,10 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     </div>
     `,
     contextItem: null, // bug pdp contextItem buble
+    attached() {
+        // this.links = undefined;
+        console.log(this)
+    },
     $pdp: {
         container: {
             get() {
@@ -320,6 +324,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
     `,
     attached() {
         this.links = undefined;
+        console.log(this)
     },
     $pdp: {
         pos: String,
@@ -354,6 +359,9 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         }
     </style>
     `,
+    attached(){
+        console.log(this)
+    },
     get _grid() {
         return this.container?.parentElement;
     },

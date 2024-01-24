@@ -4,13 +4,13 @@
 <script type="module">
     import '../../../oda.js';
     import Tensor from  './tensor.js';
-    ODA({is: 'oda-tensor', imports: '@oda/app-layout', extends: 'oda-app-layout',
+    ODA({is: 'oda-tensor', imports: '@oda/app-layout, @oda/scheme-layout', extends: 'oda-app-layout',
         template:`
             <div vertical slot="left-panel" opened>
                <textarea flex ::value="program"></textarea>
                <oda-button no-flex @tap="build"  style="text-align: center; padding: 8px;">BUILD</oda-button>
             </div>
-            <oda-net-layout :items slot="main" ></oda-net-layout>
+            <oda-scheme-layout :items slot="main" ></oda-scheme-layout>
         `,
         program:{
             $save: true,
@@ -39,7 +39,7 @@
                         props: { el },
                         pins: {
                             top: [{}],
-                            bottom: (bind.length)? [{ bind, props: { icon: this.toIcon(el.op) } }]:[]
+                            bottom: (bind.length)? [{ bind }]:[]
                         }
                     }
                     rez.xMax = Math.max(rez.xMax,obj.x)
@@ -63,9 +63,7 @@
             return rez.data;
         }
     })
-    ODA({is: 'oda-net-layout', imports: '@oda/scheme-layout', extends: 'oda-scheme-layout',
 
-    })
     ODA({ is: 'oda-net-node', imports: '@oda/button',
         template: /*HTML*/ `
             <style>
