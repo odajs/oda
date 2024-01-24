@@ -239,6 +239,12 @@
                                             },
                                             {
                                                 "label": {
+                                                    "ru": "<b style='color: brown'>~props</b> и обработчики событий"
+                                                },
+                                                "name": "structure-template-jsx-directives-~props-event-handlers.md"
+                                            },
+                                            {
+                                                "label": {
                                                     "ru": "<b style='color: brown'>~text / {{}}</b>: Вставка текста"
                                                 },
                                                 "name": "structure-template-jsx-directives-~text.md"
