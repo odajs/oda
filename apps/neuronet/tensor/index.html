@@ -10,6 +10,7 @@
                <textarea flex ::value="program"></textarea>
                <oda-button no-flex @tap="build"  style="text-align: center; padding: 8px;">BUILD</oda-button>
             </div>
+            <oda-net-layout :items slot="main" ></oda-net-layout>
         `,
         program:{
             $save: true,
@@ -17,9 +18,116 @@
         },
         build(){
             const func = new Function('tensor', this.program);
-            const res = func(tensor);
-            console.log(res)
+            this.outputs = [func(tensor)];
+        },
+        outputs: [],
+        toIcon(){
+            return ''
+        },
+        get items() {
+            let rez = { data:[], xMax:0, yMax:0, m:{}, n: new Map() }
+            let addBl = (el, y) => {
+                if (rez.n.get(el) === undefined) {
+                    rez.m[y]??=0
+                    rez.m[y]++
+                    rez.n.set(el,rez.data.length)
+                    let bind = el.children.map( (v,i) => { return { block: v, top: 0 } })
+                    let obj = {
+                        is: "oda-net-node",
+                        x: rez.m[y],
+                        y,
+                        props: { el },
+                        pins: {
+                            top: [{}],
+                            bottom: (bind.length)? [{ bind, props: { icon: this.toIcon(el.op) } }]:[]
+                        }
+                    }
+                    rez.xMax = Math.max(rez.xMax,obj.x)
+                    rez.yMax = Math.max(rez.yMax,obj.y)
+                    rez.data.push(obj)
+                    el.children.forEach((c, i) => addBl(c, obj.y+1));
+                }
+            }
+            this.outputs.forEach( out => addBl(out,0))
+            let [dX, dY] = [100, 150]
+            rez.data.forEach(bl => {
+                bl.x = ((2 * bl.x - 1) / rez.m[bl.y] ) * rez.xMax * dX
+                if (bl.props.el.t === 'input')
+                    bl.y++
+                bl.y = (bl.y + 0.1) * dY
+                if (bl.pins.bottom.length)
+                    bl.pins.bottom[0].bind.forEach(b => b.block = rez.n.get(b.block));
+            } )
+            if (rez.data.length)
+                rez.data[0].pins.top = [];
+            return rez.data;
         }
+    })
+    ODA({is: 'oda-net-layout', imports: '@oda/scheme-layout', extends: 'oda-scheme-layout',
+
+    })
+    ODA({ is: 'oda-net-node', imports: '@oda/button',
+        template: /*HTML*/ `
+            <style>
+                :host {
+                    @apply --border;
+                }
+                #label {
+                    margin-right:20px;
+                }
+                input {
+                    border:none; width:5em;
+                    background:#00000022 !important;
+                    outline:none;
+                    font-size: inherit;
+                    text-align:right;
+                }
+                div{
+                    padding: 4px;
+                }
+                oda-button{
+                    font-size: xx-small;
+                }
+            </style>
+            <div dark class="horizontal dark">
+                <div class="flex">{{label}}</div>
+                <div>{{shape}}</div>
+            </div>
+            <div class="vertical">
+                <oda-button>data</oda-button>
+                <oda-button>grad</oda-button>
+<!--                <div horizontal><b id='label'>{{el.label}}</b><i flex> </i> <i>grad: {{el.grad.toFixed(2)}}</i> </div>-->
+<!--                <div horizontal><i>data:</i> <i flex></i> <input type='number' flex ~if='isInput' :value='el.data'   @input="onInput" > <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>-->
+            </div>
+        `,
+        get shape(){
+            if (!this.el?.shape)
+                return '?'
+            if (this.el.shape.length)
+                return 'shape ' + JSON.stringify(this.el.shape || '')
+            return `num ${this.el.data}`
+        },
+        get label(){
+            return this.el?.label+':';
+        },
+        get isInput() {
+            if (this.el.children.length!==0) return false
+            if (this.el.t === 'param') return false
+            return true
+
+        },
+        get border() {
+            if (this.el.t === 'param') return 'green'
+            if (this.el.t === 'fictive') return 'white'
+            if (this.el.t === 'output') return 'orange'
+            if (this.isInput) return 'blue'
+            return 'silver'
+        },
+        onInput(e){
+            this.el.data = e.target.value;
+            this.simpleNet.step()
+
+        },
     })
     function tensor(...params){
         return new Tensor(...params);

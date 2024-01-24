@@ -120,12 +120,14 @@ ODA({ is: 'oda-only-office',
         }
     },
     attached() {
-        this.iframe = this.$('iframe');
-        this.iframe.addEventListener('load', () => {
-            this.docEditor = new this.iframe.contentWindow.DocsAPI.DocEditor('placeholder', this.config);
-        })
-        const blob = new Blob([html(this.apiUrl)], { type: 'text/html' });
-        this.iframe.src = URL.createObjectURL(blob);
+        this.async(() => {
+            this.iframe = this.$('iframe');
+            this.iframe.addEventListener('load', () => {
+                this.docEditor = new this.iframe.contentWindow.DocsAPI.DocEditor('placeholder', this.config);
+            })
+            const blob = new Blob([html(this.apiUrl)], { type: 'text/html' });
+            this.iframe.src = URL.createObjectURL(blob);
+        }, 100)
     },
     _onDocumentStateChange(e) {
         this.isChanged = true;

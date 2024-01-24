@@ -46,14 +46,17 @@ export default class Tensor extends ROCKS({
         }
         return v;
     },
-    get shape(){
-        let d = this.data;
-        let v = '';
-        while(Array.isArray(d) && d.length){
-            v += (v?'x':'') + d.length;
-            d = d[0];
+    shape:{
+        $type: Array,
+        get() {
+            let d = this.data;
+            let v = [];
+            while(Array.isArray(d) && d.length){
+                v.push(d.length);
+                d = d[0];
+            }
+            return v;
         }
-        return v;
     },
     concat(other){
         other = checkTensor(other);
@@ -89,7 +92,7 @@ export default class Tensor extends ROCKS({
             } break;
 
         }
-        let out = new Tensor(result, '*', [this, other]);
+        let out = new Tensor(result, 'multiply', [this, other]);
         out._back = () => {
             switch (mode){
                 case '00':{
@@ -188,7 +191,7 @@ export default class Tensor extends ROCKS({
     }
 }){
     _back = () => {};
-    constructor(data, label='tenzor', children= [], op) {
+    constructor(data, label='tensor', children= [], op) {
         super();
         this.data = data;
         this.label = label;
