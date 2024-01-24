@@ -74,10 +74,41 @@ export default class Tensor extends ROCKS({
     },
     concat(other){
         other = checkTensor(other);
-        function fn(self, other){
-
+        let result;
+        let mode = '' + this.dim + other.dim;
+        switch (mode){
+            case '00':{ // число на число
+                result = [this.data, other.data];
+            } break;
+            case '01':{ // число на вектор
+                result = [this.data, ...other.data];
+            } break;
+            case '10':{ // вектор на число
+                result = [...this.data, other.data];
+            } break;
+            case '11':{ // вектор на вектор
+                result = [...this.data, ...other.data];
+            } break;
+            case '22':{ // матрица на матрицу
+                result = this.data.map((v, i)=>{
+                    return [...v, ...other.data[i]];
+                })
+            } break;
+            default:{
+                throw new Error(SIZE_MISMATCH);
+            }
         }
-        const res = fn(this.data, other.data)
+        let out = new Tensor(result, '*', [this, other]);
+        out._back = () => {
+            function fn(self, o = out.grad){
+                if(Array.isArray(self))
+                    return self.map((v, i )=>fn(v, o[i]));
+                return self + o;
+            }
+            this.grad = grad(this.grad);
+            other.grad = grad(other.grad);
+        }
+        return out;
 
     },
     multiply(other, type='dot'){ //умножение
@@ -147,7 +178,7 @@ export default class Tensor extends ROCKS({
                 result = this.data.map(v=>v + other.data);
             } break;
             default:{
-                if(this.shape === other.shape){
+                if(this.shape.join() === other.shape.join()){
                     function add(self, other){
                         if(Array.isArray(self))
                             return self.map((s, i )=>add(s, other[i]));
@@ -196,10 +227,50 @@ export default class Tensor extends ROCKS({
         let result = fn(this.data);
         let out = new Tensor(result, 'tanh', [this]);
         out._back = () => {
-            function fn(grad, data){
-                return (grad?.map?.((g, i) => fn(g, data[i])) || ((1 - data ** 2) * grad));
+            function fn(self, data, grad){
+                return (self?.map?.((r, i) => fn(r, data[i], grad[i])) || (self + (1 - data ** 2) * grad));
             }
-            this.grad = fn(this.grad, this.data);
+            this.grad = fn(this.grad, out.data, out.grad);
+        }
+        return out;
+    },
+    flat(){
+        if(!this.dim)
+            throw new Error(DIM_MISMATCH);
+        let result = this.data.flat();
+        let out = new Tensor(result, 'flat', [this]);
+        out._back = ()=>{
+            this.grad
+        }
+        return out;
+    },
+    softmax(){
+        if(!this.dim)
+            throw new Error(DIM_MISMATCH);
+        function fn(data){
+            if(Array.isArray(data[0]))
+                return data.map(d=>fn(d));
+            const maxLogit = data.reduce((r, b) => Math.max(r, b), -Infinity);
+            const scores = data.map((l) => Math.exp(l - maxLogit));
+            const denom = scores.reduce((r, b) => r + b);
+            return scores.map((s) => s / denom);
+        }
+        let result = fn(this.data);
+        let out = new Tensor(result, 'softmax', [this]);
+        out._back = ()=>{
+            function fn(self, data, grad){
+                if(Array.isArray(self[0]))
+                    return self.map((s, i)=>fn(s, data[i], grad[i]));
+                const size = data.length;
+                return data.map((v, i)=>{
+                    let sum = 0;
+                    for (let j = 0; j < size; j++){
+                        sum += ((i === j)?(v * (1 - v)):(-v * data[j])) * grad[j];
+                    }
+                    return self[i] + sum;
+                })
+            }
+            this.grad = fn(this.grad, out.data, out.grad);
         }
         return out;
     }
@@ -221,3 +292,4 @@ function checkTensor(data){
 
 
 const SIZE_MISMATCH = 'Несогласованность размеров';
+const DIM_MISMATCH = 'Неподходящая размерность';
