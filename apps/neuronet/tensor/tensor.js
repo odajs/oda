@@ -3,7 +3,21 @@ export default class Tensor extends ROCKS({
         data:{
             $freeze: true,
         },
-        label: '',
+        get label(){
+            switch (this.dim){
+                case 0:
+                    return 'Value';
+                case 1:
+                    return 'Vector';
+                case 2:
+                    return 'Matrix';
+                case 3:
+                    return 'Cube';
+                default:
+                    return 'Tensor';
+
+            }
+        },
     },
     grad:{
         $freeze: true,
@@ -144,7 +158,7 @@ export default class Tensor extends ROCKS({
                 else throw new Error(SIZE_MISMATCH);
             } break;
         }
-        let out = new Tensor(result, '+', [this, other]);
+        let out = new Tensor(result, 'add', [this, other]);
         out._back = () => {
             switch (mode){
                 case '00':{
@@ -191,7 +205,7 @@ export default class Tensor extends ROCKS({
     }
 }){
     _back = () => {};
-    constructor(data, label='tensor', children= [], op) {
+    constructor(data, label, children= [], op) {
         super();
         this.data = data;
         this.label = label;

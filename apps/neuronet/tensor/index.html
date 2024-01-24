@@ -91,22 +91,18 @@
                 <div class="flex">{{label}}</div>
                 <div>{{shape}}</div>
             </div>
-            <div class="vertical">
-                <oda-button>data</oda-button>
-                <oda-button>grad</oda-button>
+            <div class="horizontal">
+                <oda-button flex>data</oda-button>
+                <oda-button flex>grad</oda-button>
 <!--                <div horizontal><b id='label'>{{el.label}}</b><i flex> </i> <i>grad: {{el.grad.toFixed(2)}}</i> </div>-->
 <!--                <div horizontal><i>data:</i> <i flex></i> <input type='number' flex ~if='isInput' :value='el.data'   @input="onInput" > <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>-->
             </div>
         `,
         get shape(){
-            if (!this.el?.shape)
-                return '?'
-            if (this.el.shape.length)
-                return 'shape ' + JSON.stringify(this.el.shape || '')
-            return `num ${this.el.data}`
+            return this.el?.shape?.join('X')
         },
         get label(){
-            return this.el?.label+':';
+            return this.el?.label;
         },
         get isInput() {
             if (this.el.children.length!==0) return false

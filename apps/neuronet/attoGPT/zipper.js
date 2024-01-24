@@ -86,7 +86,7 @@ let fun3 =  new Zipper((a,b,c)=> [a,b[0],c[0][0]], [0,1,2] )
 // можно стыковать
 // console.log('sqrZ(fun3.. = ',sqrZ(fun3(3,y,x)))
 
-// использовать внутри
+// можно использовать внутри
 let sqrZ2 = new Zipper((x)=>sqrZ(x+1),[0])
 //  console.log('sqrZ2 (',x,') = ', sqrZ2(x))
 
