@@ -163,7 +163,7 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
             }
         }
     },
-    paths: Array,
+    paths: [],
     $listeners: {
         mousewheel(e) {
             e.stopPropagation();
@@ -188,6 +188,12 @@ ODA({ is: 'oda-ruler',
         }
     },
     get transform() {
+        const size = this.iconSize / 4;
+        const x = this.vertical ? size : -this.left;
+        const y = this.vertical ? -this.top : size;
+        return `translate(${x} ${y})`;
+    },
+    get smalltransform() {
         const size = this.iconSize / 2;
         const x = this.vertical ? size : -this.left;
         const y = this.vertical ? -this.top : size;
@@ -209,11 +215,11 @@ ODA({ is: 'oda-ruler',
         <pattern id="rullerBigLines" :width="!vertical ? sizeBig : 1" :height="vertical ? sizeBig : 1" patternUnits="userSpaceOnUse">
             <line x1="0" y1="0" :x2="vertical ? 1 : 0" :y2="vertical ? 0 : 1" fill="none" stroke="gray" stroke-width="1"></line>
         </pattern>
-        <pattern id="rullerSmallLines" :width="!vertical ? sizeSmall : 1" :height="vertical?sizeSmall:1" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" :x2="vertical?1:0" :y2="vertical ? 0 : 1" fill="none" stroke="gray" stroke-width="0.5"></line>
+        <pattern id="rullerSmallLines" :width="!vertical ? sizeSmall : 1" :height="vertical? sizeSmall : 1" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" :x2="vertical? 1 : 0" :y2="vertical ? 0 : 1" fill="none" stroke="gray" stroke-width="0.5"></line>
         </pattern>
-        <rect :transform fill="url(#rullerBigLines)" :width="vertical ? iconSize : width" :height="!vertical ? iconSize : width"></rect>
-        <rect :transform fill="url(#rullerSmallLines)" :width="vertical ? iconSize / 2 : width" :height="!vertical? iconSize / 2: width"></rect>
+        <rect :transform fill="url(#rullerBigLines)" :width="vertical ? iconSize : width" :height="!vertical ? iconSize : height"></rect>
+        <rect :transform="smalltransform" fill="url(#rullerSmallLines)" :width="vertical ? iconSize : width" :height="!vertical ? iconSize : height"></rect>
     </svg>
     `,
 });
