@@ -15,7 +15,7 @@ export const ERROR = {
     LOADED_MODULE_CORRUPTED: (pathname) => new Error(`Loaded module "${pathname}" is corrupted`),
 }
 
-class Zipper extends Function{
+export default class Zipper extends Function{
     constructor(fun,argsDem,strict=false) {
         super()
         this.fun = fun
@@ -28,12 +28,12 @@ class Zipper extends Function{
     __call__() {
         let args = [...arguments]
         let err0 = (n1,n2) => {
-            throw new Error()
+            // throw new Error()
             console.error(`Zipper: Ошибка, количество аргументов функции ${n1}, но подали ${n2}.`)
         }
         if (this.argsDem.length !== args.length) { // проверили кол-во аргументов
-            ERROR.NUM_ARGUMENTS_NOT_MATCH(this.argsDem.length,args.length);
-            // err0(this.argsDem.length,args.length); return
+            // ERROR.NUM_ARGUMENTS_NOT_MATCH(this.argsDem.length,args.length);
+            err0(this.argsDem.length,args.length); return
         }
 
         let getShape = (ts,akk=[]) => (Array.isArray(ts))? getShape(ts[0],akk.concat([ts.length])):akk

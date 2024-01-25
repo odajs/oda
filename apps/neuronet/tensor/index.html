@@ -100,7 +100,7 @@
             return this.block.tensor;
         },
         get shape(){
-            return this.tensor?.shape?.join('X')
+            return '['+this.tensor?.shape?.join(' x ')+']'
         },
         get label(){
             return this.tensor?.label;

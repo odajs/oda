@@ -1,3 +1,9 @@
+import Zipper from '../attoGPT/zipper.js';
+
+
+const SIZE_MISMATCH = 'Несогласованность размеров';
+const DIM_MISMATCH = 'Неподходящая размерность';
+
 export default class Tensor extends ROCKS({
     $public:{
         data:{
@@ -74,31 +80,32 @@ export default class Tensor extends ROCKS({
     },
     concat(other){
         other = checkTensor(other);
-        let result;
-        let mode = '' + this.dim + other.dim;
-        switch (mode){
-            case '00':{ // число на число
-                result = [this.data, other.data];
-            } break;
-            case '01':{ // число на вектор
-                result = [this.data, ...other.data];
-            } break;
-            case '10':{ // вектор на число
-                result = [...this.data, other.data];
-            } break;
-            case '11':{ // вектор на вектор
-                result = [...this.data, ...other.data];
-            } break;
-            case '22':{ // матрица на матрицу
-                result = this.data.map((v, i)=>{
-                    return [...v, ...other.data[i]];
-                })
-            } break;
-            default:{
-                throw new Error(SIZE_MISMATCH);
-            }
-        }
-        let out = new Tensor(result, '*', [this, other]);
+        let result = zipConcat(this.data, other.data);
+        // let result;
+        // let mode = '' + this.dim + other.dim;
+        // switch (mode){
+        //     case '00':{ // число на число
+        //         result = [this.data, other.data];
+        //     } break;
+        //     case '01':{ // число на вектор
+        //         result = [this.data, ...other.data];
+        //     } break;
+        //     case '10':{ // вектор на число
+        //         result = [...this.data, other.data];
+        //     } break;
+        //     case '11':{ // вектор на вектор
+        //         result = [...this.data, ...other.data];
+        //     } break;
+        //     case '22':{ // матрица на матрицу
+        //         result = this.data.map((v, i)=>{
+        //             return [...v, ...other.data[i]];
+        //         })
+        //     } break;
+        //     default:{
+        //         throw new Error(SIZE_MISMATCH);
+        //     }
+        // }
+        let out = new Tensor(result, 'concat', [this, other]);
         out._back = () => {
             function fn(self, o = out.grad){
                 if(Array.isArray(self))
@@ -290,6 +297,4 @@ function checkTensor(data){
     return new Tensor(data);
 }
 
-
-const SIZE_MISMATCH = 'Несогласованность размеров';
-const DIM_MISMATCH = 'Неподходящая размерность';
+let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1])
