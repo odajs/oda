@@ -123,8 +123,8 @@ ODA({ is: 'oda-only-office',
         this.init()
     },
     init() {
-        if (this.iframe)
-            return;
+        // if (this.iframe)
+        //     return;
         this.iframe = this.$('iframe');
         this.iframe.addEventListener('load', () => {
             this.docEditor = new this.iframe.contentWindow.DocsAPI.DocEditor('placeholder', this.config);
