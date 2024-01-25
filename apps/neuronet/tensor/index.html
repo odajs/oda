@@ -24,6 +24,7 @@
         toIcon(){
             return ''
         },
+
         get items() {
             let rez = { data:[], xMax:0, yMax:0, m:{}, n: new Map() }
             let addBl = (tensor, y) => {
@@ -39,7 +40,7 @@
                         tensor,
                         pins: {
                             top: [{}],
-                            bottom: (bind.length)? [{ bind }]:[]
+                            bottom: (bind.length)? [{ bind }]:[],
                         }
                     }
                     rez.xMax = Math.max(rez.xMax,obj.x)
@@ -70,16 +71,6 @@
                 :host {
                     @apply --border;
                 }
-                #label {
-                    margin-right:20px;
-                }
-                input {
-                    border:none; width:5em;
-                    background:#00000022 !important;
-                    outline:none;
-                    font-size: inherit;
-                    text-align:right;
-                }
                 div{
                     padding: 4px;
                 }
@@ -87,42 +78,39 @@
                     font-size: xx-small;
                 }
             </style>
-            <div dark class="horizontal dark">
+            <div :error-invert="!!err" :dark="!err" class="horizontal">
+                <oda-icon icon-size="16" :icon></oda-icon>
                 <div class="flex">{{label}}</div>
                 <div>{{shape}}</div>
             </div>
-            <div class="horizontal">
-                <oda-button flex>data</oda-button>
-                <oda-button flex>grad</oda-button>
+            <div ~if="!err" class="horizontal">
+                <oda-button flex @tap="showData($event, tensor.data)">data</oda-button>
+                <oda-button flex @tap="showData($event, tensor.grad)">grad</oda-button>
             </div>
+            <div ~if="!!err" error class="flex" style="font-size: xx-small; flex-wrap: wrap;">{{err}}</div>
+
         `,
+        get err(){
+            return this.tensor.error;
+        },
         get tensor(){
             return this.block.tensor;
         },
         get shape(){
-            return '['+this.tensor?.shape?.join(' x ')+']'
+            if (this.tensor.dim)
+                return '['+this.tensor?.shape?.join(' x ')+']'
+            return '0.0'
         },
         get label(){
             return this.tensor?.label;
         },
-        get isInput() {
-            if (this.tensor.children.length!==0) return false
-            if (this.tensor.t === 'param') return false
-            return true
+        get icon(){
+            return this.tensor?.icon;
+        },
+        async showData(e, data){
+            let {result} = await ODA.showDropdown('textarea', {value: JSON.stringify(data)}, {parent: e.target})
+        }
 
-        },
-        get border() {
-            if (this.tensor.t === 'param') return 'green'
-            if (this.tensor.t === 'fictive') return 'white'
-            if (this.tensor.t === 'output') return 'orange'
-            if (this.isInput) return 'blue'
-            return 'silver'
-        },
-        onInput(e){
-            this.tensor.data = e.target.value;
-            this.simpleNet.step()
-
-        },
     })
     function tensor(...params){
         return new Tensor(...params);

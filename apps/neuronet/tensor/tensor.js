@@ -24,6 +24,23 @@ export default class Tensor extends ROCKS({
 
             }
         },
+        get icon(){
+            switch (this.label){
+                case 'Value':
+                    return 'bootstrap:1-123';
+                case 'Vector':
+                    return 'carbon:matrix';
+                case 'Matrix':
+                    return 'iconoir:rubik-cube';
+                case 'Cube':
+                    return 'lineawesome:cube-solid';
+                case 'Tensor':
+                    return 'games:cubeforce';
+                case 'Dot':
+                    return 'image:adjust'
+            }
+        },
+        error: '',
     },
     grad:{
         $freeze: true,
@@ -105,7 +122,7 @@ export default class Tensor extends ROCKS({
         //         throw new Error(SIZE_MISMATCH);
         //     }
         // }
-        let out = new Tensor(result, 'concat', [this, other]);
+        let out = new Tensor(result, 'concat', [this, other], 'lineawesome:th-list-solid');
         out._back = () => {
             function fn(self, o = out.grad){
                 if(Array.isArray(self))
@@ -144,7 +161,7 @@ export default class Tensor extends ROCKS({
             } break;
 
         }
-        let out = new Tensor(result, 'multiply', [this, other]);
+        let out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
         out._back = () => {
             switch (mode){
                 case '00':{
@@ -171,56 +188,65 @@ export default class Tensor extends ROCKS({
         return out;
     },
     add(other){
-        other = checkTensor(other);
-        let result;
-        let mode = '' + this.dim + other.dim;
-        switch (mode){
-            case '00':{
-                result = this.data + other.data;
-            } break;
-            case '01':{
-                result = this.data + other.data.reduce((r, v)=>r + v);
-            } break;
-            case '10':{
-                result = this.data.map(v=>v + other.data);
-            } break;
-            default:{
-                if(this.shape.join() === other.shape.join()){
-                    function add(self, other){
-                        if(Array.isArray(self))
-                            return self.map((s, i )=>add(s, other[i]));
-                        return self + other;
-                    }
-                    result = add(this.data, other.data);
-                }
-                else throw new Error(SIZE_MISMATCH);
-            } break;
-        }
-        let out = new Tensor(result, 'add', [this, other]);
-        out._back = () => {
+        this.error = '';
+        let out;
+        try{
+            other = checkTensor(other);
+            let result;
+            let mode = '' + this.dim + other.dim;
             switch (mode){
                 case '00':{
-                    this.grad += out.grad;
-                    other.grad += out.grad;
+                    result = this.data + other.data;
                 } break;
                 case '01':{
-                    this.grad += out.grad;
-                    other.grad = other.grad.map(v=>v + out.grad);
+                    result = this.data + other.data.reduce((r, v)=>r + v);
                 } break;
                 case '10':{
-                    this.grad = this.grad.map((v, i)=>v + out.grad[i]);
-                    other.grad += this.data.reduce((r, v, i)=>r + v + out.grad[i]);
+                    result = this.data.map(v=>v + other.data);
                 } break;
                 default:{
-                    function grad(self, o = out.grad){
-                        if(Array.isArray(self))
-                            return self.map((v, i )=>grad(v, o[i]));
-                        return self + o;
+                    if(this.shape.join() === other.shape.join()){
+                        function add(self, other){
+                            if(Array.isArray(self))
+                                return self.map((s, i )=>add(s, other[i]));
+                            return self + other;
+                        }
+                        result = add(this.data, other.data);
                     }
-                    this.grad = grad(this.grad);
-                    other.grad = grad(other.grad);
+                    else throw new Error(SIZE_MISMATCH);
                 } break;
             }
+            out = new Tensor(result, 'add', [this, other], 'icons:add-circle-outline');
+            out._back = () => {
+                switch (mode){
+                    case '00':{
+                        this.grad += out.grad;
+                        other.grad += out.grad;
+                    } break;
+                    case '01':{
+                        this.grad += out.grad;
+                        other.grad = other.grad.map(v=>v + out.grad);
+                    } break;
+                    case '10':{
+                        this.grad = this.grad.map((v, i)=>v + out.grad[i]);
+                        other.grad += this.data.reduce((r, v, i)=>r + v + out.grad[i]);
+                    } break;
+                    default:{
+                        function grad(self, o = out.grad){
+                            if(Array.isArray(self))
+                                return self.map((v, i )=>grad(v, o[i]));
+                            return self + o;
+                        }
+                        this.grad = grad(this.grad);
+                        other.grad = grad(other.grad);
+                    } break;
+                }
+            }
+
+        }
+        catch (e){
+            out ??= new Tensor(0, 'add', [this, other], 'icons:add-circle-outline');
+            out.error = e.message;
         }
         return out;
     },
@@ -232,7 +258,7 @@ export default class Tensor extends ROCKS({
             })()
         }
         let result = fn(this.data);
-        let out = new Tensor(result, 'tanh', [this]);
+        let out = new Tensor(result, 'tanh', [this], 'eva:f-activity');
         out._back = () => {
             function fn(self, data, grad){
                 return (self?.map?.((r, i) => fn(r, data[i], grad[i])) || (self + (1 - data ** 2) * grad));
@@ -245,7 +271,7 @@ export default class Tensor extends ROCKS({
         if(!this.dim)
             throw new Error(DIM_MISMATCH);
         let result = this.data.flat();
-        let out = new Tensor(result, 'flat', [this]);
+        let out = new Tensor(result, 'flat', [this], 'games:flat-platform');
         out._back = ()=>{
             this.grad
         }
@@ -263,7 +289,7 @@ export default class Tensor extends ROCKS({
             return scores.map((s) => s / denom);
         }
         let result = fn(this.data);
-        let out = new Tensor(result, 'softmax', [this]);
+        let out = new Tensor(result, 'softmax', [this], 'av:equalizer');
         out._back = ()=>{
             function fn(self, data, grad){
                 if(Array.isArray(self[0]))
@@ -280,15 +306,19 @@ export default class Tensor extends ROCKS({
             this.grad = fn(this.grad, out.data, out.grad);
         }
         return out;
+    },
+    crossEntropy(){
+
     }
 }){
     _back = () => {};
-    constructor(data, label, children= [], op) {
+    constructor(data, label, children= [], icon, error) {
         super();
         this.data = data;
         this.label = label;
-        this.op = op;
+        this.icon = icon;
         this.children = children;
+        this.error = error;
     }
 }
 function checkTensor(data){
@@ -297,4 +327,7 @@ function checkTensor(data){
     return new Tensor(data);
 }
 
-let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1])
+let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1]);
+let zipAdd =  new Zipper((a, b)=>{
+    return a + b;
+},[1,1])

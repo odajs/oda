@@ -282,7 +282,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         block: {
             $type: Object,
             set(n){
-                console.log(n);
                 this.links = undefined
             }
         }
