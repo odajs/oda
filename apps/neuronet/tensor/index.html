@@ -26,17 +26,17 @@
         },
         get items() {
             let rez = { data:[], xMax:0, yMax:0, m:{}, n: new Map() }
-            let addBl = (el, y) => {
-                if (rez.n.get(el) === undefined) {
+            let addBl = (tensor, y) => {
+                if (rez.n.get(tensor) === undefined) {
                     rez.m[y]??=0
                     rez.m[y]++
-                    rez.n.set(el,rez.data.length)
-                    let bind = el.children.map( (v,i) => { return { block: v, top: 0 } })
+                    rez.n.set(tensor,rez.data.length)
+                    let bind = tensor.children.map( (v,i) => { return { block: v, top: 0 } })
                     let obj = {
                         is: "oda-net-node",
                         x: rez.m[y],
                         y,
-                        props: { el },
+                        tensor,
                         pins: {
                             top: [{}],
                             bottom: (bind.length)? [{ bind }]:[]
@@ -45,14 +45,14 @@
                     rez.xMax = Math.max(rez.xMax,obj.x)
                     rez.yMax = Math.max(rez.yMax,obj.y)
                     rez.data.push(obj)
-                    el.children.forEach((c, i) => addBl(c, obj.y+1));
+                    tensor.children.forEach((c, i) => addBl(c, obj.y+1));
                 }
             }
             this.outputs.forEach( out => addBl(out,0))
             let [dX, dY] = [100, 150]
             rez.data.forEach(bl => {
                 bl.x = ((2 * bl.x - 1) / rez.m[bl.y] ) * rez.xMax * dX
-                if (bl.props.el.t === 'input')
+                if (bl.tensor.t === 'input')
                     bl.y++
                 bl.y = (bl.y + 0.1) * dY
                 if (bl.pins.bottom.length)
@@ -94,31 +94,32 @@
             <div class="horizontal">
                 <oda-button flex>data</oda-button>
                 <oda-button flex>grad</oda-button>
-<!--                <div horizontal><b id='label'>{{el.label}}</b><i flex> </i> <i>grad: {{el.grad.toFixed(2)}}</i> </div>-->
-<!--                <div horizontal><i>data:</i> <i flex></i> <input type='number' flex ~if='isInput' :value='el.data'   @input="onInput" > <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>-->
             </div>
         `,
+        get tensor(){
+            return this.block.tensor;
+        },
         get shape(){
-            return this.el?.shape?.join('X')
+            return this.tensor?.shape?.join('X')
         },
         get label(){
-            return this.el?.label;
+            return this.tensor?.label;
         },
         get isInput() {
-            if (this.el.children.length!==0) return false
-            if (this.el.t === 'param') return false
+            if (this.tensor.children.length!==0) return false
+            if (this.tensor.t === 'param') return false
             return true
 
         },
         get border() {
-            if (this.el.t === 'param') return 'green'
-            if (this.el.t === 'fictive') return 'white'
-            if (this.el.t === 'output') return 'orange'
+            if (this.tensor.t === 'param') return 'green'
+            if (this.tensor.t === 'fictive') return 'white'
+            if (this.tensor.t === 'output') return 'orange'
             if (this.isInput) return 'blue'
             return 'silver'
         },
         onInput(e){
-            this.el.data = e.target.value;
+            this.tensor.data = e.target.value;
             this.simpleNet.step()
 
         },

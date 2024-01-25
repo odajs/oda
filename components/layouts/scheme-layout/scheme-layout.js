@@ -279,10 +279,13 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         get allPins(){
             return this.block?.pins;
         },
-        // get block() {
-        //     return this.$('.block');
-        // },
-        block: Object
+        block: {
+            $type: Object,
+            set(n){
+                console.log(n);
+                this.links = undefined
+            }
+        }
     },
 
     get links() {
