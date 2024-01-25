@@ -95,6 +95,20 @@ export default class Tensor extends ROCKS({
             return v;
         }
     },
+    transpose(){
+        let result = zipTranspose(this.data);
+        let out = new Tensor(result, 'transpose', [this], 'lineawesome:th-list-solid');
+        out._back = () => {
+            function fn(self, o = out.grad){
+                if(Array.isArray(self))
+                    return self.map((v, i )=>fn(v, o[i]));
+                return self + o;
+            }
+            this.grad = grad(this.grad);
+            other.grad = grad(other.grad);
+        }
+        return out;
+    },
     concat(other){
         other = checkTensor(other);
         let result = zipConcat(this.data, other.data);
@@ -328,6 +342,21 @@ function checkTensor(data){
 }
 
 let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1]);
+
 let zipAdd =  new Zipper((a, b)=>{
     return a + b;
 },[1,1])
+
+let zipTranspose = new Zipper((m) => {
+    return m[0].map((x,i) =>(m.map(y => y[i])));
+},[2]);
+
+let gpuTranspose = new Zipper((m) => {
+    const gpumultiplyMM = gpu.createKernel(function (a, b){
+        let sum = 0;
+        for (let i = 0; i < 512; i++) {
+            sum += a[this.thread.y][i] * b[i][this.thread.x];
+        }
+        return sum;
+    }).setOutput([512, 512])
+},[2]);

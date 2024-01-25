@@ -108,7 +108,7 @@
             return this.tensor?.icon;
         },
         async showData(e, data){
-            let {result} = await ODA.showDropdown('textarea', {value: JSON.stringify(data)}, {parent: e.target})
+            let {result} = await ODA.showDropdown('textarea', {value: JSON.stringify(data), rows: data?.length || 1}, {parent: e.target})
         }
 
     })

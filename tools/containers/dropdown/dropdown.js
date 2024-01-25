@@ -56,7 +56,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         if (this._contentRect && left + this._contentRect.width>window.innerWidth){
             left = window.innerWidth - this._contentRect.width;
         }
-        return left;
+        return left * this.zoom;
     },
     get _top(){
         let top = 0;
@@ -72,7 +72,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
             top = 0;
         if (this._contentRect && top + this._contentRect.height>window.innerHeight)
             top = window.innerHeight - this._contentRect.height;
-        return top;
+        return top * this.zoom;
     },
     get _startPoint(){
         const anchor = this.anchor || (this.align === 'left'?'right-bottom':'left-bottom');
@@ -91,7 +91,19 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 return {x: this._parentRect.x + (this._parentRect.width || 0), y: this._parentRect.y + (this._parentRect.height || 0)}
         }
     },
+    get zoom(){
+        let zoom = 1;
+        if (this.parent){
+            let p = this.parent;
+            while(p){
+                zoom *= +(getComputedStyle(p).zoom);
+                p = (p.parentElement || p.domHost);
+            }
+        }
+        return zoom;
+    },
     get _parentRect(){
+        const zoom = this.zoom;
         return this.parent?.getBoundingClientRect() || ODA.mousePos;
     },
     onResize(e){
