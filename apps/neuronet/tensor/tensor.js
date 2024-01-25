@@ -99,52 +99,18 @@ export default class Tensor extends ROCKS({
         let result = zipTranspose(this.data);
         let out = new Tensor(result, 'transpose', [this], 'lineawesome:th-list-solid');
         out._back = () => {
-            function fn(self, o = out.grad){
-                if(Array.isArray(self))
-                    return self.map((v, i )=>fn(v, o[i]));
-                return self + o;
-            }
-            this.grad = grad(this.grad);
-            other.grad = grad(other.grad);
+            this.grad = zipTransposeBack(this.grad, out.grad);
         }
         return out;
     },
     concat(other){
         other = checkTensor(other);
         let result = zipConcat(this.data, other.data);
-        // let result;
-        // let mode = '' + this.dim + other.dim;
-        // switch (mode){
-        //     case '00':{ // число на число
-        //         result = [this.data, other.data];
-        //     } break;
-        //     case '01':{ // число на вектор
-        //         result = [this.data, ...other.data];
-        //     } break;
-        //     case '10':{ // вектор на число
-        //         result = [...this.data, other.data];
-        //     } break;
-        //     case '11':{ // вектор на вектор
-        //         result = [...this.data, ...other.data];
-        //     } break;
-        //     case '22':{ // матрица на матрицу
-        //         result = this.data.map((v, i)=>{
-        //             return [...v, ...other.data[i]];
-        //         })
-        //     } break;
-        //     default:{
-        //         throw new Error(SIZE_MISMATCH);
-        //     }
-        // }
         let out = new Tensor(result, 'concat', [this, other], 'lineawesome:th-list-solid');
         out._back = () => {
-            function fn(self, o = out.grad){
-                if(Array.isArray(self))
-                    return self.map((v, i )=>fn(v, o[i]));
-                return self + o;
-            }
-            this.grad = grad(this.grad);
-            other.grad = grad(other.grad);
+            const gdars = zipConcatBack(this.grad, other.grad, out.grad);
+            this.grad = gdars[0];
+            other.grad = gdars[1];
         }
         return out;
 
@@ -206,57 +172,13 @@ export default class Tensor extends ROCKS({
         let out;
         try{
             other = checkTensor(other);
-            let result;
-            let mode = '' + this.dim + other.dim;
-            switch (mode){
-                case '00':{
-                    result = this.data + other.data;
-                } break;
-                case '01':{
-                    result = this.data + other.data.reduce((r, v)=>r + v);
-                } break;
-                case '10':{
-                    result = this.data.map(v=>v + other.data);
-                } break;
-                default:{
-                    if(this.shape.join() === other.shape.join()){
-                        function add(self, other){
-                            if(Array.isArray(self))
-                                return self.map((s, i )=>add(s, other[i]));
-                            return self + other;
-                        }
-                        result = add(this.data, other.data);
-                    }
-                    else throw new Error(SIZE_MISMATCH);
-                } break;
-            }
+            let result = zipAdd(this.data, other.data);
             out = new Tensor(result, 'add', [this, other], 'icons:add-circle-outline');
             out._back = () => {
-                switch (mode){
-                    case '00':{
-                        this.grad += out.grad;
-                        other.grad += out.grad;
-                    } break;
-                    case '01':{
-                        this.grad += out.grad;
-                        other.grad = other.grad.map(v=>v + out.grad);
-                    } break;
-                    case '10':{
-                        this.grad = this.grad.map((v, i)=>v + out.grad[i]);
-                        other.grad += this.data.reduce((r, v, i)=>r + v + out.grad[i]);
-                    } break;
-                    default:{
-                        function grad(self, o = out.grad){
-                            if(Array.isArray(self))
-                                return self.map((v, i )=>grad(v, o[i]));
-                            return self + o;
-                        }
-                        this.grad = grad(this.grad);
-                        other.grad = grad(other.grad);
-                    } break;
-                }
+                const gdars = zipAddBack(this.grad, other.grad, out.grad);
+                this.grad = gdars[0];
+                other.grad = gdars[1];
             }
-
         }
         catch (e){
             out ??= new Tensor(0, 'add', [this, other], 'icons:add-circle-outline');
@@ -342,21 +264,43 @@ function checkTensor(data){
 }
 
 let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1]);
+let zipConcatBack =  new Zipper((self, other, out)=> {
+    let s = self.length;
+    return [
+        self.map((x,i)=>x+out[i]),
+        other.map((x,i)=>x+out[s+i])
+    ]
+},[1,1,1]);
 
 let zipAdd =  new Zipper((a, b)=>{
-    return a + b;
-},[1,1])
+    if(a.length === 1){
+        return a[0] + b.reduce((r,v)=>r+v);
+    }
+    else if(b.length === 1){
+        return a.map((x, i)=>x + b[0]);
+    }
+    return a.map((x, i)=>x + b[i]);
+},[1,1]);
+let zipAddBack = new Zipper((self, other, out)=>{
+    return [
+        self.map((x,i)=>x+out[i]),
+        other.map((x,i)=>x+out[i])
+    ]
+},[1,1,1])
 
 let zipTranspose = new Zipper((m) => {
     return m[0].map((x,i) =>(m.map(y => y[i])));
 },[2]);
+let zipTransposeBack = new Zipper((grad, out_grad) => {
+    return grad.map((x,i) =>(x.map((y,j) => y + out_grad[j][i])));
+},[2, 2]);
 
-let gpuTranspose = new Zipper((m) => {
-    const gpumultiplyMM = gpu.createKernel(function (a, b){
-        let sum = 0;
-        for (let i = 0; i < 512; i++) {
-            sum += a[this.thread.y][i] * b[i][this.thread.x];
-        }
-        return sum;
-    }).setOutput([512, 512])
-},[2]);
+// let gpuTranspose = new Zipper((m) => {
+//     const gpumultiplyMM = gpu.createKernel(function (a, b){
+//         let sum = 0;
+//         for (let i = 0; i < 512; i++) {
+//             sum += a[this.thread.y][i] * b[i][this.thread.x];
+//         }
+//         return sum;
+//     }).setOutput([512, 512])
+// },[2]);
