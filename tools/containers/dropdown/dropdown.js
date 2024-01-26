@@ -70,7 +70,9 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         }
         if (top < 0)
             top = 0;
-        if (this._contentRect && top + this._contentRect.height>window.innerHeight)
+        if (this.fixedTop)
+            this.maxHeight = `calc(100% - ${this._startPoint.y + 2}px)`;
+        else if (this._contentRect && top + this._contentRect.height>window.innerHeight)
             top = window.innerHeight - this._contentRect.height;
         return top * this.zoom;
     },
@@ -147,6 +149,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
         maxWidth: undefined,
         minHeight: undefined,
         maxHeight: undefined,
+        fixedTop: false
     },
     $pdp: {
         get control() {
