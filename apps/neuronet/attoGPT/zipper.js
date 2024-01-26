@@ -42,17 +42,11 @@ export default class Zipper extends Function{
         })
         sadowShapes = argShapes.map((s,i) => s.slice(0,-this.argsDem[i]))
 
-        let col=(new Array(sadowShapes[0].length)).fill(1)
-        sadowShapes.forEach((s,i)=> s.forEach((dem,j)=> 
-            ((a,b) => ((a===1)&&(b>a))? col[j]=dem: ((b!==1)&&(b!==a))? ERROR.NO_SOLUTIONS(j,i,b,a):{}) (col[j],dem)  ))
+        sadowShapes.forEach((s,i)=> s.forEach((dem,j)=> ((a,b) => ((a===1)&&(b>a))? rezShape[j]=dem
+            : ((b!==1)&&(b!==a))? ERROR.NO_SOLUTIONS(j,i,b,a):{}) (rezShape[j],dem)  ))
 
-        let makeMagic = (funArgs, shape, l=0) => {
-            if (shape.length === 0) return this.fun(...funArgs)
-            let newArgs = []
-            for (let j=0;j<shape[0];j++) newArgs[j] = args.map((a,i)=> 
-                (sadowShapes[i][l] === 0)? funArgs[i] : (sadowShapes[i][l] === 1)? funArgs[i][0] : funArgs[i][j]  )
-            return newArgs.map(a => makeMagic(a, shape.slice(1)),l++ )
-        }
+        let makeMagic = (funArgs, shape, l=0) => [...new Array(shape[0])].map((_,k) => !shape.length? this.fun(...funArgs)
+            : makeMagic(funArgs.map((arg,i)=> (sadowShapes[i][l] === 1)? arg[0]: arg[k] ), shape.slice(1),l+1) )
         return makeMagic(args,rezShape)
     }
 }
@@ -80,10 +74,11 @@ let concatZ =  new Zipper((a,b)=>a.concat(b),[1,1])
 
 let concat3 =  new Zipper((a,b,c)=>a.concat(b).concat(c), [1,1,1] )
 // console.log('concat3 = ',concat3(9,x,y))
-let cc = 1
+let cc = 4
 let a = testTen([1,2,3,4],()=>1)
 let b = testTen([3,4],()=>2)
-let c = testTen([3,1],()=>{cc++;return cc})
+let c = testTen([3,2],()=>{cc++;return cc})
+console.log(c)
 console.log('concat3 = ',concat3(a,b,c))
 
 // размерность может быть разной 
