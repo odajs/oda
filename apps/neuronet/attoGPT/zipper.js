@@ -45,8 +45,8 @@ export default class Zipper extends Function{
         sadowShapes.forEach((s,i)=> s.forEach((dem,j)=> ((a,b) => ((a===1)&&(b>a))? rezShape[j]=dem
             : ((b!==1)&&(b!==a))? ERROR.NO_SOLUTIONS(j,i,b,a):{}) (rezShape[j],dem)  ))
 
-        let makeMagic = (funArgs, shape, l=0) => [...new Array(shape[0])].map((_,k) => !shape.length? this.fun(...funArgs)
-            : makeMagic(funArgs.map((arg,i)=> (sadowShapes[i][l] === 1)? arg[0]: arg[k] ), shape.slice(1),l+1) )
+        let makeMagic = (funArgs, shape, l=0) => !shape.length? this.fun(...funArgs): [...new Array(shape[0])].map((_,k) => 
+            makeMagic(funArgs.map((arg,i)=> (sadowShapes[i][l] === 1)? arg[0]: arg[k] ), shape.slice(1),l+1) )
         return makeMagic(args,rezShape)
     }
 }
@@ -71,7 +71,6 @@ let sqrZ = new Zipper((x)=>x**2,[0])
 let concatZ =  new Zipper((a,b)=>a.concat(b),[1,1])
 // console.log('concatZ =',concatZ(x,y))
 
-
 let concat3 =  new Zipper((a,b,c)=>a.concat(b).concat(c), [1,1,1] )
 // console.log('concat3 = ',concat3(9,x,y))
 let cc = 0
@@ -79,13 +78,11 @@ let a = testTen([  1,2,1],()=>{cc++;return cc})
 let b = testTen([1,3,1,1],()=>{cc++;return cc})
 let c = testTen([  3,2,1],()=>{cc++;return cc})
 console.log('a=',a,'\nb=',b,'\nc=',c)
-console.log('concat3(a,b,c) = ',concat3(a,b,c))
+console.log('concat3(a,b,c) = ',JSON.stringify( concat3(a,b,c)))
 
 // размерность может быть разной 
 let fun3 =  new Zipper((a,b,c)=> [a,b[0],c[0][0]], [0,1,2] )
 // console.log('fun3 = ',fun3(3,y,x))
-
-
 
 // можно стыковать
 // console.log('sqrZ(fun3.. = ',sqrZ(fun3(3,y,x)))
@@ -93,5 +90,3 @@ let fun3 =  new Zipper((a,b,c)=> [a,b[0],c[0][0]], [0,1,2] )
 // можно использовать внутри
 let sqrZ2 = new Zipper((x)=>sqrZ(x+1),[0])
 // console.log('sqrZ2 (',x,') = ', sqrZ2(x))
-
-
