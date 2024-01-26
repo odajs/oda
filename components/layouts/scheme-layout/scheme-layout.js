@@ -123,7 +123,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             return this.links;
         },
         track(e) {
-            if (e.sourceEvent.ctrlKey) {
+            if (!this.lastdown) {
                 switch (e.detail.state) {
                     case 'start': {
                         this.slotDiv.style.setProperty('cursor', 'grabbing');
@@ -137,7 +137,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     } break;
                 }
             } else {
-                if (!this.lastdown) return;
                 if (!this.designMode) return;
                 switch (e.detail.state) {
                     case 'start': {
