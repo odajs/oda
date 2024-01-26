@@ -74,12 +74,12 @@ let concatZ =  new Zipper((a,b)=>a.concat(b),[1,1])
 
 let concat3 =  new Zipper((a,b,c)=>a.concat(b).concat(c), [1,1,1] )
 // console.log('concat3 = ',concat3(9,x,y))
-let cc = 4
-let a = testTen([1,2,3,4],()=>1)
-let b = testTen([3,4],()=>2)
-let c = testTen([3,2],()=>{cc++;return cc})
-console.log(c)
-console.log('concat3 = ',concat3(a,b,c))
+let cc = 0
+let a = testTen([  1,2,1],()=>{cc++;return cc})
+let b = testTen([1,3,1,1],()=>{cc++;return cc})
+let c = testTen([  3,2,1],()=>{cc++;return cc})
+console.log('a=',a,'\nb=',b,'\nc=',c)
+console.log('concat3(a,b,c) = ',concat3(a,b,c))
 
 // размерность может быть разной 
 let fun3 =  new Zipper((a,b,c)=> [a,b[0],c[0][0]], [0,1,2] )
