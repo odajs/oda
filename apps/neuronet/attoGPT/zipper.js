@@ -3,10 +3,18 @@
 //     <strict> -- размерность аргументов строго больше размерности целевой ф-и, по умолчанию false
 
 export const ERROR = {
-    NUM_ARGUMENTS: (args_fun, args_in) => new Error(`Zipper: У zip-функции ${args_fun} аргуметов, но подаем ${args_in}.`),
-    ARGUMENT_BAD: (nom,l,l1,l2) => new Error(`Zipper: Ошибка ${nom} аргумента  на уровне ${l}. Размерность ${l1}, но есть ${l2}.`),
-    SHAPE_LESS_FUN: (i, dIn ,dFun) => new Error(`Zipper: Ошибка ${i} аргумента, размерность: ${dIn}. Размерность ф-и: ${dFun}. Установите strict=false.`),
-    NO_SOLUTIONS: (level,arg,d1,d2) => new Error(`Zipper: Аргумент ${arg} на уровне ${level} размерности ${d1}, а требует ${d2}. Нет решения.`),
+    NUM_ARGUMENTS: (args_fun, args_in) => {
+        throw new Error(`Zipper: У zip-функции ${args_fun} аргуметов, но подаем ${args_in}.`)
+    },
+    ARGUMENT_BAD: (nom,l,l1,l2) => {
+        throw new Error(`Zipper: Ошибка ${nom} аргумента  на уровне ${l}. Размерность ${l1}, но есть ${l2}.`)
+    },
+    SHAPE_LESS_FUN: (i, dIn ,dFun) => {
+        throw new Error(`Zipper: Ошибка ${i} аргумента, размерность: ${dIn}. Размерность ф-и: ${dFun}. Установите strict=false.`)
+    },
+    NO_SOLUTIONS: (level,arg,d1,d2) => {
+        throw new Error(`Zipper: Аргумент ${arg} на уровне ${level} размерности ${d1}, а требует ${d2}. Нет решения.`)
+    },
 }
 
 export default class Zipper extends Function{

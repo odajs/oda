@@ -93,9 +93,11 @@
             return this.block.tensor;
         },
         get shape(){
+            if (this.tensor.error)
+                return 'ERROR';
             if (this.tensor.dim)
                 return '['+this.tensor?.shape?.join(' x ')+']'
-            return '0.0'
+            return '= '+this.tensor.data.toLocaleString();
         },
         get label(){
             return this.tensor?.label;

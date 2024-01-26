@@ -1,8 +1,13 @@
 import Zipper from '../attoGPT/zipper.js';
 
-
-const SIZE_MISMATCH = 'Несогласованность размеров';
-const DIM_MISMATCH = 'Неподходящая размерность';
+const ERROR = {
+    SIZE_MISMATCH: (p1 = 0, p2 = 0) => {
+        throw new Error(`Несогласованность размеров: p1=${p1}, p2=${p2}`)
+    },
+    DIM_MISMATCH: (p1 = 0, p2 = 0) => {
+        throw new Error(`Неподходящая размерность: ожидается ${p1}, подано ${p2}`)
+    },
+}
 
 export default class Tensor extends ROCKS({
     $public:{
@@ -96,10 +101,18 @@ export default class Tensor extends ROCKS({
         }
     },
     transpose(){
-        let result = zipTranspose(this.data);
-        let out = new Tensor(result, 'transpose', [this], 'lineawesome:th-list-solid');
-        out._back = () => {
-            this.grad = zipTransposeBack(this.grad, out.grad);
+        let out;
+        try{
+            if (this.dim < 2)
+                ERROR.DIM_MISMATCH('>1', this.dim)
+            out = new Tensor(zipTranspose(this.data), 'transpose', [this], 'lineawesome:th-list-solid');
+            out._back = () => {
+                this.grad = zipTransposeBack(this.grad, out.grad);
+            }
+        }
+        catch (e){
+            out ??= new Tensor(0, 'transpose', [this], 'lineawesome:th-list-solid');
+            out.error = e.message;
         }
         return out;
     },
@@ -108,9 +121,8 @@ export default class Tensor extends ROCKS({
         let result = zipConcat(this.data, other.data);
         let out = new Tensor(result, 'concat', [this, other], 'lineawesome:th-list-solid');
         out._back = () => {
-            const gdars = zipConcatBack(this.grad, other.grad, out.grad);
-            this.grad = gdars[0];
-            other.grad = gdars[1];
+            this.grad = zipConcatBack(this.grad, out.grad);
+            other.grad = zipConcatBack(other.grad, out.grad);
         }
         return out;
 
@@ -131,12 +143,12 @@ export default class Tensor extends ROCKS({
             } break;
             case '11':{ // вектор на вектор поэлементно
                 if (this.data.length !== other.data.length)
-                    throw new Error(SIZE_MISMATCH);
+                    ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
                 result = this.data.map((v,i)=>v * other.data[i]);
             } break;
             case '12':{ // вектор на матрицу
                 if (this.data.length !== other.data.length)
-                    throw new Error(SIZE_MISMATCH);
+                    ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
                 result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
             } break;
 
@@ -168,16 +180,14 @@ export default class Tensor extends ROCKS({
         return out;
     },
     add(other){
-        this.error = '';
         let out;
         try{
             other = checkTensor(other);
             let result = zipAdd(this.data, other.data);
             out = new Tensor(result, 'add', [this, other], 'icons:add-circle-outline');
             out._back = () => {
-                const gdars = zipAddBack(this.grad, other.grad, out.grad);
-                this.grad = gdars[0];
-                other.grad = gdars[1];
+                this.grad = zipAddBack(this.grad, out.grad);
+                other.grad = zipAddBack(other.grad, out.grad);
             }
         }
         catch (e){
@@ -205,7 +215,7 @@ export default class Tensor extends ROCKS({
     },
     flat(){
         if(!this.dim)
-            throw new Error(DIM_MISMATCH);
+            ERROR.DIM_MISMATCH(this.dim, '>0');
         let result = this.data.flat();
         let out = new Tensor(result, 'flat', [this], 'games:flat-platform');
         out._back = ()=>{
@@ -215,7 +225,7 @@ export default class Tensor extends ROCKS({
     },
     softmax(){
         if(!this.dim)
-            throw new Error(DIM_MISMATCH);
+            ERROR.DIM_MISMATCH(this.dim, '>0');
         function fn(data){
             if(Array.isArray(data[0]))
                 return data.map(d=>fn(d));
@@ -264,33 +274,32 @@ function checkTensor(data){
 }
 
 let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1]);
-let zipConcatBack =  new Zipper((self, other, out)=> {
-    let s = self.length;
-    return [
-        self.map((x,i)=>x+out[i]),
-        other.map((x,i)=>x+out[s+i])
-    ]
-},[1,1,1]);
+
+let zipConcatBack =  new Zipper((grad, out)=> {
+    return grad.map((x,i)=>x + out[i])
+},[1,1]);
 
 let zipAdd =  new Zipper((a, b)=>{
-    if(a.length === 1){
+    if(a.length === 1)
         return a[0] + b.reduce((r,v)=>r+v);
-    }
-    else if(b.length === 1){
+    else if(b.length === 1)
         return a.map((x, i)=>x + b[0]);
-    }
+    else if (a.length  !== b.length)
+        ERROR.SIZE_MISMATCH(a.length, b.length);
     return a.map((x, i)=>x + b[i]);
 },[1,1]);
-let zipAddBack = new Zipper((self, other, out)=>{
-    return [
-        self.map((x,i)=>x+out[i]),
-        other.map((x,i)=>x+out[i])
-    ]
-},[1,1,1])
+
+let zipAddBack = new Zipper((grad, out)=>{
+    grad = grad.map((x,i)=>x+out[i])
+    if (grad.length === 1)
+        return grad[0]
+    return grad;
+},[1,1])
 
 let zipTranspose = new Zipper((m) => {
     return m[0].map((x,i) =>(m.map(y => y[i])));
 },[2]);
+
 let zipTransposeBack = new Zipper((grad, out_grad) => {
     return grad.map((x,i) =>(x.map((y,j) => y + out_grad[j][i])));
 },[2, 2]);
