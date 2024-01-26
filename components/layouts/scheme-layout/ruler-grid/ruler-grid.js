@@ -167,16 +167,21 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
     $listeners: {
         mousewheel(e) {
             e.stopPropagation();
-            if (!e.ctrlKey)
-                return;
             e.preventDefault();
             const dir = e.deltaY < 0 ? 1 : -1;
             const zoom = Math.exp(dir * this.zoomIntensity * (e.shiftKey ? 0.1 : 1));
             const newScale = this.scale * zoom;
-            if (newScale >= this.maxScale || newScale <= this.minScale)
-                return;
+            if (newScale >= this.maxScale || newScale <= this.minScale) return;
             this.scale = newScale;
-            this.resetWH()
+
+            const globalMouseX = (e.x + this.left);
+            const globalMouseY = (e.y + this.top);
+            const deltaX = -(globalMouseX * zoom - globalMouseX) / zoom;
+            const deltaY = -(globalMouseY * zoom - globalMouseY) / zoom;
+
+            this.resetWH();
+            this.slotDiv.scrollLeft = this.left - deltaX;
+            this.slotDiv.scrollTop = this.top - deltaY;
         }
     }
 })
