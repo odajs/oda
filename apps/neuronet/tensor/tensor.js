@@ -72,7 +72,7 @@ export default class Tensor extends ROCKS({
         function clone(d){
             if(Array.isArray(d))
                 return d.map(i=>clone(i));
-            return Math.round(Math.random() * 10);//1.0;
+            return Math.round(Math.random() * 10)/10;//1.0;
         }
         this.grad = clone(this.data);
         topo.reverse().forEach(node => {
@@ -130,7 +130,7 @@ export default class Tensor extends ROCKS({
     sum(){
         function fn(data){
             if (Array.isArray(data[0]))
-                return data.map(d=>fn(data));
+                return data.map(d=>fn(d));
             return data?.reduce?.((r,v)=>r+v) || data;
         }
         let result = fn(this.data);
@@ -142,105 +142,61 @@ export default class Tensor extends ROCKS({
         try{
             other = checkTensor(other);
             let result;
-            if (!this.dim){
-                if (!other.dim){
+            let mode = '' + this.dim + other.dim;
+            switch (mode){
+                case '00':{ // число на число
                     result = this.data * other.data;
-                }
-                else{
-                    function fn(other){
-                        return other?.reduce?.((r, v) => r + fn(v)) || other
-                    }
-                    result = this.data * fn(other.data);
-                }
-            }
-            else if (!other.dim){
-                function fn(self){
-                    if (Array.isArray(self))
-                        return self.map(v => fn(v));
-                    else
-                        return self * other.data;
-                }
-                result = fn(this.data);
-            }
-            else{
+                } break;
+                case '01':{ // число на вектор
+                    result = other.data.reduce((r, v)=>r + v) * this.data;
+                } break;
+                case '10':{ // вектор на число
+                    result = this.data.map(v=>v * other.data);
+                } break;
+                case '11':{ // вектор на вектор поэлементно
+                    if (this.data.length !== other.data.length)
+                        ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
+                    result = this.data.map((v,i)=>v * other.data[i]);
+                } break;
+                case '12':{ // вектор на матрицу
+                    if (this.data.length !== other.data.length)
+                        ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
+                    result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
+                } break;
 
             }
             out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
             out._back = () => {
-                if (!this.dim){
-                    if (!other.dim){
+                switch (mode){
+                    case '00':{
                         this.grad += other.data * out.grad;
                         other.grad += this.data * out.grad;
-                    }
-                    else {
-                        this.grad += other.sum().data * out.grad;
-                        function fn(grad, data, out) {
-                            return grad?.map?.((v) => fn(v, data, out)) || (grad + data * out);
-                        }
-
-                        other.grad = fn(other.grad, this.data, out.grad);
-                    }
-                }
-                else if (!other.dim){
-
-                }
-                else{
-
+                    } break;
+                    case '01':{
+                        this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
+                        other.grad = other.grad.map(v=>v + this.data * out.grad);
+                    } break;
+                    case '10':{
+                        this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
+                        other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
+                    } break;
+                    case '11':{ // вектор на вектор поэлементно
+                        this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
+                        other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
+                    } break;
+                    case '12':{ // вектор на матрицу
+                        this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
+                        other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
+                    } break;
                 }
             }
+
         }
         catch (e){
-
+            out ??= new Tensor(0, 'multiply', [this], 'lineawesome:th-list-solid');
+            out.error = e.message;
         }
         //
-
-        // let mode = '' + this.dim + other.dim;
-        // switch (mode){
-        //     case '00':{ // число на число
-        //         result = this.data * other.data;
-        //     } break;
-        //     case '01':{ // число на вектор
-        //         result = other.data.reduce((r, v)=>r + v) * this.data;
-        //     } break;
-        //     case '10':{ // вектор на число
-        //         result = this.data.map(v=>v * other.data);
-        //     } break;
-        //     case '11':{ // вектор на вектор поэлементно
-        //         if (this.data.length !== other.data.length)
-        //             ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
-        //         result = this.data.map((v,i)=>v * other.data[i]);
-        //     } break;
-        //     case '12':{ // вектор на матрицу
-        //         if (this.data.length !== other.data.length)
-        //             ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
-        //         result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
-        //     } break;
-        //
-        // }
-        // let out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
-        // out._back = () => {
-        //     switch (mode){
-        //         case '00':{
-        //             this.grad += other.data * out.grad;
-        //             other.grad += this.data * out.grad;
-        //         } break;
-        //         case '01':{
-        //             this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
-        //             other.grad = other.grad.map(v=>v + this.data * out.grad);
-        //         } break;
-        //         case '10':{
-        //             this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
-        //             other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
-        //         } break;
-        //         case '11':{ // вектор на вектор поэлементно
-        //             this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
-        //             other.grad = other.grad.map((v, i)=>v + this.data * out.grad[i]);
-        //         } break;
-        //         case '12':{ // вектор на матрицу
-        //             result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
-        //         } break;
-        //     }
-        // }
         return out;
     },
     add(other){
