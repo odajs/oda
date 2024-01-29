@@ -80,6 +80,12 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                 this.focusedPin = null;
             }
         },
+        allPinsVisible: {
+            $type: String,
+            $pdp: true,
+            $list: ['visible', 'half', 'invisible'],
+            $def: 'half'
+        },
         snapToGrid: {
             $def: false,
             $save: true,
@@ -271,18 +277,28 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     </style>
     <oda-scheme-container-toolbar ~if="designMode && selection.last === block"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-pins class="horizontal" pos="top" style="transform: translateY(40%)"></oda-scheme-pins>
+        <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsVisible + '%)'"></oda-scheme-pins>
         <div class="flex horizontal">
-            <oda-scheme-pins class="vertical" pos="left"  style="transform: translateX(40%)"></oda-scheme-pins>
+            <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsVisible + '%)'"></oda-scheme-pins>
             <div class="block shadow content flex horizontal" style="align-items: center; z-index: 1" :active="selection.has(block)" :focused="selection.has(block)">
                 <div class="flex" ~is="block?.template || block?.is || blockTemplate || 'div'" ~props="block?.props"></div>
             </div>
-            <oda-scheme-pins class="vertical" pos="right"  style="transform: translateX(-40%)"></oda-scheme-pins>
+            <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsVisible + '%)'"></oda-scheme-pins>
         </div>
-        <oda-scheme-pins class="horizontal" pos="bottom"  style="transform: translateY(-40%)"></oda-scheme-pins>
+        <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsVisible + '%)'"></oda-scheme-pins>
     </div>
     `,
     contextItem: null, // bug pdp contextItem buble
+    get pinsVisible() {
+        switch(this.allPinsVisible) {
+            case 'visible':
+                return 0;
+            case 'half':
+                return 40;
+            case 'invisible':
+                return 100;
+        }
+    },
     $pdp: {
         container: {
             get() {
@@ -331,7 +347,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.reserved || $for.item?.link)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.link)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
     attached() {
         this.links = undefined;
