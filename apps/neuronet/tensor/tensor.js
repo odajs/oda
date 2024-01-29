@@ -127,56 +127,120 @@ export default class Tensor extends ROCKS({
         return out;
 
     },
-    multiply(other, type='dot'){ //умножение
-        other = checkTensor(other);
-        let result;
-        let mode = '' + this.dim + other.dim;
-        switch (mode){
-            case '00':{ // число на число
-                result = this.data * other.data;
-            } break;
-            case '01':{ // число на вектор
-                result = other.data.reduce((r, v)=>r + v) * this.data;
-            } break;
-            case '10':{ // вектор на число
-                result = this.data.map(v=>v * other.data);
-            } break;
-            case '11':{ // вектор на вектор поэлементно
-                if (this.data.length !== other.data.length)
-                    ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
-                result = this.data.map((v,i)=>v * other.data[i]);
-            } break;
-            case '12':{ // вектор на матрицу
-                if (this.data.length !== other.data.length)
-                    ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
-                result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
-            } break;
-
+    sum(){
+        function fn(data){
+            if (Array.isArray(data[0]))
+                return data.map(d=>fn(data));
+            return data?.reduce?.((r,v)=>r+v) || data;
         }
-        let out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
-        out._back = () => {
-            switch (mode){
-                case '00':{
-                    this.grad += other.data * out.grad;
-                    other.grad += this.data * out.grad;
-                } break;
-                case '01':{
-                    this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
-                    other.grad = other.grad.map(v=>v + this.data * out.grad);
-                } break;
-                case '10':{
-                    this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
-                    other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
-                } break;
-                case '11':{ // вектор на вектор поэлементно
-                    this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
-                    other.grad = other.grad.map((v, i)=>v + this.data * out.grad[i]);
-                } break;
-                case '12':{ // вектор на матрицу
-                    result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
-                } break;
+        let result = fn(this.data);
+        let out = new Tensor(result, 'sum', [this], 'icons:add-circle-outline');
+        return out;
+    },
+    multiply(other){ //умножение
+        let out;
+        try{
+            other = checkTensor(other);
+            let result;
+            if (!this.dim){
+                if (!other.dim){
+                    result = this.data * other.data;
+                }
+                else{
+                    function fn(other){
+                        return other?.reduce?.((r, v) => r + fn(v)) || other
+                    }
+                    result = this.data * fn(other.data);
+                }
+            }
+            else if (!other.dim){
+                function fn(self){
+                    if (Array.isArray(self))
+                        return self.map(v => fn(v));
+                    else
+                        return self * other.data;
+                }
+                result = fn(this.data);
+            }
+            else{
+
+            }
+            out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
+            out._back = () => {
+                if (!this.dim){
+                    if (!other.dim){
+                        this.grad += other.data * out.grad;
+                        other.grad += this.data * out.grad;
+                    }
+                    else {
+                        this.grad += other.sum().data * out.grad;
+                        function fn(grad, data, out) {
+                            return grad?.map?.((v) => fn(v, data, out)) || (grad + data * out);
+                        }
+
+                        other.grad = fn(other.grad, this.data, out.grad);
+                    }
+                }
+                else if (!other.dim){
+
+                }
+                else{
+
+                }
             }
         }
+        catch (e){
+
+        }
+        //
+
+        // let mode = '' + this.dim + other.dim;
+        // switch (mode){
+        //     case '00':{ // число на число
+        //         result = this.data * other.data;
+        //     } break;
+        //     case '01':{ // число на вектор
+        //         result = other.data.reduce((r, v)=>r + v) * this.data;
+        //     } break;
+        //     case '10':{ // вектор на число
+        //         result = this.data.map(v=>v * other.data);
+        //     } break;
+        //     case '11':{ // вектор на вектор поэлементно
+        //         if (this.data.length !== other.data.length)
+        //             ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
+        //         result = this.data.map((v,i)=>v * other.data[i]);
+        //     } break;
+        //     case '12':{ // вектор на матрицу
+        //         if (this.data.length !== other.data.length)
+        //             ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
+        //         result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
+        //     } break;
+        //
+        // }
+        // let out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
+        // out._back = () => {
+        //     switch (mode){
+        //         case '00':{
+        //             this.grad += other.data * out.grad;
+        //             other.grad += this.data * out.grad;
+        //         } break;
+        //         case '01':{
+        //             this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
+        //             other.grad = other.grad.map(v=>v + this.data * out.grad);
+        //         } break;
+        //         case '10':{
+        //             this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
+        //             other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
+        //         } break;
+        //         case '11':{ // вектор на вектор поэлементно
+        //             this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
+        //             other.grad = other.grad.map((v, i)=>v + this.data * out.grad[i]);
+        //         } break;
+        //         case '12':{ // вектор на матрицу
+        //             result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
+        //         } break;
+        //     }
+        // }
         return out;
     },
     add(other){
@@ -184,7 +248,7 @@ export default class Tensor extends ROCKS({
         try{
             other = checkTensor(other);
             let result;
-            if(this.dim === 0){
+            if(!this.dim){
                 if(other.dim){
                     let data = other.data
                     for(let i = 0; i<other.dim; i++){
@@ -196,7 +260,7 @@ export default class Tensor extends ROCKS({
                     result = other.data + this.data;
 
             }
-            else if(other.dim === 0){
+            else if(!other.dim){
                 function fn(self, other){
                     return self?.map?.(v => fn(v, other)) || (()=>{
                         return self + other;
@@ -219,8 +283,8 @@ export default class Tensor extends ROCKS({
             out = new Tensor(result, 'add', [this, other], 'icons:add-circle-outline');
             out._back = () => {
                 function grad(out){
-                    if(this.dim === 0){
-                        if(out.dim === 0)
+                    if(!this.dim){
+                        if(!out.dim)
                             this.grad += out.grad;
                         else{
                             let grad = out.grad;
