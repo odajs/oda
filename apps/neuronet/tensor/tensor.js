@@ -183,11 +183,64 @@ export default class Tensor extends ROCKS({
         let out;
         try{
             other = checkTensor(other);
-            let result = zipAdd(this.data, other.data);
+            let result;
+            if(this.dim === 0){
+                if(other.dim){
+                    let data = other.data
+                    for(let i = 0; i<other.dim; i++){
+                        data = data.flat();
+                    }
+                    result = data.reduce((r,v)=>r+v) + this.data;
+                }
+                else
+                    result = other.data + this.data;
+
+            }
+            else if(other.dim === 0){
+                function fn(self, other){
+                    return self?.map?.(v => fn(v, other)) || (()=>{
+                        return self + other;
+                    })()
+                }
+                result = fn(this.data, other.data);
+            }
+            else if(this.shape.toString() !== other.shape.toString()){
+                ERROR.DIM_MISMATCH(this.shape, other.shape);
+            }
+            else {
+                function fn(self, other){
+                    return self?.map?.((d,i) => fn(d, other[i])) || (()=>{
+                        return self + other;
+                    })()
+                }
+                result = fn(this.data, other.data);
+            }
+            // let result = zipAdd(this.data, other.data);
             out = new Tensor(result, 'add', [this, other], 'icons:add-circle-outline');
             out._back = () => {
-                this.grad = zipAddBack(this.grad, out.grad);
-                other.grad = zipAddBack(other.grad, out.grad);
+                function grad(out){
+                    if(this.dim === 0){
+                        if(out.dim === 0)
+                            this.grad += out.grad;
+                        else{
+                            let grad = out.grad;
+                            for(let i = 0; i<out.dim; i++){
+                                grad = grad.flat();
+                            }
+                            this.grad += grad.reduce((r,v)=>r+v);
+                        }
+                    }
+                    else{
+                        function fn(grad, out){
+                            return grad?.map?.((d,i) => fn(d, out[i])) || (()=>{
+                                return grad + out;
+                            })()
+                        }
+                        this.grad = fn(this.grad, out.grad);
+                    }
+                }
+                grad.call(this, out);//zipAddBack(this.grad, out.grad);
+                grad.call(other, out);//zipAddBack(other.grad, out.grad);
             }
         }
         catch (e){
