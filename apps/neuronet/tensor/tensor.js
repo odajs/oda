@@ -2,10 +2,10 @@ import Zipper from '../attoGPT/zipper.js';
 
 const ERROR = {
     SIZE_MISMATCH: (p1 = 0, p2 = 0) => {
-        throw new Error(`Несогласованность размеров: p1=${p1}, p2=${p2}`)
+        throw new Error(`Несогласованность размеров:\r\n p1=${p1}, p2=${p2}`)
     },
     DIM_MISMATCH: (p1 = 0, p2 = 0) => {
-        throw new Error(`Неподходящая размерность: ожидается ${p1}, подано ${p2}`)
+        throw new Error(`Неподходящая размерность:\r\n ожидается ${p1}, подано ${p2}`)
     },
 }
 
@@ -72,7 +72,7 @@ export default class Tensor extends ROCKS({
         function clone(d){
             if(Array.isArray(d))
                 return d.map(i=>clone(i));
-            return Math.round(Math.random() * 10)/10;//1.0;
+            return 1.0// Math.round(Math.random() * 10)/10;//1.0;
         }
         this.grad = clone(this.data);
         topo.reverse().forEach(node => {
@@ -163,32 +163,53 @@ export default class Tensor extends ROCKS({
                         ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
                     result = other.data[0].map((_, i)=>this.data.reduce((r, v, j)=>r + v * other.data[j][i]));
                 } break;
+                case '22':{
+                    if (this.data[0].length !== other.data.length)
+                        ERROR.SIZE_MISMATCH(this.data.length, other.data.length);
+                    result = MultiplyMatrix(this.data, other.data);
+                } break;
 
             }
             out = new Tensor(result, 'multiply', [this, other], 'icons:add-circle-outline:45');
             out._back = () => {
-                switch (mode){
-                    case '00':{
-                        this.grad += other.data * out.grad;
-                        other.grad += this.data * out.grad;
-                    } break;
-                    case '01':{
-                        this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
-                        other.grad = other.grad.map(v=>v + this.data * out.grad);
-                    } break;
-                    case '10':{
-                        this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
-                        other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
-                    } break;
-                    case '11':{ // вектор на вектор поэлементно
-                        this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
-                        other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
-                    } break;
-                    case '12':{ // вектор на матрицу
-                        this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
-                        other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
-                    } break;
+                try{
+                    switch (mode){
+                        case '00':{
+                            this.grad += other.data * out.grad;
+                            other.grad += this.data * out.grad;
+                        } break;
+                        case '01':{
+                            this.grad += other.data.reduce((r, v)=>r + v) * out.grad;
+                            other.grad = other.grad.map(v=>v + this.data * out.grad);
+                        } break;
+                        case '10':{
+                            this.grad = this.grad.map((v, i)=>v + other.data * out.grad[i]);
+                            other.grad += this.data.reduce((r, v, i)=>r + v * out.grad[i]);
+                        } break;
+                        case '11':{ // вектор на вектор поэлементно
+                            this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
+                            other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
+                        } break;
+                        case '12':{ // вектор на матрицу todo Доделать
+                            this.grad = this.grad.map((v, i)=>v + other.data[i] * out.grad[i]);
+                            other.grad = other.grad.map((v, i)=>v + this.data[i] * out.grad[i]);
+                        } break;
+                        case '22':{
+
+                            // this.grad = multiplyMT(out.grad, other.data);
+
+                            const data = transposeMatrix(this.data)
+                            other.grad = MultiplyMatrix(data, out.grad)
+                            this.grad = multiplyMT(out.grad, other.data);
+
+                            // other.grad = MultiplyMatrix(this.data, out.grad);
+                        } break;
+                    }
                 }
+                catch (e){
+                    this.error = 'Back:\r\n' + e.message;
+                }
+
             }
 
         }
@@ -386,3 +407,36 @@ let zipTransposeBack = new Zipper((grad, out_grad) => {
 //         return sum;
 //     }).setOutput([512, 512])
 // },[2]);
+
+function MultiplyMatrix(A,B)
+{
+    var rowsA = A.length, colsA = A[0].length,
+        rowsB = B.length, colsB = B[0].length,
+        C = [];
+    if (colsA != rowsB)
+        ERROR.SIZE_MISMATCH(colsA, rowsB);
+    for (var i = 0; i < rowsA; i++) C[ i ] = [];
+    for (var k = 0; k < colsB; k++)
+    { for (var i = 0; i < rowsA; i++)
+    { var t = 0;
+        for (var j = 0; j < rowsB; j++) t += A[ i ][j]*B[j][k];
+        C[ i ][k] = t;
+    }
+    }
+    return C;
+}
+function multiplyMT(M, T) {
+    return M.map(x=>T.map(y=>dotProduct(x, y)));
+}
+
+function multiplyTM(T, M) {
+    return T.map(x=>M.map(y=>dotProduct(y, x)));
+}
+
+
+function dotProduct(v1, v2) {
+    return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
+}
+function transposeMatrix(m) {
+    return m[0].map((x,i) =>(m.map(y => y[i])));
+}

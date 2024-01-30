@@ -83,7 +83,7 @@
                 <oda-button flex @tap="showData($event, tensor.data)">data</oda-button>
                 <oda-button flex @tap="showData($event, tensor.grad)">grad</oda-button>
             </div>
-            <div ~if="!!err" error class="flex" style="font-size: xx-small; flex-wrap: wrap;">{{err}}</div>
+            <div ~if="!!err" error class="flex" style="font-size: xx-small; flex-wrap: wrap; white-space: break-spaces;">{{err}}</div>
 
         `,
         get err(){
