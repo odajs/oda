@@ -138,7 +138,8 @@ ODA({ is: 'oda-only-office',
 })
 
 const types = {
-    word: 'djvu,doc,docm,docx,docxf,dot,dotm,dotx,epub,fb2,fodt,htm,html,mht,mhtml,odt,oform,ott,oxps,pdf,rtf,stw,sxw,txt,wps,wpt,xml,xps'.split(','),
+    // word: 'djvu,doc,docm,docx,docxf,dot,dotm,dotx,epub,fb2,fodt,htm,html,mht,mhtml,odt,oform,ott,oxps,pdf,rtf,stw,sxw,txt,wps,wpt,xml,xps'.split(','),
+    word: 'djvu,doc,docm,docx,docxf,dot,dotm,dotx,epub,fb2,fodt,odt,oform,ott,oxps,pdf,rtf,stw,sxw,txt,wps,wpt,xps'.split(','),
     cell: 'csv,et,ett,fods,ods,ots,sxc,xls,xlsb,xlsm,xlsx,xlt,xltm,xltx,xml'.split(','),
     slide: 'dps,dpt,fodp,odp,otp,pot,potm,potx,pps,ppsm,ppsx,ppt,pptm,pptx,sxi'.split(',')
 }
