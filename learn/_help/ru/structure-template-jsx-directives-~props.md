@@ -1,6 +1,6 @@
-﻿Директива **~props** используется для динамического связывания свойств компонента с атрибутами HTML-элемента, в котором эта директива указана.
+﻿Директива **~props** используется для динамического связывания свойств компонента с атрибутами HTML-элемента, в котором она указана. Также с помощью директивы можно передавать параметры во вложенные компоненты.
 
-Связываемые свойства должны быть сгруппированы в одном объекте, который указывается как значение директивы. Директива создает в HTML-элементе из каждого свойства одноименный атрибут. Значение свойства становится значением этого атрибута.
+В отличие от биндинга, связывающего одно свойство компонента с одним атрибутом HTML-элемента и требующего явно указывать все связываемые пары, директива **~props** привязывает к элементу сразу группу свойств. Эти свойства должны быть сгруппированы в одном объекте, который указывается как значение директивы. Директива создает в HTML-элементе из каждого свойства одноименный атрибут. Значение свойства становится значением этого атрибута.
 
 Например,
 
@@ -70,8 +70,8 @@ ODA({
         <oda-button ~props="attr">Кнопка</oda-button>
     `,
     attr: {
-        color: 'colorNumber_1',
-        icon: 'icons:android'
+        icon: 'icons:android',
+        color: 'colorNumber_1'
     }
 });
 ```
@@ -110,7 +110,6 @@ ODA({
 ```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
-    imports: '@oda/icon',
     template: `
         <div ~props="attr">Атрибут с дефисом</div>
     `,
@@ -236,10 +235,10 @@ ODA({
     is: 'my-component',
     template: `
         <input id="i1" placeholder="с ~props" ~props="attr" >
-        <span>Имеет свойство type: {{'type' in $('#i1')}} — Имеет атрибут type: {{$('#i1').hasAttribute('type')}}</span>
+        <span>Имеет свойство «type»: {{'type' in $('#i1')}} — Имеет атрибут «type»: {{$('#i1').hasAttribute('type')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
-        <span>Имеет свойство type: {{'type' in $('#i2')}} — Имеет атрибут type: {{$('#i2').hasAttribute('type')}}</span>
+        <span>Имеет свойство «type»: {{'type' in $('#i2')}} — Имеет атрибут «type»: {{$('#i2').hasAttribute('type')}}</span>
     `,
     attr: {
         type: 'text'
@@ -258,10 +257,10 @@ ODA({
     is: 'my-component',
     template: `
         <input id="i1" ~props="attr" >
-        <span>Имеет свойство value: {{'value' in $('#i1')}} — Имеет атрибут value: {{$('#i1').hasAttribute('value')}}</span>
+        <span>Имеет свойство «value»: {{'value' in $('#i1')}} — Имеет атрибут «value»: {{$('#i1').hasAttribute('value')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
-        <span>Имеет свойство value: {{'value' in $('#i2')}} — Имеет атрибут value: {{$('#i2').hasAttribute('value')}}</span>
+        <span>Имеет свойство «value»: {{'value' in $('#i2')}} — Имеет атрибут «value»: {{$('#i2').hasAttribute('value')}}</span>
     `,
     attr: {
         value: 'с ~props'
@@ -278,10 +277,10 @@ ODA({
     is: 'my-component',
     template: `
         <input id="i1" placeholder="с ~props" ~props="attr" >
-        <span>Имеет свойство nick: {{'nick' in $('#i1')}} — Имеет атрибут nick: {{$('#i1').hasAttribute('nick')}}</span>
+        <span>Имеет свойство «nick»: {{'nick' in $('#i1')}} — Имеет атрибут «nick»: {{$('#i1').hasAttribute('nick')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
-        <span>Имеет свойство nick: {{'nick' in $('#i2')}} — Имеет атрибут nick: {{$('#i2').hasAttribute('nick')}}</span>
+        <span>Имеет свойство «nick»: {{'nick' in $('#i2')}} — Имеет атрибут «nick»: {{$('#i2').hasAttribute('nick')}}</span>
     `,
     attr: {
         nick: 'Строка ввода'
