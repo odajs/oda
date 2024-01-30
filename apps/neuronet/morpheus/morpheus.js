@@ -15,7 +15,7 @@ export class gptModel extends ROCKS({
                 return [start, end];
             }
         },
-        dim: 64,
+        dim: 128,
         negativeSize: 5,
         feedLayerK: 2,
         step: 2,
@@ -828,8 +828,9 @@ function tanhD(x, th){
 }
 function getPositionalVector(d, pos = 0){
     const vector = [];
+    const k = 2**32;
     for(let i = 0; i < d; i++){
-        const v = 1/Math.pow(10000, 2 * i/d) * pos;
+        const v = 1/Math.pow(k, 2 * i/d) * pos;
         vector[i] = (i%2)?Math.cos(v):Math.sin(v)
     }
     return vector;

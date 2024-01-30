@@ -72,7 +72,7 @@ export default class Tensor extends ROCKS({
         function clone(d){
             if(Array.isArray(d))
                 return d.map(i=>clone(i));
-            return 1.0// Math.round(Math.random() * 10)/10;//1.0;
+            return Math.round(Math.random() * 10)/10;//1.0;
         }
         this.grad = clone(this.data);
         topo.reverse().forEach(node => {
