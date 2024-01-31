@@ -290,6 +290,34 @@ export default class Tensor extends ROCKS({
         }
         return out;
     },
+    sigmoida(){
+        function fn(data){
+            return data?.map?.(d=>fn(d)) || 1/(1+ Math.exp(-data));
+        }
+        let result = fn(this.data);
+        let out = new Tensor(result, 'sigmoid', [this], 'unicon:sigma');
+        out._back = () => {
+            function fn(self, data, grad){
+                return self?.map?.((r, i) => fn(r, data[i], grad[i])) || (self + data * (1 - data) * grad);
+            }
+            this.grad = fn(this.grad, out.data, out.grad);
+        }
+        return out;
+    },
+    silu(){
+        function fn(data){
+            return data?.map?.(d=>fn(d)) || data * 1/(1+ Math.exp(-data));
+        }
+        let result = fn(this.data);
+        let out = new Tensor(result, 'silu', [this], 'unicon:sigma');
+        out._back = () => {
+            function fn(self, data, grad){
+                return self?.map?.((r, i) => fn(r, data[i], grad[i])) || (self + data * (1 - data) * 1/(1+ Math.exp(-data)) * grad);
+            }
+            this.grad = fn(this.grad, out.data, out.grad);
+        }
+        return out;
+    },
     tanh(){
         function fn(data){
             return data?.map?.(d => fn(d)) || (()=>{
@@ -439,4 +467,12 @@ function dotProduct(v1, v2) {
 }
 function transposeMatrix(m) {
     return m[0].map((x,i) =>(m.map(y => y[i])));
+}
+function getPositionalVector(d, pos = 0, k = 10000){
+    const vector = [];
+    for(let i = 0; i < d; i++){
+        const v = 1/Math.pow(k, 2 * i/d) * pos;
+        vector[i] = (i%2)?Math.cos(v):Math.sin(v)
+    }
+    return vector;
 }

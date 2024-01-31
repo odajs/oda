@@ -7,11 +7,53 @@
     ODA({is: 'oda-tensor', imports: '@oda/app-layout, @oda/scheme-layout', extends: 'oda-app-layout',
         template:`
             <div vertical slot="left-panel" opened>
+                <textarea ::value="text"></textarea>
                <textarea flex ::value="program"></textarea>
                <oda-button no-flex @tap="build"  style="text-align: center; padding: 8px;">BUILD</oda-button>
             </div>
             <oda-scheme-layout :items slot="main" ></oda-scheme-layout>
         `,
+        tokenSize: 16,
+        text: {
+            $save: true,
+            $def: ''
+        },
+        tokenize(text){
+            const size = 2**16;
+            const tokens = [];
+            for (let i = 0; i<text.length; i++){
+                const code = text.charCodeAt(i)
+                tokens.push({char: text[i], code,  vec: getPositionalVector(this.tokenSize, code, size)});
+            }
+            const words = [];
+            let word;
+            for (let i = 0; i < tokens.length; i++){
+                const token = tokens[i];
+                if (token.code === 32){
+                    word = undefined;
+                }
+                else{
+                    if (!word){
+                        word = {word: '', vec: Array(this.tokenSize * 2).fill(0), tokens: []};
+                        words.push(word);
+                    }
+                    word.word += token.char;
+                    const pos = getPositionalVector(this.tokenSize, word.tokens.length);
+                    const concatArray = [...token.vec, ...pos];
+                    word.vec = word.vec.map((v, i)=>{
+                        return v + concatArray[i];
+                    })
+                    word.tokens.push(token);
+                }
+            }
+            return words;
+        },
+        inputs:{
+            $freeze: true,
+            get (){
+                return this.tokenize(this.text)
+            }
+        },
         program:{
             $save: true,
             $def: ''
@@ -113,4 +155,13 @@
     function tensor(...params){
         return new Tensor(...params);
     }
+    function getPositionalVector(d, pos = 0, k = 10000){
+        const vector = [];
+        for(let i = 0; i < d; i++){
+            const v = 1/Math.pow(k, 2 * i/d) * pos;
+            vector[i] = (i%2)?Math.cos(v):Math.sin(v)
+        }
+        return vector;
+    }
 </script>
+

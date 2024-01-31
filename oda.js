@@ -891,11 +891,11 @@ if (!window.ODA?.IsReady) {
             return  exec.call(this, fn, $el, p)? tag : false;
         },
         'else-if'(tag, fn, p, $el) {
-            if ($el.previousElementSibling?.nodeType !== 1)
+            if ($el?.previousElementSibling?.nodeType !== 1)
                 return exec.call(this, fn, $el, p) ? tag : false;
         },
         else(tag, fn, p, $el) {
-            if ($el.previousElementSibling?.nodeType !== 1)
+            if ($el?.previousElementSibling?.nodeType !== 1)
                 return tag;
         },
         is(tag, fn, p, $el) {
