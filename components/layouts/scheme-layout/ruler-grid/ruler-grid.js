@@ -68,7 +68,7 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
         minScale: 0.05,
         maxScale: 20,
         backgroundColor: {
-            $def: 'white',
+            $def: 'var(--content-background)',
             $editor: '@oda/color-picker[oda-color-picker]',
             $save: true,
         },
