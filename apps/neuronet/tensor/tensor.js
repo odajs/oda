@@ -1,5 +1,5 @@
 import Zipper from '../attoGPT/zipper.js';
-
+import  './numjs.js'
 const ERROR = {
     SIZE_MISMATCH: (p1 = 0, p2 = 0) => {
         throw new Error(`Несогласованность размеров:\r\n p1=${p1}, p2=${p2}`)
@@ -7,6 +7,35 @@ const ERROR = {
     DIM_MISMATCH: (p1 = 0, p2 = 0) => {
         throw new Error(`Неподходящая размерность:\r\n ожидается ${p1}, подано ${p2}`)
     },
+}
+const matrix = {
+    eye(N, M = N, k){
+        const matrix = []
+        for (let n = 0; n < N; n++){
+            const row = matrix[n] ??= []
+            for (let m = 0; m < M; m++){
+                row[m] = n === m?1:0;
+            }
+        }
+        return matrix;
+    },
+    make_HIPPO(N){
+        function v(n,k){
+            if (n > k)
+                return -Math.sqrt(2 * n + 1) * Math.sqrt(2 * k + 1);
+            if (n === k)
+                return -(n + 1);
+            return 0;
+        }
+        const matrix = [];
+        for(let n = 0; n < N; n++){
+            const row = matrix[n] ??= [];
+            for(let k = 0; k < N; k++) {
+                row[k] = v(n+1, k+1)
+            }
+        }
+        return matrix;
+    }
 }
 
 export default class Tensor extends ROCKS({
@@ -80,13 +109,7 @@ export default class Tensor extends ROCKS({
         })
     },
     get dim(){
-        let d = this.data;
-        let v = 0;
-        while(Array.isArray(d) && d.length){
-            v++;
-            d = d[0];
-        }
-        return v;
+        shape.length;
     },
     shape:{
         $type: Array,
@@ -99,6 +122,9 @@ export default class Tensor extends ROCKS({
             }
             return v;
         }
+    },
+    get size(){
+        return this.shape.reduce((r, v)=>r * v, 1);
     },
     transpose(){
         let out;
@@ -289,6 +315,9 @@ export default class Tensor extends ROCKS({
             out.error = e.message;
         }
         return out;
+    },
+    discretize(B, C, step){
+        const I = tensor(matrix.eye(this.shape[0]));
     },
     sigmoida(){
         function fn(data){

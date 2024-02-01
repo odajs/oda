@@ -101,7 +101,7 @@ ODA({
     },
     _nj_random_randn_k (a, b, k) { let arr = []
         for (let i=0;i<a*b;i++) arr.push(randn())
-        return nj.array(arr.map(e => e*k) ).reshape(a,b)
+            return nj.array(arr.map(e => e*k) ).reshape(a,b)
     },
     _nj_random_chois_p (arr) { let rez = 0
         let r = Math.random()*arr.reduce((a,b)=>a+b)
