@@ -109,7 +109,7 @@ export default class Tensor extends ROCKS({
         })
     },
     get dim(){
-        shape.length;
+        return this.shape.length;
     },
     shape:{
         $type: Array,
@@ -505,3 +505,10 @@ function getPositionalVector(d, pos = 0, k = 10000){
     }
     return vector;
 }
+
+function charCodeToBin(code, dim= 32){
+    return code.toString(2).padStart(dim, '0').split('').slice(-dim).map(i=>+i)
+}
+
+
+
