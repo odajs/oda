@@ -81,6 +81,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             }
         },
         allPinsVisible: {
+            $save: true,
             $type: String,
             $pdp: true,
             $list: ['visible', 'half', 'invisible'],
@@ -126,7 +127,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         },
         resize(e) {
             this.links = undefined;
-            return this.links;
+            // return this.links;
         },
         track(e) {
             if (!this.lastdown) {
@@ -188,15 +189,8 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         },
         dragover(e){
             e.preventDefault();
-            if (!this.focusedPin)
-                return;
-            // const rect = this.focusedPin._grid.getBoundingClientRect();
-            // const center = rect.center;
-            // const x = (e.x  - rect.x) / this.scale;
-            // const y = (e.y  - rect.y) / this.scale;
-            const x = e.layerX / this.scale;
-            const y = e.layerY / this.scale;
-            this.dragLink = `M ${x} ${y}` + endPoint.call(this.focusedPin);
+            if (!this.focusedPin) return;
+            this.dragLink = `M ${e.layerX / this.scale} ${e.layerY / this.scale}` + endPoint.call(this.focusedPin);
         },
     },
     select(e) {
@@ -221,7 +215,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             // this.links?.remove(i);
         });
         this.designInfo = undefined
-        this.debounce('links', () => { this.links = undefined })
+        // this.links = undefined;
     }
 });
 ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
@@ -277,26 +271,26 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     </style>
     <oda-scheme-container-toolbar ~if="designMode && selection.last === block"></oda-scheme-container-toolbar>
     <div>
-        <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsVisible + '%)'"></oda-scheme-pins>
+        <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsTranslate + '%)'"></oda-scheme-pins>
         <div class="flex horizontal">
-            <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsVisible + '%)'"></oda-scheme-pins>
+            <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsTranslate + '%)'"></oda-scheme-pins>
             <div class="block shadow content flex horizontal" style="align-items: center; z-index: 1" :active="selection.has(block)" :focused="selection.has(block)">
                 <div class="flex" ~is="block?.template || block?.is || blockTemplate || 'div'" ~props="block?.props"></div>
             </div>
-            <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsVisible + '%)'"></oda-scheme-pins>
+            <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsTranslate + '%)'"></oda-scheme-pins>
         </div>
-        <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsVisible + '%)'"></oda-scheme-pins>
+        <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsTranslate + '%)'"></oda-scheme-pins>
     </div>
     `,
     contextItem: null, // bug pdp contextItem buble
-    get pinsVisible() {
+    get pinsTranslate() {
         switch(this.allPinsVisible) {
             case 'visible':
                 return 0;
             case 'half':
                 return 40;
             case 'invisible':
-                return 100;
+                return 93;
         }
     },
     $pdp: {
@@ -326,7 +320,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     },
     $listeners: {
         dragover(e) {
-
             if (!this.designMode) return;
             if (!this.focusedPin) return;
             if (this.focusedPin.container === this) return;
@@ -338,7 +331,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         },
         dragend(e) {
             this.focusedPin = null;
-        },
+        }
     }
 });
 ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
@@ -414,7 +407,6 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             this.focusedPin = this;
         },
         dragover(e) {
-
             if (!this.designMode) return;
             if (!this.focusedPin) return;
             if (this.focusedPin.container === this.container) return;
@@ -441,16 +433,8 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         }
     },
     set pin(n) {
-        if (n && typeof n === 'object') {
-            n.pin = this;
-            // Object.defineProperty(n, 'pin', {
-            //     writable: true,
-            //     configurable: true,
-            //     enumerable: false,
-            //     value: this
-            // });
-        }
-        this.links = undefined;
+        if (n && typeof n === 'object') n.pin = this;
+        // this.links = undefined;
     }
 })
 const alterPos = {
