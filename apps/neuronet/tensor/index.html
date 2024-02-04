@@ -22,8 +22,11 @@
             const size = 2**16;
             const tokens = [];
             for (let i = 0; i<text.length; i++){
-                const code = text.charCodeAt(i)
-                tokens.push({char: text[i], code,  vec: getPositionalVector(this.tokenSize, code, size)});
+                const code = text.charCodeAt(i);
+                const vec = code.toString(2).split('').map(v=>+v);
+                while(vec.length<this.tokenSize)
+                    vec.unshift(0)
+                tokens.push({char: text[i], code,  vec});
             }
             const words = [];
             let word;
