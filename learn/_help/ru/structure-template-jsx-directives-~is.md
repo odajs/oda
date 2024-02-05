@@ -9,8 +9,7 @@ ODA({
         <button ~is="myTag" @tap="changeTag">Нажми на меня</button>
     `,
     myTag: 'button',
-    changeTag()
-    {
+    changeTag() {
         this.myTag = this.myTag === 'button' ? 'span' : 'button';
     }
 });
