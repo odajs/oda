@@ -85,6 +85,10 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
             $def: 1,
             $save: true
         },
+        mouseMode: {
+            $save: true,
+            $def: false
+        }
     },
     $pdp: {
         left: {
@@ -165,8 +169,13 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
     },
     paths: [],
     $listeners: {
+        track(e) {
+            if( this.mouseMode ) return;
+            this.trackGrid(e);
+        },
         mousewheel(e) {
             e.stopPropagation();
+            if (!this.mouseMode && !e.ctrlKey) return;
             e.preventDefault();
             const dir = e.deltaY < 0 ? 1 : -1;
             const zoom = Math.exp(dir * this.zoomIntensity * (e.shiftKey ? 0.1 : 1));
@@ -182,6 +191,14 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
             this.resetWH();
             this.slotDiv.scrollLeft = this.left - deltaX;
             this.slotDiv.scrollTop = this.top - deltaY;
+        }
+    },
+    trackGrid(e) {
+        switch (e.detail.state) {
+            case 'track': {
+                this.slotDiv.scrollLeft = this.left - e.detail.ddx;
+                this.slotDiv.scrollTop = this.top - e.detail.ddy
+            } break;
         }
     }
 })

@@ -131,57 +131,11 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             // return this.links;
         },
         track(e) {
-            if (!this.lastdown) {
-                switch (e.detail.state) {
-                    case 'start': {
-                        this.slotDiv.style.setProperty('cursor', 'grabbing');
-                    } break;
-                    case 'track': {
-                        this.slotDiv.scrollLeft = this.left - e.detail.ddx;
-                        this.slotDiv.scrollTop = this.top - e.detail.ddy
-                    } break;
-                    case 'end': {
-                        this.slotDiv.style.removeProperty('cursor');
-                    } break;
-                }
+            if( !this.lastdown ) {
+                if(this.mouseMode)
+                    this.trackGrid(e);
             } else {
-                if (!this.designMode) return;
-                switch (e.detail.state) {
-                    case 'start': {
-                        if (!this.selection.has(this.lastdown.block)) {
-                            this.selection.splice(0, this.selection.length, this.lastdown.block);
-                        }
-                        this.selection.forEach(i => {
-                            Object.defineProperty(i, 'delta', {
-                                writable: true,
-                                enumerable: false,
-                                configurable: true,
-                                value: {
-                                    x: e.detail.start.x / this.scale - i.x,
-                                    y: e.detail.start.y / this.scale - i.y
-                                }
-                            })
-                        })
-                    } break;
-                    case 'track': {
-                        this.selection.forEach(i => {
-                            const step = this.snapToGrid ? this.step : 1;
-                            i.x = Math.round((e.detail.x / this.scale - i.delta.x) / step) * step;
-                            i.y = Math.round((e.detail.y / this.scale - i.delta.y) / step) * step;
-                            if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) {
-                                this.inTrack = true;
-                            }
-                        })
-                        this.links = undefined;
-                    } break;
-                    case 'end': {
-                        this.lastdown = null;
-                        this.async(() => {
-                            this.inTrack = false;
-                            this.links = undefined;
-                        });
-                    } break;
-                }
+                this.trackBlock(e);
             }
         },
         tap(e) {
@@ -193,6 +147,45 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             if (!this.focusedPin) return;
             this.dragLink = `M ${e.layerX / this.scale} ${e.layerY / this.scale}` + endPoint.call(this.focusedPin);
         },
+    },
+    trackBlock(e) {
+        if (!this.designMode) return;
+        switch (e.detail.state) {
+            case 'start': {
+                if (!this.selection.has(this.lastdown.block)) {
+                    this.selection.splice(0, this.selection.length, this.lastdown.block);
+                }
+                this.selection.forEach(i => {
+                    Object.defineProperty(i, 'delta', {
+                        writable: true,
+                        enumerable: false,
+                        configurable: true,
+                        value: {
+                            x: e.detail.start.x / this.scale - i.x,
+                            y: e.detail.start.y / this.scale - i.y
+                        }
+                    })
+                })
+            } break;
+            case 'track': {
+                this.selection.forEach(i => {
+                    const step = this.snapToGrid ? this.step : 1;
+                    i.x = Math.round((e.detail.x / this.scale - i.delta.x) / step) * step;
+                    i.y = Math.round((e.detail.y / this.scale - i.delta.y) / step) * step;
+                    if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) {
+                        this.inTrack = true;
+                    }
+                })
+                this.links = undefined;
+            } break;
+            case 'end': {
+                this.lastdown = null;
+                this.async(() => {
+                    this.inTrack = false;
+                    this.links = undefined;
+                });
+            } break;
+        }
     },
     select(e) {
         if (!this.designMode) return;
