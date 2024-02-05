@@ -417,6 +417,14 @@ export default class Tensor extends ROCKS({
         this.children = children;
         this.error = error;
     }
+    valueOf(){
+        return this.data;
+    }
+    toString(){
+        return JSON.stringify(this.data) + JSON.stringify({id: this.label, shape: this.shape})
+    }
+
+
 }
 function checkTensor(data){
     if (data instanceof Tensor)
