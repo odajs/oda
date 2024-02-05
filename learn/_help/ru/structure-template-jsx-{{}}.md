@@ -55,3 +55,77 @@ ODA({
 
 Как видно из примера, в момент вычисления интерполяционной подстановки **${}** указатель **this** не определён, т.к. компонент еще не создан.
 
+```warning_text_md
+В текущей версии фреймворка нельзя использовать одновременно символ апострофа (**’**) и подстановку **{{ Mustache }}** в одном текстовом узле. Использование экранированного апострофа **\’**, его мнемоники **&amp;apos;** и кода **&amp;#39;** также недопустимо.
+```
+
+Например,
+
+```html run_edit_error_h=30_
+<script type="module" src="./oda.js"></script>
+<button id="button">Создать компонент</button>
+<script type="module">
+    button.onclick = function() {
+        ODA({
+            is: 'my-component',
+            template: `
+                <div>{{mustache}} ' </div>
+            `,
+            mustache: 'Символ апострофа:'
+        });
+    }
+</script>
+```
+
+```html run_edit_error_h=30_
+<script type="module" src="./oda.js"></script>
+<button id="button">Создать компонент</button>
+<script type="module">
+    button.onclick = function() {
+        ODA({
+            is: 'my-component',
+            template: `
+                <div>{{mustache}} \' </div>
+            `,
+            mustache: 'Экранированный апостроф:'
+        });
+    }
+</script>
+```
+
+```html run_edit_error_h=30_
+<script type="module" src="./oda.js"></script>
+<button id="button">Создать компонент</button>
+<script type="module">
+    button.onclick = function() {
+        ODA({
+            is: 'my-component',
+            template: `
+                <div>{{mustache}} &apos; </div>
+            `,
+            mustache: 'Мнемоника апострофа:'
+        });
+    }
+</script>
+```
+
+```html run_edit_error_h=30_
+<script type="module" src="./oda.js"></script>
+<button id="button">Создать компонент</button>
+<script type="module">
+    button.onclick = function() {
+        ODA({
+            is: 'my-component',
+            template: `
+                <div>{{mustache}} &#39; </div>
+            `,
+            mustache: 'Код апострофа:'
+        });
+    }
+</script>
+```
+
+В данных примерах приведены варианты неправильного использования символа апострофа (**’**) совместно с подстановкой **{{ Mustache }}**. При нажатии на кнопку ее обработчик пытается создать компонент, в HTML-шаблоне которого одновременно используются **{{ Mustache }}** и апостроф. В результате возникает исключение:
+
+![Консоль браузера](learn/_help/ru/_images/structure-template-jsx-{{}}-1.png "Консоль браузера")
+
