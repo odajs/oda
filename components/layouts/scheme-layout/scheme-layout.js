@@ -23,6 +23,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     onContextMenuPin(e){
 
     },
+    $wake: true,
     dragLink: '',
     get paths() {
         const paths =  this.links?.map(l => ({ is: 'path', props: { stroke: this.linkColor, 'stroke-width': '2', fill: 'transparent', d: l }}));
@@ -282,6 +283,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsTranslate + '%)'"></oda-scheme-pins>
     </div>
     `,
+    $wake: true,
     contextItem: null, // bug pdp contextItem buble
     get pinsTranslate() {
         switch(this.allPinsVisible) {
@@ -342,6 +344,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
     </style>
     <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.link)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
+    $wake: true,
     attached() {
         this.links = undefined;
     },
@@ -378,6 +381,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         }
     </style>
     `,
+    $wake: true,
     get _grid() {
         return this.container?.parentElement;
     },
