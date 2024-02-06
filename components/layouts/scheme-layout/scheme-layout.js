@@ -335,7 +335,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.bind)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.bind || $for.item?.reserved)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
     $wake: true,
     attached() {
@@ -387,10 +387,10 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
             if (block){
                 return Object.keys(bind).map(dir=>{
                     const pin = block.pins?.[dir];
-                    if (!pin)
-                        return;
+                    if (!pin) return;
                     const pin_idx = bind[dir];
                     const target = pin[pin_idx];
+                    target.reserved = true;
                     if (target?.pin)
                         return (startPoint.call(this) + endPoint.call(target.pin));
                 }).filter(i=>i);
