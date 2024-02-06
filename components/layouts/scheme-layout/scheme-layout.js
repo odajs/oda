@@ -335,7 +335,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             justify-content: center;
         }
     </style>
-    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.link)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" ~style="{visibility: (designMode || $for.item?.bind)?'visible':'hidden'}" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
     $wake: true,
     attached() {
