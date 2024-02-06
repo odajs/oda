@@ -1,11 +1,14 @@
 import Zipper from '../attoGPT/zipper.js';
-import  './numjs.js'
+// import  './numjs.js'
 const ERROR = {
     SIZE_MISMATCH: (p1 = 0, p2 = 0) => {
         throw new Error(`Несогласованность размеров:\r\n p1=${p1}, p2=${p2}`)
     },
     DIM_MISMATCH: (p1 = 0, p2 = 0) => {
         throw new Error(`Неподходящая размерность:\r\n ожидается ${p1}, подано ${p2}`)
+    },
+    DIM_OUT_FO_RANGE: (need = [], got = 0) => {
+        throw new Error(`IndexError: Dimension out of range (expected to be in range of ${need}, but got ${got})`)
     },
 }
 const matrix = {
@@ -126,6 +129,9 @@ export default class Tensor extends ROCKS({
     get size(){
         return this.shape.reduce((r, v)=>r * v, 1);
     },
+    get numel(){
+        return this.shape.reduce((r,v)=>r*v, 1)
+    },
     transpose(){
         let out;
         try{
@@ -152,6 +158,13 @@ export default class Tensor extends ROCKS({
         }
         return out;
 
+    },
+    max(axis){
+        if (axis > this.dim)
+            DIM_OUT_FO_RANGE([this.dim - 4, this.dim], axis)
+        let result = this.data;
+        let out = new Tensor(result, 'max', [this], 'icons:add-circle-outline');
+        return out;
     },
     sum(){
         function fn(data){
