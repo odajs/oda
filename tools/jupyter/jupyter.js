@@ -1,22 +1,20 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/containers',
+
+ODA({ is: 'oda-jupyter', imports: '@oda/button',
     template: `
         <style>
             :host{
                 @apply --vertical;
                 @apply --flex;
                 padding: 8px;
-                height: auto;
+                height: calc(100% - 18px);
                 overflow-x: auto;
-            }
-            .outline {
-                outline: 1px solid var(--border-color);
             }
         </style>
         <div ~if="readOnly || !isReady" style="height: 16px;"></div>
         <oda-jupyter-divider ~if="!readOnly && isReady" index="-1" style="padding: 6px 0 2px; 0" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell ~class="{outline: showBorder}" :cell="$for.item" :focused="focusedIndex === $for.index" @tap.stop="focusedIndex = (readOnly ? -1 : $for.index)"></oda-jupyter-cell>
+            <oda-jupyter-cell :cell="$for.item" :focused="focusedIndex === $for.index" @tap.stop="focusedIndex = (readOnly ? -1 : $for.index)"></oda-jupyter-cell>
             <oda-jupyter-divider :index="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
@@ -32,12 +30,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
             }
         },
         collapsedMode: false,
-        showBorder: {
-            $def: false,
-            $save: true
-        },
         iconSize: 24,
-        editors: ['pell', 'markdown', 'code', 'executable']
+        editors: ['Код', 'Текст']
     },
     focusedIndex: {
         $pdp: true,
@@ -59,9 +53,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @tools/property-grid, @tools/con
     },
     isReady: false,
     attached() {
-        this.async(() => this.isReady = true, 300 );
+        this.async(() => this.isReady = true, 300);
     }
 })
+
 ODA({ is: 'oda-jupyter-divider',
     template: `
         <style>
@@ -72,6 +67,8 @@ ODA({ is: 'oda-jupyter-divider',
                 z-index: 99;
                 opacity: 0;
                 transition: opacity ease-out .5s;
+                position: relative;
+                padding: 1px;
             }
             :host([focused]) {
                 box-shadow: none !important;
@@ -83,7 +80,7 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: 1;
             }
             oda-button {
-                font-size: x-small;
+                font-size: 14px;
                 margin: 0px 4px;
                 @apply --content;
                 @apply --border;
@@ -97,7 +94,8 @@ ODA({ is: 'oda-jupyter-divider',
                 justify-content: start;
             }
         </style>
-        <div class="horizontal">
+        <div class="horizontal center">
+            <div ~if="index!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
             <oda-button :icon-size icon="icons:add" ~for="editors" @tap.stop="addCell($for.item)">{{$for.item}}</oda-button>
         </div>
     `,
@@ -113,7 +111,7 @@ ODA({ is: 'oda-jupyter-divider',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell', imports: '@oda/divider',
+ODA({ is: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -145,7 +143,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/divider',
             <div class="vertical flex main">
                 <h3 ~if="cell?.structure?.label">{{cell?.structure?.label}}</h3>
                 <div ~if="isReady" ~is="cell?.cell_extType || cellType" class="editor" ~class="{shadow: !readOnly && focused}" :edit-mode="!readOnly && focused && editMode" :source="cell.source || ''"  :src="cell.source || ''" :args="cell.args" :fount="cell.fount" :label="cell.label" @change="onchange" :syspanel="!readOnly && focused && editMode" :read-only></div>
-                <oda-divider size="0" direction="horizontal" resize use_px></oda-divider>
             </div>
         </div>
         <div class="row" ~if="collapsedMode && !editMode" ~class="{shadow: !readOnly && focused}">{{cell?.label || cell?.cell_type || ''}}</div>
@@ -154,10 +151,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/divider',
     set cell(n) {
         if (n) {
             let type = n.cell_type;
-            type = this.editors.includes(type) ? type : 'pell';
-            ODA.import('@oda/' + type + '-editor').then(res => {
-                this.cellType = 'oda-' + type + '-editor';
-            })
+            this.cellType = 'oda-jupyter-' + (type === 'Код' ? 'code' : 'text')  + '-editor';
         }
     },
     get control() {
@@ -215,7 +209,7 @@ ODA({ is: 'oda-jupyter-toolbar',
                 top: 0;
                 right: 8px;
                 padding: 1px;
-                border-radius: 2px;
+                border-radius: 4px;
                 z-index: 100;
             }
         </style>
@@ -233,6 +227,7 @@ ODA({ is: 'oda-jupyter-toolbar',
     enableSettings2() {
         return Object.keys(this.control?.usedControl?.props || {}).length > 0;
     },
+    iconSize: 20,
     cell: null,
     async showSettings(e) {
         if (!this.enableSettings()) return;
@@ -263,7 +258,7 @@ ODA({ is: 'oda-jupyter-toolbar',
         }
         io.props = props;
         io = new Proxy(io, {
-            set: function(target, key, value) {
+            set: function (target, key, value) {
                 if (target.props[key].category === 'cell - ' + control.localName) {
                     control[key] = value;
                     control.controlSetArgs?.({ key, value, setArgs: true });
@@ -275,11 +270,6 @@ ODA({ is: 'oda-jupyter-toolbar',
                 return true;
             }
         })
-        await ODA.showDropdown(
-            'oda-property-grid',
-            { inspectedObject: io, style: 'min-width: 360px', showHeader: false },
-            { parent: e.target, align: 'left', intersect: true, title: control.localName }
-        )
     },
     moveCell(v) {
         this.editMode = false;
@@ -298,4 +288,31 @@ ODA({ is: 'oda-jupyter-toolbar',
             this.notebook.cells.splice(this.focusedIndex, 1);
         }
     }
+})
+
+ODA({ is: 'oda-jupyter-text-editor',
+    template: `
+        <style>
+
+        </style>
+        <div class="horizontal" style="padding: 4px">
+            Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")
+        </div>
+    `,
+})
+
+ODA({ is: 'oda-jupyter-code-editor',
+    template: `
+        <style>
+            :host {
+
+            }
+            .outline {
+                outline: 1px solid var(--border-color);
+            }
+        </style>
+        <div class="horizontal outline" style="padding: 4px">
+            [ ]
+        </div>
+    `,
 })
