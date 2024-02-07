@@ -712,7 +712,7 @@ if (!window.ODA?.IsReady) {
                 }
                 else{
                     src.text.push(function ($el) {
-                        let text = exec.call(this, fn, $el, $el.__for);
+                        let text = String(exec.call(this, fn, $el, $el.__for));
                         if ($el.___textContent == text)
                             return;
                         $el.textContent = $el.___textContent = text;
