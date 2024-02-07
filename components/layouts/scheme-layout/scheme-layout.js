@@ -1,8 +1,12 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
+    <style>
+    </style>
+    <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
     <div slot="content" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
     <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
+    showTrash: false,
     onLinkToBlock(e) {
         let pos = alterPos[this.focusedPin.pos];
         this.block.pins ??= {};
@@ -15,13 +19,10 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         console.log(this.focusedPin, this);
     },
     onTapPin(e) {
-
     },
     onDblClickPin(e) {
-
     },
     onContextMenuPin(e) {
-
     },
     $wake: true,
     dragLink: '',
@@ -34,7 +35,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     hostAttributes: {
         tabindex: 1
     },
-    keyBindings: {
+    $keyBindings: {
         delete(e) {
             this.removeSelection();
         }
@@ -82,7 +83,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             }
         },
         allPinsVisible: {
-            $save: true,
             $type: String,
             $pdp: true,
             $list: ['visible', 'half', 'invisible'],
@@ -152,6 +152,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         if (!this.designMode) return;
         switch (e.detail.state) {
             case 'start': {
+                this.showTrash = true;
                 if (!this.selection.has(this.lastdown.block)) {
                     this.selection.splice(0, this.selection.length, this.lastdown.block);
                 }
@@ -179,11 +180,15 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                 this.links = undefined;
             } break;
             case 'end': {
+                this.showTrash = false;
                 this.lastdown = null;
                 this.async(() => {
                     this.inTrack = false;
                     this.links = undefined;
                 });
+                if (e.detail.x > (this.layout.offsetWidth - 90) || e.detail.y > (this.layout.offsetHeight - 90)) {
+                    this.removeSelection();
+                };
             } break;
         }
     },
@@ -263,8 +268,8 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             z-index: {{(selection.includes(block)?1:0)}};
         }
     </style>
-    <oda-scheme-container-toolbar ~if="designMode && selection.last === block"></oda-scheme-container-toolbar>
-    <div>
+    <!--<oda-scheme-container-toolbar ~if="designMode && selection.last === block"></oda-scheme-container-toolbar>
+    <div>-->
         <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsTranslate + '%)'"></oda-scheme-pins>
         <div class="flex horizontal">
             <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsTranslate + '%)'"></oda-scheme-pins>
@@ -274,7 +279,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsTranslate + '%)'"></oda-scheme-pins>
         </div>
         <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsTranslate + '%)'"></oda-scheme-pins>
-    </div>
+    <!--</div>-->
     `,
     $wake: true,
     contextItem: null, // bug pdp contextItem buble
@@ -312,6 +317,24 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             i.links = undefined;
         });
     },
+    // $observers: {
+    //     async changeSelection(selection) {
+    //         if(selection.last === this.block) {
+    //             await (ODA.showDropdown('oda-button', {
+    //                 icon: 'icons:close',
+    //                 tap: () => {
+    //                     this.layout.removeSelection();
+    //                 },
+    //             }, {
+    //                 parent: this,
+    //                 // align: 'right',
+    //                 drop: 'up',
+    //                 anchor: 'right-top'
+    //             })).catch(e => { });
+    //             console.log('end dd');
+    //         }
+    //     }
+    // },
     $listeners: {
         dragover(e) {
             if (!this.designMode) return;
