@@ -18,7 +18,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     `,
     $public: {
         $pdp: true,
-        iconSize: 24,   
+        iconSize: 24,
         readOnly: false
     },
     $pdp: {
@@ -34,14 +34,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
         }
-    },    
+    },
     attached() {
         this.async(() => {
             this.style.opacity = 1;
         }, 500)
     },
     $listeners: {
-        tap(e) { this.focusedIdx = this.editIdx = -1; }
+        tap(e) { this.focusedIdx = this.editIdx = -1 }
     }
 })
 
@@ -111,7 +111,7 @@ ODA({ is: 'oda-jupyter-cell',
     set cell(n) {
         if (n) {
             let type = n.cell_type;
-            this.cellType = 'oda-jupyter-' + (type === 'Код' ? 'code' : 'text')  + '-editor';
+            this.cellType = 'oda-jupyter-' + (type === 'Код' ? 'code' : 'text') + '-editor';
         }
     },
     idx: -2,
@@ -273,6 +273,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
             }, 300)
-        , 100})
+        }, 100)
     }
 })
