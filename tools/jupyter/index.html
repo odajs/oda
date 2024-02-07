@@ -9,7 +9,7 @@
     jupyter.notebook = {
         cells: [
             {
-                cell_type: 'Техт',
+                cell_type: 'Текст',
                 source: `
 ## <strong>Начало работы</strong>
 Документ, который вы читаете, размещен не на статической веб-странице, а в интерактивной среде под названием <strong>блокнот ODA-Jupyter</strong>, позволяющей писать и выполнять код.
@@ -20,14 +20,14 @@
                 cell_type: 'Код',
                 source: `
 <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"><\/script>
-<div id="map" style="width:100%; height:400px"></div>
+<div id="map" style="width: 100%; height: 400px;"></div>
 <script>
-    DG.then(function () {  map = DG.map('map', { center: [54.62948, 39.74199], zoom: 16, scrollWheelZoom: false }) })
+    DG.then(function () { map = DG.map('map', { center: [54.62948, 39.74199], zoom: 16, scrollWheelZoom: false }) });
 <\/script>                
                 `
             },
             {
-                cell_type: 'Техт',
+                cell_type: 'Текст',
                 source: `
 Благодаря блокнотам <strong>ODA-Jupyter</strong> вы можете использовать в одном документе <strong>исполняемый код</strong>, <strong>форматированный текст</strong>, <strong>изображения</strong>, <strong>разметку HTML</strong> и не только.               
                 `
