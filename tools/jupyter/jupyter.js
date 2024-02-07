@@ -176,7 +176,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
                 outline: none;
             }
         </style>
-        <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px; " @change="onchange"></oda-simplemde-editor>
+        <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="_onchange"></oda-simplemde-editor>
         <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="_setEditMode" @keypress="_keyPress"></oda-md-viewer>
     `,
     cell: undefined,
@@ -191,9 +191,10 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
             this.src = this.cell?.source || '';
         }, 100)
     },
-    onchange(e) {
-        this.src = e.detail.value;
-        this.fire('change', this.src);
+    _onchange(e) {
+        this.cell.source = this.src = e.detail.value;
+        this.fire('change', this.cell);
+        console.log(this.cell)
     },
     _keyPress(e) {
         if (e.key === 'Enter')
@@ -225,7 +226,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </style>
         <div class="horizontal">
             <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
-            <oda-ace-editor :value="code" mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="border-left: 1px solid var(--border-color); padding: 4px 0px"></oda-ace-editor>   
+            <oda-ace-editor mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="border-left: 1px solid var(--border-color); padding: 4px 0px" @change="_onchange"></oda-ace-editor>   
         </div>
         <div ~if="run" class="horizontal" style="border-top: 1px solid var(--border-color);">
             <oda-icon :icon-size="iconSize" :icon="_iconClose" @tap="run=false" style="margin-top: 0; cursor: pointer; position: sticky; top: 0"></oda-icon>
@@ -237,15 +238,18 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     run: false,
     _icon: '',
     _iconClose: 'eva:o-close-circle-outline',
-    code: '',
     srcdoc: '',
     get icon() {
         return this.run ? 'av:play-circle-outline' : this._icon || 'bootstrap:code-square';
     },
     attached() {
         this.async(() => {
-            this.code = this.cell?.source || '';
+            this.$('oda-ace-editor').value = this.cell?.source || '';
         }, 100)
+    },
+    _onchange(e) {
+        this.cell.source = e.detail.value;
+        this.fire('change', this.cell);
     },
     _run() {
         this._iconClose = 'spinners:180-ring-with-bg';
@@ -268,7 +272,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
-            }, 750)
+            }, 300)
         , 100})
     }
 })
