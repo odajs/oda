@@ -6,6 +6,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 @apply --flex;
                 padding: 12px 6px;
                 height: calc(100% - 24px);
+                opacity: 0;
+                transition: opacity ease-out 1s;
             }
         </style>
         <oda-jupyter-divider idx="-1" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
@@ -14,31 +16,33 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
-    $listeners: {
-        tap(e) { this.focusedIdx = this.editIdx = -1; }
-    },
     $public: {
         $pdp: true,
-        iconSize: 24,
+        iconSize: 24,   
+        readOnly: false
+    },
+    $pdp: {
+        notebook: null,
         editors: ['Код', 'Текст'],
-        readOnly: false,
-        get _readOnly() {
-            return this.notebook?.readOnly || this.readOnly;
-        },
         focusedIdx: {
             $def: -1,
             set(n) {
                 this.editIdx = -1;
-            },
+            }
         },
-        editIdx: -1
+        editIdx: -1,
+        get _readOnly() {
+            return this.notebook?.readOnly || this.readOnly;
+        }
+    },    
+    attached() {
+        this.async(() => {
+            this.style.opacity = 1;
+        }, 500)
     },
-    notebook: {
-        $pdp: true,
-        $def: null
-    },
-    get focusedItem() { return this.notebook?.cells?.[this.focusedIdx] || undefined }
-
+    $listeners: {
+        tap(e) { this.focusedIdx = this.editIdx = -1; }
+    }
 })
 
 ODA({ is: 'oda-jupyter-divider',
@@ -161,6 +165,7 @@ ODA({ is: 'oda-jupyter-toolbar',
 ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer',
     template: `
         <style>
+            oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
             :host {
                 @apply --horizontal;
                 @apply --flex;
@@ -172,40 +177,98 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
             }
         </style>
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px; " @change="onchange"></oda-simplemde-editor>
-        <oda-md-viewer tabindex=0 class="flex" :srcmd="src" :pmargin="'0px'" @dblclick="editIdx = editIdx===idx ? -1 : idx" @keypress="_keyPress"></oda-md-viewer>
+        <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="_setEditMode" @keypress="_keyPress"></oda-md-viewer>
     `,
+    cell: undefined,
     idx: -2,
-    src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")',
+    src: '',
+    _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")',
     get opacity() {
-        return this.src === 'Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")' ? .3 : 1;
+        return this.src ? 1 : .3;
+    },
+    attached() {
+        this.async(() => {
+            this.src = this.cell?.source || '';
+        }, 100)
     },
     onchange(e) {
         this.src = e.detail.value;
         this.fire('change', this.src);
     },
-    // $keyBindings: {
-    //     enter(e) {
-    //         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
-    //     }
-    // },
     _keyPress(e) {
         if (e.key === 'Enter')
+            this._setEditMode();
+    },
+    _setEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
+        this.async(() => {
+            this.$('oda-simplemde-editor').value = this.src;
+        })
     }
 })
 
-ODA({ is: 'oda-jupyter-code-editor',
+ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     template: `
         <style>
             :host {
-
-            }
-            .outline {
+                @apply --vertical;
+                @apply --flex;
                 outline: 1px solid var(--border-color);
             }
+            oda-icon {
+                padding: 4px;
+                height: {{iconSize}};
+            }
+            oda-icon:hover {
+                fill: red;
+            }
         </style>
-        <div class="horizontal outline" style="padding: 4px">
-            [ ]
+        <div class="horizontal">
+            <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
+            <oda-ace-editor :value="code" mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="border-left: 1px solid var(--border-color); padding: 4px 0px"></oda-ace-editor>   
+        </div>
+        <div ~if="run" class="horizontal" style="border-top: 1px solid var(--border-color);">
+            <oda-icon :icon-size="iconSize" :icon="_iconClose" @tap="run=false" style="margin-top: 0; cursor: pointer; position: sticky; top: 0"></oda-icon>
+            <div style="width: 0px; height: 100%; border-right: 1px solid var(--border-color);"></div>
+            <iframe :srcdoc style="width: 100%; border: none; opacity: 0; height: 32px;"></iframe>
         </div>
     `,
+    cell: undefined,
+    run: false,
+    _icon: '',
+    _iconClose: 'eva:o-close-circle-outline',
+    code: '',
+    srcdoc: '',
+    get icon() {
+        return this.run ? 'av:play-circle-outline' : this._icon || 'bootstrap:code-square';
+    },
+    attached() {
+        this.async(() => {
+            this.code = this.cell?.source || '';
+        }, 100)
+    },
+    _run() {
+        this._iconClose = 'spinners:180-ring-with-bg';
+        this.srcdoc = '';
+        this.run = true;
+        this.async(() => {
+            const iframe = this.$('iframe');
+            iframe.style.height ='32px';
+            iframe.style.opacity = 0;
+            this.srcdoc = `
+<style>
+    html {
+        font-family: monospace;
+        font-size: 18px;
+    }
+</style>
+            ` + this.$('oda-ace-editor').value;
+            this.async(() => {
+                // const iframe = this.$('iframe');
+                iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
+                iframe.style.opacity = 1;
+                this._iconClose = 'eva:o-close-circle-outline';
+            }, 750)
+        , 100})
+    }
 })
