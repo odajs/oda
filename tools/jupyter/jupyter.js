@@ -83,11 +83,12 @@ ODA({ is: 'oda-jupyter-divider',
     `,
     idx: -2,
     addCell(cell_type) {
+        let idx = this.idx + 1;
         this.focusedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(1 + (+this.idx), 0, { cell_type });
-        this.async(() => this.focusedIdx = 1 + (+this.idx));
+        this.notebook.cells.splice(idx, 0, { cell_type, source: '' });
+        this.async(() => this.focusedIdx = idx);
     }
 })
 
@@ -103,7 +104,7 @@ ODA({ is: 'oda-jupyter-cell',
             }
         </style>
         <div class="vertical flex main" style="height: 100%; min-height: 22px;">
-            <div :idx ~is="this.cellType || 'div'" :cell ~class="{shadow: !_readOnly && focused}"></div>
+            <div ~is="this.cellType || 'div'" :idx :cell ~class="{shadow: !_readOnly && focused}"></div>
         </div>
         <oda-jupyter-toolbar :idx ~if="!_readOnly && focused" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
@@ -179,17 +180,14 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="_onchange"></oda-simplemde-editor>
         <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="_setEditMode" @keypress="_keyPress"></oda-md-viewer>
     `,
-    cell: undefined,
+    set cell(n) {
+        this.src = n?.source || '';
+    },
     idx: -2,
     src: '',
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")',
     get opacity() {
         return this.src ? 1 : .3;
-    },
-    attached() {
-        this.async(() => {
-            this.src = this.cell?.source || '';
-        }, 100)
     },
     _onchange(e) {
         this.cell.source = this.src = e.detail.value;
@@ -212,7 +210,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     template: `
         <style>
             :host {
-                @apply --vertical;
+                @apply --horizontal;
                 @apply --flex;
                 outline: 1px solid var(--border-color);
             }
@@ -220,45 +218,48 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 padding: 4px;
                 height: {{iconSize}};
             }
-            oda-icon:hover {
+            #icon-close {
+                margin-top: {{_top}};
+            }
+            #icon-close:hover {
                 fill: red;
             }
         </style>
-        <div class="horizontal">
+        <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
-            <oda-ace-editor mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="border-left: 1px solid var(--border-color); padding: 4px 0px" @change="_onchange"></oda-ace-editor>   
+            <oda-icon id="icon-close" ~if="run" :icon-size="iconSize" :icon="_iconClose" @tap="run=false" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
         </div>
-        <div ~if="run" class="horizontal" style="border-top: 1px solid var(--border-color);">
-            <oda-icon :icon-size="iconSize" :icon="_iconClose" @tap="run=false" style="margin-top: 0; cursor: pointer; position: sticky; top: 0"></oda-icon>
-            <div style="width: 0px; height: 100%; border-right: 1px solid var(--border-color);"></div>
-            <iframe :srcdoc style="width: 100%; border: none; opacity: 0; height: 32px;"></iframe>
+        <div class="vertical flex">
+            <oda-ace-editor :src mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
+            <iframe ~if="run" :srcdoc style="width: 100%; border: none; border-top: 1px solid var(--border-color); opacity: 0; min-height: 32px; height: 32px;"></iframe>
         </div>
     `,
-    cell: undefined,
+    src: '',
+    set cell(n) {
+        this.src = n?.source || '';
+    },
     run: false,
     _icon: '',
     _iconClose: 'eva:o-close-circle-outline',
+    get _top() {
+        return this.$('oda-ace-editor')?.editor.container.style.height || '0px';
+    },
     srcdoc: '',
     get icon() {
         return this.run ? 'av:play-circle-outline' : this._icon || 'bootstrap:code-square';
     },
-    attached() {
-        this.async(() => {
-            this.$('oda-ace-editor').value = this.cell?.source || '';
-        }, 100)
-    },
     _onchange(e) {
+        this._top = undefined;
         this.cell.source = e.detail.value;
         this.fire('change', this.cell);
     },
     _run() {
+        this._top = undefined;
         this._iconClose = 'spinners:180-ring-with-bg';
         this.srcdoc = '';
         this.run = true;
         this.async(() => {
             const iframe = this.$('iframe');
-            iframe.style.height ='32px';
-            iframe.style.opacity = 0;
             this.srcdoc = `
 <style>
     html {
@@ -268,7 +269,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
 </style>
             ` + this.$('oda-ace-editor').value;
             this.async(() => {
-                // const iframe = this.$('iframe');
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
