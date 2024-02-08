@@ -262,14 +262,20 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             const iframe = this.$('iframe');
             this.srcdoc = `
 <style>
-    html {
+    html, body {
+        margin: 0;
+        padding: 0;
+        position: relative;
         font-family: monospace;
         font-size: 18px;
+    }
+    * *, *:before, *:after {  
+        box-sizing: border-box;
     }
 </style>
             ` + this.$('oda-ace-editor').value;
             this.async(() => {
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
+                iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
             }, 300)

@@ -18,19 +18,41 @@
             },
             {
                 cell_type: 'Код',
-                source: `
-<script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"><\/script>
-<div id="map" style="width: 100%; height: 400px;"></div>
+                source:
+`<script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"><\/script>
+<div id="map" style="width: 100%; height: 560px;"></div>
 <script>
     DG.then(function () { map = DG.map('map', { center: [54.62948, 39.74199], zoom: 16, scrollWheelZoom: false }) });
-<\/script>                
-                `
+<\/script>`
             },
             {
                 cell_type: 'Текст',
                 source: `
-Благодаря блокнотам <strong>ODA-Jupyter</strong> вы можете использовать в одном документе <strong>исполняемый код</strong>, <strong>форматированный текст</strong>, <strong>изображения</strong>, <strong>разметку HTML</strong> и не только.               
+Благодаря блокнотам <strong>ODA-Jupyter</strong> вы можете использовать в одном документе <strong>исполняемый код</strong>, <strong>форматированный текст</strong>, <strong>изображения</strong>, <strong>разметку HTML</strong> и не только. 
+
+Можете легко создавать и тестировать <strong>компоненты ODA</strong> или любые другие <strong>WEB компоненты</strong>:
                 `
+            },
+            {
+                cell_type: 'Код',
+                source:
+`<oda-component></oda-component>
+<script type="module">
+    import '../../oda.js';
+    ODA({ is: 'oda-component', imports: '@oda/button',
+        template: \`
+            <div class="horizontal flex center" style="margin: 12px;">
+                <oda-button icon="box:i-minus-circle" class="border" @tap="count--">Жми на меня</oda-button>
+                <span style="width: 160px; text-align: center;">Счетчик: {{count+" "}}</span>
+                <oda-button  icon="box:i-plus-circle" class="border" @tap="_onTapAdd">Жми на меня</oda-button>
+            </div>
+        \`,
+        count: 0,
+        _onTapAdd() {
+            this.count++;
+        }
+    })
+<\/script>`
             }
         ]
     }
