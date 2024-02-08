@@ -40,10 +40,10 @@ ODA({
     is: 'my-component',
     template: `
         <div>{{mustache}}</div>
-        <button @tap="tap">Нажми меня</button>
+        <button @tap="onTap">Нажми меня</button>
     `,
     mustache: 'Привет, Mustache!',
-    tap() {
+    onTap() {
         this.mustache = this.mustache=='Привет, Mustache!' ? 'Mustache, привет!': 'Привет, Mustache!';
     }
 });
@@ -192,46 +192,61 @@ ODA({
 
 Например,
 
-```html run_edit_error_h=30_
-<script type="module" src="./oda.js"></script>
-<button id="button">Создать компонент</button>
-<my-component></my-component>
-<script type="module">
-    button.onclick = function() {
-        ODA({
-            is: 'my-component',
-            template: `
-                <div>{{mustache}}</div>
-            `
-        });
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'error-component',
+    template: `
+        <span>Компонент с ошибкой.</div>
+        <span>{{mustache}}</span>
+    `
+});
+
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="onTap">{{text}}</button>
+        <error-component ~if="show"></error-component>
+    `,
+    show: false,
+    text: 'Показать',
+    onTap() {
+        this.show = !this.show;
+        this.text = this.text=='Показать' ? 'Скрыть': 'Показать';
     }
-</script>
+});
 ```
 
-В данном примере при нажатии на кнопку создается компонент, в HTML-шаблоне которого в подстановке используется обращение к несуществующему свойству **mustache**. В результате выдается исключение:
+В данном примере при нажатии на кнопку в DOM-объект компонента **my-component** встраивается **error-component**, в HTML-шаблоне которого в подстановке используется обращение к несуществующему свойству **mustache**. Сразу после встраивания выполняется рендеринг страницы, в процессе которого выдается исключение:
 
 ![Консоль браузера](learn/_help/ru/_images/structure-template-jsx-{{}}-2.png "Консоль браузера")
 
-Если в подстановке обращение к несуществующему свойству осуществляется с помощью указателя **this**, то исключение не генерируется, а в качестве значения свойства используется значение **undefined**.
+Если в подстановке обращение к несуществующему свойству осуществляется с использованием указателя **this**, то исключение не генерируется.
 
 Например,
 
-```html run_edit_error_h=50_
-<script type="module" src="./oda.js"></script>
-<button id="button">Создать компонент</button>
-<my-component></my-component>
-<script type="module">
-    button.onclick = function() {
-        ODA({
-            is: 'my-component',
-            template: `
-                <div>{{this.mustache}}</div>
-            `
-        });
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'error-component',
+    template: `
+        <span>Компонент с ошибкой.</div>
+        <span>{{this.mustache}}</span>
+    `
+});
+
+ODA({
+    is: 'my-component',
+    template: `
+        <button @tap="onTap">{{text}}</button>
+        <error-component ~if="show"></error-component>
+    `,
+    show: false,
+    text: 'Показать',
+    onTap() {
+        this.show = !this.show;
+        this.text = this.text=='Показать' ? 'Скрыть': 'Показать';
     }
-</script>
+});
 ```
 
-
-
+В данном примере, в отличие от предыдущего, в подстановке используется полное имя несуществующего свойства **this.mustache**. Благодаря наличию указателя **this** в имени свойства, исключение не вырабатывается.
 
