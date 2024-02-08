@@ -1,6 +1,4 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
-    <style>
-    </style>
     <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
     <div slot="content" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
     <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
@@ -34,11 +32,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     },
     hostAttributes: {
         tabindex: 1
-    },
-    $keyBindings: {
-        delete(e) {
-            this.removeSelection();
-        }
     },
     onDown(e) {
         this.lastdown = e.target;
@@ -148,6 +141,15 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.dragLink = `M ${e.layerX / this.scale} ${e.layerY / this.scale}` + endPoint.call(this.focusedPin);
         },
     },
+    $keyBindings: {
+        'space'(e) {
+            console.log('111');
+        },
+        delete(e) {
+            console.log('111');
+            this.removeSelection();
+        }
+    },
     trackBlock(e) {
         if (!this.designMode) return;
         switch (e.detail.state) {
@@ -217,38 +219,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         // this.links = undefined;
     }
 });
-ODA({ is: 'oda-scheme-container-toolbar', template: /*html*/`
-    <style>
-        :host {
-            @apply --horizontal;
-            @apply --header;
-            @apply --shadow;
-            @apply --border;
-            border-radius: 25%;
-            justify-content: right;
-            position: absolute;
-            right: 0;
-            opacity: .5;
-            z-index: 2;
-        }
-        :host(:hover) {
-            opacity: 1;
-            transition: opacity ease-in-out .5s;
-        }
-    </style>
-    <oda-button :icon-size icon="icons:close" class="error" @tap.stop="removeBlock"></oda-button>
-    `,
-    async removeBlock(e) {
-        if (this.selection.has(this.container.block))
-            this.layout.removeSelection();
-    },
-    $listeners: {
-        resize(e) {
-            this.topPosition = this.offsetHeight;
-        }
-    },
-    topPosition: 0
-});
 ODA({ is: 'oda-scheme-container', template: /*html*/`
     <style>
         :host {
@@ -268,8 +238,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             z-index: {{(selection.includes(block)?1:0)}};
         }
     </style>
-    <!--<oda-scheme-container-toolbar ~if="designMode && selection.last === block"></oda-scheme-container-toolbar>
-    <div>-->
         <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsTranslate + '%)'"></oda-scheme-pins>
         <div class="flex horizontal">
             <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsTranslate + '%)'"></oda-scheme-pins>
@@ -279,7 +247,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsTranslate + '%)'"></oda-scheme-pins>
         </div>
         <oda-scheme-pins class="horizontal" pos="bottom" :style="'transform: translateY(-' + pinsTranslate + '%)'"></oda-scheme-pins>
-    <!--</div>-->
     `,
     $wake: true,
     contextItem: null, // bug pdp contextItem buble
@@ -317,24 +284,6 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             i.links = undefined;
         });
     },
-    // $observers: {
-    //     async changeSelection(selection) {
-    //         if(selection.last === this.block) {
-    //             await (ODA.showDropdown('oda-button', {
-    //                 icon: 'icons:close',
-    //                 tap: () => {
-    //                     this.layout.removeSelection();
-    //                 },
-    //             }, {
-    //                 parent: this,
-    //                 // align: 'right',
-    //                 drop: 'up',
-    //                 anchor: 'right-top'
-    //             })).catch(e => { });
-    //             console.log('end dd');
-    //         }
-    //     }
-    // },
     $listeners: {
         dragover(e) {
             if (!this.designMode) return;
