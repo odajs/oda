@@ -1,6 +1,6 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
-    <div slot="content" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
+    <div slot="content" tabindex="0" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
     <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
@@ -30,9 +30,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             paths.push({ is: 'path', props: { stroke: 'red', 'stroke-width': '4', fill: 'transparent', d: this.dragLink } })
         return paths;
     },
-    hostAttributes: {
-        tabindex: 1
-    },
+    // $hostAttributes: {
+    //     tabindex: 1
+    // },
     onDown(e) {
         this.lastdown = e.target;
     },
@@ -142,11 +142,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         },
     },
     $keyBindings: {
-        'space'(e) {
-            console.log('111');
-        },
         delete(e) {
-            console.log('111');
             this.removeSelection();
         }
     },
