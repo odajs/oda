@@ -197,7 +197,7 @@
                                         "items": [
                                             {
                                                 "label": {
-                                                    "ru": "<b style='color: brown'>~for</b>: Синтаксис директивы цикла"
+                                                    "ru": "<b style='color: brown'>~for</b>: Директива цикла"
                                                 },
                                                 "name": "structure-template-jsx-directives-~for-syntax.md"
                                             },
