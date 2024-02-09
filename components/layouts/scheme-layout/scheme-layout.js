@@ -184,7 +184,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     this.inTrack = false;
                     this.links = undefined;
                 });
-                if (e.detail.x > (this.layout.offsetWidth - 90) || e.detail.y > (this.layout.offsetHeight - 90)) {
+                if (e.detail.x > (this.layout.offsetWidth - 120) && e.detail.y > (this.layout.offsetHeight - 120)) {
                     this.removeSelection();
                 };
             } break;
