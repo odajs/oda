@@ -278,7 +278,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
-            }, 300)
+            }, 500)
         }, 100)
     }
 })
