@@ -1,0 +1,25 @@
+<meta charset="utf-8">
+<oda-tester>
+    <oda-jupyter id="jupyter"></oda-jupyter>
+</oda-tester>
+
+<script type="module">
+    import '../../oda.js';
+    import './jupyter.js';
+    jupyter.notebook = {
+        cells: [
+            {
+                cell_type: 'Код',
+                source:
+`<script>
+    var UUIDv4 = function b(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)}
+    console.log(UUIDv4());
+    log(UUIDv4());
+    info(UUIDv4());
+    warn(UUIDv4());
+    error(UUIDv4());
+<\/script>`
+            }
+        ]
+    }
+</script>

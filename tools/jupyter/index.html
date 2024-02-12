@@ -42,14 +42,26 @@
     ODA({ is: 'oda-component', imports: '@oda/button',
         template: \`
             <div class="horizontal flex center" style="margin: 12px;">
-                <oda-button icon="box:i-minus-circle" class="border" @tap="count--">Жми на меня</oda-button>
+                <oda-button icon="box:i-minus-circle" class="border" @tap="_onTapMinus">Жми на меня</oda-button>
                 <span style="width: 160px; text-align: center;">Счетчик: {{count+" "}}</span>
-                <oda-button  icon="box:i-plus-circle" class="border" @tap="_onTapAdd">Жми на меня</oda-button>
+                <oda-button  icon="box:i-plus-circle" class="border" @tap="_onTapPlus">Жми на меня</oda-button>
             </div>
         \`,
         count: 0,
-        _onTapAdd() {
+        _onTapMinus() {
+            this.count--;
+            console.error('count - ' + this.count);
+        },
+        _onTapPlus() {
             this.count++;
+            console.info('count - ' + this.count);
+        },
+        attached() {
+            this.idx = 0;
+            setInterval(() => {
+                this.idx++;
+                console.log(this.idx);
+            }, 1000)
         }
     })
 <\/script>`

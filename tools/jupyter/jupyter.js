@@ -19,7 +19,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: false
+        readOnly: false,
+        consoleHeight: 150
     },
     $pdp: {
         notebook: null,
@@ -224,6 +225,23 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             #icon-close:hover {
                 fill: red;
             }
+            #j-console { 
+                overflow: auto;
+                position: relative;
+                max-height: {{consoleHeight}}px;
+                border-top: 1px solid var(--border-color); 
+            }
+            #icon-jclose {
+                position: absolute;
+                bottom: 0px;
+            }
+            #run {
+                width: 100%; 
+                border: none;
+                min-height: 0px;
+                height: 0px;
+                border-top: 1px solid var(--border-color); 
+            }
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
@@ -231,9 +249,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </div>
         <div class="vertical flex">
             <oda-ace-editor :src mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
-            <iframe ~if="run" :srcdoc style="width: 100%; border: none; border-top: 1px solid var(--border-color); opacity: 0; min-height: 32px; height: 32px;"></iframe>
+            <iframe id="run" ~if="run" :srcdoc></iframe>
+            <div id="j-console" ~if="run && jConsole?.length">
+                <div ~for="jConsole" style="padding: 4px;" ~style="jStyle($for.item)">{{$for.item.str}}</div>
+            </div>
         </div>
     `,
+    jConsole: undefined,
+    jStyle(i) {
+        let colors = { log: 'gray', info: 'blue', warn: 'orange', error: 'red' };
+        return `color: ${colors[i.method]}`;
+    },
     src: '',
     set cell(n) {
         this.src = n?.source || '';
@@ -273,12 +299,47 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         box-sizing: border-box;
     }
 </style>
+<script async>
+    window._jConsole = [];
+    var takeOverConsole = () => {
+        var console = window.console;
+        if (!console) return;
+        window.print = (e) => console.log(e);
+        window.log = (e) => console.log(e);
+        window.info = (e) => console.info(e);
+        window.warn = (e) => console.warn(e);
+        window.error = (e) => console.error(e);
+        var intercept = (method) => {
+            var original = console[method];
+            console[method] = function() {
+                var message = arguments;
+                if (original.apply) {
+                    // Do this for normal browsers
+                    original.apply(console, arguments);
+                } else {
+                    // Do this for IE
+                    message = Array.prototype.slice.apply(arguments).join(' ');
+                    original(message);
+                }
+                if (window.jConsole) {
+                    window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                } else {
+                    window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                }
+            }
+        }
+        ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
+    }
+    takeOverConsole();
+</script>
             ` + this.$('oda-ace-editor').value;
             this.async(() => {
+                this.jConsole = [...iframe.contentWindow._jConsole];
+                iframe.contentWindow.jConsole = this.jConsole;
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                 iframe.style.opacity = 1;
                 this._iconClose = 'eva:o-close-circle-outline';
-            }, 500)
+            }, 300)
         }, 100)
     }
 })
