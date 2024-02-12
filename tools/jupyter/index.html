@@ -65,6 +65,24 @@
         }
     })
 <\/script>`
+            },
+            {
+                cell_type: 'Код',
+                source:
+`<oda-component2></oda-component2>
+<script type="module">
+    import '../../oda.js';
+    ODA({ is: 'oda-component2', extends: 'oda-component',
+        _onTapMinus() {
+            this.count--;
+            console.warn('count - ' + this.count);
+        },
+        _onTapPlus() {
+            this.count++;
+            console.log('count - ' + this.count);
+        }
+    })
+<\/script>`
             }
         ]
     }

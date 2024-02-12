@@ -21,7 +21,9 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
         if (!this.srcmd) this.setHTML(n);
     },
     html: '',
-    pmargin: '',
+    $public: {
+        pmargin: ''
+    },
     options: {},
     defaultOptions: {
         omitExtraWLInCodeBlocks: false, noHeaderId: false, prefixHeaderId: false, rawPrefixHeaderId: false, ghCompatibleHeaderId: false, rawHeaderId: false, headerLevelStart: false, parseImgDimensions: false, simplifiedAutoLink: false, literalMidWordUnderscores: false, literalMidWordAsterisks: false, strikethrough: false, tables: true, tablesHeaderId: false, ghCodeBlocks: true, tasklists: false, smoothLivePreview: false, smartIndentationFix: false, disableForced4SpacesIndentedSublists: true, simpleLineBreaks: false, requireSpaceBeforeHeadingText: false, ghMentions: false, ghMentionsLink: 'https://github.com/{u}', encodeEmails: true, openLinksInNewWindow: true, backslashEscapesHTMLTags: true, emoji: true, underline: true, completeHTMLDocument: false, metadata: false, splitAdjacentBlockquotes: false

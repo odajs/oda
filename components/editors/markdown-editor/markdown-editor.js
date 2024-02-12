@@ -17,7 +17,7 @@ ODA({is: 'oda-markdown-editor', imports: '@oda/button, @oda/simplemde-editor, @o
             </div>
             <oda-divider ~if="!readOnly" size="3" color=transparent></oda-divider>
             <div ~if="readOnly || !hideResultView || !editMode" style="overflow-x: hidden; flex: 1">
-            <oda-md-viewer class="flex" :src="fount || ''" :srcmd="fount ? '' : value" :edit-mode="!readOnly" padding="0 2px"></oda-md-viewer>
+            <oda-md-viewer pmargin="16px" class="flex" :src="fount || ''" :srcmd="fount ? '' : value" :edit-mode="!readOnly" padding="0 2px"></oda-md-viewer>
             </div>
         </div>
         <div ~if="syspanel" class="horizontal header shadow" style="position: sticky; bottom: 0; border-top: 1px solid var(--border-color); z-index: 9;">
