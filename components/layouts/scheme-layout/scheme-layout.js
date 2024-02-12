@@ -9,7 +9,8 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         let pos = alterPos[this.focusedPin.pos];
         this.block.pins ??= {};
         this.block.pins[pos] ??= [];
-        const bind = { bind: [{ block: this.items.indexOf(this.focusedPin.block), [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
+        // const bind = { bind: [{ block: this.items.indexOf(this.focusedPin.block), [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
+        const bind = { bind: [{ block: this.focusedPin.block.id, [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
         this.block.pins[pos].push(bind);
         this.links = undefined;
     },
@@ -363,7 +364,8 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     },
     get links() {
         const links = this.binds?.map(bind => {
-            const block = this.items[bind.block];
+            // const block = this.items[bind.id];
+            const block = this.items.find(i => i.id === bind.block);
             if( block ) {
                 return Object.keys(bind).map(dir => {
                     const pin = block.pins?.[dir];
