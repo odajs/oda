@@ -40,7 +40,8 @@ export class NetValue extends ROCKS({
         }
         this.outputs.forEach( out => addBl(out,0))
         let [dX, dY] = [100, 150]
-        rez.data.forEach(bl=> {
+        rez.data.forEach((bl, idx)=> {
+            bl.id = idx;
             bl.x = ( (2*bl.x-1) / rez.m[bl.y] ) * rez.xMax * dX
             if (bl.props.el.t==='input') bl.y++
             bl.y = (bl.y+0.1) * dY
