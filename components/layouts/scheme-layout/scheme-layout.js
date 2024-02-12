@@ -151,6 +151,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         switch (e.detail.state) {
             case 'start': {
                 this.showTrash = true;
+                this.lastdown.style.opacity = 0.8;
                 if (!this.selection.has(this.lastdown.block)) {
                     this.selection.splice(0, this.selection.length, this.lastdown.block);
                 }
@@ -179,6 +180,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             } break;
             case 'end': {
                 this.showTrash = false;
+                this.lastdown.style.opacity = 1;
                 this.lastdown = null;
                 this.async(() => {
                     this.inTrack = false;

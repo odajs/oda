@@ -20,7 +20,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         $pdp: true,
         iconSize: 24,
         readOnly: false,
-        consoleHeight: 150
+        consoleHeight: 160
     },
     $pdp: {
         notebook: null,
@@ -214,6 +214,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 @apply --horizontal;
                 @apply --flex;
                 outline: 1px solid var(--border-color);
+                position: relative;
             }
             oda-icon {
                 padding: 4px;
@@ -240,7 +241,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 border: none;
                 min-height: 0px;
                 height: 0px;
-                border-top: 1px solid var(--border-color); 
+            }
+            #splitter {
+                border-top: {{run ? '1px solid var(--border-color)' : 'none'}}; 
             }
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
@@ -249,6 +252,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </div>
         <div class="vertical flex">
             <oda-ace-editor :src mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
+            <div id="splitter"></div>
             <iframe id="run" ~if="run" :srcdoc></iframe>
             <div id="j-console" ~if="run && jConsole?.length">
                 <div ~for="jConsole" style="padding: 4px;" ~style="jStyle($for.item)">{{$for.item.str}}</div>
@@ -268,7 +272,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     _icon: '',
     _iconClose: 'eva:o-close-circle-outline',
     get _top() {
-        return this.$('oda-ace-editor')?.editor.container.style.height || '0px';
+        return (this.$('#splitter')?.offsetTop) - 36 + 'px';
     },
     srcdoc: '',
     get icon() {
