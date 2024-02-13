@@ -365,7 +365,7 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     get links() {
         const links = this.binds?.map(bind => {
             // const block = this.items[bind.id];
-            const block = this.items.find(i => i.id === bind.block);
+            const block = this.items.find?.(i => i.id === bind.block);
             if( block ) {
                 return Object.keys(bind).map(dir => {
                     const pin = block.pins?.[dir];
