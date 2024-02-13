@@ -1,0 +1,13 @@
+<meta charset="UTF-8">
+<title>Title</title>
+
+<script>
+    const vals = []
+    function fib(n) {
+        return vals[n] ??= (n <= 1 ? n : fib(n - 1) + fib(n - 2));
+    }
+    let result = fib(1000)
+    console.log(result)
+
+
+</script>

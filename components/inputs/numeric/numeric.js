@@ -108,11 +108,7 @@ ODA({is: 'oda-numeric-input',
     },
     set __focused(n) {
         if (n) {
-            this.$next(() => {
-                this.input.selectionStart = 0;
-                this.input.selectionEnd = 100000;
-                this.setPos();
-            })
+            this.setPos();
         }
     },
     get beginInt() {
