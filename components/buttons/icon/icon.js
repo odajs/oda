@@ -1,4 +1,5 @@
 const path = import.meta.url.split('/').slice(0, -1).join('/');
+const DEF_ICON_SIZE = 24;
 ODA({is: 'oda-icon',
     template: /*html*/`
         <style>
@@ -65,7 +66,7 @@ ODA({is: 'oda-icon',
         return `0 0 ${size} ${size}`;
     },
     get _style() {
-        const w = this.iconSize + 'px';
+        const w = (this.iconSize ?? DEF_ICON_SIZE) + 'px';
         return { minWidth: w, minHeight: w, height: w, width: w };
     },
     get _body() {
@@ -134,7 +135,7 @@ ODA({is: 'oda-icon',
             $def: '',
             $attr: true
         },
-        iconSize: 24,
+        iconSize: DEF_ICON_SIZE,
         stroke: '',
         fill: '',
         blink: 0,

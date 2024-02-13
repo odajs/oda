@@ -914,11 +914,20 @@ if (!window.ODA?.IsReady) {
             }
         },
         props($el, fn, p) {
-            const props = exec.call(this, fn, $el,  p);
-            if (Object.equal($el.__dir_props__, props, true))
-                return;
-            $el.__dir_props__ = props;
-            $el.assignProps(props);
+            const props = exec.call(this, fn, $el, p);
+            if ($el.__dir_props__) {
+                if (Object.equal($el.__dir_props__.last, props, true))
+                    return;
+            }
+            else {
+                $el.__dir_props__ = { current: {}, last: {} };
+            }
+            const keys = new Set([$el.__dir_props__.last, props].map(o => (o && Object.keys(o)) || []).flat());
+            for (const k of keys) {
+                $el.__dir_props__.current[k] = props?.[k];
+            }
+            $el.__dir_props__.last = props;
+            $el.assignProps($el.__dir_props__.current);
         },
         show($el, fn, p) {
             $el.style.display = exec.call(this, fn, $el, p) ? '' : 'none';
