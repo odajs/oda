@@ -249,6 +249,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     `,
     $wake: true,
     contextItem: null, // bug pdp contextItem buble
+    iconSize: 24, // bug pdp iconSize buble
     get pinsTranslate() {
         switch( this.allPinsVisible ) {
             case 'visible':
