@@ -1,4 +1,4 @@
-ODA({ is: 'oda-jupyter', imports: '@oda/button',
+ODA({ is: 'oda-jupyter2', imports: '@oda/button',
     template: `
         <style>
             :host{
@@ -302,7 +302,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     getFullCode() {
         this.fullCode = '';
         let html = '', script = '', isODA = false;
-        this.notebook.cells.map(i => {
+        const i = this.cell.source;
+        //this.notebook.cells.map(i => {
             if (i.mode === 'html')
                 html += i.source + `
             `;
@@ -311,11 +312,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
 
 `;
                 isODA ||= i.isODA;
-        })
+        //})
         let odaImport = isODA ? `import '../../oda.js';` : ``;
         script = 
 `
-${this.cell.mode === 'html' ? this.cell.source : ''}
+
 
 <script type="module">
 ${odaImport}
@@ -333,6 +334,31 @@ ${script}
         this._setMode();
     },
     _run() {
+                // const handlers = {
+        //     get: (target, key, resolver) => {
+        //         return target[key]
+        //     },
+        //     set: (target, key, value) => {
+        //         target[key] = value;
+        //         return true;
+        //     }
+        // };
+        //const target = {};
+        //const env = new Proxy(target, handlers)
+        const env = window['env'] ??= {};
+        const txt = this.cell.source;
+        const fn = new Function('', `with (this) {try { ${txt}} catch(e){console.error(e)}} `);
+        const res = fn.call(env);
+
+
+
+
+
+
+
+        return;
+
+
         this._top = undefined;
         this._iconClose = 'spinners:180-ring-with-bg';
         this.srcdoc = '';

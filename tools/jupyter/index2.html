@@ -1,39 +1,31 @@
 <meta charset="utf-8">
-<oda-tester>
-    <oda-jupyter id="jupyter"></oda-jupyter>
-</oda-tester>
+<!-- <oda-tester> -->
+    <oda-jupyter2 id="jupyter"></oda-jupyter2>
+<!-- </oda-tester> -->
 
 <script type="module">
     import '../../oda.js';
-    import './jupyter.js';
+    import './jupyter2.js';
     jupyter.notebook = {
         cells: [
             {
                 cell_type: 'Код',
                 source:
-`const text1 = '  a = 100;' +
-    'console.log(a)'
-const text2 = 'b = 200 * a'
-const fn1 = new Function('', \`with (this) {\${text1}}\`)
-const fn2 = new Function('', \`with (this) {\${text2}}\`)
-const result1 = fn1.call(window)
-const result2 = fn2.call(window)
-
-console.log(a, b)
-ODA({ is: 'oda-component2', 
-    template: \`
-        <h3>ODA-component</h3>
-    \`
-})
+`
+const a = 100;
+const b = a + 100;
 
 console.log(a, b);
+
+c = a + b / 0
+
 `
             },
             {
                 cell_type: 'Код',
                 source:
 `
-console.log(a, b);
+console.log(c);
 `
             }
         ]
