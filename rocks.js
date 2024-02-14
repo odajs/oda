@@ -331,6 +331,13 @@ in the <${host.localName}>`;
                 op.target[key] = reactor.call(this, value);
                 ROCKS.resetDeps($prop);
                 return true;
+            },
+            deleteProperty: (target, key) => {
+                const $prop = op.props[key] ??= { deps: new Set() }
+                op.target[key] = reactor.call(this, undefined);
+                delete op.target[key];
+                ROCKS.resetDeps($prop);
+                return true;
             }
         };
         const proxy = new Proxy(op?.target || target, handlers);
