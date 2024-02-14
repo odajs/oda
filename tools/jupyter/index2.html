@@ -9,20 +9,28 @@
     jupyter.notebook = {
         cells: [
             {
-                cell_type: 'Код',
+                cell_type: 'text',
+                source:
+`
+Markdown editor
+---
+`
+            },
+            {
+                cell_type: 'code',
                 source:
 `
 const a = 100;
-const b = a + 100;
+const b = a + 200;
 
 console.log(a, b);
 
-c = a + b / 0
+c = a + b;
 
 `
             },
             {
-                cell_type: 'Код',
+                cell_type: 'code',
                 source:
 `
 console.log(c);

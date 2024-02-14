@@ -12,7 +12,7 @@ ODA({ is: 'oda-jupyter2', imports: '@oda/button',
         </style>
         <oda-jupyter-divider idx="-1" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell :idx="$for.index" :cell="$for.item" :focused="focusedIdx === $for.index" @tap.stop="focusedIdx = (_readOnly ? -1 : $for.index);"></oda-jupyter-cell>
+            <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="focusedIdx === $for.index" :focused="focusedIdx === $for.index" @tap.stop="focusedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
@@ -24,7 +24,14 @@ ODA({ is: 'oda-jupyter2', imports: '@oda/button',
     },
     $pdp: {
         notebook: null,
-        editors: ['Код', 'Текст'],
+        editors: {
+            code: { label: 'Код', editor: 'oda-jupyter-code-editor' },
+            text: { label: 'Текст', editor: 'oda-jupyter-text-editor' }
+        },
+        get arrEditors() {
+            const ed = this.editors;
+            return Object.keys(ed).map(k => { return { ...{ type: k }, ...ed[k] } });
+        },
         focusedIdx: {
             $def: -1,
             set(n) {
@@ -34,8 +41,7 @@ ODA({ is: 'oda-jupyter2', imports: '@oda/button',
         editIdx: -1,
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
-        },
-        fullCode: ''
+        }
     },
     attached() {
         this.async(() => {
@@ -80,16 +86,16 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center">
             <div ~if="!_readOnly && idx!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="addCell($for.item)">{{$for.item}}</oda-button>
+            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="arrEditors" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
     idx: -2,
-    addCell(cell_type) {
+    addCell(i) {
         let idx = this.idx + 1;
         this.focusedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type, source: '' });
+        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
         this.async(() => this.focusedIdx = idx);
     }
 })
@@ -105,17 +111,8 @@ ODA({ is: 'oda-jupyter-cell',
                 transition: opacity ease-out 1s;
             }
         </style>
-        <div class="vertical flex main" style="height: 100%; min-height: 22px;">
-            <div ~is="this.cellType || 'div'" :idx :cell ~class="{shadow: !_readOnly && focused}"></div>
-        </div>
         <oda-jupyter-toolbar :idx ~if="!_readOnly && focused" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
-    set cell(n) {
-        if (n) {
-            let type = n.cell_type;
-            this.cellType = 'oda-jupyter-' + (type === 'Код' ? 'code' : 'text') + '-editor';
-        }
-    },
     idx: -2,
     focused: false
 })
@@ -165,7 +162,7 @@ ODA({ is: 'oda-jupyter-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer',
+ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -208,7 +205,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     }
 })
 
-ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
+ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -303,19 +300,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.fullCode = '';
         let html = '', script = '', isODA = false;
         const i = this.cell.source;
-        //this.notebook.cells.map(i => {
-            if (i.mode === 'html')
-                html += i.source + `
+        if (i.mode === 'html')
+            html += i.source + `
             `;
-            if (i.mode === 'javascript')
-                script += i.source + `
+        if (i.mode === 'javascript')
+            script += i.source + `
 
 `;
-                isODA ||= i.isODA;
-        //})
+        isODA ||= i.isODA;
         let odaImport = isODA ? `import '../../oda.js';` : ``;
-        script = 
-`
+        script =
+            `
 
 
 <script type="module">
@@ -334,7 +329,7 @@ ${script}
         this._setMode();
     },
     _run() {
-                // const handlers = {
+        // const handlers = {
         //     get: (target, key, resolver) => {
         //         return target[key]
         //     },
