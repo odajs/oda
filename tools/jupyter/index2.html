@@ -1,0 +1,41 @@
+<meta charset="utf-8">
+<oda-tester>
+    <oda-jupyter id="jupyter"></oda-jupyter>
+</oda-tester>
+
+<script type="module">
+    import '../../oda.js';
+    import './jupyter.js';
+    jupyter.notebook = {
+        cells: [
+            {
+                cell_type: 'Код',
+                source:
+`const text1 = '  a = 100;' +
+    'console.log(a)'
+const text2 = 'b = 200 * a'
+const fn1 = new Function('', \`with (this) {\${text1}}\`)
+const fn2 = new Function('', \`with (this) {\${text2}}\`)
+const result1 = fn1.call(window)
+const result2 = fn2.call(window)
+
+console.log(a, b)
+ODA({ is: 'oda-component2', 
+    template: \`
+        <h3>ODA-component</h3>
+    \`
+})
+
+console.log(a, b);
+`
+            },
+            {
+                cell_type: 'Код',
+                source:
+`
+console.log(a, b);
+`
+            }
+        ]
+    }
+</script>

@@ -13,76 +13,85 @@
                 source: `
 ## <strong>Начало работы</strong>
 Документ, который вы читаете, размещен не на статической веб-странице, а в интерактивной среде под названием <strong>блокнот ODA-Jupyter</strong>, позволяющей писать и выполнять код.
-Например, вот <strong>ячейка</strong> с коротким кодом, который выводит карту 2ГИС центра города Рязани:              
+Например, вот <strong>ячейка</strong> с коротким HTML кодом:              
                 `
             },
             {
                 cell_type: 'Код',
                 source:
-`<script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"><\/script>
-<div id="map" style="width: 100%; height: 560px;"></div>
-<script>
-    DG.then(function () { map = DG.map('map', { center: [54.62948, 39.74199], zoom: 16, scrollWheelZoom: false }) });
-<\/script>`
+`<h2 style="text-align: center; color: orange; margin-top: 6px;">Демонстрация HTML кода</h2>`
             },
             {
                 cell_type: 'Текст',
                 source: `
 Благодаря блокнотам <strong>ODA-Jupyter</strong> вы можете использовать в одном документе <strong>исполняемый код</strong>, <strong>форматированный текст</strong>, <strong>изображения</strong>, <strong>разметку HTML</strong> и не только. 
 
-Можете легко создавать и тестировать <strong>компоненты ODA</strong> или любые другие <strong>WEB компоненты</strong>:
+Можете легко создавать и тестировать <strong>компоненты ODA</strong> или любые другие <strong>WEB компоненты</strong>. Напишем код для первого компонента:
                 `
             },
             {
                 cell_type: 'Код',
                 source:
-`<oda-component></oda-component>
-<script type="module">
-    import '../../oda.js';
-    ODA({ is: 'oda-component', imports: '@oda/button',
-        template: \`
-            <div class="horizontal flex center" style="margin: 12px;">
-                <oda-button icon="box:i-minus-circle" class="border" @tap="_onTapMinus">Жми на меня</oda-button>
-                <span style="width: 160px; text-align: center;">Счетчик: {{count+" "}}</span>
-                <oda-button  icon="box:i-plus-circle" class="border" @tap="_onTapPlus">Жми на меня</oda-button>
-            </div>
-        \`,
-        count: 0,
-        _onTapMinus() {
-            this.count--;
-            console.error('count - ' + this.count);
-        },
-        _onTapPlus() {
-            this.count++;
-            console.info('count - ' + this.count);
-        },
-        attached() {
-            this.idx = 0;
-            setInterval(() => {
-                this.idx++;
-                console.log(this.idx);
-            }, 1000)
-        }
-    })
-<\/script>`
+`ODA({ is: 'oda-first-component', imports: '@oda/button',
+    template: \`
+        <style>
+            oda-button {
+                background: {{back}};
+            }
+        </style>
+        <div class="horizontal flex center" style="margin: 12px;">
+            <oda-button icon="box:i-minus-circle" class="border" @tap="_onTapMinus">Жми на меня</oda-button>
+            <span style="width: 160px; text-align: center;">Счетчик: {{count+" "}}</span>
+            <oda-button  icon="box:i-plus-circle" class="border" @tap="_onTapPlus">Жми на меня</oda-button>
+        </div>
+    \`,
+    count: 0, back: 'lightyellow', minus: 'error', plus: 'info',
+    _onTapMinus() {
+        this.count--;
+        console[this.minus]('count - ' + this.count);
+    },
+    _onTapPlus() {
+        this.count++;
+        console[this.plus]('count - ' + this.count);
+    }
+})`
+            },
+            {
+                cell_type: 'Текст',
+                source:
+`Можно запустить выполнение кода выше для вывода созданного компонента:`
             },
             {
                 cell_type: 'Код',
                 source:
-`<oda-component2></oda-component2>
-<script type="module">
-    import '../../oda.js';
-    ODA({ is: 'oda-component2', extends: 'oda-component',
-        _onTapMinus() {
-            this.count--;
-            console.warn('count - ' + this.count);
-        },
-        _onTapPlus() {
-            this.count++;
-            console.log('count - ' + this.count);
-        }
-    })
-<\/script>`
+`<oda-first-component></oda-first-component>`
+            },
+            {
+                cell_type: 'Текст',
+                source:
+`Напишем код для второго компонента:`
+            },
+            {
+                cell_type: 'Код',
+                source:
+`ODA({ is: 'oda-second-component', extends: 'oda-first-component',
+    back: 'lightgreen', minus: 'warn', plus: 'log',
+})`
+            },
+            {
+            cell_type: 'Текст',
+                source:
+`В результате получаем второй компонент:`
+            },
+            {
+                cell_type: 'Код',
+                source:
+`<oda-second-component></oda-second-component>`
+            },
+            {
+            cell_type: 'Текст',
+                source:
+`Ниже интерактивный код карты 2ГИС центра Рязани:`
             }
         ]
     }

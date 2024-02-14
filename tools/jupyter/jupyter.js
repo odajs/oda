@@ -34,7 +34,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         editIdx: -1,
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
-        }
+        },
+        fullCode: ''
     },
     attached() {
         this.async(() => {
@@ -239,8 +240,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             #run {
                 width: 100%; 
                 border: none;
-                min-height: 0px;
-                height: 0px;
+                min-height: 36px;
+                height: 36px;
             }
             #splitter {
                 border-top: {{run ? '1px solid var(--border-color)' : 'none'}}; 
@@ -248,10 +249,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="run" :icon-size="iconSize" :icon="_iconClose" @tap="run=false" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
+            <oda-icon id="icon-close" ~if="run" :icon-size="iconSize" :icon="_iconClose" @tap="run=false; jConsole = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
         </div>
         <div class="vertical flex">
-            <oda-ace-editor :src mode="html" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
+            <div style="display: block; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
+            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
             <div id="splitter"></div>
             <iframe id="run" ~if="run" :srcdoc></iframe>
             <div id="j-console" ~if="run && jConsole?.length">
@@ -267,6 +269,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     src: '',
     set cell(n) {
         this.src = n?.source || '';
+        this._setMode(this.src);
     },
     run: false,
     _icon: '',
@@ -278,10 +281,56 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     get icon() {
         return this.run ? 'av:play-circle-outline' : this._icon || 'bootstrap:code-square';
     },
+    _setMode(src = this.$('oda-ace-editor')?.value || '') {
+        this.cell.mode = 'javascript';
+        this.cell.isODA = false;
+        let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
+        if (oda?.length)
+            this.cell.isODA = true;
+        // let regx = src.match(/<d\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gm);
+        let arr = ['</script>', '</html>', '</body>', '</head>', '<link', '<!DOCTYPE html>', '<meta '];
+        let regx = new RegExp(arr.join('|'));
+        if (regx.test(src))
+            this.cell.mode = 'html';
+        if (this.cell.mode !== 'html' && !this.cell.isODA) {
+            // regx = src.match(/<\b[^>]*>[\s\S]*?<\/\b[^>]*>/gmi);
+            regx = src.match(/<\b[^>]*>[\s\S]*?/gm);
+            this.cell.mode = src.match(regx)?.length ? 'html' : 'javascript';
+        }
+        // console.log(this.cell.mode)
+    },
+    getFullCode() {
+        this.fullCode = '';
+        let html = '', script = '', isODA = false;
+        this.notebook.cells.map(i => {
+            // if (i.mode === 'html')
+            //     html += i.source + `
+            // `;
+            if (i.mode === 'javascript')
+                script += i.source + `
+
+`;
+                isODA ||= i.isODA;
+        })
+        let odaImport = isODA ? `import '../../oda.js';` : ``;
+        script = 
+`
+${this.cell.mode === 'html' ? this.cell.source : ''}
+
+<script type="module">
+${odaImport}
+
+${script}
+</script>
+`;
+        // console.log(script)
+        return script;
+    },
     _onchange(e) {
         this._top = undefined;
         this.cell.source = e.detail.value;
         this.fire('change', this.cell);
+        this._setMode();
     },
     _run() {
         this._top = undefined;
@@ -336,7 +385,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     }
     takeOverConsole();
 </script>
-            ` + this.$('oda-ace-editor').value;
+            ` + this.getFullCode();
             this.async(() => {
                 this.jConsole = [...iframe.contentWindow._jConsole];
                 iframe.contentWindow.jConsole = this.jConsole;
