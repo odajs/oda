@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grid</title>
+  <script src="/web/oda/oda.js" type="module"></script>
+  <script src="/web/oda/tools/containers/containers.js" type="module"></script>
+  <script src="./grid.js" type="module"></script>
+</head>
+<body style="display: flex;">
+  <oda-grid id="grid" style="flex: auto"></oda-grid>
+  <script>
+    grid.columns = Array(10).fill(0).map((e, i) => ['name', `col${i}`]).map(e => ({ [e[0]]: e[1] }));
+    const items = Array(10000).fill(0).map((r, i) => Object.fromEntries(grid.columns.map((c, j) => [`col${j}`, `col${j}.row${i}.val`])));
+    grid.allRowsCount = items.length;
+    const update = ()=>{
+      const rows = items.slice(grid.screenFrom, grid.screenFrom + grid.screenLength);
+      while(rows.length < grid.screenLength){
+        rows.push(grid.emptyRow);
+      }
+      grid.rows = rows;
+    }
+    setTimeout(() => {
+      update();
+      grid.addEventListener('screen-from-changed', update);
+    }, 1000);
+  </script>
+</body>
+</html>
