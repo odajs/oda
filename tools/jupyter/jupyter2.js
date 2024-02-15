@@ -1,4 +1,5 @@
-ODA({ is: 'oda-jupyter2', imports: '@oda/button',
+ODA({
+    is: 'oda-jupyter2', imports: '@oda/button',
     template: `
         <style>
             :host{
@@ -19,8 +20,7 @@ ODA({ is: 'oda-jupyter2', imports: '@oda/button',
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: false,
-        consoleHeight: 160
+        readOnly: false
     },
     $pdp: {
         notebook: null,
@@ -53,7 +53,8 @@ ODA({ is: 'oda-jupyter2', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-jupyter-divider',
+ODA({
+    is: 'oda-jupyter-divider',
     template: `
         <style>
             :host {
@@ -100,7 +101,8 @@ ODA({ is: 'oda-jupyter-divider',
     }
 })
 
-ODA({ is: 'oda-jupyter-cell',
+ODA({
+    is: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -117,7 +119,8 @@ ODA({ is: 'oda-jupyter-cell',
     focused: false
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+ODA({
+    is: 'oda-jupyter-toolbar',
     template: `
         <style>
             :host {
@@ -162,7 +165,8 @@ ODA({ is: 'oda-jupyter-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
+ODA({
+    is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -205,7 +209,8 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     }
 })
 
-ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
+ODA({
+    is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -225,9 +230,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 fill: red;
             }
             #j-console { 
-                overflow: auto;
                 position: relative;
-                max-height: {{consoleHeight}}px;
                 border-top: 1px solid var(--border-color); 
             }
             #icon-jclose {
@@ -239,6 +242,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 border: none;
                 min-height: 36px;
                 height: 36px;
+                overflow: auto;
             }
             #splitter {
                 border-top: {{run ? '1px solid var(--border-color)' : 'none'}}; 
@@ -253,7 +257,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
             <div id="splitter"></div>
             <iframe id="run" ~if="run" :srcdoc></iframe>
-            <div id="j-console" ~if="run && jConsole?.length">
+            <div id="j-console" ~if="run && jConsole">
                 <div ~for="jConsole" style="padding: 4px;" ~style="jStyle($for.item)">{{$for.item.str}}</div>
             </div>
         </div>
@@ -296,10 +300,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         }
         // console.log(this.cell.mode)
     },
-    getFullCode() {
-        this.fullCode = '';
+    getCode() {
         let html = '', script = '', isODA = false;
-        const i = this.cell.source;
+        const i = this.cell;
         if (i.mode === 'html')
             html += i.source + `
             `;
@@ -311,8 +314,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         let odaImport = isODA ? `import '../../oda.js';` : ``;
         script =
             `
-
-
+${html}
 <script type="module">
 ${odaImport}
 
@@ -328,92 +330,113 @@ ${script}
         this.fire('change', this.cell);
         this._setMode();
     },
+    takeOverConsole(w = window) {
+        let console = w.console;
+        if (!console) return;
+        this.jConsole = [];
+        w.jConsole = undefined;
+        w._jConsole = [];
+        if (!w.useJConsole) {
+            w.useJConsole = true;
+            w.print = (e) => console.log(e);
+            w.log = (e) => console.log(e);
+            w.info = (e) => console.info(e);
+            w.warn = (e) => console.warn(e);
+            w.error = (e) => console.error(e);
+            let intercept = (method) => {
+                let original = console[method];
+                console[method] = function () {
+                    let message = arguments;
+                    if (original.apply) {
+                        // Do this for normal browsers
+                        original.apply(console, arguments);
+                    } else {
+                        // Do this for IE
+                        message = Array.prototype.slice.apply(arguments).join(' ');
+                        original(message);
+                    }
+                    if (w.jConsole) {
+                        w.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    } else {
+                        w._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    }
+                }
+            }
+            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
+        };
+        this.jConsole = [...w._jConsole];
+        w.jConsole = this.jConsole;
+    },
     _run() {
-        // const handlers = {
-        //     get: (target, key, resolver) => {
-        //         return target[key]
-        //     },
-        //     set: (target, key, value) => {
-        //         target[key] = value;
-        //         return true;
-        //     }
-        // };
-        //const target = {};
-        //const env = new Proxy(target, handlers)
-        const env = window['env'] ??= {};
-        const txt = this.cell.source;
-        const fn = new Function('', `with (this) {try { ${txt}} catch(e){console.error(e)}} `);
-        const res = fn.call(env);
-
-
-
-
-
-
-
-        return;
-
-
+        this.jConsole = undefined;
         this._top = undefined;
         this._iconClose = 'spinners:180-ring-with-bg';
         this.srcdoc = '';
-        this.run = true;
-        this.async(() => {
-            const iframe = this.$('iframe');
-            this.srcdoc = `
-<style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        position: relative;
-        font-family: monospace;
-        font-size: 18px;
-    }
-    * *, *:before, *:after {  
-        box-sizing: border-box;
-    }
-</style>
-<script async>
-    window._jConsole = [];
-    var takeOverConsole = () => {
-        var console = window.console;
-        if (!console) return;
-        window.print = (e) => console.log(e);
-        window.log = (e) => console.log(e);
-        window.info = (e) => console.info(e);
-        window.warn = (e) => console.warn(e);
-        window.error = (e) => console.error(e);
-        var intercept = (method) => {
-            var original = console[method];
-            console[method] = function() {
-                var message = arguments;
-                if (original.apply) {
-                    // Do this for normal browsers
-                    original.apply(console, arguments);
-                } else {
-                    // Do this for IE
-                    message = Array.prototype.slice.apply(arguments).join(' ');
-                    original(message);
-                }
-                if (window.jConsole) {
-                    window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                } else {
-                    window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+        if (this.cell.mode === 'javascript') {
+            this.takeOverConsole();
+            this.run = true;
+            let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
+            fn();
+        } else {
+            this.run = true;
+            this.async(() => {
+                const iframe = this.$('iframe');
+                this.srcdoc = `
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+            font-family: monospace;
+            font-size: 18px;
+        }
+        * *, *:before, *:after {  
+            box-sizing: border-box;
+        }
+    </style>
+    <script async>
+        window._jConsole = [];
+        var takeOverConsole = () => {
+            var console = window.console;
+            if (!console) return;
+            window.print = (e) => console.log(e);
+            window.log = (e) => console.log(e);
+            window.info = (e) => console.info(e);
+            window.warn = (e) => console.warn(e);
+            window.error = (e) => console.error(e);
+            var intercept = (method) => {
+                var original = console[method];
+                console[method] = function() {
+                    var message = arguments;
+                    if (original.apply) {
+                        // Do this for normal browsers
+                        original.apply(console, arguments);
+                    } else {
+                        // Do this for IE
+                        message = Array.prototype.slice.apply(arguments).join(' ');
+                        original(message);
+                    }
+                    if (window.jConsole) {
+                        window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    } else {
+                        window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    }
                 }
             }
+            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
         }
-        ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
-    }
-    takeOverConsole();
-</script>
-            ` + this.getFullCode();
-            this.async(() => {
-                this.jConsole = [...iframe.contentWindow._jConsole];
-                iframe.contentWindow.jConsole = this.jConsole;
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
-                iframe.style.opacity = 1;
-                this._iconClose = 'eva:o-close-circle-outline';
-            }, 300)
-        }, 100)
+        takeOverConsole();
+    </script>
+                ` + this.getCode();
+                iframe.addEventListener('load', () => {
+                    this.jConsole = [...iframe.contentWindow._jConsole];
+                    iframe.contentWindow.jConsole = this.jConsole;
+                    iframe.style.opacity = 1;
+                    iframe.style.height = iframe.contentDocument.scrollingElement.offsetHeight + 'px';
+                    // iframe.style.height = iframe.contentDocument.body.offsetHeight + 'px';
+                })
+            })
+        }
+        this._iconClose = 'eva:o-close-circle-outline';
     }
 })

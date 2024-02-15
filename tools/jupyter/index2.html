@@ -20,20 +20,41 @@ Markdown editor
                 cell_type: 'code',
                 source:
 `
-const a = 100;
-const b = a + 200;
-
-console.log(a, b);
-
-c = a + b;
-
+<h2 style="color: red; text-align: center; height: 50px;">HTML code</h2>
 `
             },
             {
                 cell_type: 'code',
                 source:
 `
-console.log(c);
+const a = Math.floor(Math.random() * 100);
+const b = Math.floor(Math.random() * 100);
+
+console.log('a = ', a);
+console.log('b = ', b);
+console.log('a +b = ', a + b);
+
+c = a + b;
+`
+            },
+            {
+                cell_type: 'code',
+                source:
+`
+m = Math.floor(Math.random() * 10);
+d = c * m;
+
+console.log(c, ' * ', m, ' = ', d);
+`
+            },
+            {
+                cell_type: 'code',
+                source:
+`
+m = Math.floor(Math.random() * 10);
+e = c + d * m;
+
+console.log(c, ' + ', d, ' * ', m, ' = ', e);
 `
             }
         ]
