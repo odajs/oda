@@ -237,16 +237,18 @@ ODA({
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="isRun" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
+            <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
             <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-            <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
-            <div id="splitter2" ~if="isRun && runConsoleData" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-            <div id="console" ~if="isRun && runConsoleData" style="min-height: 36px; margin: 2px 0;">
-                <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
+            <div id="result">
+                <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
+                <div id="splitter2" ~if="isRun && runConsoleData" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <div ~if="isRun && runConsoleData" style="min-height: 36px; margin: 2px 0;">
+                    <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
+                </div>
             </div>
         </div>
     `,
@@ -262,6 +264,7 @@ ODA({
     iconRunOver: '',
     iconClose: 'eva:o-close-circle-outline',
     iconCloseTop: '',
+    iconCloseShow: false,
     isRun: false,
     runConsoleData: undefined,
     runConsoleStyle(i) {
@@ -327,6 +330,7 @@ ODA({
         w.runConsoleData = this.runConsoleData;
     },
     run() {
+        this.iconCloseShow = false;
         this.runConsoleData = undefined;
         this.iconClose = 'spinners:180-ring-with-bg';
         this.iconCloseTop = undefined;
@@ -335,16 +339,13 @@ ODA({
             this.overrideСonsole();
             this.isRun = true;
 
-            // let fn = new Function('', `with (window) {${this.cell.source}}`);
-            let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
+            // let fn = new Function('', `with (this) {${this.cell.source}}`)
+            let fn = new Function(`try { ${this.cell.source} } catch (e) { console.error(e) }`);
             fn();
 
             let str = this.cell.source;
             str = str.split('\n').filter(i => i).at(-1);
-            if (window[str]) {
-                console.log(window[str]);
-            }
-
+            window[str] && console.log(window[str]);
         } else {
             this.isRun = true;
             this.async(() => {
@@ -410,8 +411,8 @@ ODA({
         this.iconClose = 'eva:o-close-circle-outline';
         this.async(() => {
             this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
-            // this.$('#console')?.scrollIntoView({ block: 'end', behavior: 'smooth' });
-            this.$('#console')?.scrollIntoView({ behavior: 'smooth' });
+            this.iconCloseShow = true;
+            this.$('#result')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }, 100)
     }
 })

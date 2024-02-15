@@ -51,7 +51,6 @@ console.log('a + b = ', a + b);
 c = a + b;
 
 c
-
 `
             },
             {
@@ -59,10 +58,12 @@ c
                 source:
 `
 d = Math.floor(Math.random() * 10);
-
+d = c * d;
 console.log('c = ', c);
 console.log('d = ', d);
-console.log('c * d = ', c * d);
+console.log('c * d = ', d);
+
+d
 `
             },
             {
@@ -77,6 +78,21 @@ console.log('e = ', e);
 console.log('c * d * e = ', c * d * e);
 
 result = c * d * e;
+
+result
+`
+            },
+            {
+                cell_type: 'code',
+                source:
+`
+log('log');
+info('info');
+warn('warn');
+error('error');
+print('print');
+
+print
 `
             }
         ]
