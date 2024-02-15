@@ -245,7 +245,7 @@ ODA({
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
             <div id="splitter2" ~if="isRun && runConsoleData" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-            <div ~if="isRun && runConsoleData" style="min-height: 36px">
+            <div id="console" ~if="isRun && runConsoleData" style="min-height: 36px; margin: 2px 0;">
                 <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
             </div>
         </div>
@@ -401,9 +401,7 @@ ODA({
         this.iconClose = 'eva:o-close-circle-outline';
         this.async(() => {
             this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
-            this.$body.scrollIntoView({ 
-                behavior: 'smooth' 
-            })
-        })
+            this.$('#console')?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        }, 100)
     }
 })

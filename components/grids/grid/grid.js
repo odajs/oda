@@ -27,8 +27,18 @@ ODA({
     <oda-grid-pagination-panel></oda-grid-pagination-panel>
     `,
     $pdp: {
-        columns: [],
+        columns: {
+            set(n) {
+                this._columns = n?.map?.(c => ({ $column: c })) || [];
+            }
+        },
+        _columns: [],
         rows: [],
+        _rows: {
+            get() {
+                return this.rows.map(r => ({ $data: r }));
+            }
+        },
         rowHeight: 32,
         allRowsCount: 0,
         get screenLength() {
@@ -40,12 +50,21 @@ ODA({
                 return {
                     from: this.screenFrom,
                     length: this.screenLength
-                }
+                };
             }
         },
         focusedRow: null,
         valueCellTemplate: 'oda-grid-cell-value',
-        emptyRow: {}
+        emptyRow: {},
+        sorts: [],
+        currentPage: {
+            $def: 0,
+            set(n) {
+                this.currentPage = n;
+                this.screenFrom = n * this.screenLength;
+                this.screen = undefined;
+            }
+        },
     },
     get bodyHeight() {
         return this.$('#body')?.offsetHeight;
@@ -74,7 +93,7 @@ ODA({
             display: table-row-group;
         }
     </style>
-    <oda-grid-row ~for="rows" :row="$for.item" ~style="{outline: focusedRow === $for.item ? '1px solid var(--focused-color)' : ''}"></oda-grid-row>
+    <oda-grid-row ~for="_rows" :row="$for.item" ~style="{outline: focusedRow === $for.item ? '1px solid var(--focused-color)' : ''}"></oda-grid-row>
     `
 });
 ODA({
@@ -85,11 +104,11 @@ ODA({
             display: table-header-group;
         }
     </style>
-    <oda-grid-head-row ~for="rows" :row="$for.item" ~style="{outline: focusedRow === $for.item ? '1px solid var(--focused-color)' : ''}"></oda-grid-head-row>
+    <oda-grid-head-row ~for="_rows" :row="$for.item" ~style="{outline: focusedRow === $for.item ? '1px solid var(--focused-color)' : ''}"></oda-grid-head-row>
     `,
-    rows: {
+    _rows: {
         get() {
-            return [Object.fromEntries(this.columns.map(c => [c.name, (c.label || c.name)]))];
+            return [Object.fromEntries(this._columns.map(c => [c.$column.name, (c.$column.label || c.$column.name)]))].map(r => ({ $data: r }));
         }
     }
 });
@@ -102,9 +121,9 @@ ODA({
         }
     </style>
     `,
-    rows: {
+    _rows: {
         get() {
-            return [Object.fromEntries(this.columns.map(c => [c.name, (c.label || c.name)]))];
+            return [Object.fromEntries(this._columns.map(c => [c.$column.name, (c.$column.label || c.$column.name)]))].map(r => ({ $data: r }));
         }
     }
 });
@@ -116,11 +135,11 @@ ODA({
             display: table-row;
         }
     </style>
-    <oda-grid-cell ~for="cells" :column="columns[$for.index]" :row></oda-grid-cell>
+    <oda-grid-cell ~for="cells" :column="_columns[$for.index]" :row></oda-grid-cell>
     `,
     row: null,
     get cells() {
-        return this.columns.map(c => this.row[c.name]);
+        return this._columns.map(c => this.row[c.$column.name]);
     },
     $listeners: {
         dblclick(e) {
@@ -139,11 +158,11 @@ ODA({
             display: table-row;
         }
     </style>
-    <oda-grid-head-cell ~for="cells" :column="columns[$for.index]" :row :value-cell-template="'oda-grid-cell-value'"></oda-grid-head-cell>
+    <oda-grid-head-cell ~for="cells" :column="_columns[$for.index]" :row :value-cell-template="'oda-grid-cell-value'"></oda-grid-head-cell>
     `,
     row: null,
     get cells() {
-        return this.columns.map(c => this.row[c.name]);
+        return this._columns.map(c => this.row[c.$column.name]);
     },
     $listeners: {
         dblclick(e) {
@@ -152,6 +171,9 @@ ODA({
         tap(e) {
             this.onRowClick(this.row);
         }
+    },
+    onRowDblClick() {
+        return;
     }
 });
 ODA({
@@ -180,7 +202,7 @@ ODA({
     },
     get _cellValueTemplate() {
         if (this.isEmpty) return 'div';
-        return  this.row?.cellValueTemplate || this.column?.cellValueTemplate || this.valueCellTemplate;
+        return this.row?.cellValueTemplate || this.column?.cellValueTemplate || this.valueCellTemplate;
     }
 });
 ODA({
@@ -196,14 +218,53 @@ ODA({
             @apply --header;
             height: {{rowHeight}}px;
         }
+        :host .dimmed{
+            opacity: 0.3;
+        }
         {{''}}
     </style>
-    <oda-grid-cell-value :column :row></oda-grid-cell-value>
+    <div class="horizontal" style="align-items: center">
+        <oda-grid-cell-value :column :row class="flex"></oda-grid-cell-value>
+        <oda-icon :icon="sortIcon" @tap.stop="onSortTap" ~class="{dimmed: !column.sort}" :bubble="sortIndex" style="margin-left: 4px;"></oda-icon>
+    </div>
     `,
+    get sortIcon() {
+        return this.column.sort === 'a'
+            ? 'iconoir:sort-down'
+            : this.column.sort === 'd'
+                ? 'iconoir:sort-up'
+                : 'iconoir:sort';
+    },
     column: null,
     row: null,
     get _cellValueTemplate() {
         return this.row?.cellValueTemplate || this.column?.cellValueTemplate || this.valueCellTemplate;
+    },
+    onSortTap() {
+        this.column.sort = this.column.sort === 'a'
+            ? 'd'
+            : this.column.sort === 'd'
+                ? ''
+                : 'a';
+        const idx = this.sorts.indexOf(this.column);
+        if (this.column.sort) {
+            if (!~idx) {
+                this.sorts.push(this.column);
+            }
+        }
+        else {
+            if (~idx) {
+                this.sorts.splice(idx, 1);
+            }
+        }
+    },
+    get sortIndex() {
+        return this.sorts.indexOf(this.column) + 1;
+    },
+    $listeners: {
+        resize() {
+            this.column.width = this.offsetWidth;
+        }
     }
 });
 ODA({
@@ -215,7 +276,7 @@ ODA({
     row: null,
     value: {
         get() {
-            return this.row[this.column.name] || '';
+            return this.row.$data[this.column.$column.name] || '';
         }
     }
 });
@@ -235,19 +296,11 @@ ODA({
         <oda-button :disabled="currentPage === pageCount - 1" @tap="_toLast" icon="bootstrap:chevron-double-right"></oda-button>
         <!-- <oda-button ~for="buttons" ~props="$for.item" :focused="currentPage === $for.item.index"></oda-button> -->
     `,
-    currentPage: {
-        $def: 0,
-        set(n) {
-            this.currentPage = n;
-            this.screenFrom = n * this.screenLength;
-            this.screen = undefined;
-        }
-    },
     pages: {
         get() {
             const result = [];
             for (let i = 0; i < this.pageCount; i++) {
-                result.push({ label: String(i+1), val: i });
+                result.push({ label: String(i + 1), val: i });
             }
             return result;
         }
@@ -275,4 +328,4 @@ ODA({
     _toLast() {
         this.currentPage = this.pageCount - 1;
     },
-})
+});
