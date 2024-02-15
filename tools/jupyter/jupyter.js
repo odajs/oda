@@ -1,4 +1,5 @@
-ODA({ is: 'oda-jupyter', imports: '@oda/button',
+ODA({
+    is: 'oda-jupyter', imports: '@oda/button',
     template: `
         <style>
             :host{
@@ -12,19 +13,25 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         </style>
         <oda-jupyter-divider idx="-1" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
-            <oda-jupyter-cell :idx="$for.index" :cell="$for.item" :focused="focusedIdx === $for.index" @tap.stop="focusedIdx = (_readOnly ? -1 : $for.index);"></oda-jupyter-cell>
+            <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="focusedIdx === $for.index" :focused="focusedIdx === $for.index" @tap.stop="focusedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: false,
-        consoleHeight: 160
+        readOnly: false
     },
     $pdp: {
         notebook: null,
-        editors: ['Код', 'Текст'],
+        editors: {
+            code: { label: 'Код', editor: 'oda-jupyter-code-editor' },
+            text: { label: 'Текст', editor: 'oda-jupyter-text-editor' }
+        },
+        get arrEditors() {
+            const ed = this.editors;
+            return Object.keys(ed).map(k => { return { ...{ type: k }, ...ed[k] } });
+        },
         focusedIdx: {
             $def: -1,
             set(n) {
@@ -34,8 +41,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         editIdx: -1,
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
-        },
-        fullCode: ''
+        }
     },
     attached() {
         this.async(() => {
@@ -47,7 +53,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     }
 })
 
-ODA({ is: 'oda-jupyter-divider',
+ODA({
+    is: 'oda-jupyter-divider',
     template: `
         <style>
             :host {
@@ -80,21 +87,22 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center">
             <div ~if="!_readOnly && idx!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="addCell($for.item)">{{$for.item}}</oda-button>
+            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="arrEditors" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
     idx: -2,
-    addCell(cell_type) {
+    addCell(i) {
         let idx = this.idx + 1;
         this.focusedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type, source: '' });
+        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
         this.async(() => this.focusedIdx = idx);
     }
 })
 
-ODA({ is: 'oda-jupyter-cell',
+ODA({
+    is: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -105,22 +113,14 @@ ODA({ is: 'oda-jupyter-cell',
                 transition: opacity ease-out 1s;
             }
         </style>
-        <div class="vertical flex main" style="height: 100%; min-height: 22px;">
-            <div ~is="this.cellType || 'div'" :idx :cell ~class="{shadow: !_readOnly && focused}"></div>
-        </div>
         <oda-jupyter-toolbar :idx ~if="!_readOnly && focused" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
-    set cell(n) {
-        if (n) {
-            let type = n.cell_type;
-            this.cellType = 'oda-jupyter-' + (type === 'Код' ? 'code' : 'text') + '-editor';
-        }
-    },
     idx: -2,
     focused: false
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+ODA({
+    is: 'oda-jupyter-toolbar',
     template: `
         <style>
             :host {
@@ -165,7 +165,8 @@ ODA({ is: 'oda-jupyter-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer',
+ODA({
+    is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -208,7 +209,8 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     }
 })
 
-ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
+ODA({
+    is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -228,9 +230,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 fill: red;
             }
             #j-console { 
-                overflow: auto;
                 position: relative;
-                max-height: {{consoleHeight}}px;
                 border-top: 1px solid var(--border-color); 
             }
             #icon-jclose {
@@ -242,6 +242,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 border: none;
                 min-height: 36px;
                 height: 36px;
+                overflow: auto;
             }
             #splitter {
                 border-top: {{run ? '1px solid var(--border-color)' : 'none'}}; 
@@ -256,7 +257,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
             <div id="splitter"></div>
             <iframe id="run" ~if="run" :srcdoc></iframe>
-            <div id="j-console" ~if="run && jConsole?.length">
+            <div id="j-console" ~if="run && jConsole">
                 <div ~for="jConsole" style="padding: 4px;" ~style="jStyle($for.item)">{{$for.item.str}}</div>
             </div>
         </div>
@@ -299,24 +300,21 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         }
         // console.log(this.cell.mode)
     },
-    getFullCode() {
-        this.fullCode = '';
+    getCode() {
         let html = '', script = '', isODA = false;
-        this.notebook.cells.map(i => {
-            if (i.mode === 'html')
-                html += i.source + `
+        const i = this.cell;
+        if (i.mode === 'html')
+            html += i.source + `
             `;
-            if (i.mode === 'javascript')
-                script += i.source + `
+        if (i.mode === 'javascript')
+            script += i.source + `
 
 `;
-                isODA ||= i.isODA;
-        })
+        isODA ||= i.isODA;
         let odaImport = isODA ? `import '../../oda.js';` : ``;
-        script = 
-`
-${this.cell.mode === 'html' ? this.cell.source : ''}
-
+        script =
+            `
+${html}
 <script type="module">
 ${odaImport}
 
@@ -332,67 +330,113 @@ ${script}
         this.fire('change', this.cell);
         this._setMode();
     },
+    takeOverConsole(w = window) {
+        let console = w.console;
+        if (!console) return;
+        this.jConsole = [];
+        w.jConsole = undefined;
+        w._jConsole = [];
+        if (!w.useJConsole) {
+            w.useJConsole = true;
+            w.print = (e) => console.log(e);
+            w.log = (e) => console.log(e);
+            w.info = (e) => console.info(e);
+            w.warn = (e) => console.warn(e);
+            w.error = (e) => console.error(e);
+            let intercept = (method) => {
+                let original = console[method];
+                console[method] = function () {
+                    let message = arguments;
+                    if (original.apply) {
+                        // Do this for normal browsers
+                        original.apply(console, arguments);
+                    } else {
+                        // Do this for IE
+                        message = Array.prototype.slice.apply(arguments).join(' ');
+                        original(message);
+                    }
+                    if (w.jConsole) {
+                        w.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    } else {
+                        w._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    }
+                }
+            }
+            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
+        };
+        this.jConsole = [...w._jConsole];
+        w.jConsole = this.jConsole;
+    },
     _run() {
+        this.jConsole = undefined;
         this._top = undefined;
         this._iconClose = 'spinners:180-ring-with-bg';
         this.srcdoc = '';
-        this.run = true;
-        this.async(() => {
-            const iframe = this.$('iframe');
-            this.srcdoc = `
-<style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        position: relative;
-        font-family: monospace;
-        font-size: 18px;
-    }
-    * *, *:before, *:after {  
-        box-sizing: border-box;
-    }
-</style>
-<script async>
-    window._jConsole = [];
-    var takeOverConsole = () => {
-        var console = window.console;
-        if (!console) return;
-        window.print = (e) => console.log(e);
-        window.log = (e) => console.log(e);
-        window.info = (e) => console.info(e);
-        window.warn = (e) => console.warn(e);
-        window.error = (e) => console.error(e);
-        var intercept = (method) => {
-            var original = console[method];
-            console[method] = function() {
-                var message = arguments;
-                if (original.apply) {
-                    // Do this for normal browsers
-                    original.apply(console, arguments);
-                } else {
-                    // Do this for IE
-                    message = Array.prototype.slice.apply(arguments).join(' ');
-                    original(message);
-                }
-                if (window.jConsole) {
-                    window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                } else {
-                    window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+        if (this.cell.mode === 'javascript') {
+            this.takeOverConsole();
+            this.run = true;
+            let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
+            fn();
+        } else {
+            this.run = true;
+            this.async(() => {
+                const iframe = this.$('iframe');
+                this.srcdoc = `
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+            font-family: monospace;
+            font-size: 18px;
+        }
+        * *, *:before, *:after {  
+            box-sizing: border-box;
+        }
+    </style>
+    <script async>
+        window._jConsole = [];
+        var takeOverConsole = () => {
+            var console = window.console;
+            if (!console) return;
+            window.print = (e) => console.log(e);
+            window.log = (e) => console.log(e);
+            window.info = (e) => console.info(e);
+            window.warn = (e) => console.warn(e);
+            window.error = (e) => console.error(e);
+            var intercept = (method) => {
+                var original = console[method];
+                console[method] = function() {
+                    var message = arguments;
+                    if (original.apply) {
+                        // Do this for normal browsers
+                        original.apply(console, arguments);
+                    } else {
+                        // Do this for IE
+                        message = Array.prototype.slice.apply(arguments).join(' ');
+                        original(message);
+                    }
+                    if (window.jConsole) {
+                        window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    } else {
+                        window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    }
                 }
             }
+            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
         }
-        ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
-    }
-    takeOverConsole();
-</script>
-            ` + this.getFullCode();
-            this.async(() => {
-                this.jConsole = [...iframe.contentWindow._jConsole];
-                iframe.contentWindow.jConsole = this.jConsole;
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
-                iframe.style.opacity = 1;
-                this._iconClose = 'eva:o-close-circle-outline';
-            }, 300)
-        }, 100)
+        takeOverConsole();
+    </script>
+                ` + this.getCode();
+                iframe.addEventListener('load', () => {
+                    this.jConsole = [...iframe.contentWindow._jConsole];
+                    iframe.contentWindow.jConsole = this.jConsole;
+                    iframe.style.opacity = 1;
+                    iframe.style.height = iframe.contentDocument.scrollingElement.offsetHeight + 'px';
+                    // iframe.style.height = iframe.contentDocument.body.offsetHeight + 'px';
+                })
+            })
+        }
+        this._iconClose = 'eva:o-close-circle-outline';
     }
 })
