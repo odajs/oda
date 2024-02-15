@@ -80,7 +80,12 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             $type: String,
             $pdp: true,
             $list: ['visible', 'half', 'invisible'],
-            $def: 'half'
+            $def: 'half',
+            set(n) {
+                this.async(() => {
+                    this.links = undefined;
+                }, 10)
+            }
         },
         snapToGrid: {
             $def: false,
