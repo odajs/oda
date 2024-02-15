@@ -237,22 +237,22 @@ ODA({
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="isRun" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsole = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
+            <oda-icon id="icon-close" ~if="isRun" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
             <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
-            <div id="splitter2" ~if="isRun && runConsole" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-            <div ~if="isRun && runConsole" style="min-height: 36px">
-                <div ~for="runConsole" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
+            <div id="splitter2" ~if="isRun && runConsoleData" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+            <div ~if="isRun && runConsoleData" style="min-height: 36px">
+                <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
             </div>
         </div>
     `,
     set cell(n) {
         this.src = n?.source || '';
-        this.setEditorMode(this.src);
+        this.setCellMode(this.src);
     },
     src: '',
     srcdoc: '',
@@ -263,12 +263,12 @@ ODA({
     iconClose: 'eva:o-close-circle-outline',
     iconCloseTop: '',
     isRun: false,
-    runConsole: undefined,
+    runConsoleData: undefined,
     runConsoleStyle(i) {
         let colors = { log: 'gray', info: 'blue', warn: 'orange', error: 'red' };
         return `color: ${colors[i.method]}`;
     },
-    setEditorMode(src = this.$('oda-ace-editor')?.value || '') {
+    setCellMode(src = this.$('oda-ace-editor')?.value || '') {
         this.cell.mode = 'javascript';
         this.cell.isODA = false;
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
@@ -289,14 +289,14 @@ ODA({
         this.iconCloseTop = undefined;
         this.cell.source = e.detail.value;
         this.fire('change', this.cell);
-        this.setEditorMode();
+        this.setCellMode();
     },
-    takeOverConsole(w = window) {
+    overrideСonsole(w = window) {
         let console = w.console;
         if (!console) return;
-        this.runConsole = [];
-        w.runConsole = undefined;
-        w._runConsole = [];
+        this.runConsoleData = [];
+        w.runConsoleData = undefined;
+        w._runConsoleData = [];
         if (!w.useJConsole) {
             w.useJConsole = true;
             w.print = (e) => console.log(e);
@@ -314,25 +314,25 @@ ODA({
                         message = Array.prototype.slice.apply(arguments).join(' ');
                         original(message);
                     }
-                    if (w.runConsole) {
-                        w.runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    if (w.runConsoleData) {
+                        w.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        w._runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        w._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
             ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
         };
-        this.runConsole = [...w._runConsole];
-        w.runConsole = this.runConsole;
+        this.runConsoleData = [...w._runConsoleData];
+        w.runConsoleData = this.runConsoleData;
     },
     run() {
-        this.runConsole = undefined;
+        this.runConsoleData = undefined;
         this.iconClose = 'spinners:180-ring-with-bg';
         this.iconCloseTop = undefined;
         this.srcdoc = '';
         if (this.cell.mode === 'javascript') {
-            this.takeOverConsole();
+            this.overrideСonsole();
             this.isRun = true;
             let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
             fn();
@@ -354,8 +354,8 @@ ODA({
         }
     </style>
     <script async>
-        window._runConsole = [];
-        var takeOverConsole = () => {
+        window._runConsoleData = [];
+        var overrideСonsole = () => {
             var console = window.console;
             if (!console) return;
             window.print = (e) => console.log(e);
@@ -375,22 +375,22 @@ ODA({
                         message = Array.prototype.slice.apply(arguments).join(' ');
                         original(message);
                     }
-                    if (window.runConsole) {
-                        window.runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    if (window.runConsoleData) {
+                        window.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        window._runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        window._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
             ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
         }
-        takeOverConsole();
+        overrideСonsole();
     </script>
     <script type="module">import '../../oda.js'</script>
                 ` + this.cell.source;
                 iframe.addEventListener('load', () => {
-                    this.runConsole = [...iframe.contentWindow._runConsole];
-                    iframe.contentWindow.runConsole = this.runConsole;
+                    this.runConsoleData = [...iframe.contentWindow._runConsoleData];
+                    iframe.contentWindow.runConsoleData = this.runConsoleData;
                     this.async(() => {
                         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                         iframe.style.opacity = 1;
@@ -401,6 +401,9 @@ ODA({
         this.iconClose = 'eva:o-close-circle-outline';
         this.async(() => {
             this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
+            this.$body.scrollIntoView({ 
+                behavior: 'smooth' 
+            })
         })
     }
 })

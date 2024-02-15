@@ -55,20 +55,25 @@ c = a + b;
                 cell_type: 'code',
                 source:
 `
-m = Math.floor(Math.random() * 10);
-d = c * m;
+d = Math.floor(Math.random() * 10);
 
-console.log(c, ' * ', m, ' = ', d);
+console.log('c = ', c);
+console.log('d = ', d);
+console.log('c * d = ', c * d);
 `
             },
             {
                 cell_type: 'code',
                 source:
 `
-m = Math.floor(Math.random() * 10);
-e = c + d * m;
+e = Math.floor(Math.random() * 10);
 
-console.log(c, ' + ', d, ' * ', m, ' = ', e);
+console.log('c = ', c);
+console.log('d = ', d);
+console.log('e = ', e);
+console.log('c * d * e = ', c * d * e);
+
+result = c * d * e;
 `
             }
         ]
