@@ -334,8 +334,17 @@ ODA({
         if (this.cell.mode === 'javascript') {
             this.overrideСonsole();
             this.isRun = true;
+
+            // let fn = new Function('', `with (window) {${this.cell.source}}`);
             let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
             fn();
+
+            let str = this.cell.source;
+            str = str.split('\n').filter(i => i).at(-1);
+            if (window[str]) {
+                console.log(window[str]);
+            }
+
         } else {
             this.isRun = true;
             this.async(() => {
@@ -401,7 +410,8 @@ ODA({
         this.iconClose = 'eva:o-close-circle-outline';
         this.async(() => {
             this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
-            this.$('#console')?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            // this.$('#console')?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            this.$('#console')?.scrollIntoView({ behavior: 'smooth' });
         }, 100)
     }
 })
