@@ -8,7 +8,7 @@ ODA({
                 padding: 12px 6px;
                 height: calc(100% - 24px);
                 opacity: 0;
-                transition: opacity ease-out 1s;
+                transition: opacity ease-in .5s;
             }
         </style>
         <oda-jupyter-divider idx="-1" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
@@ -44,9 +44,7 @@ ODA({
         }
     },
     attached() {
-        this.async(() => {
-            this.style.opacity = 1;
-        }, 500)
+        this.style.opacity = 1;
     },
     $listeners: {
         tap(e) { this.focusedIdx = this.editIdx = -1 }
@@ -143,9 +141,9 @@ ODA({
         <span style="width: 8px"></span>
         <oda-button :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
-    iconSize: 20,
-    cell: null,
     idx: -2,
+    cell: null,
+    iconSize: 20,
     moveCell(v) {
         this.editIdx = -1;
         let idx = this.focusedIdx;
@@ -180,8 +178,8 @@ ODA({
                 outline: none;
             }
         </style>
-        <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="_onchange"></oda-simplemde-editor>
-        <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="_setEditMode" @keypress="_keyPress"></oda-md-viewer>
+        <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+        <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @keypress="keyPress"></oda-md-viewer>
     `,
     set cell(n) {
         this.src = n?.source || '';
@@ -192,16 +190,16 @@ ODA({
     get opacity() {
         return this.src ? 1 : .3;
     },
-    _onchange(e) {
+    editorValueChanged(e) {
         this.cell.source = this.src = e.detail.value;
         this.fire('change', this.cell);
         console.log(this.cell)
     },
-    _keyPress(e) {
+    keyPress(e) {
         if (e.key === 'Enter')
-            this._setEditMode();
+            this.changeEditMode();
     },
-    _setEditMode() {
+    changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         this.async(() => {
             this.$('oda-simplemde-editor').value = this.src;
@@ -224,65 +222,53 @@ ODA({
                 height: {{iconSize}};
             }
             #icon-close {
-                margin-top: {{_top}};
+                margin-top: {{iconCloseTop}};
             }
             #icon-close:hover {
                 fill: red;
             }
-            #j-console { 
-                position: relative;
-                border-top: 1px solid var(--border-color); 
-            }
-            #icon-jclose {
-                position: absolute;
-                bottom: 0px;
-            }
-            #run {
+            iframe {
                 width: 100%; 
                 border: none;
                 min-height: 36px;
                 height: 36px;
                 overflow: auto;
             }
-            #splitter {
-                border-top: {{run ? '1px solid var(--border-color)' : 'none'}}; 
-            }
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
-            <oda-icon :icon-size="iconSize" :icon @pointerover="_icon='av:play-circle-outline'" @tap="_run" @pointerout="_icon=''" style="cursor: pointer; position: sticky; top: 0" :fill="run ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="run" :icon-size="iconSize" :icon="_iconClose" @tap="run=false; jConsole = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
+            <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
+            <oda-icon id="icon-close" ~if="isRun" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsole = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
         </div>
         <div class="vertical flex">
-            <div style="display: block; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="_onchange"></oda-ace-editor>   
-            <div id="splitter"></div>
-            <iframe id="run" ~if="run" :srcdoc></iframe>
-            <div id="j-console" ~if="run && jConsole">
-                <div ~for="jConsole" style="padding: 4px;" ~style="jStyle($for.item)">{{$for.item.str}}</div>
+            <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
+            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
+            <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+            <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
+            <div id="splitter2" ~if="isRun && runConsole" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+            <div ~if="isRun && runConsole" style="min-height: 36px">
+                <div ~for="runConsole" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
             </div>
         </div>
     `,
-    jConsole: undefined,
-    jStyle(i) {
+    set cell(n) {
+        this.src = n?.source || '';
+        this.setEditorMode(this.src);
+    },
+    src: '',
+    srcdoc: '',
+    get iconRun() {
+        return this.isRun ? 'av:play-circle-outline' : this.iconRunOver || 'bootstrap:code-square';
+    },
+    iconRunOver: '',
+    iconClose: 'eva:o-close-circle-outline',
+    iconCloseTop: '',
+    isRun: false,
+    runConsole: undefined,
+    runConsoleStyle(i) {
         let colors = { log: 'gray', info: 'blue', warn: 'orange', error: 'red' };
         return `color: ${colors[i.method]}`;
     },
-    src: '',
-    set cell(n) {
-        this.src = n?.source || '';
-        this._setMode(this.src);
-    },
-    run: false,
-    _icon: '',
-    _iconClose: 'eva:o-close-circle-outline',
-    get _top() {
-        return (this.$('#splitter')?.offsetTop) - 36 + 'px';
-    },
-    srcdoc: '',
-    get icon() {
-        return this.run ? 'av:play-circle-outline' : this._icon || 'bootstrap:code-square';
-    },
-    _setMode(src = this.$('oda-ace-editor')?.value || '') {
+    setEditorMode(src = this.$('oda-ace-editor')?.value || '') {
         this.cell.mode = 'javascript';
         this.cell.isODA = false;
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
@@ -298,44 +284,19 @@ ODA({
             regx = src.match(/<\b[^>]*>[\s\S]*?/gm);
             this.cell.mode = src.match(regx)?.length ? 'html' : 'javascript';
         }
-        // console.log(this.cell.mode)
     },
-    getCode() {
-        let html = '', script = '', isODA = false;
-        const i = this.cell;
-        if (i.mode === 'html')
-            html += i.source + `
-            `;
-        if (i.mode === 'javascript')
-            script += i.source + `
-
-`;
-        isODA ||= i.isODA;
-        let odaImport = isODA ? `import '../../oda.js';` : ``;
-        script =
-            `
-${html}
-<script type="module">
-${odaImport}
-
-${script}
-</script>
-`;
-        // console.log(script)
-        return script;
-    },
-    _onchange(e) {
-        this._top = undefined;
+    editorValueChanged(e) {
+        this.iconCloseTop = undefined;
         this.cell.source = e.detail.value;
         this.fire('change', this.cell);
-        this._setMode();
+        this.setEditorMode();
     },
     takeOverConsole(w = window) {
         let console = w.console;
         if (!console) return;
-        this.jConsole = [];
-        w.jConsole = undefined;
-        w._jConsole = [];
+        this.runConsole = [];
+        w.runConsole = undefined;
+        w._runConsole = [];
         if (!w.useJConsole) {
             w.useJConsole = true;
             w.print = (e) => console.log(e);
@@ -348,37 +309,35 @@ ${script}
                 console[method] = function () {
                     let message = arguments;
                     if (original.apply) {
-                        // Do this for normal browsers
                         original.apply(console, arguments);
                     } else {
-                        // Do this for IE
                         message = Array.prototype.slice.apply(arguments).join(' ');
                         original(message);
                     }
-                    if (w.jConsole) {
-                        w.jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    if (w.runConsole) {
+                        w.runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        w._jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        w._runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
             ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
         };
-        this.jConsole = [...w._jConsole];
-        w.jConsole = this.jConsole;
+        this.runConsole = [...w._runConsole];
+        w.runConsole = this.runConsole;
     },
-    _run() {
-        this.jConsole = undefined;
-        this._top = undefined;
-        this._iconClose = 'spinners:180-ring-with-bg';
+    run() {
+        this.runConsole = undefined;
+        this.iconClose = 'spinners:180-ring-with-bg';
+        this.iconCloseTop = undefined;
         this.srcdoc = '';
         if (this.cell.mode === 'javascript') {
             this.takeOverConsole();
-            this.run = true;
+            this.isRun = true;
             let fn = new Function('try { ' + this.cell.source + ' } catch (e) { console.error(e) }');
             fn();
         } else {
-            this.run = true;
+            this.isRun = true;
             this.async(() => {
                 const iframe = this.$('iframe');
                 this.srcdoc = `
@@ -395,7 +354,7 @@ ${script}
         }
     </style>
     <script async>
-        window._jConsole = [];
+        window._runConsole = [];
         var takeOverConsole = () => {
             var console = window.console;
             if (!console) return;
@@ -416,10 +375,10 @@ ${script}
                         message = Array.prototype.slice.apply(arguments).join(' ');
                         original(message);
                     }
-                    if (window.jConsole) {
-                        window.jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                    if (window.runConsole) {
+                        window.runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        window._jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        window._runConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
@@ -428,10 +387,10 @@ ${script}
         takeOverConsole();
     </script>
     <script type="module">import '../../oda.js'</script>
-                ` + this.getCode();
+                ` + this.cell.source;
                 iframe.addEventListener('load', () => {
-                    this.jConsole = [...iframe.contentWindow._jConsole];
-                    iframe.contentWindow.jConsole = this.jConsole;
+                    this.runConsole = [...iframe.contentWindow._runConsole];
+                    iframe.contentWindow.runConsole = this.runConsole;
                     this.async(() => {
                         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                         iframe.style.opacity = 1;
@@ -439,6 +398,9 @@ ${script}
                 })
             })
         }
-        this._iconClose = 'eva:o-close-circle-outline';
+        this.iconClose = 'eva:o-close-circle-outline';
+        this.async(() => {
+            this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
+        })
     }
 })
