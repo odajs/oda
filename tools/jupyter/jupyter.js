@@ -356,9 +356,9 @@ ${script}
                         original(message);
                     }
                     if (w.jConsole) {
-                        w.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        w.jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        w._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        w._jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
@@ -417,9 +417,9 @@ ${script}
                         original(message);
                     }
                     if (window.jConsole) {
-                        window.jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        window.jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     } else {
-                        window._jConsole.unshift({ method, str: Array.prototype.slice.apply(message).join(' ') });
+                        window._jConsole.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
                     }
                 }
             }
@@ -427,13 +427,15 @@ ${script}
         }
         takeOverConsole();
     </script>
+    <script type="module">import '../../oda.js'</script>
                 ` + this.getCode();
                 iframe.addEventListener('load', () => {
                     this.jConsole = [...iframe.contentWindow._jConsole];
                     iframe.contentWindow.jConsole = this.jConsole;
-                    iframe.style.opacity = 1;
-                    iframe.style.height = iframe.contentDocument.scrollingElement.offsetHeight + 'px';
-                    // iframe.style.height = iframe.contentDocument.body.offsetHeight + 'px';
+                    this.async(() => {
+                        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+                        iframe.style.opacity = 1;
+                    }, 300)
                 })
             })
         }

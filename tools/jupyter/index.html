@@ -21,6 +21,7 @@ Markdown editor
                 source:
 `
 <h2 style="color: red; text-align: center; height: 50px;">HTML code</h2>
+<oda-component></oda-component>
 
 <script type="module">
     const a = Math.floor(Math.random() * 100);
@@ -30,7 +31,9 @@ Markdown editor
     console.log('b = ', b);
     console.log('a + b = ', a + b);
     
-     document.querySelector("h2").innerText = 'a + b = ' + (a + b);
+    document.querySelector("h2").innerText = 'a + b = ' + (a + b);
+     
+    ODA({ is: 'oda-component', template:\`ODA component\` })
 <\/script>
 `
             },
@@ -43,7 +46,7 @@ const b = Math.floor(Math.random() * 100);
 
 console.log('a = ', a);
 console.log('b = ', b);
-console.log('a +b = ', a + b);
+console.log('a + b = ', a + b);
 
 c = a + b;
 `
