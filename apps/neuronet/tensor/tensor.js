@@ -1,5 +1,3 @@
-import Zipper from '../attoGPT/zipper.js';
-// import  './numjs.js'
 const ERROR = {
     SIZE_MISMATCH: (p1 = 0, p2 = 0) => {
         throw new Error(`Несогласованность размеров:\r\n p1=${p1}, p2=${p2}`)
@@ -11,37 +9,26 @@ const ERROR = {
         throw new Error(`IndexError: Dimension out of range (expected to be in range of ${need}, but got ${got})`)
     },
 }
-const matrix = {
-    eye(N, M = N, k){
-        const matrix = []
-        for (let n = 0; n < N; n++){
-            const row = matrix[n] ??= []
-            for (let m = 0; m < M; m++){
-                row[m] = n === m?1:0;
-            }
+export class num{
+    static range(...args){
+        let [start, end, step] = args;
+        switch (args.length){
+            case 0:
+                throw 'need arguments'
+            case 1:{
+                end = start;
+                start = 0;
+            } break;
         }
-        return matrix;
-    },
-    make_HIPPO(N){
-        function v(n,k){
-            if (n > k)
-                return -Math.sqrt(2 * n + 1) * Math.sqrt(2 * k + 1);
-            if (n === k)
-                return -(n + 1);
-            return 0;
+        const result = []
+        for (let i = start; i <= end; i += step || 1){
+            result.push(i);
         }
-        const matrix = [];
-        for(let n = 0; n < N; n++){
-            const row = matrix[n] ??= [];
-            for(let k = 0; k < N; k++) {
-                row[k] = v(n+1, k+1)
-            }
-        }
-        return matrix;
+        return result;
     }
 }
 
-export default class Tensor extends ROCKS({
+export class Tensor extends ROCKS({
     $public:{
         data:{
             $freeze: true,
@@ -49,31 +36,27 @@ export default class Tensor extends ROCKS({
         get label(){
             switch (this.dim){
                 case 0:
-                    return 'Value';
+                    return 'scalar';
                 case 1:
-                    return 'Vector';
+                    return 'vector';
                 case 2:
-                    return 'Matrix';
-                case 3:
-                    return 'Cube';
+                    return 'matrix';
                 default:
-                    return 'Tensor';
+                    return 'tensor';
 
             }
         },
         get icon(){
             switch (this.label){
-                case 'Value':
+                case 'scalar':
                     return 'bootstrap:1-123';
-                case 'Vector':
+                case 'vector':
                     return 'carbon:matrix';
-                case 'Matrix':
+                case 'matrix':
                     return 'iconoir:rubik-cube';
-                case 'Cube':
-                    return 'lineawesome:cube-solid';
-                case 'Tensor':
+                case 'tensor':
                     return 'games:cubeforce';
-                case 'Dot':
+                case 'dot':
                     return 'image:adjust'
             }
         },
@@ -129,9 +112,7 @@ export default class Tensor extends ROCKS({
     get size(){
         return this.shape.reduce((r, v)=>r * v, 1);
     },
-    get numel(){
-        return this.shape.reduce((r,v)=>r*v, 1)
-    },
+
     transpose(){
         let out;
         try{
@@ -400,20 +381,22 @@ export default class Tensor extends ROCKS({
         }
         let result = fn(this.data);
         let out = new Tensor(result, 'softmax', [this], 'av:equalizer');
-        out._back = ()=>{
-            function fn(self, data, grad){
-                if(Array.isArray(self[0]))
-                    return self.map((s, i)=>fn(s, data[i], grad[i]));
-                const size = data.length;
-                return data.map((v, i)=>{
-                    let sum = 0;
-                    for (let j = 0; j < size; j++){
-                        sum += ((i === j)?(v * (1 - v)):(-v * data[j])) * grad[j];
-                    }
-                    return self[i] + sum;
-                })
+        if (this.use_back){
+            out._back = ()=>{
+                function fn(self, data, grad){
+                    if(Array.isArray(self[0]))
+                        return self.map((s, i)=>fn(s, data[i], grad[i]));
+                    const size = data.length;
+                    return data.map((v, i)=>{
+                        let sum = 0;
+                        for (let j = 0; j < size; j++){
+                            sum += ((i === j)?(v * (1 - v)):(-v * data[j])) * grad[j];
+                        }
+                        return self[i] + sum;
+                    })
+                }
+                this.grad = fn(this.grad, out.data, out.grad);
             }
-            this.grad = fn(this.grad, out.data, out.grad);
         }
         return out;
     },
@@ -436,100 +419,10 @@ export default class Tensor extends ROCKS({
     toString(){
         return JSON.stringify(this.data) + JSON.stringify({id: this.label, shape: this.shape})
     }
-
-
-}
-function checkTensor(data){
-    if (data instanceof Tensor)
-        return data
-    return new Tensor(data);
 }
 
-let zipConcat =  new Zipper((a,b)=>a.concat(b),[1,1]);
+const num = {
+    arange:(start, size, step)=>{
 
-let zipConcatBack =  new Zipper((grad, out)=> {
-    return grad.map((x,i)=>x + out[i])
-},[1,1]);
-
-let zipAdd =  new Zipper((a, b)=>{
-    if(a.length === 1)
-        return a[0] + b.reduce((r,v)=>r+v);
-    else if(b.length === 1)
-        return a.map((x, i)=>x + b[0]);
-    else if (a.length  !== b.length)
-        ERROR.SIZE_MISMATCH(a.length, b.length);
-    return a.map((x, i)=>x + b[i]);
-},[1,1]);
-
-let zipAddBack = new Zipper((grad, out)=>{
-    grad = grad.map((x,i)=>x+out[i])
-    if (grad.length === 1)
-        return grad[0]
-    return grad;
-},[1,1])
-
-let zipTranspose = new Zipper((m) => {
-    return m[0].map((x,i) =>(m.map(y => y[i])));
-},[2]);
-
-let zipTransposeBack = new Zipper((grad, out_grad) => {
-    return grad.map((x,i) =>(x.map((y,j) => y + out_grad[j][i])));
-},[2, 2]);
-
-// let gpuTranspose = new Zipper((m) => {
-//     const gpumultiplyMM = gpu.createKernel(function (a, b){
-//         let sum = 0;
-//         for (let i = 0; i < 512; i++) {
-//             sum += a[this.thread.y][i] * b[i][this.thread.x];
-//         }
-//         return sum;
-//     }).setOutput([512, 512])
-// },[2]);
-
-function MultiplyMatrix(A,B)
-{
-    var rowsA = A.length, colsA = A[0].length,
-        rowsB = B.length, colsB = B[0].length,
-        C = [];
-    if (colsA != rowsB)
-        ERROR.SIZE_MISMATCH(colsA, rowsB);
-    for (var i = 0; i < rowsA; i++) C[ i ] = [];
-    for (var k = 0; k < colsB; k++)
-    { for (var i = 0; i < rowsA; i++)
-    { var t = 0;
-        for (var j = 0; j < rowsB; j++) t += A[ i ][j]*B[j][k];
-        C[ i ][k] = t;
     }
-    }
-    return C;
 }
-function multiplyMT(M, T) {
-    return M.map(x=>T.map(y=>dotProduct(x, y)));
-}
-
-function multiplyTM(T, M) {
-    return T.map(x=>M.map(y=>dotProduct(y, x)));
-}
-
-
-function dotProduct(v1, v2) {
-    return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
-}
-function transposeMatrix(m) {
-    return m[0].map((x,i) =>(m.map(y => y[i])));
-}
-function getPositionalVector(d, pos = 0, k = 10000){
-    const vector = [];
-    for(let i = 0; i < d; i++){
-        const v = 1/Math.pow(k, 2 * i/d) * pos;
-        vector[i] = (i%2)?Math.cos(v):Math.sin(v)
-    }
-    return vector;
-}
-
-function charCodeToBin(code, dim= 32){
-    return code.toString(2).padStart(dim, '0').split('').slice(-dim).map(i=>+i)
-}
-
-
-
