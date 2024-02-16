@@ -302,6 +302,48 @@
 
     В данном примере при нажатии на кнопку в объект **object** добавляется новое свойство **prop3**. Можно видеть, что новое свойство сразу отображается на экране.
 
+    Механизм реактивности также отслеживает удаление элементов из источника данных.
+
+    Например,
+
+    ```javascript _run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <button @tap="tap">Удалить свойство</button>
+            <div ~for="object">Свойство {{$for.key}}: {{$for.item}}</div>
+        `,
+        object: {
+            prop1:'A', prop2:'B', prop3:'C'
+        },
+        tap() {
+            delete this.object.prop2;
+        }
+    });
+    ```
+
+    В данном примере при нажатии на кнопку из объекта **object** удаляется свойство **prop2**. Можно видеть, что соответствующий ему элемент **div** сразу удаляется с экрана.
+
+1. В текущей версии фреймворка директива **~for** не может использовать в качестве источника данных объекты, свойства которых имеют модификаторы.
+
+    Например,
+
+    ```javascript _run_edit_error_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~for="object">Свойство: {{$for.key}} — Значение: {{$for.item}}</div>
+        `,
+        object: {
+            $def: {
+                prop1: { $def: 'A' }
+            }
+        }
+    });
+    ```
+
+    В данном примере свойство **prop1** объекта **object** содержит модификатор **$def**. В результате директива **~for** находит в объекте неожиданные свойства и значения и на их основе создает HTML-элементы.
+
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/GoEiwg_mkb0?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
