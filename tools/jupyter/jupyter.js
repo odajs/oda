@@ -187,10 +187,9 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
-        this._src = this.src;
         if (this.editIdx === this.idx ) {
             this.async(() => {
-                this.$('oda-simplemde-editor').value = this.cell.source = this._src;
+                this.$('oda-simplemde-editor').value = this.src;
             })
         }
     }
