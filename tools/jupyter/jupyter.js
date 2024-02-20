@@ -6,14 +6,13 @@ ODA({
                 @apply --vertical;
                 @apply --flex;
                 padding: 12px 6px;
-                height: calc(100% - 24px);
                 opacity: 0;
                 transition: opacity ease-in .5s;
             }
         </style>
-        <oda-jupyter-divider idx="-1" :focused="!notebook?.cells?.length"></oda-jupyter-divider>
+        <oda-jupyter-divider idx="-1" :hover="!notebook?.cells?.length"></oda-jupyter-divider>
         <div ~for="notebook?.cells" class="vertical no-flex">
-            <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="focusedIdx === $for.index" :focused="focusedIdx === $for.index" @tap.stop="focusedIdx = (_readOnly ? -1 : $for.index);"></div>
+            <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
@@ -25,14 +24,10 @@ ODA({
     $pdp: {
         notebook: null,
         editors: {
-            code: { label: 'Код', editor: 'oda-jupyter-code-editor' },
-            text: { label: 'Текст', editor: 'oda-jupyter-text-editor' }
+            code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
+            text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' }
         },
-        get arrEditors() {
-            const ed = this.editors;
-            return Object.keys(ed).map(k => { return { ...{ type: k }, ...ed[k] } });
-        },
-        focusedIdx: {
+        selectedIdx: {
             $def: -1,
             set(n) {
                 this.editIdx = -1;
@@ -47,7 +42,7 @@ ODA({
         this.style.opacity = 1;
     },
     $listeners: {
-        tap(e) { this.focusedIdx = this.editIdx = -1 }
+        tap(e) { this.selectedIdx = this.editIdx = -1 }
     }
 })
 
@@ -65,10 +60,10 @@ ODA({
                 position: relative;
                 padding: 1px;
             }
-            :host([focused]) {
+            :host([hover]) {
                 box-shadow: none !important;
             }
-            :host([focused]) {
+            :host([hover]) {
                 opacity: 1;
             }
             :host(:hover) {
@@ -85,17 +80,17 @@ ODA({
         </style>
         <div class="horizontal center">
             <div ~if="!_readOnly && idx!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="arrEditors" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
+            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
     idx: -2,
     addCell(i) {
         let idx = this.idx + 1;
-        this.focusedIdx = this.editIdx = -1;
+        this.selectedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
-        this.async(() => this.focusedIdx = idx);
+        this.async(() => this.selectedIdx = idx);
     }
 })
 
@@ -111,10 +106,11 @@ ODA({
                 transition: opacity ease-out 1s;
             }
         </style>
-        <oda-jupyter-toolbar :idx ~if="!_readOnly && focused" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
+        <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
     idx: -2,
-    focused: false
+    selected: false,
+    cell: null
 })
 
 ODA({
@@ -134,31 +130,29 @@ ODA({
                 z-index: 100;
             }
         </style>
-        <oda-button :disabled="focusedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
-        <oda-button :disabled="focusedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
-        <span style="width: 8px"></span>
-        <oda-button :icon-size icon="icons:delete" @tap="deleteCell"></oda-button>
-        <span style="width: 8px"></span>
-        <oda-button :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+        <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
+        <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+        <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
+        <oda-button ~if="cell?.cell_type === 'text'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
     idx: -2,
     cell: null,
     iconSize: 20,
     moveCell(v) {
         this.editIdx = -1;
-        let idx = this.focusedIdx;
+        let idx = this.selectedIdx;
         const cells = this.notebook.cells.splice(idx, 1);
         idx = idx + v;
         idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
         this.notebook.cells.splice(idx, 0, cells[0])
         this.async(() => {
-            this.focusedIdx = idx;
+            this.selectedIdx = idx;
         })
     },
     deleteCell() {
         if (window.confirm(`Do you really want delete current cell ?`)) {
             this.editIdx = -1;
-            this.notebook.cells.splice(this.focusedIdx, 1);
+            this.notebook.cells.splice(this.selectedIdx, 1);
         }
     }
 })
@@ -193,7 +187,6 @@ ODA({
     editorValueChanged(e) {
         this.cell.source = this.src = e.detail.value;
         this.fire('change', this.cell);
-        console.log(this.cell)
     },
     keyPress(e) {
         if (e.key === 'Enter')
