@@ -187,9 +187,12 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
-        this.async(() => {
-            this.$('oda-simplemde-editor').value = this.src;
-        })
+        this._src = this.src;
+        if (this.editIdx === this.idx ) {
+            this.async(() => {
+                this.$('oda-simplemde-editor').value = this.cell.source = this._src;
+            })
+        }
     }
 })
 
@@ -304,6 +307,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.async(() => {
                 const iframe = this.$('iframe');
                 this.srcdoc = `
+    <!DOCTYPE html>
     <style>
         html, body {
             margin: 0;

@@ -11,6 +11,7 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
             img { max-width: 96%; height: auto; }
             blockquote { border-left: 10px solid #ccc; background: #f9f9f9; padding: 0.5em 10px; margin: 1.5em 10px; }
             code { background-color: #f8f8f8; border: 1px solid #dfdfdf; color: #333; font-family: Consolas,"Liberation Mono",Courier,monospace; font-weight: normal; padding: 0.125rem 0.3125rem 0.0625rem;}
+            .katex-html { display: none; }
         </style>
         <div ~html="html" style="margin: 2px 10px; white-space: normal;"></div>
     `,
@@ -30,10 +31,16 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
     },
     async initShowdown() {
         if (!mdShowdown)
+            await import('./dist/showdown-katex.js'); // https://github.com/obedm503/showdown-katex
             await import('./dist/showdown-youtube.min.js');
         mdShowdown = new showdown.Converter({
             ...this.defaultOptions, ...this.options,
-            extensions: ['youtube', () => {
+            extensions: ['youtube', showdownKatex({
+                delimiters: [
+                  { left: "$", right: "$", display: false },
+                  { left: '~', right: '~', display: false, asciimath: true },
+                ],
+              }), () => {
                 return [{
                     type: "output",
                     filter(text) {
@@ -77,6 +84,7 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
                 src = src && src.ok ? await src.text() : s;
             }
             this.source = src;
+            src = src.replace(/\$\$(.*)\$\$/g, `<h2 style="text-align: center;">$ $1 $</h2>`);
             src = src.replace('~~~~~_~~~~~', '');
             src = src.replace(/(```\S*|~~~\S*)( +)/g, '$1' + '_');
             this.html = mdShowdown.makeHtml(src);
