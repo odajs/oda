@@ -1,5 +1,4 @@
-ODA({
-    is: 'oda-jupyter', imports: '@oda/button',
+ODA({ is: 'oda-jupyter', imports: '@oda/button',
     template: `
         <style>
             :host{
@@ -46,8 +45,7 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-jupyter-divider',
+ODA({ is: 'oda-jupyter-divider',
     template: `
         <style>
             :host {
@@ -94,8 +92,7 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -113,8 +110,7 @@ ODA({
     cell: null
 })
 
-ODA({
-    is: 'oda-jupyter-toolbar',
+ODA({ is: 'oda-jupyter-toolbar',
     template: `
         <style>
             :host {
@@ -145,9 +141,7 @@ ODA({
         idx = idx + v;
         idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
         this.notebook.cells.splice(idx, 0, cells[0])
-        this.async(() => {
-            this.selectedIdx = idx;
-        })
+        this.async(() => this.selectedIdx = idx);
     },
     deleteCell() {
         if (window.confirm(`Do you really want delete current cell ?`)) {
@@ -157,8 +151,7 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -200,8 +193,7 @@ ODA({
     }
 })
 
-ODA({
-    is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
     template: `
         <style>
             :host {
@@ -318,7 +310,7 @@ ODA({
                 }
             }
             ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
-        };
+        }
         this.runConsoleData = [...w._runConsoleData];
         w.runConsoleData = this.runConsoleData;
     },
