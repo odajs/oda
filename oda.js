@@ -1020,9 +1020,13 @@ if (!window.ODA?.IsReady) {
                 items = new Array(items);
                 for (let i = 0; i < items.length; items[i++] = i);
             }
-            return items.map((item, index)=>{
-                return { child, params: [...p, {item, index, items, key: index}] }
-            });
+            const res = [];
+            for (let index = 0; index < items.length; index++) {
+                if (!(index in items)) continue;
+                const item = items[index];
+                res.push({ child, params: [...p, {item, index, items, key: index}] });
+            }
+            return res;
         };
         h.src = child;
         return h;
