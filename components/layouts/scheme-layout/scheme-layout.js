@@ -1,7 +1,7 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
     <div slot="content" tabindex="0" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
-    <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
+    <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :title="$for.item.id" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
     showTrash: false,
@@ -84,7 +84,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             set(n) {
                 this.async(() => {
                     this.links = undefined;
-                }, 10)
+                }, 20)
             }
         },
         snapToGrid: {
