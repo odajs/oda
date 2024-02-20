@@ -279,41 +279,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.fire('change', this.cell);
         this.setCellMode();
     },
-    overrideСonsole(w = window) {
-        let console = w.console;
-        if (!console) return;
-        this.runConsoleData = [];
-        w.runConsoleData = undefined;
-        w._runConsoleData = [];
-        if (!w.useJConsole) {
-            w.useJConsole = true;
-            w.print = (e) => console.log(e);
-            w.log = (e) => console.log(e);
-            w.info = (e) => console.info(e);
-            w.warn = (e) => console.warn(e);
-            w.error = (e) => console.error(e);
-            let intercept = (method) => {
-                let original = console[method];
-                console[method] = function () {
-                    let message = arguments;
-                    if (original.apply) {
-                        original.apply(console, arguments);
-                    } else {
-                        message = Array.prototype.slice.apply(arguments).join(' ');
-                        original(message);
-                    }
-                    if (w.runConsoleData) {
-                        w.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                    } else {
-                        w._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                    }
-                }
-            }
-            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
-        }
-        this.runConsoleData = [...w._runConsoleData];
-        w.runConsoleData = this.runConsoleData;
-    },
     run() {
         this.iconCloseShow = false;
         this.runConsoleData = undefined;
@@ -321,11 +286,14 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.iconCloseTop = undefined;
         this.srcdoc = '';
         if (this.cell.mode === 'javascript') {
-            this.overrideСonsole();
+            let fn = Function('w', this.fnStr);
+            fn();
+            this.runConsoleData = [...window._runConsoleData];
+            window.runConsoleData = this.runConsoleData;
             this.isRun = true;
 
             // let fn = new Function('', `with (this) {${this.cell.source}}`)
-            let fn = new Function(`try { ${this.cell.source} } catch (e) { console.error(e) }`);
+            fn = new Function(`try { ${this.cell.source} } catch (e) { console.error(e) }`);
             fn();
 
             let str = this.cell.source;
@@ -351,33 +319,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     <script async>
         window._runConsoleData = [];
         var overrideСonsole = () => {
-            var console = window.console;
-            if (!console) return;
-            window.print = (e) => console.log(e);
-            window.log = (e) => console.log(e);
-            window.info = (e) => console.info(e);
-            window.warn = (e) => console.warn(e);
-            window.error = (e) => console.error(e);
-            var intercept = (method) => {
-                var original = console[method];
-                console[method] = function() {
-                    var message = arguments;
-                    if (original.apply) {
-                        // Do this for normal browsers
-                        original.apply(console, arguments);
-                    } else {
-                        // Do this for IE
-                        message = Array.prototype.slice.apply(arguments).join(' ');
-                        original(message);
-                    }
-                    if (window.runConsoleData) {
-                        window.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                    } else {
-                        window._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-                    }
-                }
-            }
-            ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
+            ${this.fnStr}
         }
         overrideСonsole();
     </script>
@@ -399,5 +341,39 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.iconCloseShow = true;
             this.$('#result')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }, 100)
+    },
+    fnStr: `
+w = window;
+let console = w.console;
+if (!console) return;
+this.runConsoleData = [];
+w.runConsoleData = undefined;
+w._runConsoleData = [];
+if (!w.useJConsole) {
+    w.useJConsole = true;
+    w.print = (e) => console.log(e);
+    w.log = (e) => console.log(e);
+    w.info = (e) => console.info(e);
+    w.warn = (e) => console.warn(e);
+    w.error = (e) => console.error(e);
+    let intercept = (method) => {
+        let original = console[method];
+        console[method] = function () {
+            let message = arguments;
+            if (original.apply) {
+                original.apply(console, arguments);
+            } else {
+                message = Array.prototype.slice.apply(arguments).join(' ');
+                original(message);
+            }
+            if (w.runConsoleData) {
+                w.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+            } else {
+                w._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
+            }
+        }
     }
+    ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
+}
+        `
 })
