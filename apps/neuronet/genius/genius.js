@@ -49,15 +49,42 @@ export class WordEncoder {
         return this.encode.bind(this);
     }
     encode(word){
+        const emb = Array(this.dim).fill(0.0);
         for (let i = 0; i<word.length; i++){
+            const del = 2 ** -i;
             let code = word.charCodeAt(i);
+            console.log(code)
             code = code.toString(2);
             code = code.padStart(this.dim, "0");
-            code = code.split('').map(i=>+i);
-            console.log(code)
+            code.split('').forEach((v, i)=>{
+                emb[i]+=((+v) * del)
+            });
         }
+        return emb;
     }
 }
-const SIGNS = ',()[]{}-:;';
+export class WordDecoder {
+    constructor() {
+        return this.decode.bind(this);
+    }
+    decode(vector){
+        let result = [];
+        for(let i = 0; i<BINS.length; i++){
+            let p = BINS[i];
+            let l = vector.reverse().reduce((r, t, i)=>{
+                if (t >= p)
+                    r += 2 ** i;
+                vector[i] = t - p;
+                return r;
+            }, 0.0);
+            if(!l) break;
+            result.push(l);
+        }
+        result = String.fromCharCode(...result)
+        return result
+    }
+}
+let BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
+const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';

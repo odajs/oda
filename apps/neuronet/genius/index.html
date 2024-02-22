@@ -12,10 +12,16 @@
     const encoder = new gen.WordEncoder();
     result = result.map(r=>{
         return r.map(w=>{
-            return encoder(w)
+            return encoder(w);
         })
     })
-
     console.log(result)
+    const decoder = new gen.WordDecoder();
+    result = result.map(r=>{
+        return r.map(w=>{
+            return decoder(w);
+        })
+    })
+    console.log(result);
 
 </script>
