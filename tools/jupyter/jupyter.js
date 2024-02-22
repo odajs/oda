@@ -26,7 +26,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 if (!n.startsWith('http'))
                     n = path + '/' + n;
                 ODA.loadJSON(n).then(async res => {
-                    console.log(res);
+                    // console.log(res);
                     this.notebook = res;
                 })
             }
@@ -37,7 +37,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         editors: {
             code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
-            markdown: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' }
+            markdown: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
         },
         selectedIdx: {
             $def: -1,
@@ -91,7 +91,7 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center">
             <div ~if="!_readOnly && idx!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!_readOnly" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
+            <oda-button ~if="!_readOnly && !$for.item.hide" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
     idx: -2,
@@ -142,7 +142,7 @@ ODA({ is: 'oda-jupyter-toolbar',
         <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-        <oda-button ~if="cell?.cell_type === 'text'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+        <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
     idx: -2,
     cell: null,
@@ -183,7 +183,10 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
         <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @keypress="keyPress"></oda-md-viewer>
     `,
     set cell(n) {
-        this.src = n?.source || '';
+        let src;    
+        if (n?.source?.length && n.source.join)
+            src = n.source.join('');
+        this.src = src || n?.source || '';
     },
     idx: -2,
     src: '',
@@ -255,7 +258,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </div>
     `,
     set cell(n) {
-        this.src = n?.source || '';
+        let src;    
+        if (n?.source?.length && n.source.join)
+            src = n.source.join('');
+        this.src = src || n?.source || '';
         this.setCellMode(this.src);
     },
     src: '',
@@ -289,7 +295,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     },
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
-        this.cell.source = e.detail.value;
+        this.cell.source = this.src = e.detail.value;
         this.fire('change', this.cell);
         this.setCellMode();
     },
@@ -305,10 +311,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             window.runConsoleData = this.runConsoleData;
             this.isRun = true;
 
-            fn = new Function(`try { ${this.cell.source} } catch (e) { console.error(e) }`);
+            fn = new Function(`try { ${this.src} } catch (e) { console.error(e) }`);
             fn();
 
-            let str = this.cell.source;
+            let str = this.src;
             str = str.split('\n').filter(i => i).at(-1);
             window[str] && console.log(window[str]);
         } else {
@@ -337,7 +343,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     overrideСonsole();
 </script>
 <script type="module">import '../../oda.js'</script>
-                ` + this.cell.source;
+                ` + this.src;
                 iframe.addEventListener('load', () => {
                     this.runConsoleData = [...iframe.contentWindow._runConsoleData];
                     iframe.contentWindow.runConsoleData = this.runConsoleData;
