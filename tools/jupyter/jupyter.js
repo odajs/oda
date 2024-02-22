@@ -223,7 +223,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             }
             oda-icon {
                 padding: 4px;
-                height: {{iconSize}};
+                height: {{iconSize}}px;
             }
             #icon-close {
                 margin-top: {{iconCloseTop}};
