@@ -162,15 +162,10 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     this.selection.splice(0, this.selection.length, this.lastdown.block);
                 }
                 this.selection.forEach(i => {
-                    Object.defineProperty(i, 'delta', {
-                        writable: true,
-                        enumerable: false,
-                        configurable: true,
-                        value: {
-                            x: e.detail.start.x / this.scale - i.x,
-                            y: e.detail.start.y / this.scale - i.y
-                        }
-                    })
+                    i.delta = {
+                        x: e.detail.start.x / this.scale - i.x,
+                        y: e.detail.start.y / this.scale - i.y
+                    }
                 })
             } break;
             case 'track': {
