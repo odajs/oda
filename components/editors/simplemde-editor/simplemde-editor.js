@@ -35,9 +35,9 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js',
                 element: this.element,
                 spellChecker: false,
                 toolbar: [
-                    'bold', 'italic', "heading", 'strikethrough', '|',
+                    "heading-1", 'heading-2', 'heading-3', 'heading-smaller', 'heading-bigger', 'bold', 'italic', '|',
                     'quote', 'unordered-list', 'ordered-list', 'horizontal-rule', '|',
-                    'code', 'table', 'link', 'image', '|',
+                    'code', 'table', 'link', 'image', '|', 'clean-block'//, '|', 'fullscreen',
                     //'preview'/*, 'side-by-side'*/
                 ],
                 codeSyntaxHighlighting: true

@@ -158,6 +158,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
             :host {
                 @apply --horizontal;
                 @apply --flex;
+                max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'uset'}};
             }
             oda-md-viewer {
                 opacity: {{opacity}};
@@ -210,6 +211,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             }
             #icon-close {
                 margin-top: {{iconCloseTop}};
+                top: {{iconSize}}px;
             }
             #icon-close:hover {
                 fill: red;
@@ -224,11 +226,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </style>
         <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" :icon="iconClose" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky; top: 24px"></oda-icon>
+            <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" :read-only style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
+            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
                 <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
@@ -249,7 +251,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         return this.isRun ? 'av:play-circle-outline' : this.iconRunOver || 'bootstrap:code-square';
     },
     iconRunOver: '',
-    iconClose: 'eva:o-close-circle-outline',
     iconCloseTop: '',
     iconCloseShow: false,
     isRun: false,
@@ -264,13 +265,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
         if (oda?.length)
             this.cell.isODA = true;
-        // let regx = src.match(/<d\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gm);
         let arr = ['</script>', '</html>', '</body>', '</head>', '<link', '<!DOCTYPE html>', '<meta '];
         let regx = new RegExp(arr.join('|'));
         if (regx.test(src))
             this.cell.mode = 'html';
         if (this.cell.mode !== 'html' && !this.cell.isODA) {
-            // regx = src.match(/<\b[^>]*>[\s\S]*?<\/\b[^>]*>/gmi);
             regx = src.match(/<\b[^>]*>[\s\S]*?/gm);
             this.cell.mode = src.match(regx)?.length ? 'html' : 'javascript';
         }
@@ -284,7 +283,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     run() {
         this.iconCloseShow = false;
         this.runConsoleData = undefined;
-        this.iconClose = 'spinners:180-ring-with-bg';
         this.iconCloseTop = undefined;
         this.srcdoc = '';
         if (this.cell.mode === 'javascript') {
@@ -294,7 +292,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             window.runConsoleData = this.runConsoleData;
             this.isRun = true;
 
-            // let fn = new Function('', `with (this) {${this.cell.source}}`)
             fn = new Function(`try { ${this.cell.source} } catch (e) { console.error(e) }`);
             fn();
 
@@ -306,27 +303,27 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.async(() => {
                 const iframe = this.$('iframe');
                 this.srcdoc = `
-    <!DOCTYPE html>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            position: relative;
-            font-family: monospace;
-            font-size: 18px;
-        }
-        * *, *:before, *:after {  
-            box-sizing: border-box;
-        }
-    </style>
-    <script async>
-        window._runConsoleData = [];
-        var overrideСonsole = () => {
-            ${this.fnStr}
-        }
-        overrideСonsole();
-    </script>
-    <script type="module">import '../../oda.js'</script>
+<!DOCTYPE html>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        position: relative;
+        font-family: monospace;
+        font-size: 18px;
+    }
+    * *, *:before, *:after {  
+        box-sizing: border-box;
+    }
+</style>
+<script async>
+    window._runConsoleData = [];
+    var overrideСonsole = () => {
+        ${this.fnStr}
+    }
+    overrideСonsole();
+</script>
+<script type="module">import '../../oda.js'</script>
                 ` + this.cell.source;
                 iframe.addEventListener('load', () => {
                     this.runConsoleData = [...iframe.contentWindow._runConsoleData];
@@ -338,7 +335,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 })
             })
         }
-        this.iconClose = 'eva:o-close-circle-outline';
         this.async(() => {
             this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
             this.iconCloseShow = true;
