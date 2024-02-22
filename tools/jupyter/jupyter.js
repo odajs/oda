@@ -279,6 +279,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         return `color: ${colors[i.method]}`;
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || '') {
+        if (this.cell?.metadata?.colab) {
+            this.cell.mode = 'python';
+            return;
+        }
         this.cell.mode = 'javascript';
         this.cell.isODA = false;
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
@@ -304,16 +308,16 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.runConsoleData = undefined;
         this.iconCloseTop = undefined;
         this.srcdoc = '';
-        if (this.cell.mode === 'javascript') {
+        if (this.cell.mode !== 'html') {
             let fn = Function('w', this.fnStr);
             fn();
             this.runConsoleData = [...window._runConsoleData];
             window.runConsoleData = this.runConsoleData;
             this.isRun = true;
-
-            fn = new Function(`try { ${this.src} } catch (e) { console.error(e) }`);
-            fn();
-
+            try {   
+                fn = new Function(`try { ${this.src} } catch (e) { console.error(e) }`);
+                fn();
+            } catch (e) { console.error(e) }
             let str = this.src;
             str = str.split('\n').filter(i => i).at(-1);
             window[str] && console.log(window[str]);
