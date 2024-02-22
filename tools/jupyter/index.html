@@ -7,113 +7,114 @@
 <script type="module">
     import '../../oda.js';
     import './jupyter.js';
-    jupyter.notebook = {
-        cells: [
-            {
-                cell_type: 'text',
-                source:
-`
-___
+    jupyter.url = 'SSM.ipynb';
+//     jupyter.notebook = {
+//         cells: [
+//             {
+//                 cell_type: 'text',
+//                 source:
+// `
+// ___
 
-Markdown editor
----
+// Markdown editor
+// ---
 
-$x=\\frac{ -b\\pm\\sqrt{ b^2-4ac } } {2a}$
+// $x=\\frac{ -b\\pm\\sqrt{ b^2-4ac } } {2a}$
 
-$$x=\\frac{ -b\\pm\\sqrt{ b^2-4ac } } {2a}$$
+// $$x=\\frac{ -b\\pm\\sqrt{ b^2-4ac } } {2a}$$
 
-#$E=mc^2$
+// #$E=mc^2$
 
-___
+// ___
 
-`
-            },
-            {
-                cell_type: 'code',
-                source:
-`
-<h2 style="color: red; text-align: center; height: 50px;">HTML code</h2>
-<oda-component></oda-component>
+// `
+//             },
+//             {
+//                 cell_type: 'code',
+//                 source:
+// `
+// <h2 style="color: red; text-align: center; height: 50px;">HTML code</h2>
+// <oda-component></oda-component>
 
-<script type="module">
-    const a = Math.floor(Math.random() * 100);
-    const b = Math.floor(Math.random() * 100);
+// <script type="module">
+//     const a = Math.floor(Math.random() * 100);
+//     const b = Math.floor(Math.random() * 100);
     
-    console.log('a = ', a);
-    console.log('b = ', b);
-    console.log('a + b = ', a + b);
+//     console.log('a = ', a);
+//     console.log('b = ', b);
+//     console.log('a + b = ', a + b);
     
-    document.querySelector("h2").innerText = 'a + b = ' + (a + b);
+//     document.querySelector("h2").innerText = 'a + b = ' + (a + b);
      
-    ODA({ is: 'oda-component', template:\`ODA component\` })
-<\/script>
-`
-            },
-            {
-                cell_type: 'code',
-                source:
-`
-const a = Math.floor(Math.random() * 100);
-const b = Math.floor(Math.random() * 100);
+//     ODA({ is: 'oda-component', template:\`ODA component\` })
+// <\/script>
+// `
+//             },
+//             {
+//                 cell_type: 'code',
+//                 source:
+// `
+// const a = Math.floor(Math.random() * 100);
+// const b = Math.floor(Math.random() * 100);
 
-console.log('a = ', a);
-console.log('b = ', b);
-console.log('a + b = ', a + b);
+// console.log('a = ', a);
+// console.log('b = ', b);
+// console.log('a + b = ', a + b);
 
-c = a + b;
+// c = a + b;
 
-c
-`
-            },
-            {
-                cell_type: 'code',
-                source:
-`
-d = Math.floor(Math.random() * 10);
-d = c * d;
-console.log('c = ', c);
-console.log('d = ', d);
-console.log('c * d = ', d);
+// c
+// `
+//             },
+//             {
+//                 cell_type: 'code',
+//                 source:
+// `
+// d = Math.floor(Math.random() * 10);
+// d = c * d;
+// console.log('c = ', c);
+// console.log('d = ', d);
+// console.log('c * d = ', d);
 
-d
-`
-            },
-            {
-                cell_type: 'code',
-                source:
-`
-e = Math.floor(Math.random() * 10);
+// d
+// `
+//             },
+//             {
+//                 cell_type: 'code',
+//                 source:
+// `
+// e = Math.floor(Math.random() * 10);
 
-console.log('c = ', c);
-console.log('d = ', d);
-console.log('e = ', e);
-console.log('c * d * e = ', c * d * e);
+// console.log('c = ', c);
+// console.log('d = ', d);
+// console.log('e = ', e);
+// console.log('c * d * e = ', c * d * e);
 
-result = c * d * e;
+// result = c * d * e;
 
-result
-`
-            },
-            {
-                cell_type: 'code',
-                source:
-`
-log('log');
-info('info');
-warn('warn');
-error('error');
-print('print');
+// result
+// `
+//             },
+//             {
+//                 cell_type: 'code',
+//                 source:
+// `
+// log('log');
+// info('info');
+// warn('warn');
+// error('error');
+// print('print');
 
-print
-`
-            },
-            {
-                cell_type: 'text',
-                source:
-`
-<center style="padding-top: 12px"><iframe width="560" height="315" src="https://www.youtube.com/embed/s8TpfgE0iVU?si=abBy5OU9nu5pi2Jj&amp;controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></center>
-`
-            }
-        ]
-    }
+// print
+// `
+//             },
+//             {
+//                 cell_type: 'text',
+//                 source:
+// `
+// <center style="padding-top: 12px"><iframe width="560" height="315" src="https://www.youtube.com/embed/s8TpfgE0iVU?si=abBy5OU9nu5pi2Jj&amp;controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></center>
+// `
+//             }
+//         ]
+//     }
 </script>

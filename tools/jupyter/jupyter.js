@@ -1,3 +1,5 @@
+const path = import.meta.url.split('/').slice(0, -1).join('/');
+
 ODA({ is: 'oda-jupyter', imports: '@oda/button',
     template: `
         <style>
@@ -18,13 +20,24 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: false
+        readOnly: false,
+        set url(n) {
+            if (n) {
+                if (!n.startsWith('http'))
+                    n = path + '/' + n;
+                ODA.loadJSON(n).then(async res => {
+                    console.log(res);
+                    this.notebook = res;
+                })
+            }
+        },
     },
     $pdp: {
         notebook: null,
         editors: {
             code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
-            text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' }
+            text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
+            markdown: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' }
         },
         selectedIdx: {
             $def: -1,
