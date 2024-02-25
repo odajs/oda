@@ -421,8 +421,8 @@ export class Tensor extends ROCKS({
     }
 }
 
-const num = {
-    arange:(start, size, step)=>{
-
-    }
-}
+// const num = {
+//     arange:(start, size, step)=>{
+//
+//     }
+// }
