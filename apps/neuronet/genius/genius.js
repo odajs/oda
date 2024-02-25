@@ -40,6 +40,10 @@ export class Tokenizer {
                 s += ch;
             }
         }
+        if (s){
+            words.push(s);
+            list.push(words);
+        }
         return list;
     }
 }
@@ -68,10 +72,11 @@ export class WordDecoder {
         return this.decode.bind(this);
     }
     decode(vector){
+        vector.reverse()
         let result = [];
         for(let i = 0; i<BINS.length; i++){
             let p = BINS[i];
-            let l = vector.reverse().reduce((r, t, i)=>{
+            let l = vector.reduce((r, t, i)=>{
                 if (t >= p)
                     r += 2 ** i;
                 vector[i] = t - p;
