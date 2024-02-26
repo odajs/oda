@@ -22,7 +22,7 @@
 
     let result = []
     for(let phrase of phrases){
-        model.initPhrase()
+        // model.initPhrase()
         for(let token of phrase) {
             token = model(token)
             result.push(token);
@@ -30,13 +30,13 @@
     }
 
 
-    // const decoder = new gen.WordDecoder();
-    // result = result.map(r=>{
-    //     return r.map(w=>{
-    //         return decoder(w);
-    //     })
-    // })
-    // console.log(result);
+    const decoder = new gen.WordDecoder();
+    result = result.map(r=>{
+        return r.map(w=>{
+            return decoder(w);
+        })
+    })
+    console.log(result);
 
 </script>
 
