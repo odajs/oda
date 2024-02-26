@@ -1,13 +1,15 @@
 //HYPER PARAMETERS
 
-const MODEL_DIM = 12;           // Размерность входного и выходного слоев
-const LAYER_COUNT = 2;          // Количество слоев
+const MODEL_DIM = 16;           // Размерность входного и выходного слоев
+const MAX_DIM = 256;
+const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
 class Model{
+    dim = MODEL_DIM;
     constructor() {
         this.forward = this.forward.bind(this);
     }
@@ -24,8 +26,29 @@ class Model{
 export class Genius extends Model{
     constructor() {
         super();
-        this.forward.initPhrase = this.initPhrase;
-        this.layers = Array(LAYER_COUNT).fill(0).map(i=>new GeniusLayer(this));
+        this.forward.initPhrase = this.initPhrase.bind(this);
+        this.encoder = new GeniusEncoder(this);
+        this.decoder = new GeniusDecoder(this);
+        return this.forward;
+    }
+    forward(x){
+        x =  toGrad(x);
+        x = this.encoder(x);
+        x = this.decoder(x);
+        return x;
+    }
+    initPhrase(){
+
+    }
+}
+export class GeniusEncoder extends Model{
+    constructor(owner) {
+        super();
+        this.owner = owner;
+        this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
+            let dim = this.dim * i * HEAD_COUNT || this.dim;
+            return new GeniusLayer(this, dim, dim * HEAD_COUNT);
+        })
         return this.forward;
     }
     forward(x){
@@ -33,24 +56,35 @@ export class Genius extends Model{
             x = layer(x);
         return x;
     }
-    initPhrase(){
-
-    }
 }
-function fnGard(data){
-    if(data instanceof Grad)
-        return data;
-    return new Grad(data);
-}
-export class GeniusLayer extends Model{
+export class GeniusDecoder extends Model{
     constructor(owner) {
         super();
         this.owner = owner;
-        this.heads = Array(HEAD_COUNT).fill().map(i=>new GeniusHead(this));
-        this.W0 = new GeniusLinear(this, MODEL_DIM * HEAD_COUNT, MODEL_DIM); // Матрица сборки выходов голов
+        this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
+            let dim = this.dim * i * HEAD_COUNT || this.dim;
+            return new GeniusLayer(this, dim * HEAD_COUNT, dim);
+        }).reverse();
         return this.forward;
     }
     forward(x){
+        for(let layer of this.layers)
+            x = layer(x);
+        return x;
+    }
+}
+
+export class GeniusLayer extends Model{
+    constructor(owner, dim, out_dim) {
+        super();
+        this.dim = dim;
+        this.owner = owner;
+        this.heads = Array(HEAD_COUNT).fill().map(i=>new GeniusHead(this));
+        this.W0 = nn.Linear(this, dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
+        return this.forward;
+    }
+    forward(x){
+        console.log(this.dim)
         let head_res = new Grad(this.heads.map(h=>h(x)));
         x = head_res._concat();
         x = this.W0(x);
@@ -61,12 +95,38 @@ export class GeniusHead extends Model{
     constructor(owner) {
         super();
         this.owner = owner;
+        this.in_proj = nn.Linear(this, this.dim, this.dim * 2 + this.delta_rank, true);
+        this.dt_proj = nn.Linear(this, this.delta_rank, this.dim, true);
+        this.A = toGrad(Array(this.dim).fill('').map(()=>Array(this.dim).fill('').map((_,i)=>Math.log(i+1))));
+        this.H = toGrad(Array(this.dim).fill('').map(()=>Array(this.dim).fill(0)));
+        this.D = toGrad(1);
         this.ssm = new GeniusSSM(this);
         return this.forward;
     }
     forward(x){
-
+        let x_dbl = this.in_proj(x);
+        let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dim, this.dim]);
+        delta = this.dt_proj(delta);
+        delta = delta._softplus();
+        x = this.selective_scan(x, delta, B, C);
         return x;
+    }
+    selective_scan(x, delta, B, C){
+        let A = this.A._exp();
+        A = A._mul(-1);
+        let deltaA = delta._mul(A);
+        deltaA = deltaA._exp();
+        let deltaB = delta._mul(B);
+        let deltaBx = x._mat_mul(deltaB)
+        this.H = this.H._mul(deltaA);
+        this.H = this.H._add(deltaBx);
+        let y = this.H._mul(C);
+        x = x._mul(this.D);
+        y = y._add(x);
+        return y;
+    }
+    get delta_rank(){
+        return this.dim / MODEL_DIM;
     }
 }
 export class GeniusSSM extends Model{
@@ -81,8 +141,9 @@ export class GeniusSSM extends Model{
     }
 }
 export class GeniusLinear extends Model{
-    constructor(owner, in_size, out_size) {
+    constructor(owner, in_size, out_size, bias = false) {
         super();
+        this.bias = bias;
         this.owner = owner;
         this.W = new Grad(Array(in_size).fill(0).map(i=>Array(out_size).fill(0).map(j=>Math.random()-.5)));
         return this.forward;
@@ -146,7 +207,6 @@ export class WordEncoder {
         for (let i = 0; i<word.length; i++){
             const del = 2 ** -i;
             let code = word.charCodeAt(i);
-            console.log(code);
             code = code.toString(2);
             code = code.padStart(this.dim, "0");
             code.split('').forEach((v, i)=>{
@@ -211,9 +271,95 @@ class Grad{
         return out;
     }
     _mat_mul(other){
-        let result = [];
+        let result = MultiplyMatrix([this.data], other.data)[0]
+        let out = new Grad(result, '_mat_mul', [this, other]);
+
+        return out;
+    }
+    _mul(other){
+        other = toGrad(other);
+        const res = element_wise((x, y)=>{
+            return element_wise((a, b)=>{
+                return a * b
+            }, y, x);
+        }, this.data, other.data);
+
+        let out = new Grad(res, '_mul', [this, other]);
+        return out;
+    }
+    _add(other){
+        other = toGrad(other);
+        const res = element_wise((x, y)=>{
+            return element_wise((a, b)=>{
+                return a + b
+            }, y, x);
+        }, this.data, other.data);
+
+        let out = new Grad(res, '_add', [this, other]);
+        return out;
+    }
+    _t(){
+        const res = transpose(this.data)
+        let out = new Grad(res, '_t', [this]);
+        return out;
+    }
+    _slice(parts = []){
+        let start = 0;
+        const result = []
+        for (let size of parts){
+            let end = start + size;
+            result.push(new Grad(this.data.slice(start,  end), `slice: ${start}-${end}`, [this]))
+            start = end;
+        }
+        return result;
+    }
+    _softplus(){
+        const res = element_wise((x) => Math.log(1 + Math.exp(x)), this.data)
+        let out = new Grad(res, '_softplus', [this]);
+        return out;
+    }
+    _exp(){
+        const res = element_wise((x) => Math.exp(x), this.data)
+        let out = new Grad(res, '_exp', [this]);
+        return out;
     }
     reverse(){
         this.data.reverse()
     }
+}
+function element_wise(fn, data, other){
+    return data.map?.((v, i)=>element_wise(fn, v, other?.[i] || other)) || fn(data, other);
+}
+function toGrad(data){
+    if(data instanceof Grad)
+        return data;
+    return new Grad(data);
+}
+const nn = {
+    Linear(...args){
+        return new GeniusLinear(...args)
+    }
+}
+
+function MultiplyMatrix(A,B) {
+    const rowsA = A.length;
+    const colsA = A[0].length;
+    const rowsB = B.length;
+    const colsB = B[0].length;
+    const C = [];
+    if (colsA !== rowsB) throw new Error('Size mismatch');
+    for (let i = 0; i < rowsA; i++)
+        C[i] = [];
+    for (var k = 0; k < colsB; k++) {
+        for (let i = 0; i < rowsA; i++) {
+            let t = 0;
+            for (let j = 0; j < rowsB; j++)
+                t += A[i][j]*B[j][k];
+            C[i][k] = t;
+        }
+    }
+    return C;
+}
+function transpose(m, axis = 0) {
+    return m[0]?.map?.((x,i) =>(m.map(y => y[i]))) || m.map(y => [y]);
 }
