@@ -2,15 +2,22 @@
 
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
-const LAYER_COUNT = 1;          // Количество слоев
+const LAYER_COUNT = 3;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
-class Model{
+class Module{
     // dim = MODEL_DIM;
-    constructor() {}
+    constructor(owner, ...args) {
+        this.owner = owner;
+        this.__init__(...args);
+        return this.forward.bind(this);
+    }
+    __init__(){
+
+    }
     forward(x){
         return x;
     }
@@ -27,33 +34,28 @@ class Model{
         this['#dim'] = n;
     }
 }
-export class Genius extends Model{
-    constructor() {
-        super();
-        this.forward.initPhrase = this.initPhrase.bind(this);
+export class Genius extends Module{
+    __init__() {
         this.encoder = new GeniusEncoder(this);
         this.decoder = new GeniusDecoder(this);
-        return this.forward.bind(this);
     }
     forward(x){
         x =  toGrad(x);
         x = this.encoder(x);
         x = this.decoder(x);
+        x = x._softplus();
         return x;
     }
     initPhrase(){
 
     }
 }
-export class GeniusEncoder extends Model{
-    constructor(owner) {
-        super();
-        this.owner = owner;
+export class GeniusEncoder extends Module{
+    __init__() {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * i * HEAD_COUNT || this.dim;
+            let dim = this.dim * HEAD_COUNT**i ;
             return new GeniusLayer(this, dim, dim * HEAD_COUNT);
         })
-        return this.forward.bind(this);
     }
     forward(x){
         for(let layer of this.layers)
@@ -61,15 +63,12 @@ export class GeniusEncoder extends Model{
         return x;
     }
 }
-export class GeniusDecoder extends Model{
-    constructor(owner) {
-        super();
-        this.owner = owner;
+export class GeniusDecoder extends Module{
+    __init__() {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * i * HEAD_COUNT || this.dim;
+            let dim = this.dim * HEAD_COUNT**i;
             return new GeniusLayer(this, dim * HEAD_COUNT, dim);
         }).reverse();
-        return this.forward.bind(this);
     }
     forward(x){
         for(let layer of this.layers)
@@ -78,34 +77,29 @@ export class GeniusDecoder extends Model{
     }
 }
 
-export class GeniusLayer extends Model{
-    constructor(owner, dim, out_dim) {
-        super();
+export class GeniusLayer extends Module{
+    __init__(dim, out_dim) {
         this.dim = dim;
-        this.owner = owner;
         this.heads = Array(HEAD_COUNT).fill().map(i=>new GeniusHead(this));
         this.W0 = nn.Linear(this, dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
-        return this.forward.bind(this);
+        this.norm = new genRMSNorm(this);
     }
     forward(x){
-        console.log(this.dim)
+        x = this.norm(x);
         let head_res = new Grad(this.heads.map(h=>h(x)));
         x = head_res._concat();
         x = this.W0(x);
         return x;
     }
 }
-export class GeniusHead extends Model{
-    constructor(owner) {
-        super();
-        this.owner = owner;
+export class GeniusHead extends Module{
+    __init__() {
         this.in_proj = nn.Linear(this, this.dim, this.dim * 2 + this.delta_rank, true);
         this.dt_proj = nn.Linear(this, this.delta_rank, this.dim, true);
         this.A = toGrad(Array(this.dim).fill('').map(()=>Array(this.dim).fill('').map((_,i)=>Math.log(i+1))));
         this.H = toGrad(Array(this.dim).fill('').map(()=>Array(this.dim).fill(0)));
-        this.D = toGrad(1);
+        this.D = toGrad(Array(this.dim).fill(1));
         this.ssm = new GeniusSSM(this);
-        return this.forward.bind(this);
     }
     forward(x){
         let x_dbl = this.in_proj(x);
@@ -134,29 +128,39 @@ export class GeniusHead extends Model{
         return this.dim / MODEL_DIM;
     }
 }
-export class GeniusSSM extends Model{
-    constructor(owner) {
-        super();
-        this.owner = owner;
-        return this.forward.bind(this);
-    }
+export class GeniusSSM extends Module{
+
     forward(x){
 
         return x;
     }
 }
-export class GeniusLinear extends Model{
-    constructor(owner, in_size, out_size, bias = false) {
-        super();
+export class GeniusLinear extends Module{
+    __init__(in_size, out_size, bias = false) {
         this.bias = bias;
-        this.owner = owner;
         this.W = new Grad(Array(in_size).fill(0).map(i=>Array(out_size).fill(0).map(j=>Math.random()-.5)));
-        return this.forward.bind(this);
     }
     forward(x){
         x = x._mat_mul(this.W);
         return x;
     }
+}
+export class genRMSNorm extends Module {
+     __init__() {
+         this.weight = toGrad(Array(this.dim).fill(1));
+         this.eps = 1e-5;
+
+     }
+     forward(x) {
+         let v = x._pow(2);
+         v = v._mean();
+         v = v._add(this.eps);
+         v = v._sqrt();
+         v = v._mul(.1);
+         v = v._mul(this.weight);
+         x = x._mul(v);
+         return x;
+     }
 }
 export class Tokenizer {
     constructor() {
@@ -312,9 +316,7 @@ class Grad{
     _mul(other){
         other = toGrad(other);
         const res = element_wise((x, y)=>{
-            return element_wise((a, b)=>{
-                return a * b
-            }, y, x);
+            return element_wise((a, b)=>(a * b), y, x);
         }, this.data, other.data);
 
         let out = new Grad(res, '_mul', [this, other]);
@@ -322,11 +324,31 @@ class Grad{
     }
     _add(other){
         other = toGrad(other);
-        const res = element_wise((x, y)=>{
-            return x + y;
-        }, this.data, other.data);
+        const res = element_wise((x, y)=>(x + y), this.data, other.data);
 
         let out = new Grad(res, '_add', [this, other]);
+        return out;
+    }
+    _pow(rate=1){
+        const res = element_wise((x)=>Math.pow(x, rate), this.data);
+
+        let out = new Grad(res, `_pow(${rate})`, [this]);
+        return out;
+    }
+    _mean(){
+        let res = 0;
+        let cnt = 0;
+        element_wise((x)=> {
+            cnt++;
+            res += x;
+        }, this.data);
+        res /= cnt
+        let out = new Grad(res, `_mean`, [this]);
+        return out;
+    }
+    _sqrt(){
+        const res = element_wise((x)=>Math.sqrt(x), this.data);
+        let out = new Grad(res, `_sqrt`, [this]);
         return out;
     }
     _t(){

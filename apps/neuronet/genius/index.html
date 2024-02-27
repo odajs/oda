@@ -6,7 +6,7 @@
     import * as gen from './genius.js'
 
     const tokenizer = new gen.Tokenizer();
-    let phrases = tokenizer('Genius уникальная нейросетевая модель.');
+    let phrases = tokenizer('мама мыла раму');
 
 
     const encoder = new gen.WordEncoder();
@@ -15,7 +15,7 @@
             return encoder(w);
         })
     })
-    console.log(phrases)
+    // console.log(phrases)
 
 
     const model = new gen.Genius();
@@ -24,17 +24,20 @@
     for(let phrase of phrases){
         // model.initPhrase()
         for(let token of phrase) {
+            console.time('work')
             token = model(token)
+            console.timeEnd('work')
             result.push(token);
         }
     }
 
 
     const decoder = new gen.WordDecoder();
-    result = result.map(r=>{
-        return r.map(w=>{
-            return decoder(w);
-        })
+    result = result.map(w=>{
+        return decoder(w.data);
+        // return r.data.map(w=>{
+        //     return decoder(w);
+        // })
     })
     console.log(result);
 
