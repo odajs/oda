@@ -1,13 +1,10 @@
-export class Tensor{
+export class Tensor {
     _back = () => {};
     constructor(data, label, children= [], error) {
         this.data = data;
         this.label = label;
         this.children = children;
         this.error = error;
-    }
-    static ones(size){
-
     }
     valueOf(){
         return this.data;
@@ -110,9 +107,21 @@ export class Tensor{
         let out = tensor(res, `_sqrt`, [this]);
         return out;
     }
+    _log(){
+        const res = element_wise((x)=>Math.log(x), this.data);
+        let out = tensor(res, `_log`, [this]);
+        return out;
+    }
     _t(){
         const res = transpose(this.data);
         let out = tensor(res, '_t', [this]);
+        return out;
+    }
+    _repeat(cnt= 1){
+        const res = Array(cnt).fill(0).map(i=>{
+            return structuredClone(this.data);
+        })
+        let out = tensor(res, `_repeat(${cnt})`, [this]);
         return out;
     }
     _slice(parts = []){
@@ -140,10 +149,49 @@ export class Tensor{
         let out = tensor(res, '_exp', [this]);
         return out;
     }
-    reverse(){
-        this.data.reverse()
+    _random(){
+        const res = element_wise((x) => Math.random()-1, this.data)
+        let out = tensor(res, '_random', [this]);
+        return out;
+    }
+    static ones(size){
+        return this.fill(size, 1);
+    }
+    static zeros(size){
+        return this.fill(size, 0);
+    }
+    static random(size){
+        return this.fill(size)._random();
+    }
+    static fill(size= 1, value= 0){
+        if (!Array.isArray(size))
+            size = [size];
+        let result;
+        let s;
+        while(s = size.pop()){
+            if (!result)
+                result = Array(s).fill(value);
+            else{
+                result = Array(s).fill(0).map(i=>{
+                    return structuredClone(result);
+                })
+            }
+        }
+        return tensor(result);
+    }
+    static arange(from_or_size = 0, size){
+        if (size === undefined){
+            size = from_or_size;
+            from_or_size = 0;
+        }
+        const result = []
+        for (let i = from_or_size; i<size; i++){
+            result.push(i);
+        }
+        return tensor(result)
     }
 }
+
 function element_wise(fn, data, other){
     return data?.map?.((d, i)=>{
         const o = other?.[i] ?? other;
@@ -175,13 +223,8 @@ function transpose(m, axis = 0) {
     return m[0]?.map?.((x,i) =>(m.map(y => y[i]))) || m.map(y => [y]);
 }
 
-export function linear(...args){
-    return new nnLinear(...args)
-}
-
 export class Module{
-    constructor(owner, ...args) {
-        this.owner = owner;
+    constructor(...args) {
         this.__init__(...args);
 
         return (...args)=>{
@@ -198,15 +241,6 @@ export class Module{
     back(g){
         return g;
     }
-    get model(){
-        return this['#model'] ??= this.owner || this;
-    }
-    get dim(){
-        return this['#dim'] || this.owner?.dim;
-    }
-    set dim(n){
-        this['#dim'] = n;
-    }
     get label(){
         return this.constructor.name + (this.index !== undefined?` [${this.index}]`:'')
     }
@@ -215,10 +249,42 @@ export class Module{
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
         this.bias = bias;
-        this.W = tensor(Array(in_size).fill(0).map(i=>Array(out_size).fill(0).map(j=>Math.random()-.5)));
+        this.W = Parameter(Tensor.random([in_size, out_size]));
     }
     forward(x){
         x = x._mat_mul(this.W);
         return x;
     }
+}
+export function linear(...args){
+    return new Linear(...args)
+}
+export class RMSNorm extends Module {
+    __init__(dim) {
+        this.weight = Parameter(Tensor.ones(dim));
+        this.eps = 1e-5;
+    }
+    forward(x) {
+        let v = x._pow(2);
+        v = v._mean();
+        v = v._add(this.eps);
+        v = v._sqrt();
+        v = v._mul(.1);
+        v = v._mul(this.weight);
+        x = x._mul(v);
+        return x;
+    }
+}
+export function rsmNorm(...args){
+    return new RMSNorm(...args)
+}
+
+function tensor(data){
+    if(data instanceof Tensor)
+        return data;
+    return new Tensor(data);
+}
+export function Parameter(t){
+    t.isParameter = true;
+    return t
 }

@@ -1,5 +1,6 @@
 //HYPER PARAMETERS
-import * as nn from  './tensor.js';
+import * as nn from  '../neuro/neuro.js';
+import {rsmNorm} from "../neuro/neuro.js";
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
 const LAYER_COUNT = 2;          // Количество слоев
@@ -9,9 +10,10 @@ const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
 export class Genius extends nn.Module{
+
     __init__() {
-        this.encoder = new genEncoder(this);
-        this.decoder = new genDecoder(this);
+        this.encoder = new genEncoder();
+        this.decoder = new genDecoder();
     }
     forward(x){
         x =  tensor(x);
@@ -21,12 +23,15 @@ export class Genius extends nn.Module{
         x = x._mul(2.0);
         return x;
     }
+    get dim(){
+        return MODEL_DIM;
+    }
 }
 export class genEncoder extends nn.Module{
     __init__() {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * HEAD_COUNT**i ;
-            return new genLayer(this, i, dim, dim * HEAD_COUNT);
+            let dim = this.dim * HEAD_COUNT ** i ;
+            return new genLayer(i, dim, dim * HEAD_COUNT);
         })
     }
     forward(x){
@@ -38,8 +43,8 @@ export class genEncoder extends nn.Module{
 export class genDecoder extends nn.Module{
     __init__() {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * HEAD_COUNT**i;
-            return new genLayer(this, LAYER_COUNT * i, dim * HEAD_COUNT, dim);
+            let dim = this.dim * HEAD_COUNT ** i;
+            return new genLayer(LAYER_COUNT * i, dim * HEAD_COUNT, dim);
         }).reverse();
     }
     forward(x){
@@ -54,8 +59,8 @@ export class genLayer extends nn.Module{
         this.dim = dim;
         this.index = index;
         this.heads = Array(HEAD_COUNT).fill().map(i=>new genHead(this));
-        this.W0 = nn.Linear(this, dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
-        this.norm = new nnRMSNorm(this);
+        this.W0 = nn.linear(dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
+        this.norm = nn.rsmNorm(dim);
     }
     forward(x){
         x = this.norm(x);
@@ -67,11 +72,11 @@ export class genLayer extends nn.Module{
 }
 export class genHead extends nn.Module{
     __init__() {
-        this.in_proj = nn.linear(this, this.dim, this.dim * 2 + this.delta_rank, true);
-        this.dt_proj = nn.linear(this, this.delta_rank, this.dim, true);
-        this.A = tensor(Array(this.dim).fill('').map(()=>Array(this.dim).fill('').map((_,i)=>Math.log(i+1))));
-        this.H = tensor(Array(this.dim).fill('').map(()=>Array(this.dim).fill(0)));
-        this.D = tensor(Array(this.dim).fill(1));
+        this.in_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, true);
+        this.dt_proj = nn.linear(this.delta_rank, this.dim, true);
+        this.A = nn.Parameter(nn.Tensor.arange(1, this.dim + 1)._repeat(this.dim)._log());
+        this.H = nn.Tensor.zeros([this.dim, this.dim]);
+        this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
     }
     forward(x){
         let x_dbl = this.in_proj(x);
@@ -99,24 +104,6 @@ export class genHead extends nn.Module{
     get delta_rank(){
         return this.dim / MODEL_DIM;
     }
-}
-
-export class nnRMSNorm extends nn.Module {
-     __init__() {
-         this.weight = tensor(Array(this.dim).fill(1));
-         this.eps = 1e-5;
-
-     }
-     forward(x) {
-         let v = x._pow(2);
-         v = v._mean();
-         v = v._add(this.eps);
-         v = v._sqrt();
-         v = v._mul(.1);
-         v = v._mul(this.weight);
-         x = x._mul(v);
-         return x;
-     }
 }
 export class Tokenizer {
     constructor() {

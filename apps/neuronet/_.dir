@@ -7,15 +7,15 @@
         }
     },
     {
-        "name": "fractal-brain",
-        "label": "Fractal brain",
+        "name": "m4t",
+        "label": "M4T - gpt",
         "content": {
             "link": "index.html"
         }
     },
     {
-        "name": "stable-diffusion",
-        "label": "Stable Diffusion",
+        "name": "attoGPT",
+        "label": "atto - GPT",
         "content": {
             "link": "index.html"
         }
