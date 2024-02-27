@@ -9,11 +9,18 @@ const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
-export class Genius extends nn.Module{
-
+class genModule extends nn.Module{
+    get dim(){
+        return this['#dim'] || this.owner?.dim || MODEL_DIM;
+    }
+    set dim(n){
+        this['#dim'] = n;
+    }
+}
+export class Genius extends genModule{
     __init__() {
-        this.encoder = new genEncoder();
-        this.decoder = new genDecoder();
+        this.encoder = new genEncoder(this);
+        this.decoder = new genDecoder(this);
     }
     forward(x){
         x =  tensor(x);
@@ -23,15 +30,13 @@ export class Genius extends nn.Module{
         x = x._mul(2.0);
         return x;
     }
-    get dim(){
-        return MODEL_DIM;
-    }
 }
-export class genEncoder extends nn.Module{
-    __init__() {
+export class genEncoder extends genModule{
+    __init__(owner) {
+        this.owner = owner;
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = this.dim * HEAD_COUNT ** i ;
-            return new genLayer(i, dim, dim * HEAD_COUNT);
+            return new genLayer(this, i, dim, dim * HEAD_COUNT);
         })
     }
     forward(x){
@@ -40,11 +45,12 @@ export class genEncoder extends nn.Module{
         return x;
     }
 }
-export class genDecoder extends nn.Module{
-    __init__() {
+export class genDecoder extends genModule{
+    __init__(owner) {
+        this.owner = owner;
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = this.dim * HEAD_COUNT ** i;
-            return new genLayer(LAYER_COUNT * i, dim * HEAD_COUNT, dim);
+            return new genLayer(this, LAYER_COUNT * i, dim * HEAD_COUNT, dim);
         }).reverse();
     }
     forward(x){
@@ -54,8 +60,9 @@ export class genDecoder extends nn.Module{
     }
 }
 
-export class genLayer extends nn.Module{
-    __init__(index, dim, out_dim) {
+export class genLayer extends genModule{
+    __init__(owner, index, dim, out_dim) {
+        this.owner = owner;
         this.dim = dim;
         this.index = index;
         this.heads = Array(HEAD_COUNT).fill().map(i=>new genHead(this));
@@ -70,8 +77,9 @@ export class genLayer extends nn.Module{
         return x;
     }
 }
-export class genHead extends nn.Module{
-    __init__() {
+export class genHead extends genModule{
+    __init__(owner) {
+        this.owner = owner;
         this.in_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, true);
         this.dt_proj = nn.linear(this.delta_rank, this.dim, true);
         this.A = nn.Parameter(nn.Tensor.arange(1, this.dim + 1)._repeat(this.dim)._log());
