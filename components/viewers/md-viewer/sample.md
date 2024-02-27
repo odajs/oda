@@ -1,6 +1,13 @@
 ### Showdown's Wiki pages 
 [Окрыть showdown wiki](https://github.com/showdownjs/showdown/wiki)
 
+<p style="margin: 32px 0"></p>
+$x=\frac{ -b\pm\sqrt{ b^2-4ac } } {2a}$
+
+$$x=\frac{ -b\pm\sqrt{ b^2-4ac } } {2a}$$
+
+#$E=mc^2$
+
 
 # Markdown Cheat Sheet
 
