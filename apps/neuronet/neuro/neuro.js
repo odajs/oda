@@ -6,6 +6,30 @@ export class Tensor {
         this.children = children;
         this.error = error;
     }
+    back(){
+        let topo = [];
+        let visited = new Set();
+        let build_topo = (v) => {
+            if (!visited.has(v)) {
+                visited.add(v)
+                v.children.forEach(ch => build_topo(ch))
+                topo.push(v)
+            }
+        }
+        build_topo(this);
+        function clone(d){
+            if(Array.isArray(d))
+                return d.map(i=>clone(i));
+            return Math.round(Math.random() * 10)/10;//1.0;
+        }
+        this.grad = clone(this.data);
+        topo.reverse().forEach(node => {
+            node._back()
+        })
+    }
+    get size(){
+        return this.shape.reduce((r, v)=>r * v, 1);
+    }
     valueOf(){
         return this.data;
     }
@@ -30,6 +54,19 @@ export class Tensor {
             return v;
         })()
     }
+    get grad(){
+        return this['#grad'] ??= (()=>{
+            function clone(d){
+                if(Array.isArray(d))
+                    return d.map(i=>clone(i));
+                return 0;
+            }
+            return clone(this.data);
+        })()
+    }
+    set grad(v){
+        this['#grad'] = v;
+    }
     get dim(){
         return this.shape.length;
     }
@@ -42,6 +79,7 @@ export class Tensor {
     }
     _mat_mul(other){
         other = tensor(other);
+
         let data = this.data;
         let o_data = other.data;
         if(this.dim === other.dim){
@@ -66,7 +104,15 @@ export class Tensor {
         if(this.dim === 1 && other.dim !== 1)
             result = result[0];
         let out = tensor(result, '_mat_mul', [this, other]);
-
+        out._back = () => {
+            let mode = '' + this.dim + other.dim;
+            switch (mode){
+                case '11':{
+                    other.grad = MultiplyMatrix(this._t().data, [out.grad])
+                    this.grad = multiplyMT([out.grad], other.data);
+                } break;
+            }
+        }
         return out;
     }
     _mul(other){
@@ -74,15 +120,29 @@ export class Tensor {
         const res = element_wise((x, y)=>{
             return element_wise((a, b)=>(a * b), y, x);
         }, this.data, other.data);
-
         let out = tensor(res, '_mul', [this, other]);
+        out._back = () => {
+            this.grad = element_wise((x, y, z)=>{
+                return element_wise((v, a, b)=>(v + a * b), y, x, z);
+            }, this.grad, other.data, out.grad);
+            other.grad = element_wise((x, y, z)=>{
+                return element_wise((v, a, b)=>(v + a * b), y, x, z);
+            }, other.grad, this.data, out.grad);
+        }
         return out;
     }
     _add(other){
         other = tensor(other);
         const res = element_wise((x, y)=>(x + y), this.data, other.data);
-
         let out = tensor(res, '_add', [this, other]);
+        out._back = () => {
+            this.grad = element_wise((x, y)=>{
+                return element_wise((a, b)=>(a + b), y, x);
+            }, this.grad, out.grad);
+            other.grad = element_wise((x, y)=>{
+                return element_wise((a, b)=>(a + b), y, x);
+            }, other.grad, out.grad);
+        }
         return out;
     }
     _pow(rate=1){
@@ -142,6 +202,11 @@ export class Tensor {
     _sigmoid(){
         const res = element_wise((x) => 1/(1+ Math.exp(-x)), this.data)
         let out = tensor(res, '_sigmoid', [this]);
+        out._back = () => {
+            this.grad = element_wise((x, y, z)=>{
+                return element_wise((v, a, b)=>(v + a * (1 - a) * b), y, x, z);
+            }, this.grad, this.data, out.grad);
+        }
         return out;
     }
     _exp(){
@@ -192,11 +257,12 @@ export class Tensor {
     }
 }
 
-function element_wise(fn, data, other){
-    return data?.map?.((d, i)=>{
-        const o = other?.[i] ?? other;
-        return element_wise(fn, d, o)
-    }) || fn(data, other);
+function element_wise(fn, data1, data2, data3){
+    return data1?.map?.((d1, i)=>{
+        const d2 = data2?.[i] ?? data2;
+        const d3 = data3?.[i] ?? data3;
+        return element_wise(fn, d1, d2, d3);
+    }) || fn(data1, data2, data3);
 }
 
 
@@ -279,12 +345,18 @@ export function rsmNorm(...args){
     return new RMSNorm(...args)
 }
 
-function tensor(data){
-    if(data instanceof Tensor)
-        return data;
-    return new Tensor(data);
+function tensor(...args){
+    if(args[0] instanceof Tensor)
+        return args[0];
+    return new Tensor(...args);
 }
 export function Parameter(t){
     t.isParameter = true;
     return t
+}
+function multiplyMT(M, T) {
+    return M.map(x=>T.map(y=>dotProduct(x, y)));
+}
+function dotProduct(v1, v2) {
+    return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }

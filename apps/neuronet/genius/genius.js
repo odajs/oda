@@ -1,6 +1,6 @@
 //HYPER PARAMETERS
 import * as nn from  '../neuro/neuro.js';
-import {rsmNorm} from "../neuro/neuro.js";
+import {rsmNorm, Tensor} from "../neuro/neuro.js";
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
 const LAYER_COUNT = 2;          // Количество слоев
@@ -200,8 +200,8 @@ export class WordDecoder {
     }
 }
 
-function tensor(data){
-    if(data instanceof nn.Tensor)
-        return data;
-    return new nn.Tensor(data);
+function tensor(...args){
+    if(args[0] instanceof nn.Tensor)
+        return args[0];
+    return new nn.Tensor(...args);
 }

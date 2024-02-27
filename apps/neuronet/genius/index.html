@@ -26,6 +26,7 @@
         for(let token of phrase) {
             console.time('work')
             token = model(token)
+            token.back();
             console.timeEnd('work')
             result.push(token);
         }
