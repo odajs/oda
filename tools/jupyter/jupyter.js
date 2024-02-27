@@ -190,7 +190,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     },
     idx: -2,
     src: '',
-    _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее (или выберите "Ввод")',
+    _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     get opacity() {
         return this.src ? 1 : .3;
     },
@@ -198,10 +198,10 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
         this.cell.source = this.src = e.detail.value;
         this.fire('change', this.cell);
     },
-    keyPress(e) {
-        if (e.key === 'Enter')
-            this.changeEditMode();
-    },
+    // keyPress(e) {
+    //     if (e.key === 'Enter')
+    //         this.changeEditMode();
+    // },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         if (this.editIdx === this.idx ) {

@@ -187,7 +187,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor',
             let n = lang;
             this._lang = lang;
             let _lang = '';
-            let langs = ['javascript', 'xml', 'xquery', 'css', 'http', 'ini', 'json', 'html'];
+            let langs = ['javascript', 'xml', 'xquery', 'css', 'http', 'ini', 'json', 'html', 'python'];
             langs.forEach(e => {
                 if (this._lang.startsWith(e)) _lang = e;
             })
