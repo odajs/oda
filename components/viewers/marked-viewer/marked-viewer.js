@@ -49,6 +49,7 @@ ODA({ is: 'oda-marked-viewer',
         iframe.addEventListener('load', e => {
             iframe.contentDocument.getElementById('marked-mathjax-input').value = this.src;
             iframe.contentWindow.Preview.UpdateSrc();
+            iframe.contentWindow.Preview.mjRunning = false;
             iframe.contentDocument.addEventListener('click', e => {
                 this.dispatchEvent(new Event('click'));
             })

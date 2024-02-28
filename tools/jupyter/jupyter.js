@@ -250,7 +250,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
+            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
                 <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
@@ -283,11 +283,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         let colors = { log: 'gray', info: 'blue', warn: 'orange', error: 'red' };
         return `color: ${colors[i.method]}`;
     },
-    attached() {
-        setTimeout(() => {
-            
-            this.$('oda-ace-editor').editor.setOption('fontSize', '16px')
-        }, 1000);
+    aceLoaded(e) {
+        this.$('oda-ace-editor').editor.setOption('fontSize', '16px');
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || '') {
         if (this.cell?.metadata?.colab) {
