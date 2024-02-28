@@ -186,3 +186,154 @@ yarn add oda-framework
 
 Данный пример аналогичен предыдущему, только объявление класса помещено в инструкцию **try…catch**, которая перехватывает исключение и выводит на экран сообщение «Ошибка: Error -- Описание: Unknown attribute "$def1" in description for property "counter"».
 
+В отличие от нативного языка JavaScript, в объект, объявленный в функции **ROCKS**, нельзя в процессе выполнения кода динамически добавить новое свойство со значением **undefined**.
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='Rocks'></div>
+<div id='Native'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        rocks: {}
+    }) {
+        native = {};
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let divRocks = document.getElementById("Rocks");
+    let divNative = document.getElementById("Native");
+    myObject.rocks.newProperty = undefined;
+    myObject.native.newProperty = undefined;
+    divRocks.innerText = "ROCKS — Свойство существует? " + ('newProperty' in myObject.rocks);
+    divNative.innerText = "NATIVE — Свойство существует? " + ('newProperty' in myObject.native);
+</script>
+```
+
+В данном примере в функции **ROCKS** объявлен пустой объект **rocks**. В процессе выполнения кода в него добавляется свойство **newProperty** со значением **undefined**. По результату выполнения примера можно видеть, что свойство добавлено не было. Для сравнения в нативной части был объявлен объект **native**. В него добавление свойства со значением **undefined** прошло успешно.
+
+Если вам всё-таки необходимо динамически добавлять в объекты свойства со значением **undefined**, используйте метод **Object.defineProperty**. 
+
+Аналогичная ситуация с массивами. В массив, объявленный в функции **ROCKS**, нельзя в процессе выполнения кода динамически добавить ранее не существовавший элемент со значением **undefined**.
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='Rocks'></div>
+<div id='Native'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        rocks: []
+    }) {
+        native = [];
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let divRocks = document.getElementById("Rocks");
+    let divNative = document.getElementById("Native");
+    myObject.rocks[0] = undefined;
+    myObject.native[0] = undefined;
+    divRocks.innerText = "ROCKS — Индекс 0 существует? " + (0 in myObject.rocks);
+    divNative.innerText = "NATIVE — Индекс 0 существует? " + (0 in myObject.native);
+</script>
+```
+
+В данном примере в функции **ROCKS** объявлен пустой массив **rocks**. В процессе выполнения кода в него добавляется элемент с индексом **0** со значением **undefined**. По результату выполнения примера можно видеть, что элемент добавлен не был. Для сравнения в нативной части был объявлен массив **native**. В него добавление элемента со значением **undefined** прошло успешно.
+
+```warning_md
+Будьте внимательны при инициализации массива, объявленного в функции **ROCKS**. Результаты инициализации одними и теме же значениями при объявлении массива и в процессе выполнения кода могут различаться, если инициализирующий массив содержит пропущенные элементы.
+```
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='Rocks1'></div>
+<div id='Rocks2'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        rocks: [,2,3]
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let divRocks1 = document.getElementById("Rocks1");
+    let divRocks2 = document.getElementById("Rocks2");
+    divRocks1.innerText = "Индекс 0 существует? — " + (0 in myObject.rocks);
+    myObject.rocks = [,2,3];
+    divRocks2.innerText = "Индекс 0 существует? — " + (0 in myObject.rocks);
+</script>
+```
+
+В данном примере массив **rocks** дважды инициализируется массивом **[,2,3]**, в котором опущен элемент с индексом **0**. Первый раз массив инициализируется при объявлении в функции **ROCKS**. Можно видеть, что элемент с индексом **0** был создан в массиве. Затем массив инициализируется в процессе выполнения кода операцией присваивания. И можно видеть, что на это раз в нем отсутствует элемент с индексом **0**.
+
+Если подставить на место пропущенного элемента значение **undefined**, то инициализация в обоих случаях приведет к одинаковому результату, в массиве будет создан элемент с соответствующим индексом.
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='Rocks1'></div>
+<div id='Rocks2'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        rocks: [undefined,2,3]
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let divRocks1 = document.getElementById("Rocks1");
+    let divRocks2 = document.getElementById("Rocks2");
+    divRocks1.innerText = "Индекс 0 существует? — " + (0 in myObject.rocks);
+    myObject.rocks = [undefined,2,3];
+    divRocks2.innerText = "Индекс 0 существует? — " + (0 in myObject.rocks);
+</script>
+```
+
+Интересно себя ведет метод **push** при добавлении в массив, объявленный в функции **ROCKS**, значения **undefined**. Длина массива увеличивается, но новый элемент не создается.
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='Rocks1'></div>
+<div id='Rocks2'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        rocks: []
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let divRocks1 = document.getElementById("Rocks1");
+    let divRocks2 = document.getElementById("Rocks2");
+    divRocks1.innerText = "Индекс 0 существует? " + (0 in myObject.rocks) + " — Количество элементов: " + myObject.rocks.length;
+    myObject.rocks.push( undefined );
+    divRocks2.innerText = "Индекс 0 существует? " + (0 in myObject.rocks) + " — Количество элементов: " + myObject.rocks.length;
+</script>
+```
+
+В данном примере в функции **ROCKS** объявлен пустой массив **rocks**. До и после выполнения метода **push** с аргументом **undefined** массив проверяется на наличие элемента с индексом **0** и на количество элементов. Можно видеть, что метод **push** увеличил длину массива, хотя никаких элементов в нем не создал.
+
