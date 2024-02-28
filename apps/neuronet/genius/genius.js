@@ -105,10 +105,10 @@ export class genHead extends genModule{
     }
     forward(x){
         let x_and_res = this.in_proj(x);
-        let [xx, res] = x_and_res._slice([this.dim, this.dim])
+        let [xx, res] = x_and_res._slice([this.dim, this.dim]);
         xx = xx._silu();
         let y = this.ssm(xx);
-        res = res._silu()
+        res = res._silu();
         y = y._mul(res);
         y = this.out_proj(y);
         return y;
@@ -130,7 +130,7 @@ export class genHead extends genModule{
         deltaB_u = u._mat_mul(deltaB_u);
         deltaA = deltaA._mul(this.H);
         this.H = deltaA._add(deltaB_u);
-        let y = C._mat_mul(this.H);
+        let y = C._mat_mul(this.H._t());
         u = u._mul(this.D);
         y = y._add(u);
         return y;
