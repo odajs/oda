@@ -90,10 +90,8 @@
     TeX: { equationNumbers: {autoNumber: "AMS"} }
   });
 </script>
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="./marked.js"></script>
-
+    <script type="text/javascript" src="./marked.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script>
         marked.setOptions({
             renderer: new marked.Renderer(),
@@ -188,8 +186,8 @@
                 this.mjRunning = false;
                 text = this.buffer.innerHTML;
                 text = this.PartialDescape(text);
-                this.buffer.innerHTML = marked(text);
-                this.SwapBuffers();
+                this.buffer.innerHTML = marked.parse(text);
+                //this.SwapBuffers();
             },
 
             Escape: function (html, encode) {
@@ -244,8 +242,8 @@
             // If you want to enable such buggy fast updates, you should 
             // add something like  onkeypress="Preview.UpdateKeyPress(event)" to textarea's attributes.
             UpdateSrc: function () {
-                this.preview.innerHTML = '<p>' + marked(this.textarea.value) + '</p>';
-                this.buffer.innerHTML = '<p>' + marked(this.textarea.value) + '</p>';
+                this.preview.innerHTML = '<p>' + marked.parse(this.textarea.value) + '</p>';
+                this.buffer.innerHTML = '<p>' + marked.parse(this.textarea.value) + '</p>';
                 this.Update();
             }
 

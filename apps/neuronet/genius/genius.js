@@ -3,18 +3,24 @@ import * as nn from  '../neuro/neuro.js';
 import {rsmNorm, Tensor} from "../neuro/neuro.js";
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
-const LAYER_COUNT = 2;          // Количество слоев
+const LAYER_COUNT = 4;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
+const CONV_DIM = 4;
+const CONV_BIAS = true;
+const BIAS = false;
 class genModule extends nn.Module{
     get dim(){
         return this['#dim'] || this.owner?.dim || MODEL_DIM;
     }
     set dim(n){
         this['#dim'] = n;
+    }
+    get label(){
+        return this.constructor.name + ` [${this.dim}]`
     }
 }
 export class Genius extends genModule{
@@ -63,50 +69,70 @@ export class genDecoder extends genModule{
 export class genLayer extends genModule{
     __init__(owner, index, dim, out_dim) {
         this.owner = owner;
+        this.out_dim = out_dim;
         this.dim = dim;
         this.index = index;
-        this.heads = Array(HEAD_COUNT).fill().map(i=>new genHead(this));
+        this.heads = Array(HEAD_COUNT).fill().map((_,i)=>new genHead(this, i));
         this.W0 = nn.linear(dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
         this.norm = nn.rsmNorm(dim);
     }
     forward(x){
-        x = this.norm(x);
-        let head_res = tensor(this.heads.map(h=>h(x)));
-        x = head_res._concat();
-        x = this.W0(x);
-        return x;
+        let y = this.norm(x);
+        console.log('norm', this.label, this.index,  '=', y.data[0])
+        let head_res = tensor(this.heads.map(h=>{
+            let r = h(y);
+            // r = r._add(x); // skip-connection
+            return r;
+        }));
+        y = head_res._concat();
+        console.log('_concat', this.label, this.index,  '=', y.data[0])
+        y = this.W0(y);
+        console.log('out', this.label, this.index,  '=', y.data[0])
+        return y;
     }
 }
 export class genHead extends genModule{
-    __init__(owner) {
+    __init__(owner, index) {
         this.owner = owner;
-        this.in_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, true);
+        this.index = index;
+        this.in_proj = nn.linear(this.dim, this.dim * 2, false);
+        this.x_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dim, true);
         this.A = nn.Parameter(nn.Tensor.arange(1, this.dim + 1)._repeat(this.dim)._log());
         this.H = nn.Tensor.zeros([this.dim, this.dim]);
         this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
+        this.out_proj = nn.linear(this.dim, this.dim, BIAS);
     }
     forward(x){
-        let x_dbl = this.in_proj(x);
+        let x_and_res = this.in_proj(x);
+        let [xx, res] = x_and_res._slice([this.dim, this.dim])
+        xx = xx._silu();
+        let y = this.ssm(xx);
+        res = res._silu()
+        y = y._mul(res);
+        y = this.out_proj(y);
+        return y;
+    }
+    ssm(x){
+        let A = this.A._exp();
+        A = A._mul(-1);
+        let x_dbl = this.x_proj(x)
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dim, this.dim]);
         delta = this.dt_proj(delta);
         delta = delta._softplus();
-        x = this.selective_scan(x, delta, B, C);
+        x = this.select(x, delta, A, B, C);
         return x;
     }
-    selective_scan(x, delta, B, C){
-        let A = this.A._exp();
-        A = A._mul(-1);
+    select(u, delta, A, B, C){
         let deltaA = delta._mul(A);
         deltaA = deltaA._exp();
-        let deltaBx = x._mat_mul(B);
-        let deltaB = delta._mat_mul(B);
-        deltaBx = deltaBx._mul(deltaB);
-        this.H = this.H._mul(deltaA);
-        this.H = this.H._add(deltaBx);
+        let deltaB_u =  delta._mul(B);
+        deltaB_u = u._mat_mul(deltaB_u);
+        deltaA = deltaA._mul(this.H);
+        this.H = deltaA._add(deltaB_u);
         let y = C._mat_mul(this.H);
-        x = x._mul(this.D);
-        y = y._add(x);
+        u = u._mul(this.D);
+        y = y._add(u);
         return y;
     }
     get delta_rank(){

@@ -167,6 +167,11 @@ export class Tensor {
         let out = tensor(res, `_sqrt`, [this]);
         return out;
     }
+    _rsqrt(){
+        const res = element_wise((x)=>1/Math.sqrt(x), this.data);
+        let out = tensor(res, `_rsqrt`, [this]);
+        return out;
+    }
     _log(){
         const res = element_wise((x)=>Math.log(x), this.data);
         let out = tensor(res, `_log`, [this]);
@@ -209,13 +214,16 @@ export class Tensor {
         }
         return out;
     }
+    _silu(){
+        return this._mul(this._sigmoid());
+    }
     _exp(){
         const res = element_wise((x) => Math.exp(x), this.data)
         let out = tensor(res, '_exp', [this]);
         return out;
     }
     _random(){
-        const res = element_wise((x) => Math.random()-1, this.data)
+        const res = element_wise((x) => Math.random()-.5, this.data)
         let out = tensor(res, '_random', [this]);
         return out;
     }
@@ -294,10 +302,9 @@ export class Module{
         this.__init__(...args);
 
         return (...args)=>{
-            console.time('forward: ' + this.label)
+            // console.time('forward: ' + this.label)
             const res = this.forward(...args)
-            console.timeEnd('forward: ' + this.label)
-            // console.log(res.toString())
+            // console.timeEnd('forward: ' + this.label)
             return res;
         }
     }
@@ -308,7 +315,7 @@ export class Module{
         return g;
     }
     get label(){
-        return this.constructor.name + (this.index !== undefined?` [${this.index}]`:'')
+        return this.constructor.name;
     }
 }
 
@@ -322,6 +329,27 @@ export class Linear extends Module{
         return x;
     }
 }
+export class Conv1d extends Module{
+     __init__(in_channels, out_channels, kernel_size, stride= 1, padding = 0, dilation = 1, groups = 1, bias = true, padding_mode = 'zeros'){
+         let kernel_size_ = _single(kernel_size);
+         let stride_ = _single(stride);
+         let padding_ = isinstance(padding, str)?padding:_single(padding);
+         let dilation_ = _single(dilation);
+     }
+
+
+    _conv_forward(input, weight, bias){
+        if (this.padding_mode != 'zeros')
+            return F.conv1d(F.pad(input, this._reversed_padding_repeated_twice, this.padding_mode), weight, bias, this.stride, _single(0), this.dilation, this.groups)
+        return F.conv1d(input, weight, bias, this.stride, this.padding, this.dilation, this.groups)
+    }
+
+
+    forward(input) {
+        return this._conv_forward(input, this.weight, this.bias)
+    }
+
+}
 export function linear(...args){
     return new Linear(...args)
 }
@@ -334,8 +362,7 @@ export class RMSNorm extends Module {
         let v = x._pow(2);
         v = v._mean();
         v = v._add(this.eps);
-        v = v._sqrt();
-        v = v._mul(.1);
+        v = v._rsqrt();
         v = v._mul(this.weight);
         x = x._mul(v);
         return x;
