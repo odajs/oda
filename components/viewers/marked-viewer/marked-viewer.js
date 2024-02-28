@@ -1,6 +1,3 @@
-import { marked } from './lib/marked.esm.js';
-import markedKatex from 'https://cdn.jsdelivr.net/npm/marked-katex-extension@5.0.1/+esm';
-
 ODA({ is: 'oda-marked-viewer',
     template: `
         <style>
@@ -10,16 +7,27 @@ ODA({ is: 'oda-marked-viewer',
                 position: relative;
                 height: 100%;
             }
-            .katex-html { display: none; }
+            iframe {
+                border: none;
+                width: 100%;
+                opacity: 0;
+                -webkit-transition: opacity 1s ease-in-out;
+                -moz-transition: opacity 1s ease-in-out;
+                transition: opacity 1s ease-in-out;
+            }
         </style>
-        <div ~html></div>
+        <iframe src="/web/oda/components/viewers/marked-viewer/lib/editor.html"></iframe>
     `,
     $pdp: {
         html: '',
         src: {
             $def: '',
             set(n) {
-                n && (this.html = marked.parse(n));
+                let iframe = this.$('iframe');
+                if (this.isReady && iframe) {
+                    iframe.contentDocument.getElementById('marked-mathjax-input').value = this.src;
+                    iframe.contentWindow.Preview.UpdateSrc();
+                }
             }
         },
         url: {
@@ -27,11 +35,6 @@ ODA({ is: 'oda-marked-viewer',
             set(n) {
                 if (n) {
                     (async () => {
-                        if (!this.isUse) {
-                            this.isUse = true;
-                            const options = { throwOnError: false }
-                            marked.use(markedKatex(options));
-                        }
                         let src = '';
                         try { src = await fetch(n) } catch (e) { console.log(e) }
                         this.src = src && src.ok ? await src.text() : n;
@@ -39,5 +42,25 @@ ODA({ is: 'oda-marked-viewer',
                 }
             }
         }
+    },
+    async attached() {
+        await new Promise((r) => setTimeout(r, 0));
+        let iframe = this.$('iframe');
+        iframe.addEventListener('load', e => {
+            iframe.contentDocument.getElementById('marked-mathjax-input').value = this.src;
+            iframe.contentWindow.Preview.UpdateSrc();
+            iframe.contentDocument.addEventListener('click', e => {
+                this.dispatchEvent(new Event('click'));
+            })
+            iframe.contentDocument.addEventListener('dblclick', e => {
+                this.dispatchEvent(new Event('dblclick'));
+            })
+            const resizeObserver = new ResizeObserver((e) => {
+                iframe.style.height = iframe.contentDocument.body.scrollHeight + 10 + 'px';
+                iframe.style.opacity = 1;
+                this.isReady = true;
+            })
+            resizeObserver.observe(iframe.contentDocument.body);
+        })
     }
 })

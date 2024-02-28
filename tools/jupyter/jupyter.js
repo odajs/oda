@@ -164,23 +164,23 @@ ODA({ is: 'oda-jupyter-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-viewer', extends: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/marked-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
             :host {
                 @apply --horizontal;
                 @apply --flex;
-                max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'uset'}};
+                max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'unset'}};
             }
-            oda-md-viewer {
+            oda-marked-viewer {
                 opacity: {{opacity}};
                 border: none;
                 outline: none;
             }
         </style>
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-        <oda-md-viewer tabindex=0 class="flex" :srcmd="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @keypress="keyPress"></oda-md-viewer>
+        <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
     `,
     set cell(n) {
         let src;    
@@ -202,6 +202,9 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/md-v
     //     if (e.key === 'Enter')
     //         this.changeEditMode();
     // },
+    markedClick(e) { 
+        this.selectedIdx = this.idx;
+    },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         if (this.editIdx === this.idx ) {
@@ -216,6 +219,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     template: `
         <style>
             :host {
+                --border-color: lightgray;
                 @apply --horizontal;
                 @apply --flex;
                 outline: 1px solid var(--border-color);
@@ -246,7 +250,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
+            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
                 <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
@@ -257,6 +261,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             </div>
         </div>
     `,
+    iconSize: 18,
     set cell(n) {
         let src;    
         if (n?.source?.length && n.source.join)
@@ -277,6 +282,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     runConsoleStyle(i) {
         let colors = { log: 'gray', info: 'blue', warn: 'orange', error: 'red' };
         return `color: ${colors[i.method]}`;
+    },
+    attached() {
+        setTimeout(() => {
+            
+            this.$('oda-ace-editor').editor.setOption('fontSize', '16px')
+        }, 1000);
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || '') {
         if (this.cell?.metadata?.colab) {
@@ -351,10 +362,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 iframe.addEventListener('load', () => {
                     this.runConsoleData = [...iframe.contentWindow._runConsoleData];
                     iframe.contentWindow.runConsoleData = this.runConsoleData;
-                    this.async(() => {
+                    const resizeObserver = new ResizeObserver((e) => {
                         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                         iframe.style.opacity = 1;
-                    }, 300)
+                    })
+                    resizeObserver.observe(iframe.contentDocument.body);
                 })
             })
         }
