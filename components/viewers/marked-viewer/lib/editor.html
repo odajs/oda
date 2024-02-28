@@ -16,7 +16,15 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
+        h1 { font-size: 2.0736em; font-weight: 100; }
+        h2 { font-size: 1.728em; font-weight: 100; }
+        h3 { font-size: 1.44em; font-weight: 200; }
+        h4 { font-size: 1.2em; font-weight: 200; }
+        h5 { font-size: 1.14px; font-weight: 200; }
+        h6 { font-size: 0.83333em; font-weight: 200; }
+        hr { opacity: .2;  }
 
         .hint {
             text-align: right;
@@ -39,11 +47,10 @@
 
         blockquote {
             color: #6a737d;
-            padding-left: 3px;
-            padding-top: 3px;
-            padding-bottom: 3px;
+            margin: 1em 2em;
+            padding: 0 1em;
             margin: 0;
-            border-left: 3px solid lightgray;
+            border-left: 5px solid lightgray;
             /* border-left: 3px solid #73A0C5; */
         }
 
@@ -86,7 +93,7 @@
     <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
     showProcessingMessages: false, messageStyle: 'none',
-    tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] },
+    tex2jax: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [ ['$$','$$'], ["\\[","\\]"] ], processEscapes: true, processEnvironments: true },
     TeX: { equationNumbers: {autoNumber: "AMS"} }
   });
 </script>
