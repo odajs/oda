@@ -3,7 +3,7 @@ import * as nn from  '../neuro/neuro.js';
 import {rsmNorm, Tensor} from "../neuro/neuro.js";
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
-const LAYER_COUNT = 4;          // Количество слоев
+const LAYER_COUNT = 2;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
@@ -32,8 +32,7 @@ export class Genius extends genModule{
         x =  tensor(x);
         x = this.encoder(x);
         x = this.decoder(x);
-        x = x._sigmoid();
-        x = x._mul(2.0);
+        x = x._relu();
         return x;
     }
 }
@@ -98,7 +97,7 @@ export class genHead extends genModule{
         this.in_proj = nn.linear(this.dim, this.dim * 2, false);
         this.x_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dim, true);
-        this.A = nn.Parameter(nn.Tensor.arange(1, this.dim + 1)._repeat(this.dim)._log());
+        this.A = nn.Parameter(nn.Tensor.hippo(this.dim, -1));
         this.H = nn.Tensor.zeros([this.dim, this.dim]);
         this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
         this.out_proj = nn.linear(this.dim, this.dim, BIAS);
@@ -114,8 +113,9 @@ export class genHead extends genModule{
         return y;
     }
     ssm(x){
-        let A = this.A._exp();
-        A = A._mul(-1);
+        let A = this.A;
+        // let A = this.A._exp();
+        // A = A._mul(-1);
         let x_dbl = this.x_proj(x)
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dim, this.dim]);
         delta = this.dt_proj(delta);

@@ -208,14 +208,51 @@ export class Tensor {
         const res = element_wise((x) => 1/(1+ Math.exp(-x)), this.data)
         let out = tensor(res, '_sigmoid', [this]);
         out._back = () => {
-            this.grad = element_wise((x, y, z)=>{
-                return element_wise((v, a, b)=>(v + a * (1 - a) * b), y, x, z);
+            this.grad = element_wise((g, d, o)=>{
+                return element_wise((v, x, e)=>(v + x * (1 - x) * e), g, d, o);
             }, this.grad, this.data, out.grad);
         }
         return out;
     }
     _silu(){
-        return this._mul(this._sigmoid());
+        const res = element_wise((x) => x * 1/(1+ Math.exp(-x)), this.data)
+        let out = tensor(res, '_silu', [this]);
+        out._back = () => {
+            // this.grad = element_wise((x, y, z)=>{
+            //     return element_wise((v, a, b)=>(v + a * (1 - a) * b), y, x, z);
+            // }, this.grad, this.data, out.grad);
+        }
+        return out;
+    }
+    _relu(){
+        const res = element_wise((x) => Math.max(0, x) , this.data)
+        let out = tensor(res, '_relu', [this]);
+        out._back = () => {
+            // this.grad = element_wise((x, y, z)=>{
+            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
+            // }, this.grad, this.data, out.grad);
+        }
+        return out;
+    }
+    _lrelu(){
+        const res = element_wise((x) => Math.max(.1 * x, x) , this.data)
+        let out = tensor(res, '_relu', [this]);
+        out._back = () => {
+            // this.grad = element_wise((x, y, z)=>{
+            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
+            // }, this.grad, this.data, out.grad);
+        }
+        return out;
+    }
+    _elu(alpha = 1){
+        const res = element_wise((x) => (x>0?x:(alpha * (Math.exp(x) - 1))), this.data)
+        let out = tensor(res, '_relu', [this]);
+        out._back = () => {
+            // this.grad = element_wise((x, y, z)=>{
+            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
+            // }, this.grad, this.data, out.grad);
+        }
+        return out;
     }
     _exp(){
         const res = element_wise((x) => Math.exp(x), this.data)
@@ -235,6 +272,18 @@ export class Tensor {
     }
     static random(size){
         return this.fill(size)._random();
+    }
+    static hippo(size= 8, koef = 1){
+        const hippo = Array(size).fill('').map((_, k)=>{
+            return Array(size).fill('').map((_, n)=>{
+                if (n>k)
+                    return (2 * k + 1) ** .5 * (2 * n + 1) ** .5 * koef;
+                if (n === k)
+                    return (n + 1) * koef;
+                return 0;
+            })
+        })
+        return tensor(hippo);
     }
     static fill(size= 1, value= 0){
         if (!Array.isArray(size))

@@ -1,7 +1,7 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
     <div slot="content" tabindex="0" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
-    <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :title="$for.item.id" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
+    <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
     showTrash: false,
@@ -9,7 +9,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         let pos = alterPos[this.focusedPin.pos];
         this.block.pins ??= {};
         this.block.pins[pos] ??= [];
-        // const bind = { bind: [{ block: this.items.indexOf(this.focusedPin.block), [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
         const bind = { bind: [{ block: this.focusedPin.block.id, [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
         this.block.pins[pos].push(bind);
         this.links = undefined;
@@ -31,9 +30,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             paths.push({ is: 'path', props: { stroke: 'red', 'stroke-width': '4', fill: 'transparent', d: this.dragLink } })
         return paths;
     },
-    // $hostAttributes: {
-    //     tabindex: 1
-    // },
     onDown(e) {
         this.lastdown = e.target;
     },
@@ -214,8 +210,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.items.remove(i);
             // this.links?.remove(i);
         });
-        this.designInfo = undefined
-        // this.links = undefined;
+        this.designInfo = undefined;
     }
 });
 ODA({ is: 'oda-scheme-container', template: /*html*/`
