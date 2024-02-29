@@ -19,9 +19,6 @@ class genModule extends nn.Module{
     set dim(n){
         this['#dim'] = n;
     }
-    get label(){
-        return this.constructor.name + ` [${this.dim}]`
-    }
 }
 export class Genius extends genModule{
     __init__() {
@@ -100,14 +97,18 @@ export class genHead extends genModule{
         this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
         this.out_proj = nn.linear(this.dim, this.dim, BIAS);
         this.norm = nn.rsmNorm(this.dim);
+        this.conv1d = (x)=>{
+            return x;
+        }
     }
     forward(x){
         let x_and_res = this.in_proj(x);
-        let [xx, res] = x_and_res._slice([this.dim, this.dim]);
-        xx = xx._silu();
-        let y = this.ssm(xx);
-        res = res._silu();
-        y = y._mul(res);
+        let [x1, x2] = x_and_res._slice([this.dim, this.dim]);
+        x1 = this.conv1d(x1);
+        x1 = x1._silu();
+        let y = this.ssm(x1)
+        x2 = x2._silu();
+        y = y._mul(x2);
         y = this.out_proj(y);
         y = this.norm(y);
         return y;
@@ -221,7 +222,7 @@ export class WordDecoder {
             if(!l) break;
             result.push(l);
         }
-        result = String.fromCharCode(...result)
+        result = String.fromCharCode(...result);
         return result;
     }
 }

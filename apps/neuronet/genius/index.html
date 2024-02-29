@@ -25,11 +25,17 @@
                 </div>
                 <button>go</button>
             </div>
+            <div slot="main" class="flex vertical">
+                <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
+            </div>
 
         `,
         value:{
             $def: '',
             $save: true
+        },
+        get model(){
+            return new gen.Genius();
         },
         get tokens(){
             const tokenizer = new gen.Tokenizer();
@@ -67,6 +73,7 @@
     //     for(let token of phrase) {
     //         console.time('work')
     //         token = model(token)
+    //
     //         token.back();
     //         console.timeEnd('work')
     //         result.push(token);

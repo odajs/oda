@@ -17,12 +17,7 @@ export class Tensor {
             }
         }
         build_topo(this);
-        function clone(d){
-            if(Array.isArray(d))
-                return d.map(i=>clone(i));
-            return Math.round(Math.random() * 10)/10;//1.0;
-        }
-        this.grad = clone(this.data);
+        this.grad = element_wise((x)=>1, this.data)
         topo.reverse().forEach(node => {
             node._back()
         })
@@ -59,9 +54,9 @@ export class Tensor {
             else{
                 if (d.length>6){
                     result += d.slice(0, 2).map(x=>{
-                        return ((x < 0?' ':'  ') + x.toExponential(3) + ' ');
+                        return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
                     }).join(' ')  + ' ... ' + d.slice(-2).map(x=>{
-                        return ((x < 0?' ':'  ') + x.toExponential(3) + ' ');
+                        return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
                     }).join(' ')
                 }
                 else{
@@ -69,26 +64,10 @@ export class Tensor {
                         return x.toExponential(3);
                     }).join(' ')
                 }
-
             }
-            result += ']';
-            return result
+            return result + ']'
         }
         s += recurse(this.data, 0, 0);
-        // const res = element_wise((d)=>{
-        //     return element_wise((x)=>x.toExponential(3), d);
-        // }, this.data);
-        // s += JSON.stringify(res);
-        // //     let result = ''
-        // //     if (!Array.isArray(array?.[0])){
-        // //         result += ' '.repeat(deep) + JSON.stringify(array);
-        // //     }
-        // //     else{
-        // //         result += array.map(i=>recurse(i, deep+1)).join('\r\n');
-        // //     }
-        // //     return result
-        // // }
-        // s += recurse(this.data, 0);
         return s
     }
     get shape(){
@@ -103,14 +82,7 @@ export class Tensor {
         })()
     }
     get grad(){
-        return this['#grad'] ??= (()=>{
-            function clone(d){
-                if(Array.isArray(d))
-                    return d.map(i=>clone(i));
-                return 0;
-            }
-            return clone(this.data);
-        })()
+        return this['#grad'] ??= element_wise((x)=>0, this.data)
     }
     set grad(v){
         this['#grad'] = v;
@@ -276,9 +248,9 @@ export class Tensor {
         const res = element_wise((x) => Math.max(0, x) , this.data)
         let out = tensor(res, '_relu', [this]);
         out._back = () => {
-            // this.grad = element_wise((x, y, z)=>{
-            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
-            // }, this.grad, this.data, out.grad);
+            this.grad = element_wise((x, y, z)=>{
+                return element_wise((v, a, b)=>(v + a<0?0:1 * b), x, y, z);
+            }, this.grad, this.data, out.grad);
         }
         return out;
     }
@@ -397,13 +369,15 @@ function transpose(m, axis = 0) {
 export class Module{
     constructor(...args) {
         this.__init__(...args);
-
-        return (...args)=>{
+        const fwd = (...args)=>{
             console.time('forward: ' + this.label)
             const res = this.forward(...args)
             console.timeEnd('forward: ' + this.label)
             return res;
         }
+        fwd.module = this;
+        fwd.toString = this.toString.bind(this);
+        return fwd
     }
     forward(x){
         return x;
@@ -413,6 +387,30 @@ export class Module{
     }
     get label(){
         return this.constructor.name;
+    }
+    get __children__(){
+        let ch = Object.getOwnPropertyDescriptors(this);
+        const result = []
+        for (let n in ch){
+            const prop = ch[n]
+            if (prop.value?.module){
+                result.push(prop.value)
+            }
+            else if (Array.isArray(prop.value) && prop.value[0]?.module){
+                result.push(prop.value)
+            }
+        }
+        return result;
+    }
+    toString(){
+        let s = this.label+'\r\n';
+        s += this.__children__.map(i=> {
+                if (i.module)
+                    return '  ' + i.toString();
+                return i.map(j => '    '+j.toString()).join('')
+            }
+        ).join('');
+        return s;
     }
 }
 
@@ -425,27 +423,6 @@ export class Linear extends Module{
         x = x._mat_mul(this.W);
         return x;
     }
-}
-export class Conv1d extends Module{
-     __init__(in_channels, out_channels, kernel_size, stride= 1, padding = 0, dilation = 1, groups = 1, bias = true, padding_mode = 'zeros'){
-         let kernel_size_ = _single(kernel_size);
-         let stride_ = _single(stride);
-         let padding_ = isinstance(padding, str)?padding:_single(padding);
-         let dilation_ = _single(dilation);
-     }
-
-
-    _conv_forward(input, weight, bias){
-        if (this.padding_mode != 'zeros')
-            return F.conv1d(F.pad(input, this._reversed_padding_repeated_twice, this.padding_mode), weight, bias, this.stride, _single(0), this.dilation, this.groups)
-        return F.conv1d(input, weight, bias, this.stride, this.padding, this.dilation, this.groups)
-    }
-
-
-    forward(input) {
-        return this._conv_forward(input, this.weight, this.bias)
-    }
-
 }
 export function linear(...args){
     return new Linear(...args)
