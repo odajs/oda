@@ -3,7 +3,7 @@ import * as nn from  '../neuro/neuro.js';
 
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
-const LAYER_COUNT = 4;          // Количество слоев
+const LAYER_COUNT = 2;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';

@@ -394,22 +394,26 @@ export class Module{
         for (let n in ch){
             const prop = ch[n]
             if (prop.value?.module){
-                result.push(prop.value)
+                result.push({[n]:prop.value.module})
             }
             else if (Array.isArray(prop.value) && prop.value[0]?.module){
-                result.push(prop.value)
+                result.push({[n]:prop.value.map(i=>i.module)})
             }
         }
         return result;
     }
-    toString(){
-        let s = this.label+'\r\n';
-        s += this.__children__.map(i=> {
-                if (i.module)
-                    return '  ' + i.toString();
-                return i.map(j => '    '+j.toString()).join('')
+    toString(step = 0){
+        const add = 1;
+        let s = (' ').repeat(step) + `${this.label} ()(\r\n`;
+        s += this.__children__.map(obj => {
+            const key = Object.keys(obj)[0];
+            const prop = obj[key];
+            if(Array.isArray(prop)){
+                return (' ').repeat(step + add) + key+':'+prop.map?.(j =>j.toString(step + add)).join('')
             }
-        ).join('');
+            return (' ').repeat(step + add) + key+':'+prop.toString(step + add);
+        }).join('');
+        // s+=(' ').repeat(step) + '\r\n)'
         return s;
     }
 }
