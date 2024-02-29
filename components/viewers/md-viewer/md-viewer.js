@@ -80,10 +80,12 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
             await this.initShowdown();
             let src = lzs || s;
             if (!lzs && (!this.srcmd && (s.endsWith('.md') || !(s.includes('~~~') || s.includes('```'))))) {
-                src = await fetch(s);
-                src = src && src.ok ? await src.text() : s;
+                try {
+                    src = await fetch(s);
+                    src = src && src.ok ? await src.text() : s;
+                } catch (e) { }
             }
-            this.source = src;
+            this.source = src || s;
             src = src.replace(/\$\$(.*)\$\$/g, `<h2 style="text-align: center;">$ $1 $</h2>`);
             src = src.replace('~~~~~_~~~~~', '');
             src = src.replace(/(```\S*|~~~\S*)( +)/g, '$1' + '_');
