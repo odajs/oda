@@ -1,9 +1,9 @@
 //HYPER PARAMETERS
 import * as nn from  '../neuro/neuro.js';
-import {rsmNorm, Tensor} from "../neuro/neuro.js";
+
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
-const LAYER_COUNT = 2;          // Количество слоев
+const LAYER_COUNT = 4;          // Количество слоев
 const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
@@ -33,11 +33,14 @@ export class Genius extends genModule{
         x = this.encoder(x);
         x = this.decoder(x);
         x = x._relu();
+        // x = x._sigmoid();
         return x;
     }
 }
 export class genEncoder extends genModule{
+
     __init__(owner) {
+        this.head_count = HEAD_COUNT;
         this.owner = owner;
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = this.dim * HEAD_COUNT ** i ;
@@ -52,6 +55,7 @@ export class genEncoder extends genModule{
 }
 export class genDecoder extends genModule{
     __init__(owner) {
+        this.head_count = 1
         this.owner = owner;
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = this.dim * HEAD_COUNT ** i;
@@ -71,22 +75,16 @@ export class genLayer extends genModule{
         this.out_dim = out_dim;
         this.dim = dim;
         this.index = index;
-        this.heads = Array(HEAD_COUNT).fill().map((_,i)=>new genHead(this, i));
-        this.W0 = nn.linear(dim * HEAD_COUNT, out_dim); // Матрица сборки выходов голов
+        this.heads = Array(this.owner.head_count).fill().map((_,i)=>new genHead(this, i));
+        this.W0 = nn.linear(dim * this.owner.head_count, out_dim); // Матрица сборки выходов голов
         this.norm = nn.rsmNorm(dim);
     }
     forward(x){
         let y = this.norm(x);
-        console.log('norm', this.label, this.index,  '=', y.data[0])
-        let head_res = tensor(this.heads.map(h=>{
-            let r = h(y);
-            // r = r._add(x); // skip-connection
-            return r;
-        }));
+        let head_res = tensor(this.heads.map(h=>h(y)));
         y = head_res._concat();
-        console.log('_concat', this.label, this.index,  '=', y.data[0])
         y = this.W0(y);
-        console.log('out', this.label, this.index,  '=', y.data[0])
+        console.log('norm', this.label, this.index,  '=', y.data[0])
         return y;
     }
 }
@@ -101,6 +99,7 @@ export class genHead extends genModule{
         this.H = nn.Tensor.zeros([this.dim, this.dim]);
         this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
         this.out_proj = nn.linear(this.dim, this.dim, BIAS);
+        this.norm = nn.rsmNorm(this.dim);
     }
     forward(x){
         let x_and_res = this.in_proj(x);
@@ -110,6 +109,7 @@ export class genHead extends genModule{
         res = res._silu();
         y = y._mul(res);
         y = this.out_proj(y);
+        y = this.norm(y);
         return y;
     }
     ssm(x){
@@ -176,10 +176,10 @@ export class Tokenizer {
                 s += ch;
             }
         }
-        if (s){
+        if (s)
             words.push(s);
+        if (words.length)
             list.push(words);
-        }
         return list;
     }
 }

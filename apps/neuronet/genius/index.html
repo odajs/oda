@@ -1,47 +1,88 @@
 <meta charset="UTF-8">
 <title>Title</title>
-
+<gen-layout></gen-layout>
 <script type="module">
     import '../../../oda.js'
     import * as gen from './genius.js'
+    import * as nn from  '../neuro/neuro.js';
+    ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
+        template:`
+            <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
+                <div class="vertical">
+                    prompt:
+                    <textarea content ::value></textarea>
+                </div>
+                <div class="vertical">
+                    tokens:
+                    <div class="horizontal" ~for="tokens"  style="font-size: xx-small;">
+                        {{JSON.stringify($for.item)}}
+                    </div>
+                </div>
+                <div class="flex vertical">
+                    tokens:
+                    <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString()}}</textarea>
 
-    const tokenizer = new gen.Tokenizer();
-    let phrases = tokenizer('слово');
+                </div>
+                <button>go</button>
+            </div>
 
-
-    const encoder = new gen.WordEncoder();
-    phrases = phrases.map(r=>{
-        return r.map(w=>{
-            return encoder(w);
-        })
-    })
-    // console.log(phrases)
-
-
-    const model = new gen.Genius();
-
-    let result = []
-    for(let phrase of phrases){
-        // model.initPhrase()
-        for(let token of phrase) {
-            console.time('work')
-            token = model(token)
-            token.back();
-            console.timeEnd('work')
-            result.push(token);
+        `,
+        value:{
+            $def: '',
+            $save: true
+        },
+        get tokens(){
+            const tokenizer = new gen.Tokenizer();
+            return  tokenizer(this.value);
+        },
+        get vectors(){
+            const encoder = new gen.WordEncoder();
+            const phrases = this.tokens.map(r=>{
+                return r.map(w=>{
+                    return encoder(w);
+                })
+            })
+            return new nn.Tensor(phrases)
         }
-    }
-
-
-    const decoder = new gen.WordDecoder();
-    result = result.map(w=>{
-        console.log(w.data)
-        return decoder(w.data);
-        // return r.data.map(w=>{
-        //     return decoder(w);
-        // })
     })
-    console.log(result);
+    //
+    // const tokenizer = new gen.Tokenizer();
+    // let phrases = tokenizer('слово');
+    //
+    //
+    // const encoder = new gen.WordEncoder();
+    // phrases = phrases.map(r=>{
+    //     return r.map(w=>{
+    //         return encoder(w);
+    //     })
+    // })
+    // // console.log(phrases)
+    //
+    //
+    // const model = new gen.Genius();
+    //
+    // let result = []
+    // for(let phrase of phrases){
+    //     // model.initPhrase()
+    //     for(let token of phrase) {
+    //         console.time('work')
+    //         token = model(token)
+    //         token.back();
+    //         console.timeEnd('work')
+    //         result.push(token);
+    //     }
+    // }
+    //
+    //
+    // const decoder = new gen.WordDecoder();
+    // result = result.map(w=>{
+    //     console.log(w.data)
+    //     return decoder(w.data);
+    //     // return r.data.map(w=>{
+    //     //     return decoder(w);
+    //     // })
+    // })
+    // console.log(result);
 
 </script>
 

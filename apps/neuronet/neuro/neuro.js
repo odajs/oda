@@ -27,6 +27,12 @@ export class Tensor {
             node._back()
         })
     }
+    get label(){
+        return this['#label'] || '';
+    }
+    set label(n){
+        this['#label'] = n;
+    }
     get size(){
         return this.shape.reduce((r, v)=>r * v, 1);
     }
@@ -41,7 +47,49 @@ export class Tensor {
         }
     }
     toString(){
-        return JSON.stringify(this, undefined, 1)
+        let s = `tensor ${this.label} (${this.shape}):\r\n`;
+        function recurse(d, idx, l){
+            let result = idx?`\r\n${(' ').repeat(l)}[`:'['
+            if (Array.isArray(d[0])){
+                const list = d.map((v, i)=>{
+                    return recurse(v, i, l + 1);
+                })
+                result += list;
+            }
+            else{
+                if (d.length>6){
+                    result += d.slice(0, 2).map(x=>{
+                        return ((x < 0?' ':'  ') + x.toExponential(3) + ' ');
+                    }).join(' ')  + ' ... ' + d.slice(-2).map(x=>{
+                        return ((x < 0?' ':'  ') + x.toExponential(3) + ' ');
+                    }).join(' ')
+                }
+                else{
+                    result += d.map(x=>{
+                        return x.toExponential(3);
+                    }).join(' ')
+                }
+
+            }
+            result += ']';
+            return result
+        }
+        s += recurse(this.data, 0, 0);
+        // const res = element_wise((d)=>{
+        //     return element_wise((x)=>x.toExponential(3), d);
+        // }, this.data);
+        // s += JSON.stringify(res);
+        // //     let result = ''
+        // //     if (!Array.isArray(array?.[0])){
+        // //         result += ' '.repeat(deep) + JSON.stringify(array);
+        // //     }
+        // //     else{
+        // //         result += array.map(i=>recurse(i, deep+1)).join('\r\n');
+        // //     }
+        // //     return result
+        // // }
+        // s += recurse(this.data, 0);
+        return s
     }
     get shape(){
         return this['#shape'] ??= (()=>{
@@ -351,9 +399,9 @@ export class Module{
         this.__init__(...args);
 
         return (...args)=>{
-            // console.time('forward: ' + this.label)
+            console.time('forward: ' + this.label)
             const res = this.forward(...args)
-            // console.timeEnd('forward: ' + this.label)
+            console.timeEnd('forward: ' + this.label)
             return res;
         }
     }
