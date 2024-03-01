@@ -368,6 +368,17 @@ function transpose(m, axis = 0) {
 
 export class Module{
     constructor(...args) {
+        this.__args__ = ''
+        if (args.length){
+            let s = this.constructor.toString();
+            s = s.substr(s.indexOf('(')+1);
+            s = s.substr(0, s.indexOf(')'));
+            s = s.split(',');
+            this.__args__= s.map((n, i)=>{
+                n = n.split('=').shift().trim();
+                return n +'='+ args[i];
+            }).join(', ')
+        }
         this.__init__(...args);
         const fwd = (...args)=>{
             console.time('forward: ' + this.label)
@@ -403,17 +414,17 @@ export class Module{
         return result;
     }
     toString(step = 0){
-        const add = 1;
-        let s = (' ').repeat(step) + `${this.label} ()(\r\n`;
+        const add = 3;
+        const tab = (' ').repeat(step + add);
+        let s = `${this.label} (${this.__args__})\r\n`;
         s += this.__children__.map(obj => {
             const key = Object.keys(obj)[0];
             const prop = obj[key];
             if(Array.isArray(prop)){
-                return (' ').repeat(step + add) + key+':'+prop.map?.(j =>j.toString(step + add)).join('')
+                return tab + key + `[${prop.length}]:\r\n` +prop.map((m, i)=>(' ').repeat(step + add * 2)+i+': '+m.toString(step + add * 2)).join('')
             }
-            return (' ').repeat(step + add) + key+':'+prop.toString(step + add);
+            return tab + key+': '+prop.toString(step + add);
         }).join('');
-        // s+=(' ').repeat(step) + '\r\n)'
         return s;
     }
 }
