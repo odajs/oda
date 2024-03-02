@@ -1,3 +1,4 @@
+import { marked } from './lib/marked.esm.js';
 ODA({ is: 'oda-marked-viewer',
     template: `
         <style>
@@ -16,17 +17,15 @@ ODA({ is: 'oda-marked-viewer',
                 transition: opacity 1s ease-in-out;
             }
         </style>
-        <iframe src="/web/oda/components/viewers/marked-viewer/lib/editor.html"></iframe>
+        <iframe></iframe>
     `,
     $pdp: {
         html: '',
         src: {
             $def: '',
             set(n) {
-                let iframe = this.$('iframe');
-                if (this.isReady && iframe) {
-                    iframe.contentDocument.getElementById('marked-mathjax-input').value = this.src;
-                    iframe.contentWindow.Preview.UpdateSrc();
+                if (this.isReady) {
+                    this.typesetInput();
                 }
             }
         },
@@ -43,13 +42,16 @@ ODA({ is: 'oda-marked-viewer',
             }
         }
     },
+    typesetInput() {
+        let iframe = this.$('iframe');
+        iframe.contentWindow.MathInput.value = (marked(this.src || ''));
+        iframe.contentWindow.typesetInput();
+    },
     async attached() {
         await new Promise((r) => setTimeout(r, 0));
         let iframe = this.$('iframe');
-        iframe.addEventListener('load', e => {
-            iframe.contentDocument.getElementById('marked-mathjax-input').value = this.src;
-            iframe.contentWindow.Preview.UpdateSrc();
-            iframe.contentWindow.Preview.mjRunning = false;
+        iframe.addEventListener('load', async e => {
+            this.typesetInput();
             iframe.contentDocument.addEventListener('click', e => {
                 this.dispatchEvent(new Event('click'));
             })
@@ -59,9 +61,10 @@ ODA({ is: 'oda-marked-viewer',
             const resizeObserver = new ResizeObserver((e) => {
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 10 + 'px';
                 iframe.style.opacity = 1;
-                this.isReady = true;
             })
             resizeObserver.observe(iframe.contentDocument.body);
+            this.isReady = true;
         })
+        iframe.src = '/web/oda/components/viewers/marked-viewer/lib/editor.html';
     }
 })
