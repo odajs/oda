@@ -17,11 +17,14 @@
             padding: 0;
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
+        h1, h2, h3, h4, h5, h6 { padding-top: 0; margin-top: 0 }
+        h4, h5 { padding-bottom: 0; margin-bottom: 6px; }
+        h6 { padding-bottom: 0; margin-bottom: 4px; }
         h1 { font-size: 2.0736em; font-weight: 300; }
         h2 { font-size: 1.728em; font-weight: 300; }
         h3 { font-size: 1.44em; font-weight: 200; }
         h4 { font-size: 1.2em; font-weight: 200; }
-        h5 { font-size: 1.14px; font-weight: 200; }
+        h5 { font-size: 1.14em; font-weight: 200; }
         h6 { font-size: 0.83333em; font-weight: 200; }
         hr { opacity: .2;  }
 
@@ -69,8 +72,8 @@
                     var input = window.MathInput = document.getElementById('MathInput');
                     var output = document.getElementById('MathPreview');
                     output.innerHTML = input.value.trim();
-                    window.typesetInput = function (text) {
-                        output.innerHTML = text || (input.value ? input.value.trim() : '');
+                    window.typesetInput = function () {
+                        output.innerHTML = input.value ? marked(input.value).trim() : '';
                         MathJax.texReset();
                         MathJax.typesetClear();
                         MathJax.typesetPromise([output]).catch(function (err) {
@@ -94,7 +97,6 @@
         script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
         script.setAttribute('id', 'MathJax-script');
         document.head.appendChild(script);
-        top.MathJax = MathJax;
     </script>
 </body>
 

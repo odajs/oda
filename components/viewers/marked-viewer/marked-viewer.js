@@ -44,7 +44,8 @@ ODA({ is: 'oda-marked-viewer',
     },
     typesetInput() {
         let iframe = this.$('iframe');
-        iframe.contentWindow.MathInput.value = (marked(this.src || ''));
+        iframe.contentWindow.marked = marked;
+        iframe.contentWindow.MathInput.value = (this.src || '');
         iframe.contentWindow.typesetInput();
     },
     async attached() {
