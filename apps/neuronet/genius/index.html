@@ -23,13 +23,43 @@
                     <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString()}}</textarea>
 
                 </div>
-                <button>go</button>
+                <button @tap="go">go</button>
+                <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
+                {{err}}
             </div>
             <div slot="main" class="flex vertical">
                 <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
+
             </div>
 
         `,
+        err: '',
+        go(){
+            let result = [];
+            for(let phrase of this.vectors.data){
+                for(let i = 0; i<phrase.length; i++) {
+                    let token = phrase[i];
+                    let next = phrase[i+1] || Array(token.length).fill(0);
+                    // console.time('work');
+                    token = this.model(token);
+                    if(next){
+                        let err = token._mse(next);
+                        err.back();
+                        this.err = err.data;
+                    }
+                    // console.timeEnd('work');
+                    result.push(token);
+                }
+            }
+            const decoder = new gen.WordDecoder();
+            this.result = result.join('\r\n');
+            result = result.map(w=>{
+                // console.log(w.data)
+                return decoder(w.data);
+            })
+            this.result += '\r\n'+result.join(' ');
+        },
+        result: '',
         value:{
             $def: '',
             $save: true

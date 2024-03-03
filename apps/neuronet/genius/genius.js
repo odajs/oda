@@ -4,7 +4,7 @@ import * as nn from  '../neuro/neuro.js';
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const MAX_DIM = 256;
 const LAYER_COUNT = 1;          // Количество слоев
-const HEAD_COUNT = 2;            // Количество селекторов (голов) в слое
+const HEAD_COUNT = 1;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
@@ -14,22 +14,22 @@ const CONV_BIAS = true;
 const BIAS = false;
 export class Genius extends nn.Module{
     __init__() {
-        this.encoder = new genEncoder();
-        this.decoder = new genDecoder();
+        this.encoder = new genEncoder(MODEL_DIM);
+        this.decoder = new genDecoder(MODEL_DIM);
     }
     forward(x){
-        x =  tensor(x);
+        x =  tensor(x, 'INPUT');
         x = this.encoder(x);
-        x = this.decoder(x);
+        // x = this.decoder(x);
         x = x._relu();
         // x = x._sigmoid();
         return x;
     }
 }
 export class genEncoder extends nn.Module{
-    __init__() {
+    __init__(d_in) {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * HEAD_COUNT ** i ;
+            let dim = d_in * HEAD_COUNT ** i ;
             return new genLayer(dim, dim * HEAD_COUNT, HEAD_COUNT);
         })
     }
@@ -40,10 +40,10 @@ export class genEncoder extends nn.Module{
     }
 }
 export class genDecoder extends nn.Module{
-    __init__() {
+    __init__(d_in) {
         this.head_count = 1
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = this.dim * HEAD_COUNT ** i;
+            let dim = d_in * HEAD_COUNT ** i;
             return new genLayer(dim * HEAD_COUNT, dim);
         }).reverse();
     }
@@ -55,29 +55,30 @@ export class genDecoder extends nn.Module{
 }
 
 export class genLayer extends nn.Module{
-    __init__(in_dim, out_dim, head_count = 1) {
-        this.heads = Array(head_count).fill().map(()=>new genHead());
-        this.W0 = nn.linear(in_dim * head_count, out_dim); // Матрица сборки выходов голов
-        this.norm = nn.rsmNorm(in_dim);
+    __init__(d_in, d_out, head_count = 1) {
+        this.norm = nn.rsmNorm(d_in);
+        this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
+        this.W0 = nn.linear(d_in * head_count, d_out); // Матрица сборки выходов голов
     }
     forward(x){
         let y = this.norm(x);
-        let head_res = tensor(this.heads.map(h=>h(y)));
+        let head_res = nn.Tensor.stack(this.heads.map(h=>h(y)));
         y = head_res._concat();
         y = this.W0(y);
         return y;
     }
 }
 export class genHead extends nn.Module{
-    __init__() {
-        this.in_proj = nn.linear(this.dim, this.dim * 2, false);
-        this.x_proj = nn.linear(this.dim, this.dim * 2 + this.delta_rank, false);
-        this.dt_proj = nn.linear(this.delta_rank, this.dim, true);
-        this.A = nn.Parameter(nn.Tensor.hippo(this.dim, -1));
-        this.H = nn.Tensor.zeros([this.dim, this.dim]);
-        this.D = nn.Parameter(nn.Tensor.ones([this.dim]));
-        this.out_proj = nn.linear(this.dim, this.dim, BIAS);
-        this.norm = nn.rsmNorm(this.dim);
+    __init__(d) {
+        this.dim = d;
+        this.in_proj = nn.linear(d, d * 2, false);
+        this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
+        this.dt_proj = nn.linear(this.delta_rank, d, true);
+        this.A = nn.Parameter(nn.Tensor.hippo(d, -1));
+        this.H = nn.Tensor.zeros([d, d]);
+        this.D = nn.Parameter(nn.Tensor.ones([d]));
+        this.out_proj = nn.linear(d, d, BIAS);
+        this.norm = nn.rsmNorm(d);
         this.conv1d = (x)=>{
             return x;
         }
@@ -96,9 +97,9 @@ export class genHead extends nn.Module{
     }
     ssm(x){
         let A = this.A;
-        // let A = this.A._exp();
+        // let A = A._exp();
         // A = A._mul(-1);
-        let x_dbl = this.x_proj(x)
+        let x_dbl = this.x_proj(x);
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dim, this.dim]);
         delta = this.dt_proj(delta);
         delta = delta._softplus();
@@ -106,6 +107,7 @@ export class genHead extends nn.Module{
         return x;
     }
     select(u, delta, A, B, C){
+        // let y = u;
         let deltaA = delta._mul(A);
         deltaA = deltaA._exp();
         let deltaB_u =  delta._mul(B);
