@@ -27,13 +27,23 @@
                 <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
                 {{err}}
             </div>
-            <div slot="main" class="flex vertical">
-                <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
+            <div slot="main" class="flex vertical" style="overflow: auto;">
+                <div class="horizontal header">
+                    <oda-button @tap="focusedPanel = 0" :focused="focusedPanel === 0">Model</oda-button>
+                    <oda-button @tap="focusedPanel = 1" :focused="focusedPanel === 1">Graph</oda-button>
+                </div>
+                <textarea ~if="focusedPanel === 0" class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
+                <gen-func-graph ~if="focusedPanel === 1" :tensor></gen-func-graph>
 
             </div>
 
         `,
+        focusedPanel: {
+            $def: 0,
+            $save: true
+        },
         err: '',
+        tensor: null,
         go(){
             let result = [];
             for(let phrase of this.vectors.data){
@@ -43,9 +53,9 @@
                     // console.time('work');
                     token = this.model(token);
                     if(next){
-                        let err = token._mse(next);
-                        err.back();
-                        this.err = err.data;
+                        this.tensor = token._mse(next);
+                        this.tensor.back();
+                        this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
                     result.push(token);
@@ -81,45 +91,28 @@
             return new nn.Tensor(phrases)
         }
     })
-    //
-    // const tokenizer = new gen.Tokenizer();
-    // let phrases = tokenizer('слово');
-    //
-    //
-    // const encoder = new gen.WordEncoder();
-    // phrases = phrases.map(r=>{
-    //     return r.map(w=>{
-    //         return encoder(w);
-    //     })
-    // })
-    // // console.log(phrases)
-    //
-    //
-    // const model = new gen.Genius();
-    //
-    // let result = []
-    // for(let phrase of phrases){
-    //     // model.initPhrase()
-    //     for(let token of phrase) {
-    //         console.time('work')
-    //         token = model(token)
-    //
-    //         token.back();
-    //         console.timeEnd('work')
-    //         result.push(token);
-    //     }
-    // }
-    //
-    //
-    // const decoder = new gen.WordDecoder();
-    // result = result.map(w=>{
-    //     console.log(w.data)
-    //     return decoder(w.data);
-    //     // return r.data.map(w=>{
-    //     //     return decoder(w);
-    //     // })
-    // })
-    // console.log(result);
+    ODA({is: 'gen-func-graph',
+        template:`
+            <style>
+                :host{
+                    font-size: xx-small;
+                    @apply --vertical;
+                    @apply --flex;
+                    border-left: 1px solid silver;
+
+                }
+            </style>
+            <div shadow style="padding: 4px;">{{tensor?.toString()}}</div>
+            <div class="dark vertical" style="padding-left: 8px">
+                <gen-func-graph content ~for="children" :tensor="$for.item"></gen-func-graph>
+            </div>
+
+        `,
+        tensor: null,
+        get children(){
+            return this.tensor?.children?.filter(i=>i.allowBack);
+        }
+    })
 
 </script>
 

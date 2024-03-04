@@ -45,13 +45,13 @@ export class Tensor {
     get description(){
         if(!this.children?.length)
             return this.label;
-        let res = this.children[0].label+'.'+this.label+'(';
+        let res = this.label+'(';
         let others = []
         for(let i = 1; i<this.children.length; i++){
             others.push(this.children[i].label)
         }
-        res+=others.join(', ');
-        res +=')'
+        res += others.join(', ');
+        res +='): ['+ this.shape+']';
         return res;
     }
     set label(n){
@@ -84,14 +84,16 @@ export class Tensor {
                 if (d.length>6){
                     result += d.slice(0, 2).map(x=>{
                         return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
-                    }).join(' ')  + ' ... ' + d.slice(-2).map(x=>{
+                    }).join(' ') ;
+                    result +=  ' ... ';
+                    result +=  d.slice(-2).map(x=>{
                         return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
                     }).join(' ')
                 }
                 else{
                     result += d?.map?.(x=>{
-                        return x.toExponential(3);
-                    }).join(' ') || d?.toExponential?.(3);
+                        return x.toExponential(4);
+                    }).join(' ') || d?.toExponential?.(4);
                 }
             }
             return result + ']'
@@ -237,7 +239,11 @@ export class Tensor {
         return out;
     }
     _rsqrt(){
-        return tensor(1, '_rsqrt')._div(this._sqrt());
+        let sqrt = this._sqrt();
+        let out = tensor(1, '_rsqrt');
+        out.allowBack = false;
+        out = out._div(sqrt);
+        return out;
     }
     _log(){
         const res = element_wise((x)=>Math.log(x), this.data);
@@ -376,8 +382,13 @@ export class Tensor {
         return this.fill(size, 0,'random')._random();
     }
     static hippo(size= 8, koef = 1){
-        const hippo = Array(size).fill('').map((_, k)=>{
-            return Array(size).fill('').map((_, n)=>{
+        if (!Array.isArray(size))
+            size = [size];
+        if (size.length<2)
+            size.push(size[0])
+
+        const hippo = Array(size[0]).fill('').map((_, k)=>{
+            return Array(size[1]).fill('').map((_, n)=>{
                 if (n>k)
                     return (2 * k + 1) ** .5 * (2 * n + 1) ** .5 * koef;
                 if (n === k)
@@ -385,7 +396,9 @@ export class Tensor {
                 return 0;
             })
         })
-        return tensor(hippo, `hippo [${size}]`);
+        const out = tensor(hippo, `hippo [${size}]`);
+        out.allowBack = false;
+        return out;
     }
     static fill(size= 1, value= 0, label){
         label = label+`[${size}]`

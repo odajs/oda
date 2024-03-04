@@ -70,14 +70,15 @@ export class genLayer extends nn.Module{
 }
 export class genHead extends nn.Module{
     __init__(d) {
-        this.dim = d;
+        this.d = d;
+        this.dH = d * 1.5;
         this.in_proj = nn.linear(d, d * 2, false);
-        this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
-        this.dt_proj = nn.linear(this.delta_rank, d, true);
-        this.A = nn.Parameter(nn.Tensor.hippo(d, -1));
-        this.H = nn.Tensor.zeros([d, d]);
+        this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
+        this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
+        this.A = nn.Parameter(nn.Tensor.hippo([d, this.dH], -1));
+        this.H = nn.Tensor.zeros([d, this.dH]);
         this.D = nn.Parameter(nn.Tensor.ones([d]));
-        this.out_proj = nn.linear(d, d, BIAS);
+        this.out_proj = nn.linear(this.dH, d, BIAS);
         this.norm = nn.rsmNorm(d);
         this.conv1d = (x)=>{
             return x;
@@ -85,7 +86,7 @@ export class genHead extends nn.Module{
     }
     forward(x){
         let x_and_res = this.in_proj(x);
-        let [x1, x2] = x_and_res._slice([this.dim, this.dim]);
+        let [x1, x2] = x_and_res._slice([this.d, this.d]);
         x1 = this.conv1d(x1);
         x1 = x1._silu();
         let y = this.ssm(x1)
@@ -97,10 +98,10 @@ export class genHead extends nn.Module{
     }
     ssm(x){
         let A = this.A;
-        // let A = A._exp();
+        // A = A._exp();
         // A = A._mul(-1);
         let x_dbl = this.x_proj(x);
-        let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dim, this.dim]);
+        let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dH, this.dH]);
         delta = this.dt_proj(delta);
         delta = delta._softplus();
         x = this.select(x, delta, A, B, C);
@@ -111,16 +112,17 @@ export class genHead extends nn.Module{
         let deltaA = delta._mul(A);
         deltaA = deltaA._exp();
         let deltaB_u =  delta._mul(B);
-        deltaB_u = u._mat_mul(deltaB_u);
         deltaA = deltaA._mul(this.H);
+        deltaB_u = u._mat_mul(deltaB_u);
         this.H = deltaA._add(deltaB_u);
-        let y = C._mat_mul(this.H._t());
+        let ht = this.H._t();
+        let y = C._mat_mul(ht);
         u = u._mul(this.D);
         y = y._add(u);
         return y;
     }
     get delta_rank(){
-        return this.dim / MODEL_DIM;
+        return Math.ceil(this.dH / MODEL_DIM);
     }
 }
 export class Tokenizer {
