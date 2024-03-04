@@ -61,11 +61,118 @@ ODA({ is: 'oda-marked-viewer',
             })
             const resizeObserver = new ResizeObserver((e) => {
                 iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
-                iframe.style.opacity = 1;
             })
             resizeObserver.observe(iframe.contentDocument.body);
+            iframe.style.opacity = 1;
             this.isReady = true;
         })
-        iframe.src = '/web/oda/components/viewers/marked-viewer/lib/editor.html';
+        iframe.srcdoc = srcdoc; //'/web/oda/components/viewers/marked-viewer/lib/editor.html';
+        // iframe.src = '/web/oda/components/viewers/marked-viewer/lib/editor.html';
     }
 })
+
+const srcdoc = `
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <style>
+        body::-webkit-scrollbar { width: 0px; height: 0px; }
+        body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 { padding-top: 0; margin-top: 0 }
+        h4, h5 { padding-bottom: 0; margin-bottom: 6px; }
+        h6 { padding-bottom: 0; margin-bottom: 4px; }
+        h1 { font-size: 2.0736em; font-weight: 300; }
+        h2 { font-size: 1.728em; font-weight: 300; }
+        h3 { font-size: 1.44em; font-weight: 200; }
+        h4 { font-size: 1.2em; font-weight: 200; }
+        h5 { font-size: 1.14em; font-weight: 200; }
+        h6 { font-size: 0.83333em; font-weight: 200; }
+        hr { opacity: .2;  }
+        .hint {
+            text-align: right;
+            color: #555555;
+            font-size: small;
+        }
+        .hint a {
+            color: #555555;
+        }
+        textarea {
+            height: 0;
+        }
+        .preview {
+            padding: 4px;
+            width: 100%;
+            height: 100%;
+        }
+        blockquote {
+            color: #6a737d;
+            margin: 1em 2em;
+            padding: 0 1em;
+            margin: 0;
+            border-left: 5px solid lightgray;
+        }
+        img {
+            max-width: 90%;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="MathInput" rows="10" style="width: 100%; height: 400px; display: none;"></textarea>
+    <div id="MathPreview" class="preview"></div>
+
+    <script type="module">
+        window.MathJax = {
+            loader: { load: ['input/asciimath'] },
+            startup: {
+                pageReady: function () {
+                    var renderer = MathJax.startup.document.menu.settings.renderer;
+                    var input = window.MathInput = document.getElementById('MathInput');
+                    var output = document.getElementById('MathPreview');
+                    output.innerHTML = input.value.trim();
+                    window.typesetInput = function () {
+                        output.innerHTML = input.value ? marked(input.value).trim() : '';
+                        MathJax.texReset();
+                        MathJax.typesetClear();
+                        MathJax.typesetPromise([output]).catch(function (err) {
+                            output.innerHTML = '';
+                            output.appendChild(document.createTextNode(err.message));
+                            console.error(err);
+                        }).then(function () {
+
+                        })
+                    }
+                    input.oninput = typesetInput;
+                    return MathJax.startup.defaultPageReady();
+                }
+            },
+            tex: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+                processEscapes: true,
+                processEnvironments: true
+            }
+        }
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+        script.setAttribute('id', 'MathJax-script');
+        document.head.appendChild(script);
+    </script>
+</body>
+
+</html>
+`
