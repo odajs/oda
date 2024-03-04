@@ -84,7 +84,10 @@ ODA({is: 'oda-icon',
         $def: null,
         get() {
             if (this.icon) {
-                let obj = icons[this._icon] ??= loadIcon.call(this, this._icon);
+                let obj = icons[this._icon];
+                if (obj === undefined) {
+                    obj = icons[this._icon] = loadIcon.call(this, this._icon);
+                }
                 if (obj?.then)
                     return obj?.then?.(res => {
                         if (!res?.body)
