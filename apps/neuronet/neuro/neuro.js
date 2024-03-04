@@ -71,7 +71,7 @@ export class Tensor {
         }
     }
     toString(){
-        let s = this.id+`.tensor ${this.label} (${this.shape}):\r\n`;
+        let s = this.id+`.${this.label} (${this.shape}):\r\n`;
         function recurse(d, idx, l){
             let result = idx?`\r\n${(' ').repeat(l)}[`:'['
             if (Array.isArray(d[0])){
@@ -565,7 +565,7 @@ export function rsmNorm(...args){
     return new RMSNorm(...args)
 }
 
-function tensor(...args){
+export function tensor(...args){
     if(args[0] instanceof Tensor)
         return args[0];
     return new Tensor(...args);

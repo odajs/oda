@@ -15,7 +15,7 @@ const BIAS = false;
 export class Genius extends nn.Module{
     __init__() {
         this.encoder = new genEncoder(MODEL_DIM);
-        this.decoder = new genDecoder(MODEL_DIM);
+        // this.decoder = new genDecoder(MODEL_DIM);
     }
     forward(x){
         x =  tensor(x, 'INPUT');
@@ -108,15 +108,15 @@ export class genHead extends nn.Module{
         return x;
     }
     select(u, delta, A, B, C){
-        let y = u;
-        // let deltaA = delta._mul(A);
-        // deltaA = deltaA._exp();
-        // let deltaB_u =  delta._mul(B);
-        // deltaA = deltaA._mul(this.H);
-        // deltaB_u = deltaB_u._mat_mul(u);
-        // this.H = deltaA._add(deltaB_u);
-        // let y = C._mat_mul(this.H);
-        // u = u._mul(this.D);
+        // let y = u;
+        let deltaA = delta._mul(A);
+        deltaA = deltaA._exp();
+        let deltaB_u =  delta._mul(B);
+        deltaA = deltaA._mul(this.H);
+        deltaB_u = deltaB_u._mat_mul(u);
+        this.H = deltaA._add(deltaB_u);
+        let y = C._mat_mul(this.H);
+        u = u._mul(this.D);
         y = y._add(u);
         return y;
     }
