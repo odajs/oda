@@ -60,7 +60,7 @@ ODA({ is: 'oda-marked-viewer',
                 this.dispatchEvent(new Event('dblclick'));
             })
             const resizeObserver = new ResizeObserver((e) => {
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 10 + 'px';
+                iframe.style.height = iframe.contentDocument.body.scrollHeight + 20 + 'px';
                 iframe.style.opacity = 1;
             })
             resizeObserver.observe(iframe.contentDocument.body);
