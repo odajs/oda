@@ -75,10 +75,10 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = nn.Parameter(nn.Tensor.hippo([d, this.dH], -1));
-        this.H = nn.Tensor.zeros([d, this.dH]);
+        this.A = nn.Parameter(nn.Tensor.hippo([this.dH, d], -1));
+        this.H = nn.Tensor.zeros([this.dH, d]);
         this.D = nn.Parameter(nn.Tensor.ones([d]));
-        this.out_proj = nn.linear(this.dH, d, BIAS);
+        this.out_proj = nn.linear(d, d, BIAS);
         this.norm = nn.rsmNorm(d);
         this.conv1d = (x)=>{
             return x;
@@ -98,7 +98,7 @@ export class genHead extends nn.Module{
     }
     ssm(x){
         let A = this.A;
-        // A = A._exp();
+        A = A._exp();
         // A = A._mul(-1);
         let x_dbl = this.x_proj(x);
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dH, this.dH]);
@@ -113,10 +113,10 @@ export class genHead extends nn.Module{
         deltaA = deltaA._exp();
         let deltaB_u =  delta._mul(B);
         deltaA = deltaA._mul(this.H);
-        deltaB_u = u._mat_mul(deltaB_u);
+        deltaB_u = deltaB_u._mat_mul(u);
         this.H = deltaA._add(deltaB_u);
-        let ht = this.H._t();
-        let y = C._mat_mul(ht);
+        // let ht = this.H._t();
+        let y = C._mat_mul(this.H);
         u = u._mul(this.D);
         y = y._add(u);
         return y;
