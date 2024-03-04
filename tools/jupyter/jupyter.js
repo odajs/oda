@@ -49,10 +49,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
         },
-        isChanged(detail) {
-            console.log(detail);
+        hasChanged(detail) {
+            // console.log(detail);
             this.fire('changed', detail);
+            this.isChanged = true;
         },
+        isChanged: false
     },
     attached() {
         this.style.opacity = 1;
@@ -105,7 +107,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook ||= {};
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
-        this.isChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
+        this.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
         this.async(() => this.selectedIdx = idx);
     }
 })
@@ -159,12 +161,12 @@ ODA({ is: 'oda-jupyter-toolbar',
         idx = idx + v;
         idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
         this.notebook.cells.splice(idx, 0, cells[0])
-        this.isChanged({ type: 'moveCell', cell: this.notebook.cells[idx] });
+        this.hasChanged({ type: 'moveCell', cell: this.notebook.cells[idx] });
         this.async(() => this.selectedIdx = idx);
     },
     deleteCell() {
         if (window.confirm(`Do you really want delete current cell ?`)) {
-            this.isChanged({ type: 'deleteCell', cell: this.notebook.cells[this.selectedIdx] });
+            this.hasChanged({ type: 'deleteCell', cell: this.notebook.cells[this.selectedIdx] });
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
         }
@@ -203,7 +205,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     },
     editorValueChanged(e) {
         this.cell.source = this.src = e.detail.value;
-        this.isChanged({ type: 'editCell', cell: this.cell });
+        this.hasChanged({ type: 'editCell', cell: this.cell });
     },
     markedClick(e) { 
         this.selectedIdx = this.idx;
@@ -311,7 +313,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
         this.cell.source = this.src = e.detail.value;
-        this.isChanged({ type: 'editCell', cell: this.cell });
+        this.hasChanged({ type: 'editCell', cell: this.cell });
         this.setCellMode();
     },
     run() {
