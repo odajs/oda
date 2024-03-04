@@ -13,18 +13,18 @@ export class Tensor {
         this.error = error;
     }
     back(){
-        let topo = [];
+        this.topo = [];
         let visited = new Set();
         let build_topo = (v) => {
-            if (v.allowBack && !visited.has(v)) {
+            if (/*v.allowBack && */!visited.has(v)) {
                 visited.add(v)
                 v.children.forEach(ch => build_topo(ch))
-                topo.push(v)
+                this.topo.push(v)
             }
         }
         build_topo(this);
         // this.grad = element_wise((x)=>0, this.data);
-        topo.reverse().forEach((node) => {
+        this.topo.reverse().forEach((node) => {
             node._back()
         })
     }
@@ -71,7 +71,7 @@ export class Tensor {
         }
     }
     toString(){
-        let s = `tensor ${this.label} (${this.shape}):\r\n`;
+        let s = this.id+`.tensor ${this.label} (${this.shape}):\r\n`;
         function recurse(d, idx, l){
             let result = idx?`\r\n${(' ').repeat(l)}[`:'['
             if (Array.isArray(d[0])){
@@ -273,12 +273,13 @@ export class Tensor {
         const result = []
         for (let size of parts){
             let end = start + size;
-            let out = tensor(this.data.slice(start,  end), `slice: ${start}-${end}`, [this]);
+            let res = this.data.slice(start,  end);
+            let out = tensor(res, `slice: ${start}-${end}`, [this]);
             out._back = () => {
                 this.grad = this.grad.map((x,i)=>{
                     if(i<start || i>end)
                         return x;
-                    return out.grad[i];
+                    return x + out.grad[i];
                 })
             }
             result.push(out)

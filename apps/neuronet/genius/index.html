@@ -110,7 +110,7 @@
         `,
         tensor: null,
         get children(){
-            return this.tensor?.children?.filter(i=>i.allowBack);
+            return this.tensor?.children;//?.filter(i=>i.allowBack);
         }
     })
 
