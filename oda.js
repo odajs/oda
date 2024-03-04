@@ -1106,7 +1106,6 @@ if (!window.ODA?.IsReady) {
             for (let h of (root?.$node || this[CORE_KEY]).children || []){
                 if (h.call){ // table list
                     let items = h.call(this, root.__for);
-                    let i = 0;
                     for(let i = 0; i<items.length; i++){
                         const node = items[i];
                         if(node){
@@ -1115,6 +1114,10 @@ if (!window.ODA?.IsReady) {
                                 if (!el.$node) {
                                     idx++;
                                     continue;
+                                }
+                                //понаблюдать 👀
+                                else if(el.$node.vars !== node.child.vars) {
+                                    break;
                                 }
                                 root.removeChild(el);
                             }
