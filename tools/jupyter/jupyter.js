@@ -130,16 +130,74 @@ ODA({ is: 'oda-jupyter-cell',
     cell: null
 })
 
-ODA({ is: 'oda-jupyter-settings',
+ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
     template: `
         <style>
             :host {
-                width: 300px;
-                height: 400px;
+                @apply --vertical;
+                @apply --flex;
+                max-width: 300px;
+                min-height: 300px;
+                padding: 8px;
+                color: #333;
+            }
+            .container {
+                padding: 4px;
+            }
+            label {
+                min-width: 60%;
+            }
+            input {
+                color: #333;
+                font-family: Arial;
+                text-align: left;
+                outline: none;
+                background: transparent;
+                border: none;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                border-bottom: 1px solid lightgray;
+            }
+            input[type="checkbox"] {
+                float: left;
+                margin: 0 auto;
+                width: 100%;
+            }
+            oda-button {
+                margin: 4px;
+                padding: 4px;
             }
         </style>
-        settings ...
-    `
+        <div class="container horizontal" ~for="props">
+            <label>{{$for.item.label}}</label>
+            <input :type="$for.item.type" ::value="$for.item.value">
+        </div>
+        <div class="flex"></div>
+        <div class="horizontal" style="justify-content: right">
+            <oda-button @tap="btnCancel">Cancel</oda-button>
+            <oda-button @tap="btnOk">Ok</oda-button>
+        </div>
+
+    `,
+    cell: {},
+    props: [
+        { label: 'language', value: 'auto', type: 'text' },
+        { label: 'theme', value: '', type: 'text' },
+        { label: 'showOnlySource', value: false, type: 'checkbox' },
+        { label: 'showOnlyResult', value: false, type: 'checkbox' },
+        { label: 'autoRun', value: false, type: 'checkbox' },
+        { label: 'hideBtnRun', value: false, type: 'checkbox' },
+        { label: 'hideTerminal', value: false, type: 'checkbox' },
+    ],
+    btnCancel(e) {
+        this.fire('cancel')
+    },
+    btnOk(e) {
+        this.cell.props = { ...this.props };
+        console.log(this.cell);
+        this.fire('ok')
+    },
 })
 
 ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
@@ -187,7 +245,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
     showSettings(e) {
         if (this.cell.cell_type === 'code') {
             console.log(this.cell);
-            ODA.showModal('oda-jupyter-settings', {}, { animation: 500, title: 'Настройки' })
+            ODA.showModal('oda-jupyter-settings', { cell: this.cell }, { animation: 500, title: 'Настройки' })
         }
     }
 })
