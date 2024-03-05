@@ -195,7 +195,7 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
     },
     btnOk(e) {
         this.cell.props = { ...this.props };
-        console.log(this.cell);
+        // console.log(this.cell);
         this.fire('ok')
     },
 })
@@ -244,7 +244,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
     },
     showSettings(e) {
         if (this.cell.cell_type === 'code') {
-            console.log(this.cell);
+            // console.log(this.cell);
             ODA.showModal('oda-jupyter-settings', { cell: this.cell }, { animation: 500, title: 'Настройки' })
         }
     }
