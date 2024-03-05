@@ -3,8 +3,7 @@ function getId(){
 }
 let id = 0;
 export class Tensor {
-    _back = () => {};
-    allowBack = true;
+    // _back = () => {};
     id = getId();
     constructor(data, label, children= [], error) {
         this.data = data;
@@ -12,11 +11,16 @@ export class Tensor {
         this.children = children;
         this.error = error;
     }
+    get paramCount(){
+        if (this.isParam)
+            return this.shape.reduce((r, v)=> r * v, 1);
+        return 0;
+    }
     back(){
         this.topo = [];
         let visited = new Set();
         let build_topo = (v) => {
-            if (/*v.allowBack && */!visited.has(v)) {
+            if (!visited.has(v)) {
                 visited.add(v)
                 v.children.forEach(ch => build_topo(ch))
                 this.topo.push(v)
@@ -71,35 +75,7 @@ export class Tensor {
         }
     }
     toString(){
-        let s = this.id+`.${this.label} (${this.shape}):\r\n`;
-        function recurse(d, idx, l){
-            let result = idx?`\r\n${(' ').repeat(l)}[`:'['
-            if (Array.isArray(d[0])){
-                const list = d.map((v, i)=>{
-                    return recurse(v, i, l + 1);
-                })
-                result += list;
-            }
-            else{
-                if (d.length>6){
-                    result += d.slice(0, 2).map(x=>{
-                        return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
-                    }).join(' ') ;
-                    result +=  ' ... ';
-                    result +=  d.slice(-2).map(x=>{
-                        return ((x < 0?' ':'  ') + x.toExponential(4) + ' ');
-                    }).join(' ')
-                }
-                else{
-                    result += d?.map?.(x=>{
-                        return x.toExponential(4);
-                    }).join(' ') || d?.toExponential?.(4);
-                }
-            }
-            return result + ']'
-        }
-        s += recurse(this.data, 0, 0);
-        return s
+        return this.label + (this.shape?.length?' ('+this.shape+')':'') +':\r\n' + this.data.toTensorString();
     }
     get shape(){
         return this['#shape'] ??= (()=>{
@@ -135,7 +111,7 @@ export class Tensor {
         }
         return out;
     }
-    _mat_mul(other){
+    _mm(other){
         other = tensor(other);
 
         let data = this.data;
@@ -161,21 +137,17 @@ export class Tensor {
         let result = MultiplyMatrix(data, o_data);
         if(this.dim === 1 && other.dim !== 1)
             result = result[0];
-        let out = tensor(result, '_mat_mul', [this, other]);
+        let out = tensor(result, '_mm', [this, other]);
         out._back = () => {
             let mode = '' + this.dim + other.dim;
             switch (mode){
                 case '11':{
-                    if(other.allowBack)
-                        other.grad = MultiplyMatrix(this._t().data, [out.grad])
-                    if(this.allowBack)
-                        this.grad = multiplyMT([out.grad], other.data);
+                    other.grad = MultiplyMatrix(this._t().data, [out.grad])
+                    this.grad = multiplyMT([out.grad], other.data);
                 } break;
                 case '12':{
-                    if(other.allowBack)
-                        other.grad = MultiplyMatrix(this._t().data, [out.grad])
-                    if(this.allowBack)
-                        this.grad = multiplyMT([out.grad], other.data)[0];
+                    other.grad = MultiplyMatrix(this._t().data, [out.grad])
+                    this.grad = multiplyMT([out.grad], other.data)[0];
                 } break;
             }
         }
@@ -274,7 +246,7 @@ export class Tensor {
         for (let size of parts){
             let end = start + size;
             let res = this.data.slice(start,  end);
-            let out = tensor(res, `slice: ${start}-${end}`, [this]);
+            let out = tensor(res, `_slice [${start}-${end}]`, [this]);
             out._back = () => {
                 this.grad = this.grad.map((x,i)=>{
                     if(i<start || i>end)
@@ -357,9 +329,9 @@ export class Tensor {
         }
         return out;
     }
-    _random(){
+    _random(label = '_random'){
         const res = element_wise((x) => Math.random()-.5, this.data)
-        let out = tensor(res, '_random');
+        let out = tensor(res, label);
         out.allowBack = false;
         return out;
     }
@@ -373,14 +345,14 @@ export class Tensor {
         }
         return out;
     }
-    static ones(size){
-        return this.fill(size, 1,'ones');
+    static ones(size, label = 'ones'){
+        return this.fill(size, 1, label);
     }
-    static zeros(size){
-        return this.fill(size, 0, 'zeros');
+    static zeros(size, label='zeros'){
+        return this.fill(size, 0, label);
     }
-    static random(size){
-        return this.fill(size, 0,'random')._random();
+    static random(size, label='random'){
+        return this.fill(size, 0, label)._random(label);
     }
     static hippo(size= 8, koef = 1){
         if (!Array.isArray(size))
@@ -397,12 +369,10 @@ export class Tensor {
                 return 0;
             })
         })
-        const out = tensor(hippo, `hippo [${size}]`);
-        out.allowBack = false;
+        const out = tensor(hippo, 'hippo');
         return out;
     }
     static fill(size= 1, value= 0, label){
-        label = label+`[${size}]`
         if (!Array.isArray(size))
             size = [size];
         let result;
@@ -417,7 +387,6 @@ export class Tensor {
             }
         }
         const out = tensor(result, label);
-        out.allowBack = false;
         return out;
     }
     static arange(from_or_size = 0, size){
@@ -430,7 +399,6 @@ export class Tensor {
             result.push(i);
         }
         const out = tensor(result, `arange (${from_or_size}-${size})`);
-        out.allowBack = false;
         return out;
     }
 }
@@ -536,10 +504,10 @@ export class Module{
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
         this.bias = bias;
-        this.W = Parameter(Tensor.random([in_size, out_size]));
+        this.W = Parameter(Tensor.random([in_size, out_size], 'Linear'));
     }
     forward(x){
-        x = x._mat_mul(this.W);
+        x = x._mm(this.W);
         return x;
     }
 }
@@ -548,7 +516,7 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.weight = Parameter(Tensor.ones(dim));
+        this.weight = Parameter(Tensor.ones(dim, 'RMSNorm'));
         this.eps = 1e-5;
     }
     forward(x) {
@@ -571,7 +539,7 @@ export function tensor(...args){
     return new Tensor(...args);
 }
 export function Parameter(t){
-    t.isParameter = true;
+    t.isParam = true;
     return t
 }
 function multiplyMT(M, T) {
@@ -579,4 +547,38 @@ function multiplyMT(M, T) {
 }
 function dotProduct(v1, v2) {
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
+}
+Array.prototype.toTensorString = function (n = 4){
+    function recurse(d, idx = 0, l = 0){
+        let result = idx?`\r\n${(' ').repeat(l)}[`:'['
+        if (Array.isArray(d[0])){
+            const list = d.map((v, i)=>{
+                return recurse(v, i, l + 1);
+            })
+            result += list;
+        }
+        else{
+            if (d.length>6){
+                result += d.slice(0, 2).map(x=>{
+                    return ((x < 0?' ':'  ') + x.toExponential(n) + ' ');
+                }).join(' ') ;
+                result +=  ' ... ';
+                result +=  d.slice(-2).map(x=>{
+                    return ((x < 0?' ':'  ') + x.toExponential(n) + ' ');
+                }).join(' ')
+            }
+            else{
+                result += d?.map?.(x=>{
+                    return x.toExponential(n);
+                }).join(' ') || d?.toExponential?.(n);
+            }
+        }
+        return result + ']'
+    }
+    return recurse(this);
+}
+Number.prototype.toTensorString = function (n = 4){
+    if (!Number.isNaN(this))
+        return this.toExponential?.(n);
+    return this
 }

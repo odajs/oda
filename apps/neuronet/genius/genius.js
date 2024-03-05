@@ -113,9 +113,9 @@ export class genHead extends nn.Module{
         deltaA = deltaA._exp();
         let deltaB_u =  delta._mul(B);
         deltaA = deltaA._mul(this.H);
-        deltaB_u = deltaB_u._mat_mul(u);
+        deltaB_u = deltaB_u._mm(u);
         this.H = deltaA._add(deltaB_u);
-        let y = C._mat_mul(this.H);
+        let y = C._mm(this.H);
         u = u._mul(this.D);
         y = y._add(u);
         return y;

@@ -27,7 +27,7 @@
                 <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
                 {{err}}
             </div>
-            <div slot="main" class="flex vertical" style="overflow-y: auto; overflow-x: hidden;">
+            <div slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
                     <oda-button @tap="focusedPanel = 0" :focused="focusedPanel === 0">Model</oda-button>
                     <oda-button @tap="focusedPanel = 1" :focused="focusedPanel === 1">Graph</oda-button>
@@ -100,16 +100,28 @@
                     @apply --vertical;
                     @apply --flex;
                     border-left: 1px solid silver;
-
+                    overflow: hidden;
+                }
+                span{
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding: 4px;
                 }
             </style>
-            <div ~for="tensor?.topo"  class="shadow horizontal">
-                <span flex  style="padding: 4px; min-width: 50%; max-width: 50%;" :title="$for.item?.toString()">{{$for.item?.toString()}}</span>
-                <span flex dark style="padding:  4px;" :title="$for.item?.grad">{{$for.item?.grad}}</span>
+            <div class="flex vertical" style="overflow-y: auto">
+                <div ~for="tensor?.topo"  class="border horizontal">
+                    <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString()">{{$for.item?.toString()}}</span>
+                    <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>
+                </div>
             </div>
-
+            <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
         `,
-        tensor: null
+        tensor: null,
+        get paramCount(){
+            return this.tensor?.topo?.reduce((r, v)=> {
+                return r + v.paramCount
+            }, 0) || 0;
+        }
     })
 
 </script>
