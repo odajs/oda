@@ -3,7 +3,7 @@ function getId(){
 }
 let id = 0;
 export class Tensor {
-    // _back = () => {};
+    _back = () => {};
     id = getId();
     constructor(data, label, children= [], error) {
         this.data = data;
@@ -16,21 +16,25 @@ export class Tensor {
             return this.shape.reduce((r, v)=> r * v, 1);
         return 0;
     }
-    back(){
+    back(learn_speed = .1){
         this.topo = [];
         let visited = new Set();
-        let build_topo = (v) => {
-            if (!visited.has(v)) {
-                visited.add(v)
-                v.children.forEach(ch => build_topo(ch))
-                this.topo.push(v)
+        let build_topo = (t) => {
+            if (!visited.has(t)) {
+                visited.add(t)
+                t.children.forEach(ch => build_topo(ch))
+                this.topo.push(t)
             }
         }
         build_topo(this);
         // this.grad = element_wise((x)=>0, this.data);
+        for (let t of this.topo)
+        t.grad = undefined;
         this.topo.reverse().forEach((node) => {
             node._back()
         })
+        const params = this.topo.filter(t=>t.isParam);
+        params.map(p=>p.updateParams(learn_speed));
     }
     get label(){
         return this['#label'] ?? (()=>{
@@ -57,6 +61,9 @@ export class Tensor {
         res += others.join(', ');
         res +='): ['+ this.shape+']';
         return res;
+    }
+    updateParams(learn_speed=.1){
+        this.data = element_wise((d, g)=>(d + g * learn_speed), this.data, this.grad);
     }
     set label(n){
         this['#label'] = n;
@@ -111,9 +118,11 @@ export class Tensor {
         }
         return out;
     }
+    _dot(other){ //todo доделать
+        other = tensor(other);
+    }
     _mm(other){
         other = tensor(other);
-
         let data = this.data;
         let o_data = other.data;
         if(this.dim === other.dim){
@@ -287,7 +296,7 @@ export class Tensor {
         const res = element_wise((x) => Math.max(0, x) , this.data)
         let out = tensor(res, '_relu', [this]);
         out._back = () => {
-            this.grad = element_wise((v, x, g) => v + x<0?0:1 * g , this.grad, this.data, out.grad);
+            this.grad = element_wise((v, x, g) => v + (x>1?1:0) * g , this.grad, this.data, out.grad);
         }
         return out;
     }
@@ -313,13 +322,12 @@ export class Tensor {
     }
     _mse(other){
         other = tensor(other);
-        let res = 0;
-        this.grad = element_wise((x, t) =>{
-            let r = (t - x) ** 2;
-            res+=r;
-            return r
-        }, this.data, other.data);
-        return tensor(res, '_mse', [this]);
+        let res = element_wise((x, t) => (t - x) ** 2, this.data, other.data);
+        let out =  tensor(res.reduce((r, v) => (r + v)), '_mse', [this]);
+        out._back = () => {
+            this.grad = element_wise((x, t) => (t - x), this.data, other.data);
+        }
+        return out
     }
     _exp(){
         const res = element_wise((x) => Math.exp(x), this.data)
@@ -516,7 +524,7 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.weight = Parameter(Tensor.ones(dim, 'RMSNorm'));
+        this.weight = Parameter(Tensor.ones(dim, 'RMSNorm-w'));
         this.eps = 1e-5;
     }
     forward(x) {
@@ -548,7 +556,7 @@ function multiplyMT(M, T) {
 function dotProduct(v1, v2) {
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
-Array.prototype.toTensorString = function (n = 4){
+Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (Array.isArray(d[0])){
@@ -577,7 +585,7 @@ Array.prototype.toTensorString = function (n = 4){
     }
     return recurse(this);
 }
-Number.prototype.toTensorString = function (n = 4){
+Number.prototype.toTensorString = function (n = 2){
     if (!Number.isNaN(this))
         return this.toExponential?.(n);
     return this

@@ -2,7 +2,6 @@
 import * as nn from  '../neuro/neuro.js';
 
 const MODEL_DIM = 16;           // Размерность входного и выходного слоев
-const MAX_DIM = 256;
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
@@ -61,9 +60,9 @@ export class genLayer extends nn.Module{
         this.W0 = nn.linear(d_in * head_count, d_out); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = this.norm(x);
-        let head_res = nn.Tensor.stack(this.heads.map(h=>h(y)));
-        y = head_res._concat();
+        let y = x//this.norm(x);
+        // let head_res = nn.Tensor.stack(this.heads.map(h=>h(y)));
+        // y = head_res._concat();
         y = this.W0(y);
         return y;
     }

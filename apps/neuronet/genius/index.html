@@ -23,9 +23,9 @@
                     <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString()}}</textarea>
 
                 </div>
-                <button @tap="go">go</button>
+                <button @tap="go">go {{err}}</button>
                 <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
-                {{err}}
+
             </div>
             <div slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
@@ -51,14 +51,15 @@
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
                     // console.time('work');
-                    token = this.model(token);
+                    let res = this.model(token);
                     if(next){
-                        this.tensor = token._mse(next);
-                        this.tensor.back();
+                        this.tensor = res._mse(token);
+                        // this.tensor = res._mse(next);
+                        this.tensor.back(.1);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
-                    result.push(token);
+                    result.push(res);
                 }
             }
             const decoder = new gen.WordDecoder();
@@ -109,7 +110,7 @@
                 }
             </style>
             <div class="flex vertical" style="overflow-y: auto">
-                <div ~for="tensor?.topo"  class="border horizontal">
+                <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
                     <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString()">{{$for.item?.toString()}}</span>
                     <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>
                 </div>
