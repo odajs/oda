@@ -120,6 +120,22 @@ export class Tensor {
     }
     _dot(other){ //todo доделать
         other = tensor(other);
+        let res = other.data.map(w=>{
+            return this.data.reduce((l, r, i) => l + r * w[i]);
+        })
+        let out = tensor(res, '_dot', [this, other]);
+        out._back = () => {
+            this.grad = this.grad.map((v, i)=>{
+                return v + other.data[i].reduce((r, d, j)=> r + d * out.grad[j]);
+            })
+            other.grad = other.grad.map((row, i) =>{
+                let d = this.data[i];
+                return row.map((v, j)=>{
+                    return v + d * out.grad[j];
+                })
+            })
+        }
+        return out;
     }
     _mm(other){
         other = tensor(other);
@@ -296,7 +312,9 @@ export class Tensor {
         const res = element_wise((x) => Math.max(0, x) , this.data)
         let out = tensor(res, '_relu', [this]);
         out._back = () => {
-            this.grad = element_wise((v, x, g) => v + (x>1?1:0) * g , this.grad, this.data, out.grad);
+            this.grad = element_wise((v, x, g) => {
+                return (v + (x>1?1:0) * g);
+                }, this.grad, this.data, out.grad);
         }
         return out;
     }
@@ -515,7 +533,7 @@ export class Linear extends Module{
         this.W = Parameter(Tensor.random([in_size, out_size], 'Linear'));
     }
     forward(x){
-        x = x._mm(this.W);
+        x = x._dot(this.W);
         return x;
     }
 }
@@ -550,10 +568,10 @@ export function Parameter(t){
     t.isParam = true;
     return t
 }
-function multiplyMT(M, T) {
+function multiplyMT(M, T){
     return M.map(x=>T.map(y=>dotProduct(x, y)));
 }
-function dotProduct(v1, v2) {
+function dotProduct(v1, v2){
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
 Array.prototype.toTensorString = function (n = 2){

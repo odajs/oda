@@ -55,7 +55,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(.1);
+                        this.tensor.back(.01);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
