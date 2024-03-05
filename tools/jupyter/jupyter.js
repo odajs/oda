@@ -130,7 +130,19 @@ ODA({ is: 'oda-jupyter-cell',
     cell: null
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+ODA({ is: 'oda-jupyter-settings',
+    template: `
+        <style>
+            :host {
+                width: 300px;
+                height: 400px;
+            }
+        </style>
+        settings ...
+    `
+})
+
+ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
     template: `
         <style>
             :host {
@@ -148,6 +160,7 @@ ODA({ is: 'oda-jupyter-toolbar',
         </style>
         <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+        <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
         <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
@@ -170,6 +183,12 @@ ODA({ is: 'oda-jupyter-toolbar',
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
         }
+    },
+    showSettings(e) {
+        if (this.cell.cell_type === 'code') {
+            console.log(this.cell);
+            ODA.showModal('oda-jupyter-settings', {}, { animation: 500, title: 'Настройки' })
+        }
     }
 })
 
@@ -181,6 +200,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --horizontal;
                 @apply --flex;
                 max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'unset'}};
+                position: relative;
             }
             oda-marked-viewer {
                 opacity: {{opacity}};

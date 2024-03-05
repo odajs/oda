@@ -4,6 +4,7 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js',
         <style>
             :host { @apply --vertical; height: 100%; }
             .CodeMirror-wrap { height: 100%; min-height: 24px; }
+            .editor-toolbar { display: flex; flex-wrap: wrap; }
         </style>
         <link rel="stylesheet" :href="path + 'lib/simplemde.min.css'">
         <link rel="stylesheet" type="text/css" :href="path + 'lib/font-awesome.min.css'">
