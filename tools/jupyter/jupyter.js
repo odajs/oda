@@ -30,24 +30,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     this.notebook = res;
                 })
             }
-        },
-        autoRunCode: {
-            $def: false,
-            $save: true
-        },
-        hideCode: {
-            $def: false,
-            $save: true
-        },
-        languageCode: {
-            $def: '',
-            $list: ['javascript', 'html', 'css', 'phyton'],
-            $save: true
-        }            ,
-        themeCode: {
-            $def: '',
-            $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
-            $save: true
         }
     },
     $pdp: {
@@ -141,14 +123,15 @@ ODA({ is: 'oda-jupyter-cell',
                 transition: opacity ease-out 1s;
             }
         </style>
-        <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
+        <oda-jupyter-toolbar :cmp :cell :idx ~if="!_readOnly && selected" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
     idx: -2,
     selected: false,
-    cell: null
+    cell: null,
+    get cmp() { return this }
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-grid',
     template: `
         <style>
             :host {
@@ -166,11 +149,13 @@ ODA({ is: 'oda-jupyter-toolbar',
         </style>
         <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+        <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
         <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
     idx: -2,
     cell: null,
+    cmp: null,
     iconSize: 20,
     moveCell(v) {
         this.editIdx = -1;
@@ -187,6 +172,11 @@ ODA({ is: 'oda-jupyter-toolbar',
             this.hasChanged({ type: 'deleteCell', cell: this.notebook.cells[this.selectedIdx] });
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
+        }
+    },
+    async showSettings() {
+        if (this.cmp.cell.cell_type === 'code') {
+            await ODA.showModal('oda-property-grid', { inspectedObject: this.cmp }, { minWidth: '400px', animation: 500, title: 'Настройки' })
         }
     }
 })
@@ -268,23 +258,69 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
+        <div ~if="!hideRun" class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
             <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor :src :mode="cell?.mode || 'javascript'" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded"></oda-ace-editor>   
+            <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded"></oda-ace-editor>   
             <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
-                <iframe ~if="isRun && cell?.mode==='html'" :srcdoc></iframe>
-                <div id="splitter2" ~if="isRun && runConsoleData" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-                <div ~if="isRun && runConsoleData" style="min-height: 36px; margin: 2px 0;">
+                <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
+                <div id="splitter2" ~if="!hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
                     <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
                 </div>
             </div>
         </div>
     `,
+    $public: {
+        autoRun: {
+            $def: false,
+            set(n) {
+                this.cell.autoRun = n;
+            }
+        },
+        hideRun: {
+            $def: false,
+            set(n) {
+                this.cell.hideRun = n;
+            }
+        },
+        hideCode: {
+            $def: false,
+            set(n) {
+                this.cell.hideCode = n;
+            }
+        },
+        hideResult: {
+            $def: false,
+            set(n) {
+                this.cell.hideResult = n;
+            }
+        },
+        hideConsole: {
+            $def: false,
+            set(n) {
+                this.cell.mode = n;
+            }
+        },
+        mode: {
+            $def: '',
+            $list: ['javascript', 'html', 'css', 'phyton'],
+            set(n) {
+                this.cell.mode = n;
+            }
+        },
+        theme: {
+            $def: '',
+            $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
+            set(n) {
+                this.cell.theme = n;
+            }
+        }
+    },
     iconSize: 18,
     set cell(n) {
         let src;    
