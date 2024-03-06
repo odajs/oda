@@ -17,12 +17,12 @@ export class Genius extends nn.Module{
         // this.decoder = new genDecoder(MODEL_DIM);
     }
     forward(x){
-        x =  tensor(x, 'INPUT');
-        x = this.encoder(x);
-        // x = this.decoder(x);
-        x = x._relu();
+        x = tensor(x, 'INPUT');
+        let res = this.encoder(x);
+        // res = this.decoder(res);
+        res = res._relu();
         // x = x._sigmoid();
-        return x;
+        return res;
     }
 }
 export class genEncoder extends nn.Module{

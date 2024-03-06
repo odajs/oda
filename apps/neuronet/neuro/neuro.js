@@ -118,62 +118,55 @@ export class Tensor {
         }
         return out;
     }
-    _dot(other){ //todo доделать
-        other = tensor(other);
-        let res = other.data.map(w=>{
-            return this.data.reduce((l, r, i) => l + r * w[i]);
-        })
-        let out = tensor(res, '_dot', [this, other]);
-        out._back = () => {
-            this.grad = this.grad.map((v, i)=>{
-                return v + other.data[i].reduce((r, d, j)=> r + d * out.grad[j]);
-            })
-            other.grad = other.grad.map((row, i) =>{
-                let d = this.data[i];
-                return row.map((v, j)=>{
-                    return v + d * out.grad[j];
-                })
-            })
-        }
-        return out;
-    }
+    // _dot(other){ //todo доделать
+    //     other = tensor(other);
+    //      other.data.map(w=>{
+    //         return this.data.reduce((l, r, i) => l + r * w[i]);
+    //     })
+    //     let out = tensor(res, '_dot', [this, other]);
+    //     out._back = () => {
+    //         this.grad = this.grad.map((v, i)=>{
+    //             return v + other.data[i].reduce((r, d, j)=> r + d * out.grad[j]);
+    //         })
+    //         other.grad = other.grad.map((row, i) =>{
+    //             let d = this.data[i];
+    //             return row.map((v, j)=>{
+    //                 return v + d * out.grad[j];
+    //             })
+    //         })
+    //     }
+    //     return out;
+    // }
     _mm(other){
         other = tensor(other);
-        let data = this.data;
-        let o_data = other.data;
-        if(this.dim === other.dim){
-            switch (this.dim){
-                case 1:{
-                    o_data = [o_data];
-                    data = this._t().data;
-
-                }
-            }
+        let m = ''+this.dim+other.dim;
+        let res;
+        switch(m){
+            case '11':{
+                res = MultiplyMatrix([this.data], other.data.map(i=>[i]))[0];
+            } break;
+            case '12':{
+                res = MultiplyMatrix([this.data], other.data)[0];
+            } break;
+            case '22':{
+                res = MultiplyMatrix(this.data, other.data);
+            } break;
+            default:
+                throw new Error('Не поддерживается');
         }
-        else {
-            if(this.dim === 1){
-                data = [data];
-            }
-            if(other.dim === 1){
-                o_data = [o_data];
-            }
-        }
-
-        let result = MultiplyMatrix(data, o_data);
-        if(this.dim === 1 && other.dim !== 1)
-            result = result[0];
-        let out = tensor(result, '_mm', [this, other]);
+        let out = tensor(res, '_mm', [this, other]);
         out._back = () => {
-            let mode = '' + this.dim + other.dim;
-            switch (mode){
+            switch (m){
                 case '11':{
-                    other.grad = MultiplyMatrix(this._t().data, [out.grad])
                     this.grad = multiplyMT([out.grad], other.data);
+                    other.grad = MultiplyMatrix(transpose(this.data), [out.grad]);
                 } break;
                 case '12':{
-                    other.grad = MultiplyMatrix(this._t().data, [out.grad])
-                    this.grad = multiplyMT([out.grad], other.data)[0];
+                    this.grad = multiplyMT([out.grad], other.data);
+                    other.grad = MultiplyMatrix(transpose(this.data), [out.grad]);
                 } break;
+                default:
+                    throw new Error('Не поддерживается');
             }
         }
         return out;
@@ -337,9 +330,7 @@ export class Tensor {
         const res = element_wise((x) => (x>0?x:0)  , this.data)
         let out = tensor(res, '_relu', [this]);
         out._back = () => {
-            this.grad = element_wise((v, x, g) => {
-                return (v + (x>0?1:0) * g);
-                }, this.grad, this.data, out.grad);
+            this.grad = element_wise((v, x, g) => (v + (x>0?1:0) * g), this.grad, this.data, out.grad);
         }
         return out;
     }
@@ -557,7 +548,7 @@ export class Linear extends Module{
         this.W = Parameter(Tensor.random([in_size, out_size], 'linear-w'));
     }
     forward(x){
-        x = x._dot(this.W);
+        x = x._mm(this.W);
         return x;
     }
 }

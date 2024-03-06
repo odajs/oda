@@ -24,7 +24,7 @@
 
                 </div>
                 <div class="horizontal">
-                    <button @tap="step" class="flex">step {{err}}</button>
+                    <button @tap="step" class="flex">step {{Math.round(err*100)/100}}</button>
                     <button @tap="steps">{{stepCount}} steps</button>
                 </div>
 
@@ -65,7 +65,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(0.1);
+                        this.tensor.back(0.01);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
