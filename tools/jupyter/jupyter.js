@@ -136,8 +136,8 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
             :host {
                 @apply --vertical;
                 @apply --flex;
-                max-width: 300px;
-                min-height: 300px;
+                width: 300px;
+                min-height: 360px;
                 padding: 8px;
                 color: #333;
             }
@@ -145,9 +145,9 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
                 padding: 4px;
             }
             label {
-                min-width: 60%;
+                width: 140px;
             }
-            input {
+            .input {
                 color: #333;
                 font-family: Arial;
                 text-align: left;
@@ -158,11 +158,7 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 border-bottom: 1px solid lightgray;
-            }
-            input[type="checkbox"] {
-                float: left;
-                margin: 0 auto;
-                width: 100%;
+                width: 150px;
             }
             oda-button {
                 margin: 4px;
@@ -171,7 +167,9 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
         </style>
         <div class="container horizontal" ~for="props">
             <label>{{$for.item.label}}</label>
-            <input :type="$for.item.type" ::value="$for.item.value">
+            <div class="input" ~is="$for.item.is" :type="$for.item.type" ::value="$for.item.value" icon-size="22" @change="_change">
+                <option ~if="$for.item.options" ~for="$for.item.options">{{$$for.item}}</option>
+            </div>
         </div>
         <div class="flex"></div>
         <div class="horizontal" style="justify-content: right">
@@ -182,22 +180,24 @@ ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
     `,
     cell: {},
     props: [
-        { label: 'language', value: 'auto', type: 'text' },
-        { label: 'theme', value: '', type: 'text' },
-        { label: 'showOnlySource', value: false, type: 'checkbox' },
-        { label: 'showOnlyResult', value: false, type: 'checkbox' },
-        { label: 'autoRun', value: false, type: 'checkbox' },
-        { label: 'hideBtnRun', value: false, type: 'checkbox' },
-        { label: 'hideTerminal', value: false, type: 'checkbox' },
+        { label: 'language', value: '', is: 'select', options: ['javascript', 'html', 'css', 'phyton'] },
+        { label: 'theme', value: '', is: 'select', options: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'] },
+        { label: 'showOnlySource', value: false, type: 'checkbox', is: 'input' },
+        { label: 'showOnlyResult', value: false, type: 'checkbox', is: 'input' },
+        { label: 'autoRun', value: false, type: 'checkbox', is: 'input' },
+        { label: 'hideBtnRun', value: false, type: 'checkbox', is: 'input' },
+        { label: 'hideTerminal', value: false, type: 'checkbox', is: 'input' },
     ],
     btnCancel(e) {
         this.fire('cancel')
     },
     btnOk(e) {
         this.cell.props = { ...this.props };
-        // console.log(this.cell);
         this.fire('ok')
     },
+    _change(e) {
+        console.log(e);
+    }
 })
 
 ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
