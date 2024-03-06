@@ -171,19 +171,7 @@ ODA({
 
 В этом примере любое изменение свойства компонента **myColor**, будет приводить к автоматическому изменению связанного с ним свойства **background** CSS-объекта.
 
-
-
-
-
-
-
-
-
-
-
-
-
-Механизм реактивности также работает в строках, являющихся шаблонными литералами. В этом случае значение свойства должно задаваться интерполяционной подстановкой **${** *JS-выражение* **}**.
+Для включения реактивности внутри строкового литерала, свойства компонента необходимо включать в него с помощью операции конкатенации.
 
 Например,
 
@@ -191,7 +179,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="\`background: \${myColor}; color: yellow; padding: 10px\`" @tap="changeStyle">Щелкни по мне</div>
+        <div ~style="'background:' + myColor + ';color: yellow; padding: 10px'" @tap="changeStyle">Щелкни по мне</div>
     `,
     myColor: 'green',
     changeStyle() {
@@ -200,53 +188,9 @@ ODA({
 });
 ```
 
-В данном примере в интерполяционной подстановке указано свойство компонента **myColor**. Можно видеть, что при изменении его значения меняется цвет фона элемента **div**.
+Данный пример аналогичен предыдущему, только значение директивы **~style** задано не объектом, а строкой, формируемой с помощью операции конкатенации. В результате цвет фона берется из свойства **myColor**.
 
-``` warning_md
-В шаблонном литерале символ **$** обязательно нужно экранировать, иначе интерполяционное выражение будет применятся к свойству **template** компонента, а не к значению директивы **~style**.
-```
-
-В интерполяционном выражении можно использовать отдельные свойства объекта.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="\`background: \${myStyle.background}; color: yellow; padding: 10px\`" @tap="changeStyle">Щелкни по мне</div>
-    `,
-    myStyle: {
-        background: 'green',
-        color: 'yellow',
-        padding: '10px'
-    },
-    changeStyle() {
-       this.myStyle.background = this.myStyle.background === 'green' ? 'red' : 'green';
-    }
-});
-```
-
-Заметьте, что если шаблонный литерал записан внутри обычной строки, то механизм реактивности работать не будет.
-
-Например,
-
-```javascript error_run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="'background: \`\${myColor}\`'" @tap="changeStyle">Щелкни по мне</div>
-    `,
-    myColor: 'green',
-    changeStyle() {
-        this.myColor = this.myColor === 'green' ? 'red' : 'green';
-    }
-});
-```
-
-В этом примере шаблонный литерал рассматривается лишь как часть строки и директивой **~style** не воспринимается как отдельное интерполяционное выражение.
-
-В случае использования одновременно нескольких способов стилизации директива **~style** будет добавлять только новые CSS-объявления к уже существующим, не удаляя предыдущие.
+В случае использования одновременно нескольких способов стилизации, директива **~style** будет добавлять только новые CSS-объявления к уже существующим, не удаляя предыдущие.
 
 Например,
 
@@ -278,7 +222,9 @@ ODA({
 
 В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим собственным значением, заданным в свойстве **myStyle**.
 
-Однако, если в атрибут **style** данные передаются с помощью биндинга, то директива **~style** игнорируется.
+```warning_md
+Если в атрибут **style** данные передаются с помощью биндинга, то директива **~style** игнорируется.
+```
 
 Например,
 
@@ -287,16 +233,18 @@ ODA({
     is: 'my-component',
     template: `
         <div :style="'background: yellow; padding: 10px'" ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
+        <div>{{myStyle}}</div>
     `,
     myStyle: "color: green",
     changeStyle() {
-        this.myStyle = this.myStyle === 'color: green' ? 'color: red' : 'color: green';
+        this.myStyle = this.myStyle == 'color: green' ? 'color: red' : 'color: green';
     }});
 ```
 
-В данном примере менять цвет шрифта с помощью директивы **~style** не удастся. Как видно на экране, задаваемые с помощью нее CSS-объявления игнорируются.
+В данном примере менять цвет шрифта с помощью директивы **~style** не удастся. Как видно на экране, задаваемый с помощью нее цвет шрифта игнорируется.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/RbZrBh4KWbk?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
+
