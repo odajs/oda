@@ -31,6 +31,24 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 })
             }
         },
+        autoRunCode: {
+            $def: false,
+            $save: true
+        },
+        hideCode: {
+            $def: false,
+            $save: true
+        },
+        languageCode: {
+            $def: '',
+            $list: ['javascript', 'html', 'css', 'phyton'],
+            $save: true
+        }            ,
+        themeCode: {
+            $def: '',
+            $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
+            $save: true
+        }
     },
     $pdp: {
         notebook: null,
@@ -130,77 +148,7 @@ ODA({ is: 'oda-jupyter-cell',
     cell: null
 })
 
-ODA({ is: 'oda-jupyter-settings', imports: '@oda/button',
-    template: `
-        <style>
-            :host {
-                @apply --vertical;
-                @apply --flex;
-                width: 300px;
-                min-height: 360px;
-                padding: 8px;
-                color: #333;
-            }
-            .container {
-                padding: 4px;
-            }
-            label {
-                width: 140px;
-            }
-            .input {
-                color: #333;
-                font-family: Arial;
-                text-align: left;
-                outline: none;
-                background: transparent;
-                border: none;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                border-bottom: 1px solid lightgray;
-                width: 150px;
-            }
-            oda-button {
-                margin: 4px;
-                padding: 4px;
-            }
-        </style>
-        <div class="container horizontal" ~for="props">
-            <label>{{$for.item.label}}</label>
-            <div class="input" ~is="$for.item.is" :type="$for.item.type" ::value="$for.item.value" icon-size="22" @change="_change">
-                <option ~if="$for.item.options" ~for="$for.item.options">{{$$for.item}}</option>
-            </div>
-        </div>
-        <div class="flex"></div>
-        <div class="horizontal" style="justify-content: right">
-            <oda-button @tap="btnCancel">Cancel</oda-button>
-            <oda-button @tap="btnOk">Ok</oda-button>
-        </div>
-
-    `,
-    cell: {},
-    props: [
-        { label: 'language', value: '', is: 'select', options: ['javascript', 'html', 'css', 'phyton'] },
-        { label: 'theme', value: '', is: 'select', options: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'] },
-        { label: 'showOnlySource', value: false, type: 'checkbox', is: 'input' },
-        { label: 'showOnlyResult', value: false, type: 'checkbox', is: 'input' },
-        { label: 'autoRun', value: false, type: 'checkbox', is: 'input' },
-        { label: 'hideBtnRun', value: false, type: 'checkbox', is: 'input' },
-        { label: 'hideTerminal', value: false, type: 'checkbox', is: 'input' },
-    ],
-    btnCancel(e) {
-        this.fire('cancel')
-    },
-    btnOk(e) {
-        this.cell.props = { ...this.props };
-        this.fire('ok')
-    },
-    _change(e) {
-        console.log(e);
-    }
-})
-
-ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
+ODA({ is: 'oda-jupyter-toolbar',
     template: `
         <style>
             :host {
@@ -218,7 +166,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
         </style>
         <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
         <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
-        <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
         <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
         <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
     `,
@@ -240,12 +187,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers',
             this.hasChanged({ type: 'deleteCell', cell: this.notebook.cells[this.selectedIdx] });
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
-        }
-    },
-    showSettings(e) {
-        if (this.cell.cell_type === 'code') {
-            // console.log(this.cell);
-            ODA.showModal('oda-jupyter-settings', { cell: this.cell }, { animation: 500, title: 'Настройки' })
         }
     }
 })
