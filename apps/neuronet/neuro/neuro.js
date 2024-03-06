@@ -40,7 +40,7 @@ export class Tensor {
         return this['#label'] ?? (()=>{
             switch (this.dim){
                 case 0:
-                    return 'scalar='+this.data;
+                    return 'scalar';
                 case 1:
                     return `vector[${this.shape}]`;
                 case 2:
@@ -180,11 +180,34 @@ export class Tensor {
     }
     _mul(other){
         other = tensor(other);
-        const res = element_wise((x, y) => (x * y), this.data, other.data);
+        const m = '' + this.dim + other.dim;
+        let res;
+        switch (m){
+            case '00':
+                res = other.data * this.data;
+                break;
+            default: {
+                let queue = this.dim<other.dim?[other.data, this.data]:[this.data, other.data];
+                res = element_wise((x, y) => (x * y), ...queue);
+            }
+        }
         let out = tensor(res, '_mul', [this, other]);
         out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + x * g), this.grad, other.data, out.grad);
-            other.grad = element_wise((v, x, g) => (v + x * g), other.grad, this.data, out.grad);
+            switch (m){
+                case '00':{
+                    this.grad = other.data * out.grad;
+                    other.grad = this.data * out.grad;
+                } break;
+                case '01':{
+                    this.grad = other.data.reduce((r, x, i)=>r + x * out.grad[i]);
+                    other.grad = out.grad.map(x=>x * this.data);
+                } break;
+                case '10':{
+                    other.grad = thisother.data.reduce((r, x, i)=>r + x * out.grad[i]);
+                    this.grad = out.grad.map(x=>x * other.data);
+                } break;
+            }
+
         }
         return out;
     }
@@ -216,14 +239,17 @@ export class Tensor {
         return out;
     }
     _mean(){
-        return this._sum()._div(this.size);
+        let out = this._sum();
+        out = out._div(this.size);
+        return out;
     }
     _div(other){
         other = tensor(other);
         const res = element_wise((a, b)=>(a / b), this.data, other.data);
-        let out = tensor(res, `_div`, [this]);
+        let out = tensor(res, `_div`, [this, other]);
         out._back = () => {
-            this.grad = element_wise((v, x, y, g) => v + (x * y / y**2) * g, this.grad, this.data, other.data, out.grad);
+            this.grad = element_wise((x, y, g) => (x * y / y**2 * g), this.data, other.data, out.grad);
+            other.grad = element_wise((x, y, g) => (x * y / y**2 * g), other.data, this.data, out.grad);
         }
         return out;
     }
@@ -238,7 +264,6 @@ export class Tensor {
     _rsqrt(){
         let sqrt = this._sqrt();
         let out = tensor(1, '_rsqrt');
-        out.allowBack = false;
         out = out._div(sqrt);
         return out;
     }
@@ -309,11 +334,11 @@ export class Tensor {
         return out;
     }
     _relu(){
-        const res = element_wise((x) => Math.max(0, x) , this.data)
+        const res = element_wise((x) => (x>0?x:0)  , this.data)
         let out = tensor(res, '_relu', [this]);
         out._back = () => {
             this.grad = element_wise((v, x, g) => {
-                return (v + (x>1?1:0) * g);
+                return (v + (x>0?1:0) * g);
                 }, this.grad, this.data, out.grad);
         }
         return out;
@@ -358,7 +383,6 @@ export class Tensor {
     _random(label = '_random'){
         const res = element_wise((x) => Math.random()-.5, this.data)
         let out = tensor(res, label);
-        out.allowBack = false;
         return out;
     }
     static stack(other_tensors){
@@ -430,10 +454,10 @@ export class Tensor {
 }
 
 function element_wise(fn, ...args){
-    let main = args.sort((a,b)=>{
-        return ((a?.length || 1)<(b?.length || 1))?1:-1;
-    })[0];
-    return main?.map?.((_, i)=>{
+    // let main = args.sort((a,b)=>{
+    //     return ((a?.length || 1)<(b?.length || 1))?1:-1;
+    // })[0];
+    return args[0]?.map?.((_, i)=>{
         const next_args = args.map(a=>{
             return a?.[i] ?? a;
         });
@@ -530,7 +554,7 @@ export class Module{
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
         this.bias = bias;
-        this.W = Parameter(Tensor.random([in_size, out_size], 'Linear'));
+        this.W = Parameter(Tensor.random([in_size, out_size], 'linear-w'));
     }
     forward(x){
         x = x._dot(this.W);
@@ -542,7 +566,7 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.weight = Parameter(Tensor.ones(dim, 'RMSNorm-w'));
+        this.weight = Parameter(Tensor.ones(dim, 'rsm-norm-w'));
         this.eps = 1e-5;
     }
     forward(x) {
@@ -604,7 +628,7 @@ Array.prototype.toTensorString = function (n = 2){
     return recurse(this);
 }
 Number.prototype.toTensorString = function (n = 2){
-    if (!Number.isNaN(this))
-        return this.toExponential?.(n);
+    // if (!Number.isNaN(this))
+    //     return this.toExponential?.(n);
     return this
 }

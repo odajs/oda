@@ -23,7 +23,11 @@
                     <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString()}}</textarea>
 
                 </div>
-                <button @tap="go">go {{err}}</button>
+                <div class="horizontal">
+                    <button @tap="step" class="flex">step {{err}}</button>
+                    <button @tap="steps">{{stepCount}} steps</button>
+                </div>
+
                 <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
 
             </div>
@@ -38,13 +42,19 @@
             </div>
 
         `,
+        stepCount: 1000,
         focusedPanel: {
             $def: 0,
             $save: true
         },
         err: '',
         tensor: null,
-        go(){
+        steps(){
+            for (let i=0; i<this.stepCount;i++){
+                this.step();
+            }
+        },
+        step(){
             let result = [];
             for(let phrase of this.vectors.data){
                 for(let i = 0; i<phrase.length; i++) {
@@ -55,7 +65,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(.01);
+                        this.tensor.back(0.1);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');

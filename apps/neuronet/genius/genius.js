@@ -60,7 +60,7 @@ export class genLayer extends nn.Module{
         this.W0 = nn.linear(d_in * head_count, d_out); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = x//this.norm(x);
+        let y = this.norm(x);
         // let head_res = nn.Tensor.stack(this.heads.map(h=>h(y)));
         // y = head_res._concat();
         y = this.W0(y);
