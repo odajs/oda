@@ -265,10 +265,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
             <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded"></oda-ace-editor>   
-            <div id="splitter1" ~if="isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+            <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
                 <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
-                <div id="splitter2" ~if="!hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
                     <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
                 </div>
@@ -304,6 +304,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             $def: false,
             set(n) {
                 this.cell.mode = n;
+            }
+        },
+        showGutter: {
+            $def: false,
+            set(n) {
+                this.cell.showGutter = n;
             }
         },
         mode: {
