@@ -12,7 +12,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             }
         </style>
         <oda-jupyter-divider idx="-1" :hover="!notebook?.cells?.length"></oda-jupyter-divider>
-        <div ~for="notebook?.cells" class="vertical no-flex">
+        <div ~for="notebook?.cells" class="vertical no-flex":id="cells[$for.index].id || ''" ~style="{display: cells?.[$for.index]?.hidden ? 'none' : 'flex'}">
             <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
@@ -26,7 +26,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 if (!n.startsWith('http'))
                     n = path + '/' + n;
                 ODA.loadJSON(n).then(async res => {
-                    // console.log(res);
+                    if (res?.cells.length)
+                        this.makeLevels(res.cells);
                     this.notebook = res;
                 })
             }
@@ -57,13 +58,49 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.fire('changed', detail);
             this.isChanged = true;
         },
-        isChanged: false
+        isChanged: false,
+        cells: undefined,
+        levels: undefined
     },
     attached() {
         this.style.opacity = 1;
     },
     $listeners: {
         tap(e) { this.selectedIdx = this.editIdx = -1 }
+    },
+    makeLevels(cells = this.notebook?.cells) {
+        let level = 0, ids = {};
+        this.levels = {};
+        this.cells = [];
+        cells.map((i, idx) => {
+            let src = '',
+                firstStr = '',
+                id = i.id || self.crypto.randomUUID(),
+                cell = { id, idx };
+            if (i.source?.length === 1) {
+                src = i.source;
+            } else if (!i.source?.length && i.source?.split) {
+                src = i.source.split('\n');
+            }
+            firstStr = src[0] || '';
+            if (firstStr?.startsWith('#')) {
+                let str = firstStr.split(' ');
+                cell.label = src[0].replace(str[0]).trim();
+                level = cell.level = str[0].length;
+                if (level === 1) ids = {};
+                ids[level] = id;
+            }
+            for (let i = 1; i <= 6; i++) {
+                if (ids[i]) {
+                    if (!cell.level || i < cell.level) {
+                        this.levels[ids[i]] ||= { cells: [] };
+                        this.levels[ids[i]].cells.push(cell);
+                    }
+                }
+            }
+            this.cells.push(cell);
+        })
+        // console.log(this.levels)
     }
 })
 
@@ -199,9 +236,26 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 border: none;
                 outline: none;
             }
+            .collapsed {
+                font-style: italic;
+                opacity: .5;
+                position: absolute; 
+                bottom: 0; 
+                width: calc(100% - 22px); 
+                height: 20px; 
+                background: lightgray; 
+                border: 1px stroke gray; 
+                margin: 4px;
+                font-size: small;
+                padding: 4px 0 0 12px;
+            }
         </style>
+        <div class="vertical" ~style="{width: iconSize+8+'px'}">
+            <oda-icon ~if="cells?.[idx].level" :icon="cells?.[idx].collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+        </div>
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
         <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
+        <div class="collapsed horizontal flex" ~if="cells?.[idx].collapsed">Скрыто ... ячеек</div>
     `,
     set cell(n) {
         let src;    
@@ -229,6 +283,12 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 this.$('oda-simplemde-editor').value = this.src;
             })
         }
+    },
+    setCollapse() {
+        let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
+        this.levels[this.cells[this.idx].id]?.cells?.map(i => {
+            i.hidden = collapsed;
+        })
     }
 })
 
