@@ -20,8 +20,8 @@ export class Genius extends nn.Module{
         x = tensor(x, 'INPUT');
         let res = this.encoder(x);
         // res = this.decoder(res);
-        res = res._relu();
-        // x = x._sigmoid();
+        // res = res._relu();
+        // res = res._sigmoid();
         return res;
     }
 }
@@ -55,13 +55,13 @@ export class genDecoder extends nn.Module{
 
 export class genLayer extends nn.Module{
     __init__(d_in, d_out, head_count = 1) {
-        this.norm = nn.rsmNorm(d_in);
-        this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
+        // this.norm = nn.rsmNorm(d_in);
+        // this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
         this.W0 = nn.linear(d_in * head_count, d_out); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = this.norm(x);
-        // let head_res = nn.Tensor.stack(this.heads.map(h=>h(y)));
+        let y = x//this.norm(x);
+        // let head_res = n/n.Tensor.stack(this.heads.map(h=>h(y)));
         // y = head_res._concat();
         y = this.W0(y);
         return y;
