@@ -251,11 +251,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="vertical" ~style="{width: iconSize+8+'px'}">
-            <oda-icon ~if="cells?.[idx].level" :icon="cells?.[idx].collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+            <oda-icon ~if="countHidden" :icon="cells?.[idx].collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
         </div>
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
         <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
-        <div class="collapsed horizontal flex" ~if="cells?.[idx].collapsed">Скрыто ... ячеек</div>
+        <div class="collapsed horizontal flex" ~if="cells?.[idx].collapsed">Скрыто {{countHidden}} ячеек</div>
     `,
     set cell(n) {
         let src;    
@@ -284,6 +284,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             })
         }
     },
+    get countHidden() { return this.levels[this.cells[this.idx].id]?.cells.length || '' },
     setCollapse() {
         let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
         this.levels[this.cells[this.idx].id]?.cells?.map(i => {
