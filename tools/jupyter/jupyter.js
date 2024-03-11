@@ -81,9 +81,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 firstStr = '',
                 id = i.id || 'id-' + idx.toString().padStart(6, '0'),
                 cell = { id, idx };
-            if (i.source?.length === 1) {
+            if (Array.isArray(i.source) && i.source?.length === 1) {
                 src = i.source;
-            } else if (!i.source?.length && i.source?.split) {
+            } else if (typeof i.source === 'string') {
                 src = i.source.split('\n');
             }
             firstStr = src[0] || '';
@@ -288,6 +288,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         if (this.editIdx === this.idx ) {
             this.async(() => {
                 this.$('oda-simplemde-editor').value = this.src;
+            }, 100)
+        }
+        if (this.editIdx === -1) {
+            this.async(() => {
+                this.jupyter.makeLevels();
             }, 100)
         }
     },

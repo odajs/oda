@@ -45,8 +45,8 @@ ODA({ is: 'oda-marked-viewer',
     async typesetInput() {
         await new Promise((r) => setTimeout(r, 100));
         let iframe = this.$('iframe');
-        iframe.contentWindow.marked = marked;
-        if (iframe.contentWindow.typesetInput) {
+        if (iframe?.contentWindow.typesetInput) {
+            iframe.contentWindow.marked = marked;
             iframe.contentWindow.MathInput.value = (this.src || '');
             iframe.contentWindow.typesetInput();
         }
