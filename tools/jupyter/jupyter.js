@@ -300,7 +300,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     setCollapse() {
         let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
         this.levels[this.cells[this.idx].id]?.cells?.map(i => {
-            i.hidden = collapsed;
+            i.hidden = i.collapsed = collapsed;
         })
     }
 })
@@ -340,7 +340,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </div>
         <div class="vertical flex">
             <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded"></oda-ace-editor>   
+            <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
             <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
             <div id="result">
                 <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
