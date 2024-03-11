@@ -57,7 +57,7 @@ export class genLayer extends nn.Module{
     __init__(d_in, d_out, head_count = 1) {
         // this.norm = nn.rsmNorm(d_in);
         // this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
-        this.W0 = nn.linear(d_in * head_count, d_out); // Матрица сборки выходов голов
+        this.W0 = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
     forward(x){
         let y = x//this.norm(x);
@@ -184,6 +184,15 @@ export class WordEncoder {
             });
         }
         return emb;
+    }
+}
+export class WordDecoderNet extends nn.Module{
+    __init__(d, bias = false) {
+        this.proj = nn.linear(d, d, bias);
+    }
+    forward(x){
+        x = this.proj(x);
+        return x;
     }
 }
 export class WordDecoder {

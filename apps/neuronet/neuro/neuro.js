@@ -544,11 +544,13 @@ export class Module{
 
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
-        this.bias = bias;
-        this.W = Parameter(Tensor.random([in_size, out_size], 'linear-w'));
+        this.W = Parameter(Tensor.random([in_size, out_size], 'linear-weights'));
+        this.bias = bias?Parameter(Tensor.random([out_size], 'linear-bias')):null;
     }
     forward(x){
         x = x._mm(this.W);
+        if (this.bias)
+            x = x._add(this.bias);
         return x;
     }
 }

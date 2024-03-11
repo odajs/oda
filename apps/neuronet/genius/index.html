@@ -75,7 +75,7 @@
             const decoder = new gen.WordDecoder();
             this.result = result.join('\r\n');
             result = result.map(w=>{
-                // console.log(w.data)
+                console.log(w.data)
                 return decoder(w.data);
             })
             this.result += '\r\n'+result.join(' ');
