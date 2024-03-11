@@ -1,6 +1,6 @@
 ﻿Директива **~class** используется для связывания атрибута **class** HTML-элемента с одним или несколькими CSS-классами его стилевого оформления или с CSS-классами стилевого оформления родительского компонента.
 
-Значением директивы должно быть имя или список имен CSS-классов. Сами CSS-классы, указываемые в директиве, должны быть объявлены заранее в разделе шаблона **style** компонента или его родителя.
+Значением директивы должно быть имя или список имен CSS-классов. Сами CSS-классы, указываемые в директиве, должны быть объявлены заранее в шаблоне компонента или его родителя в HTML-элементе **style**.
 
 Например,
 
@@ -9,13 +9,13 @@ ODA({
     is: 'my-component',
     template: `
         <style>
-            .my-css-class {
+            .my-class {
                 background: yellow;
                 color: green;
                 padding: 10px;
             }
         </style>
-        <div ~class="'my-css-class'">Директива ~class</div>
+        <div ~class="'my-class'">Директива ~class</div>
     `
 });
 ```
@@ -31,15 +31,15 @@ ODA({
         is: 'my-component',
         template: `
             <style>
-                .my-css-class1 {
+                .class1 {
                     background: yellow;
                     padding: 10px;
                 }
-                .my-css-class2 {
+                .class2 {
                     color: green;
                 }
             </style>
-            <div ~class="'my-css-class1 my-css-class2'">Список классов в виде строки "my-css-class1 my-css-class2"</div>
+            <div ~class="'class1 class2'">Список классов в виде строки "class1 class2"</div>
         `
     });
     ```
@@ -53,20 +53,20 @@ ODA({
         is: 'my-component',
         template: `
             <style>
-                .my-css-class1 {
+                .class1 {
                     background: yellow;
                     padding: 10px;
                 }
-                .my-css-class2 {
+                .class2 {
                     color: green;
                 }
             </style>
-            <div ~class="['my-css-class1', 'my-css-class2']">Список классов в виде массива ['my-css-class1', 'my-css-class2']</div>
+            <div ~class="['class1', 'class2']">Список классов в виде массива ['class1', 'class2']</div>
         `
     });
     ```
 
-1. в виде объекта, в котором имена классов являются ключами со значениями **true** (разрешает применение класса к элементу) или **false** (запрещает применение класса к элементу).
+1. в виде объекта, в котором имена свойств совпадают с именами классов, а значениями свойств являются **true** (разрешает применение класса к элементу) или **false** (запрещает применение класса к элементу).
     
     Например,
     
@@ -75,15 +75,36 @@ ODA({
         is: 'my-component',
         template: `
             <style>
-                .my-css-class1 {
+                .class1 {
                     background: yellow;
                     padding: 10px;
                 }
-                .my-css-class2 {
+                .class2 {
                     color: green;
                 }
             </style>
-            <div ~class="{'my-css-class1': true, 'my-css-class2': true}">Список классов в виде объекта {'my-css-class1': true, 'my-css-class2': true}</div>
+            <div ~class="{class1: true, class2: true}">Список классов в виде объекта {class1: true, class2: true}</div>
+        `
+    });
+    ```
+
+    Если имя CSS-класса содержит дефис (**-**), то в объекте его необходимо записывать в кавычках.
+    
+
+    Например,
+    
+    ```javascript_run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <style>
+                .my-class {
+                    background: yellow;
+                    color: green;
+                    padding: 10px;
+                }
+            </style>
+            <div ~class="{'my-class': true}">Имя класса заключено в кавычки</div>
         `
     });
     ```
@@ -97,24 +118,24 @@ ODA({
     is: 'my-component',
     template: `
         <style>
-            .my-css-class {
+            .my-class {
                 background: yellow;
                 color: green;
                 padding: 10px;
             }
         </style>
-        <div ~class="'my-css-class'">inline-выражение</div>
+        <div ~class="'my-class'">inline-выражение</div>
         <div ~class="myStyle">Свойство</div>
         <div ~class="myMethod">Метод</div>
     `,
-    myStyle: 'my-css-class',
+    myStyle: 'my-class',
     myMethod() {
         return this.myStyle;
     }
 });
 ```
 
-Директива **~class** поддерживает механизм реактивности, т.е. при любом изменении значения директивы автоматически будет изменяться значение атрибута **class** HTML-элемента, в котором она указана.
+Директива **~class** поддерживает механизм реактивности, т.е. при любом изменении значения директивы автоматически будет изменяться набор классов применяемых, к HTML-элементу.
 
 Например,
 
@@ -123,42 +144,183 @@ ODA({
     is: 'my-component',
     template: `
         <style>
-            .my-css-class1 {
+            .class1 {
                 background: yellow;
                 color: green;
                 padding: 10px;
             }
-            .my-css-class2 {
+            .class2 {
                 background: green;
                 color: yellow;
                 padding: 10px;
             }
         </style>
-        <div ~class="myStyle">Образец стиля</div>
-        <button @tap="changeStyle">Изменить стиль</button>
+        <div ~class="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
-    myStyle: 'my-css-class1',
+    myStyle: 'class1',
     changeStyle() {
-        this.myStyle = this.myStyle === 'my-css-class1' ? 'my-css-class2' : 'my-css-class1';
+        this.myStyle = this.myStyle == 'class1' ? 'class2' : 'class1';
     }
 });
 ```
 
+Следует отметить, что если список классов задан в виде массива, то механизм реактивности работает только при изменении значения указателя на массив, а не при изменении значений его отдельных свойств.
 
+Например,
 
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <style>
+            .class1 {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+            .class2 {
+                background: green;
+                color: yellow;
+                padding: 10px;
+            }
+        </style>
+        <div ~class="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: [],
+    style1: ['class1'],
+    style2: ['class2'],
+    ready() {
+        this.myStyle = this.style1;
+    },
+    changeStyle() {
+        this.myStyle = this.myStyle == this.style1? this.style2 : this.style1;
+    }
+});
+```
 
+При изменении отдельных элементов массива или их числа механизм реактивности работать не будет.
 
+Например,
 
+```javascript _error_run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <style>
+            .class1 {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+            .class2 {
+                background: green;
+                color: yellow;
+                padding: 10px;
+            }
+        </style>
+        <div ~class="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: ['class1'],
+    changeStyle() {
+        this.myStyle[0] = this.myStyle[0] == 'class1' ? 'class2' : 'class1';
+    }
+});
+```
 
+Аналогично, если список классов задан в виде объекта, то механизм реактивности работает только при изменении значения указателя на объект, а не при изменении значений его отдельных свойств.
 
+Например,
 
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <style>
+            .class1 {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+            .class2 {
+                background: green;
+                color: yellow;
+                padding: 10px;
+            }
+        </style>
+        <div ~class="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: {},
+    style1: {class1: true, class2: false },
+    style2: {class1: false, class2: true },
+    ready() {
+        this.myStyle = this.style1;
+    },
+    changeStyle() {
+        this.myStyle = this.myStyle == this.style1? this.style2 : this.style1;
+    }
+});
+```
 
+При изменении отдельных свойств объекта механизм реактивности работать не будет.
 
+Например,
 
+```javascript _error_run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <style>
+            .class1 {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+            .class2 {
+                background: green;
+                color: yellow;
+                padding: 10px;
+            }
+        </style>
+        <div ~class="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: {class1: true, class2: false },
+    changeStyle() {
+        this.myStyle.class1 = !this.myStyle.class1;
+        this.myStyle.class2 = !this.myStyle.class2;
+    }
+});
+```
 
+Для включения реактивности внутри объекта, его необходимо записать в литеральной форме, а в качестве значений его свойств нужно использовать другие свойства компонента.
 
+Например,
 
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <style>
+            .class1 {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+            .class2 {
+                background: green;
+                color: yellow;
+                padding: 10px;
+            }
+        </style>
+        <div ~class="{class1: myStyle, class2: !myStyle }" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: true,
+    changeStyle() {
+        this.myStyle = !this.myStyle;
+    }
+});
+```
 
+В этом примере любое изменение свойства компонента **myStyle**, будет приводить к автоматической смене применяемого класса.
 
 В HTML-элементе можно одновременно использовать атрибут **class** и директиву **~class**. В этом случае указанные в них классы объединяются в один список классов.
 
@@ -169,20 +331,20 @@ ODA({
     is: 'my-component',
     template: `
         <style>
-            .my-css-class1 {
+            .class1 {
                 background: yellow;
                 padding: 10px;
             }
-            .my-css-class2 {
+            .class2 {
                 color: green;
             }
         </style>
-        <div class="my-css-class1" ~class="'my-css-class2'">Список классов: "{{$this.parentElement.className}}"</div>
+        <div class="class1" ~class="'class2'">Список классов: "{{$this.parentElement.className}}"</div>
     `
 });
 ```
 
-В данном примере в элемент **div** с помощью атрибута **class** и директивы **~class** добавлены стилевые классы **my-css-class1** и **my-css-class2**. На экране видно, что оба класса работают одновременно, т.к. цвет фона берется из класса **my-css-class1**, а цвет шрифта из класса **my-css-class2**. Кроме того, на экран выводится список классов элемента **div**, в котором присутствуют оба класса.
+В данном примере в элемент **div** с помощью атрибута **class** и директивы **~class** добавлены стилевые классы **class1** и **class2**. На экране видно, что оба класса работают одновременно, т.к. цвет фона берется из класса **class1**, а цвет шрифта из класса **class2**. Кроме того, на экран выводится список классов элемента **div**, в котором присутствуют оба класса.
 
 Однако, если в атрибут **class** данные передаются с помощью биндинга, то директива **~class** игнорируется.
 
@@ -193,28 +355,28 @@ ODA({
     is: 'my-component',
     template: `
         <style>
-            .my-css-class1 {
+            .class1 {
                 background: yellow;
                 padding: 10px;
             }
-            .my-css-class2 {
+            .class2 {
                 color: green;
             }
-            .my-css-class3 {
+            .class3 {
                 color: red;
             }
         </style>
-        <div :class="'my-css-class1'" ~class="myStyle">Список классов: "{{$this.parentElement.className}}"</div>
+        <div :class="'class1'" ~class="myStyle">Список классов: "{{$this.parentElement.className}}"</div>
         <button @tap="changeStyle">Изменить цвет шрифта</button>
     `,
-    myStyle: 'my-css-class2',
+    myStyle: 'class2',
     changeStyle() {
-        this.myStyle = this.myStyle === 'my-css-class2' ? 'my-css-class3' : 'my-css-class2';
+        this.myStyle = this.myStyle == 'class2' ? 'class3' : 'class2';
     }
 });
 ```
 
-В данном примере менять цвет шрифта с помощью директивы **~class** не удастся. Как видно на экране, задаваемые с помощью нее стилевые классы не добавляются в список классов элемента **div**.
+В данном примере не удастся менять цвет шрифта с помощью директивы **~class**. Как видно на экране, задаваемые с помощью нее стилевые классы не добавляются в список классов элемента **div**.
 
 <div style="position:relative;padding-bottom:48%; margin:10px">
     <iframe src="https://www.youtube.com/embed/H43hAmTDLqM?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
