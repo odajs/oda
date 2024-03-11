@@ -26,8 +26,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 if (!n.startsWith('http'))
                     n = path + '/' + n;
                 ODA.loadJSON(n).then(async res => {
-                    if (res?.cells.length)
-                        this.makeLevels(res.cells);
                     this.notebook = res;
                 })
             }
@@ -37,7 +35,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get jupyter() {
             return this;
         },
-        notebook: null,
+        notebook: {
+            $def: null,
+            set(n) {
+                if (n?.cells?.length)
+                    this.makeLevels(n.cells);
+            }
+        },
         editors: {
             code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },

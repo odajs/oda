@@ -1,0 +1,26 @@
+<head>
+    <script>
+      // Configure MathJax settings
+      MathJax = {
+        tex: {
+          inlineMath: [
+            ['$', '$'],
+            ['\\(', '\\)']
+          ]
+        }
+      }
+      addEventListener('zero-md-rendered', () => MathJax.typeset())
+    </script>
+    <!-- Load MathJax library -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <!-- Load zero-md -->
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/gh/zerodevx/zero-md@2/dist/zero-md.min.js"
+    ></script>
+  </head>
+  
+  <body>
+    <!-- Render zero-md into light dom -->
+    <zero-md src="marked-demo.md" no-shadow></zero-md>
+  </body>
