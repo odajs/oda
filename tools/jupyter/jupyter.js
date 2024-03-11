@@ -152,7 +152,10 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
-        this.async(() => this.selectedIdx = idx);
+        this.jupyter.makeLevels();
+        this.async(() => {
+            this.selectedIdx = idx;
+        }, 100)
     }
 })
 
@@ -255,11 +258,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="vertical" ~style="{width: iconSize+8+'px'}">
-            <oda-icon ~if="countHidden" :icon="cells?.[idx].collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+            <oda-icon ~if="countHidden" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
         </div>
         <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
         <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
-        <div class="collapsed horizontal flex" ~if="cells?.[idx].collapsed">Скрыто {{countHidden}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{countHidden}} ячеек</div>
     `,
     set cell(n) {
         let src;    
@@ -285,10 +288,10 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         if (this.editIdx === this.idx ) {
             this.async(() => {
                 this.$('oda-simplemde-editor').value = this.src;
-            })
+            }, 100)
         }
     },
-    get countHidden() { return this.levels[this.cells[this.idx].id]?.cells.length || '' },
+    get countHidden() { return this.levels?.[this.cells?.[this.idx]?.id]?.cells.length || '' },
     setCollapse() {
         let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
         this.levels[this.cells[this.idx].id]?.cells?.map(i => {

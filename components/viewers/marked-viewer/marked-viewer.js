@@ -42,14 +42,17 @@ ODA({ is: 'oda-marked-viewer',
             }
         }
     },
-    typesetInput() {
+    async typesetInput() {
+        await new Promise((r) => setTimeout(r, 100));
         let iframe = this.$('iframe');
         iframe.contentWindow.marked = marked;
-        iframe.contentWindow.MathInput.value = (this.src || '');
-        iframe.contentWindow.typesetInput();
+        if (iframe.contentWindow.typesetInput) {
+            iframe.contentWindow.MathInput.value = (this.src || '');
+            iframe.contentWindow.typesetInput();
+        }
     },
     async attached() {
-        await new Promise((r) => setTimeout(r, 0));
+        await new Promise((r) => setTimeout(r, 20));
         let iframe = this.$('iframe');
         iframe.addEventListener('load', async e => {
             this.typesetInput();
