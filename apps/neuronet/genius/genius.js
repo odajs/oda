@@ -174,7 +174,7 @@ export class WordEncoder {
     }
     encode(word){
         const emb = Array(this.dim).fill(0.0);
-        for (let i = 0; i<word.length; i++){
+        for (let i = 0; i < word.length; i++){
             const del = 2 ** -i;
             let code = word.charCodeAt(i);
             code = code.toString(2);
@@ -186,6 +186,28 @@ export class WordEncoder {
         return emb;
     }
 }
+
+export class WordEncoderLog10 {
+    constructor(dim = MODEL_DIM) {
+        this.dim = dim;
+        return this.encode.bind(this);
+    }
+    encode(word){
+        const emb = Array(this.dim).fill(0.0);
+        for (let i = 0; i < word.length; i++){
+            const del = Math.log10(2 ** i);
+            let code = word.charCodeAt(i);
+            code = code.toString(2);
+            code = code.padStart(this.dim, "0");
+            code.split('').forEach((v, i)=>{
+                emb[i]+=((+v) * del)
+            });
+        }
+        return emb;
+    }
+}
+
+
 export class WordDecoderNet extends nn.Module{
     __init__(d, bias = false) {
         this.proj = nn.linear(d, d, bias);
@@ -196,6 +218,30 @@ export class WordDecoderNet extends nn.Module{
     }
 }
 export class WordDecoder {
+    constructor() {
+        return this.decode.bind(this);
+    }
+    decode(vector){
+        vector.reverse()
+        let result = [];
+        for(let i = 0; i<BINS.length; i++){
+            let p = BINS[i];
+            let l = vector.reduce((r, t, i)=>{
+                if (t >= p){
+                    r += 2 ** i;
+                    vector[i] = t - p;
+                }
+                return r;
+            }, 0.0);
+            if(!l) break;
+            result.push(l);
+        }
+        result = String.fromCharCode(...result);
+        return result;
+    }
+}
+
+export class WordDecoderLog10 {
     constructor() {
         return this.decode.bind(this);
     }

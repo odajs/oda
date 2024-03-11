@@ -72,7 +72,7 @@
                     result.push(res);
                 }
             }
-            const decoder = new gen.WordDecoder();
+            const decoder = new gen.WordDecoderLog10();
             this.result = result.join('\r\n');
             result = result.map(w=>{
                 console.log(w.data)
@@ -93,7 +93,7 @@
             return  tokenizer(this.value);
         },
         get vectors(){
-            const encoder = new gen.WordEncoder();
+            const encoder = new gen.WordEncoderLog10();
             const phrases = this.tokens.map(r=>{
                 return r.map(w=>{
                     return encoder(w);

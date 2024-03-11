@@ -438,7 +438,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
         if (oda?.length)
             this.cell.isODA = true;
-        let arr = ['</script>', '</html>', '</body>', '</head>', '<link', '<!DOCTYPE html>', '<meta '];
+        let arr = ['</script>', '</html>', '</body>', '</head>', '<link', '<!DOCTYPE html>', '<meta ', '</'];
         let regx = new RegExp(arr.join('|'));
         if (regx.test(src))
             this.cell.mode = 'html';
@@ -475,7 +475,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.isRun = true;
             this.async(() => {
                 const iframe = this.$('iframe');
-                this.srcdoc = `
+                let srcdoc = `
 <!DOCTYPE html>
 <style>
     html, body {
@@ -499,7 +499,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
 <script type="module">import '../../oda.js'</script>
                 ` + this.src;
                 iframe.addEventListener('load', () => {
-                    this.runConsoleData = [...iframe.contentWindow._runConsoleData];
+                    this.runConsoleData = [...(iframe.contentWindow._runConsoleData || [])];
                     iframe.contentWindow.runConsoleData = this.runConsoleData;
                     const resizeObserver = new ResizeObserver((e) => {
                         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
@@ -507,6 +507,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                     })
                     resizeObserver.observe(iframe.contentDocument.body);
                 })
+                this.srcdoc = srcdoc;
             })
         }
         this.async(() => {
