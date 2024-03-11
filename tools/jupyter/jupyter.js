@@ -79,7 +79,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         cells.map((i, idx) => {
             let src = '',
                 firstStr = '',
-                id = i.id || self.crypto.randomUUID(),
+                id = i.id || Math.floor(Math.random() * Date.now()), //self.crypto.randomUUID(),
                 cell = { id, idx };
             if (i.source?.length === 1) {
                 src = i.source;
