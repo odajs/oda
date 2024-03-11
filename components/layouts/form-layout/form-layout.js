@@ -87,7 +87,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" ~props="statusBar"></form-status-bar>`,
     _in() {
-        this.__allowMove = true;
+        this.__allowMove = this.sizeMode !== 'max';
     },
     _out() {
         this.__allowMove = false;
@@ -146,7 +146,10 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 show: false,
             },
         },
-        minWidth: 400,
+        minWidth: {
+            $pdp: true,
+            $def: 400
+        },
         minHeight: 300,
         _resizeDir: String,
         // _curPos: String,
@@ -165,6 +168,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         pointermove(e) {
             if (this.autosize || e.buttons || !this.float || this.sizeMode !== 'normal' || this.isMinimized)
                 return;
+
             const bw = this._bw;
             const bw2 = bw * 2;
             const h = this.pos.height;
@@ -182,12 +186,13 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 if (str) {
                     this.style.cursor = `${str}-resize`;
                 } else {
-                    return this.style.cursor = '';
+                    this.style.cursor = '';
                 }
             });
 
         },
         track(e, d) {
+            if (this.sizeMode === 'max') return;
             if (this.autosize) return;
             if (!this.float/*  || e.sourceEvent.button !== 0 */) return;
             // console.log(e)
