@@ -260,7 +260,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         <div class="vertical" ~style="{width: iconSize+8+'px'}">
             <oda-icon ~if="countHidden" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
         </div>
-        <oda-simplemde-editor ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+        <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
         <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
         <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{countHidden}} ячеек</div>
     `,
@@ -287,7 +287,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         if (this.editIdx === this.idx ) {
             this.async(() => {
-                this.$('oda-simplemde-editor').value = this.src;
+                this.$('oda-simplemde-editor').value = this.cell.source;
             }, 100)
         }
         if (this.editIdx === -1) {
