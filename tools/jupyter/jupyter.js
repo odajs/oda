@@ -81,7 +81,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 firstStr = '',
                 id = i.id || 'id-' + idx.toString().padStart(6, '0'),
                 cell = { id, idx };
-            if (Array.isArray(i.source) && i.source?.length === 1) {
+            if (Array.isArray(i.source)) {
                 src = i.source;
             } else if (typeof i.source === 'string') {
                 src = i.source.split('\n');
@@ -248,12 +248,12 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 opacity: .5;
                 position: absolute; 
                 bottom: 0; 
-                width: calc(100% - 22px); 
-                height: 20px; 
+                width: calc(100% - 18px); 
+                height: 14px; 
                 background: lightgray; 
                 border: 1px stroke gray; 
-                margin: 4px;
-                font-size: small;
+                margin: 2px;
+                font-size: x-small;
                 padding: 4px 0 0 12px;
             }
         </style>
