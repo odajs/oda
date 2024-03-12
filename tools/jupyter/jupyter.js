@@ -266,7 +266,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     `,
     set cell(n) {
         let src;    
-        if (n?.source?.length && n.source.join)
+        if (Array.isArray(n?.source))
             src = n.source.join('');
         this.src = src || n?.source || '';
     },
@@ -287,7 +287,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         if (this.editIdx === this.idx ) {
             this.async(() => {
-                this.$('oda-simplemde-editor').value = this.cell.source;
+                this.$('oda-simplemde-editor').value = this.src;
             }, 100)
         }
         if (this.editIdx === -1) {
@@ -334,7 +334,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div ~if="!hideRun" class="vertical"  style="border-right: 1px solid var(--border-color); padding: 4px 0px">
+        <div ~if="!hideRun" class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px">
             <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
             <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
         </div>
@@ -406,7 +406,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     iconSize: 18,
     set cell(n) {
         let src;    
-        if (n?.source?.length && n.source.join)
+        if (Array.isArray(n?.source))
             src = n.source.join('');
         this.src = src || n?.source || '';
         this.setCellMode(this.src);
@@ -429,10 +429,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.$('oda-ace-editor').editor.setOption('fontSize', '16px');
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || '') {
+        if (this.cell.mode) return;
         if (this.cell?.metadata?.colab) {
             this.cell.mode = 'python';
             return;
         }
+
         this.cell.mode = 'javascript';
         this.cell.isODA = false;
         let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
