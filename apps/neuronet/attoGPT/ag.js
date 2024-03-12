@@ -25,7 +25,7 @@ export class NetValue extends ROCKS({
                 let bind = el.children.map( (v,i) => { return { block: v, top: 0 } })
                 let obj = {
                     is: "oda-ag-value", x:rez.m[y], y, 
-                    props: { el },
+                    el,
                     pins: {
                         top: [{}],
                         bottom: (bind.length)? [{ bind, props: { icon: this.toIcon(el.op) } }]:[]
@@ -43,7 +43,7 @@ export class NetValue extends ROCKS({
         rez.data.forEach((bl, idx)=> {
             bl.id = idx;
             bl.x = ( (2*bl.x-1) / rez.m[bl.y] ) * rez.xMax * dX
-            if (bl.props.el.t==='input') bl.y++
+            if (bl.el.t==='input') bl.y=bl.y+0.3
             bl.y = (bl.y+0.1) * dY
             if (bl.pins.bottom.length)          
                 bl.pins.bottom[0].bind.forEach(b => b.block =  rez.n.get(b.block))

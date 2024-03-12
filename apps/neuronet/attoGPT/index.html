@@ -70,6 +70,7 @@
             <div horizontal><i>data:</i> <i flex></i> <input type='number' flex ~if='isInput' :value='el.data'   @input="onInput" > <i ~if='!isInput'>{{el.data.toFixed(2)}}</i></div>           
         </div> 
         `,
+        get el() {return this.block.el},
         get isInput() {
             if (this.el.children.length!==0) return false
             if (this.el.t === 'param') return false
