@@ -79,7 +79,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         cells.map((i, idx) => {
             let src = '',
                 firstStr = '',
-                id = i.id || 'id-' + idx.toString().padStart(6, '0'),
+                id = i.metadata?.id || 'cell-' + this.getID(),
                 cell = { id, idx };
             if (Array.isArray(i.source)) {
                 src = i.source;
@@ -105,6 +105,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.cells.push(cell);
         })
         // console.log(this.levels)
+    },
+    getID() {
+        return Math.floor(Math.random() * Date.now()).toString(16);
     }
 })
 
@@ -150,7 +153,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.selectedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '' });
+        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
         this.jupyter.makeLevels();
         this.async(() => {
@@ -187,7 +190,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 @apply --content;
                 @apply --shadow;
                 position: absolute;
-                top: 0;
                 right: 8px;
                 padding: 1px;
                 border-radius: 4px;
