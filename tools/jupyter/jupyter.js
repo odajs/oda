@@ -170,12 +170,13 @@ ODA({ is: 'oda-jupyter-cell',
             }
             oda-jupyter-toolbar {
                 position: sticky;
-                top: 0;
+                top: 21px;
                 width: 120px;
                 margin-left: auto;
+                z-index: 100;
             }
         </style>
-        <oda-jupyter-toolbar :cmp :cell :idx ~if="!_readOnly && selected" ~style="{marginTop: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
+        <oda-jupyter-toolbar :cmp :cell :idx ~if="!_readOnly && selected"></oda-jupyter-toolbar>
     `,
     idx: -2,
     selected: false,
@@ -186,7 +187,7 @@ ODA({ is: 'oda-jupyter-cell',
 ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-grid',
     template: `
         <style>
-            :host {
+            .top {
                 @apply --horizontal;
                 @apply --no-flex;
                 @apply --content;
@@ -196,13 +197,16 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 padding: 1px;
                 border-radius: 4px;
                 z-index: 100;
+                margin-top: -20px;
             }
         </style>
-        <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
-        <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
-        <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
-        <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-        <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+        <div class="top">
+            <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
+            <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+            <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
+            <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
+            <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+        </div>
     `,
     idx: -2,
     cell: null,
