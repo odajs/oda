@@ -1,7 +1,7 @@
 //HYPER PARAMETERS
 import * as nn from  '../neuro/neuro.js';
 
-const MODEL_DIM = 16;           // Размерность входного и выходного слоев
+const MODEL_DIM = 32;           // Размерность входного и выходного слоев
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;            // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
@@ -170,55 +170,21 @@ export class Tokenizer {
 export class WordEncoder {
     constructor(dim = MODEL_DIM) {
         this.dim = dim;
+        this.K = Array(dim).fill().map((_,i)=>2**-i);
+        this.O = Array(dim).fill().map(()=>.1);
         return this.encode.bind(this);
     }
     encode(word){
-        const map = (word).split('').map(i=>i.charCodeAt(0).toString(2).padStart(this.dim,'0').split('').map(n=>+n))
-        const emb = Array(this.dim).fill(0.0);
-        for (let i = 0; i < 48 /*word.length*/; i++){
-            
-            const del = 2 ** -i;
-            let code = word.charCodeAt(i);
-            code = code.toString(2);
-            code = code.padStart(this.dim, "0");
-            code.split('').forEach((v, j)=>{                
-                emb[j]+=((+ ((i<word.length)?v:1) ) * del)
-            });
-        }
-        return emb;
-    }
-}
-
-export class WordEncoderLog10 {
-    constructor(dim = MODEL_DIM) {
-        this.dim = dim;
-        return this.encode.bind(this);
-    }
-    encode(word){
-        const emb = Array(this.dim).fill(0.0);
-        for (let i = 0; i < word.length; i++){
-            const del = Math.log10(2 ** i);
-            let code = word.charCodeAt(i);
-            code = code.toString(2);
-            code = code.padStart(this.dim, "0");
-            code.split('').forEach((v, i)=>{
-                emb[i]+=((+v) * del)
-            });
-        }
+        const map = (word).split('').map(i=>i.charCodeAt(0).toString(2).padStart(this.dim, '0').split('').map(n=>+n))
+        const emb = this.K.reduce((r, k, i)=>{
+            const row = map[i] || this.O;
+            return r.map((v,j)=>v + row[j] * k);
+        }, Array(this.dim).fill(0))
         return emb;
     }
 }
 
 
-export class WordDecoderNet extends nn.Module{
-    __init__(d, bias = false) {
-        this.proj = nn.linear(d, d, bias);
-    }
-    forward(x){
-        x = this.proj(x);
-        return x;
-    }
-}
 export class WordDecoder {
     constructor() {
         return this.decode.bind(this);
@@ -243,38 +209,9 @@ export class WordDecoder {
     }
 }
 
-export class WordDecoderLog10 {
-    constructor() {
-        return this.decode.bind(this);
-    }
-    decode(vector){
-        vector.reverse()
-        let result = [];
-        for(let i = 0; i<BINS.length; i++){
-            let p = BINS[i];
-            let l = vector.reduce((r, t, i)=>{
-                if (t >= p){
-                    r += 2 ** i;
-                    vector[i] = t - p;
-                }
-                return r;
-            }, 0.0);
-            if(!l) break;
-            result.push(l);
-        }
-        result = String.fromCharCode(...result);
-        return result;
-    }
-}
 
 function tensor(...args){
     if(args[0] instanceof nn.Tensor)
         return args[0];
     return new nn.Tensor(...args);
 }
-
-
-// function normFract(n) {
-//     [...new Array(n)]
-// }
-

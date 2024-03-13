@@ -421,8 +421,7 @@ export class Tensor {
                 return 0;
             })
         })
-        const out = tensor(hippo, 'hippo');
-        return out;
+        return tensor(hippo, 'hippo');
     }
     static fill(size= 1, value= 0, label){
         if (!Array.isArray(size))
@@ -438,8 +437,7 @@ export class Tensor {
                 })
             }
         }
-        const out = tensor(result, label);
-        return out;
+        return tensor(result, label);
     }
     static arange(from_or_size = 0, size){
         if (size === undefined){
@@ -450,8 +448,7 @@ export class Tensor {
         for (let i = from_or_size; i<size; i++){
             result.push(i);
         }
-        const out = tensor(result, `arange (${from_or_size}-${size})`);
-        return out;
+        return tensor(result, `arange (${from_or_size}-${size})`);
     }
     static pos(d, pos = 0, k = 1000){
         return tensor(Array(d).fill().map((_,i)=>{

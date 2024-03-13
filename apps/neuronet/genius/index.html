@@ -70,7 +70,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(0.01);
+                        this.tensor.back(0.1);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
