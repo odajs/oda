@@ -175,13 +175,14 @@ export class WordEncoder {
     encode(word){
         const map = (word).split('').map(i=>i.charCodeAt(0).toString(2).padStart(this.dim,'0').split('').map(n=>+n))
         const emb = Array(this.dim).fill(0.0);
-        for (let i = 0; i < word.length; i++){
+        for (let i = 0; i < 48 /*word.length*/; i++){
+            
             const del = 2 ** -i;
             let code = word.charCodeAt(i);
             code = code.toString(2);
             code = code.padStart(this.dim, "0");
-            code.split('').forEach((v, i)=>{
-                emb[i]+=((+v) * del)
+            code.split('').forEach((v, j)=>{                
+                emb[j]+=((+ ((i<word.length)?v:1) ) * del)
             });
         }
         return emb;
@@ -271,3 +272,9 @@ function tensor(...args){
         return args[0];
     return new nn.Tensor(...args);
 }
+
+
+// function normFract(n) {
+//     [...new Array(n)]
+// }
+

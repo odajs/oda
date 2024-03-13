@@ -12,7 +12,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             }
         </style>
         <oda-jupyter-divider idx="-1" :hover="!cells?.length"></oda-jupyter-divider>
-        <div ~for="cells" class="vertical no-flex" :id="$for.item.id || ''" ~style="{display: $for.item?.hidden ? 'none' : 'flex'}">
+        <div ~for="cells" class="vertical no-flex" :id="'cell-' + $for.item.id" ~style="{display: $for.item?.hidden ? 'none' : 'flex'}">
             <div ~is="editors?.[$for.item.$cell.cell_type || 'code'].editor" :idx="$for.index" :cell="$for.item.$cell" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
