@@ -346,8 +346,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             <h3 @dblclick="setCollapse">{{cells[idx].label}}</h3>
         </div>
         <div ~if="!cells[this.idx].collapsed" class="horizontal">
-            <div ~if="!hideRun" class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px">
-                <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
+            <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
+                <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
                 <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
@@ -381,6 +381,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             $def: false,
             set(n) {
                 this.cell.hideRun = n;
+            },
+            get() {
+                return this.cell.hideRun;
             }
         },
         hideCode: {
