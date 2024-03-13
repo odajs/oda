@@ -11,9 +11,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 transition: opacity ease-in .5s;
             }
         </style>
-        <oda-jupyter-divider idx="-1" :hover="!notebook?.cells?.length"></oda-jupyter-divider>
-        <div ~for="notebook?.cells" class="vertical no-flex":id="cells[$for.index].id || ''" ~style="{display: cells?.[$for.index]?.hidden ? 'none' : 'flex'}">
-            <div ~is="editors?.[$for.item.cell_type].editor" :idx="$for.index" :cell="$for.item" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
+        <oda-jupyter-divider idx="-1" :hover="!cells?.length"></oda-jupyter-divider>
+        <div ~for="cells" class="vertical no-flex" :id="$for.item.id || ''" ~style="{display: $for.item?.hidden ? 'none' : 'flex'}">
+            <div ~is="editors?.[$for.item.$cell.cell_type || 'code'].editor" :idx="$for.index" :cell="$for.item.$cell" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
         </div>
     `,
@@ -35,13 +35,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get jupyter() {
             return this;
         },
-        notebook: {
-            $def: null,
-            set(n) {
-                if (n?.cells?.length)
-                    this.makeLevels(n.cells);
-            }
-        },
+        notebook: null,
         editors: {
             code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
@@ -63,48 +57,50 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.isChanged = true;
         },
         isChanged: false,
-        cells: undefined,
-        levels: undefined
+        get cells() {
+            let level = 0, ids = {}, cells = [];
+            this.notebook?.cells.map((i, idx) => {
+                let src = '',
+                    firstStr = '',
+                    id = i.metadata?.id || 'cell-' + this.getID(),
+                    cell = { id, idx, $cell: i, levels: [] };
+                if (Array.isArray(i.source)) {
+                    src = i.source;
+                } else if (typeof i.source === 'string') {
+                    src = i.source.split('\n');
+                }
+                firstStr = src[0] || '';
+                if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
+                    let str = firstStr.split(' ');
+                    cell.$label = src[0].replace(str[0], '').trim();
+                    level = str[0].length;
+                    cell.$level = level = level > 6 ? 6 : level;
+                    if (level === 1) ids = {};
+                    ids[level] = id;
+                } else if(firstStr?.startsWith('#@title ') ) {
+                    cell.$codeLabel = firstStr.replace('#@title ', '').trim();
+                    cell.$level = level = 3;
+                    ids[level] = id;
+                }
+                for (let i = 1; i <= level; i++) {
+                    if (ids[i]) {
+                        let up = cells.filter(c => c.id === ids[i])[0];
+                        if (up && !cell.$level || i < cell.$level) {
+                            up.levels.push(cell);
+                        }
+                    }
+                }
+                cells.push(cell);
+            })
+            // console.log(cells);
+            return cells;
+        }
     },
     attached() {
         this.style.opacity = 1;
     },
     $listeners: {
         tap(e) { this.selectedIdx = this.editIdx = -1 }
-    },
-    makeLevels(cells = this.notebook?.cells) {
-        let level = 0, ids = {};
-        this.levels = {};
-        this.cells = [];
-        cells.map((i, idx) => {
-            let src = '',
-                firstStr = '',
-                id = i.metadata?.id || 'cell-' + this.getID(),
-                cell = { id, idx };
-            if (Array.isArray(i.source)) {
-                src = i.source;
-            } else if (typeof i.source === 'string') {
-                src = i.source.split('\n');
-            }
-            firstStr = src[0] || '';
-            if (firstStr?.startsWith('#')) {
-                let str = firstStr.split(' ');
-                cell.label = src[0].replace(str[0]).trim();
-                level = cell.level = str[0].length;
-                if (level === 1) ids = {};
-                ids[level] = id;
-            }
-            for (let i = 1; i <= 6; i++) {
-                if (ids[i]) {
-                    if (!cell.level || i < cell.level) {
-                        this.levels[ids[i]] ||= { cells: [] };
-                        this.levels[ids[i]].cells.push(cell);
-                    }
-                }
-            }
-            this.cells.push(cell);
-        })
-        // console.log(this.levels)
     },
     getID() {
         return Math.floor(Math.random() * Date.now()).toString(16);
@@ -153,9 +149,8 @@ ODA({ is: 'oda-jupyter-divider',
         this.selectedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
+        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: 'cell-' + this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
-        this.jupyter.makeLevels();
         this.async(() => {
             this.selectedIdx = idx;
         }, 100)
@@ -260,11 +255,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="vertical" ~style="{width: iconSize+8+'px'}">
-            <oda-icon ~if="countHidden" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+            <oda-icon ~if="levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
         </div>
         <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
         <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
-        <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{countHidden}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{levelsCount}} ячеек</div>
     `,
     set cell(n) {
         let src;    
@@ -292,16 +287,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 this.$('oda-simplemde-editor').value = this.src;
             }, 100)
         }
-        if (this.editIdx === -1) {
-            this.async(() => {
-                this.jupyter.makeLevels();
-            }, 100)
-        }
     },
-    get countHidden() { return this.levels?.[this.cells?.[this.idx]?.id]?.cells.length || '' },
+    get levelsCount() { return this.cells?.[this.idx]?.levels?.length || '' },
     setCollapse() {
         let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
-        this.levels[this.cells[this.idx].id]?.cells?.map(i => {
+        this.cells[this.idx].levels?.map(i => {
             i.hidden = i.collapsed = collapsed;
         })
     }
