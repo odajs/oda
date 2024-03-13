@@ -173,6 +173,7 @@ export class WordEncoder {
         return this.encode.bind(this);
     }
     encode(word){
+        const map = (word).split('').map(i=>i.charCodeAt(0).toString(2).padStart(this.dim,'0').split('').map(n=>+n))
         const emb = Array(this.dim).fill(0.0);
         for (let i = 0; i < word.length; i++){
             const del = 2 ** -i;

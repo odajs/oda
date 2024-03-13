@@ -453,6 +453,12 @@ export class Tensor {
         const out = tensor(result, `arange (${from_or_size}-${size})`);
         return out;
     }
+    static pos(d, pos = 0, k = 1000){
+        return tensor(Array(d).fill().map((_,i)=>{
+            const v = 1/Math.pow(k, 2 * i/d) * pos;
+            return (i%2)?Math.cos(v):Math.sin(v);
+        }), 'pos: '+pos)
+    }
 }
 
 function element_wise(fn, ...args){
