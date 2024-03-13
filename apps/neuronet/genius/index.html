@@ -47,7 +47,7 @@
             </div>
 
         `,
-        stepCount: 1000,
+        stepCount: 100,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -70,7 +70,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(0.1);
+                        this.tensor.back(0.01);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
