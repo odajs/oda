@@ -264,9 +264,20 @@ export class Tensor {
         const res = element_wise((x)=>Math.log(x), this.data);
         let out = tensor(res, `_log`, [this]);
         out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + 1/x * g), this.grad, this.data, out.grad);
+            this.grad = element_wise((v, x, g) => (v + 1/(x * Math.log(Math.exp())) * g), this.grad, this.data, out.grad);
         }
         return out;
+    }
+    _log10(){
+        const res = element_wise((x)=>Math.log10(x), this.data);
+        let out = tensor(res, `_log10`, [this]);
+        out._back = () => {
+            this.grad = element_wise((v, x, g) => (v + 1/(x * Math.log(10)) * g), this.grad, this.data, out.grad);
+        }
+        return out;
+    }
+    get T(){
+        return this._t();
     }
     _t(){
         const res = transpose(this.data);
@@ -404,9 +415,9 @@ export class Tensor {
         const hippo = Array(size[0]).fill('').map((_, k)=>{
             return Array(size[1]).fill('').map((_, n)=>{
                 if (n>k)
-                    return (2 * k + 1) ** .5 * (2 * n + 1) ** .5 * koef;
+                    return -((2 * k + 1) ** .5 * (2 * n + 1) ** .5 * koef);
                 if (n === k)
-                    return (n + 1) * koef;
+                    return -((n + 1) * koef);
                 return 0;
             })
         })

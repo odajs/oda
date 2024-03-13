@@ -7,6 +7,11 @@
     import * as nn from  '../neuro/neuro.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
+            <style>
+                button{
+                    cursor: pointer;
+                }
+            </style>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
                 <div class="vertical">
                     prompt:
@@ -72,7 +77,7 @@
                     result.push(res);
                 }
             }
-            const decoder = new gen.WordDecoderLog10();
+            const decoder = new gen.WordDecoder();
             this.result = result.join('\r\n');
             result = result.map(w=>{
                 console.log(w.data)
@@ -93,7 +98,7 @@
             return  tokenizer(this.value);
         },
         get vectors(){
-            const encoder = new gen.WordEncoderLog10();
+            const encoder = new gen.WordEncoder();
             const phrases = this.tokens.map(r=>{
                 return r.map(w=>{
                     return encoder(w);
