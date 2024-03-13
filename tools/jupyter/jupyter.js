@@ -62,7 +62,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.notebook?.cells.map((i, idx) => {
                 let src = '',
                     firstStr = '',
-                    id = i.metadata?.id || 'cell-' + this.getID(),
+                    id = i.metadata?.id || this.getID(),
                     cell = { id, idx, $cell: i, levels: [] };
                 if (Array.isArray(i.source)) {
                     src = i.source;
@@ -72,20 +72,21 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 firstStr = src[0] || '';
                 if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
                     let str = firstStr.split(' ');
-                    cell.$label = src[0].replace(str[0], '').trim();
+                    cell.label = src[0].replace(str[0], '').trim();
                     level = str[0].length;
-                    cell.$level = level = level > 6 ? 6 : level;
+                    cell.level = level = level > 6 ? 6 : level;
                     if (level === 1) ids = {};
                     ids[level] = id;
-                } else if(firstStr?.startsWith('#@title ') ) {
-                    cell.$codeLabel = firstStr.replace('#@title ', '').trim();
-                    cell.$level = level = 3;
+                } else if (firstStr?.startsWith('#@title ') ) {
+                    cell.label = firstStr.replace('#@title ', '').trim();
+                    cell.level = level = 3;
                     ids[level] = id;
+                    cell.collapsed = true;
                 }
                 for (let i = 1; i <= level; i++) {
                     if (ids[i]) {
                         let up = cells.filter(c => c.id === ids[i])[0];
-                        if (up && !cell.$level || i < cell.$level) {
+                        if (up && !cell.level || i < cell.level) {
                             up.levels.push(cell);
                         }
                     }
@@ -149,7 +150,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.selectedIdx = this.editIdx = -1;
         this.notebook ||= {};
         this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: 'cell-' + this.jupyter.getID() } });
+        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
         this.async(() => {
             this.selectedIdx = idx;
@@ -167,8 +168,14 @@ ODA({ is: 'oda-jupyter-cell',
                 margin: 0 2px;
                 transition: opacity ease-out 1s;
             }
+            oda-jupyter-toolbar {
+                position: sticky;
+                top: 0;
+                width: 120px;
+                margin-left: auto;
+            }
         </style>
-        <oda-jupyter-toolbar :cmp :cell :idx ~if="!_readOnly && selected" ~style="{top: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
+        <oda-jupyter-toolbar :cmp :cell :idx ~if="!_readOnly && selected" ~style="{marginTop: '-' + (iconSize - 4) + 'px'}"></oda-jupyter-toolbar>
     `,
     idx: -2,
     selected: false,
@@ -230,7 +237,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
             :host {
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --flex;
                 max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'unset'}};
                 position: relative;
@@ -254,12 +261,14 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 padding: 4px 0 0 12px;
             }
         </style>
-        <div class="vertical" ~style="{width: iconSize+8+'px'}">
-            <oda-icon ~if="levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+        <div class="horizontal flex">
+            <div class="vertical" ~style="{width: iconSize+8+'px'}">
+                <oda-icon ~if="levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+            </div>
+            <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+            <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
+            <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{levelsCount}} ячеек</div>
         </div>
-        <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-        <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
-        <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{levelsCount}} ячеек</div>
     `,
     set cell(n) {
         let src;    
@@ -302,7 +311,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         <style>
             :host {
                 --border-color: lightgray;
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --flex;
                 outline: 1px solid var(--border-color);
                 position: relative;
@@ -326,23 +335,37 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div ~if="!hideRun" class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px">
-            <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-            <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
+        <div ~if="cells[idx].label" class="horizontal" ~style="{borderBottom: cells?.[idx]?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
+            <div class="vertical" ~style="{width: iconSize+8+'px'}">
+                <oda-icon :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="setCollapse"></oda-icon>
+            </div>
+            <h3 @dblclick="setCollapse">{{cells[idx].label}}</h3>
         </div>
-        <div class="vertical flex">
-            <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-            <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
-            <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-            <div id="result">
-                <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
-                <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-                <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
-                    <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
+        <div ~if="!cells[this.idx].collapsed" class="horizontal">
+            <div ~if="!hideRun" class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px">
+                <oda-icon :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
+                <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
+            </div>
+            <div class="vertical flex">
+                <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
+                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
+                <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <div id="result">
+                    <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
+                    <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                    <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
+                        <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
+                    </div>
                 </div>
             </div>
         </div>
     `,
+    setCollapse() {
+        let collapsed = this.cells[this.idx].collapsed = !this.cells[this.idx].collapsed;
+        this.cells[this.idx].levels?.map(i => {
+            i.hidden = i.collapsed = collapsed;
+        })
+    },
     $public: {
         autoRun: {
             $def: false,
