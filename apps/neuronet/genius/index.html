@@ -70,7 +70,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(0.01);
+                        this.tensor.back(0.1);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');
@@ -78,12 +78,12 @@
                 }
             }
             const decoder = new gen.WordDecoder();
-            this.result = result.join('\r\n');
+            // this.result = result.join('\r\n');
             result = result.map(w=>{
                 console.log(w.data)
                 return decoder(w.data);
             })
-            this.result += '\r\n'+result.join(' ');
+            this.result = result.join(' ');
         },
         result: '',
         value:{

@@ -170,16 +170,14 @@ export class Tokenizer {
 export class WordEncoder {
     constructor(dim = MODEL_DIM) {
         this.dim = dim;
-        this.K = Array(dim).fill().map((_,i)=>2**-i);
-        this.O = Array(dim).fill().map(()=>.1);
         return this.encode.bind(this);
     }
     encode(word){
-        const map = (word).split('').map(i=>i.charCodeAt(0).toString(2).padStart(this.dim, '0').split('').map(n=>+n))
-        const emb = this.K.reduce((r, k, i)=>{
-            const row = map[i] || this.O;
-            return r.map((v,j)=>v + row[j] * k);
-        }, Array(this.dim).fill(0))
+        let arr = Array(this.dim).fill((2 ** -this.dim));
+        const emb = (word).split('').reduce((r, v, i) => {
+            v.charCodeAt(0).toString(2).padStart(this.dim, '0').split('').map((n, j) => arr[j] += (+n * 2 ** -i));
+            return r;
+        }, arr);
         return emb;
     }
 }
