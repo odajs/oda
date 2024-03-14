@@ -109,6 +109,7 @@ export class genHead extends nn.Module{
         return x;
     }
     select(u, delta, A, B, C){
+        const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
         // let y = u;
         let deltaA = delta._mul(A);
         deltaA = deltaA._exp();

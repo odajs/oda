@@ -432,6 +432,30 @@ export class Tensor {
             return (i%2)?Math.cos(v):Math.sin(v);
         }), 'pos: '+pos)
     }
+    static einsum(expr, ...sources){
+        const tensors = sources.map(i=>tensor(i));
+        expr = expr.split('->');
+        const axis = {};
+        const ins = expr[0].trim().split(',').map((s, i)=>{
+            s = s.trim();
+            const tensor = tensors[i];
+            return s.split(' ').map((a, j)=>{
+                a = a.trim();
+                let d =  tensor.shape[j];
+                if(!axis[a])
+                    axis[a] = d;
+                else if(axis[a] !== d)
+                    throw new Error(`Axis '${a}' = ${axis[a]} but on tensor №${i+1} this axis = ${d}`);
+                return {a, d};
+            })
+        });
+        const outs = expr[1].trim().split(' ').map(a => {
+            if(!axis[a])
+                throw new Error(`Unknown axis: '${a}'`);
+            return axis[a];
+        })
+        let res = outs.length?[]:0;
+    }
 }
 export function tensor(...args){
     if(args[0] instanceof Tensor)
