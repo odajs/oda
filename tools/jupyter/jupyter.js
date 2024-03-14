@@ -367,7 +367,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
                 <oda-ace-editor @loaded="loaded" ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
                 <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
@@ -389,56 +388,45 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     $public: {
         autoRun: {
             $def: false,
-            set(n) {
-                this.cell.autoRun = n;
-            }
+            set(n) { this.cell.autoRun = n },
+            get() { return this.cell.autoRun }
         },
         hideRun: {
             $def: false,
-            set(n) {
-                this.cell.hideRun = n;
-            },
-            get() {
-                return this.cell.hideRun;
-            }
+            set(n) { this.cell.hideRun = n },
+            get() { return this.cell.hideRun }
         },
         hideCode: {
             $def: false,
-            set(n) {
-                this.cell.hideCode = n;
-            }
+            set(n) { this.cell.hideCode = n },
+            get() { return this.cell.hideCode }
         },
         hideResult: {
             $def: false,
-            set(n) {
-                this.cell.hideResult = n;
-            }
+            set(n) { this.cell.hideResult = n },
+            get() { return this.cell.hideResult }
         },
         hideConsole: {
             $def: false,
-            set(n) {
-                this.cell.mode = n;
-            }
+            set(n) { this.cell.hideConsole = n },
+            get() { return this.cell.hideConsole }
         },
         showGutter: {
             $def: false,
-            set(n) {
-                this.cell.showGutter = n;
-            }
+            set(n) { this.cell.showGutter = n },
+            get() { return this.cell.showGutter }
         },
         mode: {
             $def: '',
             $list: ['javascript', 'html', 'css', 'phyton'],
-            set(n) {
-                this.cell.mode = n;
-            }
+            set(n) { this.cell.mode = n },
+            get() { return this.cell.mode }
         },
         theme: {
             $def: '',
             $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
-            set(n) {
-                this.cell.theme = n;
-            }
+            set(n) { this.cell.theme = n },
+            get() { return this.cell.theme }
         }
     },
     iconSize: 18,
@@ -472,20 +460,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.cell.mode = 'python';
             return;
         }
-
         this.cell.mode = 'javascript';
-        this.cell.isODA = false;
-        let oda = src.match(/ODA\b[^(]*\([\s\S]*}\s*?\)/gm);
-        if (oda?.length)
-            this.cell.isODA = true;
-        let arr = ['</script>', '</html>', '</body>', '</head>', '<link', '<!DOCTYPE html>', '<meta ', '</'];
+        let arr = ['<!DOCTYPE html>', '<!--', '</script>', '</html>', '</body>', '</head>', '<link', '<meta ', '</'];
         let regx = new RegExp(arr.join('|'));
         if (regx.test(src))
             this.cell.mode = 'html';
-        if (this.cell.mode !== 'html' && !this.cell.isODA) {
-            regx = src.match(/<\b[^>]*>[\s\S]*?/gm);
-            this.cell.mode = src.match(regx)?.length ? 'html' : 'javascript';
-        }
     },
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
@@ -515,6 +494,19 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             this.isRun = true;
             this.async(() => {
                 const iframe = this.$('iframe');
+                let code = '',
+                    _code = this.cell.source.matchAll(new RegExp('</oda-' + '(.*)' + '>', 'g'));
+                _code = Array.from(_code, x => x[1]);
+                _code = _code.map(i => 'oda-' + i);
+                // console.log(_code)
+                for (let i = 0; i < this.idx; i++) {
+                    const cell = this.cells[i].$cell;
+                    if (cell.cell_type === 'code' && cell.mode !== 'html') {
+                        if (_code.some(v => cell.source.includes(v))) {
+                            code += cell.source + '\n';
+                        } 
+                    }
+                }
                 let srcdoc = `
 <!DOCTYPE html>
 <style>
@@ -536,8 +528,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     }
     overrideСonsole();
 </script>
-<script type="module">import '../../oda.js'</script>
-                ` + this.src;
+<script type="module">
+    import '../../oda.js';
+    ${code || ''}
+</script>` + this.src;
                 iframe.addEventListener('load', () => {
                     this.runConsoleData = [...(iframe.contentWindow._runConsoleData || [])];
                     iframe.contentWindow.runConsoleData = this.runConsoleData;
