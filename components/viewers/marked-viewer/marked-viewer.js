@@ -68,6 +68,7 @@ ODA({ is: 'oda-marked-viewer',
             resizeObserver.observe(iframe.contentDocument.body);
             iframe.style.opacity = 1;
             this.isReady = true;
+            this.fire('loaded');
         })
         iframe.srcdoc = srcdoc; //'/web/oda/components/viewers/marked-viewer/lib/editor.html';
         // iframe.src = '/web/oda/components/viewers/marked-viewer/lib/editor.html';

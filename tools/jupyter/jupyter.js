@@ -57,6 +57,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.isChanged = true;
         },
         isChanged: false,
+        get isLoaded() {
+            return this.cells.every(i => i.isLoaded);
+        },
         get cells() {
             let level = 0, ids = {}, cells = [];
             this.notebook?.cells.map((i, idx) => {
@@ -181,6 +184,9 @@ ODA({ is: 'oda-jupyter-cell',
     idx: -2,
     selected: false,
     cell: null,
+    loaded(e) {
+        this.cells[this.idx].isLoaded = true;
+    },
     get cmp() { return this }
 })
 
@@ -270,7 +276,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 <oda-icon ~if="levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-            <oda-marked-viewer tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
+            <oda-marked-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
             <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{levelsCount}} ячеек</div>
         </div>
     `,
@@ -352,7 +358,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             </div>
             <div class="vertical flex">
                 <div style="display: none; padding: 2px; font-size: xx-small">{{cell?.mode + ' - ' + (cell?.isODA ? 'isODA' : 'noODA')}}</div>
-                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
+                <oda-ace-editor @loaded="loaded" ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
                 <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
