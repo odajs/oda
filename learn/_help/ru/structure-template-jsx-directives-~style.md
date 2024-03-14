@@ -1,89 +1,97 @@
-﻿Директива **~style** используется для реактивной стилизации HTML-элемента, в котором она указана.
+﻿Директива **~style** используется для реактивной стилизации HTML-элемента, в котором она указана. Значение директивы автоматически связывается со значением атрибута **style** HTML-элемента, задавая стиль его отображения.
 
-Значение директивы **~style** автоматически связывается со значением атрибута **style** HTML-элемента, задавая стиль его отображения.
+Значением директивы должен быть список CSS-объявлений. Список может быть представлен:
+
+1. в виде строки, в которой CSS-объявления разделены символом точки с запятой (**;**);
+    
+    Например,
+    
+    ```javascript _run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~style="'background: yellow; color: green; padding: 10px'">Список в виде строки</div>
+        `
+    });
+    ```
+    
+1. в виде массива строк с CSS-объявлениями;
+    
+    Например,
+    
+    ```javascript _run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~style="['background: yellow', 'color: green', 'padding: 10px']">Список в виде массива</div>
+        `
+    });
+    ```
+    
+1. в виде объекта, в котором свойства соответствуют CSS-объявлениям.
+    
+    Например,
+    
+    ```javascript _run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~style="{background: 'yellow', color: 'green', padding: '10px'}">Список в виде объекта</div>
+        `
+    });
+    ```
+    
+    Обратите внимание, что в отличие от строковых литералов значения свойств у такого объекта необходимо указывать в кавычках.
+    
+    Если имя свойства CSS-объявления содержит дефис (**-**), то в объекте его необходимо записывать в кавычках.
+
+    Например,
+    
+    ```javascript _run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~style="{'background-color': 'yellow', color: 'green', padding: '10px'}"> Экранирование невалидного имени свойства 'background-color'</div>
+        `
+    });
+    ```
+    
+
+    Вместо использования кавычек можно записать такое имя в верблюжьей нотации (Camel case). При построении CSS-правила фреймворк автоматически преобразует его в форму с дефисом (**-**) между словами.
+    
+    Например,
+    
+    ```javascript run_edit_[my-component.js]
+    ODA({
+        is: 'my-component',
+        template: `
+            <div ~style="{backgroundColor: 'yellow', color: 'green', padding: '10px'}">Использование верблюжьей нотации в имени свойства backgroundColor</div>
+        `,
+    });
+    ```
+
+При формировании списка CSS-объявлений можно использовать inline-выражение, свойство или метод компонента.
 
 Например,
 
-```javascript _run_edit_[my-component.js]
+```javascript_run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template: `
-        <div ~style="myStyle">Директива ~style</div>
+        <style>
+            .my-class {
+                background: yellow;
+                color: green;
+                padding: 10px;
+            }
+        </style>
+        <div ~style="{background: 'yellow', color: 'green', padding: '10px'}">inline-выражение</div>
+        <div ~style="myStyle">Свойство</div>
+        <div ~style="myMethod">Метод</div>
     `,
-    myStyle: "background: yellow; color: green; padding: 10px"
-});
-```
-
-В этом примере значение свойства компонента **myStyle** передается через директиву **~style** атрибуту **style** элемента **div**, вследствие чего у него изменяется стиль отображения.
-
-Значение директивы **~style** можно задать не только в виде свойства компонента, но и в виде обычной строки.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="'background: green; color: yellow; padding: 10px'">Стиль, заданный в виде строкового литерала</div>
-    `,
-});
-```
-
-В качестве значения директивы **~style** вместо строковых литералов можно использовать обычный объект, в котором свойства соответствуют CSS-объявлениям.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="{background: 'green', color: 'yellow', padding: '10px'}">Стиль, заданный в виде литерального объекта</div>
-    `,
-});
-```
-
-Обратите внимание, что в отличие от строковых литералов значения свойств у такого объекта необходимо указывать в кавычках.
-
-Если CSS-объявление имеет имя, содержащее дефис (**-**), то его тоже необходимо записывать в кавычках.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="{'background-color': 'green', color: 'yellow', padding: '10px'}">Экранирование невалидных имен свойств объекта</div>
-    `,
-});
-```
-
-Вместо использования кавычек можно записать такое имя в верблюжьей нотации (Camel case). При построении CSS-правила фреймворк автоматически преобразует его в форму с дефисом (**-**) между словами.
-
-Например,
-
-```javascript run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="{backgroundColor: 'green', color: 'yellow', padding: '10px'}">Использование верблюжьей нотации</div>
-    `,
-});
-```
-
-Также автоматическое преобразование невалидных имен свойств из верблюжьей нотацию в шашлычную (Kebab case) происходит для любого объекта, указанного в директиве **~style**.
-
-Например,
-
-```javascript _run_edit_[my-component.js]
-ODA({
-    is: 'my-component',
-    template: `
-        <div ~style="myStyle">Верблюжья нотация для свойств объекта</div>
-    `,
-    myStyle: {
-        backgroundColor: 'green',
-        color: 'yellow',
-        padding: '10px'
+    myStyle: {background: 'yellow', color: 'green', padding: '10px'},
+    myMethod() {
+        return this.myStyle;
     }
 });
 ```
@@ -98,10 +106,10 @@ ODA({
     template: `
         <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
-    myStyle: "background: green; color: yellow; padding: 10px",
+    myStyle: "background: yellow; color: green; padding: 10px",
     changeStyle() {
-        let style1 = "background: green; color: yellow; padding: 10px";
-        let style2 = "background: yellow; color: green; padding: 10px";
+        let style1 = "background: yellow; color: green; padding: 10px";
+        let style2 = "background: green; color: yellow; padding: 10px";
         this.myStyle = this.myStyle === style1 ? style2 : style1;
     }
 });
@@ -109,7 +117,46 @@ ODA({
 
 Здесь при щелчке изменяется значение свойства компонента **myStyle**, что приводит к автоматическому изменению стиля отображения HTML-элемента **div**, в котором была указана директива **~style**.
 
-Следует отметить, что если CSS-объявления сгруппированы в объекте, то механизм реактивности работает только при изменении значения указателя на объект, а не при изменении значений его отдельных свойств.
+Следует отметить, что если список CSS-объявлений задан в виде массива, то механизм реактивности работает только при изменении значения указателя на массив, а не при изменении значений его отдельных элементов.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: [],
+    style1: ['background: yellow', 'color: green', 'padding: 10px'],
+    style2: ['background: green', 'color: yellow', 'padding: 10px'],
+    ready() {
+        this.myStyle = this.style1;
+    },
+    changeStyle() {
+        this.myStyle = this.myStyle === this.style1? this.style2 : this.style1;
+    }
+});
+```
+
+При изменении отдельных элементов массива или их числа механизм реактивности работать не будет.
+
+Например,
+
+```javascript _run_edit_error_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
+    `,
+    myStyle: ['background: yellow', 'color: green', 'padding: 10px'],
+    changeStyle() {
+        this.myStyle[0] = this.myStyle[0] === 'background: yellow'? 'background: pink' : 'background: yellow';
+    }
+});
+```
+
+Аналогично, если список CSS-объявлений задан в виде объекта, то механизм реактивности работает только при изменении значения указателя на объект, а не при изменении значений его отдельных свойств.
 
 Например,
 
@@ -120,8 +167,8 @@ ODA({
         <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
     myStyle: {},
-    style1: {background: 'green', color: 'yellow', padding: '10px'},
-    style2: {background: 'yellow', color: 'green', padding: '10px'},
+    style1: {background: 'yellow', color: 'green', padding: '10px'},
+    style2: {background: 'green', color: 'yellow', padding: '10px'},
     ready() {
         this.myStyle = this.style1;
     },
@@ -142,12 +189,12 @@ ODA({
         <div ~style="myStyle" @tap="changeStyle">Щелкни по мне</div>
     `,
     myStyle: {
-        background: 'green',
-        color: 'yellow',
+        background: 'yellow',
+        color: 'green',
         padding: '10px'
     },
     changeStyle() {
-        this.myStyle.background = this.myStyle.background === 'green' ? 'yellow' : 'green';
+        this.myStyle.background = this.myStyle.background === 'yellow' ? 'green' : 'yellow';
     }
 });
 ```
@@ -190,7 +237,7 @@ ODA({
 
 Данный пример аналогичен предыдущему, только значение директивы **~style** задано не объектом, а строкой, формируемой с помощью операции конкатенации. В результате цвет фона берется из свойства **myColor**.
 
-В случае использования одновременно нескольких способов стилизации, директива **~style** будет добавлять только новые CSS-объявления к уже существующим, не удаляя предыдущие.
+В HTML-элементе можно одновременно использовать атрибут **style** и директиву **~style**. В этом случае их CSS-объявления будут объединяться.
 
 Например,
 
@@ -204,8 +251,8 @@ ODA({
 });
 ```
 
-```warning_md
-Если какое-либо CSS-объявление, указанное в директиве **~style**, совпадет с уже существующим, то оно перекроет его значение.
+```info_md
+Если какое-либо CSS-объявление, указанное в директиве **~style**, совпадет с объявлением в атрибуте **style**, то оно перекроет его значение.
 ```
 
 Например,
@@ -220,7 +267,7 @@ ODA({
 });
 ```
 
-В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим собственным значением, заданным в свойстве **myStyle**.
+В этом примере цвет фона будет не зеленым, а желтым, так как директива **~style** перекрыла значение CSS-объявления **background**, указанное в атрибуте **style** HTML-элемента, своим собственным значением, заданным в свойстве компонента **myStyle**.
 
 ```warning_md
 Если в атрибут **style** данные передаются с помощью биндинга, то директива **~style** игнорируется.
