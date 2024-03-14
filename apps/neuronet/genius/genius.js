@@ -1,5 +1,6 @@
 //HYPER PARAMETERS
-import * as nn from  '../neuro/neuro.js';
+import {Parameter, Tensor} from "./neuro.js";
+import * as nn from  './module.js';
 
 const MODEL_DIM = 32;           // Размерность входного и выходного слоев
 const LAYER_COUNT = 1;          // Количество слоев
@@ -61,7 +62,7 @@ export class genLayer extends nn.Module{
     }
     forward(x){
         let y = x//this.norm(x);
-        // let head_res = n/n.Tensor.stack(this.heads.map(h=>h(y)));
+        // let head_res = Tensor.stack(this.heads.map(h=>h(y)));
         // y = head_res._concat();
         y = this.W0(y);
         return y;
@@ -74,9 +75,9 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = nn.Parameter(nn.Tensor.hippo([this.dH, d], -1));
-        this.H = nn.Tensor.zeros([this.dH, d]);
-        this.D = nn.Parameter(nn.Tensor.ones([d]));
+        this.A = Parameter(Tensor.hippo([this.dH, d], -1));
+        this.H = Tensor.zeros([this.dH, d]);
+        this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
         this.norm = nn.rsmNorm(d);
         this.conv1d = (x)=>{
@@ -209,7 +210,7 @@ export class WordDecoder {
 
 
 function tensor(...args){
-    if(args[0] instanceof nn.Tensor)
+    if(args[0] instanceof Tensor)
         return args[0];
-    return new nn.Tensor(...args);
+    return new Tensor(...args);
 }
