@@ -433,11 +433,17 @@ export class Tensor {
         }), 'pos: '+pos)
     }
 }
+export function tensor(...args){
+    if(args[0] instanceof Tensor)
+        return args[0];
+    return new Tensor(...args);
+}
+export function Parameter(t){
+    t.isParam = true;
+    return t
+}
 
 function element_wise(fn, ...args){
-    // let main = args.sort((a,b)=>{
-    //     return ((a?.length || 1)<(b?.length || 1))?1:-1;
-    // })[0];
     return args[0]?.map?.((_, i)=>{
         const next_args = args.map(a=>{
             return a?.[i] ?? a;
@@ -469,22 +475,14 @@ function transpose(m, axis = 0) {
     return m[0]?.map?.((x,i) =>(m.map(y => y[i]))) || m.map(y => [y]);
 }
 
-
-export function tensor(...args){
-    if(args[0] instanceof Tensor)
-        return args[0];
-    return new Tensor(...args);
-}
-export function Parameter(t){
-    t.isParam = true;
-    return t
-}
 function multiplyMT(M, T){
     return M.map(x=>T.map(y=>dotProduct(x, y)));
 }
 function dotProduct(v1, v2){
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
+
+
 Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
@@ -515,7 +513,5 @@ Array.prototype.toTensorString = function (n = 2){
     return recurse(this);
 }
 Number.prototype.toTensorString = function (n = 2){
-    // if (!Number.isNaN(this))
-    //     return this.toExponential?.(n);
     return this
 }
