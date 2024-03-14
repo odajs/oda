@@ -12,9 +12,9 @@ ODA({ is: 'oda-marked-viewer',
                 border: none;
                 width: 100%;
                 opacity: 0;
-                -webkit-transition: opacity 1s ease-in-out;
-                -moz-transition: opacity 1s ease-in-out;
-                transition: opacity 1s ease-in-out;
+                -webkit-transition: opacity .3s ease-in-out;
+                -moz-transition: opacity .3s ease-in-out;
+                transition: opacity .3s ease-in-out;
             }
         </style>
         <iframe></iframe>
@@ -26,6 +26,8 @@ ODA({ is: 'oda-marked-viewer',
             set(n) {
                 if (this.isReady) {
                     this.typesetInput();
+                } else if(this.iframe) {
+                    this.init();
                 }
             }
         },
@@ -42,36 +44,40 @@ ODA({ is: 'oda-marked-viewer',
             }
         }
     },
-    async typesetInput() {
-        await new Promise((r) => setTimeout(r, 100));
-        let iframe = this.$('iframe');
-        if (iframe?.contentWindow.typesetInput) {
-            iframe.contentWindow.marked = marked;
-            iframe.contentWindow.MathInput.value = (this.src || '');
-            iframe.contentWindow.typesetInput();
-        }
+    get iframe() {
+        return this.$('iframe') || undefined;
     },
-    async attached() {
-        await new Promise((r) => setTimeout(r, 20));
-        let iframe = this.$('iframe');
-        iframe.addEventListener('load', async e => {
+    async typesetInput() {
+        this.async(() => {
+            if (this.iframe?.contentWindow.typesetInput) {
+                this.iframe.contentWindow.marked ||= marked;
+                this.iframe.contentWindow.MathInput.value = (this.src || '');
+                this.iframe.contentWindow.typesetInput();
+            }
+        }, 100)
+    },
+    attached() {
+        if (this.src)
+            this.init();
+    },
+    async init() {
+        this.iframe.addEventListener('load', async e => {
             this.typesetInput();
-            iframe.contentDocument.addEventListener('click', e => {
+            this.iframe.contentDocument.addEventListener('click', e => {
                 this.dispatchEvent(new Event('click'));
             })
-            iframe.contentDocument.addEventListener('dblclick', e => {
+            this.iframe.contentDocument.addEventListener('dblclick', e => {
                 this.dispatchEvent(new Event('dblclick'));
             })
             const resizeObserver = new ResizeObserver((e) => {
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+                this.iframe.style.height = this.iframe.contentDocument.body.scrollHeight + 'px';
             })
-            resizeObserver.observe(iframe.contentDocument.body);
-            iframe.style.opacity = 1;
+            resizeObserver.observe(this.iframe.contentDocument.body);
+            this.iframe.style.opacity = 1;
             this.isReady = true;
             this.fire('loaded');
         })
-        iframe.srcdoc = srcdoc; //'/web/oda/components/viewers/marked-viewer/lib/editor.html';
-        // iframe.src = '/web/oda/components/viewers/marked-viewer/lib/editor.html';
+        this.iframe.srcdoc = srcdoc;
     }
 })
 

@@ -7,11 +7,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 @apply --vertical;
                 @apply --flex;
                 padding: 12px 6px;
-                opacity: 0;
-                transition: opacity ease-in .5s;
             }
         </style>
-        <oda-jupyter-divider idx="-1" :hover="!cells?.length"></oda-jupyter-divider>
+        <div ~if="!isReady" class="horizontal flex" style="width: 100%; position: fixed; justify-content: center; top: 0;">
+            <oda-icon icon="spinners:6-dots-rotate" icon-size="64"></oda-icon>
+        </div>
+        <oda-jupyter-divider idx="-1" :hover="isReady && !cells?.length"></oda-jupyter-divider>
         <div ~for="cells" class="vertical no-flex" :id="'cell-' + $for.item.id" ~style="{display: $for.item?.hidden ? 'none' : 'flex'}">
             <div ~is="editors?.[$for.item.$cell.cell_type || 'code'].editor" :idx="$for.index" :cell="$for.item.$cell" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
             <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
@@ -57,9 +58,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.isChanged = true;
         },
         isChanged: false,
-        get isLoaded() {
-            return this.cells.every(i => i.isLoaded);
-        },
         get cells() {
             let level = 0, ids = {}, cells = [];
             this.notebook?.cells.map((i, idx) => {
@@ -98,16 +96,19 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             })
             // console.log(cells);
             return cells;
-        }
-    },
-    attached() {
-        this.style.opacity = 1;
+        },
+        isReady: false
     },
     $listeners: {
         tap(e) { this.selectedIdx = this.editIdx = -1 }
     },
     getID() {
         return Math.floor(Math.random() * Date.now()).toString(16);
+    },
+    attached() {
+        this.async(e => {
+            if (!this.notebook?.cells?.length) this.isReady = true;
+        }, 100)
     }
 })
 
@@ -169,7 +170,8 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 padding: 1px;
                 margin: 0 2px;
-                transition: opacity ease-out 1s;
+                opacity: {{opacity}};
+                transition: opacity ease-out .1s;
             }
             oda-jupyter-toolbar {
                 position: sticky;
@@ -184,8 +186,16 @@ ODA({ is: 'oda-jupyter-cell',
     idx: -2,
     selected: false,
     cell: null,
+    opacity: 0,
     loaded(e) {
         this.cells[this.idx].isLoaded = true;
+        let isLoaded = this.cells.every(i => i.isLoaded);
+        this.opacity = 1;
+        if (isLoaded) {
+            this.isReady = true;
+            console.log('jupyter-loaded');
+            this.jupyter.fire('jupyter-loaded');
+        }
     },
     get cmp() { return this }
 })
@@ -273,7 +283,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
+                <oda-icon ~if="isReady && levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="setCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <oda-marked-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
@@ -345,7 +355,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div ~if="cells[idx].label" class="horizontal" ~style="{borderBottom: cells?.[idx]?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
+        <div ~if="isReady && cells[idx].label" class="horizontal" ~style="{borderBottom: cells?.[idx]?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
                 <oda-icon :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="setCollapse"></oda-icon>
             </div>
