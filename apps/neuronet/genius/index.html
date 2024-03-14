@@ -15,7 +15,7 @@
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
                 <div class="vertical">
                     prompt:
-                    <textarea content ::value></textarea>
+                    <textarea rows="10" content ::value></textarea>
                 </div>
                 <div class="vertical">
                     tokens:
@@ -48,6 +48,7 @@
 
         `,
         stepCount: 100,
+        learnSpeed: .1,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -70,7 +71,7 @@
                     if(next){
                         this.tensor = res._mse(token);
                         // this.tensor = res._mse(next);
-                        this.tensor.back(0.1);
+                        this.tensor.back(this.learnSpeed);
                         this.err = this.tensor.data;
                     }
                     // console.timeEnd('work');

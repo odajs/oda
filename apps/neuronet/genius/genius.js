@@ -56,14 +56,15 @@ export class genDecoder extends nn.Module{
 
 export class genLayer extends nn.Module{
     __init__(d_in, d_out, head_count = 1) {
-        // this.norm = nn.rsmNorm(d_in);
-        // this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
+        this.norm = nn.rsmNorm(d_in);
+        this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
         this.W0 = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = x//this.norm(x);
-        // let head_res = Tensor.stack(this.heads.map(h=>h(y)));
-        // y = head_res._concat();
+        let y = x;
+        // let y = this.norm(x);
+        let head_res = Tensor.stack(this.heads.map(h=>h(y)));
+        y = head_res._concat();
         y = this.W0(y);
         return y;
     }
@@ -75,19 +76,19 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = Parameter(Tensor.hippo([this.dH, d], -1));
+        this.A = Tensor.hippo([this.dH, d], -1)._log();
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
         this.norm = nn.rsmNorm(d);
-        this.conv1d = (x)=>{
-            return x;
-        }
+        // this.conv1d = (x)=>{
+        //     return x;
+        // }
     }
     forward(x){
         let x_and_res = this.in_proj(x);
         let [x1, x2] = x_and_res._slice([this.d, this.d]);
-        x1 = this.conv1d(x1);
+        // x1 = this.conv1d(x1);
         x1 = x1._silu();
         let y = this.ssm(x1)
         x2 = x2._silu();
@@ -98,7 +99,7 @@ export class genHead extends nn.Module{
     }
     ssm(x){
         let A = this.A;
-        A = A._exp();
+        // A = A._exp();
         // A = A._mul(-1);
         let x_dbl = this.x_proj(x);
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dH, this.dH]);
