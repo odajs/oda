@@ -97,7 +97,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             // console.log(cells);
             return cells;
         },
-        isReady: false
+        isReady: false,
+        get path() { return path },
+        get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
     },
     $listeners: {
         tap(e) { this.selectedIdx = this.editIdx = -1 }
@@ -529,7 +531,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     overrideСonsole();
 </script>
 <script type="module">
-    import '../../oda.js';
+    import '${this.pathODA}';
     ${code || ''}
 </script>` + this.src;
                 iframe.addEventListener('load', () => {
