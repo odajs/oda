@@ -84,15 +84,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     ids[level] = id;
                     cell.collapsed = true;
                 }
+                let _cell = new CELL(cell);
                 for (let i = 1; i <= level; i++) {
                     if (ids[i]) {
                         let up = cells.filter(c => c.id === ids[i])[0];
                         if (up && !cell.level || i < cell.level) {
-                            up.levels.push(cell);
+                            up.levels.push(_cell);
                         }
                     }
                 }
-                cells.push(cell);
+                cells.push(_cell);
             })
             // console.log(cells);
             return cells;
@@ -260,11 +261,12 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     get cmp() { return this },
-    toggleColapse() {
+    toggleCollapse(render) {
         let collapsed = this.cell.collapsed = !this.cell.collapsed;
         this.cell.levels?.map(i => {
             i.hidden = /*i.collapsed =*/ collapsed;
         })
+        render && this.jupyter.$render();
     }
 })
 
@@ -299,7 +301,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="isReady && levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="toggleColapse"></oda-icon>
+                <oda-icon ~if="isReady && levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <oda-marked-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
@@ -359,9 +361,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         </style>
         <div ~if="isReady && cells[idx].label" class="horizontal" ~style="{borderBottom: cells?.[idx]?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleColapse"></oda-icon>
+                <oda-icon :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
             </div>
-            <h3 @dblclick="toggleColapse">{{cells[idx].label}}</h3>
+            <h3 @dblclick="toggleCollapse">{{cells[idx].label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
@@ -573,3 +575,24 @@ if (!w.useJConsole) {
 }
         `
 })
+
+const CELL = class extends ROCKS({
+    collapsed: {
+        $def: false,
+        set(v) {
+            this.levels?.map(i => {
+                i.hidden = v;
+            })
+        }
+    }
+}) {
+    constructor(cell) {
+        super();
+        this.$cell = cell.$cell;
+        this.levels = cell.levels;
+        this.id = cell.id;
+        this.label = cell.label;
+        this.level = cell.level
+        this.collapsed = cell.collapsed;
+    }
+}
