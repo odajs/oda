@@ -380,33 +380,13 @@ export class Tensor {
     static fill(shape, value){
         if (!Array.isArray(shape))
             shape = [shape];
-        function expr_gen(sh, lev = 0){
+        function expr_gen(sh){
             const s = sh.shift();
-            return s && `Array(${s}).fill(v)${sh.length?'.map(a=>'+expr_gen(sh, lev+1)+')':((typeof value === 'function')?'.map(a=>a())':'')}`;
+            return s && `Array(${s}).fill(v)${sh.length?'.map(a=>'+expr_gen(sh)+')':((typeof value === 'function')?'.map(a=>a())':'')}`;
         }
         const expr = expr_gen(shape);
         const fn = new Function('v', 'return ' + expr);
-        let result = fn(value) || value;
-        console.log(expr)
-        // const expr = `Array(8).fill(v).map(a1=>{
-        //     return Array(16).fill(v).map(a2=>a2());
-        // })`
-        // let result;
-        // if (size.length){
-        //     let s;
-        //     while(s = size.pop()){
-        //         if (!result)
-        //             result = Array(s).fill(value);
-        //         else{
-        //             result = Array(s).fill(0).map(i=>{
-        //                 return structuredClone(result);
-        //             })
-        //         }
-        //     }
-        // }
-        // else {
-        //     result = value?.();
-        // }
+        let result = fn(value) || (typeof value === 'function'?value():value);
         return tensor(result);
     }
     static hippo(size= 8, koef = 1){
@@ -472,13 +452,13 @@ export class Tensor {
             axis.splice(idx, 1);
             return ax;
         })
-        const out = Tensor.zeros(outs.map(a=>a.d));
-        if (outs.length === 0){
-
-        }
-        else{
-
-        }
+        expr = ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(' * ');
+        expr = `out${outs.map(o => '['+o.a+']').join('')} += ` + expr;
+        expr = [...outs, ...axis].map(o => `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
+        const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
+        const out = Tensor.zeros(outs.map(o => o.d));
+        fn(out.data, ...tensors.map(t=>t.data));
+        return out;
     }
 }
 export function tensor(...args){
@@ -563,3 +543,8 @@ Array.prototype.toTensorString = function (n = 2){
 Number.prototype.toTensorString = function (n = 2){
     return this
 }
+Math.seed = function(s) {
+    return function() {
+        s = Math.sin(s) * 10000; return s - Math.floor(s);
+    }
+};

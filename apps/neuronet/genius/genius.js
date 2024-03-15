@@ -75,7 +75,7 @@ export class genHead extends nn.Module{
         this.dH = d * 1.5;
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
-        this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
+        this.dt_proj = nn.linear(this.delta_rank, this.d, true);
         this.A = Tensor.hippo([this.dH, d], -1)._log();
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
@@ -111,10 +111,11 @@ export class genHead extends nn.Module{
     select(u, delta, A, B, C){
         const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
         // let y = u;
-        let deltaA = delta._mul(A);
-        deltaA = deltaA._exp();
-        let deltaB_u =  delta._mul(B);
-        deltaA = deltaA._mul(this.H);
+        // let deltaA = delta._mul(A);
+        // deltaA = deltaA._exp();
+        let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
+
+        // deltaA = deltaA._mul(this.H);
         deltaB_u = deltaB_u._mm(u);
         this.H = deltaA._add(deltaB_u);
         let y = C._mm(this.H);
