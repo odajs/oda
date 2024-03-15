@@ -241,7 +241,7 @@ ODA({ is: 'oda-jupyter-cell',
     selected: false,
     cell: null,
     src: '',
-    opacity: 1,
+    opacity: 0,
     set cell(n) {
         let src;    
         if (Array.isArray(n?.$cell?.source))
@@ -363,7 +363,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             </div>
             <h3 @dblclick="toggleColapse">{{cells[idx].label}}</h3>
         </div>
-        <div ~if="!cell.collapsed" class="horizontal">
+        <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
                 <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
                 <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
