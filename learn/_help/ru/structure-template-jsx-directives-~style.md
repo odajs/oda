@@ -78,13 +78,6 @@
 ODA({
     is: 'my-component',
     template: `
-        <style>
-            .my-class {
-                background: yellow;
-                color: green;
-                padding: 10px;
-            }
-        </style>
         <div ~style="{background: 'yellow', color: 'green', padding: '10px'}">inline-выражение</div>
         <div ~style="myStyle">Свойство</div>
         <div ~style="myMethod">Метод</div>
@@ -95,6 +88,78 @@ ODA({
     }
 });
 ```
+
+```info_md
+Можно использовать сокращенный синтаксис директивы **~style**, состоящий только из ее имени. В этом случае компонент должен содержать объект, массив или свойство строкового типа с именем **style**, которые автоматически будут привязаны к директиве.
+```
+
+Пример с объектом **style**,
+
+```javascript_run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style>Сокращенный синтаксис с объектом style</div>
+    `,
+    style: {
+        background: 'yellow',
+        color: 'green',
+        padding: '10px'
+    }
+});
+```
+
+Пример с массивом **style**,
+
+```javascript_run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style>Сокращенный синтаксис с массивом style</div>
+    `,
+    style: [
+        'background: yellow',
+        'color: green',
+        'padding: 10px'
+    ]
+});
+```
+
+Пример со свойством **style**,
+
+```javascript_run_edit_[my-component.js]
+ODA({
+    is: 'my-component',
+    template: `
+        <div ~style>Сокращенный синтаксис со свойством style</div>
+    `,
+    style: 'background: yellow; color: green; padding: 10px'
+});
+```
+
+С помощью сокращенного синтаксиса директивы можно организовать единую стилизацию родительских и дочерних компонентов.
+
+Например,
+
+```javascript_run_edit_[my-component.js]
+ODA({
+    is: 'base-component',
+    template: `
+        <div ~style>Родительский компонент</div>
+    `
+});
+
+ODA({
+    is: 'my-component',
+    extends: 'base-component',
+    template: `
+        <div ~style>Дочерний компонент</div>
+    `,
+    style: 'background: yellow; color: green; padding: 10px'
+});
+```
+
+В данном примере HTML-элементы дочернего и родительского компонента содержат директиву **~style**, имеющую сокращенный синтаксис. В результате обе директивы автоматически подключатся к свойству **style** родительского компонента и получают единый набор CSS-объявлений для своих элементов.
 
 Директива **~style** поддерживает механизм реактивности, т.е. автоматически изменяет стиль отображения HTML-элемента при изменении значения связанного с ней свойства компонента.
 
