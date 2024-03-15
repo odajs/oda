@@ -269,12 +269,6 @@
                                             },
                                             {
                                                 "label": {
-                                                    "ru": "<b style='color: brown'>~ref</b>: Указатели на элементы"
-                                                },
-                                                "name": "structure-template-jsx-directives-~ref.md"
-                                            },
-                                            {
-                                                "label": {
                                                     "ru": "<b style='color: brown'>~save-key</b>: Ключ хранилища"
                                                 },
                                                 "name": "structure-template-jsx-directives-~save-key.md"
