@@ -358,11 +358,6 @@ export class Tensor {
         }
         return out;
     }
-    _random(label = '_random'){
-        const res = element_wise((x) => Math.random()-.5, this.data)
-        let out = tensor(res, label);
-        return out;
-    }
     static stack(other_tensors){
         let res = other_tensors.map(t=>Array.from(t.data));
         let out = tensor(res, 'stack', other_tensors);
@@ -373,21 +368,52 @@ export class Tensor {
         }
         return out;
     }
-    static ones(size, label = 'ones'){
-        return this.fill(size, 1, label);
+    static ones(size){
+        return this.fill(size, 1);
     }
-    static zeros(size, label='zeros'){
-        return this.fill(size, 0, label);
+    static zeros(size){
+        return this.fill(size, 0);
     }
-    static random(size, label='random'){
-        return this.fill(size, 0, label)._random(label);
+    static random(size){
+        return this.fill(size, ()=>Math.random()-.5);
+    }
+    static fill(shape, value){
+        if (!Array.isArray(shape))
+            shape = [shape];
+        function expr_gen(sh, lev = 0){
+            const s = sh.shift();
+            return s && `Array(${s}).fill(v)${sh.length?'.map(a=>'+expr_gen(sh, lev+1)+')':((typeof value === 'function')?'.map(a=>a())':'')}`;
+        }
+        const expr = expr_gen(shape);
+        const fn = new Function('v', 'return ' + expr);
+        let result = fn(value) || value;
+        console.log(expr)
+        // const expr = `Array(8).fill(v).map(a1=>{
+        //     return Array(16).fill(v).map(a2=>a2());
+        // })`
+        // let result;
+        // if (size.length){
+        //     let s;
+        //     while(s = size.pop()){
+        //         if (!result)
+        //             result = Array(s).fill(value);
+        //         else{
+        //             result = Array(s).fill(0).map(i=>{
+        //                 return structuredClone(result);
+        //             })
+        //         }
+        //     }
+        // }
+        // else {
+        //     result = value?.();
+        // }
+        return tensor(result);
     }
     static hippo(size= 8, koef = 1){
         if (!Array.isArray(size))
             size = [size];
         if (size.length<2)
             size.push(size[0])
-
         const hippo = Array(size[0]).fill('').map((_, k)=>{
             return Array(size[1]).fill('').map((_, n)=>{
                 if (n>k)
@@ -398,22 +424,6 @@ export class Tensor {
             })
         })
         return tensor(hippo, 'hippo');
-    }
-    static fill(size= 1, value= 0, label){
-        if (!Array.isArray(size))
-            size = [size];
-        let result;
-        let s;
-        while(s = size.pop()){
-            if (!result)
-                result = Array(s).fill(value);
-            else{
-                result = Array(s).fill(0).map(i=>{
-                    return structuredClone(result);
-                })
-            }
-        }
-        return tensor(result, label);
     }
     static arange(from_or_size = 0, size){
         if (size === undefined){
@@ -434,27 +444,41 @@ export class Tensor {
     }
     static einsum(expr, ...sources){
         const tensors = sources.map(i=>tensor(i));
-        expr = expr.split('->');
-        const axis = {};
-        const ins = expr[0].trim().split(',').map((s, i)=>{
-            s = s.trim();
+        expr = expr.split('->');                            // Разделение выражения на вход и выход
+        const axis = [];
+        const terms = expr[0].trim().split(',');            // Разделение входа на термы
+        const ins = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
+            term = term.trim();
             const tensor = tensors[i];
-            return s.split(' ').map((a, j)=>{
+            return term.split(' ').map((a, j)=>{            // Разделение терма на индексы и их анализ
                 a = a.trim();
                 let d =  tensor.shape[j];
-                if(!axis[a])
-                    axis[a] = d;
-                else if(axis[a] !== d)
-                    throw new Error(`Axis '${a}' = ${axis[a]} but on tensor №${i+1} this axis = ${d}`);
-                return {a, d};
+                let ax = axis.find(v => v.a === a);
+                if(ax === undefined){
+                    ax = {a, d};
+                    axis.push(ax);
+                }
+                else if(ax.d !== d)
+                    throw new Error(`Axis '${a}' = ${ax.d} but on tensor №${i+1} this axis = ${d}`);
+                return ax;
             })
         });
-        const outs = expr[1].trim().split(' ').map(a => {
-            if(!axis[a])
+        const outs = expr[1].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
+            a = a.trim();
+            let idx = axis.findIndex(v => v.a === a);
+            if(idx < 0)
                 throw new Error(`Unknown axis: '${a}'`);
-            return axis[a];
+            let ax = axis[idx];
+            axis.splice(idx, 1);
+            return ax;
         })
-        let res = outs.length?[]:0;
+        const out = Tensor.zeros(outs.map(a=>a.d));
+        if (outs.length === 0){
+
+        }
+        else{
+
+        }
     }
 }
 export function tensor(...args){
