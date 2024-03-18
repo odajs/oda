@@ -13,10 +13,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             <oda-icon icon="spinners:6-dots-rotate" icon-size="64"></oda-icon>
         </div>
         <oda-jupyter-divider idx="-1" :hover="isReady && !cells?.length"></oda-jupyter-divider>
-        <div ~for="cells" class="vertical no-flex" :id="'cell-' + $for.item.id" ~style="{display: $for.item?.hidden ? 'none' : 'flex'}">
-            <div ~is="editors?.[$for.item.$cell.cell_type || 'code'].editor" :idx="$for.index" :cell="$for.item" :shadow="selectedIdx === $for.index" :selected="selectedIdx === $for.index" @tap.stop="selectedIdx = (_readOnly ? -1 : $for.index);"></div>
-            <oda-jupyter-divider :idx="$for.index" style="margin-top: 4px;"></oda-jupyter-divider>
-        </div>
+        <oda-jupyter-cell-container ~for="cells" :item="$for.item" :index="$for.index"></oda-jupyter-cell-container>
     `,
     $public: {
         $pdp: true,
@@ -115,6 +112,34 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     }
 })
 
+ODA({
+    is: 'oda-jupyter-cell-container',
+    template: `
+        <style>
+            :host{
+                @apply --vertical; 
+                @apply --no-flex;
+            }
+        </style>
+        <div ~is="editors?.[item.$cell.cell_type || 'code'].editor" :idx="index" :cell="item" :shadow="selectedIdx === index" :selected="selectedIdx === index" @tap.stop="selectedIdx = (_readOnly ? -1 : index);"></div>
+        <oda-jupyter-divider :idx="index" style="margin-top: 4px;"></oda-jupyter-divider>
+    `,
+    item: null,
+    index: -1,
+    id: {
+        $attr: true,
+        get(){
+            return `cell-${this.item.id}`;
+        }
+    },
+    hidden: {
+        $attr: true,
+        get(){
+            return this.item?.hidden;
+        }
+    }
+})
+
 ODA({ is: 'oda-jupyter-divider',
     template: `
         <style>
@@ -158,7 +183,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook ||= {};
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
-        this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cells[idx] });
+        this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cell });
         this.async(() => {
             this.selectedIdx = idx;
         }, 100)
@@ -200,7 +225,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         idx = idx + v;
         idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
         this.notebook.cells.splice(idx, 0, cells[0])
-        this.jupyter.hasChanged({ type: 'moveCell', cell: this.notebook.cells[idx] });
+        this.jupyter.hasChanged({ type: 'moveCell', cell: this.notebook.cell });
         this.async(() => this.selectedIdx = idx);
     },
     deleteCell() {
@@ -261,12 +286,14 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     get cmp() { return this },
-    toggleCollapse(render) {
-        let collapsed = this.cell.collapsed = !this.cell.collapsed;
-        this.cell.levels?.map(i => {
-            i.hidden = /*i.collapsed =*/ collapsed;
-        })
-        render && this.jupyter.$render();
+    toggleCollapse() {
+        this.cell.collapsed = !this.cell.collapsed;
+    },
+    get levelsCount() { 
+        return this.cell?.levels?.length || ''
+    },
+    get expanderIcon(){
+        return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
     }
 })
 
@@ -301,11 +328,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="isReady && levelsCount" :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
+                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor ~show="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <oda-marked-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
-            <div class="collapsed horizontal flex" ~if="cells?.[idx]?.collapsed">Скрыто {{levelsCount}} ячеек</div>
+            <div class="collapsed horizontal flex" ~if="cell?.collapsed">Скрыто {{levelsCount}} ячеек</div>
         </div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
@@ -326,8 +353,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 this.$('oda-simplemde-editor').value = this.src;
             }, 100)
         }
-    },
-    get levelsCount() { return this.cell?.levels?.length || '' }
+    }
 })
 
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
@@ -359,11 +385,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div ~if="isReady && cells[idx].label" class="horizontal" ~style="{borderBottom: cells?.[idx]?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
+        <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon :icon="cells?.[idx]?.collapsed ? 'icons:chevron-right' : 'icons:expand-more'" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
+                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
             </div>
-            <h3 @dblclick="toggleCollapse">{{cells[idx].label}}</h3>
+            <h3 @dblclick="toggleCollapse">{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
@@ -576,7 +602,11 @@ if (!w.useJConsole) {
         `
 })
 
-const CELL = class extends ROCKS({
+class CELL extends ROCKS({
+    levels: undefined,
+    hidden: {
+        $def: false,
+    },
     collapsed: {
         $def: false,
         set(v) {
@@ -584,15 +614,19 @@ const CELL = class extends ROCKS({
                 i.hidden = v;
             })
         }
-    }
-}) {
-    constructor(cell) {
-        super();
+    },
+    _init(cell){
+        this.hidden = cell.hidden;
         this.$cell = cell.$cell;
         this.levels = cell.levels;
         this.id = cell.id;
         this.label = cell.label;
-        this.level = cell.level
+        this.level = cell.level;
         this.collapsed = cell.collapsed;
+    }
+}) {
+    constructor(cell) {
+        super();
+        this._init(cell);
     }
 }

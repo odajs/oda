@@ -124,7 +124,6 @@ const srcdoc = `
             height: 0;
         }
         .preview {
-            padding: 4px;
             width: 100%;
             height: 100%;
         }
