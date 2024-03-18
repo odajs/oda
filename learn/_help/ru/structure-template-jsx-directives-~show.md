@@ -9,8 +9,8 @@ ODA({
     is: 'my-component',
     template: `
         <button @tap="onTap">
-            <span ~show="showMe" style="color: green">Нажми меня</span>
-            <span ~show="!showMe" style="color: red">Нажми еще раз</span>
+            <span ~show="showMe">Нажми меня</span>
+            <span ~show="!showMe">Нажми еще раз</span>
         </button>
     `,
     showMe: true,
@@ -28,8 +28,8 @@ DOM кнопки с надписью «Нажми меня»:
 
 ```html_hideGutter
 <button>
-    <span style="color: green">Нажми меня</span>
-    <span style="color: red; display: none;">Нажми еще раз</span>
+    <span style="">Нажми меня</span>
+    <span style="display: none;">Нажми еще раз</span>
 </button>
 ```
 
@@ -37,8 +37,8 @@ DOM кнопки с надписью «Нажми еще раз»:
 
 ```html_hideGutter
 <button>
-    <span style="color: green; display: none;">Нажми меня</span>
-    <span style="color: red;">Нажми еще раз</span>
+    <span style="display: none;">Нажми меня</span>
+    <span style="">Нажми еще раз</span>
 </button>
 ```
 
