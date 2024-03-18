@@ -1,9 +1,9 @@
 export class Tensor {
     _back = () => {};
     constructor(data, label, children= [], error) {
-        this.data = element_wise((x)=>{
-            return tn(x);
-        }, data)
+        this.data =  element_wise((x)=>{
+            return tnum(x);
+        }, [data])[0]
         this.label = label;
         this.children = children;
         this.error = error;
@@ -24,17 +24,12 @@ export class Tensor {
             }
         }
         build_topo(this);
-        // this.grad = element_wise((x)=>0, this.data);
-        // for (let t of this.topo)
-        //     t.grad = undefined;
         this.topo.reverse().forEach((node) => {
             node._back()
         })
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
         })
-        // const params = this.topo.filter(t=>t.isParam);
-        // params.map(p=>p.updateParams(learn_speed));
     }
     get label(){
         return this['#label'] ?? (()=>{
@@ -64,7 +59,7 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data = element_wise((d)=>(tn(d + d._.g * learn_speed)), this.data);
+        this.data = element_wise((d)=>(tnum(d + d._.g * learn_speed)), this.data);
     }
     set label(n){
         this['#label'] = n;
@@ -97,7 +92,7 @@ export class Tensor {
         })()
     }
     get grad(){
-        return /*this['#grad'] ??= */element_wise((x)=>x._.g, this.data);
+        return /*this['#grad'] ??= */element_wise((x)=>x?._.g, [this.data])[0];
     }
     set grad(v){
         this['#grad'] = v;
@@ -116,83 +111,6 @@ export class Tensor {
             this.grad = this.grad.map((v, i)=>{
                 return out.grad.slice(i * len, i * len + len);
             });
-        }
-        return out;
-    }
-    _mm(other){
-        other = tensor(other);
-        let m = ''+this.dim+other.dim;
-        let res;
-        switch(m){
-            case '11':{
-                res = MultiplyMatrix([this.data], other.data.map(i=>[i]))[0];
-            } break;
-            case '12':{
-                res = MultiplyMatrix([this.data], other.data)[0];
-            } break;
-            case '22':{
-                res = MultiplyMatrix(this.data, other.data);
-            } break;
-            default:
-                throw new Error('Не поддерживается');
-        }
-        let out = tensor(res, '_mm', [this, other]);
-        out._back = () => {
-            switch (m){
-                case '11':{
-                    this.grad = multiplyMT([out.grad], other.data);
-                    other.grad = MultiplyMatrix(transpose(this.data), [out.grad]);
-                } break;
-                case '12':{
-                    this.grad = multiplyMT([out.grad], other.data);
-                    other.grad = MultiplyMatrix(transpose(this.data), [out.grad]);
-                } break;
-                default:
-                    throw new Error('Не поддерживается');
-            }
-        }
-        return out;
-    }
-    _mul(other){
-        other = tensor(other);
-        const m = '' + this.dim + other.dim;
-        let res;
-        switch (m){
-            case '00':
-                res = other.data * this.data;
-                break;
-            default: {
-                let queue = this.dim<other.dim?[other.data, this.data]:[this.data, other.data];
-                res = element_wise((x, y) => (x * y), ...queue);
-            }
-        }
-        let out = tensor(res, '_mul', [this, other]);
-        out._back = () => {
-            switch (m){
-                case '00':{
-                    this.grad = other.data * out.grad;
-                    other.grad = this.data * out.grad;
-                } break;
-                case '01':{
-                    this.grad = other.data.reduce((r, x, i)=>r + x * out.grad[i]);
-                    other.grad = out.grad.map(x=>x * this.data);
-                } break;
-                case '10':{
-                    other.grad = thisother.data.reduce((r, x, i)=>r + x * out.grad[i]);
-                    this.grad = out.grad.map(x=>x * other.data);
-                } break;
-            }
-
-        }
-        return out;
-    }
-    _add(other){
-        other = tensor(other);
-        const res = element_wise((x, y) => (x + y), this.data, other.data);
-        let out = tensor(res, '_add', [this, other]);
-        out._back = () => {
-            this.grad = element_wise((v, g) => (v + g), this.grad, out.grad);
-            other.grad = element_wise((v, g) => (v + g), other.grad, out.grad);
         }
         return out;
     }
@@ -255,17 +173,6 @@ export class Tensor {
         let out = tensor(res, `_log10`, [this]);
         out._back = () => {
             this.grad = element_wise((v, x, g) => (v + 1/(x * Math.log(10)) * g), this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    get T(){
-        return this._t();
-    }
-    _t(){
-        const res = transpose(this.data);
-        let out = tensor(res, '_t', [this]);
-        out._back = () => {
-            this.grad = transpose(out.grad);
         }
         return out;
     }
@@ -350,7 +257,8 @@ export class Tensor {
     _mse(other){
         other = tensor(other);
         let res = element_wise((x, t) => (t - x) ** 2, this.data, other.data);
-        let out =  tensor(res.reduce((r, v) => (r + v)), '_mse', [this]);
+        res = res.reduce((r, v) => (r + v))
+        let out =  tensor(res, '_mse', [this]);
         out._back = () => {
             element_wise((x, t) => x._.back(t - x), this.data, other.data);
         }
@@ -381,7 +289,7 @@ export class Tensor {
         return this.fill(size, 0);
     }
     static random(size){
-        return this.fill(size, ()=>tn(Math.random()-.5));
+        return this.fill(size, ()=>Math.random()-.5);
     }
     static fill(shape, value){
         if (!Array.isArray(shape))
@@ -511,14 +419,8 @@ function MultiplyMatrix(A,B) {
     }
     return C;
 }
-function transpose(m, axis = 0) {
-    return m[0]?.map?.((x,i) =>(m.map(y => y[i]))) || m.map(y => [y]);
-}
 function multiplyMT(M, T){
     return M.map(x=>T.map(y=>dotProduct(x, y)));
-}
-function dotProduct(v1, v2){
-    return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
 Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
@@ -560,40 +462,40 @@ Math.seed = function(s) {
 };
 
 Number.prototype._mul = function (other){
-    let out = tn(this * other);
+    let out = tnum(this * other);
     out._.children = [this, other];
     this._.g = 0;
     other._.g = 0;
     out._.back = (g)=>{
         this._.g += other * g;
         other._.g += this * g;
-        // this._.back(this._.g);
-        // other._.back(other._.g);
+        this._.back(this._.g);
+        other._.back(other._.g);
     }
     return out;
 }
 
 Number.prototype._add = function (other){
-    let out = tn(this + other);
-    out._.children = [this, other];
-    this._.g = 0;
-    other._.g = 0;
+    let out = tnum(this + other);
+    // out._.children = [this, other];
+    // this._.g = 0;
+    // other._.g = 0;
     out._.back = (g)=>{
-        this._.g += 1 * g;
-        other._.g += 1 * g;
-        // this._.back(this._.g);
-        // other._.back(other._.g);
+        // this._.g += 1 * g;
+        // other._.g += 1 * g;
+        this._.back(g);
+        other._.back(g);
     }
     return out;
 }
 
-class TensorNumber extends Number{
+class TNum extends Number{
     _ = Object.create(null);
-    constructor() {
-        super();
+    constructor(v) {
+        super(v);
         this._.g = 0;
     }
 }
-function tn(val){
-    return val instanceof TensorNumber?val:new TensorNumber(val);
+function tnum(val){
+    return val instanceof TNum?val:new TNum(val);
 }

@@ -132,7 +132,7 @@
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
                     <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString(0, true)">{{$for.item?.toString(0, true)}}</span>
-                    <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>
+<!--                    <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>-->
                 </div>
             </div>
             <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
