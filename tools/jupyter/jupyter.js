@@ -209,9 +209,9 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top">
             <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
             <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
-            <oda-button :hidden="cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
+            <oda-button :hidden="cell?.$cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button ~if="cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+            <oda-button ~if="cell?.$cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
         </div>
     `,
     idx: -2,
@@ -236,7 +236,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         }
     },
     async showSettings() {
-        if (this.cmp.cell.cell_type === 'code') {
+        if (this.cmp.cell.$cell.cell_type === 'code') {
             await ODA.showModal('oda-property-grid', { inspectedObject: this.cmp }, { minWidth: '400px', animation: 500, title: 'Настройки' })
         }
     }
@@ -272,7 +272,7 @@ ODA({ is: 'oda-jupyter-cell',
         let src;    
         if (Array.isArray(n?.$cell?.source))
             src = n.$cell.source.join('');
-        this.src = src || n?.source || '';
+        this.src = src || n?.$cell?.source || '';
         this.setCellMode && this.setCellMode(this.src);
     },
     loaded(e) {
@@ -340,7 +340,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         return this.src ? 1 : .3;
     },
     editorValueChanged(e) {
-        this.cell.source = this.src = e.detail.value;
+        this.cell.$cell.source = this.src = e.detail.value;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
     markedClick(e) { 
@@ -484,7 +484,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     },
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
-        this.cell.source = this.src = e.detail.value;
+        this.cell.$cell.source = this.src = e.detail.value;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
         this.setCellMode();
     },
@@ -509,16 +509,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         } else {
             this.isRun = true;
             this.async(() => {
+                let source = this.cell.$cell.source;
                 const iframe = this.$('iframe');
                 let code = '',
-                    _code = this.cell.source.matchAll(new RegExp('</oda-' + '(.*)' + '>', 'g'));
+                    _code = source.matchAll(new RegExp('</oda-' + '(.*)' + '>', 'g'));
                 _code = Array.from(_code, x => x[1]);
                 _code = _code.map(i => 'oda-' + i);
                 // console.log(_code)
                 for (let i = 0; i < this.idx; i++) {
                     const cell = this.cells[i].$cell;
                     if (cell.cell_type === 'code' && cell.mode !== 'html') {
-                        if (_code.some(v => cell.source.includes(v))) {
+                        if (_code.some(v => source.includes(v))) {
                             code += cell.source + '\n';
                         } 
                     }
