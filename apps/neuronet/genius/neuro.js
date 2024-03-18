@@ -1,7 +1,9 @@
 export class Tensor {
     _back = () => {};
     constructor(data, label, children= [], error) {
-        this.data = data;
+        this.data = element_wise((x)=>{
+            return tn(x);
+        }, data)
         this.label = label;
         this.children = children;
         this.error = error;
@@ -23,13 +25,16 @@ export class Tensor {
         }
         build_topo(this);
         // this.grad = element_wise((x)=>0, this.data);
-        for (let t of this.topo)
-        t.grad = undefined;
+        // for (let t of this.topo)
+        //     t.grad = undefined;
         this.topo.reverse().forEach((node) => {
             node._back()
         })
-        const params = this.topo.filter(t=>t.isParam);
-        params.map(p=>p.updateParams(learn_speed));
+        this.topo.forEach((node) => {
+            node.updateParams(learn_speed);
+        })
+        // const params = this.topo.filter(t=>t.isParam);
+        // params.map(p=>p.updateParams(learn_speed));
     }
     get label(){
         return this['#label'] ?? (()=>{
@@ -37,11 +42,11 @@ export class Tensor {
                 case 0:
                     return 'scalar';
                 case 1:
-                    return `vector[${this.shape}]`;
+                    return `vector (${this.shape})`;
                 case 2:
-                    return `matrix[${this.shape}]`;
+                    return `matrix (${this.shape})`;
                 default:
-                    return `tensor[${this.shape}]`;
+                    return `tensor (${this.shape})`;
             }
         })();
     }
@@ -58,7 +63,8 @@ export class Tensor {
         return res;
     }
     updateParams(learn_speed=.1){
-        this.data = element_wise((d, g)=>(d + g * learn_speed), this.data, this.grad);
+        if (!this.isParam) return;
+        this.data = element_wise((d)=>(tn(d + d._.g * learn_speed)), this.data);
     }
     set label(n){
         this['#label'] = n;
@@ -76,8 +82,8 @@ export class Tensor {
             "shape": this.shape
         }
     }
-    toString(){
-        return this.label + (this.shape?.length?' ('+this.shape+')':'') +':\r\n' + this.data.toTensorString();
+    toString(step = 0, show_data = false){
+        return this.label + '\r\n' + (show_data?this.data.toTensorString()+'\r\n':'');
     }
     get shape(){
         return this['#shape'] ??= (()=>{
@@ -91,7 +97,7 @@ export class Tensor {
         })()
     }
     get grad(){
-        return this['#grad'] ??= element_wise((x)=>0, this.data)
+        return /*this['#grad'] ??= */element_wise((x)=>x._.g, this.data);
     }
     set grad(v){
         this['#grad'] = v;
@@ -346,7 +352,7 @@ export class Tensor {
         let res = element_wise((x, t) => (t - x) ** 2, this.data, other.data);
         let out =  tensor(res.reduce((r, v) => (r + v)), '_mse', [this]);
         out._back = () => {
-            this.grad = element_wise((x, t) => (t - x), this.data, other.data);
+            element_wise((x, t) => x._.back(t - x), this.data, other.data);
         }
         return out
     }
@@ -375,7 +381,7 @@ export class Tensor {
         return this.fill(size, 0);
     }
     static random(size){
-        return this.fill(size, ()=>Math.random()-.5);
+        return this.fill(size, ()=>tn(Math.random()-.5));
     }
     static fill(shape, value){
         if (!Array.isArray(shape))
@@ -423,6 +429,7 @@ export class Tensor {
         }), 'pos: '+pos)
     }
     static einsum(expr, ...sources){
+        const label = 'einsum: '+expr;
         const tensors = sources.map(i=>tensor(i));
         expr = expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
@@ -460,11 +467,10 @@ export class Tensor {
         const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
         const out = Tensor.zeros(outs.map(o => o.d));
         out.children = tensors;
+        out.label = label;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
         out._back = ()=>{
-            element_wise((v, g)=>{
-                v._back(g);
-            }, [out.data], [out.grad]);
+            element_wise((x) => x._.back(x._.g), out.data);
         }
         return out;
     }
@@ -552,63 +558,42 @@ Math.seed = function(s) {
         return s - Math.floor(s);
     }
 };
-Number.prototype._add = function (other){
-    let out = this + other;
-    out.children = [this, other];
-    out._back = (g)=>{
-        this.grad += g;
-        other.grad += g;
-        // this._back();
-        // other._back();
-    }
-    return out;
-}
-Number.prototype._plus = function (other){
-    let out = this + other;
-    out.children = [this, other];
-    out._back = (g)=>{
-        this.grad += g;
-        other.grad += g;
-        // this._back();
-        // other._back();
-    }
-    return out;
-}
+
 Number.prototype._mul = function (other){
-    let out = this * other;
-    out.children = [this, other];
-    out._back = (g)=>{
-        this.grad += other * g;
-        other.grad += this * g;
+    let out = tn(this * other);
+    out._.children = [this, other];
+    this._.g = 0;
+    other._.g = 0;
+    out._.back = (g)=>{
+        this._.g += other * g;
+        other._.g += this * g;
+        // this._.back(this._.g);
+        // other._.back(other._.g);
     }
     return out;
 }
-Number.prototype._setChildren = function (...children){
-    this.children.push(...children)
+
+Number.prototype._add = function (other){
+    let out = tn(this + other);
+    out._.children = [this, other];
+    this._.g = 0;
+    other._.g = 0;
+    out._.back = (g)=>{
+        this._.g += 1 * g;
+        other._.g += 1 * g;
+        // this._.back(this._.g);
+        // other._.back(other._.g);
+    }
+    return out;
 }
-Object.defineProperty(Number.prototype, 'children', {
-    set(n){
-        this.cache.children = n;
-    },
-    get(){
-        return this.cache.children;
+
+class TensorNumber extends Number{
+    _ = Object.create(null);
+    constructor() {
+        super();
+        this._.g = 0;
     }
-})
-Object.defineProperty(Number.prototype, '_back', {
-    set(n){
-        this.cache._back = n;
-    },
-    get(){
-        return this.cache._back;
-    }
-})
-Object.defineProperty(Number.prototype, 'grad', {
-    set(n){
-        this.cache.grad = n;
-        this._grad?.(n);
-    },
-    get(){
-        return this.cache.grad || 0;
-    }
-})
-Number.prototype.cache = Object.create(null);
+}
+function tn(val){
+    return val instanceof TensorNumber?val:new TensorNumber(val);
+}

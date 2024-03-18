@@ -81,7 +81,7 @@
             const decoder = new gen.WordDecoder();
             // this.result = result.join('\r\n');
             result = result.map(w=>{
-                console.log(w.data)
+                // console.log(w.data)
                 return decoder(w.data);
             })
             this.result = result.join(' ');
@@ -91,8 +91,12 @@
             $def: '',
             $save: true
         },
-        get model(){
-            return new gen.Genius();
+        model:{
+            $pdp: true,
+            get(){
+                return new gen.Genius();
+            }
+
         },
         get tokens(){
             const tokenizer = new gen.Tokenizer();
@@ -127,7 +131,7 @@
             </style>
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString()">{{$for.item?.toString()}}</span>
+                    <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString(0, true)">{{$for.item?.toString(0, true)}}</span>
                     <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>
                 </div>
             </div>

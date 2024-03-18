@@ -40,6 +40,9 @@ export class Module{
             if (prop.value?.module){
                 result.push({[n]:prop.value.module})
             }
+            else if (prop.value instanceof Tensor){
+                result.push({[n]:prop.value})
+            }
             else if (Array.isArray(prop.value) && prop.value[0]?.module){
                 result.push({[n]:prop.value.map(i=>i.module)})
             }
@@ -95,3 +98,4 @@ export class RMSNorm extends Module {
 export function rsmNorm(...args){
     return new RMSNorm(...args)
 }
+

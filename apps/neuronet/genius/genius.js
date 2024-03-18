@@ -16,7 +16,7 @@ const BIAS = false;
 export class Genius extends nn.Module{
     __init__() {
         const d = MODEL_DIM * EXPAND;
-        this.W = Parameter(Tensor.random([MODEL_DIM, d]));
+        this.W = Parameter(Tensor.random([MODEL_DIM, MODEL_DIM/*d*/]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
     }
@@ -26,9 +26,9 @@ export class Genius extends nn.Module{
         // res = this.decoder(res);
         // res = res._relu();
         // res = res._sigmoid();
-        const wT = Tensor.einsum('i j -> j i', this.W);
-        let res = Tensor.einsum('x, x w -> w', x, wT);
-        return res;
+        // const wT = Tensor.einsum('i j -> j i', this.W);
+        // let res = Tensor.einsum('x, x w -> w', x, wT);
+        return x;
     }
 }
 export class genEncoder extends nn.Module{
