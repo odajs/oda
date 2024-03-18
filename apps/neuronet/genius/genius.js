@@ -2,27 +2,32 @@
 import {Parameter, Tensor} from "./neuro.js";
 import * as nn from  './module.js';
 
+
 const MODEL_DIM = 32;           // Размерность входного и выходного слоев
+const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
-const HEAD_COUNT = 1;            // Количество селекторов (голов) в слое
+const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
-const CONV_DIM = 4;
-const CONV_BIAS = true;
 const BIAS = false;
+
 export class Genius extends nn.Module{
     __init__() {
-        this.encoder = new genEncoder(MODEL_DIM);
-        // this.decoder = new genDecoder(MODEL_DIM);
+        const d = MODEL_DIM * EXPAND;
+        this.W = Parameter(Tensor.random([MODEL_DIM, d]));
+        this.encoder = new genEncoder(d);
+        this.decoder = new genDecoder(d);
     }
-    forward(x){
-        x = tensor(x, 'INPUT');
-        let res = this.encoder(x);
+    forward(w){
+        let x = Tensor.einsum('w, w x -> x', w, this.W);
+        // let res = this.encoder(x);
         // res = this.decoder(res);
         // res = res._relu();
         // res = res._sigmoid();
+        const wT = Tensor.einsum('i j -> j i', this.W);
+        let res = Tensor.einsum('x, x w -> w', x, wT);
         return res;
     }
 }
@@ -109,6 +114,8 @@ export class genHead extends nn.Module{
         return x;
     }
     select(u, delta, A, B, C){
+
+        const ss = Tensor.einsum('i->', [1,2,3,4,5])
         const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
         // let y = u;
         // let deltaA = delta._mul(A);

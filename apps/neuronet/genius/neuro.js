@@ -439,25 +439,33 @@ export class Tensor {
                     axis.push(ax);
                 }
                 else if(ax.d !== d)
-                    throw new Error(`Axis '${a}' = ${ax.d} but on tensor №${i+1} this axis = ${d}`);
+                    throw new Error(`Axis '${a}' == ${ax.d} but on tensor №${i+1} this axis == ${d}`);
                 return ax;
             })
         });
         const outs = expr[1].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
             a = a.trim();
+            if(!a) return;
             let idx = axis.findIndex(v => v.a === a);
             if(idx < 0)
                 throw new Error(`Unknown axis: '${a}'`);
             let ax = axis[idx];
             axis.splice(idx, 1);
             return ax;
-        })
-        expr = ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(' * ');
-        expr = `out${outs.map(o => '['+o.a+']').join('')} += ` + expr;
+        }).filter(i=>i)
+        expr = '('+ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(')._mul(')+')';
+        expr = `out${outs.map(o => '['+o.a+']').join('')} = (out${outs.map(o => '['+o.a+']').join('')})._add(` + expr + ')';
         expr = [...outs, ...axis].map(o => `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
+        expr = expr + '\n return out';
         const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
         const out = Tensor.zeros(outs.map(o => o.d));
-        fn(out.data, ...tensors.map(t=>t.data));
+        out.children = tensors;
+        out.data = fn(out.data, ...tensors.map(t=>t.data));
+        out._back = ()=>{
+            element_wise((v, g)=>{
+                v._back(g);
+            }, [out.data], [out.grad]);
+        }
         return out;
     }
 }
@@ -470,7 +478,6 @@ export function Parameter(t){
     t.isParam = true;
     return t
 }
-
 function element_wise(fn, ...args){
     return args[0]?.map?.((_, i)=>{
         const next_args = args.map(a=>{
@@ -479,7 +486,6 @@ function element_wise(fn, ...args){
         return element_wise(fn, ...next_args);
     }) ?? fn(...args);
 }
-
 function MultiplyMatrix(A,B) {
     const rowsA = A.length;
     const colsA = A[0].length;
@@ -502,15 +508,12 @@ function MultiplyMatrix(A,B) {
 function transpose(m, axis = 0) {
     return m[0]?.map?.((x,i) =>(m.map(y => y[i]))) || m.map(y => [y]);
 }
-
 function multiplyMT(M, T){
     return M.map(x=>T.map(y=>dotProduct(x, y)));
 }
 function dotProduct(v1, v2){
     return v1.map((a, i) => (a * v2[i])).reduce((r, n) => (r + n));
 }
-
-
 Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
@@ -545,6 +548,67 @@ Number.prototype.toTensorString = function (n = 2){
 }
 Math.seed = function(s) {
     return function() {
-        s = Math.sin(s) * 10000; return s - Math.floor(s);
+        s = Math.sin(s) * 10000;
+        return s - Math.floor(s);
     }
 };
+Number.prototype._add = function (other){
+    let out = this + other;
+    out.children = [this, other];
+    out._back = (g)=>{
+        this.grad += g;
+        other.grad += g;
+        // this._back();
+        // other._back();
+    }
+    return out;
+}
+Number.prototype._plus = function (other){
+    let out = this + other;
+    out.children = [this, other];
+    out._back = (g)=>{
+        this.grad += g;
+        other.grad += g;
+        // this._back();
+        // other._back();
+    }
+    return out;
+}
+Number.prototype._mul = function (other){
+    let out = this * other;
+    out.children = [this, other];
+    out._back = (g)=>{
+        this.grad += other * g;
+        other.grad += this * g;
+    }
+    return out;
+}
+Number.prototype._setChildren = function (...children){
+    this.children.push(...children)
+}
+Object.defineProperty(Number.prototype, 'children', {
+    set(n){
+        this.cache.children = n;
+    },
+    get(){
+        return this.cache.children;
+    }
+})
+Object.defineProperty(Number.prototype, '_back', {
+    set(n){
+        this.cache._back = n;
+    },
+    get(){
+        return this.cache._back;
+    }
+})
+Object.defineProperty(Number.prototype, 'grad', {
+    set(n){
+        this.cache.grad = n;
+        this._grad?.(n);
+    },
+    get(){
+        return this.cache.grad || 0;
+    }
+})
+Number.prototype.cache = Object.create(null);
