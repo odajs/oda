@@ -1,8 +1,9 @@
+import {num} from './num.js';
 export class Tensor {
     _back = () => {};
     constructor(data, label, children= [], error) {
         this.data =  element_wise((x)=>{
-            return tnum(x);
+            return num(x);
         }, [data])[0]
         this.label = label;
         this.children = children;
@@ -59,7 +60,7 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data = element_wise((d)=>(tnum(d + d._.g * learn_speed)), this.data);
+        this.data = element_wise((d)=>(tnum(d + d.g * learn_speed)), this.data);
     }
     set label(n){
         this['#label'] = n;
@@ -92,7 +93,7 @@ export class Tensor {
         })()
     }
     get grad(){
-        return /*this['#grad'] ??= */element_wise((x)=>x?._.g, [this.data])[0];
+        return /*this['#grad'] ??= */element_wise((x)=>x?.g, [this.data])[0];
     }
     set grad(v){
         this['#grad'] = v;
@@ -260,7 +261,7 @@ export class Tensor {
         res = res.reduce((r, v) => (r + v))
         let out =  tensor(res, '_mse', [this]);
         out._back = () => {
-            element_wise((x, t) => x._.back(t - x), this.data, other.data);
+            element_wise((x, t) => x.back(t - x), this.data, other.data);
         }
         return out
     }
@@ -378,7 +379,7 @@ export class Tensor {
         out.label = label;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
         out._back = ()=>{
-            element_wise((x) => x._.back(x._.g), out.data);
+            element_wise((x) => x._.back(x.g), out.data);
         }
         return out;
     }
@@ -460,42 +461,3 @@ Math.seed = function(s) {
         return s - Math.floor(s);
     }
 };
-
-Number.prototype._mul = function (other){
-    let out = tnum(this * other);
-    out._.children = [this, other];
-    this._.g = 0;
-    other._.g = 0;
-    out._.back = (g)=>{
-        this._.g += other * g;
-        other._.g += this * g;
-        this._.back(this._.g);
-        other._.back(other._.g);
-    }
-    return out;
-}
-
-Number.prototype._add = function (other){
-    let out = tnum(this + other);
-    // out._.children = [this, other];
-    // this._.g = 0;
-    // other._.g = 0;
-    out._.back = (g)=>{
-        // this._.g += 1 * g;
-        // other._.g += 1 * g;
-        this._.back(g);
-        other._.back(g);
-    }
-    return out;
-}
-
-class TNum extends Number{
-    _ = Object.create(null);
-    constructor(v) {
-        super(v);
-        this._.g = 0;
-    }
-}
-function tnum(val){
-    return val instanceof TNum?val:new TNum(val);
-}
