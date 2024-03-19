@@ -64,11 +64,7 @@ ODA({ is: 'oda-marked-viewer', template: /*html*/`
             }
         }
     },
-    ready() {
-        this.loadMathJax();
-    },
     async attached() {
-        if (this.src && !this.mathJaxReady)
-            this.loadMathJax();
+        if(!this.mathJaxReady) this.loadMathJax();
     }
 })
