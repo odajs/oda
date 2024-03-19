@@ -6,14 +6,15 @@ class TNum extends Number{
     }
 }
 export function num(val, back_fn){
-    const n = val instanceof TNum?val:new TNum(val, back_fn);
-    n.g = 0;
+    const n = val instanceof TNum ? val : new TNum(val, back_fn);
+    if (back_fn)
+        n.g = 0;
     return n;
 }
 Number.prototype.back = function (g){
     const n = num(this);
     n.g += g;
-    this.back_fn?.(n.g);
+    n.back_fn?.(n.g);
 }
 
 // math functions

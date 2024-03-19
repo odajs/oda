@@ -14,10 +14,7 @@ export class Module{
         }
         this.__init__(...args);
         const fwd = (...args)=>{
-            // console.time('forward: ' + this.label)
-            const res = this.forward(...args)
-            // console.timeEnd('forward: ' + this.label)
-            return res;
+            return this.forward(...args)
         }
         fwd.module = this;
         fwd.toString = this.toString.bind(this);
@@ -71,9 +68,10 @@ export class Linear extends Module{
         this.bias = bias?Parameter(Tensor.random([out_size], 'linear-bias')):null;
     }
     forward(x){
-        x = x._mm(this.W);
         if (this.bias)
-            x = x._add(this.bias);
+            x = Tensor.einsum('in, out, in out -> out', x, this.bias, this.W);
+        else
+            x = Tensor.einsum('in, in out -> out', x, this.W);
         return x;
     }
 }

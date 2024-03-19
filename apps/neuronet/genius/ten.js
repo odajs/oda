@@ -4,10 +4,10 @@ export class Tensor {
 
     };
     constructor(data, label, children= [], error) {
+        this.data = data;
         this.data =  element_wise((x)=>{
             return num(x);
         }, [data])[0]
-        // this.data = data;
         this.label = label;
         this.children = children;
         this.error = error;
@@ -18,6 +18,10 @@ export class Tensor {
         return 0;
     }
     back(learn_speed = .1){
+        element_wise((x)=>{
+            x.back(x);
+        }, [this.data])
+
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -28,9 +32,9 @@ export class Tensor {
             }
         }
         build_topo(this);
-        this.topo.reverse().forEach((node) => {
-            node._back()
-        })
+        // this.topo.reverse().forEach((node) => {
+        //     node._back()
+        // })
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
         })
@@ -63,7 +67,9 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data = element_wise((d)=>(num(d + d.g * learn_speed)), [this.data])[0];
+        this.data = element_wise((d)=>{
+            return (num(d + d.g * learn_speed));
+        }, [this.data])[0];
     }
     set label(n){
         this['#label'] = n;
@@ -113,20 +119,20 @@ export class Tensor {
         // которые надо соединить.
         let result = this.data.flat();
         let out = ten(result, '_concat', [this]);
-        out._back = () => {
-            const len = this.data[0].length;
-            this.grad = this.grad.map((v, i)=>{
-                return out.grad.slice(i * len, i * len + len);
-            });
-        }
+        // out._back = () => {
+        //     const len = this.data[0].length;
+        //     this.grad = this.grad.map((v, i)=>{
+        //         return out.grad.slice(i * len, i * len + len);
+        //     });
+        // }
         return out;
     }
     _sum(){
         let res = this.data.reduce((r, v) => r + v);
-        let out = ten(res, `_sum`, [this]);
-        out._back = () => {
-            this.grad = this.grad.map(v=>v + out.grad);
-        }
+        let out = ten(res, `_sum`);
+        // out._back = () => {
+        //     this.grad = this.grad.map(v=>v + out.grad);
+        // }
         return out;
     }
     _mean(){
@@ -148,13 +154,13 @@ export class Tensor {
             let end = start + size;
             let res = this.data.slice(start,  end);
             let out = ten(res, `_slice [${start}-${end}]`, [this]);
-            out._back = () => {
-                this.grad = this.grad.map((x,i)=>{
-                    if(i<start || i>end)
-                        return x;
-                    return x + out.grad[i];
-                })
-            }
+            // out._back = () => {
+            //     this.grad = this.grad.map((x,i)=>{
+            //         if(i<start || i>end)
+            //             return x;
+            //         return x + out.grad[i];
+            //     })
+            // }
             result.push(out)
             start = end;
         }
@@ -162,22 +168,24 @@ export class Tensor {
     }
     _mse(other){
         other = ten(other);
-        let res = element_wise((x, t) => (t - x) ** 2, this.data, other.data);
-        res = res.reduce((r, v) => (r + v))
+        let res = element_wise((x, t) => num(t - x, g => {
+            x.back(g);
+        }), this.data, other.data);
+        // res = res.reduce((r, v) => (r + v))
         let out =  ten(res, '_mse', [this]);
-        out._back = () => {
-            element_wise((x, t) => x.back(t - x), this.data, other.data);
-        }
+        // out._back = () => {
+        //     element_wise((x, t) => x.back((t - x)), this.data, other.data);
+        // }
         return out
     }
     static stack(other_tensors){
         let res = other_tensors.map(t=>Array.from(t.data));
         let out = ten(res, 'stack', other_tensors);
-        out._back = () => {
-            other_tensors.map((t, i)=>{
-                t.grad = out.grad[i];
-            })
-        }
+        // out._back = () => {
+        //     other_tensors.map((t, i)=>{
+        //         t.grad = out.grad[i];
+        //     })
+        // }
         return out;
     }
     static ones(size){
@@ -244,7 +252,7 @@ export class Tensor {
             term = term.trim();
             const tensor = tensors[i];
             return term.split(' ').map((a, j)=>{            // Разделение терма на индексы и их анализ
-                a = a.trim();
+                a = '_'+a.trim()+'_';
                 let d =  tensor.shape[j];
                 let ax = axis.find(v => v.a === a);
                 if(ax === undefined){
@@ -257,7 +265,7 @@ export class Tensor {
             })
         });
         const outs = expr[1].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
-            a = a.trim();
+            a = '_'+a.trim()+'_';
             if(!a) return;
             let idx = axis.findIndex(v => v.a === a);
             if(idx < 0)
@@ -275,13 +283,10 @@ export class Tensor {
         out.children = tensors;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
         out.label = label + ' ('+out.shape+')';
-        out._back = ()=>{
-            element_wise((x) => x.back(x.g), out.data);
-        }
         return out;
     }
-    any(fn){
-        return element_wise(v => v[fn](), [this.data])[0];
+    any(fn, ...args){
+        return ten(element_wise(v => v[fn](...args), [this.data])[0]);
     }
 }
 export function ten(...args){
@@ -343,4 +348,15 @@ Math.seed = function(s) {
 
 Tensor.prototype._log = function (){
     return this.any('_log');
+}
+
+Tensor.prototype._silu = function (){
+    return this.any('_silu');
+}
+
+Tensor.prototype._softplus = function (){
+    return this.any('_softplus');
+}
+Tensor.prototype._pow = function (e){
+    return this.any('_pow', e);
 }

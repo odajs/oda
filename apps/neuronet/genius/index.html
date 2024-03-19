@@ -5,6 +5,7 @@
     import '../../../oda.js'
     import * as gen from './genius.js'
     import * as nn from './ten.js';
+    import * as mm from './module.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -40,9 +41,11 @@
                 <div class="horizontal header">
                     <oda-button @tap="focusedPanel = 0" :focused="focusedPanel === 0">Model</oda-button>
                     <oda-button @tap="focusedPanel = 1" :focused="focusedPanel === 1">Graph</oda-button>
+                    <oda-button @tap="focusedPanel = 2" :focused="focusedPanel === 2">Tests</oda-button>
                 </div>
                 <textarea ~if="focusedPanel === 0" class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
                 <gen-func-graph ~if="focusedPanel === 1" :tensor></gen-func-graph>
+                <gen-test ~if="focusedPanel === 2" class="flex"></gen-test>
 
             </div>
 
@@ -72,7 +75,7 @@
                         this.tensor = res._mse(token);
                         // this.ten = res._mse(next);
                         this.tensor.back(this.learnSpeed);
-                        this.err = this.tensor.data;
+                        this.err = this.tensor._pow(2)._sum().data;
                     }
                     // console.timeEnd('work');
                     result.push(res);
@@ -146,6 +149,29 @@
             }, 0) || 0;
         }
     })
-
+    ODA({is: 'gen-test',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                }
+            </style>
+            <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace;"></textarea>
+            <textarea class="flex" style="font-size: xx-small; font-family: monospace;">{{result}}</textarea>
+        `,
+        value:{
+            $def: '',
+            $save: true
+        },
+        get result(){
+            try{
+                const fn = new Function('mm', 'nn', this.value);
+                return fn.call(this, mm, nn)|| '';
+            }
+            catch (e){
+                return e;
+            }
+        }
+    })
 </script>
 
