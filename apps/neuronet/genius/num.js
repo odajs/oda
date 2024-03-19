@@ -1,5 +1,3 @@
-import {tensor} from "./neuro";
-
 Number.prototype._mul = function (other){
     let out = num(this * other);
     this.g = 0;
@@ -25,8 +23,26 @@ Number.prototype._add = function (other){
 }
 Number.prototype._exp = function (){
     const out = num(Math.exp(this));
-    out.back = () => {
-        this.grad = element_wise((v, x, g) => (v + x * g), this.grad, res, out.grad);
+    out.back = (g = 1) => {
+        this.g += Math.E * this ** (Math.E - 1) * g;
+        this.back(this.g);
+    }
+    return out;
+}
+Number.prototype._pow = function (e){
+    const out = num(this ** e);
+    out.back = (g = 1) => {
+        this.g += this * e ** (this - 1) * g;
+        this.back(this.g);
+    }
+    return out;
+}
+
+Number.prototype._div = function (e){
+    const out = num(this / e);
+    out.back = (g = 1) => {
+        this.g += this * e / у ** 2 * g;
+        this.back(this.g);
     }
     return out;
 }

@@ -1,5 +1,5 @@
 //HYPER PARAMETERS
-import {Parameter, Tensor} from "./neuro.js";
+import {Parameter, Tensor} from "./ten.js";
 import * as nn from  './module.js';
 
 

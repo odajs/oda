@@ -1,4 +1,4 @@
-import {Parameter, Tensor} from "./neuro.js";
+import {Parameter, Tensor} from "./ten.js";
 export class Module{
     constructor(...args) {
         this.__args__ = ''
