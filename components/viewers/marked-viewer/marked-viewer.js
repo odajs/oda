@@ -1,108 +1,11 @@
-import { marked } from './lib/marked.esm.js';
-ODA({ is: 'oda-marked-viewer',
-    template: `
-        <style>
-            :host {
-                @apply --vertical;
-                @apply --fllex;
-                position: relative;
-                height: 100%;
-            }
-            iframe {
-                border: none;
-                width: 100%;
-                opacity: 0;
-                -webkit-transition: opacity .3s ease-in-out;
-                -moz-transition: opacity .3s ease-in-out;
-                transition: opacity .3s ease-in-out;
-            }
-        </style>
-        <iframe></iframe>
-    `,
-    $pdp: {
-        html: '',
-        src: {
-            $def: '',
-            set(n) {
-                if (this.isReady) {
-                    this.typesetInput();
-                } else if(this.iframe) {
-                    this.init();
-                }
-            }
-        },
-        url: {
-            $def: '',
-            set(n) {
-                if (n) {
-                    (async () => {
-                        let src = '';
-                        try { src = await fetch(n) } catch (e) { console.log(e) }
-                        this.src = src && src.ok ? await src.text() : n;
-                    })()
-                }
-            }
-        }
-    },
-    get iframe() {
-        return this.$('iframe') || undefined;
-    },
-    async typesetInput() {
-        this.async(() => {
-            if (this.iframe?.contentWindow.typesetInput) {
-                this.iframe.contentWindow.marked ||= marked;
-                this.iframe.contentWindow.MathInput.value = (this.src || '');
-                this.iframe.contentWindow.typesetInput();
-            }
-        }, 100)
-    },
-    attached() {
-        if (this.src)
-            this.init();
-    },
-    async init() {
-        this.iframe.addEventListener('load', async e => {
-            this.typesetInput();
-            this.iframe.contentDocument.addEventListener('click', e => {
-                this.dispatchEvent(new Event('click'));
-            })
-            this.iframe.contentDocument.addEventListener('dblclick', e => {
-                this.dispatchEvent(new Event('dblclick'));
-            })
-            this.iframe.contentDocument.addEventListener('loaded', e => {
-                this.fire('loaded');
-            })
-            const resizeObserver = new ResizeObserver((e) => {
-                this.iframe.style.height = this.iframe.contentDocument.body.scrollHeight + 'px';
-            })
-            resizeObserver.observe(this.iframe.contentDocument.body);
-            this.iframe.style.opacity = 1;
-            this.isReady = true;
-        })
-        this.iframe.srcdoc = srcdoc;
-    }
-})
+import { marked } from './lib/marked/lib/marked.esm.js';
+import './lib/mathjax-config.js';
+import './lib/mathjax/es5/tex-mml-chtml.js';
 
-const srcdoc = `
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
+ODA({ is: 'oda-marked-viewer', template: /*html*/`
     <style>
-        body::-webkit-scrollbar { width: 0px; height: 0px; }
-        body {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        :host {
+            @apply --flex;
         }
         h1, h2, h3, h4, h5, h6 { padding-top: 0; margin-top: 0 }
         h4, h5 { padding-bottom: 0; margin-bottom: 6px; }
@@ -114,21 +17,6 @@ const srcdoc = `
         h5 { font-size: 1.14em; font-weight: 200; }
         h6 { font-size: 0.83333em; font-weight: 200; }
         hr { opacity: .2;  }
-        .hint {
-            text-align: right;
-            color: #555555;
-            font-size: small;
-        }
-        .hint a {
-            color: #555555;
-        }
-        textarea {
-            height: 0;
-        }
-        .preview {
-            width: 100%;
-            height: 100%;
-        }
         blockquote {
             color: #6a737d;
             margin: 1em 2em;
@@ -140,51 +28,47 @@ const srcdoc = `
             max-width: 90%;
         }
     </style>
-</head>
-
-<body>
-    <textarea id="MathInput" rows="10" style="width: 100%; height: 400px; display: none;"></textarea>
-    <div id="MathPreview" class="preview"></div>
-
-    <script type="module">
-        window.MathJax = {
-            loader: { load: ['input/asciimath'] },
-            startup: {
-                pageReady: function () {
-                    var renderer = MathJax.startup.document.menu.settings.renderer;
-                    var input = window.MathInput = document.getElementById('MathInput');
-                    var output = document.getElementById('MathPreview');
-                    output.innerHTML = input.value.trim();
-                    window.typesetInput = function () {
-                        output.innerHTML = input.value ? marked(input.value).trim() : '';
-                        MathJax.texReset();
-                        MathJax.typesetClear();
-                        MathJax.typesetPromise([output]).catch(function (err) {
-                            output.innerHTML = '';
-                            output.appendChild(document.createTextNode(err.message));
-                            console.error(err);
-                        }).then(function () {
-                            document.dispatchEvent(new Event("loaded"));
-                        })
-                    }
-                    input.oninput = typesetInput;
-                    return MathJax.startup.defaultPageReady();
-                }
-            },
-            tex: {
-                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-                processEscapes: true,
-                processEnvironments: true
+    <div></div>
+    `,
+    loadMathJax() {
+        MathJax.startup.promise.then(() => {
+            this.mathJaxReady = true;
+        });
+    },
+    mathJaxReady: false,
+    src: String,
+    url: {
+        $type: String,
+        set(n) {
+            if (n) {
+                (async () => {
+                    let src = '';
+                    try { src = await fetch(n) } catch (e) { console.log(e) }
+                    this.src = src?.ok ? await src.text() : n;
+                })()
             }
         }
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-        script.setAttribute('id', 'MathJax-script');
-        script.async = true;
-        document.head.appendChild(script);
-    </script>
-</body>
-
-</html>
-`
+    },
+    $observers: {
+        srcChanged(src, mathJaxReady) {
+            if (!src) this.$('div').innerHTML = '';
+            else if (src && mathJaxReady) {
+                this.$('div').innerHTML = marked.parse(src);
+                MathJax.texReset();
+                MathJax.typesetClear();
+                MathJax.typesetPromise([this.$('div')]).then(() => {
+                    this.fire('loaded');
+                }).catch(function (err) {
+                    console.error(err);
+                })
+            }
+        }
+    },
+    ready() {
+        this.loadMathJax();
+    },
+    async attached() {
+        if (this.src && !this.mathJaxReady)
+            this.loadMathJax();
+    }
+})

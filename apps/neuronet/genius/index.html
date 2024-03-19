@@ -25,7 +25,7 @@
                 </div>
                 <div class="flex vertical">
                     tokens:
-                    <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString()}}</textarea>
+                    <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString(0, true)}}</textarea>
 
                 </div>
                 <div class="horizontal">
@@ -33,7 +33,7 @@
                     <button @tap="steps">{{stepCount}} steps</button>
                 </div>
 
-                <textarea rows="15" content :value="result" style="font-size: xx-small;"></textarea>
+                <textarea rows="10" content :value="result" style="font-size: xx-small;"></textarea>
 
             </div>
             <div slot="main" class="flex vertical" style="overflow: hidden;">
@@ -127,12 +127,14 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                     padding: 4px;
+                    white-space: pre-wrap;
+                    font-family: monospace;
                 }
             </style>
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span flex :success-invert="$for.item?.isParam" style="min-width: 50%; max-width: 50%;" :title="$for.item?.toString(0, true)">{{$for.item?.toString(0, true)}}</span>
-<!--                    <span flex dark :title="$for.item?.grad.toTensorString()">{{$for.item?.grad.toTensorString()}}</span>-->
+                    <span flex :info="$for.item?.isParam" style="min-width: 50%; max-width: 50%;">{{$for.item?.toString(0, true)}}</span>
+<!--                    <span flex dark>{{$for.item?.grad?.toTensorString?.(0, true)}}</span>-->
                 </div>
             </div>
             <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>

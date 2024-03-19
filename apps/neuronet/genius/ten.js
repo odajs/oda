@@ -1,6 +1,8 @@
 import {num} from './num.js';
 export class Tensor {
-    _back = () => {};
+    _back = () => {
+
+    };
     constructor(data, label, children= [], error) {
         this.data =  element_wise((x)=>{
             return num(x);
@@ -80,7 +82,13 @@ export class Tensor {
         }
     }
     toString(step = 0, show_data = false){
-        return this.label + '\r\n' + (show_data?this.data.toTensorString()+'\r\n':'');
+        let data = (show_data?this.data.toTensorString()+'\r\n':'').split('\r\n');
+        if (data.length > 6){
+            const padding = data[0].length/2 + 2
+            data = [...data.slice(0, 2), ('...').padStart(padding, ' '), ...data.slice(-3)]
+        }
+        data = data.join('\r\n')
+        return this.label + '\r\n' + data
     }
     get shape(){
         return this['#shape'] ??= (()=>{
@@ -94,7 +102,7 @@ export class Tensor {
         })()
     }
     get grad(){
-        return /*this['#grad'] ??= */element_wise((x)=>x?.g, [this.data])[0];
+        return element_wise((x)=>x?.g, [this.data])[0];
     }
     get dim(){
         return this.shape.length;
@@ -297,13 +305,13 @@ Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (Array.isArray(d[0])){
-            const list = d.map((v, i)=>{
+            let list = d.map((v, i)=>{
                 return recurse(v, i, l + 1);
             })
             result += list;
         }
         else{
-            if (d.length>6){
+            if (d.length > 6){
                 result += d.slice(0, 2).map(x=>{
                     return ((x < 0?' ':'  ') + x.toExponential(n) + ' ');
                 }).join(' ') ;
@@ -320,6 +328,7 @@ Array.prototype.toTensorString = function (n = 2){
         }
         return result + ']'
     }
+
     return recurse(this);
 }
 Number.prototype.toTensorString = function (n = 2){
