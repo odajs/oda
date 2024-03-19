@@ -55,7 +55,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             this.isChanged = true;
         },
         isChanged: false,
-        isAllCollapsed: true,
+        isAllCollapsed: false,
         get cells() {
             let level = 0, ids = {}, cells = [];
             this.notebook?.cells.map((i, idx) => {

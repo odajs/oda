@@ -69,13 +69,15 @@ ODA({ is: 'oda-marked-viewer',
             this.iframe.contentDocument.addEventListener('dblclick', e => {
                 this.dispatchEvent(new Event('dblclick'));
             })
+            this.iframe.contentDocument.addEventListener('loaded', e => {
+                this.fire('loaded');
+            })
             const resizeObserver = new ResizeObserver((e) => {
                 this.iframe.style.height = this.iframe.contentDocument.body.scrollHeight + 'px';
             })
             resizeObserver.observe(this.iframe.contentDocument.body);
             this.iframe.style.opacity = 1;
             this.isReady = true;
-            this.fire('loaded');
         })
         this.iframe.srcdoc = srcdoc;
     }
@@ -162,7 +164,7 @@ const srcdoc = `
                             output.appendChild(document.createTextNode(err.message));
                             console.error(err);
                         }).then(function () {
-
+                            document.dispatchEvent(new Event("loaded"));
                         })
                     }
                     input.oninput = typesetInput;
