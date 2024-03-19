@@ -235,7 +235,7 @@ export class Tensor {
         }), 'pos: '+pos)
     }
     static einsum(expr, ...sources){
-        const label = 'einsum: '+expr;
+        const label = 'einsum: \''+expr+'\'';
         const tensors = sources.map(i=>ten(i));
         expr = expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
@@ -273,8 +273,8 @@ export class Tensor {
         const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
         const out = Tensor.zeros(outs.map(o => o.d));
         out.children = tensors;
-        out.label = label;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
+        out.label = label + ' ('+out.shape+')';
         out._back = ()=>{
             element_wise((x) => x.back(x.g), out.data);
         }

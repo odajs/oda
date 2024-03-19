@@ -1,6 +1,6 @@
-import { marked } from './lib/marked/lib/marked.esm.js';
+import { marked } from './lib/marked/marked.esm.js';
 import './lib/mathjax-config.js';
-import './lib/mathjax/es5/tex-mml-chtml.js';
+import './lib/mathjax/tex-mml-chtml.js';
 
 ODA({ is: 'oda-marked-viewer', template: /*html*/`
     <style>
