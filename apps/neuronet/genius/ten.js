@@ -5,6 +5,7 @@ export class Tensor {
         this.data =  element_wise((x)=>{
             return num(x);
         }, [data])[0]
+        // this.data = data;
         this.label = label;
         this.children = children;
         this.error = error;
@@ -60,7 +61,7 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data = element_wise((d)=>(num(d + d.g * learn_speed)), this.data);
+        this.data = element_wise((d)=>(num(d + d.g * learn_speed)), [this.data])[0];
     }
     set label(n){
         this['#label'] = n;
@@ -95,9 +96,6 @@ export class Tensor {
     get grad(){
         return /*this['#grad'] ??= */element_wise((x)=>x?.g, [this.data])[0];
     }
-    set grad(v){
-        this['#grad'] = v;
-    }
     get dim(){
         return this.shape.length;
     }
@@ -115,15 +113,6 @@ export class Tensor {
         }
         return out;
     }
-    _pow(other){
-        other = ten(other);
-        const res = element_wise((x, rate)=> x ** rate, this.data, other.data);
-        let out = ten(res, '_pow', [this, other]);
-        out._back = () => {
-            this.grad = element_wise((v, x, y, g) => v + (y * x ** (y - 1)) * g, this.grad, this.data, other.data, out.grad);
-        }
-        return out;
-    }
     _sum(){
         let res = this.data.reduce((r, v) => r + v);
         let out = ten(res, `_sum`, [this]);
@@ -135,46 +124,6 @@ export class Tensor {
     _mean(){
         let out = this._sum();
         out = out._div(this.size);
-        return out;
-    }
-    _div(other){
-        other = ten(other);
-        const res = element_wise((a, b)=>(a / b), this.data, other.data);
-        let out = ten(res, `_div`, [this, other]);
-        out._back = () => {
-            this.grad = element_wise((x, y, g) => (x * y / y**2 * g), this.data, other.data, out.grad);
-            other.grad = element_wise((x, y, g) => (x * y / y**2 * g), other.data, this.data, out.grad);
-        }
-        return out;
-    }
-    _sqrt(){
-        const res = element_wise((x)=> Math.sqrt(x) , this.data);
-        let out = ten(res, `_sqrt`, [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g)=> v + (1 / (2 * Math.sqrt(x) ** 2)) * g, this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _rsqrt(){
-        let sqrt = this._sqrt();
-        let out = ten(1, '_rsqrt');
-        out = out._div(sqrt);
-        return out;
-    }
-    _log(){
-        const res = element_wise((x)=>Math.log(x), this.data);
-        let out = ten(res, `_log`, [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + 1/(x * Math.log(Math.exp())) * g), this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _log10(){
-        const res = element_wise((x)=>Math.log10(x), this.data);
-        let out = ten(res, `_log10`, [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + 1/(x * Math.log(10)) * g), this.grad, this.data, out.grad);
-        }
         return out;
     }
     _repeat(cnt= 1){
@@ -203,58 +152,6 @@ export class Tensor {
         }
         return result;
     }
-    _softplus(){
-        const res = element_wise((x) => Math.log(1 + Math.exp(x)), this.data);
-        let out = ten(res, '_softplus', [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => v + (1 / (1 + Math.exp (-x))) * g, this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _sigmoid(){
-        const res = element_wise((x) => 1/(1+ Math.exp(-x)), this.data);
-        let out = ten(res, '_sigmoid', [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + x * (1 - x) * g), this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _silu(){
-        const res = element_wise((x) => x * 1/(1+ Math.exp(-x)), this.data);
-        let out = ten(res, '_silu', [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => v + x * (1 - x) * g, this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _relu(){
-        const res = element_wise((x) => (x>0?x:0)  , this.data)
-        let out = ten(res, '_relu', [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + (x>0?1:0) * g), this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _lrelu(){
-        const res = element_wise((x) => Math.max(.1 * x, x) , this.data)
-        let out = ten(res, '_relu', [this]);
-        out._back = () => {
-            // this.grad = element_wise((x, y, z)=>{
-            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
-            // }, this.grad, this.data, out.grad);
-        }
-        return out;
-    }
-    _elu(alpha = 1){
-        const res = element_wise((x) => (x>0?x:(alpha * (Math.exp(x) - 1))), this.data)
-        let out = ten(res, '_relu', [this]);
-        out._back = () => {
-            // this.grad = element_wise((x, y, z)=>{
-            //     return element_wise((v, a, b)=>(v + a<0?0:1 * b), y, x, z);
-            // }, this.grad, this.data, out.grad);
-        }
-        return out;
-    }
     _mse(other){
         other = ten(other);
         let res = element_wise((x, t) => (t - x) ** 2, this.data, other.data);
@@ -264,14 +161,6 @@ export class Tensor {
             element_wise((x, t) => x.back(t - x), this.data, other.data);
         }
         return out
-    }
-    _exp(){
-        const res = element_wise((x) => Math.exp(x), this.data)
-        let out = ten(res, '_exp', [this]);
-        out._back = () => {
-            this.grad = element_wise((v, x, g) => (v + x * g), this.grad, res, out.grad);
-        }
-        return out;
     }
     static stack(other_tensors){
         let res = other_tensors.map(t=>Array.from(t.data));
@@ -383,6 +272,9 @@ export class Tensor {
         }
         return out;
     }
+    any(fn){
+        return element_wise(v => v[fn](), [this.data])[0];
+    }
 }
 export function ten(...args){
     if(args[0] instanceof Tensor)
@@ -439,3 +331,7 @@ Math.seed = function(s) {
         return s - Math.floor(s);
     }
 };
+
+Tensor.prototype._log = function (){
+    return this.any('_log');
+}
