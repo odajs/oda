@@ -399,10 +399,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
                 <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-                <oda-icon id="icon-close" ~if="isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
+                <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor @loaded="loaded" ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" style="padding: 8px 0" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
+                <oda-ace-editor @loaded="loaded" ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
                 <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
@@ -493,7 +493,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
         this.setCellMode();
     },
-    run() {
+    async run() {
         this.iconCloseShow = false;
         this.runConsoleData = undefined;
         this.iconCloseTop = undefined;
@@ -508,6 +508,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 fn = new Function(`try { ${this.src} } catch (e) { console.error(e) }`);
                 fn();
             } catch (e) { console.error(e) }
+            if (this.src.includes('import(')) {
+                window.runConsoleData = this.runConsoleData = [];
+                await new Promise((r) => setTimeout(r, 300));
+                fn();
+            }
             let str = this.src;
             str = str.split('\n').filter(i => i).at(-1);
             window[str] && console.log(window[str]);
@@ -567,7 +572,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             })
         }
         this.async(() => {
-            this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 36) - 36 + 'px';
+            this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 28) - 28 + 'px';
             this.iconCloseShow = true;
             this.$('#result')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }, 100)
@@ -635,4 +640,21 @@ class CELL extends ROCKS({
         super();
         this._init(cell);
     }
+    get autoRun() { return this.$cell.autoRun }
+    set autoRun(v) { this.$cell.autoRun = v }
+    get hideRun() { return this.$cell.hideRun }
+    set hideRun(v) { this.$cell.hideRun = v }
+    get hideCode() { return this.$cell.hideCode }
+    set hideCode(v) { this.$cell.hideCode = v }
+    get hideResult() { return this.$cell.hideResult }
+    set hideResult(v) { this.$cell.hideResult = v }
+    get hideConsole() { return this.$cell.hideConsole }
+    set hideConsole(v) { this.$cell.hideConsole = v }
+    get showGutter() { return this.$cell.showGutter }
+    set showGutter(v) { this.$cell.showGutter = v }
+    get mode() { return this.$cell.mode }
+    set mode(v) { this.$cell.mode = v }
+    get theme() { return this.$cell.theme }
+    set theme(v) { this.$cell.theme = v }
+
 }
