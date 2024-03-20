@@ -368,3 +368,45 @@ Tensor.prototype._add = function (e){
 Tensor.prototype._rsqrt = function (e){
     return this.any('_rsqrt', e);
 }
+
+function Rec_Mult(C, A, B, n, rowsize) {
+    if (n === 2)
+    {
+        const d11 = 0;
+        const d12 = 1;
+        const d21 = rowsize;
+        const d22 = rowsize + 1;
+
+        C[d11] += A[d11] * B[d11] + A[d12] * B[d21];
+        C[d12] += A[d11] * B[d12] + A[d12] * B[d22];
+        C[d21] += A[d21] * B[d11] + A[d22] * B[d21];
+        C[d22] += A[d21] * B[d12] + A[d22] * B[d22];
+    }
+    else
+    {
+        const d11 = 0;
+        const d12 = n / 2;
+        const d21 = (n / 2) * rowsize;
+        const d22 = (n / 2) * (rowsize + 1);
+
+        // C11 += A11 * B11
+        Rec_Mult(C + d11, A + d11, B + d11, n / 2, rowsize);
+        // C11 += A12 * B21
+        Rec_Mult(C + d11, A + d12, B + d21, n / 2, rowsize);
+
+        // C12 += A11 * B12
+        Rec_Mult(C + d12, A + d11, B + d12, n / 2, rowsize);
+        // C12 += A12 * B22
+        Rec_Mult(C + d12, A + d12, B + d22, n / 2, rowsize);
+
+        // C21 += A21 * B11
+        Rec_Mult(C + d21, A + d21, B + d11, n / 2, rowsize);
+        // C21 += A22 * B21
+        Rec_Mult(C + d21, A + d22, B + d21, n / 2, rowsize);
+
+        // C22 += A21 * B12
+        Rec_Mult(C + d22, A + d21, B + d12, n / 2, rowsize);
+        // C22 += A22 * B22
+        Rec_Mult(C + d22, A + d22, B + d22, n / 2, rowsize);
+    }
+}
