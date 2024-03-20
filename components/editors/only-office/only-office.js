@@ -56,7 +56,7 @@ ODA({ is: 'oda-only-office',
         callbackUrl: ''
     },
     get fileType() {
-        this.ext ||= this.url?.split('.').at(-1).split('?')[0];
+        this.ext = this.url?.split('.').at(-1).split('?')[0];
         return this.ext;
     },
     get documentType() {
