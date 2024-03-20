@@ -4,7 +4,7 @@ import * as nn from  './module.js';
 
 
 const MODEL_DIM = 32;           // Размерность входного и выходного слоев
-const EXPAND = 2;               // Коэффициент расширения вектора слов
+const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
@@ -15,11 +15,12 @@ const BIAS = false;
 
 export class Genius extends nn.Module{
     __init__() {
-        const d = MODEL_DIM// * EXPAND;
+        const d = MODEL_DIM * EXPAND;
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
-        this.Wo = Tensor.random([MODEL_DIM, MODEL_DIM/*d*/]);
+        this.Wo = Parameter(Tensor.random([d, MODEL_DIM]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
+        this.norm = nn.rsmNorm(d);
     }
     forward(x){
         x = Tensor.einsum('out, out in -> in', x, this.W);
@@ -28,11 +29,12 @@ export class Genius extends nn.Module{
         // res = this.decoder(res);
         // res = res._relu();
         // res = res._sigmoid();
-        // const wT = Tensor.einsum('i j -> j i', this.W);
-        // let res = Tensor.einsum('x, x w -> w', x, wT);
-        // x = Tensor.einsum('w x, x -> x', this.Wo, x);
-        x = Tensor.einsum('w, w x -> x', x, this.Wo);
+        x = this.norm(x);
 
+        // const wT = Tensor.einsum('i j -> j i', this.W);
+        // x = Tensor.einsum('x, x w -> w', x, wT);
+        // x = Tensor.einsum('w x, x -> x', this.Wo, x);
+        x = Tensor.einsum('in, in out -> out', x, this.Wo);
         return x;
     }
 }

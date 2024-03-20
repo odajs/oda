@@ -1,8 +1,5 @@
-import {num} from './num.js';
+import {num, TNum} from './num.js';
 export class Tensor {
-    _back = () => {
-
-    };
     constructor(data, label, children= [], error) {
         this.data = data;
         this.data =  element_wise((x)=>{
@@ -17,11 +14,12 @@ export class Tensor {
             return this.shape.reduce((r, v)=> r * v, 1);
         return 0;
     }
+    _back(){
+        const s = this.data;
+        element_wise(x => x.back(x.g), [this.data]);
+    }
     back(learn_speed = .1){
-        element_wise((x)=>{
-            x.back(x);
-        }, [this.data])
-
+        element_wise(x => x.g = x, [this.data]);
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -32,9 +30,9 @@ export class Tensor {
             }
         }
         build_topo(this);
-        // this.topo.reverse().forEach((node) => {
-        //     node._back()
-        // })
+        this.topo.reverse().forEach((node) => {
+            node._back();
+        })
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
         })
@@ -67,8 +65,11 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data = element_wise((d)=>{
-            return (num(d + d.g * learn_speed));
+        element_wise((d)=>{
+            const correct = d.g * learn_speed + d.p || 0;
+            d.setVal(d + correct);
+            d.p = correct * learn_speed;
+            d.g = 0;
         }, [this.data])[0];
     }
     set label(n){
@@ -168,14 +169,11 @@ export class Tensor {
     }
     _mse(other){
         other = ten(other);
-        let res = element_wise((x, t) => num(t - x, g => {
-            x.back(g);
-        }), this.data, other.data);
+        let res = element_wise((x, t) => num(t - x, g=>{
+            x.g = g;
+        }, '_mse'), this.data, other.data);
         // res = res.reduce((r, v) => (r + v))
         let out =  ten(res, '_mse', [this]);
-        // out._back = () => {
-        //     element_wise((x, t) => x.back((t - x)), this.data, other.data);
-        // }
         return out
     }
     static stack(other_tensors){
@@ -194,8 +192,8 @@ export class Tensor {
     static zeros(size){
         return this.fill(size, 0);
     }
-    static random(size){
-        return this.fill(size, ()=>Math.random()-.5);
+    static random(size, k = 1){
+        return this.fill(size, ()=>(Math.random()-.5) * k);
     }
     static fill(shape, value){
         if (!Array.isArray(shape))
@@ -243,7 +241,7 @@ export class Tensor {
         }), 'pos: '+pos)
     }
     static einsum(expr, ...sources){
-        const label = 'einsum: \''+expr+'\'';
+        const label = 'einsum \''+expr+'\'';
         const tensors = sources.map(i=>ten(i));
         expr = expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
@@ -275,7 +273,7 @@ export class Tensor {
             return ax;
         }).filter(i=>i)
         expr = '('+ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(')._mul(')+')';
-        expr = `out${outs.map(o => '['+o.a+']').join('')} = (out${outs.map(o => '['+o.a+']').join('')})._add(` + expr + ')';
+        expr = `(out${outs.map(o => '['+o.a+']').join('')})._add_(` + expr + ')';
         expr = [...outs, ...axis].map(o => `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
         expr = expr + '\n return out';
         const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
@@ -359,4 +357,14 @@ Tensor.prototype._softplus = function (){
 }
 Tensor.prototype._pow = function (e){
     return this.any('_pow', e);
+}
+Tensor.prototype._div = function (e){
+    return this.any('_div', e);
+}
+Tensor.prototype._add = function (e){
+    return this.any('_add', e);
+}
+
+Tensor.prototype._rsqrt = function (e){
+    return this.any('_rsqrt', e);
 }
