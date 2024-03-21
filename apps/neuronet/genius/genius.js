@@ -2,7 +2,8 @@
 import {Parameter, Tensor} from "./ten.js";
 import * as nn from  './module.js';
 
-
+const WORD_DEEP = 32;
+const TOKEN_SIZE = 5;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -10,7 +11,7 @@ const HEAD_COUNT = 1;           // Количество селекторов (г
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
-const BINS = Array(32).fill(0).map((v, i)=>(2. ** -i));
+const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 const BIAS = false;
 
 export class Genius extends nn.Module{
@@ -144,43 +145,10 @@ export class Tokenizer {
         return this.tokenize.bind(this);
     }
     tokenize(text){
-        let s = '';
-        let words = [];
-        const list = [];
-        for (let ch of text){
-            if (ch === '.' && s.length === 1){
-                s += ch;
-                words.push(s);
-                s = ''
-            }
-            else if (TERMINATES.includes(ch)){
-                if (s)
-                    words.push(s);
-                s = '';
-                words.push(ch.toString());
-                list.push(words);
-                words = [];
-            }
-            else if (SPLITTERS.includes(ch)){
-                if (s)
-                    words.push(s);
-                s = '';
-            }
-            else if (SIGNS.includes(ch)){
-                if (s)
-                    words.push(s);
-                s = '';
-                words.push(ch.toString());
-            }
-            else{
-                s += ch;
-            }
-        }
-        if (s)
-            words.push(s);
-        if (words.length)
-            list.push(words);
-        return list;
+        const tokens = []
+        for (let i = 0; i<text.length; i += TOKEN_SIZE)
+            tokens.push(text.slice(i, i + TOKEN_SIZE));
+        return  tokens;
     }
 }
 export class WordEncoder {
@@ -196,7 +164,7 @@ export class WordEncoder {
             v = v.padStart(8, '0');
             v.split('').map((n, j) => r[j] += (+n * b));
             return r;
-        }, Array(8).fill(2 ** -32));
+        }, Array(8).fill(2 ** -WORD_DEEP));
         return emb;
     }
 }

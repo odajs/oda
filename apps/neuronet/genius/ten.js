@@ -68,7 +68,7 @@ export class Tensor {
         element_wise((d)=>{
             const correct = d.g * learn_speed + d.p || 0;
             d.setVal(d + correct);
-            d.p = correct * .1;
+            d.p = correct * learn_speed;
             d.g = 0;
         }, [this.data])[0];
     }
