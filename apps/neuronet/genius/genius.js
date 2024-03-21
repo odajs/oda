@@ -3,7 +3,7 @@ import {Parameter, Tensor} from "./ten.js";
 import * as nn from  './module.js';
 
 
-const MODEL_DIM = 16;           // Размерность входного и выходного слоев
+const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
@@ -30,8 +30,8 @@ export class Genius extends nn.Module{
         // res = res._sigmoid();
         // x = this.norm(x);
 
-        const wT = Tensor.einsum('i j -> j i', this.W);
-        x = Tensor.einsum('x, x w -> w', x, wT);
+        // const wT = Tensor.einsum('i j -> j i', this.W);
+        // x = Tensor.einsum('x, x w -> w', x, wT);
 
         return x;
     }
@@ -184,22 +184,25 @@ export class Tokenizer {
     }
 }
 export class WordEncoder {
-    constructor(dim = MODEL_DIM) {
-        this.dim = dim;
+    textEncoder = new TextEncoder();
+    constructor() {
         return this.encode.bind(this);
     }
     encode(word){
-        let arr = Array(this.dim).fill((2 ** -this.dim));
-        const emb = (word).split('').reduce((r, v, i) => {
-            v.charCodeAt(0).toString(2).padStart(this.dim, '0').split('').map((n, j) => arr[j] += (+n * 2 ** -i));
+        const buf = this.textEncoder.encode(word);
+        const emb = BINS.reduce((r, b, i) => {
+            let v = (buf[i] || 0);
+            v = v.toString(2);
+            v = v.padStart(8, '0');
+            v.split('').map((n, j) => r[j] += (+n * b));
             return r;
-        }, arr);
+        }, Array(8).fill(2 ** -32));
         return emb;
     }
 }
 
-
 export class WordDecoder {
+    textDecoder = new TextDecoder();
     constructor() {
         return this.decode.bind(this);
     }
@@ -218,11 +221,11 @@ export class WordDecoder {
             if(!l) break;
             result.push(l);
         }
-        result = String.fromCharCode(...result);
+        result = new Int8Array(result)
+        result = this.textDecoder.decode(result);
         return result;
     }
 }
-
 
 function tensor(...args){
     if(args[0] instanceof Tensor)
