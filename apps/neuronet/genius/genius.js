@@ -3,7 +3,7 @@ import {Parameter, Tensor} from "./ten.js";
 import * as nn from  './module.js';
 
 const WORD_DEEP = 32;
-const TOKEN_SIZE = 5;
+const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -31,8 +31,8 @@ export class Genius extends nn.Module{
         // res = res._sigmoid();
         // x = this.norm(x);
 
-        // const wT = Tensor.einsum('i j -> j i', this.W);
-        // x = Tensor.einsum('x, x w -> w', x, wT);
+        const wT = Tensor.einsum('i j -> j i', this.W);
+        x = Tensor.einsum('x, x w -> w', x, wT);
 
         return x;
     }

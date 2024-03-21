@@ -45,7 +45,7 @@
 
         `,
         stepCount: 50,
-        learnSpeed: .08,
+        learnSpeed: .07,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -53,7 +53,7 @@
         err: '',
         tensor: null,
         steps(){
-            for (let i=0; i<this.stepCount;i++){
+            for (let i=0; i < this.stepCount; i++){
                 this.step();
             }
         },
