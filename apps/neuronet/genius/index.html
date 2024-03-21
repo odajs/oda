@@ -23,13 +23,11 @@
                     <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString(0, true)}}</textarea>
 
                 </div>
-                <div class="horizontal">
-                    <button @tap="step" class="flex">step {{err}}</button>
-                    <button @tap="steps">{{stepCount}} steps</button>
+                <div class="horizontal header">
+                    <oda-button class="flex" @tap="step" class="flex" icon="av:skip-next">{{err}}</oda-button>
+                    <oda-button style="width: 100px;" allow-toggle ::toggled="goSteps" :icon="goSteps?'av:stop':'av:play-arrow'">{{stepCount}}</oda-button>
                 </div>
-
                 <textarea rows="10" content :value="result" style="font-size: xx-small;"></textarea>
-
             </div>
             <div  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
@@ -42,10 +40,9 @@
                 <gen-test ~if="focusedPanel === 2" class="flex"></gen-test>
 
             </div>
-
         `,
-        stepCount: 50,
-        learnSpeed: .07,
+        stepCount: 0,
+        learnSpeed: .074,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -53,9 +50,17 @@
         err: '',
         tensor: null,
         steps(){
-            for (let i=0; i < this.stepCount; i++){
+            if (this.value === this.result)
+                this.goSteps = false;
+            if (!this.goSteps) return;
+            setTimeout(()=>{
                 this.step();
-            }
+                this.steps();
+            })
+        },
+        set goSteps(n) {
+            if (n)
+                this.steps();
         },
         step(){
             let result = [];
@@ -80,6 +85,7 @@
                 return this._decoder(w.data);
             })
             this.result = result.join('');
+            this.stepCount++;
         },
         result: '',
         value:{
