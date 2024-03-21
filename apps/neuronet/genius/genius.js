@@ -81,14 +81,11 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = Tensor.hippo([this.dH, d], -1)._log();
+        this.A = Parameter(Tensor.hippo([this.dH, d], -1));
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
         this.norm = nn.rsmNorm(d);
-        // this.conv1d = (x)=>{
-        //     return x;
-        // }
     }
     forward(x){
         let x_and_res = this.in_proj(x);
@@ -117,7 +114,7 @@ export class genHead extends nn.Module{
         let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
         const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
         let deltaA = sum._exp();
-        deltaA = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, this.H); // поэлементное умножение
+        deltaA = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, this.H.data); // поэлементное умножение без распространения градиента в H
 
         this.H = Tensor.einsum('n d_in, n d_in -> n d_in : _add', deltaA, deltaB_u);
         let y = Tensor.einsum('n, n d_in -> n', C, this.H);
