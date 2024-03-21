@@ -5,7 +5,7 @@ import * as nn from  './module.js';
 const WORD_DEEP = 32;
 const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
-const EXPAND = 1;               // Коэффициент расширения вектора слов
+const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';

@@ -12,22 +12,32 @@
                 button{
                     cursor: pointer;
                 }
+                span{
+                    font-size: xx-small;
+                    font-family: monospace;
+                }
+                textarea{
+                    font-size: xx-small;
+                    font-family: monospace;
+                }
             </style>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
-                <div class="vertical">
+                <div class="vertical flex">
                     prompt:
-                    <textarea rows="10" content ::value></textarea>
+                    <textarea class="flex" content ::value></textarea>
                 </div>
-                <div class="flex vertical">
+                <div ~if="false" class="flex vertical">
                     tokens:
-                    <textarea class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{vectors?.toString(0, true)}}</textarea>
+                    <textarea class="flex" content>{{vectors?.toString(0, true)}}</textarea>
 
                 </div>
                 <div class="horizontal header">
-                    <oda-button class="flex" @tap="step" class="flex" icon="av:skip-next">{{err}}</oda-button>
+                    <oda-button class="flex" @tap="step" class="flex" icon="av:skip-next"></oda-button>
                     <oda-button style="width: 100px;" allow-toggle ::toggled="goSteps" :icon="goSteps?'av:stop':'av:play-arrow'">{{stepCount}}</oda-button>
                 </div>
-                <textarea rows="10" content :value="result" style="font-size: xx-small;"></textarea>
+                <textarea flex content :value="result"></textarea>
+                <span>speed: {{learnSpeed}}</span>
+                <span>error: {{err}}</span>
             </div>
             <div  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
@@ -42,12 +52,18 @@
             </div>
         `,
         stepCount: 0,
-        learnSpeed: .074,
+        learnSpeedCorrection: 0,
+        learnSpeed: .014,
         focusedPanel: {
             $def: 0,
             $save: true
         },
-        err: '',
+        err:{
+            $def: 0,
+            set(n, o){
+                // this.learnSpeed += (n-o)/n * this.learnSpeed;
+            }
+        },
         tensor: null,
         steps(){
             if (this.value === this.result)
@@ -68,20 +84,16 @@
                 for(let i = 0; i<phrase.length; i++) {
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
-                    // console.time('work');
                     let res = this.model(token);
                     if(next){
                         this.tensor = res._mse(token);
-                        // this.ten = res._mse(next);
                         this.tensor.back(this.learnSpeed);
                         this.err = this.tensor._pow(2)._sum().data;
                     }
-                    // console.timeEnd('work');
                     result.push(res);
                 }
             }
             result = result.map(w=>{
-                // console.log(w.data)
                 return this._decoder(w.data);
             })
             this.result = result.join('');
