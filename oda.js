@@ -13,7 +13,7 @@ if (!window.ODA?.IsReady) {
         try { //cross-origin
             win.addEventListener('pointerdown', (e) => {
                 if (win !== top)
-                    top.dispatchEvent(new PointerEvent("pointerdown", e));
+                    ODA.top.dispatchEvent(new PointerEvent("pointerdown", e));
             })
             // ToDo: not works dropdown (without parent) in modal:
             win.addEventListener('pointerdown', (e) => {
@@ -651,10 +651,16 @@ if (!window.ODA?.IsReady) {
     }
 
     Object.defineProperty(ODA, 'top',  {
-        get (){
-            if (window.parent !== window)
-                return window.parent.ODA?.top || window;
-            return window;
+        get() {
+            try {
+                if (window.parent !== window)
+                    return window.parent.ODA?.top || window;
+                return window;
+            }
+            catch (err) {
+                console.warn(err);
+                return window;
+            }
         }
     })
 
