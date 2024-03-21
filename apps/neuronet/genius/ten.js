@@ -179,11 +179,6 @@ export class Tensor {
     static stack(other_tensors){
         let res = other_tensors.map(t=>Array.from(t.data));
         let out = ten(res, 'stack', other_tensors);
-        // out._back = () => {
-        //     other_tensors.map((t, i)=>{
-        //         t.grad = out.grad[i];
-        //     })
-        // }
         return out;
     }
     static ones(size){

@@ -66,8 +66,7 @@ export class genLayer extends nn.Module{
         this.W0 = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = x;
-        // let y = this.norm(x);
+        let y = this.norm(x);
         let head_res = Tensor.stack(this.heads.map(h=>h(y)));
         y = head_res._concat();
         y = this.W0(y);
@@ -90,7 +89,6 @@ export class genHead extends nn.Module{
     forward(x){
         let x_and_res = this.in_proj(x);
         let [x1, x2] = x_and_res._slice([this.d, this.d]);
-        // x1 = this.conv1d(x1);
         x1 = x1._silu();
         let y = this.ssm(x1)
         x2 = x2._silu();
@@ -100,19 +98,16 @@ export class genHead extends nn.Module{
         return y;
     }
     ssm(x){
-        let A = this.A;
-        // A = A._exp();
-        // A = A._mul(-1);
         let x_dbl = this.x_proj(x);
         let [delta, B, C] = x_dbl._slice([this.delta_rank, this.d, this.d]);
         delta = this.dt_proj(delta);
         delta = delta._softplus();
-        x = this.select(x, delta, A, B, C);
+        x = this.select(x, delta, B, C);
         return x;
     }
-    select(u, delta, A, B, C){
+    select(u, delta, B, C){
         let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
-        const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
+        const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, this.A);
         let deltaA = sum._exp();
         deltaA = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, this.H.data); // поэлементное умножение без распространения градиента в H
 

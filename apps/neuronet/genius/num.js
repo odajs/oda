@@ -16,8 +16,8 @@ export class TNum extends Number{
     toTesorString(width = 2) {
         const v = (+this);
         if (v.toString().length > 6)
-            return ((v < 0?' ':'  ') + v.toExponential(width) + ' ')
-        return v
+            return ((v < 0?' ':'  ') + v.toExponential(width) + ' ').padStart(9, ' ');
+        return v.toString().padStart(9, ' ');
     }
 
 }
