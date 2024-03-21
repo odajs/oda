@@ -23,7 +23,7 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = Tensor.einsum('out, out in -> in', x, this.W);
-        // x = this.encoder(x);
+        x = this.encoder(x);
         // x = this.decoder(x);
         const wT = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, wT);
@@ -97,7 +97,7 @@ export class genHead extends nn.Module{
         x1 = x1._silu();
         let y = this.ssm(x1)
         x2 = x2._silu();
-        y = y._mul(x2);
+        y = Tensor.einsum('n, n -> n', y, x2);
         y = this.out_proj(y);
         y = this.norm(y);
         return y;
@@ -114,13 +114,15 @@ export class genHead extends nn.Module{
         return x;
     }
     select(u, delta, A, B, C){
+        let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
         const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
         let deltaA = sum._exp();
-        let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
-        this.H = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, deltaB_u);
+        deltaA = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, this.H); // поэлементное умножение
+
+        this.H = Tensor.einsum('n d_in, n d_in -> n d_in : _add', deltaA, deltaB_u);
         let y = Tensor.einsum('n, n d_in -> n', C, this.H);
-        // u = Tensor.einsum('n, n -> n', u, this.D);
-        // y = y._add(u);
+        u = Tensor.einsum('n, n -> n', u, this.D);
+        y = Tensor.einsum('n, n -> n : _add', u, y);
         return y;
     }
     get delta_rank(){

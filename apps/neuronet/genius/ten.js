@@ -243,6 +243,7 @@ export class Tensor {
     static einsum(expr, ...sources){
         const label = 'einsum \''+expr+'\'';
         const tensors = sources.map(i=>ten(i));
+        let operator = '_mul';
         expr = expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
         const terms = expr[0].trim().split(',');            // Разделение входа на термы
@@ -262,7 +263,8 @@ export class Tensor {
                 return ax;
             })
         });
-        const outs = expr[1].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
+        expr = expr[1].split(':');
+        const outs = expr[0].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
             a = a.trim();
             if(!a) return;
             a = '_'+a+'_';
@@ -273,7 +275,10 @@ export class Tensor {
             axis.splice(idx, 1);
             return ax;
         }).filter(i=>i)
-        expr = '('+ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(')._mul(')+')';
+        expr = expr[1]?.trim();
+        if(expr?.length)
+            operator = expr;
+        expr = '('+ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(`).${operator}(`)+')';
         expr = `\t(out${outs.map(o => '['+o.a+']').join('')})._add_(` + expr + ')';
         expr = [...outs, ...axis].map((o, i) => '\t'.repeat(i)+`for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
         expr = expr + '\n return out';
@@ -315,7 +320,7 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 8){
+            if (d.length > 6){
                 result += d.slice(0, 2).map(x=>{
                     return x.toTesorString()
                 }).join(' ') ;

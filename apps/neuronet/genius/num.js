@@ -1,4 +1,5 @@
 export class TNum extends Number{
+    _ = undefined;
     g = 0;
     backs = []
     constructor(v, back_fn, l) {
@@ -9,7 +10,7 @@ export class TNum extends Number{
             this.l = l;
     }
     setVal(v){
-        this.val = v;
+        this._ = v;
         this.valueOf = valueOf;
     }
     toTesorString(width = 2) {
@@ -24,7 +25,7 @@ export function num(val, back_fn, label){
     return val instanceof TNum ? val : new TNum(val, back_fn, label);
 }
 function valueOf(){
-    return this.val;
+    return this._;
 }
 
 
