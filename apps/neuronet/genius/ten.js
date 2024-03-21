@@ -88,7 +88,7 @@ export class Tensor {
             "shape": this.shape
         }
     }
-    toString(step = 0, show_data = false){
+    toString(show_data = false){
         let data = (show_data?this.data.toTensorString()+'\r\n':'').split('\r\n');
         if (data.length > 6){
             const padding = data[0].length/2 + 2
@@ -263,8 +263,9 @@ export class Tensor {
             })
         });
         const outs = expr[1].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
-            a = '_'+a.trim()+'_';
+            a = a.trim();
             if(!a) return;
+            a = '_'+a+'_';
             let idx = axis.findIndex(v => v.a === a);
             if(idx < 0)
                 throw new Error(`Unknown axis: '${a}'`);
@@ -273,8 +274,8 @@ export class Tensor {
             return ax;
         }).filter(i=>i)
         expr = '('+ins.map((t, i) => `t_${i}${t.map(idx=>'['+idx.a+']').join('')}`).join(')._mul(')+')';
-        expr = `(out${outs.map(o => '['+o.a+']').join('')})._add_(` + expr + ')';
-        expr = [...outs, ...axis].map(o => `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
+        expr = `\t(out${outs.map(o => '['+o.a+']').join('')})._add_(` + expr + ')';
+        expr = [...outs, ...axis].map((o, i) => '\t'.repeat(i)+`for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`).join('\n')+'\n' + expr;
         expr = expr + '\n return out';
         const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
         const out = Tensor.zeros(outs.map(o => o.d));
@@ -314,19 +315,19 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 6){
+            if (d.length > 8){
                 result += d.slice(0, 2).map(x=>{
-                    return ((x < 0?' ':'  ') + x.toExponential(n) + ' ');
+                    return x.toTesorString()
                 }).join(' ') ;
                 result +=  ' ... ';
                 result +=  d.slice(-2).map(x=>{
-                    return ((x < 0?' ':'  ') + x.toExponential(n) + ' ');
+                    return x.toTesorString()
                 }).join(' ')
             }
             else{
                 result += d?.map?.(x=>{
-                    return x.toExponential(n);
-                }).join(' ') || d?.toExponential?.(n);
+                    return x.toTesorString()
+                }).join(' ') || d.toTesorString()
             }
         }
         return result + ']'
@@ -367,6 +368,10 @@ Tensor.prototype._add = function (e){
 
 Tensor.prototype._rsqrt = function (e){
     return this.any('_rsqrt', e);
+}
+
+Tensor.prototype._exp = function (e){
+    return this.any('_exp', e);
 }
 
 function Rec_Mult(C, A, B, n, rowsize) {

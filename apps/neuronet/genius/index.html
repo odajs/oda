@@ -28,7 +28,7 @@
                 </div>
                 <div ~if="false" class="flex vertical">
                     tokens:
-                    <textarea class="flex" content>{{vectors?.toString(0, true)}}</textarea>
+                    <textarea class="flex" content>{{vectors?.toString(true)}}</textarea>
 
                 </div>
                 <div class="horizontal header">
@@ -53,7 +53,7 @@
         `,
         stepCount: 0,
         learnSpeedCorrection: 0,
-        learnSpeed: .014,
+        learnSpeed: .07,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -151,8 +151,7 @@
             </style>
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span flex :info="$for.item?.isParam" style="min-width: 50%; max-width: 50%;">{{$for.item?.toString(0, true)}}</span>
-<!--                    <span flex dark>{{$for.item?.grad?.toTensorString?.(0, true)}}</span>-->
+                    <span flex :info="$for.item?.isParam">{{$for.item?.toString(true)}}</span>
                 </div>
             </div>
             <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>

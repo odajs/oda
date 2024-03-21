@@ -46,7 +46,10 @@ export class Module{
         }
         return result;
     }
-    toString(step = 0){
+    toString(){
+        return this.toStringTree()
+    }
+    toStringTree(step = 0){
         const add = 3;
         const tab = (' ').repeat(step + add);
         let s = `${this.label} (${this.__args__})\r\n`;
@@ -56,7 +59,7 @@ export class Module{
             if(Array.isArray(prop)){
                 return tab + key + `[${prop.length}]:\r\n` +prop.map((m, i)=>(' ').repeat(step + add * 2)+i+': '+m.toString(step + add * 2)).join('')
             }
-            return tab + key+': '+prop.toString(step + add);
+            return tab + key+': ' + (prop.toStringTree?.(step + add) || prop.toString());
         }).join('');
         return s;
     }
@@ -64,8 +67,8 @@ export class Module{
 
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
-        this.W = Parameter(Tensor.random([in_size, out_size], 'linear-weights'));
-        this.bias = bias?Parameter(Tensor.random([out_size], 'linear-bias')):null;
+        this.W = Parameter(Tensor.random([in_size, out_size]));
+        this.bias = bias?Parameter(Tensor.random([out_size])):null;
     }
     forward(x){
         if (this.bias)

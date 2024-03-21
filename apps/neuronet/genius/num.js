@@ -12,6 +12,12 @@ export class TNum extends Number{
         this.val = v;
         this.valueOf = valueOf;
     }
+    toTesorString(width = 2) {
+        const v = (+this);
+        if (v.toString().length > 6)
+            return ((v < 0?' ':'  ') + v.toExponential(width) + ' ')
+        return v
+    }
 
 }
 export function num(val, back_fn, label){
@@ -20,6 +26,8 @@ export function num(val, back_fn, label){
 function valueOf(){
     return this.val;
 }
+
+
 Number.prototype.back = function (g){
     for (let back of this.backs)
         back(g);
@@ -111,3 +119,4 @@ Number.prototype._elu = function (alpha = 1){
         this.back(this.g += (this > 0 ? 1 : elu + alpha) * g);
     });
 }
+

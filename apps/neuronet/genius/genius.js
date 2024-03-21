@@ -5,7 +5,7 @@ import * as nn from  './module.js';
 const WORD_DEEP = 32;
 const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
-const EXPAND = 2;               // Коэффициент расширения вектора слов
+const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
@@ -20,17 +20,11 @@ export class Genius extends nn.Module{
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
-        this.norm = nn.rsmNorm(d);
     }
     forward(x){
         x = Tensor.einsum('out, out in -> in', x, this.W);
-        // res = Tensor.einsum('out, out in -> in', res, this.Wo);
-        // let res = this.encoder(w);
-        // res = this.decoder(res);
-        // res = res._relu();
-        // res = res._sigmoid();
-        // x = this.norm(x);
-
+        // x = this.encoder(x);
+        // x = this.decoder(x);
         const wT = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, wT);
 
@@ -38,9 +32,9 @@ export class Genius extends nn.Module{
     }
 }
 export class genEncoder extends nn.Module{
-    __init__(d_in) {
+    __init__(d) {
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
-            let dim = d_in * HEAD_COUNT ** i ;
+            let dim = d * HEAD_COUNT ** i ;
             return new genLayer(dim, dim * HEAD_COUNT, HEAD_COUNT);
         })
     }
@@ -83,10 +77,10 @@ export class genLayer extends nn.Module{
 export class genHead extends nn.Module{
     __init__(d) {
         this.d = d;
-        this.dH = d * 1.5;
+        this.dH = d;
         this.in_proj = nn.linear(d, d * 2, false);
-        this.x_proj = nn.linear(d, this.dH * 2 + this.delta_rank, false);
-        this.dt_proj = nn.linear(this.delta_rank, this.d, true);
+        this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
+        this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
         this.A = Tensor.hippo([this.dH, d], -1)._log();
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
@@ -113,27 +107,20 @@ export class genHead extends nn.Module{
         // A = A._exp();
         // A = A._mul(-1);
         let x_dbl = this.x_proj(x);
-        let [delta, B, C] = x_dbl._slice([this.delta_rank, this.dH, this.dH]);
+        let [delta, B, C] = x_dbl._slice([this.delta_rank, this.d, this.d]);
         delta = this.dt_proj(delta);
         delta = delta._softplus();
         x = this.select(x, delta, A, B, C);
         return x;
     }
     select(u, delta, A, B, C){
-
-        const ss = Tensor.einsum('i->', [1,2,3,4,5])
         const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
-        // let y = u;
-        // let deltaA = delta._mul(A);
-        // deltaA = deltaA._exp();
+        let deltaA = sum._exp();
         let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
-
-        // deltaA = deltaA._mul(this.H);
-        deltaB_u = deltaB_u._mm(u);
-        this.H = deltaA._add(deltaB_u);
-        let y = C._mm(this.H);
-        u = u._mul(this.D);
-        y = y._add(u);
+        this.H = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, deltaB_u);
+        let y = Tensor.einsum('n, n d_in -> n', C, this.H);
+        // u = Tensor.einsum('n, n -> n', u, this.D);
+        // y = y._add(u);
         return y;
     }
     get delta_rank(){
