@@ -53,19 +53,19 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
         },
         color1: {
             $public: true,
-            $def: 'whitesmoke',
+            $def: 'var(--content-background)',
             $save: true,
             $editor: '@oda/color-picker[oda-color-picker]'
         },
         color2: {
             $public: true,
-            $def: 'silver',
+            $def: 'var(--section-background)',
             $save: true,
             $editor: '@oda/color-picker[oda-color-picker]'
         },
         background: {
             $public: true,
-            $def: 'var(--header-background)',
+            $def: 'var(--border-color)',
             $save: true,
             $editor: '@oda/color-picker[oda-color-picker]'
         },
@@ -224,7 +224,7 @@ ODA({is: 'oda-hexagon',
             transition: top .5s, transform  .5s;
             left: -{{size * .25}}px;
             max-height: {{size}}px;
-            
+
             text-align: center;
             position: absolute;
             content: "{{label}}";
