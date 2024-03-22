@@ -1,6 +1,7 @@
 //HYPER PARAMETERS
 import {Parameter, Tensor} from "./ten.js";
 import * as nn from  './module.js';
+import {rmsNorm} from "./module.js";
 
 const WORD_DEEP = 32;
 const TOKEN_SIZE = 8;
@@ -24,7 +25,7 @@ export class Genius extends nn.Module{
     forward(x){
         x = Tensor.einsum('out, out in -> in', x, this.W);
         x = this.encoder(x);
-        // x = this.decoder(x);
+        x = this.decoder(x);
         const wT = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, wT);
 
@@ -46,7 +47,7 @@ export class genEncoder extends nn.Module{
 }
 export class genDecoder extends nn.Module{
     __init__(d_in) {
-        this.head_count = 1
+        // this.head_count = 1
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = d_in * HEAD_COUNT ** i;
             return new genLayer(dim * HEAD_COUNT, dim);
@@ -61,14 +62,14 @@ export class genDecoder extends nn.Module{
 
 export class genLayer extends nn.Module{
     __init__(d_in, d_out, head_count = 1) {
-        this.norm = nn.rsmNorm(d_in);
+        this.norm = nn.rmsNorm(d_in);
         this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
         this.W0 = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
     forward(x){
         let y = this.norm(x);
-        let head_res = Tensor.stack(this.heads.map(h=>h(y)));
-        y = head_res._concat();
+        let heads_res = this.heads.map(h=>h(y));
+        y = Tensor.concat(...heads_res);//heads_res._concat();
         y = this.W0(y);
         return y;
     }
@@ -80,11 +81,11 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = Parameter(Tensor.hippo([this.dH, d], -1));
+        this.A = Parameter(Tensor.hippo([this.dH, d], -1)/*._log()*/);
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
-        this.norm = nn.rsmNorm(d);
+        // this.norm = nn.rmsNorm(d);
     }
     forward(x){
         let x_and_res = this.in_proj(x);
@@ -94,7 +95,7 @@ export class genHead extends nn.Module{
         x2 = x2._silu();
         y = Tensor.einsum('n, n -> n', y, x2);
         y = this.out_proj(y);
-        y = this.norm(y);
+        // y = this.norm(y);
         return y;
     }
     ssm(x){

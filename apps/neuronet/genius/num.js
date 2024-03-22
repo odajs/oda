@@ -13,11 +13,10 @@ export class TNum extends Number{
         this._ = v;
         this.valueOf = valueOf;
     }
-    toTesorString(width = 2) {
-        const v = (+this);
-        if (v.toString().length > 6)
-            return ((v < 0?' ':'  ') + v.toExponential(width) + ' ').padStart(9, ' ');
-        return v.toString().padStart(9, ' ');
+    back(g){
+        for (let back of this.backs)
+            back(g);
+        this.backs = []
     }
 
 }
@@ -28,25 +27,26 @@ function valueOf(){
     return this._;
 }
 
-
-Number.prototype.back = function (g){
-    for (let back of this.backs)
-        back(g);
-    this.backs = []
+Number.prototype.toTNumString = function (width = 2) {
+    const v = (+this);
+    if (v.toString().length > 6)
+        return ((v < 0?' ':'  ') + v.toExponential(width) + ' ').padStart(9, ' ');
+    return v.toString().padStart(9, ' ');
 }
+
 
 // math functions
 
 Number.prototype._mul = function (other){
     return num(this * other, g => {
         this.back(this.g += other * g);
-        other.back( other.g += this * g);
+        other.back?.( other.g += this * g);
     }, '_mul');
 }
 Number.prototype._add = function (other){
     return num(this + other, g => {
         this.back(this.g += g);
-        other.back(other.g += g);
+        other.back?.(other.g += g);
     }, '_add');
 }
 
@@ -73,8 +73,9 @@ Number.prototype._div = function (e){
     });
 }
 Number.prototype._sqrt = function (){
-    return num(Math.sqrt(this), g => {
-        this.back(this.g += (1 / (2 * Math.sqrt(this) ** 2)) * g);
+    const res = Math.sqrt(this)
+    return num(res, g => {
+        this.back(this.g += (1 / (2 * res)) * g);
     });
 }
 Number.prototype._rsqrt = function (){

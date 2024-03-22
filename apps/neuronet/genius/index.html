@@ -53,7 +53,7 @@
         `,
         stepCount: 0,
         learnSpeedCorrection: 0,
-        learnSpeed: .07,
+        learnSpeed: .01,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -151,7 +151,8 @@
             </style>
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span flex :info="$for.item?.isParam">{{$for.item?.toString(true)}}</span>
+                    <span flex :info="$for.item?.isParam">{{$for.index}}: {{$for.item?.toString(true)}}</span>
+                    <span dark style="width: 50%">{{$for.item.g.toTensorString()}}</span>
                 </div>
             </div>
             <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
