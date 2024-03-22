@@ -356,6 +356,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     }
 })
 
+import aliases from '../../aliases.js';
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-jupyter-cell',
     template: `
         <style>
@@ -493,6 +494,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.runConsoleData = undefined;
         this.iconCloseTop = undefined;
         this.srcdoc = '';
+        let src = this.src;
         if (this.cell.mode !== 'html') {
             let fn = Function('w', this.fnStr);
             fn();
@@ -500,17 +502,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             window.runConsoleData = this.runConsoleData;
             this.isRun = true;
             try {   
-                fn = new Function(`try { ${this.src} } catch (e) { console.error(e) }`);
+                fn = new Function(`try { ${src} } catch (e) { console.error(e) }`);
                 fn();
             } catch (e) { console.error(e) }
-            if (this.src.includes('import(')) {
+            if (src.includes('import(')) {
                 window.runConsoleData = this.runConsoleData = [];
-                await new Promise((r) => setTimeout(r, 300));
-                fn();
+                this.async(() => fn(), 300);
             }
-            let str = this.src;
-            str = str.split('\n').filter(i => i).at(-1);
-            window[str] && console.log(window[str]);
+            src = src.split('\n').filter(i => i).at(-1);
+            window[str] && console.log(window[src]);
         } else {
             this.isRun = true;
             this.async(() => {
@@ -523,9 +523,18 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 // console.log(_code)
                 for (let i = 0; i < this.idx; i++) {
                     const cell = this.cells[i].$cell;
+                    let src = cell.source,
+                        _path = path.replace('tools/jupyter', '');
+                    if (src.includes('import ')) {
+                        Object.keys(aliases).forEach(k => {
+                            if (src.includes(k)) {
+                                src = src.replaceAll(k, _path + aliases[k]);
+                            }
+                        })
+                    }
                     if (cell.cell_type === 'code' && cell.mode !== 'html') {
                         if (_code.some(v => source.includes(v))) {
-                            code += cell.source + '\n';
+                            code += src + '\n';
                         } 
                     }
                 }
