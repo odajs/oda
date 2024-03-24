@@ -14,7 +14,7 @@ export class TNum extends Number{
         this._ = v;
     }
     back(g){
-        this.g += g;
+        this.g = g + this.g;
         for (let back of this.backs)
             back(this.g);
         this.backs = []
@@ -30,7 +30,7 @@ function valueOf(){
 
 Number.prototype.toTNumString = function (width = 2) {
     const v = this;
-    // return v.toString().padStart(9, ' ');
+    return v.toString().padStart(9, ' ');
     if (v.toString().length > 6)
         return ((v < 0?' ':'  ') + (v).toExponential(width) + ' ').padStart(9, ' ');
     return v.toString().padStart(9, ' ');
@@ -54,10 +54,10 @@ Number.prototype._add = function (other){
 
 Number.prototype._add_ = function (other){
     this.setVal(this + other);
-    this.l='_add_';
     this.backs.push(g=>{
         other.back(g);
     })
+    this.l='_add_';
     return this;
 }
 Number.prototype._exp = function (){

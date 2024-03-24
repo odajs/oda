@@ -23,9 +23,6 @@ export class Tensor {
         element_wise(x => x.back(x.g), [this.data]);
     }
     back(learn_speed = .1){
-        this.data.map(x=>{
-            x.g = +x
-        })
         // element_wise(x => (x.g = x), [this.data]);
         this.topo = [];
         let visited = new Set();
