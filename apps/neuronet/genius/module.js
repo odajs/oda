@@ -89,8 +89,8 @@ export class RMSNorm extends Module {
     forward(x) {
         let v = x._pow(2);
         v = v._mean();
-        v = v._add(this.eps);
-        v = v._rsqrt();
+        // v = v._add(this.eps);
+        // v = v._rsqrt();
         v = Tensor.einsum('v, w -> w', v, this.W);
         x = Tensor.einsum('x, x -> x', x, v);
         return x;

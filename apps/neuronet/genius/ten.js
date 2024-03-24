@@ -10,7 +10,9 @@ export class Tensor {
         this.error = error;
     }
     get g(){
-        return element_wise(d => d.g, [this.data])[0];
+        return element_wise(d => {
+            return num(d.g);
+        }, [this.data])[0];
     }
     get paramCount(){
         if (this.isParam)
@@ -18,11 +20,13 @@ export class Tensor {
         return 0;
     }
     _back(){
-        const s = this.data;
         element_wise(x => x.back(x.g), [this.data]);
     }
     back(learn_speed = .1){
-        element_wise(x => x.g = +x, [this.data]);
+        this.data.map(x=>{
+            x.g = +x
+        })
+        // element_wise(x => (x.g = x), [this.data]);
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -34,12 +38,12 @@ export class Tensor {
         }
         build_topo(this);
         this.topo.reverse();
-        this.topo.forEach((node, i) => {
-            node._back();
-        })
-        this.topo.forEach((node) => {
-            node.updateParams(learn_speed);
-        })
+        // this.topo.forEach((node, i) => {
+        //     node._back();
+        // })
+        // this.topo.forEach((node) => {
+        //     node.updateParams(learn_speed);
+        // })
         // this.topo.forEach((node) => {
         //     node.clearGrad()
         // })
@@ -125,16 +129,11 @@ export class Tensor {
         return this.shape.length;
     }
     _sum(){
-        let res = this.data.reduce((r, v) => r + v);
-        let out = ten(res, `_sum`);
-        // out._back = () => {
-        //     this.grad = this.grad.map(v=>v + out.grad);
-        // }
-        return out;
+        return Tensor.einsum('x -> ', this);
     }
     _mean(){
         let out = this._sum();
-        out = out._div(this.size);
+        out = out._div(num(this.size));
         return out;
     }
     _repeat(cnt= 1){
@@ -159,11 +158,9 @@ export class Tensor {
     _mse(other){
         other = ten(other);
         let res = element_wise((x, t) => num(t - x, g=>{
-            x.g = g;
+            x.back(g);
         }, '_mse'), this.data, other.data);
-        // res = res.reduce((r, v) => (r + v))
-        let out =  ten(res, '_mse', [this]);
-        return out
+        return ten(res, '_mse', [this]);
     }
     static concat(...tensors){
         const out = ten(tensors.reduce((r, t)=>{
@@ -178,10 +175,10 @@ export class Tensor {
         return out;
     }
     static ones(size){
-        return this.fill(size, 1);
+        return this.fill(size, 1.0);
     }
     static zeros(size){
-        return this.fill(size, 0);
+        return this.fill(size, 0.0);
     }
     static random(size, k = 1){
         return this.fill(size, ()=>(Math.random()-.5) * k);
@@ -305,13 +302,14 @@ export function Parameter(t){
     t.isParam = true;
     return t
 }
-function element_wise(fn, ...args){
-    return args[0]?.map?.((_, i)=>{
-        const next_args = args.map(a=>{
-            return a?.[i] ?? a;
-        });
-        return element_wise(fn, ...next_args);
-    }) ?? fn(...args);
+function element_wise(fn, data, other){
+    if(Array.isArray(data)){
+        return data.map?.((d, i)=>{
+            return element_wise(fn, d, other?.[i]);
+        })
+    }
+    const rr = fn(data, other);
+    return rr;
 }
 Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
@@ -323,7 +321,7 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 6){
+            if (d.length > 8){
                 result += d.slice(0, 2).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;

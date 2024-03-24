@@ -1,5 +1,5 @@
 export class TNum extends Number{
-    _ = undefined;
+    // _ = undefined;
     g = 0;
     backs = []
     constructor(v, back_fn, l) {
@@ -10,27 +10,29 @@ export class TNum extends Number{
             this.l = l;
     }
     setVal(v){
-        this._ = v;
         this.valueOf = valueOf;
+        this._ = v;
     }
     back(g){
+        this.g += g;
         for (let back of this.backs)
-            back(g);
+            back(this.g);
         this.backs = []
     }
 
 }
 export function num(val, back_fn, label){
-    return val instanceof TNum ? val : new TNum(val, back_fn, label);
+    return ((val instanceof TNum) ? val : new TNum(val, back_fn, label));
 }
 function valueOf(){
     return this._;
 }
 
 Number.prototype.toTNumString = function (width = 2) {
-    const v = (+this);
+    const v = this;
+    // return v.toString().padStart(9, ' ');
     if (v.toString().length > 6)
-        return ((v < 0?' ':'  ') + v.toExponential(width) + ' ').padStart(9, ' ');
+        return ((v < 0?' ':'  ') + (v).toExponential(width) + ' ').padStart(9, ' ');
     return v.toString().padStart(9, ' ');
 }
 
@@ -39,86 +41,90 @@ Number.prototype.toTNumString = function (width = 2) {
 
 Number.prototype._mul = function (other){
     return num(this * other, g => {
-        this.back(this.g += other * g);
-        other.back?.( other.g += this * g);
+        this.back(other * g);
+        other.back(this * g);
     }, '_mul');
 }
 Number.prototype._add = function (other){
     return num(this + other, g => {
-        this.back(this.g += g);
-        other.back?.(other.g += g);
+        this.back(g);
+        other.back(g);
     }, '_add');
 }
 
 Number.prototype._add_ = function (other){
     this.setVal(this + other);
+    this.l='_add_';
     this.backs.push(g=>{
-        other.back(other.g += g);
+        other.back(g);
     })
     return this;
 }
 Number.prototype._exp = function (){
     return num(Math.exp(this), g => {
-        this.back(this.g += Math.E * this ** (Math.E - 1) * g);
-    });
+        this.back(Math.E ** this * g);
+    }, '_exp');
 }
-Number.prototype._pow = function (e){
-    return num(this ** e, g => {
-        this.back(this.g += this * e ** (this - 1) * g);
-    });
+Number.prototype._pow = function (other){
+    return num(this ** other, g => {
+        this.back(other * this ** (other - 1) * g);
+        other.back?.(this ** other * Math.log(this) * g);
+    }, '_pow');
 }
-Number.prototype._div = function (e){
-    return num(this / e, g => {
-        this.back(this.g += this * e / e ** 2 * g);
-    });
+Number.prototype._div = function (other){
+    return num(this / other, g => {
+        this.back(1 / other * g);
+        other.back(-(this / other ** 2) * g);
+    },'_div');
 }
+
 Number.prototype._sqrt = function (){
     const res = Math.sqrt(this)
     return num(res, g => {
-        this.back(this.g += (1 / (2 * res)) * g);
-    });
+        this.back((1 / (2 * res)) * g);
+    },'_sqrt');
 }
 Number.prototype._rsqrt = function (){
     return num(1)._div(this._sqrt());
 }
 Number.prototype._log = function (){
     return num(Math.log(this), g => {
-        this.back(this.g += (1 / (this * Math.log(Math.exp())) * g));
-    });
+        this.back((1 / this) * g);
+    },'_log');
 }
 Number.prototype._log10 = function () {
     return num(Math.log10(this), g => {
-        this.back(this.g += (1 / (this * Math.log(10)) * g));
-    });
+        this.back((1 / (this * Math.log(10)) * g));
+    },'_log10');
 }
 
 // activation functions
 
 Number.prototype._softplus = function () {
     return num(Math.log(1 + Math.exp(this)), g => {
-        this.back(this.g += (1 / (1 + Math.exp (-this))) * g);
-    });
+        this.back((1 / (1 + Math.exp (-this))) * g);
+    },'_softplus');
 }
 Number.prototype._sigmoid = function () {
     return num(1 / (1 + Math.exp(-this)), g => {
-        this.back(this.g += this * (1 - this) * g);
-    });
+        this.back(this * (1 - this) * g);
+    },'_sigmoid');
 }
 Number.prototype._silu = function () {
     return num(this * 1 / (1 + Math.exp(-this)), g => {
-        this.back(this.g += this * (1 - this) * g);
-    });
+        this.back(this * (1 - this) * g);
+    },'_silu');
 }
 Number.prototype._relu = function (leak = 0) {
     return num(this > 0 ? this : leak, g => {
-        this.back(this.g += (this > 0 ? 1 : leak) * g);
-    });
+        this.back((this > 0 ? 1 : leak) * g);
+    },'_relu');
 }
 
 Number.prototype._elu = function (alpha = 1){
     const elu = this > 0 ? this : (alpha * (Math.exp(this) - 1));
     return num(elu, g => {
-        this.back(this.g += (this > 0 ? 1 : elu + alpha) * g);
-    });
+        this.back((this > 0 ? 1 : elu + alpha) * g);
+    },'_elu');
 }
 

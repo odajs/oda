@@ -151,8 +151,12 @@
             </style>
             <div class="flex vertical" style="overflow-y: auto">
                 <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span flex :info="$for.item?.isParam">{{$for.index}}: {{$for.item?.toString(true)}}</span>
-                    <span dark style="width: 50%">{{$for.item.g.toTensorString()}}</span>
+                    <span no-flex>{{$for.index}}: </span>
+                    <div class="vertical flex">
+                        <span flex :info="$for.item?.isParam">{{$for.item?.toString(true)}}</span>
+                        <span dark>{{$for.item.g.toTensorString()}}</span>
+                    </div>
+
                 </div>
             </div>
             <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
