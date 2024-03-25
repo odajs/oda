@@ -9,8 +9,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 padding: 12px 6px;
             }
         </style>
-        <div ~if="!isReady" class="horizontal flex" style="width: 100%; position: fixed; justify-content: center; top: 0;">
-            <oda-icon icon="spinners:6-dots-rotate" icon-size="64"></oda-icon>
+        <div ~if="!isReady" class="horizontal flex" style="position: fixed;top: 50%;left: 50%;z-index: 100;transform: translate3d(-50%, -50%, 0);pointer-events: none;">
+            <oda-icon icon="odant:spin" icon-size="64"></oda-icon>
         </div>
         <oda-jupyter-divider idx="-1" :hover="isReady && !cells?.length"></oda-jupyter-divider>
         <oda-jupyter-cell-container ~for="cells" :item="$for.item" :index="$for.index"></oda-jupyter-cell-container>
