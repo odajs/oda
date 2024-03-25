@@ -14,7 +14,9 @@ export class Module{
         }
         this.__init__(...args);
         const fwd = (...args)=>{
-            return this.forward(...args)
+            const out = this.forward(...args)
+            out.label = this.label;
+            return out;
         }
         fwd.module = this;
         fwd.toString = this.toString.bind(this);
@@ -75,7 +77,11 @@ export class Linear extends Module{
             x = Tensor.einsum('in, out, in out -> out', x, this.bias, this.W);
         else
             x = Tensor.einsum('in, in out -> out', x, this.W);
+        x.label = this.label
         return x;
+    }
+    get label(){
+        return this.constructor.name + ` (${this.W.shape}, ${!!this.bias})`
     }
 }
 export function linear(...args){
@@ -87,13 +93,16 @@ export class RMSNorm extends Module {
         this.eps = 1e-5;
     }
     forward(x) {
-        let v = x._pow(2);
-        v = v._mean();
-        v = v._add(this.eps);
-        v = v._rsqrt();
-        v = Tensor.einsum('v, w -> w', v, this.V);
-        x = Tensor.einsum('x, x -> x', x, v);
-        return x;
+        let v = x.func('_pow', 2);
+        v = v.mean();
+        v = v.add(this.eps);
+        v = v.func('_rsqrt');
+        v = this.V.mul(v);
+        v = v.mul(x);
+        return v;
+    }
+    get label(){
+        return this.constructor.name + ` (${this.V.shape})`
     }
 }
 export function rmsNorm(...args){

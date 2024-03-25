@@ -1,5 +1,4 @@
 export class TNum extends Number{
-    // _ = undefined;
     g = 0;
     backs = []
     constructor(v, back_fn, l) {
@@ -28,11 +27,9 @@ function valueOf(){
     return this._;
 }
 
-Number.prototype.toTNumString = function (width = 2) {
+Number.prototype.toTNumString = function () {
     const v = +this;
-    if (v.toString().length > 6)
-        return ((v < 0?' ':'  ') + (v).toExponential(width) + ' ').padStart(9, ' ');
-    return v.toString().padStart(9, ' ');
+    return ((v < 0?' ':'  ') + (v).toExponential(2) + ' ').padStart(7, ' ');
 }
 
 
@@ -99,31 +96,31 @@ Number.prototype._log10 = function () {
 
 // activation functions
 
-Number.prototype._softplus = function () {
+Number.prototype.softplus = function () {
     return num(Math.log(1 + Math.exp(this)), g => {
         this.back((1 / (1 + Math.exp (-this))) * g);
-    },'_softplus');
+    },'softplus');
 }
-Number.prototype._sigmoid = function () {
+Number.prototype.sigmoid = function () {
     return num(1 / (1 + Math.exp(-this)), g => {
         this.back(this * (1 - this) * g);
-    },'_sigmoid');
+    },'sigmoid');
 }
-Number.prototype._silu = function () {
+Number.prototype.silu = function () {
     return num(this * 1 / (1 + Math.exp(-this)), g => {
         this.back(this * (1 - this) * g);
-    },'_silu');
+    },'silu');
 }
-Number.prototype._relu = function (leak = 0) {
+Number.prototype.relu = function (leak = 0) {
     return num(this > 0 ? this : leak, g => {
         this.back((this > 0 ? 1 : leak) * g);
-    },'_relu');
+    },'relu');
 }
 
-Number.prototype._elu = function (alpha = 1){
+Number.prototype.elu = function (alpha = 1){
     const elu = this > 0 ? this : (alpha * (Math.exp(this) - 1));
     return num(elu, g => {
         this.back((this > 0 ? 1 : elu + alpha) * g);
-    },'_elu');
+    },'elu');
 }
 

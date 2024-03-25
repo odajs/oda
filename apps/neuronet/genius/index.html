@@ -53,7 +53,7 @@
         `,
         stepCount: 0,
         learnSpeedCorrection: 0,
-        learnSpeed: .01,
+        learnSpeed: .05,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -86,9 +86,9 @@
                     let next = phrase[i+1] || Array(token.length).fill(0);
                     let res = this.model(token);
                     if(next){
-                        this.tensor = res._mse(token);
+                        this.tensor = res.mse(token);
                         this.tensor.back(this.learnSpeed);
-                        this.err = this.tensor._pow(2)._sum().data;
+                        this.err = this.tensor.pow(2).sum().data;
                     }
                     result.push(res);
                 }

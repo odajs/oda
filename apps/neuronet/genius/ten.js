@@ -32,6 +32,9 @@ export class Tensor {
                 t.children.forEach(ch => build_topo(ch))
                 this.topo.push(t)
             }
+            else{
+            //     console.log(t)
+            }
         }
         build_topo(this);
         this.topo.forEach((node) => {
@@ -127,45 +130,79 @@ export class Tensor {
     get dim(){
         return this.shape.length;
     }
-    _sum(){
-        return Tensor.einsum('x -> ', this);
-    }
-    _mean(){
-        let out = this._sum();
-        out = out._div(this.size);
+    sum(axis){
+        let expr = this.shape.map((_,i)=>{
+            return 'd'+i;
+        }).join(' ')+' -> ';
+        if (axis !== undefined)
+            expr += 'd'+axis
+        const out = Tensor.einsum(expr, this);
+        out.label = 'sum';
+        if (axis !== undefined)
+            out.label +=' by ' + axis;
         return out;
     }
-    _repeat(cnt= 1){
+    mul(other){
+        return this.func('_mul', other);
+    }
+    add(other){
+        return this.func('_add', other);
+    }
+    div(other){
+        return this.func('_div', other);
+    }
+    exp(){
+        return this.func('_exp');
+    }
+    pow(other){
+        return this.func('_pow', other);
+    }
+    mean(){
+        let out = this.sum();
+        out = out.div(this.size);
+        return out;
+    }
+    repeat(cnt= 1){
         const res = Array(cnt).fill(0).map(i=>{
             return structuredClone(this.data);
         })
         let out = ten(res, `_repeat(${cnt})`, [this]);
         return out;
     }
-    _slice(parts = []){
+    slice(parts = []){
         let start = 0;
         const result = []
         for (let size of parts){
             let end = start + size;
             let res = this.data.slice(start,  end);
-            let out = ten(res, `_slice [${start}-${end}]`, [this]);
+            let out = ten(res, `slice [${start}-${end}]`, [this]);
             result.push(out);
             start = end;
         }
         return result;
     }
-    _mse(other){
+    mse(other){
         other = ten(other);
         let res = element_wise((x, t) => num(t - x, g=>{
             x.back(g);
-        }, '_mse'), this.data, other.data);
-        return ten(res, '_mse', [this]);
+        }, `_mse`), this.data, other.data);
+        return ten(res, `mse (${this.shape})`, [this]);
+    }
+    active(name){
+        return this.func(name);
+    }
+    func(fn, ...args){
+        let res = element_wise((d, o) => {
+            return d[fn](o)
+        }, this.data, ...(args.map(i=>(i?.data ?? i))));
+        return ten(res, fn, [this, ...args.filter(i=>i instanceof TNum)]);
     }
     static concat(...tensors){
-        const out = ten(tensors.reduce((r, t)=>{
+        const res = tensors.reduce((r, t)=>{
             return r.concat(t.data);
             return r;
-        }, []), 'concat', tensors)
+        }, [])
+        const out = ten(res, 'concat', tensors);
         return out;
     }
     static stack(other_tensors){
@@ -288,9 +325,6 @@ export class Tensor {
         out.label = label + ' ('+out.shape+')';
         return out;
     }
-    any(fn, ...args){
-        return ten(element_wise(v => v[fn](...args), [this.data])[0], fn, [this]);
-    }
 }
 export function ten(...args){
     if(args[0] instanceof Tensor)
@@ -304,7 +338,7 @@ export function Parameter(t){
 function element_wise(fn, data, other){
     if(Array.isArray(data)){
         return data.map?.((d, i)=>{
-            return element_wise(fn, d, other?.[i]);
+            return element_wise(fn, d, other?.[i] ?? other);
         })
     }
     const rr = fn(data, other);
@@ -320,7 +354,7 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 8){
+            if (d.length > 6){
                 result += d.slice(0, 2).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
@@ -335,7 +369,9 @@ Array.prototype.toTensorString = function (n = 2){
                 }).join(' ') || d.toTNumString()
             }
         }
-        return result + ']'
+
+        result = result + ']'
+        return result
     }
 
     return recurse(this);
@@ -349,36 +385,6 @@ Math.seed = function(s) {
         return s - Math.floor(s);
     }
 };
-
-Tensor.prototype._log = function (){
-    return this.any('_log');
-}
-
-Tensor.prototype._silu = function (){
-    return this.any('_silu');
-}
-
-Tensor.prototype._softplus = function (){
-    return this.any('_softplus');
-}
-Tensor.prototype._pow = function (e){
-    return this.any('_pow', e);
-}
-Tensor.prototype._div = function (e){
-    return this.any('_div', e);
-}
-Tensor.prototype._add = function (e){
-    return this.any('_add', e);
-}
-
-Tensor.prototype._rsqrt = function (e){
-    return this.any('_rsqrt', e);
-}
-
-Tensor.prototype._exp = function (e){
-    return this.any('_exp', e);
-}
-
 function Rec_Mult(C, A, B, n, rowsize) {
     if (n === 2)
     {
