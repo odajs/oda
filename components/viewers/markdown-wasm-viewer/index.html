@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="../../../oda.js"></script>
+
+<!-- <oda-tester> -->
+    <oda-markdown-wasm-viewer id="marked"></oda-markdown-wasm-viewer>
+<!-- </oda-tester> -->
+
+<script type="module">
+    import './markdown-wasm-viewer.js';
+    // marked.src = '# Marked in the browser\n\nRendered by **marked**.';
+    marked.url = './test.md';
+</script>
