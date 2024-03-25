@@ -302,7 +302,7 @@ ODA({ is: 'oda-jupyter-cell',
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/marked-viewer', extends: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/markdown-wasm-viewer', extends: 'oda-jupyter-cell',
     template: `
         <style>
             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -312,7 +312,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'unset'}};
                 position: relative;
             }
-            oda-marked-viewer {
+            oda-markdown-wasm-viewer {
                 opacity: {{opacity}};
                 border: none;
                 outline: none;
@@ -336,7 +336,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor :value="src" ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-            <oda-marked-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-marked-viewer>
+            <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             <div class="collapsed horizontal flex" ~if="cell?.collapsed">Скрыто {{levelsCount}} ячеек</div>
         </div>
     `,
