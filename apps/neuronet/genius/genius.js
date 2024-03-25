@@ -21,16 +21,13 @@ export class Genius extends nn.Module{
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
-        this.norm = nn.rmsNorm(d);
     }
     forward(x){
         x = Tensor.einsum('out, out in -> in', x, this.W);
-        x = this.norm(x);
-
-        // x = this.encoder(x);
+        x = this.encoder(x);
         // x = this.decoder(x);
-        // const wT = Tensor.einsum('i j -> j i', this.W);
-        // x = Tensor.einsum('x, x w -> w', x, wT);
+        const wT = Tensor.einsum('i j -> j i', this.W);
+        x = Tensor.einsum('x, x w -> w', x, wT);
 
         return x;
     }
@@ -50,7 +47,7 @@ export class genEncoder extends nn.Module{
 }
 export class genDecoder extends nn.Module{
     __init__(d_in) {
-        // this.head_count = 1
+        this.head_count = 1
         this.layers = Array(LAYER_COUNT).fill(0).map((_, i)=>{
             let dim = d_in * HEAD_COUNT ** i;
             return new genLayer(dim * HEAD_COUNT, dim);
@@ -88,7 +85,7 @@ export class genHead extends nn.Module{
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
-        // this.norm = nn.rmsNorm(d);
+        this.norm = nn.rmsNorm(d);
     }
     forward(x){
         let x_and_res = this.in_proj(x);
@@ -98,7 +95,7 @@ export class genHead extends nn.Module{
         x2 = x2._silu();
         y = Tensor.einsum('n, n -> n', y, x2);
         y = this.out_proj(y);
-        // y = this.norm(y);
+        y = this.norm(y);
         return y;
     }
     ssm(x){
@@ -160,7 +157,7 @@ export class WordDecoder {
         return this.decode.bind(this);
     }
     decode(vector){
-        vector.reverse()
+        vector = vector.toReversed();
         let result = [];
         for(let i = 0; i<BINS.length; i++){
             let p = BINS[i];

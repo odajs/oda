@@ -23,7 +23,7 @@ export class Tensor {
         element_wise(x => x.back(x.g), [this.data]);
     }
     back(learn_speed = .1){
-        // element_wise(x => (x.g = x), [this.data]);
+
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -34,16 +34,18 @@ export class Tensor {
             }
         }
         build_topo(this);
+        this.topo.forEach((node) => {
+            node.clearGrad()
+        })
+        element_wise(x => (x.g = x), [this.data]);
         this.topo.reverse();
-        // this.topo.forEach((node, i) => {
-        //     node._back();
-        // })
-        // this.topo.forEach((node) => {
-        //     node.updateParams(learn_speed);
-        // })
-        // this.topo.forEach((node) => {
-        //     node.clearGrad()
-        // })
+        this.topo.forEach((node, i) => {
+            node._back();
+        })
+        this.topo.forEach((node) => {
+            node.updateParams(learn_speed);
+        })
+
 
     }
     get label(){
@@ -81,7 +83,7 @@ export class Tensor {
         }, [this.data])[0];
     }
     clearGrad(){
-        element_wise(d=>d.g = 0, [this.data])[0];
+        element_wise(d=>d.g = 0, [this.data]);
     }
     set label(n){
         this['#label'] = n;
@@ -130,7 +132,7 @@ export class Tensor {
     }
     _mean(){
         let out = this._sum();
-        out = out._div(num(this.size));
+        out = out._div(this.size);
         return out;
     }
     _repeat(cnt= 1){

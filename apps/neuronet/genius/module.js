@@ -83,7 +83,7 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.W = Parameter(Tensor.ones(dim));
+        this.V = Parameter(Tensor.ones(dim));
         this.eps = 1e-5;
     }
     forward(x) {
@@ -91,7 +91,7 @@ export class RMSNorm extends Module {
         v = v._mean();
         v = v._add(this.eps);
         v = v._rsqrt();
-        v = Tensor.einsum('v, w -> w', v, this.W);
+        v = Tensor.einsum('v, w -> w', v, this.V);
         x = Tensor.einsum('x, x -> x', x, v);
         return x;
     }

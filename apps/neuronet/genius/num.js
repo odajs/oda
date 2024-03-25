@@ -29,8 +29,7 @@ function valueOf(){
 }
 
 Number.prototype.toTNumString = function (width = 2) {
-    const v = this;
-    return v.toString().padStart(9, ' ');
+    const v = +this;
     if (v.toString().length > 6)
         return ((v < 0?' ':'  ') + (v).toExponential(width) + ' ').padStart(9, ' ');
     return v.toString().padStart(9, ' ');
@@ -42,13 +41,13 @@ Number.prototype.toTNumString = function (width = 2) {
 Number.prototype._mul = function (other){
     return num(this * other, g => {
         this.back(other * g);
-        other.back(this * g);
+        other.back?.(this * g);
     }, '_mul');
 }
 Number.prototype._add = function (other){
     return num(this + other, g => {
         this.back(g);
-        other.back(g);
+        other.back?.(g);
     }, '_add');
 }
 
@@ -74,7 +73,7 @@ Number.prototype._pow = function (other){
 Number.prototype._div = function (other){
     return num(this / other, g => {
         this.back(1 / other * g);
-        other.back(-(this / other ** 2) * g);
+        other.back?.(-(this / other ** 2) * g);
     },'_div');
 }
 
