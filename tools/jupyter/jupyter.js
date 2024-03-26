@@ -309,8 +309,8 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             :host {
                 @apply --vertical;
                 @apply --flex;
-                max-height: {{editIdx >= 0 ? 'calc(100vh - 32px)' : 'unset'}};
                 position: relative;
+                overflow: hidden;
             }
             oda-markdown-wasm-viewer {
                 opacity: {{opacity}};
@@ -330,14 +330,19 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 font-size: x-small;
                 padding: 4px 0 0 12px;
             }
+            .md {
+                max-height: {{editIdx === idx ? 'calc(100vh - 100px)' : 'unset'}}; 
+            }
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
                 <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
             </div>
-            <oda-simplemde-editor :value="src" ~if="!readOnly && editIdx===idx" style="max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-            <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
-            <div class="collapsed horizontal flex" ~if="cell?.collapsed">Скрыто {{levelsCount}} ячеек</div>
+            <oda-simplemde-editor :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+            <div class="md vertical flex" style="overflow-y: auto">
+                <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
+            </div>
+            <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
         </div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
