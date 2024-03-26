@@ -33,7 +33,6 @@
                 let end = performance.now();
                 let markedTime = Math.round(end - start);
                 _markedTime.innerHTML = `Время выполнения marked : ${markedTime} мс`;
-                console.log(_markedTime.innerHTML);
 
                 start = performance.now();
                 for (let i = 0; i < count; i++) {
@@ -42,10 +41,8 @@
                 end = performance.now();
                 let markdownTime = Math.round(end - start);
                 _markdownTime.innerHTML = `Время выполнения markdown-wasm : ${markdownTime} мс`;
-                console.log(_markdownTime.innerHTML);
 
                 _result.innerHTML = `Результат : marked / markdown-wasm = ${(markedTime / markdownTime).toFixed(2)}`;
-                console.log(_result.innerHTML);
             })
         })
     })
