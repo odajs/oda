@@ -55,77 +55,98 @@ Number.prototype._add = function (other){
 Number.prototype._add_ = function (other){
     this.setVal(this + other);
     this.backs.push(()=>{
-        other.g += this.g;
-        other.back();
+        other.back(other.g += this.g);
     })
     this.l='_add_';
     return this;
 }
 Number.prototype._exp = function (){
-    return num(Math.exp(this), g => {
-        this.back(Math.E ** this * g);
-    }, '_exp');
+    const out = num(Math.exp(this), '_exp')
+    this.backs.push(()=>{
+        this.back(this.g += Math.E ** this * out.g);
+    })
+    return out;
 }
 Number.prototype._pow = function (other){
-    return num(this ** other, g => {
-        this.back(other * this ** (other - 1) * g);
-        other.back?.(this ** other * Math.log(this) * g);
-    }, '_pow');
+    const out = num(this ** other, '_pow')
+    this.backs.push(()=>{
+        this.back(this.g += other * this ** (other - 1) * out.g);
+        other.back?.(other.g += this ** other * Math.log(this) * out.g);
+    })
+    return out;
 }
 Number.prototype._div = function (other){
-    return num(this / other, g => {
-        this.back(1 / other * g);
-        other.back?.(-(this / other ** 2) * g);
-    },'_div');
+    const out = num(this / other, '_div')
+    this.backs.push(()=>{
+        this.back(this.g += 1 / other * out.g);
+        other.back?.(other.g += -(this / other ** 2) * out.g);
+    })
+    return out;
 }
 
 Number.prototype._sqrt = function (){
     const res = Math.sqrt(this)
-    return num(res, g => {
-        this.back((1 / (2 * res)) * g);
-    },'_sqrt');
+    const out = num(res, '_sqrt')
+    this.backs.push(()=>{
+        this.back(this.g += (1 / (2 * res)) * out.g);
+    })
+    return out;
 }
 Number.prototype._rsqrt = function (){
     return num(1)._div(this._sqrt());
 }
 Number.prototype._log = function (){
-    return num(Math.log(this), g => {
-        this.back((1 / this) * g);
-    },'_log');
+    const out = num(Math.log(this), '_log')
+    this.backs.push(()=>{
+        this.back(this.g += (1 / this) * out.g);
+    })
+    return out;
 }
 Number.prototype._log10 = function () {
-    return num(Math.log10(this), g => {
-        this.back((1 / (this * Math.log(10)) * g));
-    },'_log10');
+    const out =  num(Math.log10(this), '_log10')
+    this.backs.push(()=>{
+        this.back(this.g += (1 / (this * Math.log(10)) * out.g));
+    })
+    return out;
 }
 
 // activation functions
 
 Number.prototype.softplus = function () {
-    return num(Math.log(1 + Math.exp(this)), g => {
-        this.back((1 / (1 + Math.exp (-this))) * g);
-    },'softplus');
+    const out =  num(Math.log(1 + Math.exp(this)),'softplus')
+    this.backs.push(()=>{
+        this.back(this.g += (1 / (1 + Math.exp (-this))) * out.g);
+    })
+    return out;
 }
 Number.prototype.sigmoid = function () {
-    return num(1 / (1 + Math.exp(-this)), g => {
-        this.back(this * (1 - this) * g);
-    },'sigmoid');
+    const out =  num(1 / (1 + Math.exp(-this)), 'sigmoid')
+    this.backs.push(()=>{
+        this.back(this.g += this * (1 - this) * out.g);
+    })
+    return out;
 }
 Number.prototype.silu = function () {
-    return num(this * 1 / (1 + Math.exp(-this)), g => {
-        this.back(this * (1 - this) * g);
-    },'silu');
+    const out =  num(this * 1 / (1 + Math.exp(-this)), 'silu')
+    this.backs.push(()=>{
+        this.back(this.g += this * (1 - this) * out.g);
+    })
+    return out;
 }
 Number.prototype.relu = function (leak = 0) {
-    return num(this > 0 ? this : leak, g => {
-        this.back((this > 0 ? 1 : leak) * g);
-    },'relu');
+    const out =  num(this > 0 ? this : leak, 'relu')
+    this.backs.push(()=>{
+        this.back(this.g += (this > 0 ? 1 : leak) * out.g);
+    })
+    return out;
 }
 
 Number.prototype.elu = function (alpha = 1){
     const elu = this > 0 ? this : (alpha * (Math.exp(this) - 1));
-    return num(elu, g => {
-        this.back((this > 0 ? 1 : elu + alpha) * g);
-    },'elu');
+    const out =  num(elu, 'elu')
+    this.backs.push(()=>{
+        this.back(this.g += (this > 0 ? 1 : elu + alpha) * out.g);
+    })
+    return out;
 }
 
