@@ -27,8 +27,8 @@ export class Genius extends nn.Module{
 
         // x = this.encoder(x);
         // x = this.decoder(x);
-        // const wT = Tensor.einsum('i j -> j i', this.W);
-        // x = Tensor.einsum('x, x w -> w', x, wT);
+        const wT = Tensor.einsum('i j -> j i', this.W);
+        x = Tensor.einsum('x, x w -> w', x, wT);
 
         return x;
     }

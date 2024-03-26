@@ -27,7 +27,7 @@ export class Tensor {
         return 0;
     }
     _back(){
-        element_wise(x => x._back?.(), [this.data]);
+        element_wise(x => x.back(), [this.data]);
     }
     back(learn_speed = .1){
 
@@ -321,7 +321,7 @@ export class Tensor {
         const ss = `out${outs.map(o => {
             return '['+o.a+']'}).join('')
         }`
-        expr = `\t${ss} = (${ss})._add(` + expr + ')';
+        expr = `\t(${ss})._add_(` + expr + ')';
         expr = [...outs, ...axis].map((o, i) => {
             if (o.d)
                 return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`;

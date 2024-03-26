@@ -10,8 +10,8 @@ export class TNum extends Number{
         this.valueOf = valueOf;
         this._ = v;
     }
-    back(g){
-        this.g += g
+    back(){
+        // this.g += g
         for (let back of this.backs)
             back();
         this.backs = []
@@ -37,25 +37,26 @@ Number.prototype.toTNumString = function () {
 
 Number.prototype._mul = function (other){
     const out = num(this * other, '_mul');
-    out._back = () => {
-        this.back(other * out.g);
-        other.back?.(this * out.g);
-    }
+    out.backs.push(() => {
+        this.back(this.g += other * out.g);
+        other.back?.(other.g += this * out.g);
+    })
     return out;
 }
 Number.prototype._add = function (other){
     const out = num(this + other, '_add');
-    out._back =  () => {
-        this.back(out.g);
-        other.back?.(out.g);
-    }
+    out.backs.push(() => {
+        this.back(this.g += out.g);
+        other.back?.(other.g += out.g);
+    })
     return out;
 }
 
 Number.prototype._add_ = function (other){
     this.setVal(this + other);
     this.backs.push(()=>{
-        other.back(g);
+        other.g += this.g;
+        other.back();
     })
     this.l='_add_';
     return this;
