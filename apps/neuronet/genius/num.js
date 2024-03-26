@@ -1,10 +1,8 @@
 export class TNum extends Number{
     g = 0;
     backs = []
-    constructor(v, back_fn, l) {
+    constructor(v, l) {
         super(v);
-        if (back_fn)
-            this.backs.push(back_fn);
         if (l)
             this.l = l;
     }
@@ -13,15 +11,17 @@ export class TNum extends Number{
         this._ = v;
     }
     back(g){
-        this.g = g + this.g;
+        this.g += g
         for (let back of this.backs)
-            back(this.g);
+            back();
         this.backs = []
     }
-
 }
-export function num(val, back_fn, label){
-    return ((val instanceof TNum) ? val : new TNum(val, back_fn, label));
+export function num(val, label, back){
+    val = ((val instanceof TNum) ? val : new TNum(val, label));
+    // if (back)
+    //     val.backs.push(back);
+    return val;
 }
 function valueOf(){
     return this._;
@@ -29,28 +29,32 @@ function valueOf(){
 
 Number.prototype.toTNumString = function () {
     const v = +this;
-    return ((v < 0?' ':'  ') + (v).toExponential(2) + ' ').padStart(7, ' ');
+    return (v).toExponential(2).padStart(10, ' ') +' ';
 }
 
 
 // math functions
 
 Number.prototype._mul = function (other){
-    return num(this * other, g => {
-        this.back(other * g);
-        other.back?.(this * g);
-    }, '_mul');
+    const out = num(this * other, '_mul');
+    out._back = () => {
+        this.back(other * out.g);
+        other.back?.(this * out.g);
+    }
+    return out;
 }
 Number.prototype._add = function (other){
-    return num(this + other, g => {
-        this.back(g);
-        other.back?.(g);
-    }, '_add');
+    const out = num(this + other, '_add');
+    out._back =  () => {
+        this.back(out.g);
+        other.back?.(out.g);
+    }
+    return out;
 }
 
 Number.prototype._add_ = function (other){
     this.setVal(this + other);
-    this.backs.push(g=>{
+    this.backs.push(()=>{
         other.back(g);
     })
     this.l='_add_';

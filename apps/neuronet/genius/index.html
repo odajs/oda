@@ -6,6 +6,7 @@
     import * as gen from './genius.js'
     import * as nn from './ten.js';
     import * as mm from './module.js';
+    import {TNum} from './num.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -46,14 +47,17 @@
                     <oda-button @tap="focusedPanel = 2" :focused="focusedPanel === 2">Tests</oda-button>
                 </div>
                 <textarea ~if="focusedPanel === 0" class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
-                <gen-func-graph ~if="focusedPanel === 1" :tensor></gen-func-graph>
-                <gen-test ~if="focusedPanel === 2" class="flex"></gen-test>
+                <div ~if="focusedPanel === 1" class="flex  vertical" style="overflow: auto;">
+                    <gen-tensor-tree raised ~if="tensor" :tensor></gen-tensor-tree>
+                </div>
+
+                <gen-test class="flex" ~if="focusedPanel === 2" class="flex"></gen-test>
 
             </div>
         `,
         stepCount: 0,
         learnSpeedCorrection: 0,
-        learnSpeed: .05,
+        learnSpeed: .01,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -130,16 +134,15 @@
             return new nn.Tensor([phrases])
         }
     })
-    ODA({is: 'gen-func-graph',
-        template:`
+    ODA({is: 'gen-tensor-tree',
+        template: `
             <style>
                 :host{
-                    position: relative;
-                    font-size: xx-small;
+                    @apply --raised;
+                    /*border-right: 1px solid black;*/
+                    /*border-top: 1px solid black;*/
                     @apply --vertical;
-                    @apply --flex;
-                    border-left: 1px solid silver;
-                    overflow: hidden;
+                    @apply --no-flex;
                 }
                 span{
                     overflow: hidden;
@@ -149,24 +152,44 @@
                     font-family: monospace;
                 }
             </style>
-            <div class="flex vertical" style="overflow-y: auto">
-                <div ~for="tensor?.topo"  class="border horizontal" :tensor="$for.item">
-                    <span no-flex>{{$for.index}}: </span>
-                    <div class="vertical flex">
-                        <span flex :info="$for.item?.isParam">{{$for.item?.toString(true)}}</span>
-                        <span dark>{{$for.item.g.toTensorString()}}</span>
-                    </div>
+            <div class="header bold horizontal" style="position: sticky; top: 0px;">
+                <span>{{tensor?.id}}</span><oda-icon @tap="closed = !closed" :icon></oda-icon>
+                <span  no-flex>{{tensor?.toString()}}</span>
+            </div>
 
+            <div ~if="!closed" vertical style="position: sticky; top: 32px;">
+                <div class="vertical">
+                    <span no-flex>{{tensor?.data?.toTensorString()}}</span>
+                    <span disabled no-flex>{{tensor?.g?.toTensorString()}}</span>
+                </div>
+                <div class="no-flex horizontal">
+                    <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>
                 </div>
             </div>
-            <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
+
         `,
+        closed:{
+            set(n){
+                this.tensor.closed = n
+            },
+            get(){
+                return this.tensor?.closed || false
+            }
+        },
         tensor: null,
-        get paramCount(){
-            return this.tensor?.topo?.reduce((r, v)=> {
-                return r + v.paramCount
-            }, 0) || 0;
+        get children(){
+            return this.tensor?.children;
+        },
+        info:{
+            $attr: true,
+            get() {
+                return this.tensor?.isParam;
+            }
+        },
+        get icon(){
+            return this.closed?'icons:chevron-right':'icons:chevron-right:90'
         }
+
     })
     ODA({is: 'gen-test',
         template:`
@@ -184,8 +207,8 @@
         },
         get result(){
             try{
-                const fn = new Function('mm', 'nn', this.value);
-                return fn.call(this, mm, nn)|| '';
+                const fn = new Function('mm', 'nn', 'TNum', this.value);
+                return fn.call(this, mm, nn, TNum)|| '';
             }
             catch (e){
                 return e;

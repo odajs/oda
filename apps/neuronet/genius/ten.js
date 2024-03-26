@@ -1,9 +1,16 @@
 import {num, TNum} from './num.js';
+function genId(){
+    return ++_id;
+}
+let _id = 0;
 export class Tensor {
     constructor(data, label, children= [], error) {
+        this.id = genId();
         this.data = data;
         this.data =  element_wise((x)=>{
-            return num(x);
+            const n = num(x);
+            n.t = this;
+            return n;
         }, [data])[0]
         this.label = label;
         this.children = children;
@@ -20,7 +27,7 @@ export class Tensor {
         return 0;
     }
     _back(){
-        element_wise(x => x.back(x.g), [this.data]);
+        element_wise(x => x._back?.(), [this.data]);
     }
     back(learn_speed = .1){
 
@@ -32,15 +39,11 @@ export class Tensor {
                 t.children.forEach(ch => build_topo(ch))
                 this.topo.push(t)
             }
-            else{
-            //     console.log(t)
-            }
         }
         build_topo(this);
         this.topo.forEach((node) => {
             node.clearGrad()
         })
-        element_wise(x => (x.g = x), [this.data]);
         this.topo.reverse();
         this.topo.forEach((node, i) => {
             node._back();
@@ -106,9 +109,9 @@ export class Tensor {
     }
     toString(show_data = false){
         let data = (show_data?this.data.toTensorString()+'\r\n':'').split('\r\n');
-        if (data.length > 6){
+        if (data.length > 4){
             const padding = data[0].length/2 + 2
-            data = [...data.slice(0, 2), ('...').padStart(padding, ' '), ...data.slice(-3)]
+            data = [...data.slice(0, 1), (' ...').padStart(padding, ' '), ...data.slice(-2)]
         }
         data = data.join('\r\n')
         return this.label + '\r\n' + data
@@ -183,10 +186,12 @@ export class Tensor {
     }
     mse(other){
         other = ten(other);
-        let res = element_wise((x, t) => num(t - x, g=>{
-            x.back(g);
-        }, `_mse`), this.data, other.data);
-        return ten(res, `mse (${this.shape})`, [this]);
+        let res = element_wise((x, t) => num(t - x), this.data, other.data);
+        let out = ten(res, `mse (${this.shape})`, [this]);
+        out._back = ()=>{
+            element_wise((x, g) => (x.g += g), [this.data], [out.data]);
+        }
+        return out
     }
     active(name){
         return this.func(name);
@@ -202,7 +207,11 @@ export class Tensor {
             return r.concat(t.data);
             return r;
         }, [])
-        const out = ten(res, 'concat', tensors);
+
+        const out = ten(res, '', tensors);
+        let label = 'concat: (';
+        label += tensors.map(t=>t.shape).join(') + (') + `) -> (${out.shape})`;
+        out.label = label
         return out;
     }
     static stack(other_tensors){
@@ -265,7 +274,7 @@ export class Tensor {
         }), 'pos: '+pos)
     }
     static einsum(expr, ...sources){
-        const label = 'einsum \''+expr+'\'';
+        const label = 'einsum: \"'+expr+'\"';
         const tensors = sources.map(i=>ten(i));
         let operator = '_mul';
         expr = expr.split('->');                            // Разделение выражения на вход и выход
@@ -309,9 +318,10 @@ export class Tensor {
                 return ''
             }).join('')}`
         }).join(`).${operator}(`)+')';
-        expr = `\t(out${outs.map(o => {
+        const ss = `out${outs.map(o => {
             return '['+o.a+']'}).join('')
-        })._add_(` + expr + ')';
+        }`
+        expr = `\t${ss} = (${ss})._add(` + expr + ')';
         expr = [...outs, ...axis].map((o, i) => {
             if (o.d)
                 return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`;
@@ -354,12 +364,12 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 6){
-                result += d.slice(0, 2).map(x=>{
+            if (d.length > 4){
+                result += d.slice(0, 1).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
-                result +=  ' ... ';
-                result +=  d.slice(-2).map(x=>{
+                result +=  ':';
+                result +=  d.slice(-1).map(x=>{
                     return x.toTNumString()
                 }).join(' ')
             }
