@@ -312,7 +312,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input id="i1" placeholder="с ~props" ~props="attr" >
+        <input id="i1" placeholder="с ~props" ~props="attr">
         <span>Имеет свойство «type»: {{'type' in $('#i1')}} — Имеет атрибут «type»: {{$('#i1').hasAttribute('type')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
@@ -334,7 +334,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input id="i1" ~props="attr" >
+        <input id="i1" ~props="attr">
         <span>Имеет свойство «value»: {{'value' in $('#i1')}} — Имеет атрибут «value»: {{$('#i1').hasAttribute('value')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
@@ -354,7 +354,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input id="i1" placeholder="с ~props" ~props="attr" >
+        <input id="i1" placeholder="с ~props" ~props="attr">
         <span>Имеет свойство «nick»: {{'nick' in $('#i1')}} — Имеет атрибут «nick»: {{$('#i1').hasAttribute('nick')}}</span>
         <br>
         <input id="i2" placeholder="без ~props">
