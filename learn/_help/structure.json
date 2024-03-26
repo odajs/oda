@@ -269,6 +269,12 @@
                                             },
                                             {
                                                 "label": {
+                                                    "ru": "<b style='color: brown'>~if / ~else / ~else-if</b>: Взаимодействие с DOM компонента"
+                                                },
+                                                "name": "structure-template-jsx-directives-~if-dom.md"
+                                            },
+                                            {
+                                                "label": {
                                                     "ru": "<b style='color: brown'>~save-key</b>: Ключ хранилища"
                                                 },
                                                 "name": "structure-template-jsx-directives-~save-key.md"
