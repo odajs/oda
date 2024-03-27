@@ -42,6 +42,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get selected() {
             return this.cells[this.selectedIdx];
         },
+        set selected(n) {
+            if (n)
+                this.selectedIdx = this.cells.findIndex(i => i.id === n.id);
+        },
         selectedIdx: {
             $def: -1,
             set(n) {
@@ -318,7 +322,6 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --vertical;
                 @apply --flex;
                 position: relative;
-                overflow: hidden;
             }
             oda-markdown-wasm-viewer {
                 opacity: {{opacity}};
