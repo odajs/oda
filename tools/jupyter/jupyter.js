@@ -286,7 +286,7 @@ ODA({ is: 'oda-jupyter-cell',
         this.opacity = 1;
         if (isLoaded) {
             this.isReady = true;
-            console.log('jupyter-loaded');
+            // console.log('jupyter-loaded');
             this.jupyter.fire('jupyter-loaded');
         }
     },
