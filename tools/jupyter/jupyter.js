@@ -39,6 +39,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
             markdown: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
         },
+        get selected() {
+            return this.cells[this.selectedIdx];
+        },
         selectedIdx: {
             $def: -1,
             set(n) {
@@ -103,6 +106,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         isReady: false,
         get path() { return path },
         get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
+        scrollToCell(idx = this.selectedIdx) {
+            this.async(() => {
+                this.jupyter.$('#cell-' + this.cells[idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            })
+        }
     },
     $listeners: {
         tap(e) { this.selectedIdx = this.editIdx = -1 }
@@ -359,9 +367,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
         if (this.editIdx === this.idx){
-            this.async(() => {
-                this.jupyter.$('#cell-' + this.cells[this.idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            })
+            this.scrollToCell(this.editIdx);
         }
     }
 })
@@ -520,7 +526,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 this.async(() => fn(), 300);
             }
             src = src.split('\n').filter(i => i).at(-1);
-            window[str] && console.log(window[src]);
+            window[src] && console.log(window[src]);
+            this.iconCloseShow = true;
         } else {
             this.isRun = true;
             this.async(() => {
