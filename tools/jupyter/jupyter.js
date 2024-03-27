@@ -209,7 +209,10 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cell });
-        this.async(() => this.selectedIdx = idx, 100);
+        this.async(() => {
+            this.selectedIdx = idx;
+            this.editIdx = idx;
+        }, 100)
     }
 })
 
