@@ -49,10 +49,18 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         selectedIdx: {
             $def: -1,
             set(n) {
+                // if (this.editIdx >= 0)
+                //     this.scrollToCell();
                 this.editIdx = -1;
             }
         },
-        editIdx: -1,
+        editIdx: {
+            $def: -1,
+            set(n) {
+                if (n >= 0)
+                    this.scrollToCell();
+            }
+        },
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
         },
@@ -113,7 +121,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         scrollToCell(idx = this.selectedIdx) {
             this.async(() => {
                 this.jupyter.$('#cell-' + this.cells[idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            })
+            }, 100)
         }
     },
     $listeners: {
@@ -201,9 +209,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cell });
-        this.async(() => {
-            this.selectedIdx = idx;
-        }, 100)
+        this.async(() => this.selectedIdx = idx, 100);
     }
 })
 
@@ -347,7 +353,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="cursor: pointer; padding: 4px" @tap="toggleCollapse"></oda-icon>
+                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md vertical flex" style="overflow-y: auto">
@@ -369,9 +375,6 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
-        if (this.editIdx === this.idx){
-            this.scrollToCell(this.editIdx);
-        }
     }
 })
 
@@ -405,11 +408,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 overflow: auto;
             }
         </style>
-        <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}">
+        <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
                 <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
             </div>
-            <h3 @dblclick="toggleCollapse">{{cell.label}}</h3>
+            <h3>{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
