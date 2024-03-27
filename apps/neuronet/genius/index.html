@@ -52,12 +52,12 @@
                 </div>
 
                 <gen-test class="flex" ~if="focusedPanel === 2" class="flex"></gen-test>
-
+                <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
             </div>
         `,
         stepCount: 0,
         learnSpeedCorrection: 0,
-        learnSpeed: .01,
+        learnSpeed: .025,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -81,6 +81,11 @@
         set goSteps(n) {
             if (n)
                 this.steps();
+        },
+        get paramCount(){
+            return this.tensor?.topo?.reduce((r, v)=> {
+                return r + v.paramCount
+            }, 0) || 0;
         },
         step(){
             let result = [];
@@ -152,7 +157,7 @@
                     font-family: monospace;
                 }
             </style>
-            <div class="header bold horizontal" style="position: sticky; top: 0px;">
+            <div class="border header bold horizontal" style="position: sticky; top: 0px;">
                 <span>{{tensor?.id}}</span><oda-icon @tap="closed = !closed" :icon></oda-icon>
                 <span  no-flex>{{tensor?.toString()}}</span>
             </div>
@@ -166,8 +171,8 @@
                     <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>
                 </div>
             </div>
-
         `,
+
         closed:{
             set(n){
                 this.tensor.closed = n

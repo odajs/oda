@@ -24,11 +24,10 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
-
         x = this.encoder(x);
         // x = this.decoder(x);
-        const wT = Tensor.einsum('i j -> j i', this.W);
-        x = Tensor.einsum('x, x w -> w', x, wT);
+        this.Wt = Tensor.einsum('i j -> j i', this.W);
+        x = Tensor.einsum('x, x w -> w', x, this.Wt);
 
         return x;
     }
@@ -78,11 +77,11 @@ export class genLayer extends nn.Module{
         this.W0 = nn.linear(d_in * head_count, d_out/2, true); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = x;//this.norm(x);
+        let y = x//this.norm(x);
         let heads_res = this.heads.map(h=>{
             let res = h(y);
-            // let res1 = res.add(x);
-            // return res1;
+            let res1 = res.add(x);
+            return res1;
             return res;
         });
         y = Tensor.concat(...heads_res);//heads_res._concat();

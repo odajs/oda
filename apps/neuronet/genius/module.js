@@ -14,8 +14,8 @@ export class Module{
         }
         this.__init__(...args);
         const fwd = (...args)=>{
-            const out = this.forward(...args)
-            out.label += ' [' + this.label + ']';
+            const out = this.forward(...args);
+            out.label += '/'+this.label;
             return out;
         }
         fwd.module = this;
@@ -69,15 +69,21 @@ export class Module{
 
 export class Linear extends Module{
     __init__(in_size, out_size, bias = false) {
-        this.W = Parameter(Tensor.random([in_size, out_size]));
-        this.bias = bias?Parameter(Tensor.random([out_size])):null;
+        this.W = Tensor.random([in_size, out_size]);
+        this.W.label += '/weights';
+        this.W = Parameter(this.W);
+        if(bias){
+            this.bias = Tensor.random([out_size]);
+            this.bias.label +='/bias';
+            this.bias = Parameter(this.bias);
+        }
+
     }
     forward(x){
         if (this.bias)
             x = Tensor.einsum('in, out, in out -> out', x, this.bias, this.W);
         else
             x = Tensor.einsum('in, in out -> out', x, this.W);
-        x.label = this.label
         return x;
     }
     get label(){

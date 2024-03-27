@@ -351,8 +351,7 @@ function element_wise(fn, data, other){
             return element_wise(fn, d, other?.[i] ?? other);
         })
     }
-    const rr = fn(data, other);
-    return rr;
+    return fn(data, other);
 }
 Array.prototype.toTensorString = function (n = 2){
     function recurse(d, idx = 0, l = 0){
