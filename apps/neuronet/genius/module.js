@@ -80,10 +80,9 @@ export class Linear extends Module{
 
     }
     forward(x){
+        x = Tensor.einsum('in, in out -> out', x, this.W);
         if (this.bias)
-            x = Tensor.einsum('in, out, in out -> out', x, this.bias, this.W);
-        else
-            x = Tensor.einsum('in, in out -> out', x, this.W);
+            x.add(this.bias);
         return x;
     }
     get label(){
@@ -95,20 +94,22 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.V = Parameter(Tensor.ones(dim));
+        this.W = Parameter(Tensor.ones(dim));
         this.eps = 1e-5;
     }
     forward(x) {
-        let v = x.func('_pow', 2);
-        v = v.mean();
-        v = v.add(this.eps);
-        v = v.func('_rsqrt');
-        v = this.V.mul(v);
-        v = v.mul(x);
-        return v;
+
+        x = x.mul(x.pow(2).mean().add(this.eps)).mul(this.W);
+        // let v = x.func('_pow', 2);
+        // v = v.mean();
+        // v = v.add(this.eps);
+        // v = v.func('_rsqrt');
+        // v = this.V.mul(v);
+        // v = v.mul(x);
+        return x;
     }
     get label(){
-        return this.constructor.name + ` (${this.V.shape})`
+        return this.constructor.name + ` (${this.W.shape})`
     }
 }
 export function rmsNorm(...args){

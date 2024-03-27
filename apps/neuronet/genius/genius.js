@@ -8,7 +8,7 @@ const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
-const HEAD_COUNT = 2;           // Количество селекторов (голов) в слое
+const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
@@ -20,7 +20,9 @@ export class Genius extends nn.Module{
         const d = MODEL_DIM * EXPAND;
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
-        // this.decoder = new genDecoder(d);
+        this.decoder = new genDecoder(d);
+
+
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
@@ -74,18 +76,17 @@ export class genLayer extends nn.Module{
         this.head_count = head_count;
         this.norm = nn.rmsNorm(d_in);
         this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
-        this.W0 = nn.linear(d_in * head_count, d_out/2, true); // Матрица сборки выходов голов
+        this.proj_out = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
     forward(x){
-        let y = x//this.norm(x);
+        let y = this.norm(x);
         let heads_res = this.heads.map(h=>{
             let res = h(y);
-            let res1 = res.add(x);
-            return res1;
+            res = res.add(x);
             return res;
         });
-        y = Tensor.concat(...heads_res);//heads_res._concat();
-        y = this.W0(y);
+        y = Tensor.concat(...heads_res);
+        y = this.proj_out(y);
         return y;
     }
     get label(){
@@ -105,31 +106,14 @@ export class genHead extends nn.Module{
         this.out_proj = nn.linear(d, d, BIAS);
     }
     forward(x){
-
-        let [x1, x2] = x.slice([x.size/2, x.size/2]);
-        x1 = x1.active('relu').mul(1).add(1);
-        x2 = x2.active('sigmoid');
-        x = Tensor.concat(x1, x2);
-        return x;
-
-
-
-        //
-        // let x_and_res = this.in_proj(x);
-        // let [x1, x2] = x_and_res.slice([this.d, this.d]);
-        // x1 = x1.active('silu');
-        // x2 = x2.active('silu');
-        // x_and_res = Tensor.einsum('n, n -> n', x1, x2);
-        // return x_and_res;
-        //
-        //
-        //
-        //
-        // let y = this.ssm(x1)
-        // x2 = x2.active('silu');
-        // y = Tensor.einsum('n, n -> n', y, x2);
-        // y = this.out_proj(y);
-        // return y;
+        let x_and_res = this.in_proj(x);
+        let [x1, x2] = x_and_res.slice([this.d, this.d]);
+        x1 = x1.active('silu');
+        let y = this.ssm(x1)
+        x2 = x2.active('silu');
+        y = Tensor.einsum('n, n -> n', y, x2);
+        y = this.out_proj(y);
+        return y;
     }
     ssm(x){
         let x_dbl = this.x_proj(x);

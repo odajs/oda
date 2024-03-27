@@ -13,7 +13,7 @@ export class TNum extends Number{
     back(){
         for (let back of this.backs)
             back();
-        // this.backs = []
+        this.backs = []
     }
     grad(g){
         this.g += g;
@@ -64,14 +64,14 @@ Number.prototype._add_ = function (other){
 }
 Number.prototype._exp = function (){
     const out = num(Math.exp(this), '_exp')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad(Math.E ** this * out.g);
     }
     return out;
 }
 Number.prototype._pow = function (other){
     const out = num(this ** other, '_pow')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad(other * this ** (other - 1) * out.g);
         other.grad?.(this ** other * Math.log(this) * out.g);
     }
@@ -79,7 +79,7 @@ Number.prototype._pow = function (other){
 }
 Number.prototype._div = function (other){
     const out = num(this / other, '_div')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad(1 / other * out.g);
         other.grad?.(-(this / other ** 2) * out.g);
     }
@@ -89,7 +89,7 @@ Number.prototype._div = function (other){
 Number.prototype._sqrt = function (){
     const res = Math.sqrt(this)
     const out = num(res, '_sqrt')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad((1 / (2 * res)) * out.g);
     }
     return out;
@@ -99,14 +99,14 @@ Number.prototype._rsqrt = function (){
 }
 Number.prototype._log = function (){
     const out = num(Math.log(this), '_log')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad((1 / this) * out.g);
     }
     return out;
 }
 Number.prototype._log10 = function () {
     const out =  num(Math.log10(this), '_log10')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad((1 / (this * Math.log(10)) * out.g));
     }
     return out;
@@ -116,28 +116,28 @@ Number.prototype._log10 = function () {
 
 Number.prototype.softplus = function () {
     const out =  num(Math.log(1 + Math.exp(this)),'softplus')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad((1 / (1 + Math.exp (-this))) * out.g);
     }
     return out;
 }
 Number.prototype.sigmoid = function () {
     const out =  num(1 / (1 + Math.exp(-this)), 'sigmoid')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad(this * (1 - this) * out.g);
     }
     return out;
 }
 Number.prototype.silu = function () {
     const out =  num(this * 1 / (1 + Math.exp(-this)), 'silu')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad(this * (1 - this) * out.g);
     }
     return out;
 }
 Number.prototype.relu = function (leak = 0) {
     const out =  num(this > 0 ? this : leak, 'relu')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad( (this > 0 ? 1 : leak) * out.g);
     }
     return out;
@@ -146,7 +146,7 @@ Number.prototype.relu = function (leak = 0) {
 Number.prototype.elu = function (alpha = 1){
     const elu = this > 0 ? this : (alpha * (Math.exp(this) - 1));
     const out =  num(elu, 'elu')
-    this.back = ()=>{
+    out.back = ()=>{
         this.grad((this > 0 ? 1 : elu + alpha) * out.g);
     }
     return out;

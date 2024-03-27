@@ -27,6 +27,8 @@ export class Tensor {
         return 0;
     }
     _back(){
+        if (!this.children.length)
+            return;
         element_wise(x => x.back(), [this.data]);
     }
     back(learn_speed = .1){
@@ -109,9 +111,9 @@ export class Tensor {
     }
     toString(show_data = false){
         let data = (show_data?this.data.toTensorString()+'\r\n':'').split('\r\n');
-        if (data.length > 4){
+        if (data.length > 6){
             const padding = data[0].length/2 + 2
-            data = [...data.slice(0, 1), (' ...').padStart(padding, ' '), ...data.slice(-2)]
+            data = [...data.slice(0, 2), (' ...').padStart(padding, ' '), ...data.slice(-2)]
         }
         data = data.join('\r\n')
         return this.label + '\r\n' + data
@@ -200,7 +202,7 @@ export class Tensor {
         let res = element_wise((d, o) => {
             return d[fn](o)
         }, this.data, ...(args.map(i=>(i?.data ?? i))));
-        return ten(res, fn, [this, ...args.filter(i=>i instanceof TNum)]);
+        return ten(res, fn, [this, ...args.filter(i=>i instanceof Tensor)]);
     }
     static concat(...tensors){
         const res = tensors.reduce((r, t)=>{
@@ -332,6 +334,12 @@ export class Tensor {
         const out = Tensor.zeros(outs.map(o => o.d));
         out.children = tensors;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
+        // out.data = element_wise((x)=>{
+        //     let res = num(+x);
+        //     res.backs = x.backs;
+        //     res.back = x.back;
+        //     return res;
+        // }, out.data)
         out.label = label + ' ('+out.shape+')';
         return out;
     }
@@ -363,12 +371,12 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 4){
-                result += d.slice(0, 1).map(x=>{
+            if (d.length > 6){
+                result += d.slice(0, 2).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
                 result +=  ':';
-                result +=  d.slice(-1).map(x=>{
+                result +=  d.slice(-2).map(x=>{
                     return x.toTNumString()
                 }).join(' ')
             }
