@@ -162,6 +162,9 @@ export class Tensor {
     pow(other){
         return this.func('_pow', other);
     }
+    log(other){
+        return this.func('_log', other);
+    }
     mean(){
         let out = this.sum();
         out = out.div(this.size);
@@ -253,7 +256,7 @@ export class Tensor {
                     return -((2 * k + 1) ** .5 * (2 * n + 1) ** .5 * koef);
                 if (n === k)
                     return -((n + 1) * koef);
-                return 0;
+                return 1;
             })
         })
         return ten(hippo, `hippo (${size})`);
