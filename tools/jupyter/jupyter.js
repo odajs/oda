@@ -353,11 +353,16 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         this.cell.$cell.source = this.src = e.detail.value;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
-    markedClick(e) { 
+    markedClick(e) {
         this.selectedIdx = this.idx;
     },
     changeEditMode() {
         this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
+        if (this.editIdx === this.idx){
+            this.async(() => {
+                this.jupyter.$('#cell-' + this.cells[this.idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            })
+        }
     }
 })
 
