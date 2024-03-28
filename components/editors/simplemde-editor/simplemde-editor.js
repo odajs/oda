@@ -26,7 +26,7 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
     simpleMde: null,
     syncScrollWith: null,
     onScroll(e) {
-        this.syncScrollWith.scrollTop = this.scrollableElement.scrollTop;
+        this.syncScrollWith.scrollTop = (this.scrollableElement.scrollTop / this.scrollableElement.scrollHeight) * this.syncScrollWith.scrollHeight;
     },
     async attached() {
         ['woff', 'woff2', 'eot'].forEach(format => {
