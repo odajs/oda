@@ -4,7 +4,7 @@ import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
 const WORD_DEEP = 32;
-const TOKEN_SIZE = 8;
+const TOKEN_SIZE = 16;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев

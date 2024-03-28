@@ -37,8 +37,8 @@
                     <oda-button style="width: 100px;" allow-toggle ::toggled="goSteps" :icon="goSteps?'av:stop':'av:play-arrow'">{{stepCount}}</oda-button>
                 </div>
                 <textarea flex content :value="result"></textarea>
-                <span>speed: {{learnSpeed}}</span>
-                <span>error: {{err}}</span>
+                <span>speed: {{learnSpeed.toExponential(4)}}</span>
+                <span>error:  {{err.toExponential(4)}}</span>
             </div>
             <div  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
@@ -56,16 +56,18 @@
             </div>
         `,
         stepCount: 0,
-        learnSpeedCorrection: 0,
-        learnSpeed: .1,
+        learnSpeed: .0618,
         focusedPanel: {
             $def: 0,
             $save: true
         },
+        correct:0,
         err:{
             $def: 0,
-            set(n, o){
-                // this.learnSpeed += (n-o)/n * this.learnSpeed;
+            set(n, o=0){
+                this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
+                this.learnSpeed += this.correct;
+                this.correct *= this.learnSpeed;
             }
         },
         tensor: null,
