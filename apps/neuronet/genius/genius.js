@@ -21,12 +21,17 @@ export class Genius extends nn.Module{
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
+        this.norm = nn.rmsNorm(d);
 
 
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
-        x = this.encoder(x);
+        // x = this.norm(x);
+        const x1 = x.active('elu')
+        x = x.mul(x1);
+
+        // x = this.encoder(x);
         // x = this.decoder(x);
         this.Wt = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, this.Wt);

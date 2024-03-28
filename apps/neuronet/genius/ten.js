@@ -10,6 +10,7 @@ export class Tensor {
         this.data =  element_wise((x)=>{
             const n = num(x);
             n.t = this;
+            n.l = this.label;
             return n;
         }, [data])[0]
         this.label = label;
@@ -47,11 +48,14 @@ export class Tensor {
             node.clearGrad()
         })
         this.topo.reverse();
-        this.topo.forEach((node, i) => {
-            node._back();
-        })
+        // this.topo.forEach((node, i) => {
+        //     node._back();
+        // })
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
+        })
+        this.topo.forEach((node) => {
+            element_wise(d=>{d.grads = []}, [node.data]);
         })
 
 
@@ -83,15 +87,17 @@ export class Tensor {
         return res;
     }
     updateParams(learn_speed=.1){
-        if (!this.isParam) return
+        if (!this.isParam) return;
         element_wise(d=>{
-            const correct = d.g * learn_speed + d.p || 0;
+            const correct = d.g * learn_speed + (d.p || 0);
             d.setVal(d + correct);
             d.p = correct * learn_speed;
         }, [this.data])[0];
     }
     clearGrad(){
-        element_wise(d=>d.g = 0, [this.data]);
+        element_wise(d=>{
+            d['#g'] = undefined;
+        }, [this.data]);
     }
     set label(n){
         this['#label'] = n;
@@ -191,11 +197,15 @@ export class Tensor {
     }
     mse(other){
         other = ten(other);
-        let res = element_wise((x, t) => num(t - x), this.data, other.data);
+        let res = element_wise((x, t) => num(t-x), this.data, other.data);
         let out = ten(res, `mse (${this.shape})`, [this]);
-        out._back = ()=>{
-            element_wise((x, g) => (x.g += g), [this.data], [out.data]);
-        }
+        element_wise((x, g) => (x.grads.push(()=>{
+            return g;
+        })), [this.data], [out.data]);
+        // this.grads.push()
+        // out._back = ()=>{
+        //     element_wise((x, g) => (x.g += g), [this.data], [out.data]);
+        // }
         return out
     }
     active(name){
