@@ -1,13 +1,13 @@
-const url = import.meta.url;
+const PATH = import.meta.url.replace('simplemde-editor.js', '');
 ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /*html*/`
-        <style>
-            :host { @apply --vertical; height: 100%; }
-            .CodeMirror-wrap { height: 100%; min-height: 24px; }
-            .editor-toolbar { display: flex; flex-wrap: wrap; }
-        </style>
-        <link rel="stylesheet" type="text/css" :href="path + 'lib/simplemde.min.css'">
-        <link rel="stylesheet" type="text/css" :href="path + 'lib/font-awesome.min.css'">
-        <textarea></textarea>
+    <style>
+        :host { @apply --vertical; height: 100%; }
+        .CodeMirror-wrap { height: 100%; min-height: 24px; }
+        .editor-toolbar { display: flex; flex-wrap: wrap; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">
+    <link rel="stylesheet" type="text/css" href="${PATH}lib/font-awesome.min.css">
+    <textarea></textarea>
     `,
     $public: {
         value: {
@@ -20,12 +20,17 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
             }
         }
     },
-    get path() {
-        return url.replace('simplemde-editor.js', '');
+    get scrollableElement() {
+        return this.$('.CodeMirror-scroll') || undefined;
+    },
+    simpleMde: null,
+    syncScrollWith: null,
+    onScroll(e) {
+        this.syncScrollWith.scrollTop = this.scrollableElement.scrollTop;
     },
     async attached() {
         ['woff', 'woff2', 'eot'].forEach(format => {
-            document.fonts.add(new FontFace('FontAwesome', `url(${this.path}/lib/fonts/fontawesome-webfont.${format})`))
+            document.fonts.add(new FontFace('FontAwesome', `url(${PATH}lib/fonts/fontawesome-webfont.${format})`))
         })
         this.simpleMde ??= new SimpleMDE({
             autoDownloadFontAwesome: false,
@@ -42,5 +47,10 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
         })
         this.simpleMde.codemirror.on('change', () => this.fire('change', this.simpleMde.value()));
         if (this.value) this.simpleMde.value(this.value);
+        if(this.syncScrollWith && this.scrollableElement)
+            this.listen('scroll', 'onScroll', {target: this.scrollableElement});
+    },
+    detached() {
+        this.unlisten('scroll', 'onScroll', {target: this.scrollableElement});
     }
 })
