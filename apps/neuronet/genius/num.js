@@ -5,19 +5,13 @@ export class TNum extends Number{
         if (l)
             this.l = l;
     }
-    setVal(v){
-        this.valueOf = valueOf;
-        this._ = v;
-    }
     get g(){
-        return this['#g'] ??= this.grads.reduce((r, grad)=>r + grad(), 0);
+        const res = this['#g'] ??= this.grads.reduce((r, grad)=>r + grad(), 0);
+        return res;
     }
 }
 export function num(val, label){
     return ((val instanceof TNum) ? val : new TNum(val, label));
-}
-function valueOf(){
-    return this._;
 }
 
 Number.prototype.toTNumString = function () {
@@ -30,56 +24,56 @@ Number.prototype.toTNumString = function () {
 
 Number.prototype._mul = function (other){
     const out = num(this * other, '_mul');
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return other * out.g;
     })
-    other.grads?.push(()=>{
+    other.grads?.unshift(()=>{
         return this * out.g;
     })
     return out;
 }
 Number.prototype._add = function (other){
     const out = num(this + other, '_add');
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return out.g;
     })
-    other.grads?.push(()=>{
+    other.grads?.unshift(()=>{
         return out.g;
     })
     return out;
 }
-
-Number.prototype._add_ = function (other){
-    this.setVal(this + other);
-    other.grads.push(()=>{
-        return this.g;
-    })
-    this.l='_add_';
-    return this;
-}
+//
+// Number.prototype._add_ = function (other){
+//     this.setVal(this + other);
+//     other.grads.unshift(()=>{
+//         return this.g;
+//     })
+//     this.l='_add_';
+//     return this;
+// }
 Number.prototype._exp = function (){
     const out = num(Math.exp(this), '_exp')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return (Math.E ** this * out.g);
     })
     return out;
 }
 Number.prototype._pow = function (other){
     const out = num(this ** other, '_pow')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return other * this ** (other - 1) * out.g;
     })
-    other.grads?.push(()=>{
+    other.grads?.unshift(()=>{
         return this ** other * Math.log(this) * out.g;
     })
     return out;
 }
 Number.prototype._div = function (other){
     const out = num(this / other, '_div')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return (1 / other * out.g);
     })
-    other.grads?.push(()=>{
+    other.grads?.unshift(()=>{
         return (-(this / other ** 2) * out.g);
     })
     return out;
@@ -88,7 +82,7 @@ Number.prototype._div = function (other){
 Number.prototype._sqrt = function (){
     const res = Math.sqrt(this)
     const out = num(res, '_sqrt')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ((1 / (2 * res)) * out.g);
     })
     return out;
@@ -98,14 +92,14 @@ Number.prototype._rsqrt = function (){
 }
 Number.prototype._log = function (){
     const out = num(Math.log(this), '_log')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ((1 / this) * out.g);
     })
     return out;
 }
 Number.prototype._log10 = function () {
     const out =  num(Math.log10(this), '_log10')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ((1 / (this * Math.log(10)) * out.g));
     })
     return out;
@@ -115,28 +109,28 @@ Number.prototype._log10 = function () {
 
 Number.prototype.softplus = function () {
     const out =  num(Math.log(1 + Math.exp(this)),'softplus')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ((1 / (1 + Math.exp (-this))) * out.g);
     })
     return out;
 }
 Number.prototype.sigmoid = function () {
     const out =  num(1 / (1 + Math.exp(-this)), 'sigmoid')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return (this * (1 - this) * out.g);
     })
     return out;
 }
 Number.prototype.silu = function () {
     const out =  num(this * (1 / (1 + Math.exp(-this))), 'silu')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return (this * (1 - this) * out.g);
     })
     return out;
 }
 Number.prototype.relu = function (leak = 0) {
     const out =  num(+(this > 0 ? this : leak), 'relu')
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ( (this > 0 ? 1 : leak) * out.g)
     })
     return out;
@@ -145,7 +139,7 @@ Number.prototype.relu = function (leak = 0) {
 Number.prototype.elu = function (alpha = 1){
     const elu = +(this > 0 ? this : (alpha * (Math.exp(this) - 1)));
     const out =  num(elu, 'elu');
-    this.grads.push(()=>{
+    this.grads.unshift(()=>{
         return ((this > 0 ? 1 : elu + alpha) * out.g);
     })
     return out;

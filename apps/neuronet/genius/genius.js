@@ -21,21 +21,15 @@ export class Genius extends nn.Module{
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
-        this.norm = nn.rmsNorm(d);
 
 
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
-        // x = this.norm(x);
-        const x1 = x.active('elu')
-        x = x.mul(x1);
-
         // x = this.encoder(x);
         // x = this.decoder(x);
         this.Wt = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, this.Wt);
-
         return x;
     }
 }
@@ -85,12 +79,12 @@ export class genLayer extends nn.Module{
     }
     forward(x){
         let y = this.norm(x);
-        let heads_res = this.heads.map(h=>{
-            let res = h(y);
-            res = res.add(x);
-            return res;
-        });
-        y = Tensor.concat(...heads_res);
+        // let heads_res = this.heads.map(h=>{
+        //     let res = h(y);
+        //     res = res.add(x);
+        //     return res;
+        // });
+        // y = Tensor.concat(...heads_res);
         y = this.proj_out(y);
         return y;
     }
@@ -114,11 +108,11 @@ export class genHead extends nn.Module{
         let x_and_res = this.in_proj(x);
         let [x1, x2] = x_and_res.slice([this.d, this.d]);
         x1 = x1.active('silu');
-        let y = this.ssm(x1)
+        // let x1 = this.ssm(x1)
         x2 = x2.active('silu');
-        y = Tensor.einsum('n, n -> n', y, x2);
-        y = this.out_proj(y);
-        return y;
+        x1 = x1.mul(x2);
+        x1 = this.out_proj(x1);
+        return x1;
     }
     ssm(x){
         let x_dbl = this.x_proj(x);

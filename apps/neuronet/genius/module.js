@@ -99,13 +99,13 @@ export class RMSNorm extends Module {
     }
     forward(x) {
 
-        x = x.mul(x.pow(2).mean().add(this.eps)).mul(this.W);
-        // let v = x.func('_pow', 2);
-        // v = v.mean();
-        // v = v.add(this.eps);
-        // v = v.func('_rsqrt');
-        // v = this.V.mul(v);
-        // v = v.mul(x);
+        // x = x.mul(x.pow(2).mean().add(this.eps)).mul(this.W);
+        let v = x.pow(2);
+        v = v.mean();
+        v = v.add(this.eps);
+        v = v.func('_rsqrt');
+        v = this.W.mul(v);
+        x = v.mul(x);
         return x;
     }
     get label(){

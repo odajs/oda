@@ -88,10 +88,12 @@ export class Tensor {
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        element_wise(d=>{
-            const correct = d.g * learn_speed + (d.p || 0);
-            d.setVal(d + correct);
-            d.p = correct * learn_speed;
+        this.data = element_wise(d=>{
+            let correct = d.g * learn_speed + (d.p || 0);
+            const res =  num(d + correct);
+            res.p = correct * learn_speed;
+            res['#g'] = d.g
+            return res;
         }, [this.data])[0];
     }
     clearGrad(){
@@ -199,7 +201,7 @@ export class Tensor {
         other = ten(other);
         let res = element_wise((x, t) => num(t-x), this.data, other.data);
         let out = ten(res, `mse (${this.shape})`, [this]);
-        element_wise((x, g) => (x.grads.push(()=>{
+        element_wise((x, g) => (x.grads.unshift(()=>{
             return g;
         })), [this.data], [out.data]);
         // this.grads.push()
@@ -336,7 +338,7 @@ export class Tensor {
         const ss = `out${outs.map(o => {
             return '['+o.a+']'}).join('')
         }`
-        expr = `\t(${ss})._add_(` + expr + ')';
+        expr = `\t${ss} = ${ss}._add(` + expr + ')';
         expr = [...outs, ...axis].map((o, i) => {
             if (o.d)
                 return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < ${o.d}; ${o.a}++)`;
