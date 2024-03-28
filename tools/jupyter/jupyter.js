@@ -209,10 +209,8 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
         this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cell });
-        this.async(() => {
-            this.selectedIdx = idx;
-            this.editIdx = idx;
-        }, 100)
+        this.selectedIdx = idx;
+        this.editIdx = idx;
     }
 })
 
@@ -358,7 +356,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
                 <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
-            <oda-simplemde-editor :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+            <oda-simplemde-editor :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged" @loaded="mdeLoaded"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
@@ -371,6 +369,9 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     },
     get opacity() {
         return this.src ? 1 : .3;
+    },
+    mdeLoaded(e) {
+        e.target.simpleMde.codemirror?.focus();
     },
     editorValueChanged(e) {
         this.cell.$cell.source = this.src = e.detail.value;
@@ -426,7 +427,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor @loaded="loaded" ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
+                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
                 <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
@@ -497,7 +498,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         return `color: ${colors[i.method]}`;
     },
     aceLoaded(e) {
-        this.$('oda-ace-editor').editor.setOption('fontSize', '16px');
+        this.loaded();
+        const ace = this.$('oda-ace-editor');
+        ace.editor.setOption('fontSize', '16px');
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || '') {
         if (this.cell.mode) return;

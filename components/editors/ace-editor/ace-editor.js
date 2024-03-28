@@ -142,8 +142,8 @@ ODA({is: 'oda-ace-editor',
                     }]);
                 }
             }
-            this.fire('loaded', this.editor);
         });
+        this.fire('loaded', this.editor);
     },
     setValue(value) {
         this.editor?.setValue(value);
