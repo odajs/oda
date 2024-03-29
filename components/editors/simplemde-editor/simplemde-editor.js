@@ -18,7 +18,8 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
             get() {
                 return this.simpleMde.value();
             }
-        }
+        },
+        autofocus: false
     },
     get scrollableElement() {
         return this.$('.CodeMirror-scroll') || undefined;
@@ -43,15 +44,21 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
             ],
             renderingConfig: {
                 codeSyntaxHighlighting: true
-            }
+            },
+            autofocus: this.autofocus
         })
-        this.simpleMde.codemirror.on('change', () => this.fire('change', this.simpleMde.value()));
         if (this.value) this.simpleMde.value(this.value);
         this.fire('loaded');
-        if(this.syncScrollWith && this.scrollableElement)
-            this.listen('scroll', 'onScroll', {target: this.scrollableElement});
+
+        this.simpleMde.codemirror.on('change', () => this.fire('change', this.simpleMde.value()));
+
+        if (this.syncScrollWith && this.scrollableElement)
+            this.listen('scroll', 'onScroll', { target: this.scrollableElement });
+
+        if (this.autofocus)
+            this.simpleMde.codemirror.on('focus', (codeMirror) => { codeMirror.focus(); });
     },
     detached() {
-        this.unlisten('scroll', 'onScroll', {target: this.scrollableElement});
+        this.unlisten('scroll', 'onScroll', { target: this.scrollableElement });
     }
 })

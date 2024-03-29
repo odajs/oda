@@ -40,7 +40,7 @@
                 <span>speed: {{learnSpeed.toExponential(4)}}</span>
                 <span>error:  {{err.toExponential(4)}}</span>
             </div>
-            <div ~if="false"  slot="main" class="flex vertical" style="overflow: hidden;">
+            <div  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
                     <oda-button @tap="focusedPanel = 0" :focused="focusedPanel === 0">Model</oda-button>
                     <oda-button @tap="focusedPanel = 1" :focused="focusedPanel === 1">Graph</oda-button>
@@ -56,7 +56,7 @@
             </div>
         `,
         stepCount: 0,
-        learnSpeed: .01,
+        learnSpeed: .1,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -65,7 +65,7 @@
         err:{
             $def: 0,
             set(n, o=0){
-                this.learnSpeed += (n-o) * this.learnSpeed ** 2
+                // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },
         tensor: null,

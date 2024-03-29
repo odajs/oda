@@ -26,10 +26,10 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
-        x = this.encoder(x);
-        x = this.decoder(x);
-        this.Wt = Tensor.einsum('i j -> j i', this.W);
-        x = Tensor.einsum('x, x w -> w', x, this.Wt);
+        // x = this.encoder(x);
+        // x = this.decoder(x);
+        // this.Wt = Tensor.einsum('i j -> j i', this.W);
+        // x = Tensor.einsum('x, x w -> w', x, this.Wt);
         return x;
     }
 }

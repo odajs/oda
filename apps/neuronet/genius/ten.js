@@ -200,10 +200,6 @@ export class Tensor {
         element_wise((x, g) => (x.grads.unshift(()=>{
             return g;
         })), [this.data], [out.data]);
-        // this.grads.push()
-        // out._back = ()=>{
-        //     element_wise((x, g) => (x.g += g), [this.data], [out.data]);
-        // }
         return out
     }
     active(name){
