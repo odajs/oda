@@ -59,17 +59,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     this.async(() => {
                         this.scrollToCell();
                         if (this.editIdx >= 0) {
-                            this.async(() => {
-                                const id = this.cells[this.selectedIdx].id,
-                                    cmp = this.cellsComponents[id],
-                                    ace = cmp?.$('oda-ace-editor'),
-                                    mde = cmp?.$('oda-simplemde-editor');
-                                ace?.editor.focus();
-                                mde?.simpleMde.codemirror?.focus();
-                                console.log(id, cmp)
-                            }, 100)
+                            const id = this.cells[this.selectedIdx].id,
+                                cmp = this.cellsComponents[id],
+                                ace = cmp?.$('oda-ace-editor'),
+                                mde = cmp?.$('oda-simplemde-editor');
+                            ace?.editor.focus();
+                            mde?.simpleMde.codemirror?.focus();
                         }
-                    }, 100)
+                    }, 300)
                 }
             }
         },
