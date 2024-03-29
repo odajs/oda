@@ -49,28 +49,40 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         selectedIdx: {
             $def: -1,
             set(n) {
-                // if (this.editIdx >= 0)
-                //     this.scrollToCell();
                 this.editIdx = -1;
             }
         },
         editIdx: {
             $def: -1,
             set(n) {
-                if (n >= 0)
-                    this.scrollToCell();
+                if (n >= 0) {
+                    this.async(() => {
+                        this.scrollToCell();
+                        if (this.editIdx >= 0) {
+                            this.async(() => {
+                                const id = this.cells[this.selectedIdx].id,
+                                    cmp = this.cellsComponents[id],
+                                    ace = cmp?.$('oda-ace-editor'),
+                                    mde = cmp?.$('oda-simplemde-editor');
+                                ace?.editor.focus();
+                                mde?.simpleMde.codemirror?.focus();
+                                console.log(id, cmp)
+                            }, 100)
+                        }
+                    }, 100)
+                }
             }
         },
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
         },
         hasChanged(detail) {
-            // console.log(detail);
             this.fire('changed', detail);
             this.isChanged = true;
         },
         isChanged: false,
         isAllCollapsed: false,
+        cellsComponents: undefined,
         get cells() {
             let level = 0, ids = {}, cells = [];
             this.notebook?.cells.map((i, idx) => {
@@ -119,9 +131,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get path() { return path },
         get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
         scrollToCell(idx = this.selectedIdx) {
-            this.async(() => {
-                this.jupyter.$('#cell-' + this.cells[idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            }, 100)
+            this.jupyter.$('#cell-' + this.cells[idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
     },
     $listeners: {
@@ -298,6 +308,8 @@ ODA({ is: 'oda-jupyter-cell',
             src = n.$cell.source.join('');
         this.src = src || n?.$cell?.source || '';
         this.setCellMode && this.setCellMode(this.src);
+        this.cellsComponents ||= {};
+        this.cellsComponents[this.cell.id] = this;
     },
     loaded(e) {
         this.cell.isLoaded = true;
@@ -305,7 +317,7 @@ ODA({ is: 'oda-jupyter-cell',
         this.opacity = 1;
         if (isLoaded) {
             this.isReady = true;
-            // console.log('jupyter-loaded');
+            console.log('jupyter-loaded');
             this.jupyter.fire('jupyter-loaded');
         }
     },
@@ -329,6 +341,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --vertical;
                 @apply --flex;
                 position: relative;
+                text-wrap: wrap;
             }
             oda-markdown-wasm-viewer {
                 opacity: {{opacity}};
@@ -356,7 +369,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
                 <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
-            <oda-simplemde-editor :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged" @loaded="mdeLoaded"></oda-simplemde-editor>
+            <oda-simplemde-editor :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged" @loaded="loaded"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
@@ -369,9 +382,6 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     },
     get opacity() {
         return this.src ? 1 : .3;
-    },
-    mdeLoaded(e) {
-        e.target.simpleMde.codemirror?.focus();
     },
     editorValueChanged(e) {
         this.cell.$cell.source = this.src = e.detail.value;
