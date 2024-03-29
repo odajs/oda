@@ -341,9 +341,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 text-wrap: wrap;
             }
             oda-markdown-wasm-viewer {
-                opacity: {{opacity}};
-                border: none;
-                outline: none;
+                opacity: {{noSrcOpacity}};
             }
             .collapsed {
                 font-style: italic;
@@ -377,7 +375,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     get divMD(){
         return this.$('div.md-result') || undefined;
     },
-    get opacity() {
+    get noSrcOpacity() {
         return this.src ? 1 : .3;
     },
     editorValueChanged(e) {
