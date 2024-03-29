@@ -9,8 +9,6 @@ export class Tensor {
         this.data = data;
         this.data =  element_wise((x)=>{
             const n = num(x);
-            n.t = this;
-            n.l = this.label;
             return n;
         }, [data])[0]
         this.label = label;
@@ -48,9 +46,7 @@ export class Tensor {
             node.clearGrad()
         })
         this.topo.reverse();
-        // this.topo.forEach((node, i) => {
-        //     node._back();
-        // })
+
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
         })
@@ -273,16 +269,19 @@ export class Tensor {
         })
         return ten(hippo, `hippo (${size})`);
     }
-    static arange(from_or_size = 0, size){
+    static arange(from_or_size = 0, size, repeat = 1){
         if (size === undefined){
             size = from_or_size;
             from_or_size = 0;
         }
-        const result = []
+        let result = []
         for (let i = from_or_size; i<size; i++){
             result.push(i);
         }
-        return ten(result, `arange (${from_or_size}-${size})`);
+        if (repeat > 1){
+            result = Array(repeat).fill().map(a=>result.map(i=>i))
+        }
+        return ten(result, `arange (${from_or_size}-${size-1} X ${repeat})`);
     }
     static pos(d, pos = 0, k = 1000){
         return ten(Array(d).fill().map((_, i)=>{

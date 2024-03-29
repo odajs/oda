@@ -4,7 +4,7 @@ import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
 const WORD_DEEP = 32;
-const TOKEN_SIZE = 16;
+const TOKEN_SIZE = 5;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -26,8 +26,8 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = Tensor.einsum('in, in out -> out', x, this.W);
-        // x = this.encoder(x);
-        // x = this.decoder(x);
+        x = this.encoder(x);
+        x = this.decoder(x);
         this.Wt = Tensor.einsum('i j -> j i', this.W);
         x = Tensor.einsum('x, x w -> w', x, this.Wt);
         return x;
@@ -79,12 +79,12 @@ export class genLayer extends nn.Module{
     }
     forward(x){
         let y = this.norm(x);
-        // let heads_res = this.heads.map(h=>{
-        //     let res = h(y);
-        //     res = res.add(x);
-        //     return res;
-        // });
-        // y = Tensor.concat(...heads_res);
+        let heads_res = this.heads.map(h=>{
+            let res = h(y);
+            res = res.add(x);
+            return res;
+        });
+        y = Tensor.concat(...heads_res);
         y = this.proj_out(y);
         return y;
     }
@@ -99,7 +99,8 @@ export class genHead extends nn.Module{
         this.in_proj = nn.linear(d, d * 2, false);
         this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        this.A = Parameter(Tensor.hippo([this.dH, d], -1).log());
+        let A = Tensor.arange(1, this.dH + 1, d);
+        this.A_log = Parameter(A.log());
         this.H = Tensor.zeros([this.dH, d]);
         this.D = Parameter(Tensor.ones([d]));
         this.out_proj = nn.linear(d, d, BIAS);
@@ -108,29 +109,30 @@ export class genHead extends nn.Module{
         let x_and_res = this.in_proj(x);
         let [x1, x2] = x_and_res.slice([this.d, this.d]);
         x1 = x1.active('silu');
-        // let x1 = this.ssm(x1)
+        x1 = this.ssm(x1)
         x2 = x2.active('silu');
         x1 = x1.mul(x2);
         x1 = this.out_proj(x1);
         return x1;
     }
     ssm(x){
+        const A = this.A_log.exp().mul(-1)
         let x_dbl = this.x_proj(x);
         let [delta, B, C] = x_dbl.slice([this.delta_rank, this.d, this.d]);
         delta = this.dt_proj(delta);
         delta = delta.active('softplus');
-        x = this.select(x, delta, B, C);
+        x = this.select(x, delta, A, B, C);
         return x;
     }
-    select(u, delta, B, C){
+    select(u, delta, A, B, C){
         let deltaB_u = Tensor.einsum('d_in, n, d_in -> d_in n', delta, B, u);
-        const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, this.A);
-        let deltaA = sum.exp().mul(-1);
+        const sum = Tensor.einsum('d_in, d_in n -> d_in n', delta, A);
+        let deltaA = sum.exp();
         deltaA = Tensor.einsum('n d_in, n d_in -> n d_in', deltaA, this.H.data); // поэлементное умножение без распространения градиента в H
 
         this.H = deltaA.add(deltaB_u);
-        let y = Tensor.einsum('n, n d_in -> n', C, this.H);
-        u = Tensor.einsum('n, n -> n', u, this.D);
+        let y = Tensor.einsum('d_in n, n -> n', this.H, C);
+        u = u.mul(this.D);
         y = u.add(y);
         return y;
     }

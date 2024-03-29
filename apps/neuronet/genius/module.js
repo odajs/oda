@@ -94,19 +94,20 @@ export function linear(...args){
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.W = Parameter(Tensor.ones(dim));
+        this.W = Parameter(Tensor.random(dim));
+        this.bias = Parameter(Tensor.random(dim));
         this.eps = 1e-5;
     }
     forward(x) {
 
-        // x = x.mul(x.pow(2).mean().add(this.eps)).mul(this.W);
-        let v = x.pow(2);
-        v = v.mean();
-        v = v.add(this.eps);
-        v = v.func('_rsqrt');
-        v = this.W.mul(v);
-        x = v.mul(x);
-        return x;
+        let p = x.pow(2);
+        let m = p.mean();
+        let eps = m.add(this.eps);
+        let sqrt = eps.func('_rsqrt');
+        let mul = this.W.mul(sqrt);
+        let out = mul.mul(x);
+        out = out.add(this.bias)
+        return out;
     }
     get label(){
         return this.constructor.name + ` (${this.W.shape})`

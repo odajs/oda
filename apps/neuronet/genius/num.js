@@ -61,10 +61,10 @@ Number.prototype._exp = function (){
 Number.prototype._pow = function (other){
     const out = num(this ** other, '_pow')
     this.grads.unshift(()=>{
-        return other * this ** (other - 1) * out.g;
+        return (other * this ** (other - 1) * out.g);
     })
     other.grads?.unshift(()=>{
-        return this ** other * Math.log(this) * out.g;
+        return (this ** other * Math.log(this) * out.g);
     })
     return out;
 }
@@ -108,9 +108,10 @@ Number.prototype._log10 = function () {
 // activation functions
 
 Number.prototype.softplus = function () {
-    const out =  num(Math.log(1 + Math.exp(this)),'softplus')
+    const exp = Math.exp(this)
+    const out =  num(Math.log(1 + exp), 'softplus')
     this.grads.unshift(()=>{
-        return ((1 / (1 + Math.exp (-this))) * out.g);
+        return ((exp / (1 + exp)) * out.g);
     })
     return out;
 }
