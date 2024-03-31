@@ -6,7 +6,10 @@ export class TNum extends Number{
             this.l = l;
     }
     get g(){
-        const res = this['#g'] ??= this.grads.reduce((r, grad)=>r + grad(), 0);
+        const res = this['#g'] ??= this.grads.reduce((r, grad)=>{
+            const g = grad();
+            return r + g;
+        }, 0);
         return res;
     }
 }

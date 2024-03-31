@@ -21,16 +21,30 @@ export class Genius extends nn.Module{
         this.W = Parameter(Tensor.random([MODEL_DIM, d]));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
-
-
+        this.out_proj = nn.linear(d * HEAD_COUNT * LAYER_COUNT, d, true);
+        this.B = Parameter(Tensor.random([d], 'B'));
+        this.С = Parameter(Tensor.random([d], 'C'));
+        this.D = Parameter(Tensor.random(1, 'D'));
+        this.A = Parameter(Tensor.random([d, d], 'А'));
+        this.H = Tensor.zeros([d, d], 'H'); //todo Parameter
+        // let A = Tensor.arange(1, d + 1, d);
+        // this.A = Parameter(A.log());
+    }
+    resetH(){
+        const d = MODEL_DIM * EXPAND;
+        this.H = Tensor.zeros([d, d], 'H'); //todo Parameter
+        // this.encoder.module.resetH();
     }
     forward(x){
-        x = Tensor.einsum('in, in out -> out', x, this.W);
-        // x = this.encoder(x);
-        // x = this.decoder(x);
-        // this.Wt = Tensor.einsum('i j -> j i', this.W);
-        // x = Tensor.einsum('x, x w -> w', x, this.Wt);
-        return x;
+        x = tensor(x);
+        let bb = Tensor.einsum('x, y -> x y', x, this.B);
+        // let expA = this.A.exp().mul(-1);
+        let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
+        this.H = ba.add(this.H.data)
+        let y = Tensor.einsum('x y, y  -> x', this.H, this.С);
+        let xd =  x.mul(this.D);
+        y = y.add(xd);
+        return y;
     }
 }
 export class genEncoder extends nn.Module{
@@ -39,6 +53,10 @@ export class genEncoder extends nn.Module{
             let dim = d * HEAD_COUNT ** i ;
             return new genLayer(dim, dim * HEAD_COUNT, HEAD_COUNT);
         })
+    }
+    resetH(){
+        for(let layer of this.layers)
+            layer.module.resetH();
     }
     forward(x){
         for(let layer of this.layers)
@@ -77,11 +95,15 @@ export class genLayer extends nn.Module{
         this.heads = Array(head_count).fill().map(()=>new genHead(d_in));
         this.proj_out = nn.linear(d_in * head_count, d_out, true); // Матрица сборки выходов голов
     }
+    resetH(){
+        for(let head of this.heads)
+            head.module.resetH();
+    }
     forward(x){
-        let y = this.norm(x);
+        let y = x;//this.norm(x);
         let heads_res = this.heads.map(h=>{
             let res = h(y);
-            res = res.add(x);
+            // res = res.add(x);
             return res;
         });
         y = Tensor.concat(...heads_res);
@@ -95,19 +117,22 @@ export class genLayer extends nn.Module{
 export class genHead extends nn.Module{
     __init__(d) {
         this.d = d;
-        this.dH = d;
-        this.in_proj = nn.linear(d, d * 2, false);
-        this.x_proj = nn.linear(d, d * 2 + this.delta_rank, false);
+        this.dH = d * 2;
+        this.in_proj = nn.linear(d, this.dH * 2, false);
+        this.x_proj = nn.linear(this.dH, this.dH * 2 + this.delta_rank, false);
         this.dt_proj = nn.linear(this.delta_rank, this.dH, true);
-        let A = Tensor.arange(1, this.dH + 1, d);
+        let A = Tensor.arange(1, this.dH + 1, this.dH);
         this.A_log = Parameter(A.log());
-        this.H = Tensor.zeros([this.dH, d]);
-        this.D = Parameter(Tensor.ones([d]));
-        this.out_proj = nn.linear(d, d, BIAS);
+        this.H = Tensor.zeros([this.dH, this.dH]);
+        this.D = Parameter(Tensor.ones([this.dH]));
+        this.out_proj = nn.linear(this.dH, d, BIAS);
+    }
+    resetH(){
+        this.H = Tensor.zeros([this.dH, this.dH]);
     }
     forward(x){
         let x_and_res = this.in_proj(x);
-        let [x1, x2] = x_and_res.slice([this.d, this.d]);
+        let [x1, x2] = x_and_res.slice([this.dH, this.dH]);
         x1 = x1.active('silu');
         x1 = this.ssm(x1)
         x2 = x2.active('silu');
@@ -118,7 +143,7 @@ export class genHead extends nn.Module{
     ssm(x){
         const A = this.A_log.exp().mul(-1)
         let x_dbl = this.x_proj(x);
-        let [delta, B, C] = x_dbl.slice([this.delta_rank, this.d, this.d]);
+        let [delta, B, C] = x_dbl.slice([this.delta_rank, this.dH, this.dH]);
         delta = this.dt_proj(delta);
         delta = delta.active('softplus');
         x = this.select(x, delta, A, B, C);

@@ -16,7 +16,7 @@ export class Tensor {
         this.error = error;
     }
     get g(){
-        return element_wise(d => {
+        return  this['#g'] ??= element_wise(d => {
             return num(d.g);
         }, [this.data])[0];
     }
@@ -45,7 +45,7 @@ export class Tensor {
         this.topo.forEach((node) => {
             node.clearGrad()
         })
-        this.topo.reverse();
+        // this.topo.reverse();
 
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
@@ -133,9 +133,9 @@ export class Tensor {
             return v;
         })()
     }
-    get grad(){
-        return element_wise((x)=>x?.g, [this.data])[0];
-    }
+    // get grad(){
+    //     return element_wise((x)=>x?.g, [this.data])[0];
+    // }
     get dim(){
         return this.shape.length;
     }
@@ -228,16 +228,16 @@ export class Tensor {
         let out = ten(res, 'stack', other_tensors);
         return out;
     }
-    static ones(size){
-        return this.fill(size, 1.0);
+    static ones(size, label){
+        return this.fill(size, 1.0, label);
     }
-    static zeros(size){
-        return this.fill(size, 0.0);
+    static zeros(size, label){
+        return this.fill(size, 0.0, label);
     }
-    static random(size, k = 1){
-        return this.fill(size, ()=>(Math.random()-.5) * k);
+    static random(size, label){
+        return this.fill(size, ()=>(Math.random()-.5), label);
     }
-    static fill(shape, value){
+    static fill(shape, value, label){
         if (!Array.isArray(shape))
             shape = [shape];
         function expr_gen(sh){
@@ -247,7 +247,7 @@ export class Tensor {
         const expr = expr_gen(shape);
         const fn = new Function('v', 'return ' + expr);
         let result = fn(value) || (typeof value === 'function'?value():value);
-        return ten(result);
+        return ten(result, label);
     }
     static hippo(size= 8, koef = 1){
         if (!Array.isArray(size))

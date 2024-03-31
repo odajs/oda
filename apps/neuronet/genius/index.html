@@ -23,6 +23,11 @@
                 }
             </style>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
+                <div class="horizontal">
+                    <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
+                    <oda-button icon="icons:arrow-forward" allow-toggle ::toggled="isNext"></oda-button>
+                </div>
+
                 <div class="vertical flex">
                     prompt:
                     <textarea class="flex" content ::value></textarea>
@@ -40,7 +45,7 @@
                 <span>speed: {{learnSpeed.toExponential(4)}}</span>
                 <span>error:  {{err.toExponential(4)}}</span>
             </div>
-            <div  slot="main" class="flex vertical" style="overflow: hidden;">
+            <div ~if="showMain"  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
                     <oda-button @tap="focusedPanel = 0" :focused="focusedPanel === 0">Model</oda-button>
                     <oda-button @tap="focusedPanel = 1" :focused="focusedPanel === 1">Graph</oda-button>
@@ -55,8 +60,12 @@
                 <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
             </div>
         `,
+        showMain:{
+            $def: true,
+            $save: true
+        },
         stepCount: 0,
-        learnSpeed: .1,
+        learnSpeed: .01,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -65,6 +74,9 @@
         err:{
             $def: 0,
             set(n, o=0){
+                this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
+                this.learnSpeed += this.correct;
+                this.correct *= this.learnSpeed;
                 // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },
@@ -87,15 +99,20 @@
                 return r + v.paramCount
             }, 0) || 0;
         },
+        isNext: {
+            $def: 0,
+            $save: true
+        },
         step(){
             let result = [];
+            this.model.module.resetH();
             for(let phrase of this.vectors.data){
                 for(let i = 0; i<phrase.length; i++) {
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
                     let res = this.model(token);
                     if(next){
-                        this.tensor = res.mse(token);
+                        this.tensor = res.mse(this.isNext?next:token);
                         this.tensor.back(this.learnSpeed);
                         this.err = this.tensor.pow(2).sum().data;
                     }

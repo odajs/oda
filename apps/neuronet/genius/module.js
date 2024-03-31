@@ -95,11 +95,12 @@ export function linear(...args){
 export class RMSNorm extends Module {
     __init__(dim) {
         this.W = Parameter(Tensor.random(dim));
+        this.W.label = 'RMSNorm - W'
         this.bias = Parameter(Tensor.random(dim));
+        this.bias.label = 'RMSNorm - bias'
         this.eps = 1e-5;
     }
     forward(x) {
-
         let p = x.pow(2);
         let m = p.mean();
         let eps = m.add(this.eps);
