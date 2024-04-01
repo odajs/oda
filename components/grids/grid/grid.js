@@ -292,8 +292,8 @@ ODA({
         <oda-button :disabled="currentPage === 0" @tap="_toFirst" icon="bootstrap:chevron-double-left"></oda-button>
         <oda-button :disabled="currentPage === 0" @tap="_toPrevious" icon="bootstrap:chevron-left"></oda-button>
         <oda-button :label="currentPage + 1 + '/' + pageCount" @tap="showDD"></oda-button>
-        <oda-button :disabled="currentPage === pageCount - 1" @tap="_toNext" icon="bootstrap:chevron-right"></oda-button>
-        <oda-button :disabled="currentPage === pageCount - 1" @tap="_toLast" icon="bootstrap:chevron-double-right"></oda-button>
+        <oda-button :disabled="currentPage === pageCount - 1 || pageCount === 0" @tap="_toNext" icon="bootstrap:chevron-right"></oda-button>
+        <oda-button :disabled="currentPage === pageCount - 1 || pageCount === 0" @tap="_toLast" icon="bootstrap:chevron-double-right"></oda-button>
         <!-- <oda-button ~for="buttons" ~props="$for.item" :focused="currentPage === $for.item.index"></oda-button> -->
     `,
     pages: {
