@@ -19,7 +19,10 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
                 return this.simpleMde.value();
             }
         },
-        autofocus: false
+        autofocus: {
+            $def: false,
+            $attr: true
+        }
     },
     get scrollableElement() {
         return this.$('.CodeMirror-scroll') || undefined;
