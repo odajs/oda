@@ -2,22 +2,20 @@
 
 В Web-хранилище сохраняются только свойства, у которых модификатор **save** установлен в значение **true**.
 
-Пример 1
+Например,
 
 ```javascript _edit_[my-input-component.js]
 ODA({
     is: 'my-input-component',
     template: `
         <input ::value>
-        <button @tap="_clear">Очистить хранилище</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
-    $public: {
-        value: {
-            $def: 'Введите текст',
-            $save: true
-        }
+    value: {
+        $def: 'Введите текст',
+        $save: true
     },
-    _clear() {
+    clear() {
         this.clearSaves();
         window.location.reload(true);
     }
@@ -26,7 +24,7 @@ ODA({
 
 Данные записываются в Web-хранилище в виде пары **ключ/значение**. Значение определяется свойством, в котором указан параметр **save**, а ключ определяется директивой **~save-key** того компонента, чье свойство необходимо сохранить.
 
-Пример 2
+Например,
 
 ```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
@@ -39,7 +37,7 @@ ODA({
 
 Ключ можно задавать не только в виде строкового литерала, но и с помощью JavaScript-выражения.
 
- Пример 3
+Например,
 
 ```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
@@ -62,11 +60,11 @@ ODA({
 
 При нажатии на эту красную кнопку восстанавливаются значения по умолчанию для всех примеров на данной странице:
 
-```javascript _run_edit_nocopy_[my-component.js]
+```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
     template:`
-        <button @tap="window.localStorage.clear()" style="background-color:red">RESET</button>
+        <button @tap="window.localStorage.clear()" style="background:red">RESET</button>
         `
 });
 ```
@@ -81,9 +79,9 @@ ODA({
 
 Если в проекте применяется несколько экземпляров одного компонента и у них в директиве **~save-key** указано одно и то же значение ключа, то в хранилище будут записываться только значения свойств компонента, расположенного последним в структуре документа. В этом случае при обновлении страницы сохраненное значение будет восстанавливаться для всех однотипных компонентов, у которых совпадает значение ключа.
 
-Пример 3
+Например,
 
-```javascript _run_edit_nocopy_[my-component.js]_{my-input-component.js}
+```javascript _run_edit_[my-component.js]_{my-input-component.js}
 ODA({
     is: 'my-component',
     template:`
@@ -101,7 +99,7 @@ ODA({
 Обратите внимание, что отсутствие директивы **~save-key** НЕ отменяет сохранение свойств с модификатором **save**. Свойства по-прежнему сохраняются в хранилище, но без ключа. Фактически все компоненты без директивы **~save-key** имеют одно и то же "пустое" значение ключа. Соответственно сохранение и восстановление значений свойств осуществляется также как для компонентов с одинаковыми ключами.
 ```
 
-Пример 4
+Например,
 
 ```javascript_run_edit_nocopy_[my-component.js]_{my-input-component.js}
 ODA({
@@ -121,7 +119,7 @@ ODA({
 Будьте внимательны и учитывайте порядок поиска данных в хранилище при восстановлении значений свойств у компонентов, используемых с директивой **~save-key**. Вначале ищутся данные, сохраненные с ключом, указанным в директиве **~save-key**. Если в хранилище данные с указанным ключом отсутствуют, то ищутся данные с "пустым" ключом. Если данные с "пустым" ключом будут найдены, то в хранилище сразу создастся их копия с ключом из директивы **~save-key**, затем данные загрузятся в компонент.
 ```
 
-Пример 5
+Например,
 
 ```javascript _run_edit_nocopy_[my-component.js]_{my-input-component.js}
 ODA({
@@ -144,3 +142,4 @@ ODA({
     <iframe src="https://www.youtube.com/embed/uOQBlyWafe4?start=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
     	style="position:absolute;width:100%;height:100%;"></iframe>
 </div>
+
