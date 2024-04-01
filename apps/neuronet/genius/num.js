@@ -26,20 +26,20 @@ Object.defineProperty(Number.prototype, 'grads', {
     value: []
 })
 
+Object.defineProperty(Number.prototype, '_', {
+    value: {}
+})
+
 Object.defineProperty(Number.prototype, 'g', {
     get(){
-        const res = this['#g'] ??= this.grads.reduce((r, grad)=>{
+        const res = this._.g ??= this.grads.reduce((r, grad)=>{
             const g = grad();
             return r + g;
         }, 0);
         return res;
     }
 })
-Object.defineProperty(Number.prototype, 'p', {
-    enumerable: true,
-    writable: true,
-    value: 0
-})
+
 // math functions
 
 Number.prototype._mul = function (other){

@@ -1,4 +1,4 @@
-import {Parameter, Tensor} from "./ten.js";
+import {Parameter, Tensor} from "./tor.js";
 export class Module{
     constructor(...args) {
         this.__args__ = ''

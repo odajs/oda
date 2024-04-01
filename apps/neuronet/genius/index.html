@@ -6,7 +6,7 @@
     import * as gen from './genius.js'
     import * as nn from './tor.js';
     import * as mm from './module.js';
-    import {TNum} from './num.js';
+    // import {TNum} from './num.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .01,
+        learnSpeed: .001,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -111,10 +111,11 @@
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
                     let res = this.model(token);
-                    if(next){
-                        this.tensor = res.mse(this.isNext?next:token);
+                    if(next) {
+                        this.tensor = res.mse(this.isNext ? next : token);
                         this.tensor.back(this.learnSpeed);
-                        this.err = this.tensor.pow(2).sum().data;
+                        let err = this.tensor.pow(2);
+                        this.err = nn.Tensor.einsum('i->', err).data;
                     }
                     result.push(res);
                 }
@@ -181,7 +182,7 @@
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
                 <div class="vertical">
-                    <span no-flex>{{tensor?.data}}</span>
+                    <span no-flex>{{tensor?.toString(true)}}</span>
                     <span disabled no-flex>{{tensor?.g}}</span>
                 </div>
                 <div class="no-flex horizontal">

@@ -1,10 +1,10 @@
-import './num.js'
 function genId(){
     return ++_id;
 }
 let _id = 0;
 export class Tensor{
     children = [];
+    parents = [];
     #shape = [];
     #data = null;
     constructor(data, d_type = Float64Array) {
@@ -21,7 +21,12 @@ export class Tensor{
         }
         else
             data = [data]
+        data = data.map(i=>num(i))
         this.#data = new d_type(data);
+    }
+    get grads(){
+        const grads = this['#grads'] ??= this.map(i=>[]);
+        return grads;
     }
     get g(){
         return this.map(i=>i.g)
@@ -62,16 +67,16 @@ export class Tensor{
     }
     clearGrad(){
         this.map((d, i)=>{
-            d.g = undefined;
+            d._.g = undefined;
         })
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
         this.map(d=>{
-            let correct = d.g * learn_speed + (d.p || 0);
+            let correct = d.g * learn_speed + (d._.p || 0);
             const res =  d + correct;
-            res.p = correct * learn_speed;
-            res.g = d.g
+            res._.p = correct * learn_speed;
+            res._.g = d.g
             return res;
         })
     }
@@ -93,7 +98,7 @@ export class Tensor{
             node.updateParams(learn_speed);
         })
         this.topo.forEach((node) => {
-            node.map(x=>x.grads = [])
+            node.map(x=>x._.grads = [])
         })
     }
     map(fn){
@@ -214,12 +219,11 @@ export class Tensor{
         }
         return new Tensor(result);
     }
-    toString(){
-        return this.label;
-        let data = this.toArray.toTensorString()+'\r\n';
+    toString(show_data = false){
+        let data = (show_data?this.toArray.toTensorString()+'\r\n':'').split('\r\n');
         if (data.length > 6){
             const padding = data[0].length/2 + 2
-            data = [...data.slice(0, 2), (' ...').padStart(padding, ' '), ...data.slice(-2)]
+            data = [...data.slice(0, 2), (' ...').padStart(padding, ' '), ...data.slice(-3)]
         }
         data = data.join('\r\n')
         return this.label + '\r\n' + data
@@ -252,9 +256,14 @@ export function Parameter(t){
 }
 
 Tensor.prototype.log = function (){
-    const out = new Tensor(this.map(x=>x._log()));
+    const out = new Tensor(this.map(x=>Math.log(x)));
     out.children = [this];
     out.reshape(this.shape);
+    this.parents.push(()=>{
+        for(let i = 0; i<this.grads.length; i++){
+            this.grads[i] += (1 / this.data[i]) * out.grads[i];
+        }
+    });
     return out;
 }
 Tensor.prototype.add = function (other){
@@ -271,14 +280,143 @@ Tensor.prototype.mul = function (other){
     out.reshape(this.shape);
     return out;
 }
+Tensor.prototype.pow = function (exp){
+    const out = new Tensor(this.map((x, i)=>x ** exp));
+    out.children = [this,  other];
+    out.reshape(this.shape);
+    this.grads
+    out._back = ()=>{
+        for(let i = 0; i<this.grads.length; i++){
+            let o = (other.data[i] ?? other.data[0]);
+            this.grads[i] += (o * this.data[i] ** (o - 1) * out.grads[i]);
+        }
+    }
+    return out;
+}
+
 Tensor.prototype.mse = function (other){
     other = tensor(other);
-    let res = this.data.map((d , i)=> d - other.data[i]);
+    let res = Array.from(this.data.map((d , i)=> d - other.data[i]));
     let out = new Tensor(res);
     out.children = [this];
     out.label = 'mse';
-    this.data.map((d , i)=> d.grads.unshift(()=>{
-        return out[i].g;
+    this.data.map((d , i)=> d._.grads.unshift(()=>{
+        return out.data[i].g;
     }));
     return out
+}
+
+Array.prototype.toTensorString = function (n = 2){
+    function recurse(d, idx = 0, l = 0){
+        let result = idx?`\r\n${(' ').repeat(l)}[`:'['
+        if (Array.isArray(d[0])){
+            let list = d.map((v, i)=>{
+                return recurse(v, i, l + 1);
+            })
+            result += list;
+        }
+        else{
+            if (d.length > 6){
+                result += d.slice(0, 2).map(x=>{
+                    return x.toTNumString()
+                }).join(' ') ;
+                result +=  ':';
+                result +=  d.slice(-2).map(x=>{
+                    return x.toTNumString()
+                }).join(' ')
+            }
+            else{
+                result += d?.map?.(x=>{
+                    return x.toTNumString()
+                }).join(' ') || d.toTNumString()
+            }
+        }
+
+        result = result + ']'
+        return result
+    }
+
+    return recurse(this);
+}
+Number.prototype.toTensorString = function (n = 2){
+    return this
+}
+
+Number.prototype.toTNumString = function () {
+    const v = +this;
+    return (v).toExponential(2).padStart(10, ' ') +' ';
+}
+
+
+Object.defineProperty(Number, '_', {
+    writable: true,
+    enumerable: true,
+    value: {grads:[]}
+})
+
+Object.defineProperty(Number.prototype, 'g', {
+    get(){
+        const res = this['#g'] ??= this._.grads.reduce((r, grad)=>{
+            const g = grad();
+            return r + g;
+        }, 0);
+        return res;
+    }
+})
+
+Number.prototype._log = function (){
+    const out = Math.log(this)
+    this._.grads.unshift(()=>{
+        return ((1 / this) * out.g);
+    })
+    return out;
+}
+Number.prototype._mul = function (other){
+    const out = this * other;
+    this._.grads.unshift(()=>{
+        return other * out.g;
+    })
+    other._.grads?.unshift(()=>{
+        return this * out.g;
+    })
+    return out;
+}
+Number.prototype._add = function (other){
+    const out = this + other;
+    this._.grads.unshift(()=>{
+        return out.g;
+    })
+    other._.grads?.unshift(()=>{
+        return out.g;
+    })
+    return out;
+}
+Number.prototype._pow = function (other){
+    const out = num(this ** other, '_pow')
+    this.grads.unshift(()=>{
+        return (other * this ** (other - 1) * out.g);
+    })
+    other.grads?.unshift(()=>{
+        return (this ** other * Math.log(this) * out.g);
+    })
+    return out;
+}
+
+export class TNum extends Number{
+    grads = []
+    constructor(v, l) {
+        super(v);
+        if (l)
+            this.l = l;
+    }
+    get g(){
+        const res = this['#g'] ??= this.grads.reduce((r, grad)=>{
+            const g = grad();
+            return r + g;
+        }, 0);
+        return res;
+    }
+}
+export function num(val, label){
+    return ((val instanceof TNum) ? val : new TNum(val, label));
 }

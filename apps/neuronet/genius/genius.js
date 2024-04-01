@@ -40,9 +40,9 @@ export class Genius extends nn.Module{
         x.label = 'INPUT'
         let bb = Tensor.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
-        let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
-        this.H = ba.add(this.H.data)
-        let y = Tensor.einsum('x y, y -> x', this.H, this.С);
+        // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
+        // this.H = ba.add(this.H.data)
+        let y = Tensor.einsum('x y, y -> x', bb, this.С);
         let xd =  x.mul(this.D);
         y = y.add(xd);
         return y;
