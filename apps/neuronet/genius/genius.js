@@ -1,5 +1,5 @@
 //HYPER PARAMETERS
-import {Parameter, Tensor} from "./ten.js";
+import {Parameter, tensor, Tensor} from "./tor.js";
 import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
@@ -37,11 +37,12 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x);
+        x.label = 'INPUT'
         let bb = Tensor.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
         let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
         this.H = ba.add(this.H.data)
-        let y = Tensor.einsum('x y, y  -> x', this.H, this.С);
+        let y = Tensor.einsum('x y, y -> x', this.H, this.С);
         let xd =  x.mul(this.D);
         y = y.add(xd);
         return y;
@@ -218,10 +219,4 @@ export class WordDecoder {
         result = this.textDecoder.decode(result);
         return result;
     }
-}
-
-function tensor(...args){
-    if(args[0] instanceof Tensor)
-        return args[0];
-    return new Tensor(...args);
 }

@@ -344,12 +344,6 @@ export class Tensor {
         const out = Tensor.zeros(outs.map(o => o.d));
         out.children = tensors;
         out.data = fn(out.data, ...tensors.map(t=>t.data));
-        // out.data = element_wise((x)=>{
-        //     let res = num(+x);
-        //     res.backs = x.backs;
-        //     res.back = x.back;
-        //     return res;
-        // }, out.data)
         out.label = label + ' ('+out.shape+')';
         return out;
     }

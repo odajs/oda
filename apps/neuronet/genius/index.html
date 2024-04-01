@@ -4,7 +4,7 @@
 <script type="module">
     import '../../../oda.js'
     import * as gen from './genius.js'
-    import * as nn from './ten.js';
+    import * as nn from './tor.js';
     import * as mm from './module.js';
     import {TNum} from './num.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
@@ -106,7 +106,7 @@
         step(){
             let result = [];
             this.model.module.resetH();
-            for(let phrase of this.vectors.data){
+            for(let phrase of this.vectors.toArray){
                 for(let i = 0; i<phrase.length; i++) {
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
@@ -153,7 +153,7 @@
             const phrases = this.tokens.map(w=>{
                 return this._encoder(w);
             })
-            return new nn.Tensor([phrases])
+            return new nn.Tensor(phrases)
         }
     })
     ODA({is: 'gen-tensor-tree',
@@ -181,8 +181,8 @@
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
                 <div class="vertical">
-                    <span no-flex>{{tensor?.data?.toTensorString()}}</span>
-                    <span disabled no-flex>{{tensor?.g?.toTensorString()}}</span>
+                    <span no-flex>{{tensor?.data}}</span>
+                    <span disabled no-flex>{{tensor?.g}}</span>
                 </div>
                 <div class="no-flex horizontal">
                     <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>

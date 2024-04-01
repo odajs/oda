@@ -22,7 +22,24 @@ Number.prototype.toTNumString = function () {
     return (v).toExponential(2).padStart(10, ' ') +' ';
 }
 
+Object.defineProperty(Number.prototype, 'grads', {
+    value: []
+})
 
+Object.defineProperty(Number.prototype, 'g', {
+    get(){
+        const res = this['#g'] ??= this.grads.reduce((r, grad)=>{
+            const g = grad();
+            return r + g;
+        }, 0);
+        return res;
+    }
+})
+Object.defineProperty(Number.prototype, 'p', {
+    enumerable: true,
+    writable: true,
+    value: 0
+})
 // math functions
 
 Number.prototype._mul = function (other){
