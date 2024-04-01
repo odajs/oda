@@ -64,7 +64,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                                 ace = cmp?.$('oda-ace-editor'),
                                 mde = cmp?.$('oda-simplemde-editor');
                             ace?.editor.focus();
-                            mde?.simpleMde.codemirror?.focus();
+                            // mde?.simpleMde.codemirror?.focus();
                         }
                     }, 300)
                 }
