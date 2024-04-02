@@ -290,12 +290,11 @@ Tensor.prototype.mse = function (other){
     let res = this.data.map((d , i)=> (other.data[i] - d));
     let out = new Tensor(res, 'MSE', [this]);
     // this.parents.push(()=>{
-        for(let i = 0; i<this.data.length; i++){
-            this.data[i].grads.push(()=>{
-                return res[i];
-            })
-        }
-    // });
+    this.data.forEach((d,i)=>{
+        d.grads.push(()=>{
+            return res[i];
+        })
+    })
     return out
 }
 

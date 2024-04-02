@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .061,
+        learnSpeed: .0618,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -85,10 +85,10 @@
             if (this.value === this.result)
                 this.goSteps = false;
             if (!this.goSteps) return;
+            this.step();
             setTimeout(()=>{
-                this.step();
                 this.steps();
-            })
+            },1)
         },
         set goSteps(n) {
             if (n)
