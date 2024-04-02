@@ -4,7 +4,7 @@ import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
 const WORD_DEEP = 32;
-const TOKEN_SIZE = 5;
+const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -18,7 +18,7 @@ const BIAS = false;
 export class Genius extends nn.Module{
     __init__() {
         const d = MODEL_DIM * EXPAND;
-        this.W = Parameter(Tensor.random([MODEL_DIM, d]));
+        this.W = Parameter(Tensor.random([MODEL_DIM, d], 'weights'));
         this.encoder = new genEncoder(d);
         this.decoder = new genDecoder(d);
         this.out_proj = nn.linear(d * HEAD_COUNT * LAYER_COUNT, d, true);
@@ -37,13 +37,16 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x, 'INPUT');
-        let bb = Tensor.einsum('x, y -> x y', x, this.B);
+        let y = Tensor.einsum('x, x y -> y', x, this.W);
+        // let bb = Tensor.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
         // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
         // this.H = ba.add(this.H.data)
-        let y = Tensor.einsum('x y, y -> x', bb, this.С);
-        let xd =  x.mul(this.D);
-        y = y.add(xd);
+        // let y = Tensor.einsum('x y, y -> x', bb, this.С);
+        // let xd =  x.mul(this.D);
+        // y = y.add(xd);
+        const Wt = Tensor.einsum('x y -> y x', this.W);
+        y = Tensor.einsum('x, x y -> y', y, Wt);
         return y;
     }
 }

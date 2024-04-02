@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .001,
+        learnSpeed: .01,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -74,9 +74,9 @@
         err:{
             $def: 0,
             set(n, o=0){
-                this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
-                this.learnSpeed += this.correct;
-                this.correct *= this.learnSpeed;
+                // this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
+                // this.learnSpeed += this.correct;
+                // this.correct *= this.learnSpeed;
                 // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },
@@ -181,11 +181,11 @@
             </div>
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
-                <div class="vertical">
+                <div class="vertical flex">
                     <span no-flex>{{tensor?.toString()}}</span>
-                    <span disabled no-flex>{{tensor?.g}}</span>
+                    <span disabled header>{{tensor?.g?.toString()}}</span>
                 </div>
-                <div class="no-flex horizontal">
+                <div ~if="children?.length" class="no-flex horizontal">
                     <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>
                 </div>
             </div>

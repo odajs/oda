@@ -8,6 +8,8 @@ export class Tensor{
     #shape = [];
     #data = null;
     constructor(data, label, children = []) {
+        this.children = children
+        this.label = label;
         this.id = genId();
         if (Array.isArray(data)){
             let shape = [];
@@ -21,16 +23,14 @@ export class Tensor{
         }
         else
             data = [data]
-        this.#data = data.map(i=>TNum(i));
-        this.children = children
-        this.label = label;
-    }
-    get grads(){
-        const grads = this['#grads'] ??= this.map(i=>[]);
-        return grads;
+        this.#data = data.map(i=>TNum(i, this.label));
+
+
     }
     get g(){
-        return this.map(i=>i.g)
+        const g =  new Tensor(this.data.map(i=>i.g));
+        g.reshape(this.shape);
+        return g;
     }
     get shape(){
         return this.#shape;
@@ -67,18 +67,14 @@ export class Tensor{
         return 0;
     }
     clearGrad(){
-        this.map((d, i)=>{
-            d.g = undefined;
-        })
+        this.data.map((d, i)=>d.g = undefined)
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.map(d=>{
-            let correct = d.g * learn_speed;// + (d.p || 0);
-            const res =  d + correct;
-            // res.p = correct * learn_speed;
-            res.g = d.g;
-            return res;
+        this.data.map((d, i, data)=>{
+            const value =  TNum(d + d.g * learn_speed);
+            value.g = d.g;
+            data[i] = value;
         })
     }
     back(learn_speed = .1){
@@ -97,13 +93,8 @@ export class Tensor{
         })
         this.topo.forEach((node) => {
             node.updateParams(learn_speed);
+            node.data.map(x=>x.grads?.clear())
         })
-        this.topo.forEach((node) => {
-            node.map(x=>x.grads = [])
-        })
-    }
-    map(fn){
-        return Array.prototype.map.call(this.data, fn);
     }
     reshape(shape){
         const size = shape.reduce((r, v)=>r * v, 1);
@@ -223,8 +214,8 @@ export class Tensor{
     toString(show_data = false){
         let data = this.toArray.toTensorString().split('\r\n');
         if (data.length > 6){
-            const padding = data[0].length/2 + 2
-            data = [...data.slice(0, 2), (' ...').padStart(padding, ' '), ...data.slice(-3)]
+            const padding = data[0].length/2 + 3
+            data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
         }
         data = data.join('\r\n')
         return data
@@ -245,10 +236,10 @@ export class Tensor{
     }
 }
 
-export function tensor(data){
+export function tensor(data, label, children){
     if(data instanceof Tensor)
         return data;
-    return new Tensor(data);
+    return new Tensor(data, label, children);
 }
 
 export function Parameter(t){
@@ -257,33 +248,32 @@ export function Parameter(t){
 }
 
 Tensor.prototype.log = function (){
-    const out = new Tensor(this.map(x=>Math.log(x)));
-    out.children = [this];
+    const out = new Tensor(this.data.map(x=>Math.log(x)), 'log', [this]);
     out.reshape(this.shape);
-    this.parents.push(()=>{
-        for(let i = 0; i<this.grads.length; i++){
-            this.grads[i] += (1 / this.data[i]) * out.grads[i];
-        }
-    });
+    for(let i = 0; i<this.data.length; i++){
+        this.data[i].grads.push(()=>{
+            return (1 / this.data[i]) * out.data[i].g;
+        })
+    }
     return out;
 }
 Tensor.prototype.add = function (other){
     other = tensor(other);
-    const out = new Tensor(this.map((x, i)=>x._add(other.data[i] ?? other.data[0])));
+    const out = new Tensor(this.data.map((x, i)=>x._add(other.data[i] ?? other.data[0])));
     out.children = [this,  other];
     out.reshape(this.shape);
     return out;
 }
 Tensor.prototype.mul = function (other){
     other = tensor(other);
-    const out = new Tensor(this.map((x, i)=>x._mul(other.data[i] ?? other.data[0])));
+    const out = new Tensor(this.data.map((x, i)=>x._mul(other.data[i] ?? other.data[0])));
     out.children = [this,  other];
     out.reshape(this.shape);
     return out;
 }
 Tensor.prototype.pow = function (exp){
-    const out = new Tensor(this.map((x, i)=>x ** exp));
-    out.children = [this,  other];
+    const out = new Tensor(this.data.map((x, i)=>x ** exp));
+    out.children = [this];
     out.reshape(this.shape);
     out._back = ()=>{
         for(let i = 0; i<this.grads.length; i++){
@@ -296,13 +286,15 @@ Tensor.prototype.pow = function (exp){
 
 Tensor.prototype.mse = function (other){
     other = tensor(other);
-    let res = this.data.map((d , i)=> d - other.data[i]);
+    let res = this.data.map((d , i)=> (other.data[i] - d));
     let out = new Tensor(res, 'MSE', [this]);
-    this.parents.push(()=>{
-        for(let i = 0; i<this.grads.length; i++){
-            this.data[i].g += res[i];
+    // this.parents.push(()=>{
+        for(let i = 0; i<this.data.length; i++){
+            this.data[i].grads.push(()=>{
+                return res[i];
+            })
         }
-    });
+    // });
     return out
 }
 
@@ -316,12 +308,12 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 6){
-                result += d.slice(0, 2).map(x=>{
+            if (d.length > 4){
+                result += d.slice(0, 1).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
-                result +=  ':';
-                result +=  d.slice(-2).map(x=>{
+                result +=  "  ⇠⇢";
+                result +=  d.slice(-1).map(x=>{
                     return x.toTNumString()
                 }).join(' ')
             }

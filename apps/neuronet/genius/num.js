@@ -10,7 +10,7 @@ export class TFloat extends Number{
         if (this._g === undefined){
             this._g = 0;
             let grad
-            while(grad = this.grads.pop()){
+            while(grad = this.grads.shift()){
                 this._g += grad();
             }
         }
