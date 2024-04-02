@@ -36,8 +36,7 @@ export class Genius extends nn.Module{
         // this.encoder.module.resetH();
     }
     forward(x){
-        x = tensor(x);
-        x.label = 'INPUT'
+        x = tensor(x, 'INPUT');
         let bb = Tensor.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
         // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
