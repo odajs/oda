@@ -177,12 +177,12 @@
             </style>
             <div class="border header bold horizontal" style="position: sticky; top: 0px;">
                 <span>{{tensor?.id}}</span><oda-icon @tap="closed = !closed" :icon></oda-icon>
-                <span  no-flex>{{tensor?.toString()}}</span>
+                <span  no-flex>{{tensor?.label}}</span>
             </div>
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
                 <div class="vertical">
-                    <span no-flex>{{tensor?.toString(true)}}</span>
+                    <span no-flex>{{tensor?.toString()}}</span>
                     <span disabled no-flex>{{tensor?.g}}</span>
                 </div>
                 <div class="no-flex horizontal">

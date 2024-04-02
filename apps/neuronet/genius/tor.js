@@ -68,16 +68,16 @@ export class Tensor{
     }
     clearGrad(){
         this.map((d, i)=>{
-            d._.g = undefined;
+            d.g = undefined;
         })
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
         this.map(d=>{
-            let correct = d.g * learn_speed + (d._.p || 0);
+            let correct = d.g * learn_speed;// + (d.p || 0);
             const res =  d + correct;
-            res._.p = correct * learn_speed;
-            res._.g = d.g
+            // res.p = correct * learn_speed;
+            res.g = d.g;
             return res;
         })
     }
@@ -99,7 +99,7 @@ export class Tensor{
             node.updateParams(learn_speed);
         })
         this.topo.forEach((node) => {
-            node.map(x=>x._.grads = [])
+            node.map(x=>x.grads = [])
         })
     }
     map(fn){
@@ -221,16 +221,16 @@ export class Tensor{
         return new Tensor(result);
     }
     toString(show_data = false){
-        let data = (show_data?this.toArray.toTensorString()+'\r\n':'').split('\r\n');
+        let data = this.toArray.toTensorString().split('\r\n');
         if (data.length > 6){
             const padding = data[0].length/2 + 2
             data = [...data.slice(0, 2), (' ...').padStart(padding, ' '), ...data.slice(-3)]
         }
         data = data.join('\r\n')
-        return this.label + '\r\n' + data
+        return data
     }
     get toArray() {
-        let data = Array.from(this.data);
+        let data = this.data;
         let res = [];
         const shape = Array.from(this.shape);
         let s
