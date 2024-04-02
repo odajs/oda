@@ -59,9 +59,13 @@ ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /
             this.listen('scroll', 'onScroll', { target: this.scrollableElement });
 
         if (this.autofocus)
-            this.simpleMde.codemirror.on('focus', (codeMirror) => { codeMirror.focus(); });
+            this.simpleMde.codemirror.on('focus', this.onFocus);
+    },
+    onFocus(codeMirror) {
+        codeMirror.focus();
     },
     detached() {
         this.unlisten('scroll', 'onScroll', { target: this.scrollableElement });
+        this.simpleMde.codemirror.off('focus', this.onFocus);
     }
 })
