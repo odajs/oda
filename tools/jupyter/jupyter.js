@@ -61,6 +61,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                         if (this.editIdx >= 0) {
                             const ace = this.cells[n].$cmp?.$('oda-ace-editor');
                             ace?.editor.focus();
+                            const mde = this.cells[n].$cmp?.$('oda-simplemde-editor');
+                            mde?.simpleMde.codemirror?.focus();
+                            // mde && (mde.focus = true);
                         }
                     }, 300)
                 }
@@ -123,7 +126,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get path() { return path },
         get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
         scrollToCell(idx = this.selectedIdx) {
-            this.jupyter.$('#cell-' + this.cells[idx].id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
     },
     $listeners: {
