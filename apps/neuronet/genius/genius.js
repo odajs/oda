@@ -45,8 +45,8 @@ export class Genius extends nn.Module{
         let y = Tensor.einsum('x y, y -> x', bb, this.С);
         let xd =  x.mul(this.D);
         y = y.add(xd);*/
-        const Wt = Tensor.einsum('x y -> y x', this.W);
-        y = Tensor.einsum('x, x y -> y', y, Wt);
+        // const Wt = Tensor.einsum('x y -> y x', this.W);
+        // y = Tensor.einsum('x, x y -> y', y, Wt);
         return y;
     }
 }

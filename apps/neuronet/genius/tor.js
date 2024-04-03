@@ -74,9 +74,10 @@ export class Tensor{
         if (!this.isParam) return;
         this.data = this.data.map((d, i)=>{
             const correct = d.g * learn_speed + (d.p || 0);
-            d = TNum(d + correct);
-            d.p = correct * learn_speed;
-            return d
+            const res = TNum(d + correct);
+            res.g = d.g
+            res.p = correct * learn_speed;
+            return res
         })
     }
     back(learn_speed = .1){
