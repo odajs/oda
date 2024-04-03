@@ -1,5 +1,5 @@
 //HYPER PARAMETERS
-import {Parameter, tensor, Tensor} from "./tor.js";
+import {Parameter, tensor, Tensor, EO} from "./tor.js";
 import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
@@ -37,14 +37,15 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x, 'INPUT');
-        let y = Tensor.einsum('x, x y -> y', x, this.W);
-/*        let bb = Tensor.einsum('x, y -> x y', x, this.B);
+        // let y = EinSum.einsum('x, x y -> y', x, this.W);
+        let bb = EO.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
         // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
         // this.H = ba.add(this.H.data)
-        let y = Tensor.einsum('x y, y -> x', bb, this.С);
+        let y = EO.einsum('x y, y -> x', bb, this.С);
         let xd =  x.mul(this.D);
-        y = y.add(xd);*/
+        // y = y.add(xd);
+        y = EO.einsum('x, x -> x: _add', y, xd);
         // const Wt = Tensor.einsum('x y -> y x', this.W);
         // y = Tensor.einsum('x, x y -> y', y, Wt);
         return y;

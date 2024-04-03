@@ -12,12 +12,12 @@ export class TFloat extends Number{
     get g(){
         if (this._g === undefined){
             this._g = 0;
-            let grad
-            while(grad = this.grads.shift()){
+            let grad;
+            while(grad = this.grads.pop()){
                 this._g += grad();
             }
         }
-        return this._g
+        return this._g;
     }
     set g(n){
         this._g = n;

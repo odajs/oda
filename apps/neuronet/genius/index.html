@@ -4,7 +4,7 @@
 <script type="module">
     import '../../../oda.js'
     import * as gen from './genius.js'
-    import * as nn from './tor.js';
+    import {EO, Tensor} from './tor.js';
     import * as mm from './module.js';
     // import {TNum} from './num.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
@@ -106,7 +106,7 @@
         step(){
             let result = [];
             this.model.module.resetH();
-            for(let phrase of this.vectors.toArray){
+            for(let phrase of this.vectors.array){
                 for(let i = 0; i<phrase.length; i++) {
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
@@ -115,7 +115,7 @@
                         this.tensor = res.mse(this.isNext ? next : token);
                         this.tensor.back(this.learnSpeed);
                         let err = this.tensor.pow(2);
-                        this.err = nn.Tensor.einsum('i->', err).data;
+                        this.err = EO.einsum('i->', err).data;
                     }
                     result.push(res);
                 }
@@ -154,7 +154,7 @@
             const phrases = this.tokens.map(w=>{
                 return this._encoder(w);
             })
-            return new nn.Tensor(phrases)
+            return new Tensor(phrases)
         }
     })
     ODA({is: 'gen-tensor-tree',
