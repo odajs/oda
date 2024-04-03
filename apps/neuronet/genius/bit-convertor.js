@@ -41,10 +41,10 @@ let conv = new Convertor(32)
 
 // conv.setFraction(5,tFr)
 // conv.print(5)
-let xxx = conv.encode('zip')
-let yyy = conv.decode(xxx)
+// let xxx = conv.encode('zip')
+// let yyy = conv.decode(xxx)
 
 conv.setFloat(5,1.5)
 conv.print(5)
-conv.setBit(5,{exp:'01111111111'})
+// conv.setBit(5,{exp:'01111111111'})
 
