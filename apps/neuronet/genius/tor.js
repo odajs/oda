@@ -3,6 +3,7 @@ function genId(){
     return ++_id;
 }
 let _id = 0;
+const einsums = {};
 export class Tensor{
     parents = [];
     #shape = [];
@@ -71,11 +72,11 @@ export class Tensor{
     }
     updateParams(learn_speed=.1){
         if (!this.isParam) return;
-        this.data.map((d, i, data)=>{
+        this.data = this.data.map((d, i)=>{
             const correct = d.g * learn_speed + (d.p || 0);
-            const value =  TNum(d + correct);
-            value.p = correct * learn_speed
-            data[i] = value;
+            d = TNum(d + correct);
+            d.p = correct * learn_speed;
+            return d
         })
     }
     back(learn_speed = .1){
@@ -104,78 +105,84 @@ export class Tensor{
         return (this.#shape = shape);
     }
     static einsum(expr, ...sources){
-        const label = 'einsum: \"'+expr+'\"';
         const tensors = sources.map(i=>tensor(i));
-        let operator = '_mul';
-        expr = expr.split('->');                            // Разделение выражения на вход и выход
-        const axis = [];
-        const terms = expr[0].trim().split(',');            // Разделение входа на термы
-        const ins = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
-            term = term.trim();
-            const tensor = tensors[i];
-            return term.split(' ').map((a, j)=>{            // Разделение терма на индексы и их анализ
-                a = '_'+a.trim()+'_';
-                let d =  tensor.shape[j];
-                let ax = axis.find(v => v.a === a);
-                if(ax === undefined){
-                    ax = {a, d};
-                    axis.push(ax);
-                }
-                else if(ax.d !== d)
-                    throw new Error(`Axis '${a}' == ${ax.d} but on tensor №${i+1} this axis == ${d}`);
+        const ein = einsums[expr] ??= (()=>{
+            const label = 'einsum: \"'+expr+'\"';
+            let operator = '_mul';
+            expr = expr.split('->');                            // Разделение выражения на вход и выход
+            const axis = [];
+            const terms = expr[0].trim().split(',');            // Разделение входа на термы
+            const ins = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
+                term = term.trim();
+                const tensor = tensors[i];
+                return term.split(' ').map((a, j)=>{            // Разделение терма на индексы и их анализ
+                    a = '_'+a.trim()+'_';
+                    let d =  tensor.shape[j];
+                    let ax = axis.find(v => v.a === a);
+                    if(ax === undefined){
+                        ax = {a, d};
+                        axis.push(ax);
+                    }
+                    else if(ax.d !== d)
+                        throw new Error(`Axis '${a}' == ${ax.d} but on tensor №${i+1} this axis == ${d}`);
+                    return ax;
+                })
+            });
+            expr = expr[1].split(':');
+            const outs = expr[0].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
+                a = a.trim();
+                if(!a) return;
+                a = '_'+a+'_';
+                let idx = axis.findIndex(v => v.a === a);
+                if(idx < 0)
+                    throw new Error(`Unknown axis: '${a}'`);
+                let ax = axis[idx];
+                axis.splice(idx, 1);
                 return ax;
-            })
-        });
-        expr = expr[1].split(':');
-        const outs = expr[0].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
-            a = a.trim();
-            if(!a) return;
-            a = '_'+a+'_';
-            let idx = axis.findIndex(v => v.a === a);
-            if(idx < 0)
-                throw new Error(`Unknown axis: '${a}'`);
-            let ax = axis[idx];
-            axis.splice(idx, 1);
-            return ax;
-        }).filter(i=>i)
-        let vars = [...outs, ...axis].map((o, i) =>{
-            return 'let $'+ o.a + ' = ' + o.d +';';
-        }).join('\n');
-        const out = Tensor.zeros(outs.map(o => o.d));
-        expr = expr[1]?.trim();
-        if(expr?.length)
-            operator = expr;
-        expr = '('+ins.map((t, i) => {
-            t.reverse();
+            }).filter(i=>i)
+            let vars = [...outs, ...axis].map((o, i) =>{
+                return 'let $'+ o.a + ' = ' + o.d +';';
+            }).join('\n');
+
+            expr = expr[1]?.trim();
+            if(expr?.length)
+                operator = expr;
+            expr = '('+ins.map((t, i) => {
+                t.reverse();
+                let mm = ''
+                const idx = t.map(o => {
+                    let res = o.a + mm;
+                    mm +='*$'+o.a;
+                    return res;
+                }).join('+')
+                return `t_${i}[${idx}]`
+            }).join(`).${operator}(`)+')';
+
+            outs.reverse();
             let mm = ''
-            const idx = t.map(o => {
+            const idx = outs.map(o => {
                 let res = o.a + mm;
                 mm +='*$'+o.a;
                 return res;
-            }).join('+')
-            return `t_${i}[${idx}]`
-        }).join(`).${operator}(`)+')';
-
-        outs.reverse();
-        let mm = ''
-        const idx = outs.map(o => {
-            let res = o.a + mm;
-            mm +='*$'+o.a;
-            return res;
-        }).join('+') || 0
-        const ss = `out[${idx}]`
-        expr = `\t${ss} = ${ss}._add(` + expr + ')';
-        expr = vars + '\n'+[...outs, ...axis].map((o, i) => {
-            if (o.d)
-                return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < \$${o.a}; ${o.a}++)`;
-            return ''
-        }).join('\n')+'\n' + expr;
-        expr = expr + '\n return out';
-        const fn = new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr);
-
+            }).join('+') || 0
+            const ss = `out[${idx}]`
+            expr = `\t${ss} = ${ss}._add(` + expr + ')';
+            expr = vars + '\n'+[...outs, ...axis].map((o, i) => {
+                if (o.d)
+                    return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < \$${o.a}; ${o.a}++)`;
+                return ''
+            }).join('\n')+'\n' + expr;
+            expr = expr + '\n return out';
+            return {
+                fn:new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr),
+                outs,
+                label
+            }
+        })()
+        const out = Tensor.zeros(ein.outs.map(o => o.d));
         out.children = tensors;
-        out.data = fn(out.data, ...tensors.map(t=>t.data));
-        out.label = label + ' ('+out.shape+')';
+        out.data = ein.fn(out.data, ...tensors.map(t=>t.data));
+        out.label = ein.label + ' ('+out.shape+')';
         return out;
     }
     static fill(shape, value, label){
@@ -258,6 +265,22 @@ Tensor.prototype.log = function (){
     }
     return out;
 }
+Tensor.prototype.exp = function (){
+    const out = new Tensor(this.data.map(x=>Math.exp(x)), 'exp', [this]);
+    out.reshape(this.shape);
+    this.data.forEach((d)=>{
+        d.grads.push((d, i)=>{
+            return (Math.E ** d * out.data[i].g);
+        })
+    })
+
+    for(let i = 0; i<this.data.length; i++){
+        this.data[i].grads.push(()=>{
+            return (Math.E ** this * out.g);
+        })
+    }
+    return out;
+}
 Tensor.prototype.add = function (other){
     other = tensor(other);
     const out = new Tensor(this.data.map((x, i)=>x._add(other.data[i] ?? other.data[0])));
@@ -289,7 +312,6 @@ Tensor.prototype.mse = function (other){
     other = tensor(other);
     let res = this.data.map((d , i)=> (other.data[i] - d));
     let out = new Tensor(res, 'MSE', [this]);
-    // this.parents.push(()=>{
     this.data.forEach((d,i)=>{
         d.grads.push(()=>{
             return res[i];

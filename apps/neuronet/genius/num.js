@@ -1,10 +1,13 @@
 export class TFloat extends Number{
+    grads = []
     constructor(v, l) {
         super(v);
         if (l) this.label = l;
     }
-    get grads(){
-        return this._grads ??= [];
+    set val(n){
+        if (this._val === undefined)
+            this.valueOf = valueOf;
+        this._val = n;
     }
     get g(){
         if (this._g === undefined){
@@ -21,6 +24,9 @@ export class TFloat extends Number{
     }
 }
 
+function valueOf(){
+    return this._val;
+}
 export function TNum(v, l){
     return v.g?v:new TFloat(v, l);
 }

@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .0618,
+        learnSpeed: .1,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -74,9 +74,9 @@
         err:{
             $def: 0,
             set(n, o=0){
-                // this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
-                // this.learnSpeed += this.correct;
-                // this.correct *= this.learnSpeed;
+                this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
+                this.learnSpeed += this.correct;
+                this.correct *= this.learnSpeed;
                 // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },
@@ -86,9 +86,9 @@
                 this.goSteps = false;
             if (!this.goSteps) return;
             this.step();
-            setTimeout(()=>{
+            requestAnimationFrame(()=>{
                 this.steps();
-            },1)
+            })
         },
         set goSteps(n) {
             if (n)
@@ -176,7 +176,8 @@
                 }
             </style>
             <div class="border header bold horizontal" style="position: sticky; top: 0px;">
-                <span>{{tensor?.id}}</span><oda-icon @tap="closed = !closed" :icon></oda-icon>
+                <span>{{tensor?.id}}.</span>
+<!--                <oda-icon @tap="closed = !closed" :icon></oda-icon>-->
                 <span  no-flex>{{tensor?.label}}</span>
             </div>
 

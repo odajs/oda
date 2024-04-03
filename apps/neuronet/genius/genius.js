@@ -4,7 +4,7 @@ import * as nn from  './module.js';
 import {rmsNorm} from "./module.js";
 
 const WORD_DEEP = 32;
-const TOKEN_SIZE = 2;
+const TOKEN_SIZE = 8;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -38,15 +38,15 @@ export class Genius extends nn.Module{
     forward(x){
         x = tensor(x, 'INPUT');
         let y = Tensor.einsum('x, x y -> y', x, this.W);
-        // let bb = Tensor.einsum('x, y -> x y', x, this.B);
+/*        let bb = Tensor.einsum('x, y -> x y', x, this.B);
         // let expA = this.A.exp().mul(-1);
         // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
         // this.H = ba.add(this.H.data)
-        // let y = Tensor.einsum('x y, y -> x', bb, this.С);
-        // let xd =  x.mul(this.D);
-        // y = y.add(xd);
-        // const Wt = Tensor.einsum('x y -> y x', this.W);
-        // y = Tensor.einsum('x, x y -> y', y, Wt);
+        let y = Tensor.einsum('x y, y -> x', bb, this.С);
+        let xd =  x.mul(this.D);
+        y = y.add(xd);*/
+        const Wt = Tensor.einsum('x y -> y x', this.W);
+        y = Tensor.einsum('x, x y -> y', y, Wt);
         return y;
     }
 }
