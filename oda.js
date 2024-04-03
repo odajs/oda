@@ -611,6 +611,15 @@ if (!window.ODA?.IsReady) {
             getFromItem(key, subKey){
                 return this.data[key]?.[subKey];
             },
+            getByPath(path) {
+                const [key, ...subKeys] = path.split('/');
+                let res = this.data[key];
+                for (const subKey of subKeys) {
+                    if(!res) break;
+                    res = res[subKey];
+                }
+                return res;
+            },
             setItem(key, value){
                 this.data[key] = value;
                 this.save();
@@ -618,6 +627,20 @@ if (!window.ODA?.IsReady) {
             setToItem(key, subKey, value){
                 key = this.data[key] ??= {};
                 key[subKey] = value;
+                this.save();
+            },
+            setByPath(path, value) {
+                const [key, ...subKeys] = path.split('/');
+                if (!subKeys.length) {
+                    this.data[key] = value;
+                }
+                else {
+                    let res = this.data[key] ??= {};
+                    for (const subKey of subKeys.slice(0, -1)) {
+                        res = res[subKey] ??= {};
+                    }
+                    res[subKeys.at(-1)] = value;
+                }
                 this.save();
             },
             save(){

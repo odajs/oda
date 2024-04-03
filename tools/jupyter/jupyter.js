@@ -362,13 +362,14 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
-            <div class="md md-result vertical flex" style="overflow-y: auto; padding: 10px;">
-                <oda-markdown-wasm-viewer @loaded="loaded" tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
+            <div class="md md-result vertical flex" style="overflow-y: auto">
+                <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
             <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
         </div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
+    presetcss: path + '/preset.css',
     get divMD(){
         return this.$('div.md-result') || undefined;
     },

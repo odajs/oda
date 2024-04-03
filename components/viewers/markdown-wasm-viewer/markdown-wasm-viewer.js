@@ -10,10 +10,11 @@ ODA({ is: 'oda-markdown-wasm-viewer', template: /*html*/`
             @apply --flex;
         }
     </style>
-    <link rel="stylesheet" href="${PATH}lib/preset.css">
-    <div></div>
+    <link rel="stylesheet" :href="presetcss">
+    <div class="md-wasm"></div>
     `,
     src: String,
+    presetcss: `${PATH}lib/preset.css`,
     url: {
         $type: String,
         set(n) {

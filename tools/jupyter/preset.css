@@ -1,0 +1,71 @@
+:host {
+    font-family: Roboto, Noto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+    margin-bottom: .5em;
+    margin-top: .5em;
+}
+h1 { font-size: 26px; }
+h2 { font-size: 23px; }
+h3 { font-size: 20px; }
+h4 { font-size: 18px; }
+h4 { font-size: 16px; }
+hr { opacity: .2; }
+blockquote {
+    border-left: 5px solid lightgray;
+    margin-left: 0;
+    padding: 0 2em;
+}
+pre {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    margin: 1em 0;
+    padding: 12px 8px;
+    font-family: monospace;
+    font-size: 14px;
+    color: #333;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+code {
+    font-size: 90%;
+}
+:not(pre)>code {
+    background-color: #f7f7f7;
+    border-radius: 2px;
+    padding: 0 3px
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: none;
+    font-size: 12px;
+    margin-left: 8px;
+    table-layout: fixed
+}
+thead {
+    border-bottom: 1px solid black;
+    vertical-align: bottom
+}
+tr,th,td {
+    border: none;
+    line-height: 1;
+    overflow: hidden;
+    padding: .5em;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap
+}
+th {
+    font-weight: bold;
+}
+tbody tr:nth-child(odd) {
+    background: #f7f7f7;
+}
+tbody tr:hover {
+    background: #eeeeee;
+}
