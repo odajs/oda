@@ -339,6 +339,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
             oda-markdown-wasm-viewer {
                 opacity: {{noSrcOpacity}};
+                padding: 0 8px;
             }
             .collapsed {
                 font-style: italic;
