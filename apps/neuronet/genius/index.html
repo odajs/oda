@@ -74,9 +74,9 @@
         err:{
             $def: 0,
             set(n, o=0){
-                this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
-                this.learnSpeed += this.correct;
-                this.correct *= this.learnSpeed;
+                // this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
+                // this.learnSpeed += this.correct;
+                // this.correct *= this.learnSpeed;
                 // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },

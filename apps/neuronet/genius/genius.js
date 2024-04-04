@@ -17,35 +17,35 @@ const BIAS = false;
 
 export class Genius extends nn.Module{
     __init__() {
-        const d = MODEL_DIM * EXPAND;
-        this.W = Parameter(Tensor.random([MODEL_DIM, d], 'weights'));
-        this.encoder = new genEncoder(d);
-        this.decoder = new genDecoder(d);
-        this.out_proj = nn.linear(d * HEAD_COUNT * LAYER_COUNT, d, true);
-        this.B = Parameter(Tensor.random([d], 'B'));
-        this.С = Parameter(Tensor.random([d], 'C'));
+        this.d = MODEL_DIM * EXPAND;
+        this.in_proj = new nn.Linear(this.d, this.d * 2);
+        this.W = Parameter(Tensor.random([MODEL_DIM, this.d], 'weights'));
+        this.encoder = new genEncoder(this.d);
+        this.decoder = new genDecoder(this.d);
+        this.out_proj = nn.linear(this.d * HEAD_COUNT * LAYER_COUNT, this.d, true);
         this.D = Parameter(Tensor.random(1, 'D'));
-        this.A = Parameter(Tensor.random([d, d], 'А'));
-        this.H = Tensor.zeros([d, d], 'H'); //todo Parameter
+        this.A = Parameter(Tensor.random([this.d, this.d], 'А'));
+        this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
         // let A = Tensor.arange(1, d + 1, d);
         // this.A = Parameter(A.log());
     }
     resetH(){
-        const d = MODEL_DIM * EXPAND;
-        this.H = Tensor.zeros([d, d], 'H'); //todo Parameter
+        this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
         // this.encoder.module.resetH();
     }
     forward(x){
         x = tensor(x, 'INPUT');
+        let inProj = this.in_proj(x);
+        let [B,C] = inProj.slice([this.d,this.d]);
         // let y = EinSum.einsum('x, x y -> y', x, this.W);
-        let bb = EO.einsum('x, y -> x y', x, this.B);
+        let bb = EO.einsum('x, y -> x y', x, B);
         // let expA = this.A.exp().mul(-1);
         // let ba = Tensor.einsum('x y, x y -> x y', bb, this.A);
         // this.H = ba.add(this.H.data)
-        let y = EO.einsum('x y, y -> x', bb, this.С);
-        let xd =  x.mul(this.D);
+        let y = EO.einsum('x y, y -> x', bb, C);
+        // let xd =  x.mul(this.D);
         // y = y.add(xd);
-        y = EO.einsum('x, x -> x: _add', y, xd);
+        // y = EO.einsum('x, x -> x: _add', y, xd);
         // const Wt = Tensor.einsum('x y -> y x', this.W);
         // y = Tensor.einsum('x, x y -> y', y, Wt);
         return y;

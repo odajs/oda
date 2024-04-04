@@ -1,4 +1,4 @@
-import {Parameter, Tensor} from "./tor.js";
+import {Parameter, Tensor, EO} from "./tor.js";
 export class Module{
     constructor(...args) {
         this.__args__ = ''
@@ -80,7 +80,7 @@ export class Linear extends Module{
 
     }
     forward(x){
-        x = Tensor.einsum('in, in out -> out', x, this.W);
+        x = EO.einsum('in, in out -> out', x, this.W);
         if (this.bias)
             x.add(this.bias);
         return x;

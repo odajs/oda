@@ -24,8 +24,6 @@ export class Tensor{
         else
             data = [data]
         this.#data = data.map(i=>TNum(i, this.label));
-
-
     }
     get g(){
         return new Tensor(this.data.map(i=>i.g)).reshape(this.shape);
@@ -159,6 +157,18 @@ export class Tensor{
             res = [];
         }
         return data;
+    }
+    slice(parts = []){
+        let start = 0;
+        const result = []
+        for (let size of parts){
+            let end = start + size;
+            let res = this.data.slice(start,  end);
+            let out = tensor(res, `slice [${start}-${end}]`, [this]);
+            result.push(out);
+            start = end;
+        }
+        return result;
     }
 }
 
