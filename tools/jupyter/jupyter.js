@@ -368,8 +368,8 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="horizontal flex">
-            <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
+            <div ~if="isReady && levelsCount" class="vertical" ~style="{width: iconSize+'px'}">
+                <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
@@ -434,7 +434,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             }
         </style>
         <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
-            <div class="vertical" ~style="{width: iconSize+8+'px'}">
+            <div class="vertical" ~style="{width: iconSize+'px'}">
                 <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 6px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
             </div>
             <h3 class="cell-h3">{{cell.label}}</h3>
