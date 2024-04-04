@@ -115,10 +115,17 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 }
                 cells.push(_cell);
             })
-            if (this.isAllCollapsed)
+            if (this.isAllCollapsed) {
                 cells.forEach(i => {
                     i.collapsed = true;
                 })
+            } else if (this.isReady && !this.isFirstInit) {
+                this.isFirstInit = true;
+                cells.forEach(i => {
+                    if (i.$cell.cell_type !== 'code')
+                        i.collapsed = i.$cell.collapsed;
+                })
+            }
             // console.log(cells);
             return cells;
         },
@@ -175,13 +182,13 @@ ODA({ is: 'oda-jupyter-divider',
         <style>
             :host {
                 @apply --vertical;
-                height: 8px;
+                height: 4px;
                 justify-content: center;
                 z-index: 99;
                 opacity: 0;
                 transition: opacity ease-out .5s;
                 position: relative;
-                padding: 1px;
+                padding: 4px;
             }
             :host([hover]) {
                 box-shadow: none !important;
@@ -194,7 +201,7 @@ ODA({ is: 'oda-jupyter-divider',
             }
             oda-button {
                 font-size: 14px;
-                margin: 0px 4px;
+                margin: -4px 4px 0 4px;
                 @apply --content;
                 @apply --border;
                 padding: 0px 4px 0px 0px;
@@ -202,7 +209,7 @@ ODA({ is: 'oda-jupyter-divider',
             }
         </style>
         <div class="horizontal center">
-            <div ~if="!_readOnly && idx!==-1" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
+            <div ~if="!_readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
             <oda-button ~if="!_readOnly && !$for.item.hide" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
@@ -336,6 +343,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --flex;
                 position: relative;
                 text-wrap: wrap;
+                border: {{cell?.collapsed && cell.levels.length ? '1px solid var(--border-color)' :'none'}};
             }
             oda-markdown-wasm-viewer {
                 opacity: {{noSrcOpacity}};
@@ -344,15 +352,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             .collapsed {
                 font-style: italic;
                 opacity: .5;
-                position: absolute; 
-                bottom: 0; 
-                width: calc(100% - 18px); 
                 height: 14px; 
                 background: lightgray; 
-                border: 1px stroke gray; 
-                margin: 2px;
                 font-size: x-small;
-                padding: 4px 0 0 12px;
+                padding: 4px;
+                border: 1px solid var(--border-color);
             }
             .md {
                 max-height: {{editIdx === idx ? 'calc(100vh - 100px)' : 'unset'}}; 
@@ -366,8 +370,8 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
-            <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
         </div>
+        <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
@@ -661,9 +665,16 @@ class CELL extends ROCKS({
     collapsed: {
         $def: false,
         set(v) {
-            this.levels?.map(i => {
-                i.hidden = v;
-            })
+            this.levels?.map(i => i.hidden = v);
+            if (!v) {
+                this.levels.forEach(i => {
+                    if (i.collapsed) {
+                        i.levels.forEach(l => {
+                            l.hidden = true;
+                        })
+                    }
+                })
+            }
         }
     },
     _init(cell){
