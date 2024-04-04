@@ -25,6 +25,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     n = path + '/' + n;
                 ODA.loadJSON(n).then(async res => {
                     this.notebook = res;
+                    // this.isReady = true;
                 })
             }
         }
@@ -244,7 +245,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </style>
         <div class="top">
             <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
-            <oda-button :disabled="selectedIdx >= notebook.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+            <oda-button :disabled="selectedIdx >= cells.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
             <oda-button :hidden="cell?.$cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
             <oda-button ~if="cell?.$cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
