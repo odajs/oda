@@ -74,9 +74,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         },
         hasChanged(detail) {
             this.fire('changed', detail);
-            this.isChanged = true;
+            // this.isChanged = true;
         },
-        isChanged: false,
+        // isChanged: false,
         isAllCollapsed: false,
         get cells() {
             let level = 0, ids = {}, cells = [];
@@ -430,7 +430,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>   
+                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>
                 <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
