@@ -103,7 +103,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     cell.label = firstStr.replace('#@title ', '').trim();
                     cell.level = level = 3;
                     ids[level] = id;
-                    cell.collapsed = true;
+                    i.collapsed = true;
                 }
                 let _cell = new CELL(cell);
                 for (let i = 1; i <= level; i++) {
@@ -123,7 +123,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             } else if (this.isReady && !this.isFirstInit) {
                 this.isFirstInit = true;
                 cells.forEach(i => {
-                    if (i.$cell.cell_type !== 'code')
+                    if (i.$cell.cell_type)
                         i.collapsed = i.$cell.collapsed;
                 })
             }
@@ -296,6 +296,15 @@ ODA({ is: 'oda-jupyter-cell',
                 margin-left: auto;
                 z-index: 100;
             }
+            .collapsed {
+                font-style: italic;
+                opacity: .5;
+                height: 12px; 
+                background: #f7f7f7; 
+                font-size: x-small;
+                padding: 4px;
+                border: 1px solid var(--border-color);
+            }
         </style>
         <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected"></oda-jupyter-toolbar>
     `,
@@ -344,20 +353,11 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --flex;
                 position: relative;
                 text-wrap: wrap;
-                border: {{cell?.collapsed && cell.levels.length ? '1px solid var(--border-color)' :'none'}};
+                /* outline: {{cell?.collapsed && cell.levels.length ? '1px dotted var(--border-color)' :'none'}}; */
             }
             oda-markdown-wasm-viewer {
                 opacity: {{noSrcOpacity}};
                 padding: 0 8px;
-            }
-            .collapsed {
-                font-style: italic;
-                opacity: .5;
-                height: 14px; 
-                background: lightgray; 
-                font-size: x-small;
-                padding: 4px;
-                border: 1px solid var(--border-color);
             }
             .md {
                 max-height: {{editIdx === idx ? 'calc(100vh - 100px)' : 'unset'}}; 
@@ -365,7 +365,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         </style>
         <div class="horizontal flex">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
+                <oda-icon ~if="isReady && levelsCount" :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
@@ -423,12 +423,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 height: 36px;
                 overflow: auto;
             }
+            .cell-h3 {
+                font-weight: 500;
+                font-size: 1.44em;
+                margin: 6px 6px 6px 12px;
+            }
         </style>
         <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
             <div class="vertical" ~style="{width: iconSize+8+'px'}">
-                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 16px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
+                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 6px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
             </div>
-            <h3>{{cell.label}}</h3>
+            <h3 class="cell-h3">{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
             <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
@@ -447,6 +452,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 </div>
             </div>
         </div>
+        <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
     `,
     $public: {
         autoRun: {
