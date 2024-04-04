@@ -33,7 +33,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get jupyter() {
             return this;
         },
-        notebook: null,
+        notebook: Object,
         editors: {
             code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
@@ -213,7 +213,7 @@ ODA({ is: 'oda-jupyter-divider',
         this.notebook ||= {};
         this.notebook.cells ||= [];
         this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
-        this.jupyter.hasChanged({ type: 'addCell', cell: this.notebook.cell });
+        this.jupyter.hasChanged({ type: 'addCell', cell: this.cell });
         this.selectedIdx = idx;
         this.editIdx = idx;
     }
@@ -237,7 +237,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </style>
         <div class="top">
             <oda-button :disabled="selectedIdx === 0" :icon-size icon="icons:arrow-back:90" @tap="moveCell(-1)"></oda-button>
-            <oda-button :disabled="selectedIdx >= notebook?.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
+            <oda-button :disabled="selectedIdx >= notebook.cells?.length - 1" :icon-size icon="icons:arrow-back:270" @tap="moveCell(1)"></oda-button>
             <oda-button :hidden="cell?.$cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
             <oda-button ~if="cell?.$cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
@@ -253,12 +253,12 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         idx = idx + v;
         idx = idx < 0 ? 0 : idx > this.notebook.cells.length ? this.notebook.cells.length : idx;
         this.notebook.cells.splice(idx, 0, cells[0])
-        this.jupyter.hasChanged({ type: 'moveCell', cell: this.notebook.cell });
+        this.jupyter.hasChanged({ type: 'moveCell', cell: this.cell });
         this.async(() => this.selectedIdx = idx);
     },
     deleteCell() {
         if (window.confirm(`Do you really want delete current cell ?`)) {
-            this.jupyter.hasChanged({ type: 'deleteCell', cell: this.notebook.cells[this.selectedIdx] });
+            this.jupyter.hasChanged({ type: 'deleteCell', cell: this.cell });
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
         }
