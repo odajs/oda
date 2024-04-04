@@ -169,138 +169,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     close() {
         [this.left, this.right].forEach(i => i?.close?.());
     },
-    onTouchMove(e) { //  swipeX
-        const EDGE_INDENT = 20;
-        const MOVING_THRESHOLD = 60;
-        const touch = e.changedTouches[0];
-        const router = window.top.$odaTouchRouter;
-        if (!router || !router.startEvent)
-            return 'finish';
-        const startX = router.startEvent.changedTouches[0].screenX;
-        if (startX < EDGE_INDENT || startX > window.top.screen.width - EDGE_INDENT)
-            return 'finish';
-        const shift = touch.screenX - startX;
-        if (Math.abs(shift) < MOVING_THRESHOLD)
-            return;
-
-        const openPanelContent = target => {
-            target.focused = target.last || target.controls[0];
-        }
-        const l = !this.left.hidden;
-        const r = !this.right.hidden;
-
-        if (!router.$startSide) {
-            let startSide;
-            if (this.allowCompact && this.compact)
-                startSide = this.l_opened ? 'left' : this.r_opened ? 'right' : '';
-            if (!startSide)
-                startSide = startX <= Math.round(window.top.screen.width / 2) ? 'left' : 'right';
-            router.$startSide = startSide;
-        }
-        const startedLeft = router.$startSide === 'left';
-
-        if (!e.$phase) {
-            if (startedLeft) {
-                if (l) {
-                    if (shift < 0) {
-                        if (!this.leftHidden) {
-                            this.leftHidden = true;
-                        }
-                    } else {
-                        if (this.leftHidden) {
-                            this.leftHidden = false;
-                            // this.left.reduceSomeDrawers();
-                        } else if (!this.l_opened) {
-                            openPanelContent(this.left);
-                        }
-                    }
-                }
-            } else {
-                if (r) {
-                    if (shift < 0) {
-                        if (this.rightHidden) {
-                            this.rightHidden = false;
-                            // this.right.reduceSomeDrawers();
-                        } else if (!this.rightHidden && !this.r_opened) {
-                            openPanelContent(this.right);
-                        }
-                    } else if (!this.rightHidden) {
-                        this.rightHidden = true;
-                    }
-                }
-            }
-            return 'restart';
-        } else if (e.$phase === 'capturing') {
-            if (startedLeft) {
-                if (l) {
-                    if (shift < 0) {
-                        if (!this.leftHidden) {
-                            this.leftHidden = true;
-                            return 'restart';
-                        }
-                    } else if (window === e.view) {
-                        if (this.leftHidden) {
-                            this.leftHidden = false;
-                            // this.left.reduceSomeDrawers();
-                            return 'restart';
-                        } else if (!this.l_opened) {
-                            openPanelContent(this.left);
-                            return 'restart';
-                        }
-                    }
-                }
-            } else {
-                if (r) {
-                    if (shift < 0) {
-                        if (window === e.view) {
-                            if (this.rightHidden) {
-                                this.rightHidden = false;
-                                // this.right.reduceSomeDrawers();
-                                return 'restart';
-                            } else if (!this.r_opened) {
-                                openPanelContent(this.right);
-                                return 'restart';
-                            }
-                        }
-                    } else if (!this.rightHidden) {
-                        this.rightHidden = true;
-                        return 'restart';
-                    }
-                }
-            }
-        } else if (e.$phase === 'bubbling') {
-            if (startedLeft) {
-                if (l) {
-                    if (shift > 0) {
-                        if (this.leftHidden) {
-                            this.leftHidden = false;
-                            // this.left.reduceSomeDrawers();
-                            return 'restart';
-                        } else if (!this.l_opened) {
-                            openPanelContent(this.left);
-                            return 'restart';
-                        }
-                    }
-                }
-            } else {
-                if (r) {
-                    if (shift < 0) {
-                        if (this.rightHidden) {
-                            this.rightHidden = false;
-                            // this.right.reduceSomeDrawers();
-                            return 'restart';
-                        } else if (!this.r_opened) {
-                            openPanelContent(this.right);
-                            return 'restart';
-                        }
-                    }
-                }
-            }
-        }
-
-        delete router.$startSide;
-        return 'pass';
-    }
 });
 
 
@@ -419,7 +287,7 @@ ODA({is: 'app-layout-drawer',
             <oda-button ~show="!hideTabs" ~is="$for.item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size ~for="buttons" @down.stop="execTap($event, $for.item)" ~props="$for.item" :item="$for.item" :focused="$for.item.focused" default="icons:help" ~text="$for.item.is && $for.item.text"></oda-button>
         </div>
     </div>
-    <div @touchmove="swipePanel" @touchstart="swipePanel" @touchend="swipeEnd" @tap.stop class="horizontal shadow content drawer no-flex"
+    <div @tap.stop class="horizontal shadow content drawer no-flex"
         ~style="_styles">
         <div class="flex vertical" style="overflow: hidden;">
             <slot name="panel-header" class="no-flex"></slot>
@@ -436,7 +304,6 @@ ODA({is: 'app-layout-drawer',
     `,
     buttons: [],
     delta: 0,
-    swipe: 0,
     allowPin: false,
     $public: {
         $pdp: true,
@@ -503,7 +370,6 @@ ODA({is: 'app-layout-drawer',
             position: cpt ? 'absolute' : 'relative',
             left: cpt && this.pos === 'left' ? panelW : 'unset',
             right: cpt && this.pos === 'right' ? panelW : 'unset',
-            transform: `translateX(${this.sign * this.swipe}px)`
         };
     },
     get sign() {
@@ -586,22 +452,6 @@ ODA({is: 'app-layout-drawer',
         //     this.domHost.style.setProperty('opacity', 1);
         // })
 
-    },
-    swipePanel(e) {
-        if (this.__sw) {
-            this.swipe += this.sign > 0 ? (e.touches[0].screenX - this.__sw.touches[0].screenX) : (this.__sw.touches[0].screenX - e.touches[0].screenX);
-            if (this.swipe < 0)
-                this.swipe = 0;
-            else
-                e.$executed = true;
-        }
-        this.__sw = e;
-    },
-    swipeEnd(e) {
-        delete this.__sw;
-        if (Math.abs(this.swipe) > e.target.offsetWidth / 2)
-            this.focused = null;
-        this.swipe = 0;
     },
     opening(pinned, controls) {
         if (pinned && !this.opened && !this.focused && controls.length) {
