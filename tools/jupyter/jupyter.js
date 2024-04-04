@@ -28,7 +28,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     // this.isReady = true;
                 })
             }
-        }
+        },
+        showHiddenInfo: false,
+        levelMargin: 0
     },
     $pdp: {
         get jupyter() {
@@ -92,6 +94,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     src = i.source.split('\n');
                 }
                 firstStr = src[0] || '';
+                cell._level = level > 6 ? 6 : level;
                 if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
                     let str = firstStr.split(' ');
                     cell.label = src[0].replace(str[0], '').trim();
@@ -288,6 +291,7 @@ ODA({ is: 'oda-jupyter-cell',
                 margin: 0 2px;
                 opacity: {{opacity}};
                 transition: opacity ease-out .1s;
+                margin-left: {{levelMargin ? (cell?._level) * levelMargin + 'px' : ''}};
             }
             oda-jupyter-toolbar {
                 position: sticky;
@@ -369,10 +373,10 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             </div>
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
-                <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" :pmargin="'0px'" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
+                <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showHiddenInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
@@ -452,7 +456,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 </div>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showHiddenInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
     `,
     $public: {
         autoRun: {
@@ -690,6 +694,7 @@ class CELL extends ROCKS({
         this.levels = cell.levels;
         this.id = cell.id;
         this.label = cell.label;
+        this._level = cell._level;
         this.level = cell.level;
         this.collapsed = cell.collapsed;
     }
