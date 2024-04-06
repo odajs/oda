@@ -121,6 +121,9 @@ export class Tensor{
     static random(shape, label) {
         return this.fill(shape, ()=>(Math.random()-.5), label);
     }
+    static array(data, label="array"){
+        return new Tensor(data, label);
+    }
     static arange(from_or_size = 0, size, repeat = 1){
         if (size === undefined){
             size = from_or_size;
@@ -136,12 +139,16 @@ export class Tensor{
         return new Tensor(result);
     }
     toString(show_data = false){
-        let data = this.array.toTensorString().split('\r\n');
-        if (data.length > 6){
-            const padding = data[0].length/2 + 3
-            data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
-        }
-        data = data.join('\r\n')
+        // let res =  Math.min(...this.data).toExponential(3);
+        // if(this.size>1)
+        //     res += ' -> '+ Math.max(...this.data).toExponential(3);
+        // return res;
+        let data = this.array.toTensorString()//.split('\r\n');
+        // if (data.length > 8){
+        //     const padding = data[0].length/2 + 3
+        //     data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
+        // }
+        // data = data.join('\r\n')
         return data
     }
     get array() {
@@ -209,14 +216,12 @@ Tensor.prototype.exp = function (){
     }
     return out;
 }
-// Tensor.prototype.add = function (other){
-//     other = tensor(other);
-//     const data = Array(this.size).fill().map(_=> new TNum(0));
-//     for(let i = 0; i<this.size; i++)
-//         for(let j = 0; j<other.size; j++)
-//             data[i] = data[i]._add(this.data[i])._add(other.data[j]);
-//     return  new Tensor(data, 'add', [this,  other]).reshape(this.shape);
-// }
+Tensor.prototype.add = function (other){
+    other = tensor(other);
+    const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data[0]))
+    const out = new Tensor(data, 'add', [this,  other]).reshape(this.shape);
+    return out;
+}
 Tensor.prototype.mul = function (other){
     other = tensor(other);
     const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data[0]))
@@ -257,19 +262,19 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 4){
+            if (d.length > 8){
                 result += d.slice(0, 1).map(x=>{
-                    return x.toTNumString()
+                    return +x//.toTNumString()
                 }).join(' ') ;
                 result +=  "  ⇠⇢";
                 result +=  d.slice(-1).map(x=>{
-                    return x.toTNumString()
+                    return +x//.toTNumString()
                 }).join(' ')
             }
             else{
                 result += d?.map?.(x=>{
-                    return x.toTNumString()
-                }).join(' ') || d.toTNumString()
+                    return +x//.toTNumString()
+                }).join(' ') || d//.toTNumString()
             }
         }
 
@@ -283,7 +288,7 @@ export class EO{
     static einsums = {};
     static parse_shape(expr, tensor){
         const shape = tensor.shape;
-        const vars = expr.split(' ');
+        const vars = expr.split('');
         if(vars.length !== shape.length)
             throw new Error(`Shape size [${shape.length}] does not match variable count [${vars.length}]`);
         vars.reduce((r, d, i)=>{
@@ -303,15 +308,13 @@ export class EO{
         const tensors = sources.map(i=>tensor(i));
         const ein = EO.einsums[expr] ??= (()=>{
             const label = 'einsum: \"'+expr+'\"';
-            let operator = '_mul';
             expr = expr.split('->');                            // Разделение выражения на вход и выход
             const axis = [];
             const terms = expr[0].trim().split(',');            // Разделение входа на термы
             const ins = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
                 term = term.trim();
                 const tensor = tensors[i];
-                return term.split(' ').map((a, j)=>{            // Разделение терма на индексы и их анализ
-                    a = '_'+a.trim()+'_';
+                return term.split('').map((a, j)=>{            // Разделение терма на индексы и их анализ
                     let d =  tensor.shape[j];
                     let ax = axis.find(v => v.a === a);
                     if(ax === undefined){
@@ -324,10 +327,8 @@ export class EO{
                 })
             });
             expr = expr[1].split(':');
-            const outs = expr[0].trim().split(' ').map(a => {   // Разделение выходного терма на индексы и их анализ
-                a = a.trim();
+            const outs = expr[0].trim().split('').map(a => {   // Разделение выходного терма на индексы и их анализ
                 if(!a) return;
-                a = '_'+a+'_';
                 let idx = axis.findIndex(v => v.a === a);
                 if(idx < 0)
                     throw new Error(`Unknown axis: '${a}'`);
@@ -336,7 +337,7 @@ export class EO{
                 return ax;
             }).filter(i=>i)
             let vars = [...outs, ...axis].map((o, i) =>{
-                return 'let $'+ o.a + ' = ' + o.d +';';
+                return 'let '+ o.a + o.a + ' = ' + o.d +';';
             }).join('\n');
 
             expr = expr[1]?.trim();
@@ -347,24 +348,24 @@ export class EO{
                 let mm = ''
                 const idx = t.map(o => {
                     let res = o.a + mm;
-                    mm +='*$'+o.a;
+                    mm +=' * ' + o.a+o.a;
                     return res;
-                }).join('+')
+                }).join(' + ')
                 return `t_${i}[${idx}]`
-            }).join(`).${operator}(`)+')';
+            }).join(`)._mul(`)+')';
 
             outs.reverse();
             let mm = ''
             const idx = outs.map(o => {
                 let res = o.a + mm;
-                mm +='*$'+o.a;
+                mm +='* ' + o.a + o.a;
                 return res;
-            }).join('+') || 0
+            }).join(' + ') || 0
             const ss = `out[${idx}]`
-            expr = `\t${ss} = ${ss}._add(` + expr + ')';
+            expr = `\t${ss}._sum(` + expr + ')';
             expr = vars + '\n'+[...outs, ...axis].map((o, i) => {
                 if (o.d)
-                    return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < \$${o.a}; ${o.a}++)`;
+                    return '\t'.repeat(i) + `for(let ${o.a} = 0; ${o.a} < ${o.a+o.a}; ${o.a}++)`;
                 return ''
             }).join('\n')+'\n' + expr;
             expr = expr + '\n return out';

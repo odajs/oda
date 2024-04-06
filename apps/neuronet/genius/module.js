@@ -15,7 +15,7 @@ export class Module{
         this.__init__(...args);
         const fwd = (...args)=>{
             const out = this.forward(...args);
-            out.label += '/'+this.label;
+            out.label = this.label;
             return out;
         }
         fwd.module = this;
@@ -82,7 +82,7 @@ export class Linear extends Module{
     forward(x){
         x = EO.einsum('in, in out -> out', x, this.W);
         if (this.bias)
-            x.add(this.bias);
+            x = x.add(this.bias);
         return x;
     }
     get label(){

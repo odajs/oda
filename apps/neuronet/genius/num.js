@@ -28,13 +28,13 @@ function valueOf(){
     return this._val;
 }
 export function TNum(v, l){
-    return v.g?v:new TFloat(v, l);
+    return (v instanceof TFloat)?v:new TFloat(v, l);
 }
 
-Number.prototype.toTNumString = function () {
-    const v = +this;
-    return (v).toExponential(2).padStart(10, ' ') +' ';
-}
+// Number.prototype.toTNumString = function () {
+//     const v = +this;
+//     return (v).toExponential(2).padStart(10, ' ') +' ';
+// }
 
 // math functions
 
@@ -58,15 +58,16 @@ Number.prototype._add = function (other){
     })
     return out;
 }
-//
-// Number.prototype._add_ = function (other){
-//     this.setVal(this + other);
-//     other.grads.push(()=>{
-//         return this.g;
-//     })
-//     this.l='_add_';
-//     return this;
-// }
+
+Number.prototype._sum = function (other){
+    this.val = this + other;
+    other.grads.push(()=>{
+        return this.g;
+    })
+    this.l='_sum';
+    return this;
+}
+
 Number.prototype._exp = function (){
     const out = TNum(Math.exp(this), '_exp')
     this.grads.push(()=>{

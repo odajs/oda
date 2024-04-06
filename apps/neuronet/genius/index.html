@@ -6,7 +6,7 @@
     import * as gen from './genius.js'
     import {EO, Tensor} from './tor.js';
     import * as mm from './module.js';
-    // import {TNum} from './num.js';
+    import {TNum, TFloat} from './num.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .05,
+        learnSpeed: .003,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -222,17 +222,23 @@
                     @apply --vertical;
                 }
             </style>
+
             <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace;"></textarea>
-            <textarea class="flex" style="font-size: xx-small; font-family: monospace;">{{result}}</textarea>
+             <button @tap="calc">EXE</button>
+            <textarea class="flex" style="font-size: xx-small; font-family: monospace;">{{result.toString()}}</textarea>
         `,
         value:{
             $def: '',
             $save: true
         },
-        get result(){
+        result: '',
+        calc(){
             try{
-                const fn = new Function('mm', 'nn', 'TNum', this.value);
-                return fn.call(this, mm, nn, TNum)|| '';
+                const fn = new Function('Tensor', 'EO', 'TFloat', this.value);
+                let time = Date.now();
+                const res =  fn.call(this, Tensor, EO, TFloat) || '';
+                time = Date.now() - time;
+                this.result =  res+'\r\n\r\n'+time
             }
             catch (e){
                 return e;
