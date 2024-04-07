@@ -26,7 +26,7 @@ export class Tensor{
         this.#data = data.map(i=>TNum(i, this.label));
     }
     get g(){
-        return new Tensor(this.data.map(i=>i.g)).reshape(this.shape);
+        return new Tensor(this.data.map(i=>i._g)).reshape(this.shape);
     }
     get shape(){
         return this.#shape;
@@ -70,8 +70,8 @@ export class Tensor{
         this.data = this.data.map((d, i)=>{
             const correct = d.g * learn_speed + (d.p || 0);
             const res = TNum(d + correct);
-            res.g = d.g
-            res.p = correct * learn_speed;
+            res.g = d.g;
+            res.p = correct * .1;
             return res
         })
     }
@@ -143,12 +143,12 @@ export class Tensor{
         // if(this.size>1)
         //     res += ' -> '+ Math.max(...this.data).toExponential(3);
         // return res;
-        let data = this.array.toTensorString()//.split('\r\n');
-        // if (data.length > 8){
-        //     const padding = data[0].length/2 + 3
-        //     data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
-        // }
-        // data = data.join('\r\n')
+        let data = this.array.toTensorString().split('\r\n');
+        if (data.length > 5){
+            const padding = data[0].length/2 + 3
+            data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
+        }
+        data = data.join('\r\n')
         return data
     }
     get array() {
@@ -262,19 +262,19 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 8){
+            if (d.length > 5){
                 result += d.slice(0, 1).map(x=>{
-                    return +x//.toTNumString()
+                    return x.toTNumString()
                 }).join(' ') ;
                 result +=  "  ⇠⇢";
                 result +=  d.slice(-1).map(x=>{
-                    return +x//.toTNumString()
+                    return x.toTNumString()
                 }).join(' ')
             }
             else{
                 result += d?.map?.(x=>{
-                    return +x//.toTNumString()
-                }).join(' ') || d//.toTNumString()
+                    return x.toTNumString()
+                }).join(' ') || d.toTNumString()
             }
         }
 

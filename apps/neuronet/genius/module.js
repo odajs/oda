@@ -80,7 +80,7 @@ export class Linear extends Module{
 
     }
     forward(x){
-        x = EO.einsum('in, in out -> out', x, this.W);
+        x = EO.einsum('i, io -> o', x, this.W);
         if (this.bias)
             x = x.add(this.bias);
         return x;

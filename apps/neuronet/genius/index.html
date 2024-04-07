@@ -65,7 +65,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .003,
+        learnSpeed: .051,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -115,7 +115,7 @@
                         this.tensor = res.mse(this.isNext ? next : token);
                         this.tensor.back(this.learnSpeed);
                         let err = this.tensor.pow(2);
-                        this.err = EO.einsum('i->', err).data;
+                        this.err = EO.einsum('i->', err).data[0];
                     }
                     result.push(res);
                 }

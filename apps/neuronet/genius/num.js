@@ -31,10 +31,10 @@ export function TNum(v, l){
     return (v instanceof TFloat)?v:new TFloat(v, l);
 }
 
-// Number.prototype.toTNumString = function () {
-//     const v = +this;
-//     return (v).toExponential(2).padStart(10, ' ') +' ';
-// }
+Number.prototype.toTNumString = function () {
+    const v = +this;
+    return (v).toExponential(2).padStart(10, ' ') +' ';
+}
 
 // math functions
 
