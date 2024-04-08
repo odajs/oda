@@ -300,7 +300,7 @@ ODA({ is: 'oda-jupyter-cell',
                 margin: 0 2px;
                 opacity: {{opacity}};
                 transition: opacity ease-out .1s;
-                margin-left: {{levelMargin ? (cell?._level) * levelMargin + 'px' : ''}};
+                margin-left: {{marginLeft}};
             }
             oda-jupyter-toolbar {
                 position: sticky;
@@ -321,6 +321,11 @@ ODA({ is: 'oda-jupyter-cell',
         </style>
         <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected"></oda-jupyter-toolbar>
     `,
+    get marginLeft() {
+        const lm = this.levelMargin || 0,
+            level = (this.cell.level || this.cell?._level || 1) - 1;
+        return  level * (lm < 0 ? 0 : lm) + 'px';
+    },
     idx: -2,
     selected: false,
     get meta() {
