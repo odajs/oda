@@ -314,6 +314,9 @@ ODA({ is: 'oda-jupyter-cell',
     `,
     idx: -2,
     selected: false,
+    get meta() {
+        return this.cell?.$cell.metadata;
+    },
     cell: {
         $def: null,
         set(n) {
@@ -323,7 +326,7 @@ ODA({ is: 'oda-jupyter-cell',
             this.src = src || n?.$cell?.source || '';
             this.setCellMode && this.setCellMode(this.src);
             n.$cmp = this;
-            if (n.autoRun && this.run)
+            if (n.$cell.metadata?.autoRun && this.run)
                 this.run();
         }
     },
@@ -331,7 +334,7 @@ ODA({ is: 'oda-jupyter-cell',
     opacity: 0,
     loaded(e) {
         this.cell.isLoaded = true;
-        let isLoaded = this.cells.every(i => i.isLoaded || i.hideCode);
+        let isLoaded = this.cells.every(i => i.isLoaded || i.$cell.metadata?.hideCode);
         this.opacity = 1;
         if (isLoaded) {
             this.isReady = true;
@@ -456,15 +459,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             <h3 class="cell-h3">{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
-            <div ~if="!hideCode" class="btns vertical">
+            <div ~if="!hideCode && !hideRun" class="btns vertical">
                 <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>
-                <div id="splitter1" ~if="!hideCode && !hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <oda-ace-editor ~if="!hideCode" :src :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>
+                <div id="splitter1" ~if="!hideCode && !hideResult && isRun && mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
-                    <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
+                    <iframe ~if="!hideResult && isRun && mode==='html'" :srcdoc></iframe>
                     <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                     <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
                         <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
@@ -478,51 +481,56 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     $public: {
         autoRun: {
             $def: false,
-            set(n) { this.cell.autoRun = n },
-            get() { return this.cell.autoRun }
+            set(n) { this.setMeta('autoRun', n) },
+            get() { return this.meta?.autoRun;
+            }
         },
         hideRun: {
             $def: false,
-            set(n) { this.cell.hideRun = n },
-            get() { return this.cell.hideRun }
+            set(n) { this.setMeta('hideRun', n) },
+            get() { return this.meta?.hideRun}
         },
         hideCode: {
             $def: false,
-            set(n) { this.cell.hideCode = n },
-            get() { return this.cell.hideCode }
+            set(n) { this.setMeta('hideCode', n) },
+            get() { return this.meta?.hideCode }
         },
         hideResult: {
             $def: false,
-            set(n) { this.cell.hideResult = n },
-            get() { return this.cell.hideResult }
+            set(n) { this.setMeta('hideResult', n) },
+            get() { return this.meta?.hideResult }
         },
         hideConsole: {
             $def: false,
-            set(n) { this.cell.hideConsole = n },
-            get() { return this.cell.hideConsole }
+            set(n) { this.setMeta('hideConsole', n) },
+            get() { return this.meta?.hideConsole }
         },
         showGutter: {
             $def: false,
-            set(n) { this.cell.showGutter = n },
-            get() { return this.cell.showGutter }
+            set(n) { this.setMeta('showGutter', n) },
+            get() { return this.meta?.showGutter }
         },
         mode: {
             $def: '',
             $list: ['javascript', 'html', 'css', 'phyton'],
-            set(n) { this.cell.mode = n },
-            get() { return this.cell.mode }
+            set(n) { this.setMeta('mode', n) },
+            get() { return this.meta?.mode }
         },
         theme: {
             $def: '',
             $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
-            set(n) { this.cell.theme = n },
-            get() { return this.cell.theme }
+            set(n)  { this.setMeta('theme', n) },
+            get() { return this.meta?.theme }
         },
         border: {
             $def: '',
-            set(n) { this.cell.border = n },
-            get() { return this.cell.border }
+            set(n) { this.setMeta('border', n) },
+            get() { return this.meta?.border }
         },
+    },
+    setMeta(prop, n) {
+        this.cell.$cell.metadata ||= {}; 
+        this.cell.$cell.metadata[prop] = n;
     },
     iconSize: 18,
     srcdoc: '',
@@ -544,16 +552,16 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         ace?.editor.setOption('fontSize', '16px');
     },
     setCellMode(src = this.$('oda-ace-editor')?.value || this.src || '') {
-        if (this.cell.mode) return;
-        if (this.cell?.metadata?.colab) {
-            this.cell.mode = 'python';
+        if (this.mode) return;
+        if (this.meta?.colab) {
+            this.mode = 'python';
             return;
         }
-        this.cell.mode = 'javascript';
+        this.mode = 'javascript';
         let arr = ['<!DOCTYPE html>', '<!--', '</script>', '</html>', '</body>', '</head>', '<link', '<meta ', '</'];
         let regx = new RegExp(arr.join('|'));
         if (regx.test(src))
-            this.cell.mode = 'html';
+            this.mode = 'html';
     },
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
@@ -567,7 +575,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         this.iconCloseTop = undefined;
         this.srcdoc = '';
         let src = this.src;
-        if (this.cell.mode !== 'html') {
+        if (this.mode !== 'html') {
             let fn = Function('w', this.fnStr);
             fn();
             this.runConsoleData = [...window._runConsoleData];
@@ -605,7 +613,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                             }
                         })
                     }
-                    if (cell.cell_type === 'code' && cell.mode !== 'html') {
+                    if (cell.cell_type === 'code' && cell.metadata?.mode !== 'html') {
                         if (_code.some(v => source.includes(v))) {
                             code += src + '\n';
                         } 
@@ -649,7 +657,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 this.srcdoc = srcdoc;
             })
         }
-        if (!this.cell.autoRun) {
+        if (!this.autoRun) {
             this.async(() => {
                 this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 28) - 28 + 'px';
                 this.iconCloseShow = true;
@@ -717,7 +725,7 @@ class CELL extends ROCKS({
         this.hidden = cell.hidden;
         this.$cell = cell.$cell;
         this.levels = cell.levels;
-        this.id = cell.id;
+        this.id = cell.$cell.metadata?.id || cell.id;
         this.label = cell.label;
         this._level = cell._level;
         this.level = cell.level;
@@ -728,23 +736,4 @@ class CELL extends ROCKS({
         super();
         this._init(cell);
     }
-    get autoRun() { return this.$cell.autoRun }
-    set autoRun(v) { this.$cell.autoRun = v }
-    get hideRun() { return this.$cell.hideRun }
-    set hideRun(v) { this.$cell.hideRun = v }
-    get hideCode() { return this.$cell.hideCode }
-    set hideCode(v) { this.$cell.hideCode = v }
-    get hideResult() { return this.$cell.hideResult }
-    set hideResult(v) { this.$cell.hideResult = v }
-    get hideConsole() { return this.$cell.hideConsole }
-    set hideConsole(v) { this.$cell.hideConsole = v }
-    get showGutter() { return this.$cell.showGutter }
-    set showGutter(v) { this.$cell.showGutter = v }
-    get mode() { return this.$cell.mode }
-    set mode(v) { this.$cell.mode = v }
-    get theme() { return this.$cell.theme }
-    set theme(v) { this.$cell.theme = v }
-    get border() { return this.$cell.border }
-    set border(v) { this.$cell.border = v }
-
 }
