@@ -7,6 +7,7 @@
     import {EO, Tensor} from './tor.js';
     import * as mm from './module.js';
     import {TNum, TFloat} from './num.js';
+    import {Tokenizer} from './tokenizer.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -22,6 +23,11 @@
                     font-family: monospace;
                 }
             </style>
+            <div slot="right-panel" class="flex vertical" style="overflow: auto;">
+                <div style="padding: 4px" ~for="tokenizer?.vocabulary">
+                     <span bold>{{$for.key}}:</span><span>{{ $for.item.next.join('| ')}}</span>
+                </div>
+            </div>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
@@ -65,7 +71,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .051,
+        learnSpeed: .01,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -106,7 +112,7 @@
         step(){
             let result = [];
             this.model.module.resetH();
-            for(let phrase of this.vectors.array){
+            for(let phrase of this.vectors){
                 for(let i = 0; i<phrase.length; i++) {
                     let token = phrase[i];
                     let next = phrase[i+1] || Array(token.length).fill(0);
@@ -121,7 +127,7 @@
                 }
             }
             result = result.map(w=>{
-                return this._decoder(w.data);
+                return this.tokenizer.decode(w.data);
             })
             this.result = result.join('');
             this.stepCount++;
@@ -138,23 +144,14 @@
             }
 
         },
-        get _tokenizer(){
-            return new gen.Tokenizer();
+        get tokenizer(){
+            return new Tokenizer();
         },
         get tokens(){
-            return this._tokenizer(this.value)
-        },
-        get _encoder(){
-            return new gen.WordEncoder();
-        },
-        get _decoder(){
-            return new gen.WordDecoder();
+            return this.tokenizer.tokenize(this.value)
         },
         get vectors(){
-            const phrases = this.tokens.map(w=>{
-                return this._encoder(w);
-            })
-            return new Tensor(phrases)
+            return this.tokenizer.vectorize(this.tokens);
         }
     })
     ODA({is: 'gen-tensor-tree',

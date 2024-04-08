@@ -1,10 +1,7 @@
 //HYPER PARAMETERS
 import {Parameter, tensor, Tensor, EO} from "./tor.js";
 import * as nn from  './module.js';
-import {rmsNorm} from "./module.js";
 
-const WORD_DEEP = 32;
-const TOKEN_SIZE = 4;
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 1;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
@@ -12,7 +9,6 @@ const HEAD_COUNT = 1;           // Количество селекторов (г
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
-const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 const BIAS = false;
 
 export class Genius extends nn.Module{
@@ -23,8 +19,8 @@ export class Genius extends nn.Module{
         this.encoder = new genEncoder(this.d);
         this.decoder = new genDecoder(this.d);
         this.out_proj = nn.linear(this.d * HEAD_COUNT * LAYER_COUNT, this.d, true);
-        this.B = Parameter(Tensor.random(this.d * 2, 'B'));
-        this.C = Parameter(Tensor.random(this.d * 2, 'C'));
+        this.B = Parameter(Tensor.random(this.d, 'B'));
+        this.C = Parameter(Tensor.random(this.d, 'C'));
         this.D = Parameter(Tensor.random(1, 'D'));
         this.A = Parameter(Tensor.random([this.d, this.d], 'А'));
         this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
@@ -37,8 +33,8 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x, 'INPUT');
-        let inProj = this.in_proj(x);
-        let bb = EO.einsum('x, y -> xy', inProj, this.B);
+        // let inProj = this.in_proj(x);
+        let bb = EO.einsum('x, y -> xy', x, this.B);
         // let inProj = this.in_proj(x);
         // let [B,C] = inProj.slice([this.d,this.d]);
         // let y = EinSum.einsum('x, xy -> y', x, this.W);
@@ -51,7 +47,7 @@ export class Genius extends nn.Module{
         // y = y.add(xd);
         // y = EO.einsum('x, x -> x: _add', y, xd);
         // const Wt = Tensor.einsum('xy -> yx', this.W);
-        y = EO.einsum('x, xy -> y', y, this.W);
+        // y = EO.einsum('x, xy -> y', y, this.W);
         return y;
     }
 }
@@ -171,59 +167,5 @@ export class genHead extends nn.Module{
     }
     get delta_rank(){
         return Math.ceil(this.dH / MODEL_DIM);
-    }
-}
-export class Tokenizer {
-    constructor() {
-        return this.tokenize.bind(this);
-    }
-    tokenize(text){
-        const tokens = []
-        for (let i = 0; i<text.length; i += TOKEN_SIZE)
-            tokens.push(text.slice(i, i + TOKEN_SIZE));
-        return  tokens;
-    }
-}
-export class WordEncoder {
-    textEncoder = new TextEncoder();
-    constructor() {
-        return this.encode.bind(this);
-    }
-    encode(word){
-        const buf = this.textEncoder.encode(word);
-        const emb = BINS.reduce((r, b, i) => {
-            let v = (buf[i] || 0);
-            v = v.toString(2);
-            v = v.padStart(8, '0');
-            v.split('').map((n, j) => r[j] += (+n * b));
-            return r;
-        }, Array(8).fill(2 ** -WORD_DEEP));
-        return emb;
-    }
-}
-
-export class WordDecoder {
-    textDecoder = new TextDecoder();
-    constructor() {
-        return this.decode.bind(this);
-    }
-    decode(vector){
-        vector = vector.toReversed();
-        let result = [];
-        for(let i = 0; i<BINS.length; i++){
-            let p = BINS[i];
-            let l = vector.reduce((r, t, i)=>{
-                if (t >= p){
-                    r += 2 ** i;
-                    vector[i] = t - p;
-                }
-                return r;
-            }, 0.0);
-            if(!l) break;
-            result.push(l);
-        }
-        result = new Int8Array(result)
-        result = this.textDecoder.decode(result);
-        return result;
     }
 }

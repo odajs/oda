@@ -240,6 +240,12 @@ Tensor.prototype.pow = function (exp){
     return out;
 }
 
+Tensor.prototype.sigmoid = function (){
+    const data = this.data.map(x=>x.sigmoid());
+    const out = new Tensor(data, 'sigmoid', [this]).reshape(this.shape);
+    return out;
+}
+
 Tensor.prototype.mse = function (other){
     other = tensor(other);
     let data = this.data.map((d , i)=> (other.data[i] - d));
