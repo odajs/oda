@@ -18,7 +18,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: false,
+        readOnly: {
+            $def: false,
+            $save: true
+        },
         set url(n) {
             if (n) {
                 if (!n.startsWith('http'))
@@ -29,8 +32,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 })
             }
         },
-        showHiddenInfo: false,
-        levelMargin: 0
+        showHiddenInfo: {
+            $def: false,
+            $save: true
+        },
+        levelMargin: {
+            $def: 0,
+            $save: true
+        },
     },
     $pdp: {
         get jupyter() {
@@ -531,6 +540,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     setMeta(prop, n) {
         this.cell.$cell.metadata ||= {}; 
         this.cell.$cell.metadata[prop] = n;
+        this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
     iconSize: 18,
     srcdoc: '',
