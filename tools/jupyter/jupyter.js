@@ -269,9 +269,9 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     },
     deleteCell() {
         if (window.confirm(`Do you really want delete current cell ?`)) {
-            this.jupyter.hasChanged({ type: 'deleteCell', cell: this.cell });
             this.editIdx = -1;
             this.notebook.cells.splice(this.selectedIdx, 1);
+            this.jupyter.hasChanged({ type: 'deleteCell', cell: this.cell });
         }
     },
     async showSettings() {
@@ -323,13 +323,15 @@ ODA({ is: 'oda-jupyter-cell',
             this.src = src || n?.$cell?.source || '';
             this.setCellMode && this.setCellMode(this.src);
             n.$cmp = this;
+            if (n.autoRun && this.run)
+                this.run();
         }
     },
     src: '',
     opacity: 0,
     loaded(e) {
         this.cell.isLoaded = true;
-        let isLoaded = this.cells.every(i => i.isLoaded);
+        let isLoaded = this.cells.every(i => i.isLoaded || i.hideCode);
         this.opacity = 1;
         if (isLoaded) {
             this.isReady = true;
@@ -406,7 +408,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 --border-color: lightgray;
                 @apply --vertical;
                 @apply --flex;
-                outline: 1px solid var(--border-color);
+                outline: {{border || '1px solid var(--border-color)'}};
                 position: relative;
             }
             oda-icon {
@@ -426,11 +428,25 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 min-height: 36px;
                 height: 36px;
                 overflow: auto;
+                padding: 0 4px;
             }
             .cell-h3 {
                 font-weight: 500;
                 font-size: 1.44em;
                 margin: 6px 6px 6px 12px;
+            }
+            .btns {
+                border-right: {{border || '1px solid var(--border-color)'}}; 
+                padding: 4px 0px;
+                width: 27px;
+            }
+            .cell-select {
+                position: absolute;
+                width: 24px;
+                height: 24px;
+                right: -6px;
+                top:-12px;
+                /* border: 1px solid red; */
             }
         </style>
         <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
@@ -440,13 +456,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             <h3 class="cell-h3">{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
-            <div class="vertical" style="border-right: 1px solid var(--border-color); padding: 4px 0px; width: 27px;">
+            <div ~if="!hideCode" class="btns vertical">
                 <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
                 <oda-ace-editor ~if="!hideCode" :src :mode="cell?.mode || 'javascript'" :theme="cell?.theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>
-                <div id="splitter1" ~if="!hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
+                <div id="splitter1" ~if="!hideCode && !hideResult && isRun && cell?.mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && cell?.mode==='html'" :srcdoc></iframe>
                     <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
@@ -457,6 +473,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             </div>
         </div>
         <div class="collapsed horizontal flex" ~if="showHiddenInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
+        <div class="cell-select"></div>
     `,
     $public: {
         autoRun: {
@@ -500,7 +517,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
             $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
             set(n) { this.cell.theme = n },
             get() { return this.cell.theme }
-        }
+        },
+        border: {
+            $def: '',
+            set(n) { this.cell.border = n },
+            get() { return this.cell.border }
+        },
     },
     iconSize: 18,
     srcdoc: '',
@@ -519,9 +541,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
     aceLoaded(e) {
         this.loaded();
         const ace = this.$('oda-ace-editor');
-        ace.editor.setOption('fontSize', '16px');
+        ace?.editor.setOption('fontSize', '16px');
     },
-    setCellMode(src = this.$('oda-ace-editor')?.value || '') {
+    setCellMode(src = this.$('oda-ace-editor')?.value || this.src || '') {
         if (this.cell.mode) return;
         if (this.cell?.metadata?.colab) {
             this.cell.mode = 'python';
@@ -620,17 +642,20 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                     const resizeObserver = new ResizeObserver((e) => {
                         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
                         iframe.style.opacity = 1;
+                        this.opacity = 1;
                     })
                     resizeObserver.observe(iframe.contentDocument.body);
                 })
                 this.srcdoc = srcdoc;
             })
         }
-        this.async(() => {
-            this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 28) - 28 + 'px';
-            this.iconCloseShow = true;
-            this.$('#result')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }, 100)
+        if (!this.cell.autoRun) {
+            this.async(() => {
+                this.iconCloseTop = (this.$('#splitter1')?.offsetTop || this.$('#splitter2')?.offsetTop || 28) - 28 + 'px';
+                this.iconCloseShow = true;
+                this.$('#result')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 100)
+        }
     },
     fnStr: `
 w = window;
@@ -719,5 +744,7 @@ class CELL extends ROCKS({
     set mode(v) { this.$cell.mode = v }
     get theme() { return this.$cell.theme }
     set theme(v) { this.$cell.theme = v }
+    get border() { return this.$cell.border }
+    set border(v) { this.$cell.border = v }
 
 }
