@@ -460,6 +460,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 top:-12px;
                 /* border: 1px solid red; */
             }
+            oda-ace-editor {
+                opacity: 1;
+                filter: unset;
+            }
         </style>
         <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
             <div class="vertical" ~style="{width: iconSize+'px'}">
@@ -473,7 +477,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor ~if="!hideCode" :src :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter"></oda-ace-editor>
+                <oda-ace-editor ~if="!hideCode" :src :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter" :read-only></oda-ace-editor>
                 <div id="splitter1" ~if="!hideCode && !hideResult && isRun && mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && mode==='html'" :srcdoc></iframe>
@@ -488,6 +492,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor', extends: 'oda-j
         <div class="cell-select"></div>
     `,
     $public: {
+        readOnly: {
+            $def: false,
+            set(n) { this.setMeta('readOnly', n) },
+            get() { return this.meta?.readOnly;
+            }
+        },
         autoRun: {
             $def: false,
             set(n) { this.setMeta('autoRun', n) },
