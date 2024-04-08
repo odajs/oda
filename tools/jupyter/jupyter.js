@@ -128,18 +128,24 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 }
                 cells.push(_cell);
             })
+            let min = 6;
             if (this.isAllCollapsed) {
                 cells.forEach(i => {
                     i.collapsed = true;
+                    const l = (i.level || i._level);
+                    min = l < min ? l : min;
                 })
             } else if (this.isReady && !this.isFirstInit) {
                 this.isFirstInit = true;
                 cells.forEach(i => {
                     if (i.$cell.cell_type)
                         i.collapsed = i.$cell.collapsed;
+                    const l = (i.level || i._level);
+                    min = l < min ? l : min;
                 })
             }
-            // console.log(cells);
+            this.minLevel = min;
+            // console.log(min, cells);
             return cells;
         },
         isReady: false,
@@ -322,8 +328,9 @@ ODA({ is: 'oda-jupyter-cell',
         <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected"></oda-jupyter-toolbar>
     `,
     get marginLeft() {
-        const lm = this.levelMargin || 0,
-            level = (this.cell.level || this.cell?._level || 1) - 1;
+        let lm = this.levelMargin || 0,
+            min = this.jupyter.minLevel,
+            level = (this.cell.level || this.cell?._level || min) - min;
         return  level * (lm < 0 ? 0 : lm) + 'px';
     },
     idx: -2,
