@@ -612,9 +612,9 @@
                                         },
                                         {
                                             "label": {
-                                                "ru": "<b style='color: brown'>save</b>: Модификатор сохранения"
+                                                "ru": "<b style='color: brown'>$save</b>: Модификатор сохранения"
                                             },
-                                            "name": "structure-template-jsx-directives-~save-key.md"
+                                            "name": "structure-props-props-modifiers-$save-modifier.md"
                                         }
                                     ]
                                 },
