@@ -228,6 +228,18 @@ Tensor.prototype.mul = function (other){
     const out = new Tensor(data, 'mul', [this,  other]).reshape(this.shape);
     return out;
 }
+Tensor.prototype.div = function (other){
+    other = tensor(other);
+    const data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data[0]))
+    const out = new Tensor(data, 'div', [this,  other]).reshape(this.shape);
+    return out;
+}
+
+Tensor.prototype.tahn = function (){
+    const data = this.data.map(x=>x.tahn());
+    const out = new Tensor(data, 'tahn', [this]).reshape(this.shape);
+    return out;
+}
 Tensor.prototype.pow = function (exp){
     const data = this.data.map((x, i)=>x ** exp);
     const out = new Tensor(data, 'pow', [this]).reshape(this.shape);
@@ -310,11 +322,11 @@ export class EO{
             return r
         },{})
     }
-    static einsum(expr, ...sources){
+    static einsum(in_expr, ...sources){
         const tensors = sources.map(i=>tensor(i));
-        const ein = EO.einsums[expr] ??= (()=>{
-            const label = 'einsum: \"'+expr+'\"';
-            expr = expr.split('->');                            // Разделение выражения на вход и выход
+        // const ein = EO.einsums[expr] ??= (()=>{
+            const label = 'einsum: \"'+in_expr+'\"';
+            let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
             const axis = [];
             const terms = expr[0].trim().split(',');            // Разделение входа на термы
             const ins = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
@@ -375,12 +387,12 @@ export class EO{
                 return ''
             }).join('\n')+'\n' + expr;
             expr = expr + '\n return out';
-            return {
+            const ein =  {
                 fn:new Function(['out', ...tensors.map((_,i)=>'t_'+i)], expr),
                 outs,
                 label
             }
-        })()
+        // })()
         const out = Tensor.zeros(ein.outs.map(o => o.d));
         out.children = tensors;
         out.data = ein.fn(out.data, ...tensors.map(t=>t.data));

@@ -1,9 +1,10 @@
 //HYPER PARAMETERS
 import {Parameter, tensor, Tensor, EO} from "./tor.js";
 import * as nn from  './module.js';
+import {Linear} from "./module.js";
 
 const MODEL_DIM = 8;           // Размерность входного и выходного слоев
-const EXPAND = 1;               // Коэффициент расширения вектора слов
+const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
 const SIGNS = ',()[]{}:;';
@@ -14,40 +15,46 @@ const BIAS = false;
 export class Genius extends nn.Module{
     __init__() {
         this.d = MODEL_DIM * EXPAND;
-        this.in_proj = new nn.Linear(this.d, this.d * 2, true);
-        this.W = Parameter(Tensor.random([this.d * 2, this.d], 'weights'));
-        this.encoder = new genEncoder(this.d);
-        this.decoder = new genDecoder(this.d);
-        this.out_proj = nn.linear(this.d * HEAD_COUNT * LAYER_COUNT, this.d, true);
-        this.B = Parameter(Tensor.random(this.d, 'B'));
-        this.C = Parameter(Tensor.random(this.d, 'C'));
-        this.D = Parameter(Tensor.random(1, 'D'));
-        this.A = Parameter(Tensor.random([this.d, this.d], 'А'));
-        this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
-        // let A = Tensor.arange(1, d + 1, d);
-        // this.A = Parameter(A.log());
+        this.W = Parameter(Tensor.random([MODEL_DIM, this.d], 'in/out'));
+        this.fork_proj = new Linear(this.d, this.d * 2, false);
+        // this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
     }
     resetH(){
-        this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
+        this.H = undefined
         // this.encoder.module.resetH();
     }
     forward(x){
         x = tensor(x, 'INPUT');
-        // let inProj = this.in_proj(x);
-        let bb = EO.einsum('x, y -> xy', x, this.B);
-        // let inProj = this.in_proj(x);
-        // let [B,C] = inProj.slice([this.d,this.d]);
-        // let y = EinSum.einsum('x, xy -> y', x, this.W);
-        // let bb = EO.einsum('x, y -> xy', x, B);
-        // let expA = this.A.exp().mul(-1);
-        // let ba = Tensor.einsum(' y, xy -> xy', bb, this.A);
-        // this.H = ba.add(this.H.data)
-        let y = EO.einsum('xy, y -> x', bb, this.C);
-        // let xd =  x.mul(this.D);
-        // y = y.add(xd);
-        // y = EO.einsum('x, x -> x: _add', y, xd);
-        // const Wt = Tensor.einsum('xy -> yx', this.W);
-        // y = EO.einsum('x, xy -> y', y, this.W);
+        // расширение входа
+        x = EO.einsum('x, xy -> y', x,  this.W);
+
+        // разделение входа на вектора B и C
+        let fork_x = this.fork_proj(x);
+        let [B, C] = fork_x.slice([this.d, this.d]);
+
+        // получение матрицы A
+        let A = EO.einsum('x, y -> xy', x, B);
+
+
+        // сложение матрицы A со скрытым слоем
+        if (!this.H)
+            this.H = A;
+        else
+            this.H =  this.H.add(A).div(2);
+
+
+
+
+        // получение смещений вложения
+        let delta = EO.einsum('xy, y -> y', this.H, C);
+
+        let sum =  x.add(delta);
+
+        // Добавление ко входному токену смещения для получения выходного (следубщего) токена
+        let y = sum.div(2);
+
+        const Wt = EO.einsum('xy -> yx', this.W);
+        y = EO.einsum('x, yx -> y', y, Wt);
         return y;
     }
 }

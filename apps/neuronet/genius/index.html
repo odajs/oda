@@ -2,8 +2,8 @@
 <title>Title</title>
 <gen-layout></gen-layout>
 <script type="module">
-    import '../../../oda.js'
-    import * as gen from './genius.js'
+    import '../../../oda.js';
+    import * as gen from './genius.js';
     import {EO, Tensor} from './tor.js';
     import * as mm from './module.js';
     import {TNum, TFloat} from './num.js';
@@ -23,11 +23,7 @@
                     font-family: monospace;
                 }
             </style>
-            <div slot="right-panel" class="flex vertical" style="overflow: auto;">
-                <div style="padding: 4px" ~for="tokenizer?.vocabulary">
-                     <span bold>{{$for.key}}:</span><span>{{ $for.item.next.join('| ')}}</span>
-                </div>
-            </div>
+            <gen-vocabulary slot="right-panel"></gen-vocabulary>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
@@ -71,7 +67,7 @@
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .01,
+        learnSpeed: .1,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -106,7 +102,7 @@
             }, 0) || 0;
         },
         isNext: {
-            $def: 0,
+            $def: false,
             $save: true
         },
         step(){
@@ -144,8 +140,10 @@
             }
 
         },
-        get tokenizer(){
-            return new Tokenizer();
+        $pdp:{
+            get tokenizer(){
+                return new Tokenizer();
+            },
         },
         get tokens(){
             return this.tokenizer.tokenize(this.value)
@@ -154,6 +152,7 @@
             return this.tokenizer.vectorize(this.tokens);
         }
     })
+
     ODA({is: 'gen-tensor-tree',
         template: `
             <style>
@@ -212,6 +211,7 @@
         }
 
     })
+
     ODA({is: 'gen-test',
         template:`
             <style>
@@ -241,6 +241,19 @@
                 return e;
             }
         }
+    })
+
+    ODA({is: 'gen-vocabulary',
+        template: `
+            <style>
+                :host{
+                    @apply --vertical;
+                }
+            </style>
+            <div ~for="tokenizer?.vocabulary">
+                {{$for.key}}
+            </div>
+        `
     })
 </script>
 

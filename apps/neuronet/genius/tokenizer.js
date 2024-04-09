@@ -1,4 +1,7 @@
-const MAX_WORD = 16;
+import {Parameter, Tensor, EO} from './tor.js';
+const EMBEDDING_SIZE = 32;
+const NEGATIVE_SIZE = 5;
+const MAX_WORD = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
@@ -15,10 +18,13 @@ export class Tokenizer{
             tokens.push(word);
             this.vocabulary[word] ??= {
                 next: [],
-                v: this.encode(word)
+                v: this.encode(word),
+                e: Parameter(Tensor.random(EMBEDDING_SIZE, 'emb')),
+                c: Parameter(Tensor.random(EMBEDDING_SIZE, 'cnt'))
             }
-            if (prev)
+            if (prev){
                 this.vocabulary[prev].next.add(word);
+            }
             prev = word
         }
         for (let ch of text){

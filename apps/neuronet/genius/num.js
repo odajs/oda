@@ -124,6 +124,19 @@ Number.prototype._log10 = function () {
 
 // activation functions
 
+Number.prototype.tahn = function () {
+    const exp = Math.exp(this);
+    const nexp = Math.exp(-this);
+    const res = (exp - nexp) / (exp + nexp);
+    const out =  TNum(res, 'tahn')
+    this.grads.push(()=>{
+        return ((1 - res ** 2) * out.g);
+    })
+    return out;
+}
+
+
+
 Number.prototype.softplus = function () {
     const exp = Math.exp(this)
     const out =  TNum(Math.log(1 + exp), 'softplus')
