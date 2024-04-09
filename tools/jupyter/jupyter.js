@@ -135,8 +135,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     const l = (i.level || i._level);
                     min = l < min ? l : min;
                 })
-            } else if (this.isReady && !this.isFirstInit) {
-                this.isFirstInit = true;
+            } else {
                 cells.forEach(i => {
                     if (i.$cell.cell_type)
                         i.collapsed = i.$cell.collapsed;
@@ -144,8 +143,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     min = l < min ? l : min;
                 })
             }
-            this.minLevel = min;
-            // console.log(min, cells);
+            this.minLevel = min < 1 ? 1 : min;
             return cells;
         },
         isReady: false,
