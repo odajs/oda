@@ -148,7 +148,7 @@ export class Tensor{
         if (this.shape.length){
             let data = this.array.toTensorString().split('\r\n');
             if (data.length > 5){
-                const padding = data[0].length/2 + 3
+                const padding = data[0].length/2 + 2
                 data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
             }
             data = data.join('\r\n')
@@ -157,6 +157,8 @@ export class Tensor{
         return this.data;
     }
     get array() {
+        if(!this.shape.length)
+            return [this.data];
         let data = this.data;
         let res = [];
         const shape = Array.from(this.shape);
@@ -168,7 +170,7 @@ export class Tensor{
             data = res;
             res = [];
         }
-        return data;
+        return data.flat();
     }
     slice(parts = []){
         let start = 0;

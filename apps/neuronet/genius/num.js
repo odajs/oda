@@ -33,7 +33,7 @@ export function TNum(v, l){
 
 Number.prototype.toTNumString = function () {
     const v = +this;
-    return (v).toExponential(2).padStart(10, ' ') +' ';
+    return (v).toExponential(2).padStart(9, ' ') ;
 }
 
 // math functions

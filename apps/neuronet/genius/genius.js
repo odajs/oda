@@ -3,7 +3,7 @@ import {Parameter, tensor, Tensor, EO} from "./tor.js";
 import * as nn from  './module.js';
 import {Linear} from "./module.js";
 
-const MODEL_DIM = 32;           // Размерность входного и выходного слоев
+export const MODEL_DIM = 32;           // Размерность входного и выходного слоев
 const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое

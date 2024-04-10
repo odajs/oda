@@ -3,7 +3,7 @@
 <gen-layout></gen-layout>
 <script type="module">
     import '../../../oda.js';
-    import * as gen from './genius.js';
+    import {MODEL_DIM, Genius} from './genius.js';
     import {EO, Tensor, LEARNING_RATE} from './tor.js';
     import * as mm from './module.js';
     import {TNum, TFloat} from './num.js';
@@ -84,7 +84,7 @@
                 // this.learnSpeed -= (n-o) * this.learnSpeed * .1
             }
         },
-        tensor: null,
+
         steps(){
             if (this.value === this.result)
                 this.goSteps = false;
@@ -137,11 +137,12 @@
         model:{
             $pdp: true,
             get(){
-                return new gen.Genius();
+                return new Genius();
             }
 
         },
         $pdp:{
+            tensor: null,
             get tokenizer(){
                 return new Tokenizer();
             },
@@ -155,7 +156,7 @@
         template: `
             <style>
                 :host{
-                    /*@apply --raised;*/
+                    @apply --raised;
                     /*border-right: 1px solid black;*/
                     /*border-top: 1px solid black;*/
                     @apply --vertical;
@@ -246,12 +247,32 @@
             <style>
                 :host{
                     @apply --vertical;
+                    @apply --dark;
+                }
+                div{
+                    font-size: xx-small;
+                }
+                span{
+                    padding: 4px;
+                    width: 50px;
                 }
             </style>
-            <div ~for="tokenizer?.vocabulary">
-                {{$for.key}}
+            <div border ~for="tokenizer?.vocabulary" vertical>
+                <span no-flex>{{$for.key}} [{{$for.item.next.length}}]</span>
+                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e)"></div>
             </div>
-        `
+        `,
+        getBackGradient(vector){
+            return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
+        },
+        getColors(items){
+            const getColor = (val)=>{
+                return 300 * val;
+            }
+            return items?.map((val, idx, items)=>{
+                return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
+            }).join(', ');
+        },
     })
 </script>
 
