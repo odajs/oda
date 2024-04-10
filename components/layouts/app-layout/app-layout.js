@@ -88,6 +88,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         leftHidden: false,
         rightHidden: false,
         hideToolbar: true,
+        hideHeader: false,
         hideOnScroll: {
             $def: false,
             set(n) {
@@ -150,7 +151,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         this.compact = this.offsetWidth < this.compactThreshold;
     },
     _scroll(e) {
-        if (e.ctrlKey || e.shiftKey || e.altKey) return
+        if (!this.hideHeader || e.ctrlKey || e.shiftKey || e.altKey) return;
         this.throttle('hide-header', () => {
             let h = this.appHeader;
             let t = e.target;
@@ -170,7 +171,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         [this.left, this.right].forEach(i => i?.close?.());
     },
 });
-
 
 ODA({is: 'app-layout-toolbar',
     template: /*html*/`

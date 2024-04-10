@@ -1,4 +1,5 @@
 import {TNum} from './num.js';
+export const LEARNING_RATE = .01
 function genId(){
     return ++_id;
 }
@@ -20,13 +21,14 @@ export class Tensor{
                 data = data.flat()
             }
             this.#shape = shape;
+            this.#data = data.map(i=>TNum(i, this.label));
         }
         else
-            data = [data]
-        this.#data = data.map(i=>TNum(i, this.label));
+            this.#data = TNum(data);
+
     }
     get g(){
-        return new Tensor(this.data.map(i=>i._g)).reshape(this.shape);
+        return new Tensor(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
     }
     get shape(){
         return this.#shape;
@@ -63,19 +65,19 @@ export class Tensor{
         return 0;
     }
     clearGrad(){
-        this.data.map((d, i)=>d.g = undefined)
+        this.data.map?.((d, i)=>d._g = undefined) || (this.data._g = undefined);
     }
-    updateParams(learn_speed=.1){
+    updateParams(){
         if (!this.isParam) return;
         this.data = this.data.map((d, i)=>{
-            const correct = d.g * learn_speed + (d.p || 0);
+            const correct = d.g * LEARNING_RATE + (d.p || 0);
             const res = TNum(d + correct);
             res.g = d.g;
-            res.p = correct * .1;
+            res.p = correct * LEARNING_RATE;
             return res
         })
     }
-    back(learn_speed = .1){
+    back(){
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -90,8 +92,8 @@ export class Tensor{
             node.clearGrad()
         })
         this.topo.forEach((node) => {
-            node.updateParams(learn_speed);
-            node.data.map(x=>x.grads?.clear())
+            node.updateParams();
+            node.data.map?.(x=>x.grads?.clear()) || node.data?.grads?.clear();
         })
     }
     reshape(...shape){
@@ -143,13 +145,16 @@ export class Tensor{
         // if(this.size>1)
         //     res += ' -> '+ Math.max(...this.data).toExponential(3);
         // return res;
-        let data = this.array.toTensorString().split('\r\n');
-        if (data.length > 5){
-            const padding = data[0].length/2 + 3
-            data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
+        if (this.shape.length){
+            let data = this.array.toTensorString().split('\r\n');
+            if (data.length > 5){
+                const padding = data[0].length/2 + 3
+                data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
+            }
+            data = data.join('\r\n')
+            return data
         }
-        data = data.join('\r\n')
-        return data
+        return this.data;
     }
     get array() {
         let data = this.data;
@@ -190,6 +195,10 @@ export function Parameter(t){
     return t
 }
 
+Tensor.prototype.sum = function (){
+    return EO.einsum('x->', this)
+}
+
 Tensor.prototype.log = function (){
     const data = this.data.map(x=>Math.log(x));
     const out = new Tensor(data, 'log', [this]).reshape(this.shape);
@@ -218,19 +227,25 @@ Tensor.prototype.exp = function (){
 }
 Tensor.prototype.add = function (other){
     other = tensor(other);
-    const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data[0]))
+    const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data))
     const out = new Tensor(data, 'add', [this,  other]).reshape(this.shape);
+    return out;
+}
+Tensor.prototype.minus = function (other){
+    other = tensor(other);
+    const data = this.data.map((x, i)=>x._minus(other.data[i] ?? other.data))
+    const out = new Tensor(data, 'minus', [this,  other]).reshape(this.shape);
     return out;
 }
 Tensor.prototype.mul = function (other){
     other = tensor(other);
-    const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data[0]))
+    const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data))
     const out = new Tensor(data, 'mul', [this,  other]).reshape(this.shape);
     return out;
 }
 Tensor.prototype.div = function (other){
     other = tensor(other);
-    const data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data[0]))
+    const data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
     const out = new Tensor(data, 'div', [this,  other]).reshape(this.shape);
     return out;
 }
@@ -241,14 +256,8 @@ Tensor.prototype.tahn = function (){
     return out;
 }
 Tensor.prototype.pow = function (exp){
-    const data = this.data.map((x, i)=>x ** exp);
-    const out = new Tensor(data, 'pow', [this]).reshape(this.shape);
-    out._back = ()=>{
-        for(let i = 0; i<this.grads.length; i++){
-            let o = (other.data[i] ?? other.data[0]);
-            this.grads[i] += (o * this.data[i] ** (o - 1) * out.grads[i]);
-        }
-    }
+    const data = this.data.map((x, i)=>x._pow(exp));
+    const out = new Tensor(data, 'pow('+exp+')', [this]).reshape(this.shape);
     return out;
 }
 
@@ -260,14 +269,7 @@ Tensor.prototype.sigmoid = function (){
 
 Tensor.prototype.mse = function (other){
     other = tensor(other);
-    let data = this.data.map((d , i)=> (other.data[i] - d));
-    let out = new Tensor(data, 'MSE', [this]).reshape(this.shape);
-    this.data.forEach((d,i)=>{
-        d.grads.push(()=>{
-            return data[i];
-        })
-    })
-    return out
+    return other.minus(this).pow(2).sum().div(this.size);
 }
 
 Array.prototype.toTensorString = function (n = 2){

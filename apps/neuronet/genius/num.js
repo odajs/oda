@@ -10,12 +10,12 @@ export class TFloat extends Number{
         this._val = n;
     }
     get g(){
-        if (this._g === undefined){
-            this._g = 0;
-            let grad;
-            while(grad = this.grads.pop()){
-                this._g += grad();
-            }
+        let grad = this.grads.pop();
+        if (this._g === undefined)
+            this._g = grad?0:1;
+        while (grad) {
+            this._g += grad();
+            grad = this.grads.pop();
         }
         return this._g;
     }
@@ -59,12 +59,23 @@ Number.prototype._add = function (other){
     return out;
 }
 
+Number.prototype._minus = function (other){
+    const out = TNum(this - other, '_minus');
+    this.grads.push(()=>{
+        return out.g;
+    })
+    other.grads?.push(()=>{
+        return -out.g;
+    })
+    return out;
+}
+
 Number.prototype._sum = function (other){
     this.val = this + other;
     other.grads.push(()=>{
         return this.g;
     })
-    this.l='_sum';
+    this.label='_sum';
     return this;
 }
 
@@ -88,10 +99,10 @@ Number.prototype._pow = function (other){
 Number.prototype._div = function (other){
     const out = TNum(this / other, '_div')
     this.grads.push(()=>{
-        return (1 / other * out.g);
+        return ((1 / other) * out.g);
     })
     other.grads?.push(()=>{
-        return (-(this / other ** 2) * out.g);
+        return ((-this / ( other ** 2)) * out.g);
     })
     return out;
 }
@@ -122,13 +133,24 @@ Number.prototype._log10 = function () {
     return out;
 }
 
+// metrix
+
+// Number.prototype.mse = function (target) {
+//     const v = target - this;
+//     const out = TNum(v ** 2, 'mse');
+//     this.grads.push(()=>{
+//         return -2 * v * out.g;
+//     })
+//     return out;
+// }
+
 // activation functions
 
-Number.prototype.tahn = function () {
+Number.prototype.tanh = function () {
     const exp = Math.exp(this);
     const nexp = Math.exp(-this);
     const res = (exp - nexp) / (exp + nexp);
-    const out =  TNum(res, 'tahn')
+    const out =  TNum(res, 'tanh')
     this.grads.push(()=>{
         return ((1 - res ** 2) * out.g);
     })

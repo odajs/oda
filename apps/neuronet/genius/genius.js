@@ -3,7 +3,7 @@ import {Parameter, tensor, Tensor, EO} from "./tor.js";
 import * as nn from  './module.js';
 import {Linear} from "./module.js";
 
-const MODEL_DIM = 8;           // Размерность входного и выходного слоев
+const MODEL_DIM = 32;           // Размерность входного и выходного слоев
 const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
@@ -14,7 +14,7 @@ const BIAS = false;
 
 export class Genius extends nn.Module{
     __init__() {
-        this.d = MODEL_DIM * EXPAND;
+        this.d = MODEL_DIM;// * EXPAND;
         this.W = Parameter(Tensor.random([MODEL_DIM, this.d], 'in/out'));
         this.fork_proj = new Linear(this.d, this.d * 2, false);
         // this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
@@ -25,36 +25,40 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x, 'INPUT');
+
+
+
         // расширение входа
-        x = EO.einsum('x, xy -> y', x,  this.W);
+        let y = EO.einsum('x, xy -> y', x,  this.W);
 
         // разделение входа на вектора B и C
-        let fork_x = this.fork_proj(x);
-        let [B, C] = fork_x.slice([this.d, this.d]);
+        // let fork_x = this.fork_proj(x);
+
+        // let [B, C] = fork_x.slice([this.d, this.d]);
 
         // получение матрицы A
-        let A = EO.einsum('x, y -> xy', x, B);
+        // let A = EO.einsum('x, y -> xy', x, B);
 
+        //
+        // // сложение матрицы A со скрытым слоем
+        // if (!this.H)
+        //     this.H = A;
+        // else
+        //     this.H =  A.add(this.H.data)//.div(2);
+        //
+        //
+        //
+        //
+        // // получение смещений вложения
+        // let delta = EO.einsum('xy, y -> y', this.H, C);
+        //
+        // let sum =  x.add(delta);
+        //
+        // // Добавление ко входному токену смещения для получения выходного (следубщего) токена
+        // let y = sum//.div(2);
 
-        // сложение матрицы A со скрытым слоем
-        if (!this.H)
-            this.H = A;
-        else
-            this.H =  this.H.add(A).div(2);
-
-
-
-
-        // получение смещений вложения
-        let delta = EO.einsum('xy, y -> y', this.H, C);
-
-        let sum =  x.add(delta);
-
-        // Добавление ко входному токену смещения для получения выходного (следубщего) токена
-        let y = sum.div(2);
-
-        const Wt = EO.einsum('xy -> yx', this.W);
-        y = EO.einsum('x, yx -> y', y, Wt);
+        // const Wt = EO.einsum('xy -> yx', this.W);
+        // y = EO.einsum('x, xy -> y', y, Wt);
         return y;
     }
 }

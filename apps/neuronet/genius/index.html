@@ -4,7 +4,7 @@
 <script type="module">
     import '../../../oda.js';
     import * as gen from './genius.js';
-    import {EO, Tensor} from './tor.js';
+    import {EO, Tensor, LEARNING_RATE} from './tor.js';
     import * as mm from './module.js';
     import {TNum, TFloat} from './num.js';
     import {Tokenizer} from './tokenizer.js';
@@ -44,7 +44,7 @@
                     <oda-button style="width: 100px;" allow-toggle ::toggled="goSteps" :icon="goSteps?'av:stop':'av:play-arrow'">{{stepCount}}</oda-button>
                 </div>
                 <textarea flex content :value="result"></textarea>
-                <span>speed: {{learnSpeed.toExponential(4)}}</span>
+                <span>speed: {{learningRate.toExponential(4)}}</span>
                 <span>error:  {{err.toExponential(4)}}</span>
             </div>
             <div ~if="showMain"  slot="main" class="flex vertical" style="overflow: hidden;">
@@ -54,20 +54,22 @@
                     <oda-button @tap="focusedPanel = 2" :focused="focusedPanel === 2">Tests</oda-button>
                 </div>
                 <textarea ~if="focusedPanel === 0" class="flex" content   style="font-size: xx-small; font-family: monospace; ">{{model?.toString()}}</textarea>
-                <div ~if="focusedPanel === 1" class="flex  vertical" style="overflow: auto;">
-                    <gen-tensor-tree raised ~if="tensor" :tensor></gen-tensor-tree>
+                <div ~if="focusedPanel === 1" class="flex horizontal" style="overflow: auto;">
+                    <gen-tensor-tree ~if="tensor" :tensor></gen-tensor-tree>
                 </div>
 
                 <gen-test class="flex" ~if="focusedPanel === 2" class="flex"></gen-test>
                 <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
             </div>
         `,
+        get learningRate(){
+            return LEARNING_RATE;
+        },
         showMain:{
             $def: true,
             $save: true
         },
         stepCount: 0,
-        learnSpeed: .1,
         focusedPanel: {
             $def: 0,
             $save: true
@@ -108,16 +110,15 @@
         step(){
             let result = [];
             this.model.module.resetH();
-            for(let phrase of this.vectors){
+            for(let phrase of this.tokens){
                 for(let i = 0; i<phrase.length; i++) {
-                    let token = phrase[i];
-                    let next = phrase[i+1] || Array(token.length).fill(0);
+                    let token = phrase[i].e;
+                    let next = phrase[i+1]?.e || Array(token.length).fill(0);
                     let res = this.model(token);
                     if(next) {
                         this.tensor = res.mse(this.isNext ? next : token);
-                        this.tensor.back(this.learnSpeed);
-                        let err = this.tensor.pow(2);
-                        this.err = EO.einsum('i->', err).data[0];
+                        this.err = this.tensor.data;
+                        this.tensor.back();
                     }
                     result.push(res);
                 }
@@ -147,9 +148,6 @@
         },
         get tokens(){
             return this.tokenizer.tokenize(this.value)
-        },
-        get vectors(){
-            return this.tokenizer.vectorize(this.tokens);
         }
     })
 
@@ -157,7 +155,7 @@
         template: `
             <style>
                 :host{
-                    @apply --raised;
+                    /*@apply --raised;*/
                     /*border-right: 1px solid black;*/
                     /*border-top: 1px solid black;*/
                     @apply --vertical;

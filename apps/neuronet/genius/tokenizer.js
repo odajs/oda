@@ -1,13 +1,15 @@
 import {Parameter, Tensor, EO} from './tor.js';
+import {Linear} from './module.js';
 const EMBEDDING_SIZE = 32;
 const NEGATIVE_SIZE = 5;
-const MAX_WORD = 32;
+const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
-    vocabulary = {};
+    vocabulary = Object.create(null);
     textEncoder = new TextEncoder();
     textDecoder = new TextDecoder();
+    token_proj = new Linear(EMBEDDING_SIZE, 8, true);
     tokenize(text){
         text = text.toLowerCase();
         let word = '';
@@ -15,16 +17,17 @@ export class Tokenizer{
         let phrases = [tokens];
         let prev;
         const addToken = (word)=>{
-            tokens.push(word);
-            this.vocabulary[word] ??= {
+            const token = this.vocabulary[word] ??= {
                 next: [],
                 v: this.encode(word),
-                e: Parameter(Tensor.random(EMBEDDING_SIZE, 'emb')),
-                c: Parameter(Tensor.random(EMBEDDING_SIZE, 'cnt'))
+                e: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
+                c: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5)
             }
             if (prev){
                 this.vocabulary[prev].next.add(word);
             }
+            // this.token_proj(token.e).mse(token.v).back(.01);
+            tokens.push(token);
             prev = word
         }
         for (let ch of text){
@@ -63,7 +66,7 @@ export class Tokenizer{
                     word = ''
                 } break;
                 default:{
-                    if (word.length === MAX_WORD){
+                    if (word.length === MAX_WORD_LENGTH){
                         addToken(word + '>');
                         word = '<';
                     }
@@ -90,7 +93,8 @@ export class Tokenizer{
         })()
     }
     decode(vector){
-        vector = vector.toReversed();
+        vector = this.token_proj(vector);
+        vector = vector.data.toReversed();
         let result = BINS.map(p=>{
             let l = vector.reduce((r, t, i)=>{
                 if (t >= p){
@@ -104,8 +108,5 @@ export class Tokenizer{
         result = new Int8Array(result)
         result = this.textDecoder.decode(result);
         return result;
-    }
-    vectorize(phrases){
-        return phrases.map(ph=>ph.map(w =>this.encode(w)));
     }
 }
