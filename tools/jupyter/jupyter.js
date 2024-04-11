@@ -111,8 +111,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     cell.level = level = level > 6 ? 6 : level;
                     if (level === 1) ids = {};
                     ids[level] = id;
-                } else if (firstStr?.startsWith('#@title ') ) {
-                    cell.label = firstStr.replace('#@title ', '').trim();
+                } else if (firstStr?.includes('@title ') ) {
+                    cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
                     cell.level = level = 3;
                     ids[level] = id;
                     i.collapsed = true;
