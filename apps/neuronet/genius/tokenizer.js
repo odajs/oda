@@ -61,7 +61,7 @@ export class Tokenizer{
                 case '.':{
                     if (word)
                         addToken(word + ' ');
-                    tokens.push(ch + ' ');
+                    addToken(ch + ' ');
                     tokens = [];
                     phrases.push(tokens);
                     word = ''
