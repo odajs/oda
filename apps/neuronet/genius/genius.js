@@ -25,11 +25,8 @@ export class Genius extends nn.Module{
     }
     forward(x){
         x = tensor(x, 'INPUT');
-
-
-
         // расширение входа
-        let y = EO.einsum('x, xy -> y', x,  this.W);
+        // let y = EO.einsum('x, xy -> y', x,  this.W);
 
         // разделение входа на вектора B и C
         // let fork_x = this.fork_proj(x);
@@ -59,7 +56,7 @@ export class Genius extends nn.Module{
 
         // const Wt = EO.einsum('xy -> yx', this.W);
         // y = EO.einsum('x, xy -> y', y, Wt);
-        return y;
+        return x;
     }
 }
 export class genEncoder extends nn.Module{

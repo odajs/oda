@@ -72,7 +72,7 @@ export class Tensor{
         this.data = this.data.map((d, i)=>{
             const correct = d.g * LEARNING_RATE + (d.p || 0);
             const res = TNum(d + correct);
-            res.g = d.g;
+            res._g = d.g;
             res.p = correct * LEARNING_RATE;
             return res
         })

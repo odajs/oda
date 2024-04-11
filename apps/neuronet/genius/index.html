@@ -45,7 +45,7 @@
                 </div>
                 <textarea flex content :value="result"></textarea>
                 <span>speed: {{learningRate.toExponential(4)}}</span>
-                <span>error:  {{err.toExponential(4)}}</span>
+                <span>error:  {{err.toLocaleString('ru-RU', {style: 'percent',})}}</span>
             </div>
             <div ~if="showMain"  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">

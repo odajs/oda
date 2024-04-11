@@ -10,17 +10,15 @@ export class TFloat extends Number{
         this._val = n;
     }
     get g(){
-        let grad = this.grads.pop();
-        if (this._g === undefined)
+        if (this._g === undefined){
+            let grad = this.grads.pop();
             this._g = grad?0:1;
-        while (grad) {
-            this._g += grad();
-            grad = this.grads.pop();
+            while (grad) {
+                this._g += grad();
+                grad = this.grads.pop();
+            }
         }
         return this._g;
-    }
-    set g(n){
-        this._g = n;
     }
 }
 
