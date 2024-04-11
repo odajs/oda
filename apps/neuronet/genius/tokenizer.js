@@ -1,4 +1,5 @@
-import {Parameter, Tensor, EO} from './tor.js';
+import {Parameter, Tensor} from './tor.js';
+import {EO} from "./einops.js";
 import {Linear} from './module.js';
 const EMBEDDING_SIZE = 32;
 const NEGATIVE_SIZE = 5;

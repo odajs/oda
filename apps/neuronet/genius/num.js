@@ -49,10 +49,10 @@ Number.prototype._mul = function (other){
 Number.prototype._add = function (other){
     const out = TNum(this + other, '_add');
     this.grads.push(()=>{
-        return out.g;
+        return 1 * out.g;
     })
     other.grads?.push(()=>{
-        return out.g;
+        return 1 * out.g;
     })
     return out;
 }
@@ -60,10 +60,10 @@ Number.prototype._add = function (other){
 Number.prototype._minus = function (other){
     const out = TNum(this - other, '_minus');
     this.grads.push(()=>{
-        return out.g;
+        return 1 * out.g;
     })
     other.grads?.push(()=>{
-        return -out.g;
+        return -1 * out.g;
     })
     return out;
 }

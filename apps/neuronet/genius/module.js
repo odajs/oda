@@ -1,4 +1,5 @@
-import {Parameter, Tensor, EO} from "./tor.js";
+import {Parameter, Tensor} from "./tor.js";
+import {EO} from "./einops.js";
 export class Module{
     constructor(...args) {
         this.__args__ = ''

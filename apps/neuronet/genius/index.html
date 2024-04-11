@@ -4,7 +4,8 @@
 <script type="module">
     import '../../../oda.js';
     import {MODEL_DIM, Genius} from './genius.js';
-    import {EO, Tensor, LEARNING_RATE} from './tor.js';
+    import {Tensor, LEARNING_RATE} from './tor.js';
+    import {EO} from "./einops.js";
     import * as mm from './module.js';
     import {TNum, TFloat} from './num.js';
     import {Tokenizer} from './tokenizer.js';
@@ -237,7 +238,8 @@
                 this.result =  res+'\r\n\r\n'+time
             }
             catch (e){
-                return e;
+                this.result =  e.message;
+                console.error(e);
             }
         }
     })
