@@ -388,14 +388,21 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 padding: 0 8px;
             }
             .md {
-                max-height: {{editIdx === idx ? 'calc(100vh - 100px)' : 'unset'}}; 
+                max-height: {{editIdx === idx ? 'calc(100vh - ' + editModeIndents + 'px)' : 'unset'}}; 
+            }
+            oda-simplemde-editor {
+                max-height: calc(100vh - {{editModeIndents}}px);
+                max-width: 50%; 
+                min-width: 50%; 
+                padding: 0px; 
+                margin: 0px;
             }
         </style>
         <div class="horizontal flex">
             <div ~if="isReady && levelsCount" class="vertical" ~style="{width: iconSize+'px'}">
                 <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
-            <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" style="max-height: calc(100vh - 100px); max-width: 50%; min-width: 50%; padding: 0px; margin: 0px;" @change="editorValueChanged"></oda-simplemde-editor>
+            <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
@@ -404,6 +411,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
+    editModeIndents: '120',
     get divMD(){
         return this.$('div.md-result') || undefined;
     },
