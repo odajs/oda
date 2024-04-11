@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1
+export const LEARNING_RATE = .001
 function genId(){
     return ++_id;
 }
@@ -284,9 +284,17 @@ Tensor.prototype.sigmoid = function (){
     return out;
 }
 
-Tensor.prototype.mse = function (other){
+Tensor.prototype.mse = function (other){  //todo Подумать насчет распространения градиента на вектор целевого токена для автокоррекции
     other = tensor(other);
-    return other.minus(this).pow(2).sum().div(this.size);
+    const data = this.data.reduce((r, x, i)=>{
+        const err = x - other.data[i];
+        let out = TNum(err ** 2, 'mse');
+        x.grads.push(()=>{
+            return -2 * err;
+        })
+        return r + out;
+    }) / this.size;
+    return new Tensor(data, 'mse', [this]);
 }
 
 Array.prototype.toTensorString = function (n = 2){
