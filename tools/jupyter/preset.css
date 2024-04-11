@@ -2,8 +2,8 @@
     font-family: Roboto, Noto, sans-serif;
     font-size: 16px;
     line-height: 1.5;
-    color: --var(--content-color);
-    background: --var(--content-background);
+    color: var(--content-color);
+    background: var(--content-background);
 }
 .md-wasm p {
     margin: 4px;
