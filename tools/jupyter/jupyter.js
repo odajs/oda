@@ -47,9 +47,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         },
         notebook: Object,
         editors: {
-            code: { label: 'Код', editor: 'oda-jupyter-code-editor', type: 'code' },
-            text: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text' },
-            markdown: { label: 'Текст', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
+            code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
+            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' },
+            markdown: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
         },
         get selected() {
             return this.cells[this.selectedIdx];
