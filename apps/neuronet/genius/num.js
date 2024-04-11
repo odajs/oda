@@ -87,7 +87,7 @@ Number.prototype._exp = function (){
 Number.prototype._pow = function (other){
     const out = TNum(this ** other, '_pow')
     this.grads.push(()=>{
-        return (other * this ** (other - 1) * out.g);
+        return (other * (this ** (other - 1)) * out.g);
     })
     other.grads?.push(()=>{
         return (this ** other * Math.log(this) * out.g);
@@ -100,7 +100,7 @@ Number.prototype._div = function (other){
         return ((1 / other) * out.g);
     })
     other.grads?.push(()=>{
-        return ((-this / ( other ** 2)) * out.g);
+        return (-(this /  other ** 2) * out.g);
     })
     return out;
 }

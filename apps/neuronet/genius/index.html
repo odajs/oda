@@ -221,7 +221,7 @@
             </style>
 
             <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace;"></textarea>
-             <button @tap="calc">EXE</button>
+            <button @tap="calc">EXE ({{time}} ms)</button>
             <textarea class="flex" style="font-size: xx-small; font-family: monospace;">{{result.toString()}}</textarea>
         `,
         value:{
@@ -229,13 +229,17 @@
             $save: true
         },
         result: '',
+        time: 0,
         calc(){
+            this.time = 0;
+            this.result = ''
             try{
                 const fn = new Function('Tensor', 'EO', 'TFloat', this.value);
                 let time = Date.now();
                 const res =  fn.call(this, Tensor, EO, TFloat) || '';
                 time = Date.now() - time;
-                this.result =  res+'\r\n\r\n'+time
+                this.result =  res?.toString();
+                this.time = time;
             }
             catch (e){
                 this.result =  e.message;

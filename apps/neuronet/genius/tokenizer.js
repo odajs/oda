@@ -1,7 +1,7 @@
 import {Parameter, Tensor} from './tor.js';
 import {EO} from "./einops.js";
 import {Linear} from './module.js';
-const EMBEDDING_SIZE = 32;
+const EMBEDDING_SIZE = 16;
 const NEGATIVE_SIZE = 5;
 const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;

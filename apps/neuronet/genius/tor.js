@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .01
+export const LEARNING_RATE = .1
 function genId(){
     return ++_id;
 }
@@ -43,11 +43,14 @@ export class Tensor{
     set data(n){
         this.#data = n;
     }
+    get dim(){
+        return this.shape.length;
+    }
     get label(){
         return this['#label'] ?? (()=>{
             switch (this.dim){
                 case 0:
-                    return 'scalar';
+                    return `scalar = ${this.data}`;
                 case 1:
                     return `vector (${this.shape})`;
                 case 2:
@@ -155,7 +158,7 @@ export class Tensor{
             data = data.join('\r\n')
             return data
         }
-        return this.data;
+        return +this.data;
     }
     get array() {
         if(!this.shape.length)
@@ -199,7 +202,9 @@ export function Parameter(t){
 }
 
 Tensor.prototype.sum = function (){
-    return EO.einsum('x->', this)
+    const out = EO.einsum('x->', this);
+    out.label = `sum([${this.shape}])`;
+    return out;
 }
 
 Tensor.prototype.log = function (){
@@ -231,25 +236,29 @@ Tensor.prototype.exp = function (){
 Tensor.prototype.add = function (other){
     other = tensor(other);
     const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data))
-    const out = new Tensor(data, 'add', [this,  other]).reshape(this.shape);
+    const out = new Tensor(data, `add([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
     return out;
 }
 Tensor.prototype.minus = function (other){
     other = tensor(other);
     const data = this.data.map((x, i)=>x._minus(other.data[i] ?? other.data))
-    const out = new Tensor(data, 'minus', [this,  other]).reshape(this.shape);
+    const out = new Tensor(data, `minus([${this.shape}] - [${other.shape}])`, [this,  other]).reshape(this.shape);
     return out;
 }
 Tensor.prototype.mul = function (other){
     other = tensor(other);
     const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data))
-    const out = new Tensor(data, 'mul', [this,  other]).reshape(this.shape);
+    const out = new Tensor(data, `mul([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
     return out;
 }
 Tensor.prototype.div = function (other){
     other = tensor(other);
-    const data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
-    const out = new Tensor(data, 'div', [this,  other]).reshape(this.shape);
+    let data;
+    if (this.shape.length)
+        data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
+    else
+        data = this.data._div(other.data.reduce?.((r, v)=>r+v) ?? other.data)
+    const out = new Tensor(data, `divide([${this.shape}] / [${other.shape}])`, [this,  other]).reshape(this.shape);
     return out;
 }
 
@@ -258,9 +267,14 @@ Tensor.prototype.tahn = function (){
     const out = new Tensor(data, 'tahn', [this]).reshape(this.shape);
     return out;
 }
-Tensor.prototype.pow = function (exp){
-    const data = this.data.map((x, i)=>x._pow(exp));
-    const out = new Tensor(data, 'pow('+exp+')', [this]).reshape(this.shape);
+Tensor.prototype.pow = function (other){
+    other = tensor(other);
+    let data;
+    if (this.shape.length)
+        data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
+    else
+        data = this.data._pow(other.data.reduce?.((r, v)=>r+v) ?? other.data)
+    const out = new Tensor(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
     return out;
 }
 

@@ -2,7 +2,7 @@ import {Parameter, tensor, Tensor} from "./tor.js";
 import {EO} from "./einops.js";
 import {Linear, Module} from "./module.js";
 
-export const MODEL_DIM = 32;           // Размерность входного и выходного слоев
+export const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
@@ -14,7 +14,7 @@ const BIAS = false;
 export class Genius extends Module{
     __init__() {
         this.d = MODEL_DIM;// * EXPAND;
-        this.W = Parameter(Tensor.random([MODEL_DIM, this.d], 'in/out'));
+        this.W = Parameter(Tensor.random([MODEL_DIM, this.d]));
         this.fork_proj = new Linear(this.d, this.d * 2, false);
         // this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
     }
@@ -23,7 +23,7 @@ export class Genius extends Module{
         // this.encoder.module.resetH();
     }
     forward(x){
-        x = tensor(x, 'INPUT');
+        x = tensor(x, `INPUT`);
         // расширение входа
         let y = EO.einsum('x, xy -> y', x,  this.W);
 

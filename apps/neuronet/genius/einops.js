@@ -21,7 +21,7 @@ export class EO{
     }
     static einsum(in_expr, ...sources){
         const tensors = sources.map(i=>tensor(i));
-        // const ein = EO.einsums[expr] ??= (()=>{
+        let operator = '_mul';
         const label = 'einsum: \"'+in_expr+'\"';
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
@@ -67,7 +67,7 @@ export class EO{
                 return res;
             }).join(' + ')
             return `t_${i}[${idx}]`
-        }).join(`)._mul(`)+')';
+        }).join(`).${operator}(`)+')';
 
         outs.reverse();
         let mm = ''
@@ -76,7 +76,9 @@ export class EO{
             mm +='* ' + o.a + o.a;
             return res;
         }).join(' + ') || 0
-        const ss = `out[${idx}]`
+        let ss = 'out';
+        if(outs.length)
+            ss += `[${idx}]`;
         expr = `\t${ss}._sum(` + expr + ')';
         expr = vars + '\n'+[...outs, ...axis].map((o, i) => {
             if (o.d)
@@ -89,11 +91,10 @@ export class EO{
             outs,
             label
         }
-        // })()
-        const out = Tensor.zeros(ein.outs.map(o => o.d));
+        const out = outs.length?Tensor.zeros(ein.outs.map(o => o.d)):new Tensor(0);
         out.children = tensors;
         out.data = ein.fn(out.data, ...tensors.map(t=>t.data));
-        out.label = ein.label + ' ('+out.shape+')';
+        out.label = ein.label + (out.shape.length?(' ('+out.shape+')'):'');
         return out;
     }
     static rearrange(expr, tensor){
