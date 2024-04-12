@@ -89,7 +89,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             // this.isChanged = true;
         },
         // isChanged: false,
-        isAllCollapsed: false,
         get cells() {
             let level = 0, ids = {}, cells = [];
             this.notebook?.cells.map((i, idx) => {
@@ -130,20 +129,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 cells.push(_cell);
             })
             let min = 6;
-            if (this.isAllCollapsed) {
-                cells.forEach(i => {
-                    i.collapsed = true;
-                    const l = (i.level || i._level);
-                    min = l < min ? l : min;
-                })
-            } else {
-                cells.forEach(i => {
-                    if (i.$cell.cell_type)
-                        i.collapsed = i.$cell.collapsed;
-                    const l = (i.level || i._level);
-                    min = l < min ? l : min;
-                })
-            }
+            cells.forEach(i => {
+                if (i.$cell.cell_type)
+                    i.collapsed = i.$cell.metadata?.collapsed;
+                const l = (i.level || i._level);
+                min = l < min ? l : min;
+            })
+            
             this.minLevel = min < 1 ? 1 : min;
             return cells;
         },
@@ -363,7 +355,8 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     toggleCollapse() {
-        this.cell.collapsed = this.cell.$cell.collapsed = !this.cell.collapsed;
+        this.cell.$cell.metadata ||= {};
+        this.cell.collapsed = this.cell.$cell.metadata.collapsed = !this.cell.collapsed;
     },
     get levelsCount() { 
         return this.cell?.levels?.length || ''
