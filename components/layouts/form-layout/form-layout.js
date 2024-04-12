@@ -78,7 +78,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         <slot class="horizontal" style="flex-shrink: 1" name="title-bar"></slot>
         <label ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></label>
         <div class="flex"></div>
-        <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons" style="align-self: flex-start;"></slot>
+        <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons" style="align-self: flex-start;height: 100%;"></slot>
         <div ~if="float && !hideMinMax" style="align-self: flex-start;" class="horizontal no-flex">
             <oda-button ~if="float" :icon-size :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
             <oda-button ~if="float && !isMinimized" :icon-size :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
