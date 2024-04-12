@@ -16,6 +16,7 @@ export class Genius extends Module{
         this.d = MODEL_DIM;// * EXPAND;
         this.W = Parameter(Tensor.random([MODEL_DIM, this.d]));
         this.fork_proj = new Linear(this.d, this.d * 2, false);
+        this.A = Parameter(Tensor.hippo(this.d));
         // this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
     }
     resetH(){
@@ -25,33 +26,33 @@ export class Genius extends Module{
     forward(x){
         x = tensor(x, `INPUT`);
         // расширение входа
-        let y = EO.einsum('x, xy -> y', x,  this.W);
+        // let y = EO.einsum('x, xy -> y', x,  this.W);
 
         // разделение входа на вектора B и C
-        // let fork_x = this.fork_proj(x);
+        let fork_x = this.fork_proj(x);
 
-        // let [B, C] = fork_x.slice([this.d, this.d]);
+        let [B, C] = fork_x.slice([this.d, this.d]);
 
         // получение матрицы A
-        // let A = EO.einsum('x, y -> xy', x, B);
+        let A = EO.einsum('x, y, xy -> xy', x, B, this.A);
 
         //
         // // сложение матрицы A со скрытым слоем
-        // if (!this.H)
-        //     this.H = A;
-        // else
-        //     this.H =  A.add(this.H.data)//.div(2);
+        if (!this.H)
+            this.H = A;
+        else
+            this.H =  A.add(this.H.data)//.div(2);
         //
         //
         //
         //
         // // получение смещений вложения
-        // let delta = EO.einsum('xy, y -> y', this.H, C);
+        let delta = EO.einsum('xy, y -> y', this.H, C);
         //
-        // let sum =  x.add(delta);
+        let sum =  x.add(delta);
         //
         // // Добавление ко входному токену смещения для получения выходного (следубщего) токена
-        // let y = sum//.div(2);
+        let y = sum//.div(2);
 
         // const Wt = EO.einsum('xy -> yx', this.W);
         // y = EO.einsum('x, xy -> y', y, Wt);

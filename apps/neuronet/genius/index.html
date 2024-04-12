@@ -179,8 +179,8 @@
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
                 <div class="vertical flex">
-                    <span no-flex>{{tensor?.toString()}}</span>
-                    <span disabled header>{{tensor?.g?.toString()}}</span>
+                    <span no-flex>{{tensor?.toString(4)}}</span>
+                    <span disabled header>{{tensor?.g?.toString(4)}}</span>
                 </div>
                 <div ~if="children?.length" class="no-flex horizontal">
                     <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>
@@ -254,6 +254,7 @@
                 :host{
                     @apply --vertical;
                     @apply --dark;
+                    overflow-y: auto;
                 }
                 div{
                     font-size: xx-small;

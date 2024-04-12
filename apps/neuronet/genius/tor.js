@@ -144,16 +144,28 @@ export class Tensor{
         }
         return new Tensor(result);
     }
-    toString(show_data = false){
+    static hippo(size){
+        const data = Array(size).fill().map((_,n)=>{
+            return Array(size).fill().map((_,k)=>{
+                if (n>k)
+                    return -Math.sqrt(2 * n + 1) * Math.sqrt(2 * k + 1);
+                if(n === k)
+                    return -(n + 1);
+                return 0
+            })
+        })
+        return new Tensor(data, 'hippo');
+    }
+    toString(max = 4){
         // let res =  Math.min(...this.data).toExponential(3);
         // if(this.size>1)
         //     res += ' -> '+ Math.max(...this.data).toExponential(3);
         // return res;
         if (this.shape.length){
-            let data = this.array.toTensorString().split('\r\n');
-            if (data.length > 5){
+            let data = this.array.toTensorString(max).split('\r\n');
+            if (data.length > max){
                 const padding = data[0].length/2 + 2
-                data = [...data.slice(0, 2), ('⇅').padStart(padding, ' '), ...data.slice(-2)]
+                data = [...data.slice(0, Math.floor(max/2)), ('⇅').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
             return data
@@ -297,7 +309,7 @@ Tensor.prototype.mse = function (other){  //todo Подумать насчет �
     return new Tensor(data, 'mse', [this]);
 }
 
-Array.prototype.toTensorString = function (n = 2){
+Array.prototype.toTensorString = function (max = 4){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (Array.isArray(d[0])){
@@ -307,12 +319,12 @@ Array.prototype.toTensorString = function (n = 2){
             result += list;
         }
         else{
-            if (d.length > 5){
-                result += d.slice(0, 1).map(x=>{
+            if (d.length > max){
+                result += d.slice(0, Math.floor(max/2)).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
                 result +=  "  ⇠⇢";
-                result +=  d.slice(-1).map(x=>{
+                result +=  d.slice(-Math.floor(max/2)).map(x=>{
                     return x.toTNumString()
                 }).join(' ')
             }
