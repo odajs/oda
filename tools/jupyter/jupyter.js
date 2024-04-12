@@ -115,7 +115,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
                     cell.level = level = 3;
                     ids[level] = id;
-                    i.collapsed = true;
+                    i.collapsed ??= true;
+                } else {
+                    i.collapsed = false;
                 }
                 let _cell = new CELL(cell);
                 for (let i = 1; i <= level; i++) {
