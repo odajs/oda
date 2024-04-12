@@ -113,11 +113,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                     ids[level] = id;
                 } else if (firstStr?.includes('@title ') ) {
                     cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
+                    cell.label ||= '...';
                     cell.level = level = 3;
                     ids[level] = id;
-                    i.collapsed ??= true;
-                } else {
-                    i.collapsed = false;
+                    i.collapsed ??= cell.label === '...' ? false : true;
                 }
                 let _cell = new CELL(cell);
                 for (let i = 1; i <= level; i++) {
@@ -364,7 +363,7 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     toggleCollapse() {
-        this.cell.collapsed = !this.cell.collapsed;
+        this.cell.collapsed = this.cell.$cell.collapsed = !this.cell.collapsed;
     },
     get levelsCount() { 
         return this.cell?.levels?.length || ''
