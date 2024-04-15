@@ -7,7 +7,9 @@ ODA({ is: 'oda-pdf-viewer',
                 position: relative;
             }
         </style>
-        <iframe style="width: 100%; height: 100%; border: none;"></iframe>
+        <object type="application/pdf" style="width: 100%; height: 100%; border: none;">
+            <div>No online PDF viewer installed</div>
+        </object>
     `,
     url: '',
     file: undefined,
@@ -18,7 +20,7 @@ ODA({ is: 'oda-pdf-viewer',
     $observers: {
         urlChanged(url, isReady) {
             if (isReady)
-                this.$('iframe').src = url || '';
+                this.$('object').data = url || '';
         },
         fileChanged(file, isReady) {
             if (file && isReady) {
