@@ -9,52 +9,40 @@ const HEAD_COUNT = 1;           // Количество селекторов (г
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
+const DT_RANK = 2;
 const BIAS = false;
 
 export class Genius extends Module{
     __init__() {
         this.d = MODEL_DIM;// * EXPAND;
         this.W = Parameter(Tensor.random([MODEL_DIM, this.d]));
-        this.fork_proj = new Linear(this.d, this.d * 2, false);
+        this.fork_proj = new Linear(this.d, this.d * 2 + DT_RANK, false);
+        this.dt_proj = new Linear(DT_RANK, this.d, true);
         this.A = Parameter(Tensor.hippo(this.d));
-        // this.H = Tensor.zeros([this.d, this.d], 'H'); //todo Parameter
+        this.H = Tensor.zeros([this.d, this.d], 'H');
+        this.D = Parameter(Tensor.ones(this.d));
     }
     resetH(){
-        this.H = undefined
-        // this.encoder.module.resetH();
+        this.H = Tensor.zeros([this.d, this.d], 'H');
     }
     forward(x){
         x = tensor(x, `INPUT`);
         // расширение входа
         // let y = EO.einsum('x, xy -> y', x,  this.W);
-        // разделение входа на вектора B и C
+        // разделение входа на вектора B, C и Δ
         let fork_x = this.fork_proj(x);
 
-        let [B, C] = fork_x.slice([this.d, this.d]);
-        let A = this.A.exp();
-        // получение матрицы A
-        A = EO.einsum('x, y, xy -> xy', x, B, A);
-
-        //
-        // // сложение матрицы A со скрытым слоем
-        if (!this.H)
-            this.H = A;
-        else
-            this.H =  A.add(this.H.data)//.div(2);
-        //
-        //
-        //
-        //
-        // // получение смещений вложения
-        let delta = EO.einsum('xy, y -> y', this.H, C);
-        //
-        let sum =  x.add(delta);
-        //
-        // // Добавление ко входному токену смещения для получения выходного (следубщего) токена
-        let y = sum//.div(2);
-
-        // const Wt = EO.einsum('xy -> yx', this.W);
-        // y = EO.einsum('x, xy -> y', y, Wt);
+        let [B, C, delta] = fork_x.slice([this.d, this.d, DT_RANK]);
+        delta = this.dt_proj(delta);
+        delta = delta.softplus();
+        let A = this.A.exp().mul(-1);
+        let sum = EO.einsum('d, dn -> dn', delta, A);
+        let deltaA = sum.exp();
+        let deltaB_u = EO.einsum('d, n, d -> dn', delta, B, x)
+        let da = deltaA.mul(this.H);
+        this.H = da.add(deltaB_u);
+        let y = EO.einsum('dn, n -> d', this.H, C);
+        y =  y.add(x.mul(this.D));
         return y;
     }
 }
