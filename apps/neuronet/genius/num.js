@@ -130,17 +130,14 @@ Number.prototype._log10 = function () {
     })
     return out;
 }
+Number.prototype.exp = function (){
+    const out = TNum(Math.exp(this), 'exp')
+    this.grads.push(()=>{
+        return out * out.g;
+    })
+    return out;
+}
 
-// metrix
-
-// Number.prototype.mse = function (target) {
-//     const v = target - this;
-//     const out = TNum(v ** 2, 'mse');
-//     this.grads.push(()=>{
-//         return -2 * v * out.g;
-//     })
-//     return out;
-// }
 
 // activation functions
 

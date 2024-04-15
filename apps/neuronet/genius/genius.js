@@ -2,7 +2,7 @@ import {Parameter, tensor, Tensor} from "./tor.js";
 import {EO} from "./einops.js";
 import {Linear, Module} from "./module.js";
 
-export const MODEL_DIM = 16;           // Размерность входного и выходного слоев
+export const MODEL_DIM = 8;           // Размерность входного и выходного слоев
 const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое
@@ -27,14 +27,13 @@ export class Genius extends Module{
         x = tensor(x, `INPUT`);
         // расширение входа
         // let y = EO.einsum('x, xy -> y', x,  this.W);
-
         // разделение входа на вектора B и C
         let fork_x = this.fork_proj(x);
 
         let [B, C] = fork_x.slice([this.d, this.d]);
-
+        let A = this.A.exp();
         // получение матрицы A
-        let A = EO.einsum('x, y, xy -> xy', x, B, this.A);
+        A = EO.einsum('x, y, xy -> xy', x, B, A);
 
         //
         // // сложение матрицы A со скрытым слоем

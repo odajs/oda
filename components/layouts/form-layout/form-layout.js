@@ -29,7 +29,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         }
         :host .title-bar {
             align-items: center;
-            background-color: {{focused ? 'var(--focused-color) !important' : 'var(--content-color)'}};
+            background-color: {{focused ? 'var(--focused-color) !important' : 'var(--dark-background)'}};
             color: var(--content-background);
             fill: var(--content-background);
         }

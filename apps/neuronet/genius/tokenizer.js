@@ -1,7 +1,7 @@
 import {Parameter, Tensor} from './tor.js';
 import {EO} from "./einops.js";
 import {Linear} from './module.js';
-const EMBEDDING_SIZE = 16;
+const EMBEDDING_SIZE = 8;
 const NEGATIVE_SIZE = 5;
 const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
@@ -21,8 +21,10 @@ export class Tokenizer{
             const token = this.vocabulary[word] ??= {
                 next: [],
                 v: this.encode(word),
-                e: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
-                c: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5)
+                e1: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
+                e2: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
+                c1: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
+                c2: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5)
             }
             if (prev){
                 this.vocabulary[prev].next.add(word);

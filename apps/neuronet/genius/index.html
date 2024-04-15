@@ -113,8 +113,8 @@
             this.model.module.resetH();
             for(let phrase of this.tokens){
                 for(let i = 0; i<phrase.length; i++) {
-                    let token = phrase[i].e;
-                    let next = phrase[i+1]?.e || Array(token.length).fill(0);
+                    let token = phrase[i].e1;
+                    let next = phrase[i+1]?.e1 || Array(token.length).fill(0);
                     let res = this.model(token);
                     if(next) {
                         this.tensor = res.mse(this.isNext ? next : token);
@@ -266,7 +266,8 @@
             </style>
             <div border ~for="tokenizer?.vocabulary" vertical>
                 <span no-flex>{{$for.key}} [{{$for.item.next.length}}]</span>
-                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e)"></div>
+                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e1)"></div>
+                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e2)"></div>
             </div>
         `,
         getBackGradient(vector){

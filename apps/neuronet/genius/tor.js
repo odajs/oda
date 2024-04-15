@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .001
+export const LEARNING_RATE = .1
 function genId(){
     return ++_id;
 }
@@ -229,22 +229,14 @@ Tensor.prototype.log = function (){
     }
     return out;
 }
-Tensor.prototype.exp = function (){
-    const data = this.data.map(x=>Math.exp(x));
-    const out = new Tensor(data, 'exp', [this]).reshape(this.shape);
-    this.data.forEach((d)=>{
-        d.grads.push((d, i)=>{
-            return (Math.E ** d * out.data[i].g);
-        })
-    })
 
-    for(let i = 0; i<this.data.length; i++){
-        this.data[i].grads.push(()=>{
-            return (Math.E ** this * out.g);
-        })
-    }
+Tensor.prototype.exp = function (){
+    const data = this.data.map(x => x.exp())
+    const out = new Tensor(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
     return out;
 }
+
+
 Tensor.prototype.add = function (other){
     other = tensor(other);
     const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data))
@@ -269,7 +261,7 @@ Tensor.prototype.div = function (other){
     if (this.shape.length)
         data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
     else
-        data = this.data._div(other.data.reduce?.((r, v)=>r+v) ?? other.data)
+        data = this.data._div(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
     const out = new Tensor(data, `divide([${this.shape}] / [${other.shape}])`, [this,  other]).reshape(this.shape);
     return out;
 }
@@ -285,7 +277,7 @@ Tensor.prototype.pow = function (other){
     if (this.shape.length)
         data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
     else
-        data = this.data._pow(other.data.reduce?.((r, v)=>r+v) ?? other.data)
+        data = this.data._pow(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
     const out = new Tensor(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
     return out;
 }
@@ -305,7 +297,7 @@ Tensor.prototype.mse = function (other){  //todo Подумать насчет �
             return -2 * err;
         })
         return r + out;
-    }) / this.size;
+    }, 0) / this.size;
     return new Tensor(data, 'mse', [this]);
 }
 
