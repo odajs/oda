@@ -14,7 +14,7 @@ export class TFloat extends Number{
             let grad = this.grads.pop();
             this._g = grad?0:1;
             while (grad) {
-                this._g += grad();
+                this._g += grad()/1.618;
                 grad = this.grads.pop();
             }
         }
