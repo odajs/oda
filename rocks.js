@@ -701,7 +701,7 @@ in the <${host.localName}>`;
         }
         else{
             for (let h of $prop[KEY]?.hosts || []){
-                if (h?.$render){
+                if (h?.throttle && h?.$render){
                     h.throttle('$render', ()=>{
                         h.$render();
                     })

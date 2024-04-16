@@ -1477,7 +1477,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow($for.item)"
                 :highlighted="allowHighlight && isHighlightedRow($for.item)"
                 :selected="allowSelection !== 'none' && isSelectedRow($for.item)">
-                <div :focus="_getFocus($$for.item, $for.item)" @pointerenter="focusedMove" :draggable="getDraggable($for.item, $$for.item)" :item="$for.item" class="cell" ~for="$for.item.__group__ ? [$for.item] : rowColumns" :role="$for.item.$role" :fix="$$for.item.fix" ~props="$$for.item?.props" :col="$$for.item" ~class="_getCellClasses($for.item, $$for.item)">
+                <div :focus="_getFocus($$for.item, $for.item)" @pointerenter="focusedMove" :draggable="getDraggable($for.item, $$for.item)" :item="$for.item" class="cell" ~for="$for.item.__group__ ? [$for.item] : rowColumns" :fix="$$for.item.fix" ~props="$$for.item?.props" :col="$$for.item" ~class="_getCellClasses($for.item, $$for.item)">
                     <div :dark="raisedRows.includes($for.item)" ~is="_getTemplateTag($for.item, $$for.item)" class="flex" ~class="{'group' : $for.item.__group__}" :column="$$for.item" class="cell-content" :item="$for.item"></div>
                 </div>
             </div>
