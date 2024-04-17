@@ -14,12 +14,13 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js',
     $observers: {
         async srcChanged(src, isReady) {
             if (src && isReady) {
+                this.bufSrc = src;
                 const docxOptions = { ...docx.defaultOptions, ...{ experimental: true } };
                 if (typeof src === 'string') {
                     const response = await fetch(src);
                     this.bufSrc = await response.arrayBuffer();
                 }
-                await docx.renderAsync(this.bufSrc, this.$('div'), null, docxOptions);
+                await docx.renderAsync(this.bufSrc, this.$('#docx-container'), null, docxOptions);
             }
         }
     }
