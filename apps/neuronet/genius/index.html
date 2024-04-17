@@ -100,17 +100,18 @@
         },
         step(){
             let result = [];
-            this.model.module.resetH();
             for(let phrase of this.tokens){
-                for(let i = 0; i<phrase.length; i++) {
-                    let token = phrase[i].emb[0];
-                    let next = phrase[i+1]?.emb[0] || Array(token.length).fill(0);
-                    let res = this.model(token);
-                    if(next) {
-                        this.tensor = res.mse(this.isNext ? next : token);
-                        this.err = this.tensor.data;
-                        this.tensor.back();
-                    }
+                phrase = Array.from(phrase);
+                this.model.module.resetH();
+                while(phrase.length){
+                    let token = phrase.shift();
+                    this.tokenizer.train(token, phrase);
+                    let emb = token.emb[0];
+                    let target = this.isNext ? (phrase[0]?.emb[0] || Array(emb.length).fill(0)): emb;
+                    let res = this.model(emb);
+                    this.tensor = res.MSE(target);
+                    this.err = this.tensor.data;
+                    this.tensor.back();
                     result.push(res);
                 }
             }
@@ -147,7 +148,9 @@
         template: `
             <style>
                 :host{
-                    @apply --raised;
+                        z-index: 1;
+                    /*overflow-y: visible;*/
+                    /*@apply --raised;*/
                     /*border-right: 1px solid black;*/
                     /*border-top: 1px solid black;*/
                     @apply --vertical;
@@ -161,10 +164,9 @@
                     font-family: monospace;
                 }
             </style>
-            <div class="border header bold horizontal" style="position: sticky; top: 0px;">
+            <div class="border header bold horizontal" style="position: sticky; z-index: 1" ~style="{top: 0}">
                 <span>{{tensor?.id}}.</span>
-<!--                <oda-icon @tap="closed = !closed" :icon></oda-icon>-->
-                <span  no-flex>{{tensor?.label}}</span>
+                <span no-flex>{{tensor?.label}}</span>
             </div>
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">

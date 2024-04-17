@@ -158,6 +158,9 @@ export class Tensor{
         return new Tensor(data, label, children)
     }
     static param(tensor){
+        if (!(tensor instanceof Tensor)){
+            tensor = Tensor.from(tensor);
+        }
         tensor.isParam = true;
         return tensor;
     }
@@ -169,8 +172,8 @@ export class Tensor{
         if (this.shape.length){
             let data = this.array.toTensorString(max).split('\r\n');
             if (data.length > max){
-                const padding = data[0].length/2 + 2
-                data = [...data.slice(0, Math.floor(max/2)), ('⇅').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
+                const padding = data[0].length/2 + 4
+                data = [...data.slice(0, Math.floor(max/2)), ('⭥ '+data.length+' ⭥').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
             return data
@@ -229,32 +232,28 @@ Tensor.prototype.exp = function (){
     return Tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
 }
 
+Tensor.prototype.oper = function (operation , other){
+    other = Tensor.from(other);
+    let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
+    let axis_other = other.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
+    const expr = `${axis_this}, ${axis_other} -> ${axis_this}:`+operation;
+    const out = EO.einsum(expr, this,  other);
+    out.label = operation+`: ${this.label}, ${other.label}`;
+    return out;
+}
 
 Tensor.prototype.add = function (other){
-    other = Tensor.from(other);
-    const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data))
-    return Tensor.from(data, `add([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
+    return this.oper('add', other);
 }
 Tensor.prototype.minus = function (other){
-    other = Tensor.from(other);
-    const data = this.data.map((x, i)=>x._minus(other.data[i] ?? other.data))
-    return Tensor.from(data, `minus([${this.shape}] - [${other.shape}])`, [this,  other]).reshape(this.shape);
+    return this.oper('minus', other);
 }
 Tensor.prototype.mul = function (other){
-    other = Tensor.from(other);
-    const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data))
-    return Tensor.from(data, `mul([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
+    return this.oper('mul', other);
 }
 Tensor.prototype.div = function (other){
-    other = Tensor.from(other);
-    let data;
-    if (this.shape.length)
-        data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
-    else
-        data = this.data._div(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    return Tensor.from(data, `divide([${this.shape}] / [${other.shape}])`, [this,  other]).reshape(this.shape);
+    return this.oper('div', other);
 }
-
 Tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
     return Tensor.from(data, 'tahn', [this]).reshape(this.shape);
@@ -277,17 +276,17 @@ Tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
     return Tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
-Tensor.prototype.mse = function (other){  //todo Подумать насчет распространения градиента на вектор целевого токена для автокоррекции
+Tensor.prototype.MSE = function (other){  //todo Подумать насчет распространения градиента на вектор целевого токена для автокоррекции
     other = Tensor.from(other);
     const data = this.data.reduce((r, x, i)=>{
-        const err = x - other.data[i];
-        let out = TNum(err ** 2, 'mse');
+        const err = x - +(other.data[i]);
+        let out = TNum(err ** 2, 'MSE');
         x.grads.push(()=>{
             return -2 * err;
         })
         return r + out;
     }, 0) / this.size;
-    return Tensor.from(data, 'mse', [this]);
+    return Tensor.from(data, 'MSE', [this]);
 }
 
 Array.prototype.toTensorString = function (max = 4){
@@ -301,11 +300,12 @@ Array.prototype.toTensorString = function (max = 4){
         }
         else{
             if (d.length > max){
-                result += d.slice(0, Math.floor(max/2)).map(x=>{
+                const showing = Math.floor(max/2);
+                result += d.slice(0, showing).map(x=>{
                     return x.toTNumString()
                 }).join(' ') ;
-                result +=  "  ⇠⇢";
-                result +=  d.slice(-Math.floor(max/2)).map(x=>{
+                result +=  `  ⭠ ${d.length} ⭢`;
+                result +=  d.slice(-showing).map(x=>{
                     return x.toTNumString()
                 }).join(' ')
             }

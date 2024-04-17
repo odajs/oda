@@ -39,7 +39,8 @@ export class Genius extends Module{
         let sum = EO.einsum('d, dn -> dn', delta, A);
         let deltaA = sum.exp();
         let deltaB_u = EO.einsum('d, n, d -> dn', delta, B, x)
-        let da = deltaA.mul(this.H.data);
+        // let H = Tensor.from()
+        let da = deltaA.mul(this.H.array);
         this.H = da.add(deltaB_u);
         let y = EO.einsum('dn, n -> d', this.H, C);
         y =  y.add(x.mul(this.D));

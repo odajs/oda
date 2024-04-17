@@ -5,7 +5,7 @@ const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
-    constructor(params = {dim: 8, emb_repeat: 8}) {
+    constructor(params = {dim: 8, head_count: 10}) {
         for (let key in params){
             this[key] = params[key];
         }
@@ -24,8 +24,8 @@ export class Tokenizer{
             const token = this.vocabulary[word] ??= (()=>{
                 const res = Object.create(null);
                 res.v = this.encode(word)
-                res.emb = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
-                res.cnt = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
+                res.emb = Array(this.head_count).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
+                res.cnt = Array(this.head_count).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
                 return res;
             })()
             tokens.push(token);
@@ -78,6 +78,15 @@ export class Tokenizer{
         if (word)
             addToken(word + ' ');
         return phrases;
+    }
+    train(token, phrase){
+        if (!phrase.length) return;
+        const cnt = phrase.map(t=>t.cnt);
+        const fwd = EO.einsum('rd, hrd -> hr', Tensor.param(token.emb), Tensor.param(cnt));
+        const res = fwd.sigmoid();
+        const error = res.MSE(BINS);
+        res.back()
+        return error;
     }
     encode(word){
         return this.vocabulary[word]?.v || (()=>{

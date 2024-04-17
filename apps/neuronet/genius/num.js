@@ -42,8 +42,8 @@ Number.prototype.toTNumString = function () {
 
 // math functions
 
-Number.prototype._mul = function (other){
-    const out = TNum(this * other, '_mul');
+Number.prototype.mul = function (other){
+    const out = TNum(this * other, 'mul');
     this.grads.push(()=>{
         return other * out.g;
     })
@@ -52,8 +52,8 @@ Number.prototype._mul = function (other){
     })
     return out;
 }
-Number.prototype._add = function (other){
-    const out = TNum(this + other, '_add');
+Number.prototype.add = function (other){
+    const out = TNum(this + other, 'add');
     this.grads.push(()=>{
         return 1 * out.g;
     })
@@ -63,8 +63,8 @@ Number.prototype._add = function (other){
     return out;
 }
 
-Number.prototype._minus = function (other){
-    const out = TNum(this - other, '_minus');
+Number.prototype.minus = function (other){
+    const out = TNum(this - other, 'minus');
     this.grads.push(()=>{
         return 1 * out.g;
     })
@@ -90,8 +90,8 @@ Number.prototype._exp = function (){
     })
     return out;
 }
-Number.prototype._pow = function (other){
-    const out = TNum(this ** other, '_pow')
+Number.prototype.pow = function (other){
+    const out = TNum(this ** other, 'pow')
     this.grads.push(()=>{
         return (other * (this ** (other - 1)) * out.g);
     })
@@ -101,7 +101,7 @@ Number.prototype._pow = function (other){
     return out;
 }
 Number.prototype._div = function (other){
-    const out = TNum(this / other, '_div')
+    const out = TNum(this / other, 'div')
     this.grads.push(()=>{
         return ((1 / other) * out.g);
     })
