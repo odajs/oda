@@ -246,16 +246,13 @@
                     @apply --dark;
                     overflow-y: auto;
                 }
-                div{
-                    font-size: xx-small;
-                }
                 span{
                     padding: 4px;
                     width: 50px;
                 }
             </style>
             <div border ~for="tokenizer?.vocabulary" vertical>
-                <span no-flex>{{$for.key}} [{{$for.item.next.length}}]</span>
+                <span no-flex>{{$for.key}}</span>
                 <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
             </div>
         `,

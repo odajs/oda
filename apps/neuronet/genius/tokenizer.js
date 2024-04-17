@@ -20,21 +20,15 @@ export class Tokenizer{
         let word = '';
         let tokens = [];
         let phrases = [tokens];
-        let prev;
         const addToken = (word)=>{
             const token = this.vocabulary[word] ??= (()=>{
                 const res = Object.create(null);
-                res.next = [];
                 res.v = this.encode(word)
-                res.emb = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/1))
-                res.cnt = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/1))
+                res.emb = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
+                res.cnt = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
                 return res;
             })()
-            if (prev){
-                this.vocabulary[prev].next.add(word);
-            }
             tokens.push(token);
-            prev = word
         }
         for (let ch of text){
             switch (ch){
