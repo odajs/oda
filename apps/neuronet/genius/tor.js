@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1
+export const LEARNING_RATE = 1
 function genId(){
     return ++_id;
 }
@@ -73,12 +73,8 @@ export class Tensor{
     }
     updateParams(){
         if (!this.isParam) return;
-        this.data = this.data.map((d, i)=>{
-            const correct = d.g * LEARNING_RATE + (d.p || 0);
-            const res = TNum(d + correct);
-            res._g = d.g;
-            res.p = correct * LEARNING_RATE;
-            return res
+        this.data.forEach((d, i)=>{
+            d.val = d + d.g * LEARNING_RATE;
         })
     }
     back(){
@@ -124,8 +120,8 @@ export class Tensor{
     static ones(shape, label) {
         return this.fill(shape, 1, label);
     }
-    static random(shape, label) {
-        return this.fill(shape, ()=>(Math.random()-.5), label);
+    static random(shape, label, div = 1000) {
+        return this.fill(shape, ()=>(Math.random()-.5)/div, label);
     }
     static array(data, label="array"){
         return Tensor.from(data, label);

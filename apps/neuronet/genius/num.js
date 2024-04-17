@@ -1,3 +1,4 @@
+const GRADIENT_DIVIDER = 1.414
 export class TFloat extends Number{
     grads = []
     constructor(v, l) {
@@ -12,11 +13,16 @@ export class TFloat extends Number{
     get g(){
         if (this._g === undefined){
             let grad = this.grads.pop();
-            this._g = grad?0:1;
-            while (grad) {
-                this._g += grad()/1.618;
-                grad = this.grads.pop();
+            if (grad){
+                this._g = 0;
+                while (grad) {
+                    this._g += grad();
+                    grad = this.grads.pop();
+                }
+                this._g /= GRADIENT_DIVIDER;
             }
+            else
+                this._g = 1;
         }
         return this._g;
     }

@@ -1,16 +1,20 @@
 import {Tensor} from './tor.js';
 import {EO} from "./einops.js";
 import {Linear} from './module.js';
-const EMBEDDING_SIZE = 8;
-const NEGATIVE_SIZE = 5;
 const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
+    constructor(params = {dim: 8, emb_repeat: 8}) {
+        for (let key in params){
+            this[key] = params[key];
+        }
+        this.token_proj = new Linear(this.dim, 8, true);
+    }
     vocabulary = Object.create(null);
     textEncoder = new TextEncoder();
     textDecoder = new TextDecoder();
-    token_proj = new Linear(EMBEDDING_SIZE, 8, true);
+
     tokenize(text){
         text = text.toLowerCase();
         let word = '';
@@ -18,18 +22,17 @@ export class Tokenizer{
         let phrases = [tokens];
         let prev;
         const addToken = (word)=>{
-            const token = this.vocabulary[word] ??= {
-                next: [],
-                v: this.encode(word),
-                e1: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
-                e2: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
-                c1: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5),
-                c2: Array(EMBEDDING_SIZE).fill().map(_ => Math.random()-.5)
-            }
+            const token = this.vocabulary[word] ??= (()=>{
+                const res = Object.create(null);
+                res.next = [];
+                res.v = this.encode(word)
+                res.emb = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/1))
+                res.cnt = Array(this.emb_repeat).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/1))
+                return res;
+            })()
             if (prev){
                 this.vocabulary[prev].next.add(word);
             }
-            // this.token_proj(token.e).mse(token.v).back(.01);
             tokens.push(token);
             prev = word
         }

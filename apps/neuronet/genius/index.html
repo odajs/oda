@@ -46,7 +46,7 @@
                 </div>
                 <textarea flex content :value="result"></textarea>
                 <span>speed: {{learningRate.toExponential(4)}}</span>
-                <span>error:  {{err.toLocaleString('ru-RU', {style: 'percent',})}}</span>
+                <span>error:  {{err.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
             </div>
             <div ~if="showMain"  slot="main" class="flex vertical" style="overflow: hidden;">
                 <div class="horizontal header">
@@ -58,7 +58,6 @@
                 <div ~if="focusedPanel === 1" class="flex horizontal" style="overflow: auto;">
                     <gen-tensor-tree ~if="tensor" :tensor></gen-tensor-tree>
                 </div>
-
                 <gen-test class="flex" ~if="focusedPanel === 2" class="flex"></gen-test>
                 <span class="no-flex header">Parameters: {{paramCount.toLocaleString()}}</span>
             </div>
@@ -76,16 +75,7 @@
             $save: true
         },
         correct:0,
-        err:{
-            $def: 0,
-            set(n, o=0){
-                // this.correct = Math.round(o-n) * this.learnSpeed * this.learnSpeed + this.correct;
-                // this.learnSpeed += this.correct;
-                // this.correct *= this.learnSpeed;
-                // this.learnSpeed -= (n-o) * this.learnSpeed * .1
-            }
-        },
-
+        err: 0,
         steps(){
             if (this.value === this.result)
                 this.goSteps = false;
@@ -113,8 +103,8 @@
             this.model.module.resetH();
             for(let phrase of this.tokens){
                 for(let i = 0; i<phrase.length; i++) {
-                    let token = phrase[i].e1;
-                    let next = phrase[i+1]?.e1 || Array(token.length).fill(0);
+                    let token = phrase[i].emb[0];
+                    let next = phrase[i+1]?.emb[0] || Array(token.length).fill(0);
                     let res = this.model(token);
                     if(next) {
                         this.tensor = res.mse(this.isNext ? next : token);
@@ -266,8 +256,7 @@
             </style>
             <div border ~for="tokenizer?.vocabulary" vertical>
                 <span no-flex>{{$for.key}} [{{$for.item.next.length}}]</span>
-                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e1)"></div>
-                <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.e2)"></div>
+                <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
             </div>
         `,
         getBackGradient(vector){
