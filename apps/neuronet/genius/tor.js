@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = 1
+export const LEARNING_RATE = .1
 function genId(){
     return ++_id;
 }
@@ -276,16 +276,31 @@ Tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
     return Tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
-Tensor.prototype.MSE = function (other){  //todo Подумать насчет распространения градиента на вектор целевого токена для автокоррекции
+Tensor.prototype.MSE = function (other){
     other = Tensor.from(other);
-    const data = this.data.reduce((r, x, i)=>{
-        const err = x - +(other.data[i]);
+    let step_this = this.shape[this.shape.length - 1];
+    let step_other = other.shape[other.shape.length - 1];
+    let idx_this = 0;
+    let idx_other = 0;
+    let r = 0;
+    for(let i = 0; i<this.size; i++){
+        let x = this.data[i];
+        let y = other.data[idx_other + i] || 0;
+        const err = x - y;
         let out = TNum(err ** 2, 'MSE');
         x.grads.push(()=>{
             return -2 * err;
         })
-        return r + out;
-    }, 0) / this.size;
+        r += out;
+        idx_this++;
+        if(idx_this === step_this){
+            idx_this = 0;
+            idx_other+=step_other;
+            if(idx_other>other.size)
+                idx_other = 0;
+        }
+    }
+    const data = r / this.size;
     return Tensor.from(data, 'MSE', [this]);
 }
 

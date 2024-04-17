@@ -5,7 +5,7 @@ const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
-    constructor(params = {dim: 8, head_count: 10}) {
+    constructor(params = {dim: 8, head_count: 16}) {
         for (let key in params){
             this[key] = params[key];
         }
@@ -81,11 +81,30 @@ export class Tokenizer{
     }
     train(token, phrase){
         if (!phrase.length) return;
-        const cnt = phrase.map(t=>t.cnt);
-        const fwd = EO.einsum('rd, hrd -> hr', Tensor.param(token.emb), Tensor.param(cnt));
+        let cnt = phrase.map(t=>t.cnt);
+        let token_t = Tensor.param(token.emb);
+        let cnt_t = Tensor.param(cnt);
+        const fwd = EO.einsum('rd, hrd -> hr', token_t, cnt_t);
         const res = fwd.sigmoid();
         const error = res.MSE(BINS);
-        res.back()
+        error.back();
+        token_t = token_t.array;
+        token.emb.forEach((emb, e)=>{
+            let t = token_t[e]
+            emb.forEach((data, i)=>{
+                emb[i] = t[i];
+            })
+        })
+        cnt_t = cnt_t.array;
+        cnt.forEach((target, t)=>{
+            let cnt_t_tar = cnt_t[t];
+            target.forEach((vec, v)=>{
+                let cnt_t_tar_v = cnt_t_tar[v];
+                vec.forEach((data, i)=>{
+                    vec[i] = cnt_t_tar_v[i];
+                })
+            })
+        })
         return error;
     }
     encode(word){

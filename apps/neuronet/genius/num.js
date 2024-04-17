@@ -100,7 +100,7 @@ Number.prototype.pow = function (other){
     })
     return out;
 }
-Number.prototype._div = function (other){
+Number.prototype.div = function (other){
     const out = TNum(this / other, 'div')
     this.grads.push(()=>{
         return ((1 / other) * out.g);
@@ -120,7 +120,7 @@ Number.prototype._sqrt = function (){
     return out;
 }
 Number.prototype._rsqrt = function (){
-    return TNum(1)._div(this._sqrt());
+    return TNum(1).div(this._sqrt());
 }
 Number.prototype._log = function (){
     const out = TNum(Math.log(this), '_log')
@@ -171,14 +171,14 @@ Number.prototype.softplus = function () {
 Number.prototype.sigmoid = function () {
     const out =  TNum(1 / (1 + Math.exp(-this)), 'sigmoid')
     this.grads.push(()=>{
-        return (this * (1 - this) * out.g);
+        return (out * (1 - out) * out.g);
     })
     return out;
 }
 Number.prototype.silu = function () {
     const out =  TNum(this * (1 / (1 + Math.exp(-this))), 'silu')
     this.grads.push(()=>{
-        return (this * (1 - this) * out.g);
+        return (out * (1 - out) * out.g);
     })
     return out;
 }
