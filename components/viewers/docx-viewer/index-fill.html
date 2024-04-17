@@ -1,23 +1,14 @@
 <meta charset="UTF-8">
+<title>oda-docx-fill</title>
 <script type="module" src="../../../oda.js"></script>
 <script type="module" src="./docx-fill.js"></script>
 
-<input id="files" type="file" style="width: 60ch; position: fixed; padding: 2px; top: 3px; z-index: 9;" accept=".docx" />
-<input id="btn" type="button" style="width: 114px; position: fixed; margin: 2px; padding: 2px; top: 32px; z-index: 9;" value="Заполнить" />
-<input id="prn" type="button" style="width: 114px; position: fixed; margin: 2px; padding: 2px; top: 64px; z-index: 9;" value="Печать" />
+<input id="btn" type="button" style="width: 140px; position: fixed; padding: 4px; margin: 2px; right: 4px; top: 4px; z-index: 9; border: 1px solid gray; cursor: pointer" value="Заполнить шаблон" />
 <oda-docx-fill id="docx_viewer" src="./details.docx"></oda-docx-fill>
 
 <script>
-    const fileInput = document.querySelector("#files");
-    fileInput.addEventListener("change", ev => {
-        docx_viewer.src = fileInput.files[0];
-        fileInput.value = null;
-    })
     btn.addEventListener("click", ev => {
         docx_viewer.fill();
-    })
-    prn.addEventListener("click", ev => {
-        docx_viewer.print();
     })
     docx_viewer.fillData = {
         orgName: 'ООО "БИС"',
