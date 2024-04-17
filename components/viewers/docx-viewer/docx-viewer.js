@@ -1,3 +1,5 @@
+// https://github.com/VolodymyrBaydalka/docxjs
+
 import * as JSZip from './lib/jszip.min.js';
 
 ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js',

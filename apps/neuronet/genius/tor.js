@@ -29,7 +29,7 @@ export class Tensor{
 
     }
     get g(){
-        return new Tensor(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
+        return Tensor.from(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
     }
     get shape(){
         return this.#shape;
@@ -116,7 +116,7 @@ export class Tensor{
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?i=>value():i=>value;
         let data = Array(size).fill().map(handler);
-        return new Tensor(data, label).reshape(shape);
+        return Tensor.from(data, label).reshape(shape);
     }
     static zeros(shape, label) {
         return this.fill(shape, 0, label);
@@ -128,7 +128,7 @@ export class Tensor{
         return this.fill(shape, ()=>(Math.random()-.5), label);
     }
     static array(data, label="array"){
-        return new Tensor(data, label);
+        return Tensor.from(data, label);
     }
     static arange(from_or_size = 0, size, repeat = 1){
         if (size === undefined){
@@ -142,7 +142,7 @@ export class Tensor{
         if (repeat > 1){
             result = Array(repeat).fill().map(a=>result.map(i=>i))
         }
-        return new Tensor(result);
+        return Tensor.from(result);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -154,7 +154,16 @@ export class Tensor{
                 return 0
             })
         })
-        return new Tensor(data, 'hippo');
+        return Tensor.from(data, 'hippo');
+    }
+    static from(data, label, children){
+        if (data instanceof Tensor)
+            return data;
+        return new Tensor(data, label, children)
+    }
+    static param(tensor){
+        tensor.isParam = true;
+        return tensor;
     }
     toString(max = 4){
         // let res =  Math.min(...this.data).toExponential(3);
@@ -194,23 +203,12 @@ export class Tensor{
         for (let size of parts){
             let end = start + size;
             let res = this.data.slice(start,  end);
-            let out = tensor(res, `slice [${start}-${end}]`, [this]);
+            let out = Tensor.from(res, `slice [${start}-${end}]`, [this]);
             result.push(out);
             start = end;
         }
         return result;
     }
-}
-
-export function tensor(data, label, children){
-    if(data instanceof Tensor)
-        return data;
-    return new Tensor(data, label, children);
-}
-
-export function Parameter(t){
-    t.isParam = true;
-    return t
 }
 
 Tensor.prototype.sum = function (){
@@ -221,7 +219,7 @@ Tensor.prototype.sum = function (){
 
 Tensor.prototype.log = function (){
     const data = this.data.map(x=>Math.log(x));
-    const out = new Tensor(data, 'log', [this]).reshape(this.shape);
+    const out = Tensor.from(data, 'log', [this]).reshape(this.shape);
     for(let i = 0; i<this.data.length; i++){
         this.data[i].grads.push(()=>{
             return (1 / this.data[i]) * out.data[i].g;
@@ -232,68 +230,59 @@ Tensor.prototype.log = function (){
 
 Tensor.prototype.exp = function (){
     const data = this.data.map(x => x.exp())
-    const out = new Tensor(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
 }
 
 
 Tensor.prototype.add = function (other){
-    other = tensor(other);
+    other = Tensor.from(other);
     const data = this.data.map((x, i)=>x._add(other.data[i] ?? other.data))
-    const out = new Tensor(data, `add([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `add([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
 }
 Tensor.prototype.minus = function (other){
-    other = tensor(other);
+    other = Tensor.from(other);
     const data = this.data.map((x, i)=>x._minus(other.data[i] ?? other.data))
-    const out = new Tensor(data, `minus([${this.shape}] - [${other.shape}])`, [this,  other]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `minus([${this.shape}] - [${other.shape}])`, [this,  other]).reshape(this.shape);
 }
 Tensor.prototype.mul = function (other){
-    other = tensor(other);
+    other = Tensor.from(other);
     const data = this.data.map((x, i)=>x._mul(other.data[i] ?? other.data))
-    const out = new Tensor(data, `mul([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `mul([${this.shape}] + [${other.shape}])`, [this,  other]).reshape(this.shape);
 }
 Tensor.prototype.div = function (other){
-    other = tensor(other);
+    other = Tensor.from(other);
     let data;
     if (this.shape.length)
         data = this.data.map((x, i)=>x._div(other.data[i] ?? other.data))
     else
         data = this.data._div(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    const out = new Tensor(data, `divide([${this.shape}] / [${other.shape}])`, [this,  other]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `divide([${this.shape}] / [${other.shape}])`, [this,  other]).reshape(this.shape);
 }
 
 Tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
-    const out = new Tensor(data, 'tahn', [this]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, 'tahn', [this]).reshape(this.shape);
 }
 Tensor.prototype.pow = function (other){
-    other = tensor(other);
+    other = Tensor.from(other);
     let data;
     if (this.shape.length)
         data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
     else
         data = this.data._pow(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    const out = new Tensor(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
 }
 
 Tensor.prototype.sigmoid = function (){
     const data = this.data.map(x=>x.sigmoid());
-    const out = new Tensor(data, 'sigmoid', [this]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
 }
 Tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
-    const out = new Tensor(data, 'softplus', [this]).reshape(this.shape);
-    return out;
+    return Tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
 Tensor.prototype.mse = function (other){  //todo Подумать насчет распространения градиента на вектор целевого токена для автокоррекции
-    other = tensor(other);
+    other = Tensor.from(other);
     const data = this.data.reduce((r, x, i)=>{
         const err = x - other.data[i];
         let out = TNum(err ** 2, 'mse');
@@ -302,7 +291,7 @@ Tensor.prototype.mse = function (other){  //todo Подумать насчет �
         })
         return r + out;
     }, 0) / this.size;
-    return new Tensor(data, 'mse', [this]);
+    return Tensor.from(data, 'mse', [this]);
 }
 
 Array.prototype.toTensorString = function (max = 4){

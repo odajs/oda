@@ -1,4 +1,4 @@
-import {Tensor, tensor} from "./tor.js";
+import {Tensor} from "./tor.js";
 export class EO{
     static einsums = {};
     static parse_shape(expr, tensor){
@@ -20,7 +20,7 @@ export class EO{
         },{})
     }
     static einsum(in_expr, ...sources){
-        const tensors = sources.map(i=>tensor(i));
+        const tensors = sources.map(i=>Tensor.from(i));
         let operator = '_mul';
         const label = 'einsum: \"'+in_expr+'\"';
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
@@ -91,7 +91,7 @@ export class EO{
             outs,
             label
         }
-        const out = outs.length?Tensor.zeros(ein.outs.map(o => o.d)):new Tensor(0);
+        const out = outs.length?Tensor.zeros(ein.outs.map(o => o.d)):Tensor.from(0);
         out.children = tensors;
         out.data = ein.fn(out.data, ...tensors.map(t=>t.data));
         out.label = ein.label + (out.shape.length?(' ('+out.shape+')'):'');

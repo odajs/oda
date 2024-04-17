@@ -1,4 +1,4 @@
-import {Parameter, tensor, Tensor} from "./tor.js";
+import {Tensor} from "./tor.js";
 import {EO} from "./einops.js";
 import {Linear, Module} from "./module.js";
 
@@ -15,18 +15,18 @@ const BIAS = false;
 export class Genius extends Module{
     __init__() {
         this.d = MODEL_DIM;// * EXPAND;
-        this.W = Parameter(Tensor.random([MODEL_DIM, this.d]));
+        this.W = Tensor.param(Tensor.random([MODEL_DIM, this.d]));
         this.fork_proj = new Linear(this.d, this.d * 2 + DT_RANK, false);
         this.dt_proj = new Linear(DT_RANK, this.d, true);
-        this.A = Parameter(Tensor.hippo(this.d));
+        this.A = Tensor.param(Tensor.hippo(this.d));
         this.H = Tensor.zeros([this.d, this.d], 'H');
-        this.D = Parameter(Tensor.ones(this.d));
+        this.D = Tensor.param(Tensor.ones(this.d));
     }
     resetH(){
         this.H = Tensor.zeros([this.d, this.d], 'H');
     }
     forward(x){
-        x = tensor(x, `INPUT`);
+        x = Tensor.from(x, `INPUT`);
         // расширение входа
         // let y = EO.einsum('x, xy -> y', x,  this.W);
         // разделение входа на вектора B, C и Δ
