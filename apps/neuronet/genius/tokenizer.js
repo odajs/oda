@@ -5,11 +5,13 @@ const MAX_WORD_LENGTH = 32;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer{
-    constructor(params = {dim: 8, head_count: 16}) {
+    constructor(params = {dim: 8, head_count: 1}) {
         for (let key in params){
             this[key] = params[key];
         }
-        this.token_proj = new Linear(this.dim, 8, true);
+        this.token_proj = Array(this.head_count).fill().map(_=>new Linear(this.dim, 8, true));
+        this.ends = {id: 0, w: '<EOT>', emb: Array(this.head_count).fill().map(_=>Tensor.zeros(this.dim, 'end'))}
+
     }
     vocabulary = Object.create(null);
     textEncoder = new TextEncoder();
@@ -23,9 +25,12 @@ export class Tokenizer{
         const addToken = (word)=>{
             const token = this.vocabulary[word] ??= (()=>{
                 const res = Object.create(null);
-                res.v = this.encode(word)
-                res.emb = Array(this.head_count).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
-                res.cnt = Array(this.head_count).fill().map(i=>Array(this.dim).fill().map(_ => (Math.random()-.5)/10))
+                res.v = this.encode(word);
+                res.w = word;
+                res.id = Object.keys(this.vocabulary).length+1;
+                res.emb = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'embedding').data);
+                res.cnt = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);
+                res.W = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);
                 return res;
             })()
             tokens.push(token);
@@ -85,27 +90,19 @@ export class Tokenizer{
         let token_t = Tensor.param(token.emb);
         let cnt_t = Tensor.param(cnt);
         const fwd = EO.einsum('rd, hrd -> hr', token_t, cnt_t);
-        const res = fwd.sigmoid();
+        let res = fwd.sigmoid();
         const error = res.MSE(BINS);
         error.back();
-        token_t = token_t.array;
-        token.emb.forEach((emb, e)=>{
-            let t = token_t[e]
-            emb.forEach((data, i)=>{
-                emb[i] = t[i];
-            })
-        })
-        cnt_t = cnt_t.array;
-        cnt.forEach((target, t)=>{
-            let cnt_t_tar = cnt_t[t];
-            target.forEach((vec, v)=>{
-                let cnt_t_tar_v = cnt_t_tar[v];
-                vec.forEach((data, i)=>{
-                    vec[i] = cnt_t_tar_v[i];
-                })
-            })
-        })
+        res = token.emb.map((emb, i)=>this.token_proj[i](emb));
+        res = res.map((res, i)=>res.MSE(token.v));
+        res.map(res=>res.back());
         return error;
+    }
+    findToken(vector, target){
+        const matrix = Tensor.param(Object.values(this.vocabulary).map(t=>t.W[0]));
+        const logit = EO.einsum('x, yx -> y', vector, matrix);
+        const res = logit.softmax();
+
     }
     encode(word){
         return this.vocabulary[word]?.v || (()=>{
@@ -120,9 +117,9 @@ export class Tokenizer{
             return emb;
         })()
     }
-    decode(vector){
-        vector = this.token_proj(vector);
-        vector = vector.data.toReversed();
+    decode(vector, idx){
+        vector = this.token_proj[idx](vector);
+        vector = vector.data.map(i=>+i);//.toReversed();
         let result = BINS.map(p=>{
             let l = vector.reduce((r, t, i)=>{
                 if (t >= p){

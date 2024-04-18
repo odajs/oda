@@ -158,7 +158,14 @@ Number.prototype.tanh = function () {
     return out;
 }
 
-
+Number.prototype.softmax = function () {
+    const exp = Math.exp(this)
+    const out =  TNum(Math.log(1 + exp), 'softmax')
+    this.grads.push(()=>{
+        return ((exp / (1 + exp)) * out.g);
+    })
+    return out;
+}
 
 Number.prototype.softplus = function () {
     const exp = Math.exp(this)

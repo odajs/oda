@@ -120,7 +120,7 @@ export class Tensor{
     static ones(shape, label) {
         return this.fill(shape, 1, label);
     }
-    static random(shape, label, div = 1000) {
+    static random(shape, label, div = 10) {
         return this.fill(shape, ()=>(Math.random()-.5)/div, label);
     }
     static array(data, label="array"){
@@ -276,6 +276,12 @@ Tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
     return Tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
+Tensor.prototype.softmax = function (){
+    const data = this.data.map(value=>{
+        return Math.exp(value) / this.data.map(y=>Math.exp(y)).reduce((a, b)=>a + b)
+    })
+    return Tensor.from(data, 'softmax', [this]).reshape(this.shape);
+}
 Tensor.prototype.MSE = function (other){
     other = Tensor.from(other);
     let step_this = this.shape[this.shape.length - 1];
@@ -314,7 +320,7 @@ Array.prototype.toTensorString = function (max = 4){
             result += list;
         }
         else{
-            if (d.length > max){
+            if (d.ength > max){
                 const showing = Math.floor(max/2);
                 result += d.slice(0, showing).map(x=>{
                     return x.toTNumString()

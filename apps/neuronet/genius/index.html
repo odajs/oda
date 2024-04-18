@@ -24,7 +24,7 @@
                     font-family: monospace;
                 }
             </style>
-            <gen-vocabulary slot="right-panel"></gen-vocabulary>
+            <gen-vocabulary opened slot="right-panel"></gen-vocabulary>
             <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
@@ -107,17 +107,18 @@
                     let token = phrase.shift();
                     this.tokenizer.train(token, phrase);
                     let emb = token.emb[0];
-                    let target = this.isNext ? (phrase[0]?.emb[0] || Array(emb.length).fill(0)): emb;
+                    let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = this.model(emb);
-                    this.tensor = res.MSE(target);
+                    this.tensor = res.MSE(target.emb[0]);
                     this.err = this.tensor.data;
                     this.tensor.back();
+                    res = this.tokenizer.findToken(res, target);
                     result.push(res);
                 }
             }
-            result = result.map(w=>{
-                return this.tokenizer.decode(w.data);
-            })
+            // result = result.map(w=>{
+            //     return w, 0);
+            // })
             this.result = result.join('');
             this.stepCount++;
         },
@@ -254,7 +255,7 @@
                 }
             </style>
             <div border ~for="tokenizer?.vocabulary" vertical>
-                <span no-flex>{{$for.key}}</span>
+                <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
                 <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
             </div>
         `,
