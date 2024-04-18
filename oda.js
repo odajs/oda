@@ -356,9 +356,11 @@ if (!window.ODA?.IsReady) {
                 this._on_disconnect_timer = 0;
                 return;
             }
-            this.async(async ()=>{
+            this.async(async () => {
                 await this.$render();
-                this.attached?.();
+                this.async(() => {
+                    this.attached?.();
+                });
             })
         }
         disconnectedCallback() {
