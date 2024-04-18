@@ -320,7 +320,7 @@ Array.prototype.toTensorString = function (max = 4){
             result += list;
         }
         else{
-            if (d.ength > max){
+            if (d.length > max){
                 const showing = Math.floor(max/2);
                 result += d.slice(0, showing).map(x=>{
                     return x.toTNumString()

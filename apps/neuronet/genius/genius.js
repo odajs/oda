@@ -2,7 +2,7 @@ import {Tensor} from "./tor.js";
 import {EO} from "./einops.js";
 import {Linear, Module} from "./module.js";
 
-export const MODEL_DIM = 8;           // Размерность входного и выходного слоев
+export const MODEL_DIM = 16;           // Размерность входного и выходного слоев
 const EXPAND = 2;               // Коэффициент расширения вектора слов
 const LAYER_COUNT = 1;          // Количество слоев
 const HEAD_COUNT = 1;           // Количество селекторов (голов) в слое

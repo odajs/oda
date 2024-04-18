@@ -10,7 +10,11 @@ export class Tokenizer{
             this[key] = params[key];
         }
         this.token_proj = Array(this.head_count).fill().map(_=>new Linear(this.dim, 8, true));
-        this.ends = {id: 0, w: '<EOT>', emb: Array(this.head_count).fill().map(_=>Tensor.zeros(this.dim, 'end'))}
+        this.ends = {
+            id: 0, w: '<end>', emb: Array(this.head_count).fill().map(_=>Tensor.zeros(this.dim).data),
+            W: Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data)
+        }
+        this.vocabulary['<end>'] = this.ends;
 
     }
     vocabulary = Object.create(null);
@@ -27,7 +31,7 @@ export class Tokenizer{
                 const res = Object.create(null);
                 res.v = this.encode(word);
                 res.w = word;
-                res.id = Object.keys(this.vocabulary).length+1;
+                res.id = Object.keys(this.vocabulary).length;
                 res.emb = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'embedding').data);
                 res.cnt = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);
                 res.W = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);

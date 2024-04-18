@@ -137,7 +137,7 @@
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer();
+                return new Tokenizer({dim: MODEL_DIM, head_count: 1});
             },
         },
         get tokens(){
