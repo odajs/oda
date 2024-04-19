@@ -109,9 +109,9 @@
                     let emb = token.emb[0];
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = this.model(emb);
-                    this.tensor = res.MSE(target.emb[0]);
-                    this.err = this.tensor.data;
-                    this.tensor.back();
+                    // this.tensor = res.MSE(target.emb[0]);
+                    // this.err = this.tensor.data;
+                    // this.tensor.back();
                     res = this.tokenizer.findToken(res, target);
                     result.push(res);
                 }
@@ -137,7 +137,7 @@
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({dim: MODEL_DIM, head_count: 2});
+                return new Tokenizer({dim: MODEL_DIM, head_count: 1});
             },
         },
         get tokens(){

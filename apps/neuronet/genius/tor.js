@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1
+export const LEARNING_RATE = .5
 function genId(){
     return ++_id;
 }
@@ -278,7 +278,19 @@ Tensor.prototype.softplus = function (){
 }
 Tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
-    const data = this.data.map(v => Math.exp(v) / exp)
+    const data = this.data.map((x, i)=> {
+        const out = TNum(Math.exp(x) / exp);
+        x.grads.push(()=>{
+            let sum = data.reduce((r, sj, j)=>{
+                if (i === j)
+                    return out * (1-out)
+                return -out * sj
+            });
+            sum *= out.g;
+            return sum;
+        })
+        return out;
+    })
     return Tensor.from(data, 'softmax', [this]).reshape(this.shape);
 }
 Tensor.prototype.MSE = function (other){
@@ -292,7 +304,7 @@ Tensor.prototype.MSE = function (other){
         let x = this.data[i];
         let y = other.data[idx_other + i] || 0;
         const err = x - y;
-        let out = TNum(err ** 2, 'MSE');
+        let out = TNum(err ** 2);
         x.grads.push(()=>{
             return -2 * err;
         })

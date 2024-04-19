@@ -12,7 +12,8 @@ export class Tokenizer{
         this.token_proj = Array(this.head_count).fill().map(_=>new Linear(this.dim, 8, true));
         this.ends = {
             id: 0, w: '<end>', emb: Array(this.head_count).fill().map(_=>Tensor.zeros(this.dim).data),
-            W: Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data)
+            W: Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data),
+            B: Array(this.head_count).fill().map(_=>Tensor.random(1, 'context').data)
         }
         this.vocabulary['<end>'] = this.ends;
 
@@ -29,12 +30,12 @@ export class Tokenizer{
         const addToken = (word)=>{
             const token = this.vocabulary[word] ??= (()=>{
                 const res = Object.create(null);
-                res.v = this.encode(word);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
                 res.emb = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'embedding').data);
                 res.cnt = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);
                 res.W = Array(this.head_count).fill().map(_=>Tensor.random(this.dim, 'context').data);
+                res.B = Array(this.head_count).fill().map(_=>Tensor.random(1, 'context').data);
                 return res;
             })()
             tokens.push(token);
@@ -100,9 +101,22 @@ export class Tokenizer{
         return error;
     }
     findToken(vector, target){
-        const matrix = Tensor.param(Object.values(this.vocabulary).map(t=>t.W[0]));
-        const logit = EO.einsum('x, yx -> y', vector, matrix);
+        const array = Object.values(this.vocabulary);
+        const matrix = Tensor.param(array.map(t=>t.W[0]));
+        const bias = Tensor.param(array.map(t=>t.B[0]));
+        bias.reshape([array.length])
+        let logit = EO.einsum('x, yx -> y', vector, matrix);
+        logit = logit.add(bias);
         const res = logit.softmax();
+        const max = Math.max(...res.data);
+        const idx = res.data.findIndex(v => {
+            return +v === max;
+        });
+        const w = array.find(i=>i.id === idx).w;
+        target = array.map(i =>(i === target)?1:0);
+        const err = res.MSE(target);
+        err.back();
+        return w;
     }
     encode(word){
         return this.vocabulary[word]?.v || (()=>{
