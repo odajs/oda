@@ -1,38 +1,36 @@
-const GRADIENT_DIVIDER = 1.414
-export class TFloat extends Number{
+const GRADIENT_DIVIDER = 1.618
+export class N extends Number{
     grads = []
-    constructor(v, l) {
+    constructor(v) {
         super(v);
-        if (l) this.label = l;
+        this[''] = v;
     }
     set val(n){
-        if (this._val === undefined)
-            this.valueOf = valueOf;
-        this._val = n;
+        this[''] = n;
     }
     get g(){
         if (this._g === undefined){
             let grad = this.grads.pop();
+            let g = 1;
             if (grad){
-                this._g = 0;
+                g = 0;
                 while (grad) {
-                    this._g += grad();
+                    g += grad();
                     grad = this.grads.pop();
                 }
-                this._g /= GRADIENT_DIVIDER;
+                g /= GRADIENT_DIVIDER;
             }
-            else
-                this._g = 1;
+            this._g = g;
         }
         return this._g;
     }
+    valueOf(){
+        return this[''];
+    }
 }
 
-function valueOf(){
-    return this._val;
-}
 export function TNum(v, l){
-    return (v instanceof TFloat)?v:new TFloat(v, l);
+    return (v instanceof N)?v:new N(v, l);
 }
 
 Number.prototype.toTNumString = function () {
@@ -205,4 +203,3 @@ Number.prototype.elu = function (alpha = 1){
     })
     return out;
 }
-

@@ -97,16 +97,12 @@ export class Tokenizer{
         let res = fwd.sigmoid();
         const error = res.MSE(BINS);
         error.back();
-        res = token.emb.map((emb, i)=>this.token_proj[i](emb));
-        res = res.map((res, i)=>res.MSE(token.v));
-        res.map(res=>res.back());
         return error;
     }
     findToken(vector, target){
         const matrix = Tensor.param(Object.values(this.vocabulary).map(t=>t.W[0]));
         const logit = EO.einsum('x, yx -> y', vector, matrix);
         const res = logit.softmax();
-
     }
     encode(word){
         return this.vocabulary[word]?.v || (()=>{

@@ -20,7 +20,7 @@ export class EO{
         },{})
     }
     static einsum(in_expr, ...sources){
-        const tensors = sources.map(i=>Tensor.from(i));
+        const tensors = sources.map(Tensor.from);
         let operator = 'mul';
         const label = 'einsum: \"'+in_expr+'\"';
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход

@@ -10,7 +10,7 @@ export class Tensor{
     #shape = [];
     #data = null;
     constructor(data, label, children = []) {
-        this.children = children
+        this.children = children;
         this.label = label;
         this.id = genId();
         if (Array.isArray(data)){
@@ -22,7 +22,7 @@ export class Tensor{
                 data = data.flat()
             }
             this.#shape = shape;
-            this.#data = data.map(i=>TNum(i, this.label));
+            this.#data = data.map(TNum);
         }
         else
             this.#data = TNum(data);
@@ -110,7 +110,7 @@ export class Tensor{
         if (!Array.isArray(shape))
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
-        const handler = typeof value === 'function'?i=>value():i=>value;
+        const handler = typeof value === 'function'?value:i=>value;
         let data = Array(size).fill().map(handler);
         return Tensor.from(data, label).reshape(shape);
     }
@@ -136,7 +136,7 @@ export class Tensor{
             result.push(i);
         }
         if (repeat > 1){
-            result = Array(repeat).fill().map(a=>result.map(i=>i))
+            result = Array(repeat).fill().map(a => result.map(i=>i))
         }
         return Tensor.from(result);
     }
@@ -217,7 +217,7 @@ Tensor.prototype.sum = function (){
 }
 
 Tensor.prototype.log = function (){
-    const data = this.data.map(x=>Math.log(x));
+    const data = this.data.map(Math.log);
     const out = Tensor.from(data, 'log', [this]).reshape(this.shape);
     for(let i = 0; i<this.data.length; i++){
         this.data[i].grads.push(()=>{
@@ -277,9 +277,8 @@ Tensor.prototype.softplus = function (){
     return Tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
 Tensor.prototype.softmax = function (){
-    const data = this.data.map(value=>{
-        return Math.exp(value) / this.data.map(y=>Math.exp(y)).reduce((a, b)=>a + b)
-    })
+    const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
+    const data = this.data.map(v => Math.exp(v) / exp)
     return Tensor.from(data, 'softmax', [this]).reshape(this.shape);
 }
 Tensor.prototype.MSE = function (other){

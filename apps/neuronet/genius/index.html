@@ -7,7 +7,7 @@
     import {Tensor, LEARNING_RATE} from './tor.js';
     import {EO} from "./einops.js";
     import * as mm from './module.js';
-    import {TNum, TFloat} from './num.js';
+    import {TNum, N} from './num.js';
     import {Tokenizer} from './tokenizer.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
@@ -137,7 +137,7 @@
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({dim: MODEL_DIM, head_count: 1});
+                return new Tokenizer({dim: MODEL_DIM, head_count: 2});
             },
         },
         get tokens(){
@@ -227,9 +227,9 @@
             this.time = 0;
             this.result = ''
             try{
-                const fn = new Function('Tensor', 'EO', 'TFloat', this.value);
+                const fn = new Function('Tensor', 'EO', 'N', this.value);
                 let time = Date.now();
-                const res =  fn.call(this, Tensor, EO, TFloat) || '';
+                const res =  fn.call(this, Tensor, EO, N) || '';
                 time = Date.now() - time;
                 this.result =  res?.toString();
                 this.time = time;
