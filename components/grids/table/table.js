@@ -1734,7 +1734,7 @@ cells: {
                     @apply --flex;
                 }
             </style>
-            <span class="field-control"  ~is="template" :column :item ::value style="overflow: hidden">{{value}}</span>`,
+            <span class="field-control" ~is="template" :column :item ::value style="overflow: hidden">{{value || ''}}</span>`,
         focused: {
             $type: Boolean,
             $def: false,
@@ -1836,7 +1836,7 @@ cells: {
             </div>
             <oda-table-expand ~style="{backgroundColor: expBackground}" class="no-flex" :item :scrolled-children></oda-table-expand>
             <div ~is="item.checkTemplate || checkTemplate" class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></div>
-            <div :dark ::color  ~is="subTemplate" :column :item class="flex" @tap="_tap">{{item?.[column[columnId]]}}</div>`,
+            <div :dark ::color  ~is="subTemplate" :column :item class="flex" @tap="_tap">{{item?.[column[columnId]] || ''}}</div>`,
             get subTemplate() {
                 if(this.item.template){
                     console.warn('!!!item.template', this.item);
