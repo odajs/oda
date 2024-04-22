@@ -126,14 +126,14 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 2});
+                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 2});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({d: 4, head_count: 1});
+                return new Tokenizer({d: 8, head_count: 1});
             },
         },
         get tokens(){
