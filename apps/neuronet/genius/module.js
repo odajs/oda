@@ -1,19 +1,12 @@
 import {Tensor} from "./tor.js";
 import {EO} from "./einops.js";
 export class Module{
-    constructor(...args) {
-        this.__args__ = ''
-        if (args.length){
-            let s = this.constructor.toString();
-            s = s.substr(s.indexOf('(')+1);
-            s = s.substr(0, s.indexOf(')'));
-            s = s.split(',');
-            this.__args__= s.map((n, i)=>{
-                n = n.split('=').shift().trim();
-                return n +'='+ args[i];
-            }).join(', ')
+    constructor(params = {}) {
+        this.__params__ = params;
+        for (let n in params){
+            this[n] = params[n];
         }
-        this.__init__(...args);
+        this.__init__();
         const fwd = (...args)=>{
             const out = this.forward(...args);
             out.label = this.label;
@@ -55,7 +48,7 @@ export class Module{
     toStringTree(step = 0){
         const add = 3;
         const tab = (' ').repeat(step + add);
-        let s = `${this.label} (${this.__args__})\r\n`;
+        let s = `${this.label} (${this.__params__})\r\n`;
         s += this.__children__.map(obj => {
             const key = Object.keys(obj)[0];
             const prop = obj[key];
@@ -67,14 +60,13 @@ export class Module{
         return s;
     }
 }
-
 export class Linear extends Module{
-    __init__(in_size, out_size, bias = false) {
-        this.W = Tensor.random([in_size, out_size]);
+    __init__() {
+        this.W = Tensor.random([this.d_in, this.d_out]);
         this.W.label += '/weights';
         this.W = Tensor.param(this.W);
-        if(bias){
-            this.bias = Tensor.random([out_size]);
+        if(this.bias){
+            this.bias = Tensor.random([this.d_out]);
             this.bias.label +='/bias';
             this.bias = Tensor.param(this.bias);
         }
@@ -89,9 +81,6 @@ export class Linear extends Module{
     get label(){
         return this.constructor.name + ` (${this.W.shape}, ${!!this.bias})`
     }
-}
-export function linear(...args){
-    return new Linear(...args)
 }
 export class RMSNorm extends Module {
     __init__(dim) {
@@ -115,7 +104,3 @@ export class RMSNorm extends Module {
         return this.constructor.name + ` (${this.W.shape})`
     }
 }
-export function rmsNorm(...args){
-    return new RMSNorm(...args)
-}
-

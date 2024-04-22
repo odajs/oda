@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .5
+export const LEARNING_RATE = .1
 function genId(){
     return ++_id;
 }

@@ -3,7 +3,7 @@
 <gen-layout></gen-layout>
 <script type="module">
     import '../../../oda.js';
-    import {MODEL_DIM, Genius} from './genius.js';
+    import {Genius} from './genius.js';
     import {Tensor, LEARNING_RATE} from './tor.js';
     import {EO} from "./einops.js";
     import * as mm from './module.js';
@@ -100,15 +100,17 @@
         },
         step(){
             let result = [];
+            this.model.module.reset();
             for(let phrase of this.tokens){
                 phrase = Array.from(phrase);
-                this.model.module.resetH();
+                // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    this.tokenizer.train(token, phrase);
-                    let emb = token.emb[0];
+                    const error = this.tokenizer.train(token, phrase);
+                    if (error > this.tokenizer.maxError)
+                        continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
-                    let res = this.model(emb);
+                    let res = this.model(token, target);
                     // this.tensor = res.MSE(target.emb[0]);
                     // this.err = this.tensor.data;
                     // this.tensor.back();
@@ -116,7 +118,7 @@
                     result.push(res);
                 }
             }
-            this.model.module.resetH();
+
             // result = result.map(w=>{
             //     return w, 0);
             // })
@@ -131,14 +133,14 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius();
+                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 1});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({dim: MODEL_DIM, head_count: 1});
+                return new Tokenizer({d: 16, head_count: 1});
             },
         },
         get tokens(){
@@ -257,7 +259,10 @@
             </style>
             <div border ~for="tokenizer?.vocabulary" vertical>
                 <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
-                <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
+                <div class="horizontal">
+                    <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
+                    <div style="font-size: small; padding: 4px;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</div>
+                </div>
             </div>
         `,
         getBackGradient(vector){
