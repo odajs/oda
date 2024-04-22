@@ -1,0 +1,15 @@
+<meta charset="UTF-8">
+<title>excel-docx-viewer</title>
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./excel-viewer.js"></script>
+
+<input id="files" type="file" accept=".xlsx" style="width: 60ch; position: fixed; padding: 4px; left: 4px; bottom: 44px; border: 1px solid gray; z-index: 99" />
+<excel-docx-viewer id="excel_viewer" src="./calendar.xlsx"></excel-docx-viewer>
+
+<script>
+    const fileInput = document.querySelector("#files");
+    fileInput.addEventListener("change", async ev => {
+        excel_viewer.src = await fileInput.files[0].arrayBuffer();
+        fileInput.value = null;
+    })
+</script>
