@@ -29,59 +29,29 @@ export class Genius extends Module{
         this.layers.forEach(layer=>layer.module.reset());
     }
     forward(token, target){
-        // x = Tensor.from(x, `INPUT`);
-        const result = this.layers.map((layer, i)=>{
+        let result = this.layers.map((layer, i)=>{
             let x = Tensor.from(token.emb[i], `INPUT`);
             return layer(x);
         });
-
-
-        // расширение входа
-        // let y = EO.einsum('x, xy -> y', x,  this.W);
-        // разделение входа на вектора B, C и Δ
-        // let fork_x = this.fork_proj(x);
-        //
-        // let [B, C, delta] = fork_x.slice([this.d, this.d/*, DT_RANK*/]);
-        // let xB = EO.einsum('x, B -> xB', x, B);
-        //
-        // let y = EO.einsum('xB, C -> C', xB, C);
-        // let Wt =  EO.einsum('xy -> yx', this.W);
-        // y = EO.einsum('y, yx -> y', y, Wt);
-        // delta = this.dt_proj(delta);
-        // delta = delta.softplus();
-        // let A = this.A.exp().mul(-1);
-        // let sum = EO.einsum('d, dn -> dn', delta, A);
-        // let deltaA = sum.exp();
-        // let deltaB_u = EO.einsum('d, n, d -> dn', delta, B, x)
-        // // let H = Tensor.from()
-        // let da = deltaA.mul(this.H.array);
-        // this.H = da.add(deltaB_u);
-        // let y = EO.einsum('dn, n -> d', this.H, C);
-        // y =  y.add(x.mul(this.D));
-        this.error
-        if (target){
-            this.error.back();
-        }
-        return y;
+        result = this.tokenizer.findToken(result, target);
+        return result;
     }
 }
 export class GeniusLayer extends Module{
     get d(){
-        return this.d_in * this.expand;
+        return Math.floor(this.d_in * this.expand);
     }
     __init__() {
+        this.d_A = this.d * this.d;
         this.W = Tensor.param(Tensor.random([this.d_in, this.d]));
         this.fork_proj = new Linear({d_in: this.d, d_out: this.d * 2/* + DT_RANK*/, bias: false});
-        // this.dt_proj = new Linear(DT_RANK, this.d, true);
-        // this.A = Tensor.param(Tensor.hippo(this.d));
-        // this.H = Tensor.zeros([this.d, this.d], 'H');
-        // this.D = Tensor.param(Tensor.ones(this.d));
-
+        this.A = Tensor.param(Tensor.random([this.d_A, this.d_A]));
         if (this.deep)
-            this.layers = Array(this.head_count).map(l=>new GeniusLayer(this.d, this.expand, this.deep - 1));
+            this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
     }
     reset(){
-        this.H = Tensor.zeros([this.d, this.d], 'H');
+        // this.H = Tensor.hippo(this.d);
+        this.H = Tensor.zeros([this.d, this.d]);
     }
     forward(x){
         // расширение входа
@@ -90,10 +60,15 @@ export class GeniusLayer extends Module{
         let fork_x = this.fork_proj(xe);
         let [B, C] = fork_x.slice([this.d, this.d/*, DT_RANK*/]);
         let xB = EO.einsum('x, B -> xB', xe, B);
-        //
-        let y = EO.einsum('xB, C -> C', xB, C);
-        let Wt =  EO.einsum('xy -> yx', this.W);
-        y = EO.einsum('y, yx -> y', y, Wt);
+        xB.reshape(this.d_A);
+        let A = EO.einsum('x, xy -> y', xB, this.A);
+        A.reshape([this.d, this.d]);
+        this.H = A.add(this.H.data);
+        let y = EO.einsum('xy, y -> y', this.H, C);
+        y = xe.add(y);
+        if (this.subLayer)
+            y = this.subLayer(y);
+        y = EO.einsum('y, xy -> x', y, this.W);
         return y;
     }
 }

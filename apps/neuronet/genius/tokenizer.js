@@ -3,7 +3,7 @@ import {Tensor} from './tor.js';
 import {EO} from "./einops.js";
 import {Linear} from './module.js';
 const MAX_WORD_LENGTH = 32;
-const MAX_EMB_ERROR = .5;
+const MAX_EMB_ERROR = .1;
 const WORD_DEEP = 48;
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer extends ROCKS({
@@ -104,24 +104,27 @@ export class Tokenizer extends ROCKS({
         return Object.values(this.vocabulary);
     },
     get outMatrix(){
-        return Tensor.param(this.tokens.map(t=>t.W[0]));
+        const w = this.tokens.map(t=>t.W.flat());
+        return Tensor.param(w);
     },
-    findToken(vector, target){
+    findToken(tokens, target){
+        const vector = tokens.map(i=>i.data).flat()
         const matrix = this.outMatrix;
-        // const bias = Tensor.param(array.map(t=>t.B[0]));
-        // bias.reshape([array.length])
         let logit = EO.einsum('x, yx -> y', vector, matrix);
         // logit = logit.add(bias);
-        const res = logit.softmax();
-        const max = Math.max(...res.data);
-        const idx = res.data.findIndex(v => {
+        logit = logit.softmax();
+        const max = Math.max(...logit.data);
+        const idx = logit.data.findIndex(v => {
             return +v === max;
         });
         const w = this.tokens.find(i=>i.id === idx).w;
-        target = this.tokens.map(i =>(i === target)?1:0);
-        const err = res.MSE(target);
-        err.back();
-        return w;
+        let error;
+        if (target){
+            target = this.tokens.map(i =>(i === target)?1:0);
+            error = logit.MSE(target);
+            error.back();
+        }
+        return {w, logit, error};
     },
     // encode(word){
     //     return this.vocabulary[word]?.v || (()=>{
