@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1
+export const LEARNING_RATE = 1
 function genId(){
     return ++_id;
 }
@@ -27,6 +27,13 @@ export class Tensor{
         else
             this.#data = TNum(data);
 
+    }
+    get T(){
+        let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
+        let axis_out = axis_this.split('');
+        axis_out.reverse();
+        axis_out = axis_out.join('')
+        return EO.einsum(axis_this+'->'+axis_out, this);
     }
     get g(){
         return Tensor.from(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
@@ -105,7 +112,10 @@ export class Tensor{
         this.#shape = shape
         return this;
     }
-
+    static stack(array){
+        const data = array.map(a=>a.data).flat();
+        return Tensor.from(data, 'stack', array);
+    }
     static fill(shape, value, label){
         if (!Array.isArray(shape))
             shape = [shape];
@@ -351,6 +361,7 @@ Array.prototype.toTensorString = function (max = 4){
         result = result + ']'
         return result
     }
-
-    return recurse(this);
+    let res = recurse(this);
+    res = res.slice(1, -1);
+    return '(' + res + ')';
 }

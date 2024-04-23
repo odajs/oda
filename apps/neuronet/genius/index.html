@@ -24,8 +24,8 @@
                     font-family: monospace;
                 }
             </style>
-            <gen-vocabulary opened slot="right-panel"></gen-vocabulary>
-            <div class="vertical dark" slot="left-panel" opened style="padding: 8px">
+            <gen-vocabulary  slot="right-panel"></gen-vocabulary>
+            <div class="vertical dark" slot="left-panel"  style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
                     <oda-button icon="icons:arrow-forward" allow-toggle ::toggled="isNext"></oda-button>
@@ -98,7 +98,7 @@
             $def: false,
             $save: true
         },
-        step(){
+        async step(){
             let result = [];
             this.model.module.reset();
             for(let phrase of this.tokens){
@@ -110,7 +110,7 @@
                     if (error > this.tokenizer.maxError)
                         continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
-                    let res = this.model(token, target);
+                    let res = await this.model(token, target);
                     this.tensor = this.err = res.error;
                     result.push(res.w);
                 }
@@ -126,14 +126,14 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 2});
+                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 1});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({d: 8, head_count: 1});
+                return new Tokenizer({d: 4, head_count: 1});
             },
         },
         get tokens(){
@@ -243,21 +243,32 @@
                 :host{
                     @apply --vertical;
                     @apply --dark;
-                    overflow-y: auto;
+                    overflow: hidden;
                 }
                 span{
                     padding: 4px;
                     width: 50px;
                 }
             </style>
-            <div border ~for="tokenizer?.vocabulary" vertical>
-                <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
-                <div class="horizontal">
-                    <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
-                    <div style="font-size: small; padding: 4px;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</div>
+            <div flex style="overflow-y: auto;">
+                <div  border ~for="tokenizer?.vocabulary" vertical>
+                    <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
+                    <div class="horizontal">
+                        <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
+                        <div style="font-size: small; padding: 4px;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</div>
+                    </div>
                 </div>
             </div>
+            <span>tokens: {{size}}</span>
+            <span>error:  {{error.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
+
         `,
+        get error(){
+            return this.tokenizer.error;
+        },
+        get size(){
+            return this.tokenizer.size;
+        },
         getBackGradient(vector){
             return {background: `linear-gradient(to right, ${this.getColors(vector)})`}
         },

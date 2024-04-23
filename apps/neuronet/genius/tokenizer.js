@@ -5,6 +5,9 @@ import {Linear} from './module.js';
 const MAX_WORD_LENGTH = 32;
 const MAX_EMB_ERROR = .1;
 const WORD_DEEP = 48;
+const SIGNS = ',()[]{}:;';
+const SPLITTERS = ' \n\t';
+const TERMINATES = '.!?…';
 const BINS = Array(WORD_DEEP).fill(0).map((v, i)=>(2. ** -i));
 export class Tokenizer extends ROCKS({
     tokenize(text){
@@ -22,6 +25,7 @@ export class Tokenizer extends ROCKS({
                 res.W = Array(this.head_count).fill().map(_=>Tensor.random(this.d, 'context').data);
                 res.B = Array(this.head_count).fill().map(_=>Tensor.random(1, 'context').data);
                 res.error = 1;
+                this.tokens = undefined;
                 return res;
             })()
             tokens.push(token);
@@ -82,9 +86,13 @@ export class Tokenizer extends ROCKS({
         return this.tokens.length;
     },
     get error(){
-        return this.tokens.reduce((r, t) =>{
+        const tokens = this.tokens.filter(i=>(i.error>0 && i.error<1))
+        const size = tokens.length;
+        if (!size)
+            return 1;
+        return tokens.reduce((r, t) =>{
             return r + t.error;
-        }, 0) / this.size
+        }, 0) / size;
     },
     train(token, phrase){
         if (!phrase.length)
@@ -104,13 +112,13 @@ export class Tokenizer extends ROCKS({
         return Object.values(this.vocabulary);
     },
     get outMatrix(){
-        const w = this.tokens.map(t=>t.W.flat());
-        return Tensor.param(w);
+        const w = Tensor.param(this.tokens.map(t=>t.W.flat()));
+        w.label += ' LOGIT'
+        return w;
     },
     findToken(tokens, target){
-        const vector = tokens.map(i=>i.data).flat()
         const matrix = this.outMatrix;
-        let logit = EO.einsum('x, yx -> y', vector, matrix);
+        let logit = EO.einsum('x, yx -> y', tokens, matrix);
         // logit = logit.add(bias);
         logit = logit.softmax();
         const max = Math.max(...logit.data);
