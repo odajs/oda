@@ -1,0 +1,31 @@
+<meta charset="UTF-8">
+<title>oda-embedded-viewer</title>
+<script type="module" src="../../../oda.js"></script>
+<script type="module" src="./embedded-viewer.js"></script>
+
+<button id="btnPrev" style="position: absolute; z-index: 9; top: 34px; left: 8px;">Prev Document</button>
+<button id="btnNext" style="position: absolute; z-index: 9; top: 34px; left: 120px;">Next Document</button>
+<embedded-viewer id="embedded_viewer"></embedded-viewer>
+
+<script>
+    let idx = 0;
+    const docs = [
+        'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/C:1DA0270E3ADED4E/~/odant/01.%20whitebook/White%20papers.docx',
+        'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/C:1DA0270E3ADED4E/~/odant/04.%20application%20domain/Netcentric_conception.pptx',
+        'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/C:1DA0270E3ADED4E/~/odant/01.%20whitebook/ODANT%20-%20%D0%BE%D1%81%D0%BD%D0%BE%D0%B2%D0%B0%20%D0%9A%D0%98%D0%A1.ppt',
+        'https://current.odant.org/api/H:1D03A3F3B5863BB/P:WORK/B:1D79FD0060C89D5/C:1DA0270E3ADED4E/~/odant/10.%20archive/FAQ.docx',
+        'https://odajs.org/components/viewers/excel-viewer/sample.xlsx',
+        'https://odajs.org/components/viewers/excel-viewer/calendar.xlsx',
+    ]
+    embedded_viewer.url = docs[0];
+    btnNext.onclick = (e) => {
+        idx += 1;
+        idx = idx > docs.length - 1 ? 0 : idx;
+        embedded_viewer.url = docs[idx];
+    }
+    btnPrev.onclick = (e) => {
+        idx -= 1;
+        idx = idx < 0 ? docs.length - 1 : idx;
+        embedded_viewer.url = docs[idx];
+    }
+</script>

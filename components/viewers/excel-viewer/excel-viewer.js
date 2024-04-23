@@ -2,7 +2,7 @@
 
 import ExcelViewer from './lib/excel-viewer-esm.js';
 
-ODA({ is: 'excel-docx-viewer',
+ODA({ is: 'excel-viewer',
     template: `
         <link rel="stylesheet" href="./lib/excel/xspreadsheet.css">
         <div id="excel-container"></div>
