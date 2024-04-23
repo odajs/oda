@@ -14,7 +14,7 @@ ODA({ is: 'oda-only-office',
     `,
     $public: {
         key: '',
-        // url: 'https://odajs.org/components/editors/only-office/document.docx',
+        // url: 'https://filesamples.com/samples/document/docx/sample4.docx',
         // ooUrl: 'http://localhost:8080/',
         url: path + 'document.docx',
         get ooUrl() { return location.origin + '/docker/onlyoffice/' },
