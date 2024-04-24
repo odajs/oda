@@ -22,10 +22,14 @@ export class Tensor{
                 data = data.flat()
             }
             this.#shape = shape;
-            this.#data = data.map(TNum);
+            this.#data = data//.map(TNum);
         }
-        else
-            this.#data = TNum(data);
+        else{
+            this.#data = data;//TNum(data);
+            if (this.#data?.length)
+                this.#shape = [this.#data?.length]
+        }
+
 
     }
     get T(){
@@ -121,7 +125,7 @@ export class Tensor{
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
-        let data = Array(size).fill().map(handler);
+        let data = new Float32Array(size).map(handler);
         return Tensor.from(data, label).reshape(shape);
     }
     static zeros(shape, label) {
@@ -344,16 +348,16 @@ Array.prototype.toTensorString = function (max = 4){
             if (d.length > max){
                 const showing = Math.floor(max/2);
                 result += d.slice(0, showing).map(x=>{
-                    return x.toTNumString()
+                    return x//?.toTNumString?.()
                 }).join(' ') ;
                 result +=  `  ⭠ ${d.length} ⭢`;
                 result +=  d.slice(-showing).map(x=>{
-                    return x.toTNumString()
+                    return x//.toTNumString()
                 }).join(' ')
             }
             else{
                 result += d?.map?.(x=>{
-                    return x.toTNumString()
+                    return x//.toTNumString()
                 }).join(' ') || d.toTNumString()
             }
         }

@@ -55,7 +55,7 @@ export class EO{
         let vars = [...outs, ...axis].map((o, i) =>{
             return 'let '+ o.a + o.a + ' = ' + o.d +';';
         }).join('\n') + '\nlet idx = 0;\n';
-        vars += 'let out = '+(outs.length?'Array('+outs.reduce((r,a)=> r * a.d, 1)+')':'0') + ';';
+        vars += 'let out = '+(outs.length?'new Float32Array('+outs.reduce((r,a)=> r * a.d, 1)+')':'0') + ';';
         expr = expr[1]?.trim();
         if(expr?.length)
             operator = expr;

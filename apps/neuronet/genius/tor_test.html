@@ -3,26 +3,21 @@
 <meta charset="UTF-8">
 <script type="module">
     let aa = 2;
-    let bb = 3;
-    let сc = 4;
-    let dd = 5;
-    let idx = -1;
-    let AB = [1,2,3,  2,3,4];
-    let CD = [1,2,3,4,5,  2,3,4,5,6,  3,4,5,6,7,  4,5,6,7,8];
-    const res = Array(aa * сc);
-    let _AB = {};
-    let _CD = {};
-    for(let a = 0; a < aa; a++){
-        for (let c = 0; c < сc; c++){
-            let bi = a * bb;
-            let ab = _AB[bi] ??= AB.slice(bi, bi + bb).reduce((r,v) => r + v, 0);
-
-
-            let di = c * dd;
-            let cd = _CD[di] ??= CD.slice(di, di + dd).reduce((r,v) => r + v, 0);
-
-            res[++idx] = ab * cd;
+    let bb = 5;
+    let cc = 4;
+    let dd = 3;
+    let c_d = cc * dd;
+    let b_c_d = bb * c_d;
+    let a_b_c_d = aa * b_c_d;
+    for(let a = 0; a < a_b_c_d; a += b_c_d){
+        for (let b = 0; b < b_c_d; b += c_d) {
+            for (let c = 0; c < c_d; c += dd) {
+                for (let d = 0; d < dd; d++) {
+                    const idx = c + b + a;
+                    console.log(idx, a, b, c, d);
+                }
+            }
         }
     }
-    console.log(res)
+
 </script>
