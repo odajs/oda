@@ -12,7 +12,6 @@ export class Tensor{
     constructor(data, label, children = []) {
         this.children = children;
         this.label = label;
-        this.id = genId();
         if (Array.isArray(data)){
             let shape = [];
             let d = data;
@@ -22,15 +21,14 @@ export class Tensor{
                 data = data.flat()
             }
             this.#shape = shape;
-            this.#data = data//.map(TNum);
+
         }
         else{
-            this.#data = data;//TNum(data);
-            if (this.#data?.length)
-                this.#shape = [this.#data?.length]
+            if (data?.length)
+                this.#shape = [data?.length]
         }
-
-
+        this.#data = data;
+        this.id = genId();
     }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
@@ -338,7 +336,7 @@ Tensor.prototype.MSE = function (other){
 Array.prototype.toTensorString = function (max = 4){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
-        if (Array.isArray(d[0])){
+        if (d[0]?.map){
             let list = d.map((v, i)=>{
                 return recurse(v, i, l + 1);
             })
@@ -348,17 +346,17 @@ Array.prototype.toTensorString = function (max = 4){
             if (d.length > max){
                 const showing = Math.floor(max/2);
                 result += d.slice(0, showing).map(x=>{
-                    return x//?.toTNumString?.()
+                    return x.toExponential(3).padStart(9, ' ')//?.toTNumString?.()
                 }).join(' ') ;
                 result +=  `  ⭠ ${d.length} ⭢`;
                 result +=  d.slice(-showing).map(x=>{
-                    return x//.toTNumString()
+                    return x.toExponential(3).padStart(9, ' ')//.toTNumString()
                 }).join(' ')
             }
             else{
-                result += d?.map?.(x=>{
-                    return x//.toTNumString()
-                }).join(' ') || d.toTNumString()
+                result += Array.from(d).map(x=>{
+                    return x.toExponential(3).padStart(9, ' ')//.toTNumString()
+                }).join(' ') || d.toExponential(3).padStart(9, ' ')
             }
         }
 

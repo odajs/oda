@@ -52,23 +52,24 @@ export class EO{
             axis.splice(idx, 1);
             return ax;
         }).filter(i=>i)
-        let vars = [...outs, ...axis].map((o, i) =>{
+        let vars = axis.map((o, i) =>{
             return 'let '+ o.a + o.a + ' = ' + o.d +';';
-        }).join('\n') + '\nlet idx = 0;\n';
+        }).join('\n') + '\nlet _ = 1;\nlet idx = 0;\n';
+        let v = '_';
+        let vars1 = outs.toReversed().map(o =>{
+            o.inc = v;
+            o.all = v + '_' + o.a;
+            let res = `let ${o.all} = ${v} * ${o.d};`;
+            v = o.all;
+            return res;
+        }).join('\n')+'\n'
+        vars += vars1;
         vars += 'let out = '+(outs.length?'new Float32Array('+outs.reduce((r,a)=> r * a.d, 1)+')':'0') + ';';
         expr = expr[1]?.trim();
         if(expr?.length)
             operator = expr;
         expr = ins.map((t, i) => {
-            t.reverse();
-            let mm = ''
-            let idx = t.map(o => {
-                let res = o.a + mm;
-                mm +=' * ' + o.a + o.a;
-                return res;
-            }).join(' + ');
-            t.var = `let idx_${i} = ${idx};\n`;
-            idx = 'iii'+ i;
+            t.var = `let idx_${i} = ${t.map(o=>o.a).join('+')};\n`;
             return 'val_' + i;
         }).join(` ${operator} `)+';';
 
@@ -84,10 +85,10 @@ export class EO{
         }
 
 
-        let out_for = vars + '\n'+[...outs/*, ...axis*/].map((o, i) => {
+        let out_for = vars + '\n' + outs.map((o, i) => {
             let a = o.a;
             let tab = '\t'.repeat(i)
-            let res =  tab + `for(let ${a} = 0; ${a} < ${a + a}; ${a}++){`;
+            let res =  tab + `for(let ${a} = 0; ${a} < ${o.all}; ${a} += ${o.inc}){`;
             for (let t = 0; t<ins.length; t++){
                 let inp = ins[t];
                 const idx = inp.findIndex(j => j.a === a);
@@ -121,8 +122,12 @@ export class EO{
             }
             return res
         }).join('\n') + '\n'+ '\t'.repeat(outs.length)+'}'.repeat(axis.length);
-
-        let main_expr = axis_for + `\n${'\t'.repeat(outs.length)+ss} = ${expr}\n${'\t'.repeat(outs.length)}idx++;\n${'\t'.repeat(outs.length-1)}`;
+        let main_expr
+        if (outs.length)
+            main_expr = `\n${'\t'.repeat(outs.length)+ss} = ${expr}\n${'\t'.repeat(outs.length)}idx++;\n${'\t'.repeat(outs.length-1)}`;
+        else
+            main_expr = `\n${ss} = ${expr}\nidx++;`;
+        main_expr = axis_for +  main_expr;
         main_expr += '}'.repeat(outs.length);
         expr = out_for + main_expr;
         expr = expr + '\n return out';
