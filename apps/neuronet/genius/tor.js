@@ -176,21 +176,17 @@ export class Tensor{
         tensor.isParam = true;
         return tensor;
     }
-    toString(max = 4){
-        // let res =  Math.min(...this.data).toExponential(3);
-        // if(this.size>1)
-        //     res += ' -> '+ Math.max(...this.data).toExponential(3);
-        // return res;
+    toString(max = 8){
         if (this.shape.length){
-            let data = this.array.toTensorString(max).split('\r\n');
+            let data = this.array.toTensorString(max, this.shape).split('\r\n');
             if (data.length > max){
-                const padding = data[0].length/2 + 4
-                data = [...data.slice(0, Math.floor(max/2)), ('⭥ '+data.length+' ⭥').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
+                const padding = data[0].length/2 + 2
+                data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
             return data
         }
-        return +this.data;
+        return this.data;
     }
     get array() {
         if(!this.shape.length)
@@ -333,11 +329,11 @@ Tensor.prototype.MSE = function (other){
     return Tensor.from(data, 'MSE', [this]);
 }
 
-Array.prototype.toTensorString = function (max = 4){
+Array.prototype.toTensorString = function (max = 4, shape = ''){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (d[0]?.map){
-            let list = d.map((v, i)=>{
+            let list = Array.from(d).map((v, i)=>{
                 return recurse(v, i, l + 1);
             })
             result += list;
@@ -345,18 +341,18 @@ Array.prototype.toTensorString = function (max = 4){
         else{
             if (d.length > max){
                 const showing = Math.floor(max/2);
-                result += d.slice(0, showing).map(x=>{
-                    return x.toExponential(3).padStart(9, ' ')//?.toTNumString?.()
+                result += Array.from(d.slice(0, showing)).map(x=>{
+                    return  num2text(x);
                 }).join(' ') ;
-                result +=  `  ⭠ ${d.length} ⭢`;
-                result +=  d.slice(-showing).map(x=>{
-                    return x.toExponential(3).padStart(9, ' ')//.toTNumString()
+                result +=  `  ...  `;
+                result +=  Array.from(d.slice(-showing)).map(x=>{
+                    return num2text(x);
                 }).join(' ')
             }
             else{
                 result += Array.from(d).map(x=>{
-                    return x.toExponential(3).padStart(9, ' ')//.toTNumString()
-                }).join(' ') || d.toExponential(3).padStart(9, ' ')
+                    return num2text(x);
+                }).join(' ') || num2text(d);
             }
         }
 
@@ -365,5 +361,10 @@ Array.prototype.toTensorString = function (max = 4){
     }
     let res = recurse(this);
     res = res.slice(1, -1);
-    return '(' + res + ')';
+    return '(' + res + ', shape('+shape+'))';
+}
+function num2text(x){
+   if (Number.isInteger(x))
+        return x;
+    return x.toExponential(3).padStart(9, ' ')
 }
