@@ -416,7 +416,7 @@
         function getContentTypes(zip) {
             var ContentTypesJson = readXmlFile(zip, "[Content_Types].xml");
 
-            var subObj = ContentTypesJson["Types"]["Override"];
+            var subObj = ContentTypesJson?.["Types"]?.["Override"] || [];
             var slidesLocArray = [];
             var slideLayoutsLocArray = [];
             for (var i = 0; i < subObj.length; i++) {
