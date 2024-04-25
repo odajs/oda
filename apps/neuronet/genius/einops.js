@@ -21,7 +21,8 @@ export class EO{
     }
     static einsum(in_expr, ...sources){
         console.time(in_expr)
-        const tensors = sources.map(t=>Tensor.from(t));
+        const tensors = sources.map(t => Tensor.from(t));
+
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];
         const terms = expr[0].trim().split(',');            // Разделение входа на термы
@@ -53,7 +54,7 @@ export class EO{
         let vars = [...outs, ...axis].map((o, i) =>{
             return 'let '+ o.a + o.a + ' = ' + o.d +';';
         }).join('\n') + '\nlet idx = 0;\n';
-        vars += 'let out = '+(outs.length?'new Float32Array('+outs.reduce((r,a)=> r * a.d, 1)+')':'0') + ';';
+        vars += ins.map((_,i) => `let t${i} = t[${i}];\nlet m${i} = m[${i}]`).join('\n')+'\n';
         expr = expr[1]?.trim();
 
         let operator = expr?.length?expr:' * '; // выбор оператора
@@ -70,6 +71,7 @@ export class EO{
                 return res
             }).join(' + ');
             t.var = `let idx_${i} = ${idx_expr};\n`;
+            t.var += `mm${i}.push(idx_${i});\n`;
             return 'val_' + i;
         }).join(` ${operator} `)+';';
 
@@ -79,10 +81,11 @@ export class EO{
             mm +=' * ' + o.a + o.a;
             return res;
         }).join(' + ') || 0
-        let ss = 'out';
+        let ss = 'out.data';
         if(outs.length){
             ss += `[idx]`;
         }
+
 
 
         let out_for = vars + '\n' + outs.map((o, i) => {
@@ -96,12 +99,13 @@ export class EO{
                     inp.splice(idx, 1);
                     if (!inp.length){
                         res += '\n\t' + tab + inp.var;
-                        res += '\n\t' + tab + 'let val_' + t + ' = t_' + t + '[idx_' + t + '];'
+                        res += '\n\t' + tab + 'let val_' + t + ' = t' + t + '[idx_' + t + '];'
                     }
                 }
             }
             return res
         }).join('\n');
+        out_for += '\n' + tensors.map((o,i) => '\t'.repeat(outs.length)+`let mm${i} = m${i}.grads[idx] = [];`).join('\n');
         let axis_for = '\n'+ins.map((inp, i) => {
             let result = (inp.length?('\t'.repeat(outs.length) + 'let val_' + i + ' = 0;'):'')+'\n'
             if (inp.length){
@@ -110,27 +114,28 @@ export class EO{
                     let res =  tab + `for(let ${axis.a} = 0; ${axis.a} < ${axis.a+axis.a}; ${axis.a}++){`;
                     return res;
                 }).join('\n')+'\n'+'\t'.repeat(inp.length + outs.length) + inp.var;
-                result += '\t'.repeat(inp.length + outs.length) + 'val_'+i+' += t_'+i+'[idx_'+i+'];\n';
+                result += '\t'.repeat(inp.length + outs.length) + 'val_'+i+' += t'+i+'[idx_'+i+'];\n';
 
                 result += '\t'.repeat(outs.length)+ '}'.repeat(inp.length)
             }
             return result;
         }).join('\n')+'\n';
-        let main_expr
+        let main_expr = tensors.map((o,i) => '\t'.repeat(outs.length)+`m${i}.data[idx] = val_${i}`).join('\n');
         if (outs.length)
-            main_expr = `\n${'\t'.repeat(outs.length)+ss} = ${expr}\n${'\t'.repeat(outs.length)}idx++;\n${'\t'.repeat(outs.length-1)}`;
+            main_expr += `\n${'\t'.repeat(outs.length)+ss} = ${expr}\n${'\t'.repeat(outs.length)}idx++;\n${'\t'.repeat(outs.length-1)}`;
         else
-            main_expr = `\n${ss} = ${expr}\nidx++;`;
+            main_expr += `\n${ss} = ${expr}\nidx++;`;
         main_expr = axis_for +  main_expr;
         main_expr += '}'.repeat(outs.length);
         expr = out_for + main_expr;
-        expr = expr + '\n return out';
 
-        const fn = new Function([...tensors.map((_,i)=>'t_'+i)], expr);
-        let data = fn(...tensors.map(t=>t.data));
+
+        const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
         const out = Tensor.from(data);
         out.reshape(outs.map(i=>i.d));
-        out.children = tensors;
+        out.children = tensors.map(t => Tensor.zeros(out.shape, 'medium', t));
+        const fn = new Function('t', 'm', 'out', expr);
+        fn(tensors.map(t=>t.data), out.children, out);
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
         console.timeEnd(in_expr)
         return out;

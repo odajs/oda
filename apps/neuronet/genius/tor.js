@@ -7,6 +7,7 @@ function genId(){
 let _id = 0;
 export class Tensor{
     parents = [];
+    grads = [];
     #shape = [];
     #data = null;
     constructor(data, label, children = []) {
@@ -118,19 +119,19 @@ export class Tensor{
         const data = array.map(a=>a.data).flat();
         return Tensor.from(data, 'stack', array);
     }
-    static fill(shape, value, label){
+    static fill(shape, value, label, children){
         if (!Array.isArray(shape))
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
         let data = new Float32Array(size).map(handler);
-        return Tensor.from(data, label).reshape(shape);
+        return Tensor.from(data, label, children).reshape(shape);
     }
-    static zeros(shape, label) {
-        return this.fill(shape, 0, label);
+    static zeros(shape, label, children) {
+        return this.fill(shape, 0, label, children);
     }
-    static ones(shape, label) {
-        return this.fill(shape, 1, label);
+    static ones(shape, label, children) {
+        return this.fill(shape, 1, label, children);
     }
     static random(shape, label, div = 10) {
         return this.fill(shape, ()=>(Math.random()-.5)/div, label);
