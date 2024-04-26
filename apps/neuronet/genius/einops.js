@@ -62,12 +62,11 @@ export class EO{
             'let data = out.data;'].join('\n');
 
         const out_tabs = '\t'.repeat(outs.length);
-        expr = out_tabs + 'data';
+        let body = out_tabs + 'data';
         if(outs.length){
-            expr += `[idx]`;
+            body += `[idx]`;
         }
-
-        expr += ' = '+ins.map((t, i) => {
+        body += ' = '+ins.map((t, i) => {
             let expr = ''
             let m = ''
             for (let o of t.toReversed()){
@@ -131,7 +130,7 @@ export class EO{
         }
         axis_for += '\n' + anl_func(ins);
 
-        expr = axis_for +  expr;
+        expr = axis_for +  body;
         expr += out_tabs + 'idx++;\n'
         expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
         expr = out_for + expr;
