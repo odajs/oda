@@ -2,22 +2,66 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-    let aa = 2;
-    let bb = 5;
-    let cc = 4;
-    let dd = 3;
-    let c_d = cc * dd;
-    let b_c_d = bb * c_d;
-    let a_b_c_d = aa * b_c_d;
-    for(let a = 0; a < a_b_c_d; a += b_c_d){
-        for (let b = 0; b < b_c_d; b += c_d) {
-            for (let c = 0; c < c_d; c += dd) {
-                for (let d = 0; d < dd; d++) {
-                    const idx = d + c;
-                    console.log(idx, a, b, c, d);
+    import {Tensor} from './tor.js';
+    let i = 1000;
+    let j = 120;
+    let X = Tensor.random([i, j], .2);
+    const t = [X,X,X];
+    const data = new Float32Array(120 ** 3);
+    const out = Tensor.from(data);
+    out.reshape([120,120,120])
+    console.time('out')
+    let _j = 120;
+    let _l = 120;
+    let _k = 120;
+    let _i = 10;
+    let t0 = t[0].data;
+    let t1 = t[1].data;
+    let t2 = t[2].data;
+    let grad0 = t[0].grad;
+    let grad1 = t[1].grad;
+    let grad2 = t[2].grad;
+    let idx = 0;
+    for(let j = 0; j < _j; j++){
+        for(let l = 0; l < _l; l++){
+            for(let k = 0; k < _k; k++){
+                let v0 = 0;
+                let v1 = 0;
+                let v2 = 0;
+                let i1, i2, i0;
+                let h0 = [];
+                let h1 = [];
+                let h2 = [];
+                for(let i = 0; i < _i; i++){
+                    v1 += t1[i1 = k + _k * (i)];
+                    h1.push(i1)
+                    v2 += t2[i2 = l + _l * (i)];
+                    h2.push(i2)
+                    v0 += t0[i0 = j + _j * (i)];
+                    h0.push(i0)
+
                 }
+                let g = (out.grad?.[idx] || 1)/1.618;
+                let g0 = g * v1  *  v2;
+                for (let id of h0){
+                    grad0[id] += g0;
+                }
+
+                let g1 = g * v0  *  v2;
+                for (let id of h1){
+                    grad1[id] += g1;
+                }
+
+                let g2 = g * v1  *  v0;
+                for (let id of h2){
+                    grad2[id] += g2;
+                }
+                idx++;
             }
         }
     }
+    console.log(out)
+    console.timeEnd('out');
+    console.log(X);
 
 </script>

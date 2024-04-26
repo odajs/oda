@@ -31,6 +31,9 @@ export class Tensor{
         this.#data = data;
         this.id = genId();
     }
+    get grad(){
+        return this['#grad'] ??= new Float32Array(this.size);
+    }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
         let axis_out = axis_this.split('');
@@ -38,9 +41,9 @@ export class Tensor{
         axis_out = axis_out.join('')
         return EO.einsum(axis_this+'->'+axis_out, this);
     }
-    get g(){
-        return Tensor.from(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
-    }
+    // get g(){
+    //     return Tensor.from(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
+    // }
     get shape(){
         return this.#shape;
     }
@@ -79,7 +82,7 @@ export class Tensor{
         return 0;
     }
     clearGrad(){
-        this.data.map?.((d, i)=>d._g = undefined) || (this.data._g = undefined);
+        // this.data.map?.((d, i)=>d._g = undefined) || (this.data._g = undefined);
     }
     updateParams(){
         if (!this.isParam) return;
@@ -98,12 +101,14 @@ export class Tensor{
             }
         }
         build_topo(this);
+        // this.topo.forEach((node) => {
+        //     node.clearGrad()
+        // })
+        this.topo.reverse();
         this.topo.forEach((node) => {
-            node.clearGrad()
-        })
-        this.topo.forEach((node) => {
-            node.updateParams();
-            node.data.map?.(x=>x.grads?.clear()) || node.data?.grads?.clear();
+            node._back?.();
+            // node.updateParams();
+            // node.data.map?.(x=>x.grads?.clear()) || node.data?.grads?.clear();
         })
     }
     reshape(...shape){
@@ -139,19 +144,10 @@ export class Tensor{
     static array(data, label="array"){
         return Tensor.from(data, label);
     }
-    static arange(from_or_size = 0, size, repeat = 1){
-        if (size === undefined){
-            size = from_or_size;
-            from_or_size = 0;
-        }
-        let result = []
-        for (let i = from_or_size; i<size; i++){
-            result.push(i);
-        }
-        if (repeat > 1){
-            result = Array(repeat).fill().map(a => result.map(i=>i))
-        }
-        return Tensor.from(result);
+    static arange(shape, step = 1, label, children){
+        const size = shape.reduce((r,v)=>r*v, 1);
+        const data = new Float32Array(size).map((_, i)=>(i+1) * step);
+        return Tensor.from(data, label, children).reshape(shape);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -330,7 +326,7 @@ Tensor.prototype.MSE = function (other){
     return Tensor.from(data, 'MSE', [this]);
 }
 
-Array.prototype.toTensorString = function (max = 4, shape = ''){
+Array.prototype.toTensorString = function (max = 4, shape = []){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (d[0]?.map){
@@ -362,10 +358,10 @@ Array.prototype.toTensorString = function (max = 4, shape = ''){
     }
     let res = recurse(this);
     res = res.slice(1, -1);
-    return '(' + res + ', shape('+shape+'))';
+    return `(${res}, shape(${shape}), size: ${shape.reduce((r, v)=>r*v,1).toLocaleString()} )`;
 }
 function num2text(x){
-   if (Number.isInteger(x))
-        return x;
+   // if (Number.isInteger(x))
+   //      return x;
     return x.toExponential(3).padStart(9, ' ')
 }
