@@ -56,11 +56,13 @@ export class EO{
 
         let vars = [
             [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
+            'let' + [...outs, ...axis].map((o, i) =>` ${o.a}`).join(',') + ';',
             ins.map((_, i) => `let t${i} = t[${i}].data;`).join('\n'),
-            'let idx = 0;'].join('\n');
+            'let idx = 0;',
+            'let data = out.data;'].join('\n');
 
         const out_tabs = '\t'.repeat(outs.length);
-        expr = out_tabs + 'out.data';
+        expr = out_tabs + 'data';
         if(outs.length){
             expr += `[idx]`;
         }
@@ -75,15 +77,15 @@ export class EO{
                 m =  '_' + o.a +' * (';
             }
             expr += ')'.repeat(t.length - 1);
-            t.var = `v${i} += t${i}[${expr}];\n`;
+            t.var = `v${i} += t${i}[${expr}];`;
             return 'v' + i;
         }).join(` ${operator} `)+';\n';
-        expr += out_tabs + 'idx++;\n'
 
         let out_for = vars + '\n' + outs.map((o, i) => {
             let a = o.a;
             let tab = '\t'.repeat(i)
-            let res =  tab + `for(let ${a} = 0; ${a} < _${o.a}; ${a}++){`;
+            let res = tab + `${a} = _${o.a};\n`;
+            res += tab + `while(${o.a}--){`;
             for (let t = 0; t<ins.length; t++){
                 let inp = ins[t];
                 const idx = inp.findIndex(j => j.a === a);
@@ -106,7 +108,8 @@ export class EO{
                 let o;
                 let j = 0;
                 while(o = inp.shift()){
-                    result += '\t'.repeat(step + j + outs.length) + `for(let ${o.a} = 0; ${o.a} < _${o.a}; ${o.a}++){`;
+                    result += '\t'.repeat(step + j + outs.length) + `${o.a} = _${o.a};\n`;
+                    result += '\t'.repeat(step + j + outs.length) + `while(${o.a}--){`;
                     const any = ins.filter((iinp, ii)=>ii != i && iinp.some(oo=>oo.a === o.a));
                     result += '\n'+ any.map(any_inp=>{
                         const idx = any_inp.findIndex(any_o=>any_o.a === o.a);
@@ -129,6 +132,7 @@ export class EO{
         axis_for += '\n' + anl_func(ins);
 
         expr = axis_for +  expr;
+        expr += out_tabs + 'idx++;\n'
         expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
         expr = out_for + expr;
 
