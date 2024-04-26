@@ -56,7 +56,7 @@ export class EO{
 
         let vars = [
             [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
-            ins.map((_, i) => `let t${i} = t[${i}];`).join('\n'),
+            ins.map((_, i) => `let t${i} = t[${i}].data;`).join('\n'),
             'let idx = 0;'].join('\n');
 
         const out_tabs = '\t'.repeat(outs.length);
@@ -137,7 +137,7 @@ export class EO{
         out.reshape(outs.map(i=>i.d));
         out.children = tensors;
         const fn = new Function('t', 'out', expr);
-        fn(tensors.map(t=>t.data), out);
+        fn(tensors, out);
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
         console.timeEnd(in_expr)
         out._back = function (){
