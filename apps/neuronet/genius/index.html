@@ -106,8 +106,8 @@
                 // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    const error = this.tokenizer.train(token, phrase);
-                    if (error > this.tokenizer.maxError)
+                    const error = this.tokenizer.train(token, phrase.slice(0, 8));
+                    // if (error > this.tokenizer.maxError)
                         continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = await this.model(token, target);
@@ -126,14 +126,14 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 1});
+                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 1, head_count: 1});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer({d: 4, head_count: 1});
+                return new Tokenizer(32);
             },
         },
         get tokens(){
@@ -254,7 +254,7 @@
                 <div  border ~for="tokenizer?.vocabulary" vertical>
                     <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
                     <div class="horizontal">
-                        <div ~for="$for.item.emb" style="height: 16px;" class="flex" ~style="getBackGradient($$for.item)"></div>
+                        <div style="height: 16px;" class="flex" ~style="getBackGradient($for.item.emb.data)"></div>
                         <div style="font-size: small; padding: 4px;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</div>
                     </div>
                 </div>

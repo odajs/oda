@@ -3,14 +3,11 @@ import {EO} from "./einops.js";
 import {Linear, Module} from "./module.js";
 export class Genius extends Module{
     error = 0;
-    constructor(params = {tokenizer: null, expand: 2, deep: 1}) {
+    constructor(params = {tokenizer: null, expand: 2, deep: 1, head_count: 1}) {
         super(params);
     }
     get d(){
-        return this.tokenizer.d;
-    }
-    get head_count(){
-        return this.tokenizer.head_count;
+        return this.tokenizer.dim / this.head_count;
     }
     __init__() {
         this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1}));

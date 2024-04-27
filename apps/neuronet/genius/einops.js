@@ -1,5 +1,4 @@
-import {Tensor} from "./tor.js";
-const GRADIENT_DIVIDER = 1.618;
+import {Tensor, GRADIENT_DIVIDER} from "./tor.js";
 export class EO{
     static einsums = {};
     static parse_shape(expr, tensor){
@@ -60,9 +59,9 @@ export class EO{
             let vars = [
                 [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
                 'let' + [...outs, ...axis].map((o, i) =>` ${o.a}`).join(',') + ';',
-                ins.map((_, i) => `let t${i} = t[${i}].data;`).join('\n'),
-                'let idx = 0;',
-                'let data = out.data;'].join('\n');
+                ins.map((_, i) => `let t${i} = t[${i}].data;`).join('\n')].join('\n');
+            if (outs.length)
+                vars +='let idx = 0;\n';
             if (mode !== ''){
                 vars += '\nlet grad = out.grad\n';
                 vars += ins.map((_, i) => `let grad${i} = t[${i}].grad;`).join('\n')
@@ -81,7 +80,7 @@ export class EO{
                     m =  '_' + o.a +' * (';
                 }
                 expr += ')'.repeat(t.length - 1);
-                t.var = `v${i} += t${i}[${expr}];`;
+                t.var = `v${i} += t${i}[${expr}];\n`;
                 t.back = `grad${i}[${expr}] += v${i};`;
             })
 
@@ -125,8 +124,9 @@ export class EO{
                     if (idx>-1){
                         inp.splice(idx, 1);
                         if (!inp.length){
-                            res += '\n\t' + tab + inp.var;
-                            res += `\n\t${tab}let v${t} = t${t}[idx${t}];`
+                            // res += `\n\t${tab}let v${t} = 0;`
+                            res += '\n\t' + tab + 'let ' + inp.var.replace('+=', '=');
+
                         }
                     }
                 }
@@ -135,7 +135,7 @@ export class EO{
 
             switch (mode){
                 case 'mul':{
-                    body += `let v = data${data_idx} * grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
+                    body += `let v = out.data${data_idx} * grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
                     body += ins.map((_, i) => {
                         return out_tabs + `v${i} = v / v${i};`
                     }).join('\n')+'\n'
@@ -144,7 +144,7 @@ export class EO{
 
                 } break;
                 default:{
-                    body += `data${data_idx}`;
+                    body += `out.data${data_idx}`;
                     body += ' = ' + ins.map((_, i) => 'v' + i).join(` ${operators[operator]} `);
                 }
             }
@@ -155,7 +155,8 @@ export class EO{
             axis_for += '\n' + anl_func(ins);
 
             expr = axis_for +  body;
-            expr += '\n' + out_tabs + 'idx++;\n'
+            if (outs.length)
+                expr += '\n' + out_tabs + 'idx++;\n'
             expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
             expr = out_for + expr;
             return expr;
@@ -171,13 +172,13 @@ export class EO{
         const fn = new Function('t', 'out', expr);
         const back_fn = new Function('t', 'out', back);
         out._back = function (){
-            console.time(in_expr+'-back')
+            // console.time(in_expr+'-back')
             back_fn(tensors, out);
-            console.timeEnd(in_expr+'-back')
+            // console.timeEnd(in_expr+'-back')
         }
-        console.time(in_expr)
+        // console.time(in_expr)
         fn(tensors, out);
-        console.timeEnd(in_expr)
+        // console.timeEnd(in_expr)
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
 
 

@@ -1,18 +1,19 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = 1
+export const LEARNING_RATE = 1;
+export const GRADIENT_DIVIDER = 1.618;
 function genId(){
     return ++_id;
 }
 let _id = 0;
 export class Tensor{
-    parents = [];
-    grads = [];
     #shape = [];
     #data = null;
-    constructor(data, label, children = []) {
-        this.children = children;
-        this.label = label;
+    constructor(data, label, children) {
+        if (children)
+            this.children = children;
+        if (label)
+            this.label = label;
         if (Array.isArray(data)){
             let shape = [];
             let d = data;
@@ -34,7 +35,12 @@ export class Tensor{
         this.id = genId();
     }
     get grad(){
-        return this['#grad'] ??= new Float32Array(this.size);
+        if(this.size>1)
+            return this['#grad'] ??= new Float32Array(this.size);
+        return this['#grad'] ??= 0;
+    }
+    set grad(n){
+        this['#grad'] = n;
     }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
@@ -43,9 +49,9 @@ export class Tensor{
         axis_out = axis_out.join('')
         return EO.einsum(axis_this+'->'+axis_out, this);
     }
-    // get g(){
-    //     return Tensor.from(this.data.map?.(i=>i._g) ?? this.data._g).reshape(this.shape);
-    // }
+    get g(){
+        return Tensor.from(this.grad).reshape(this.shape);
+    }
     get shape(){
         return this.#shape;
     }
@@ -84,13 +90,14 @@ export class Tensor{
         return 0;
     }
     clearGrad(){
-        // this.data.map?.((d, i)=>d._g = undefined) || (this.data._g = undefined);
+        this['#grad'] = undefined;
     }
     updateParams(){
         if (!this.isParam) return;
-        this.data.forEach((d, i)=>{
-            d.val = d + d.g * LEARNING_RATE;
-        })
+        let i = this.size;
+        while(i--){
+            this.data[i] += this.grad[i] * LEARNING_RATE;
+        }
     }
     back(){
         this.topo = [];
@@ -98,20 +105,20 @@ export class Tensor{
         let build_topo = (t) => {
             if (!visited.has(t)) {
                 visited.add(t)
-                t.children.forEach(ch => build_topo(ch))
+                t.children?.forEach(ch => build_topo(ch))
                 this.topo.push(t)
             }
         }
         build_topo(this);
-        // this.topo.forEach((node) => {
-        //     node.clearGrad()
-        // })
+        this.topo.forEach((node) => {
+            node.clearGrad();
+        })
         this.topo.reverse();
-        this.topo[0].grad.fill(1)
         this.topo.forEach((node) => {
             node._back?.();
-            // node.updateParams();
-            // node.data.map?.(x=>x.grads?.clear()) || node.data?.grads?.clear();
+        })
+        this.topo.forEach((node) => {
+            node.updateParams();
         })
     }
     reshape(...shape){
@@ -141,8 +148,8 @@ export class Tensor{
     static ones(shape, label, children) {
         return this.fill(shape, 1, label, children);
     }
-    static random(shape, label, div = 10) {
-        return this.fill(shape, ()=>(Math.random()-.5)/div, label);
+    static random(shape, label, scale = .1) {
+        return this.fill(shape, ()=>(Math.random()-.5) * scale, label);
     }
     static array(data, label="array"){
         return Tensor.from(data, label);
@@ -277,15 +284,18 @@ Tensor.prototype.pow = function (other){
 }
 
 Tensor.prototype.sigmoid = function (){
-    const data = this.data.map(x=>1 / (1 + Math.exp(-x)));
+    const data = (this.data.length)?this.data.map(x=>1 / (1 + Math.exp(-x))): 1 / (1 + Math.exp(-this.data));
     const out = Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
     out._back = ()=>{
         let i = data.length;
-        const grad = this.grad;
-        const out_grad = out.grad;
-        while(i--){
-            let v = data[i]
-            grad[i] += v * (1-v) * out_grad[i];
+        if (i){
+            while(i--){
+                let v = data[i];
+                this.grad[i] += v * (1 - v) * out.grad[i] / GRADIENT_DIVIDER;
+            }
+        }
+        else{
+            this.grad += data * (1 - data) * out.grad / GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -312,31 +322,23 @@ Tensor.prototype.softmax = function (){
     return Tensor.from(data, 'softmax', [this]).reshape(this.shape);
 }
 Tensor.prototype.MSE = function (other){
-    other = Tensor.from(other);
-    let step_this = this.shape[this.shape.length - 1];
-    let step_other = other.shape[other.shape.length - 1];
-    let idx_this = 0;
-    let idx_other = 0;
-    let r = 0;
-    for(let i = 0; i<this.size; i++){
-        let x = this.data[i];
-        let y = other.data[idx_other + i] || 0;
-        const err = x - y;
-        let out = TNum(err ** 2);
-        x.grads.push(()=>{
-            return -2 * err;
-        })
-        r += out;
-        idx_this++;
-        if(idx_this === step_this){
-            idx_this = 0;
-            idx_other+=step_other;
-            if(idx_other>other.size)
-                idx_other = 0;
+    if (other instanceof Tensor)
+        other = other.data;
+    const data = (this.data.length)?this.data.map((d, i)=>d - (other[i] || other || 0) ** 2):(this.data - other) ** 2;
+    const error = (this.data.length)?(data.reduce((r, d) => r + d, 0) / this.size):data;
+    const out = Tensor.from(error, 'MSE', [this]);
+    out._back = ()=>{
+        let i = data.length;
+        if (i){
+            while (i--){
+                this.grad[i] = data[i] * -2;
+            }
+        }
+        else{
+            this.grad = data * -2;
         }
     }
-    const data = r / this.size;
-    return Tensor.from(data, 'MSE', [this]);
+    return out;
 }
 
 Array.prototype.toTensorString = function (max = 4, shape = []){

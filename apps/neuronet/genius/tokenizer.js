@@ -20,10 +20,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = Array(this.head_count).fill().map(_=>Array(this.d).fill().map(i=>(Math.random()-.5)/10));
-                res.cnt = Array(this.head_count).fill().map(_=>Array(this.d).fill().map(i=>(Math.random()-.5)/10));
-                res.W = Array(this.head_count).fill().map(_=>Array(this.d).fill().map(i=>(Math.random()-.5)/10));
-                res.B = Array(this.head_count).fill().map(_=>Array(1).fill().map(i=>(Math.random()-.5)/10));
+                res.emb = Tensor.param(Tensor.random(this.dim));
+                res.cnt = Tensor.param(Tensor.random(this.dim));
                 res.error = 1;
                 this.tokens = undefined;
                 return res;
@@ -97,14 +95,14 @@ export class Tokenizer extends ROCKS({
     train(token, phrase){
         if (!phrase.length)
             return 1;
-        let cnt = phrase.map(t=>t.cnt);
-        let token_t = Tensor.param(token.emb);
-        let cnt_t = Tensor.param(cnt);
-        const fwd = EO.einsum('rd, hrd -> hr', token_t, cnt_t);
-        let res = fwd.sigmoid();
-        const error = res.MSE(BINS);
-        error.back();
-        token.error = +error.data;
+        const res = phrase.reduce((r, t, i)=>{
+            let res = EO.einsum(`d, d ->`, token.emb, t.cnt);
+            res = res.sigmoid();
+            res = res.MSE(BINS[i]);
+            res.back();
+            return r + res.data;
+        }, 0)/phrase.length;
+        token.error = res
         this.error = undefined;
         return this.error;
     },
@@ -135,16 +133,13 @@ export class Tokenizer extends ROCKS({
         return {w, logit, error};
     },
 }){
-    constructor(params = {d: 8, head_count: 1}) {
+    constructor(dim = 32) {
         super()
-        for (let key in params){
-            this[key] = params[key];
-        }
-        // this.token_proj = Array(this.head_count).fill().map(_=>new Linear({d_in: this.d, d_out: 8, bias: true}));
+        this.dim = dim
         this.ends = {
-            id: 0, w: '<end>', emb: Array(this.head_count).fill().map(_=>Array(this.d).fill(0)),
-            W: Array(this.head_count).fill().map(_=>Array(this.d).fill().map(i=>(Math.random()-.5)/10)),
-            B: Array(this.head_count).fill().map(_=>Array(1).fill().map(i=>(Math.random()-.5)/10)),
+            id: 0,
+            w: '<end>',
+            emb: new Int8Array(dim),
             error: 0
         }
         this.vocabulary['<end>'] = this.ends;
