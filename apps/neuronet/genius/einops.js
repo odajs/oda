@@ -21,7 +21,7 @@ export class EO{
         },{})
     }
     static einsum(in_expr, ...sources){
-        console.time(in_expr)
+
         const tensors = sources.map(t => Tensor.from(t));
         let outs;
         let operator = 'mul';
@@ -171,13 +171,17 @@ export class EO{
         const fn = new Function('t', 'out', expr);
         const back_fn = new Function('t', 'out', back);
         out._back = function (){
+            console.time(in_expr+'-back')
             back_fn(tensors, out);
+            console.timeEnd(in_expr+'-back')
         }
+        console.time(in_expr)
         fn(tensors, out);
+        console.timeEnd(in_expr)
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
 
 
-        console.timeEnd(in_expr)
+
         return out;
     }
     static rearrange(expr, tensor){

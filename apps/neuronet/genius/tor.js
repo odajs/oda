@@ -22,6 +22,8 @@ export class Tensor{
                 data = data.flat()
             }
             this.#shape = shape;
+            if (!(data instanceof Float32Array))
+                data = new Float32Array(data);
 
         }
         else{
@@ -105,6 +107,7 @@ export class Tensor{
         //     node.clearGrad()
         // })
         this.topo.reverse();
+        this.topo[0].grad.fill(1)
         this.topo.forEach((node) => {
             node._back?.();
             // node.updateParams();
@@ -274,8 +277,18 @@ Tensor.prototype.pow = function (other){
 }
 
 Tensor.prototype.sigmoid = function (){
-    const data = this.data.map(x=>x.sigmoid());
-    return Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
+    const data = this.data.map(x=>1 / (1 + Math.exp(-x)));
+    const out = Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
+    out._back = ()=>{
+        let i = data.length;
+        const grad = this.grad;
+        const out_grad = out.grad;
+        while(i--){
+            let v = data[i]
+            grad[i] += v * (1-v) * out_grad[i];
+        }
+    }
+    return out;
 }
 Tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());

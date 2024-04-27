@@ -1,6 +1,6 @@
 const PATH = import.meta.url.replace('pptx-viewer.js','');
 
-ODA({ is: 'oda-pptx-viewer',
+ODA({ is: 'oda-pptx-viewer', imports: '@oda/button',
     template: `
         <style>
             :host {
@@ -9,7 +9,8 @@ ODA({ is: 'oda-pptx-viewer',
                 position: relative;
             }
         </style>
-        <iframe style="border: none; width: 100%; height: 100%;"></iframe>>
+        <iframe style="border: none; width: 100%; height: 100%;"></iframe>
+        <oda-button icon="icons:fullscreen" fill="gray" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 16px; z-index: 9999"></oda-button>
     `,
     url: '',
     isReady: false,
@@ -20,6 +21,29 @@ ODA({ is: 'oda-pptx-viewer',
         urlChanged(url, isReady) {
             if (url && isReady) {
                 this.$('iframe').srcdoc = srcdoc(url);
+            }
+        }
+    },
+    setFullscreen() {
+        this.fullscreenMode = !this.fullscreenMode;
+        const element = this;
+        if (this.fullscreenMode) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
             }
         }
     }
