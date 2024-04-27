@@ -1,4 +1,4 @@
-ODA({ is: 'oda-pdf-viewer',
+ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
     template: `
         <style>
             :host {
@@ -11,6 +11,7 @@ ODA({ is: 'oda-pdf-viewer',
         <object type="application/pdf" style="width: 100%; height: 100%; border: none;">
             <div>No online PDF viewer installed</div>
         </object>
+        <oda-button icon="icons:fullscreen" fill="white" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 120px; z-index: 9999"></oda-button>
     `,
     url: '',
     file: undefined,
@@ -37,5 +38,28 @@ ODA({ is: 'oda-pdf-viewer',
     async getUrl(buffer) {
         const fileBlob = await new Blob([new Uint8Array(buffer)], { type: 'application/pdf'})
         this.url = URL.createObjectURL(fileBlob);
+    },
+    setFullscreen() {
+        this.fullscreenMode = !this.fullscreenMode;
+        const element = this;
+        if (this.fullscreenMode) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
 })

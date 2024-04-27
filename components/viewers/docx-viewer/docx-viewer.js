@@ -2,12 +2,22 @@
 
 import * as JSZip from './lib/jszip.min.js';
 
-ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js',
+ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
     template: `
-        <div id="docx-container"></div>
+        <style>
+            :host {
+                @apply --vertical;
+                @apply --flex;
+                overflow: auto;
+                position: relative;
+            }
+        </style>
+        <oda-button icon="icons:fullscreen" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 8px; z-index: 9999"></oda-button>
+        <div id="docx-container" style="overflow: auto;"></div>
     `,
     src: undefined,
     isReady: false,
+    fullscreenMode: false,
     attached() {
         this.isReady = true;
     },
@@ -21,6 +31,29 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js',
                     this.bufSrc = await response.arrayBuffer();
                 }
                 await docx.renderAsync(this.bufSrc, this.$('#docx-container'), null, docxOptions);
+            }
+        }
+    },
+    setFullscreen() {
+        this.fullscreenMode = !this.fullscreenMode;
+        const element = this;
+        if (this.fullscreenMode) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
             }
         }
     }
