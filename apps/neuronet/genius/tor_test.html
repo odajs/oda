@@ -39,7 +39,8 @@
                     v2 += t2[l + _l * i];
                     v0 += t0[j + _j * i];
                 }
-                let v = data[idx] * grad[idx] / 1.618;
+                let v = data[idx] //* grad[idx] / 1.618;
+                let vv0 = v1 * v2;
                 v0 = v / v0;
                 v1 = v / v1;
                 v2 = v / v2;

@@ -148,7 +148,7 @@ export class Tensor{
     static ones(shape, label, children) {
         return this.fill(shape, 1, label, children);
     }
-    static random(shape, label, scale = .1) {
+    static random(shape, label, scale = 1) {
         return this.fill(shape, ()=>(Math.random()-.5) * scale, label);
     }
     static array(data, label="array"){
@@ -331,11 +331,11 @@ Tensor.prototype.MSE = function (other){
         let i = data.length;
         if (i){
             while (i--){
-                this.grad[i] = data[i] * -2;
+                this.grad[i] = data[i] * -2 / GRADIENT_DIVIDER;
             }
         }
         else{
-            this.grad = data * -2;
+            this.grad = data * -2 / GRADIENT_DIVIDER;
         }
     }
     return out;
