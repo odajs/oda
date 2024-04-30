@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = 1;
+export const LEARNING_RATE = .3;
 export const GRADIENT_DIVIDER = 1.618;
 function genId(){
     return ++_id;
@@ -191,7 +191,7 @@ export class Tensor{
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
-            return data
+            return `(${data}, shape(${this.shape}), size: ${this.shape.reduce((r, v)=>r*v,1).toLocaleString()} )`;
         }
         return this.data;
     }
@@ -354,17 +354,17 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
             if (d.length > max){
                 const showing = Math.floor(max/2);
                 result += Array.from(d.slice(0, showing)).map(x=>{
-                    return  num2text(x);
+                    return x// num2text(x);
                 }).join(' ') ;
                 result +=  `  ...  `;
                 result +=  Array.from(d.slice(-showing)).map(x=>{
-                    return num2text(x);
+                    return x//num2text(x);
                 }).join(' ')
             }
             else{
                 result += Array.from(d).map(x=>{
-                    return num2text(x);
-                }).join(' ') || num2text(d);
+                    return x//num2text(x);
+                }).join(' ') || x//num2text(d);
             }
         }
 
@@ -373,7 +373,7 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
     }
     let res = recurse(this);
     res = res.slice(1, -1);
-    return `(${res}, shape(${shape}), size: ${shape.reduce((r, v)=>r*v,1).toLocaleString()} )`;
+    return res;
 }
 function num2text(x){
    // if (Number.isInteger(x))

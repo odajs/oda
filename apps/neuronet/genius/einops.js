@@ -56,11 +56,11 @@ export class EO{
             'let' + [...outs, ...axis].map((o, i) =>` ${o.a}`).join(',') + ';',
             inputs.map((_, i) => `let t${i} = t[${i}].data;`).join('\n')].join('\n');
         if (outs.length)
-            vars +='\nlet idx = 0;\n';
+            vars += `\nlet idx = ${outs.reduce((r,o)=>r*o.d,1)};\n`;
 
         const out_tabs = '\t'.repeat(outs.length);
-        let body = out_tabs;
-        let data_idx = (outs.length)?`[idx]`:'';
+
+        let data_idx = (outs.length)?`[--idx]`:'';
         inputs.map((t, i) => {
             let expr = ''
             let m = ''
@@ -71,60 +71,65 @@ export class EO{
                 m =  '_' + o.a +' * (';
             }
             expr += ')'.repeat(t.length - 1);
-            t.var = `v${i} = t${i}[${expr}];\n`;
+            t.var = `v${i} = t${i}[${expr}];`;
             t.back = `grad${i}[${expr}] += v${i};`;
         })
 
 
 
         let out_for = outs.map((o, i) => {
-            let a = o.a;
+            let axis_name = o.a;
             let tab = '\t'.repeat(i)
-            let res = tab + `${a} = -1;\n`;
-            res += tab + `while(++${o.a}<_${o.a}){`;
+            let res = tab + `${axis_name} = _${axis_name};\n`;
+            res += tab + `while(${axis_name}--){`;
             for (let t = 0; t<inputs.length; t++){
                 let inp = inputs[t];
-                const idx = inp.findIndex(j => j.a === a);
+                const idx = inp.findIndex(j => j.a === axis_name);
                 if (idx>-1){
                     inp.splice(idx, 1);
                     if (!inp.length){
-                        // res += `\n\t${tab}let v${t} = 0;`
-                        res += '\n\t' + tab + 'let ' + inp.var.replace('+=', '=');
+                        res += '\n\t' + tab + 'let ' + inp.var;
 
                     }
                 }
             }
             return res
-        }).join('\n')+'\n' + out_tabs + 'let res = 0;\n';
+        }).join('\n')+'\n' + out_tabs + 'let res = 0;';
 
         let axis_for = '\n'+inputs.map((inp, i) => {
             return (inp.length?(out_tabs + 'let v' + i + ' = 0;'):'');
-        }).join('\n')+'\n';
+        }).filter(i=>i).join('\n')+'\n';
 
-        const anl_func = function (axis, var_back = 'var'){
+        const anl_func = function (axis, back = false){
             let result = ''
             const cl = axis.map((o, i)=>{
                 let axis_name = o.a;
-                result += '\t'.repeat(i + outs.length) + `${axis_name} = -1;\n`;
-                result += '\t'.repeat(i + outs.length) + `while(++${axis_name}<_${axis_name}){\n`;
+                result += '\t'.repeat(i + outs.length) + `${axis_name} = _${axis_name};\n`;
+                result += '\t'.repeat(i + outs.length) + `while(${axis_name}--){\n`;
                 result += inputs.map((input, idx)=>{
-                    if(input.some(a=>a.a === axis_name))
-                        return'\t'.repeat(i + outs.length + 1) + `v${idx} = t${idx}[${axis_name}];`;
+                    if(input.some(a=>a.a === axis_name)){
+                        if(!back)
+                            return'\t'.repeat(i + outs.length + 1) + `v${idx} = t${idx}[${axis_name}];`;
+                        return'\t'.repeat(i + outs.length + 1) + `grad${idx}[${axis_name}] += v${idx};`;
+                    }
+
                     return ''
-                }).join('\n')+'\n';
-                return '\t'.repeat( (axis.length - i - 1) + outs.length) + '}';
-            }).join('\n')+'\n';
-            result += '\t'.repeat(axis.length + outs.length) + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
+                }).filter(i=>i).join('\n');
+                return '\t'.repeat( i + outs.length) + '}';
+            }).toReversed().join('\n');
+            if(!back)
+                result += '\n'+'\t'.repeat(axis.length + outs.length) + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
             result += cl;
             return result + '\n';
         }
 
         function build_expr(mode = ''){
+            let body = out_tabs;
             switch (mode){
                 case 'mul':{
-                    body += `let v = out.data${data_idx} * grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
+                    body += `let g = res * grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
                     body += inputs.map((_, i) => {
-                        return out_tabs + `v${i} = v / v${i};`
+                        return out_tabs + `v${i} = g / v${i};`
                     }).join('\n')+'\n'
                     const ins_clone = structuredClone(axis);
                     body += anl_func(ins_clone, 'back')
@@ -145,8 +150,6 @@ export class EO{
             result += out_for+ '\n'
 
             result += axis_for + '\n' + anl_func(axis) +  body;
-            if (outs.length)
-                result += '\n' + out_tabs + 'idx++;\n'
             result += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
             return result;
         }
@@ -165,9 +168,9 @@ export class EO{
             back_fn(tensors, out);
             // console.timeEnd(in_expr+'-back')
         }
-        // console.time(in_expr)
+        console.time(in_expr)
         fn(tensors, out);
-        // console.timeEnd(in_expr)
+        console.timeEnd(in_expr)
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
 
 
