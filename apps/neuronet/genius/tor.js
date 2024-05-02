@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .3;
+export const LEARNING_RATE = .1;
 export const GRADIENT_DIVIDER = 1.618;
 function genId(){
     return ++_id;
@@ -35,7 +35,7 @@ export class Tensor{
         this.id = genId();
     }
     get grad(){
-        if(this.size>1)
+        if(this.data.length)
             return this['#grad'] ??= new Float32Array(this.size);
         return this['#grad'] ??= 0;
     }
@@ -324,7 +324,7 @@ Tensor.prototype.softmax = function (){
 Tensor.prototype.MSE = function (other){
     if (other instanceof Tensor)
         other = other.data;
-    const data = (this.data.length)?this.data.map((d, i)=>d - (other[i] || other || 0) ** 2):(this.data - other) ** 2;
+    const data = (this.data.length)?this.data.map((d, i)=>(d - (other[i] || other || 0)) ** 2):(this.data - other) ** 2;
     const error = (this.data.length)?(data.reduce((r, d) => r + d, 0) / this.size):data;
     const out = Tensor.from(error, 'MSE', [this]);
     out._back = ()=>{

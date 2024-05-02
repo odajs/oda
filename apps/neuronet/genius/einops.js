@@ -83,12 +83,12 @@ export class EO{
             let res = tab + `${axis_name} = _${axis_name};\n`;
             res += tab + `while(${axis_name}--){`;
             for (let t = 0; t<inputs.length; t++){
-                let inp = inputs[t];
-                const idx = inp.findIndex(j => j.a === axis_name);
+                let input = inputs[t];
+                const idx = input.findIndex(j => j.a === axis_name);
                 if (idx>-1){
-                    inp.splice(idx, 1);
-                    if (!inp.length){
-                        res += '\n\t' + tab + 'let ' + inp.var;
+                    input.splice(idx, 1);
+                    if (!input.length){
+                        res += '\n\t' + tab + 'let ' + input.var;
 
                     }
                 }
@@ -109,7 +109,7 @@ export class EO{
                 result += inputs.map((input, idx)=>{
                     if(input.some(a=>a.a === axis_name)){
                         if(!back)
-                            return'\t'.repeat(i + outs.length + 1) + `v${idx} = t${idx}[${axis_name}];`;
+                            return'\t'.repeat(i + outs.length + 1) + input.var;//`v${idx} = t${idx}[${axis_name}];`;
                         return'\t'.repeat(i + outs.length + 1) + `grad${idx}[${axis_name}] += v${idx};`;
                     }
 
