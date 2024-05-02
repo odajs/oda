@@ -274,9 +274,9 @@
         },
         getColors(items){
             const getColor = (val)=>{
-                return 300 * val;
+                return Math.round(300 * val);
             }
-            return items?.map((val, idx, items)=>{
+            return  Array.from(items || []).map((val, idx, items)=>{
                 return `hsl(${getColor(val)}, 100%, 50%) ${((idx+1)/items.length) * 100}%, hsl(${getColor(items[idx+1] || 0)}, 100%, 50%)  ${((idx+1)/items.length) * 100}%`;
             }).join(', ');
         },

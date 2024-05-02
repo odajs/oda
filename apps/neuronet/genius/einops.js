@@ -168,9 +168,9 @@ export class EO{
             back_fn(tensors, out);
             // console.timeEnd(in_expr+'-back')
         }
-        console.time(in_expr)
+        // console.time(in_expr)
         fn(tensors, out);
-        console.timeEnd(in_expr)
+        // console.timeEnd(in_expr)
         out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
 
 
