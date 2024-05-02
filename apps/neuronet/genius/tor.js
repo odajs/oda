@@ -1,7 +1,7 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1;
-export const GRADIENT_DIVIDER = 1.618;
+export const LEARNING_RATE = .01;
+export const GRADIENT_DIVIDER = 1//.618;
 function genId(){
     return ++_id;
 }
@@ -324,18 +324,20 @@ Tensor.prototype.softmax = function (){
 Tensor.prototype.MSE = function (other){
     if (other instanceof Tensor)
         other = other.data;
-    const data = (this.data.length)?this.data.map((d, i)=>(d - (other[i] || other || 0)) ** 2):(this.data - other) ** 2;
-    const error = (this.data.length)?(data.reduce((r, d) => r + d, 0) / this.size):data;
+    const data = (this.data.length)?this.data.map((d, i)=>{
+        return (d - (other[i] ?? other ?? 0)) ** 2;
+    }):(this.data - (other ?? 0)) ** 2;
+    const error = (this.data.length)?(data.reduce((r, d) => r + d, 0) / this.data.length):data;
     const out = Tensor.from(error, 'MSE', [this]);
     out._back = ()=>{
         let i = data.length;
         if (i){
             while (i--){
-                this.grad[i] = data[i] * -2 / GRADIENT_DIVIDER;
+                this.grad[i] = 2 * data[i] / GRADIENT_DIVIDER;
             }
         }
         else{
-            this.grad = data * -2 / GRADIENT_DIVIDER;
+            this.grad = 2 * data / GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -354,17 +356,17 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
             if (d.length > max){
                 const showing = Math.floor(max/2);
                 result += Array.from(d.slice(0, showing)).map(x=>{
-                    return x// num2text(x);
+                    return  num2text(x);
                 }).join(' ') ;
                 result +=  `  ...  `;
                 result +=  Array.from(d.slice(-showing)).map(x=>{
-                    return x//num2text(x);
+                    return num2text(x);
                 }).join(' ')
             }
             else{
                 result += Array.from(d).map(x=>{
-                    return x//num2text(x);
-                }).join(' ') || x//num2text(d);
+                    return num2text(x);
+                }).join(' ') || num2text(d);
             }
         }
 

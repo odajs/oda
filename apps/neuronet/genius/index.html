@@ -106,13 +106,13 @@
                 // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    const error = this.tokenizer.train(token, phrase.slice(0, 8));
+                    // const error = this.tokenizer.train(token, phrase.slice(0, 8));
                     // if (error > this.tokenizer.maxError)
-                        continue;
+                    //     continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
-                    let res = await this.model(token, target);
-                    this.tensor = this.err = res.error;
-                    result.push(res.w);
+                    let res = await this.model(token.emb, target.emb);
+                    this.tensor = this.err = res//.error;
+                    //result.push(res.w);
                 }
             }
             this.result = result.join('');
@@ -255,7 +255,7 @@
                 <div  border ~for="tokenizer?.vocabulary" vertical>
                     <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
                     <div class="horizontal">
-                        <div style="height: 16px; " class="flex" ~style="getBackGradient($for.item.emb.data)"></div>
+                        <div style="height: 16px; " class="flex" ~style="getBackGradient($for.item.emb)"></div>
                         <span no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
                     </div>
                 </div>

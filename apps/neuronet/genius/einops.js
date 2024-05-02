@@ -60,7 +60,7 @@ export class EO{
 
         const out_tabs = '\t'.repeat(outs.length);
 
-        let data_idx = (outs.length)?`[--idx]`:'';
+        let data_idx = (outs.length)?`[idx]`:'';
         inputs.map((t, i) => {
             let expr = ''
             let m = ''
@@ -71,8 +71,7 @@ export class EO{
                 m =  '_' + o.a +' * (';
             }
             expr += ')'.repeat(t.length - 1);
-            t.var = `v${i} = t${i}[${expr}];`;
-            t.back = `grad${i}[${expr}] += v${i};`;
+            t.idx_expr = expr;
         })
 
 
@@ -88,17 +87,18 @@ export class EO{
                 if (idx>-1){
                     input.splice(idx, 1);
                     if (!input.length){
-                        res += '\n\t' + tab + 'let ' + input.var;
-
+                        res += `\n\t${tab}let i${t} = ${input.idx_expr};`;
+                        res += `\n\t${tab}let v${t} = t${t}[i${t}]`;
                     }
                 }
             }
             return res
-        }).join('\n')+'\n' + out_tabs + 'let res = 0;';
+        }).join('\n')+'\n'+out_tabs + 'idx--;\n'
 
-        let axis_for = '\n'+inputs.map((inp, i) => {
-            return (inp.length?(out_tabs + 'let v' + i + ' = 0;'):'');
-        }).filter(i=>i).join('\n')+'\n';
+
+        // let axis_for = '\n'+inputs.map((inp, i) => {
+        //     return (inp.length?(out_tabs + 'let v' + i + ' = 0.0;'):'');
+        // }).filter(i=>i).join('\n')+'\n';
 
         const anl_func = function (axis, back = false){
             let result = ''
@@ -108,35 +108,40 @@ export class EO{
                 result += '\t'.repeat(i + outs.length) + `while(${axis_name}--){\n`;
                 result += inputs.map((input, idx)=>{
                     if(input.some(a=>a.a === axis_name)){
-                        if(!back)
-                            return'\t'.repeat(i + outs.length + 1) + input.var;//`v${idx} = t${idx}[${axis_name}];`;
-                        return'\t'.repeat(i + outs.length + 1) + `grad${idx}[${axis_name}] += v${idx};`;
+                        let res = '\t'.repeat(i + outs.length + 1) + `let i${idx} = ${input.idx_expr};\n`;
+                        res += '\t'.repeat(i + outs.length + 1) + `let v${idx} = t${idx}[i${idx}];`
+                        return res;
                     }
 
                     return ''
-                }).filter(i=>i).join('\n');
+                }).filter(i=>i).join('\n')+'\n';
                 return '\t'.repeat( i + outs.length) + '}';
             }).toReversed().join('\n');
             if(!back)
                 result += '\n'+'\t'.repeat(axis.length + outs.length) + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
+            else{
+                result += inputs.map((input, idx)=>{
+                    let e = inputs.map((_, i)=>{
+                        if (i !== idx)
+                            return 'v'+ i;
+                    }).filter(i=>i).join(' * ');
+                    return '\t'.repeat(axis.length + outs.length) + `grad${idx}[i${idx}] += g${e?' * ' + e:''};`
+                }).filter(i=>i).join('\n')+'\n';
+            }
             result += cl;
             return result + '\n';
         }
 
         function build_expr(mode = ''){
-            let body = out_tabs;
+            let body = '';
             switch (mode){
                 case 'mul':{
-                    body += `let g = res * grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
-                    body += inputs.map((_, i) => {
-                        return out_tabs + `v${i} = g / v${i};`
-                    }).join('\n')+'\n'
-                    const ins_clone = structuredClone(axis);
-                    body += anl_func(ins_clone, 'back')
+                    body += anl_func(axis, true);
                 } break;
                 default:{
-                    body += `out.data${data_idx}`;
-                    body += ' = res;'// + ins.map((_, i) => 'v' + i).join(` ${operators[operator]} `);
+                    body += anl_func(axis);
+                    body += out_tabs + `out.data${data_idx}`;
+                    body += ' = res;';
                 }
             }
 
@@ -144,12 +149,16 @@ export class EO{
                 vars += '\nlet grad = out.grad\n';
                 vars += inputs.map((_, i) => `let grad${i} = t[${i}].grad;`).join('\n')
             }
+            else
+                out_for +=  out_tabs + 'let res = 0;';
 
 
             let result = vars + '\n';
-            result += out_for+ '\n'
-
-            result += axis_for + '\n' + anl_func(axis) +  body;
+            result += out_for + '\n'
+            if (mode !== ''){
+                result += out_tabs + `let g = grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
+            }
+            result += /*axis_for + */'\n' + body + '\n';
             result += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
             return result;
         }

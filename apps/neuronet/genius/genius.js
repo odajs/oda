@@ -11,18 +11,28 @@ export class Genius extends Module{
     }
     __init__() {
         this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1}));
+        this.W = Tensor.param(Tensor.random([this.d, this.d]));
     }
     reset(){
         this.heads.forEach(h=>h.module.reset());
     }
     async forward(token, target){
-        let result = this.heads.map(async (head, i)=>{
-            let x = token.emb[i];
-            return head(x);
-        });
-        result =  await Promise.all(result)
-        result = Tensor.stack(result);
-        result = this.tokenizer.findToken(result, target);
+        let x = Tensor.from(token);
+
+        let result = EO.einsum('x, xy->y', x, this.W);
+        // let WT = EO.einsum('xy->yx', this.W);
+        // result = EO.einsum('y, yx->x', result, WT);
+        // result = result.sigmoid();
+        result = result.MSE(target);
+        result.back();
+        //
+        // let result = this.heads.map(async (head, i)=>{
+        //     let x = token.emb[i];
+        //     return head(x);
+        // });
+        // result =  await Promise.all(result)
+        // result = Tensor.stack(result);
+        // result = this.tokenizer.findToken(result, target);
         return result;
     }
 }
