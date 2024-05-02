@@ -20,7 +20,7 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = Array.from(Tensor.random(this.dim).data);
+                res.emb = Tensor.random(this.dim).data;
                 res.cnt = Array.from(Tensor.random(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
@@ -96,7 +96,7 @@ export class Tokenizer extends ROCKS({
         if (!phrase.length)
             return 1;
         phrase = phrase.slice(0, WORD_DEEP);
-        const emb = Tensor.param(token)
+        const emb = Tensor.param(token.emb);
         const cnts = Tensor.param(phrase.map(i=>i.cnt).flat());
         cnts.reshape([phrase.length, this.dim]);
         let res = EO.einsum(`d, id -> i`, emb, cnts);

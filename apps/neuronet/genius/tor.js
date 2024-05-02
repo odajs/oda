@@ -1,7 +1,7 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .01;
-export const GRADIENT_DIVIDER = 1//.618;
+export const LEARNING_RATE = .1;
+export const GRADIENT_DIVIDER = 1//1.618;
 function genId(){
     return ++_id;
 }
@@ -284,18 +284,18 @@ Tensor.prototype.pow = function (other){
 }
 
 Tensor.prototype.sigmoid = function (){
-    const data = (this.data.length)?this.data.map(x=>1 / (1 + Math.exp(-x))): 1 / (1 + Math.exp(-this.data));
+    const data = (this.data.length)?(this.data.map(x => 1 / (1 + Math.exp(-x)))): (1 / (1 + Math.exp(-this.data)));
     const out = Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
     out._back = ()=>{
         let i = data.length;
         if (i){
             while(i--){
                 let v = data[i];
-                this.grad[i] += v * (1 - v) * out.grad[i] / GRADIENT_DIVIDER;
+                this.grad[i] += (v * (1 - v) * out.grad[i] / GRADIENT_DIVIDER);
             }
         }
         else{
-            this.grad += data * (1 - data) * out.grad / GRADIENT_DIVIDER;
+            this.grad += (data * (1 - data) * out.grad / GRADIENT_DIVIDER);
         }
     }
     return out;
@@ -333,11 +333,11 @@ Tensor.prototype.MSE = function (other){
         let i = data.length;
         if (i){
             while (i--){
-                this.grad[i] = 2 * data[i] / GRADIENT_DIVIDER;
+                this.grad[i] = -2 * data[i] / GRADIENT_DIVIDER;
             }
         }
         else{
-            this.grad = 2 * data / GRADIENT_DIVIDER;
+            this.grad = -2 * data / GRADIENT_DIVIDER;
         }
     }
     return out;

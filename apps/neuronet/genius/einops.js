@@ -156,7 +156,7 @@ export class EO{
             let result = vars + '\n';
             result += out_for + '\n'
             if (mode !== ''){
-                result += out_tabs + `let g = grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
+                result += out_tabs + `let g = grad${data_idx} / ${GRADIENT_DIVIDER ** 2}\n`;
             }
             result += /*axis_for + */'\n' + body + '\n';
             result += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
