@@ -93,7 +93,9 @@ export class EO{
                 }
             }
             return res
-        }).join('\n')+'\n'+out_tabs + 'idx--;\n'
+        }).join('\n')+'\n'
+        if (outs.length)
+            out_for += out_tabs + 'idx--;\n'
 
 
         // let axis_for = '\n'+inputs.map((inp, i) => {
@@ -212,4 +214,75 @@ const operators = {
     'add': ' + ',
     'minus': ' - ',
     '-': ' - ',
+}
+
+
+function test1(check = 15){ // Сумма всех значений вектора
+    const v = Tensor.from([1, 2, 3, 4, 5]);
+    const res = EO.einsum("i->", v);
+    if (res.data !== check) throw new Error('test1');
+}
+
+function test2(check = 21){ // Сумма всех значений матрицы
+    const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const res = EO.einsum("ij->", v);
+    if (res.data !== check) throw new Error('test2');
+}
+
+function test3(check = [9, 12]){ // Сумма значений по столбцам
+    const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const res = EO.einsum("ij->j", v);
+    for(let i = 0; i<check.length; i++){
+        if (res.data[i] !== check[i]) throw new Error('test3');
+    }
+}
+
+function test4(check = [3, 7, 11]){ // Сумма значений по строкам
+    const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const res = EO.einsum("ij->i", v);
+    for(let i = 0; i<check.length; i++){
+        if (res.data[i] !== check[i]) throw new Error('test4');
+    }
+}
+
+function test5(check = [[1, 3, 5], [2, 4, 6]]){ // Транспонирование
+    const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const res = EO.einsum("ij->ji", v);
+    check = check.flat();
+    for(let i = 0; i<check.length; i++){
+        if (res.data[i] !== check[i]) throw new Error('test5');
+    }
+}
+
+function test6(check = [[5], [11], [17]]){ // Умножение матрицы на вектор
+    const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const v2 = EO.array([[1, 2]]);
+    const res = EO.einsum("ij,kj->ik", v1,  v2);
+    check = check.flat();
+    for(let i = 0; i<check.length; i++){
+        if (res.data[i] !== check[i]) throw new Error('test6');
+    }
+}
+
+function test7(check = [[1, 2], [3, 4], [5, 6]]){ // Умножение матрицы на матрицу
+    const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+    const v2 = EO.array([[1, 0], [0, 1]]);
+    const res = EO.einsum("ik,kj->ij", v1,  v2);
+    check = check.flat();
+    for(let i = 0; i<check.length; i++){
+        if (res.data[i] !== check[i]) throw new Error('test7');
+    }
+}
+
+function test8(check = 6){ // Скалярное произведение векторов
+    const v1 = Tensor.from([[1, 2, 3]]);
+    const v2 = EO.array([[1, 1, 1]]);
+    const res = EO.einsum("ik,jk->", v1,  v2);
+    if (res.data !== check) throw new Error('test8');
+}
+
+function test9(check = 15){ // След матрицы
+    const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    const res = EO.einsum("ii->", v1);
+    if (res.data !== check) throw new Error('test9');
 }
