@@ -1,7 +1,7 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .1;
-export const GRADIENT_DIVIDER = 1//1.618;
+export const LEARNING_RATE = .4;
+export const GRADIENT_DIVIDER = 1.618;
 function genId(){
     return ++_id;
 }
@@ -148,7 +148,7 @@ export class Tensor{
     static ones(shape, label, children) {
         return this.fill(shape, 1, label, children);
     }
-    static random(shape, label, scale = 1) {
+    static random(shape, label, scale = .1) {
         return this.fill(shape, ()=>(Math.random()-.5) * scale, label);
     }
     static array(data, label="array"){

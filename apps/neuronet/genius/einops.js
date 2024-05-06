@@ -104,7 +104,11 @@ export class EO{
                 backs += tabs+`grad${i}[idx${i}] += ${inputs.map((_, gi)=>{
                     if (gi !== i)
                         return 'v'+gi
-                }).filter(n=>n).join(` ${operators[operator]} `)} * g;\n`;
+                }).filter(n=>n).join(` ${operators[operator]} `)}`;
+                if(inputs.length>1)
+                    backs +=' * ';
+                backs += '_g;\n';
+
 
             })
             if (!back)
@@ -138,7 +142,7 @@ export class EO{
             let result = vars + '\n';
             result += out_for + '\n'
             if (mode !== ''){
-                result += out_tabs + `let g = grad${data_idx} / ${GRADIENT_DIVIDER ** 2}\n`;
+                result += out_tabs + `let _g = grad${data_idx} / ${GRADIENT_DIVIDER ** 2}\n`;
             }
             else
                 result +=  out_tabs + `let res = 0;`;
