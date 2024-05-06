@@ -103,11 +103,11 @@ export class Tokenizer extends ROCKS({
         res = res.sigmoid();
         let targets = BINS.slice(0, phrase.length);
         res = res.MSE(targets);
+        token.error = res.data;
         res.back();
         for (let i = 0; i<cnts.shape[0]; i++){
             phrase[i].cnt = Array.from(cnts.data.slice(this.dim * i, this.dim * i + this.dim));
         }
-        token.error = res.data
         this.error = undefined;
         return this.error;
     },

@@ -106,7 +106,7 @@
                 // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    const error = this.tokenizer.train(token, phrase.slice(0, 8));
+                    const error = this.tokenizer.train(token, phrase.slice(0, 16));
                     // if (error > this.tokenizer.maxError)
                         continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;

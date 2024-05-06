@@ -287,9 +287,8 @@ Tensor.prototype.sigmoid = function (){
     const data = (this.data.length)?(this.data.map(x => 1 / (1 + Math.exp(-x)))): (1 / (1 + Math.exp(-this.data)));
     const out = Tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
     out._back = ()=>{
-        let i = data.length;
-        if (i){
-            while(i--){
+        if (data.length){
+            for(let i = 0; i<data.length; i++){
                 let v = data[i];
                 this.grad[i] += (v * (1 - v) * out.grad[i] / GRADIENT_DIVIDER);
             }
@@ -327,17 +326,16 @@ Tensor.prototype.MSE = function (other){
     const data = (this.data.length)?this.data.map((d, i)=>{
         return (d - (other[i] ?? other ?? 0)) ** 2;
     }):(this.data - (other ?? 0)) ** 2;
-    const error = (this.data.length)?(data.reduce((r, d) => r + d, 0) / this.data.length):data;
+    const error = (data.length)?(data.reduce((r, d) => r + d, 0) / data.length):data;
     const out = Tensor.from(error, 'MSE', [this]);
     out._back = ()=>{
-        let i = data.length;
-        if (i){
-            while (i--){
-                this.grad[i] = -2 * data[i] / GRADIENT_DIVIDER;
+        if (data.length){
+            for (let i = 0; i<data.length; i++){
+                this.grad[i] = 2 * data[i];
             }
         }
         else{
-            this.grad = -2 * data / GRADIENT_DIVIDER;
+            this.grad = 2 * data;
         }
     }
     return out;
