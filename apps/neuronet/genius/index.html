@@ -4,10 +4,10 @@
 <script type="module">
     import '../../../oda.js';
     import {Genius} from './genius.js';
-    import {Tensor, LEARNING_RATE} from './tor.js';
-    import {EO} from "./einops.js";
+    import {torus, LEARNING_RATE} from './torus.js';
+    // import {EO} from "./einops.js";
     import * as mm from './module.js';
-    import {TNum, N} from './num.js';
+    // import {TNum, N} from './num.js';
     import {Tokenizer} from './tokenizer.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
@@ -223,9 +223,9 @@
             this.time = 0;
             this.result = ''
             try{
-                const fn = new Function('Tensor', 'EO', 'N', this.value);
+                const fn = new Function('torus', this.value);
                 let time = Date.now();
-                const res =  fn.call(this, Tensor, EO, N) || '';
+                const res =  fn.call(this, torus) || '';
                 time = Date.now() - time;
                 this.result =  res?.toString();
                 this.time = time;

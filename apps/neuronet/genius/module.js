@@ -1,5 +1,4 @@
-import {Tensor} from "./tor.js";
-import {EO} from "./einops.js";
+import {torus} from "./torus.js";
 export class Module{
     constructor(params = {}) {
         this.__params__ = params;
@@ -62,18 +61,18 @@ export class Module{
 }
 export class Linear extends Module{
     __init__() {
-        this.W = Tensor.random([this.d_in, this.d_out]);
+        this.W = torus.random([this.d_in, this.d_out]);
         this.W.label += '/weights';
-        this.W = Tensor.param(this.W);
+        this.W = torus.param(this.W);
         if(this.bias){
-            this.bias = Tensor.random([this.d_out]);
+            this.bias = torus.random([this.d_out]);
             this.bias.label +='/bias';
-            this.bias = Tensor.param(this.bias);
+            this.bias = torus.param(this.bias);
         }
 
     }
     forward(x){
-        x = EO.einsum('i, io -> o', x, this.W);
+        x = torus.einsum('i, io -> o', x, this.W);
         if (this.bias)
             x = x.add(this.bias);
         return x;
@@ -84,9 +83,9 @@ export class Linear extends Module{
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.W = Tensor.param(Tensor.random(dim));
+        this.W = torus.param(torus.random(dim));
         this.W.label = 'RMSNorm - W'
-        this.bias = Tensor.param(Tensor.random(dim));
+        this.bias = torus.param(torus.random(dim));
         this.bias.label = 'RMSNorm - bias'
         this.eps = 1e-5;
     }

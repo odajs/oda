@@ -1,6 +1,6 @@
 import '../../../rocks.js';
-import {Tensor} from './tor.js';
-import {EO} from "./einops.js";
+import {torus} from './torus.js';
+// import {EO} from "./einops.js";
 import {Linear} from './module.js';
 // const MAX_WORD_LENGTH = 32;
 const MAX_EMB_ERROR = .1;
@@ -20,8 +20,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = Tensor.random(this.dim).data;
-                res.cnt = Array.from(Tensor.random(this.dim).data);
+                res.emb = torus.random(this.dim).data;
+                res.cnt = Array.from(torus.random(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
                 return res;
@@ -89,8 +89,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = pair;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = Tensor.random(this.dim).data;
-                res.cnt = Array.from(Tensor.random(this.dim).data);
+                res.emb = torus.random(this.dim).data;
+                res.cnt = Array.from(torus.random(this.dim).data);
                 res.error = 1;
                 return res;
             })()
@@ -128,10 +128,10 @@ export class Tokenizer extends ROCKS({
         if (!phrase.length)
             return 1;
         phrase = phrase.slice(0, WORD_DEEP);
-        const emb = Tensor.param(token.emb);
-        const cnts = Tensor.param(phrase.map(i=>i.cnt).flat());
+        const emb = torus.param(token.emb);
+        const cnts = torus.param(phrase.map(i=>i.cnt).flat());
         cnts.reshape([phrase.length, this.dim]);
-        let res = EO.einsum(`d, id -> i`, emb, cnts);
+        let res = torus.einsum(`d, id -> i`, emb, cnts);
         res = res.sigmoid();
         let targets = BINS.slice(0, phrase.length);
         res = res.MSE(targets);
@@ -147,13 +147,13 @@ export class Tokenizer extends ROCKS({
         return Object.values(this.vocabulary);
     },
     get outMatrix(){
-        const w = Tensor.param(this.tokens.map(t=>t.W.flat()));
+        const w = torus.param(this.tokens.map(t=>t.W.flat()));
         w.label += ' LOGIT'
         return w;
     },
     findToken(tokens, target){
         const matrix = this.outMatrix;
-        let logit = EO.einsum('x, yx -> y', tokens, matrix);
+        let logit = torus.einsum('x, yx -> y', tokens, matrix);
         // logit = logit.add(bias);
         logit = logit.softmax();
         const max = Math.max(...logit.data);
