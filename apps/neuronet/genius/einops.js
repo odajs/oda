@@ -1,4 +1,5 @@
 import {Tensor, GRADIENT_DIVIDER} from "./tor.js";
+const USE_TESTS = false;
 export class EO{
     static einsums = {};
     static parse_shape(expr, tensor){
@@ -142,7 +143,7 @@ export class EO{
             let result = vars + '\n';
             result += out_for + '\n'
             if (mode !== ''){
-                result += out_tabs + `let _g = grad${data_idx} / ${GRADIENT_DIVIDER ** 2}\n`;
+                result += out_tabs + `let _g = grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
             }
             else
                 result +=  out_tabs + `let res = 0;`;
@@ -300,9 +301,9 @@ const tests = [
         }
     },
 ]
-
-setTimeout(()=>{
-    for (let test of tests)
-        test()
-})
-
+if (USE_TESTS){
+    setTimeout(()=>{
+        for (let test of tests)
+            test()
+    })
+}

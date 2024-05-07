@@ -1,6 +1,6 @@
 import {TNum} from './num.js';
 import {EO} from './einops.js';
-export const LEARNING_RATE = .4;
+export const LEARNING_RATE = .33;
 export const GRADIENT_DIVIDER = 1.618;
 function genId(){
     return ++_id;
@@ -94,9 +94,16 @@ export class Tensor{
     }
     updateParams(){
         if (!this.isParam) return;
-        let i = this.size;
-        while(i--){
-            this.data[i] += this.grad[i] * LEARNING_RATE;
+        if (this.data.length){
+            for(let i = 0; i<this.data.length; i++){
+                this.data[i] += this.grad[i] * LEARNING_RATE;
+                if (Number.isNaN(this.data[i])){
+                    console.log(this.grad[i])
+                }
+            }
+        }
+        else{
+            this.data += this.grad * LEARNING_RATE;
         }
     }
     back(){
@@ -154,10 +161,16 @@ export class Tensor{
     static array(data, label="array"){
         return Tensor.from(data, label);
     }
-    static arange(shape, step = 1, label, children){
-        const size = shape.reduce((r,v)=>r*v, 1);
-        const data = new Float32Array(size).map((_, i)=>(i+1) * step);
-        return Tensor.from(data, label, children).reshape(shape);
+    static arange(from = 0, to = 0, step = 1){
+        if (!to){
+            to = from;
+            from = 0;
+        }
+        const data = []
+        for(let i = from; i<to; i+=step){
+            data.push(i);
+        }
+        return Tensor.from(data);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -290,11 +303,11 @@ Tensor.prototype.sigmoid = function (){
         if (data.length){
             for(let i = 0; i<data.length; i++){
                 let v = data[i];
-                this.grad[i] += (v * (1 - v) * out.grad[i] / GRADIENT_DIVIDER);
+                this.grad[i] += (1 - v) * v * out.grad[i] / GRADIENT_DIVIDER;
             }
         }
         else{
-            this.grad += (data * (1 - data) * out.grad / GRADIENT_DIVIDER);
+            this.grad += (1 - data) * data * out.grad / GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -323,19 +336,23 @@ Tensor.prototype.softmax = function (){
 Tensor.prototype.MSE = function (other){
     if (other instanceof Tensor)
         other = other.data;
-    const data = (this.data.length)?this.data.map((d, i)=>{
-        return (d - (other[i] ?? other ?? 0)) ** 2;
-    }):(this.data - (other ?? 0)) ** 2;
+    let data;
+    if(this.data.length)
+        data = this.data.map((d, i)=>{
+            return ((other[i] ?? other ?? 0) - d) ** 2;
+        });
+    else
+        data = ((other ?? 0) - this.data) ** 2;
     const error = (data.length)?(data.reduce((r, d) => r + d, 0) / data.length):data;
     const out = Tensor.from(error, 'MSE', [this]);
     out._back = ()=>{
         if (data.length){
             for (let i = 0; i<data.length; i++){
-                this.grad[i] = 2 * data[i];
+                this.grad[i] += (-2 * data[i] / GRADIENT_DIVIDER);
             }
         }
         else{
-            this.grad = 2 * data;
+            this.grad += (-2 * data / GRADIENT_DIVIDER);
         }
     }
     return out;
@@ -376,7 +393,7 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
     return res;
 }
 function num2text(x){
-   // if (Number.isInteger(x))
-   //      return x;
+   if (Number.isInteger(x))
+        return x.toLocaleString();
     return x.toExponential(3).padStart(9, ' ')
 }

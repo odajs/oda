@@ -10,7 +10,7 @@ const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
 const BINS = new Float32Array(WORD_DEEP).map((v, i)=>(2. ** -i));
 export class Tokenizer extends ROCKS({
-    tokenize(text){
+    tokenizeByWord(text){
         text = text.toLowerCase();
         let word = '';
         let tokens = [];
@@ -77,6 +77,36 @@ export class Tokenizer extends ROCKS({
             addToken(word + ' ');
         return phrases;
     },
+    tokenizeByPair(text){
+        text = text.toLowerCase();
+        let word = '';
+        let tokens = [];
+        let phrases = [tokens];
+        const addToken = (pair)=>{
+            if (!pair.trim().length)
+                return;
+            const token = this.vocabulary[pair] ??= (()=>{
+                const res = Object.create(null);
+                res.w = pair;
+                res.id = Object.keys(this.vocabulary).length;
+                res.emb = Tensor.random(this.dim).data;
+                res.cnt = Array.from(Tensor.random(this.dim).data);
+                res.error = 1;
+                return res;
+            })()
+            tokens.push(token);
+        }
+        let before = ''
+        for (let ch of text){
+            if (before){
+                let pair = before + ch;
+                addToken(pair);
+            }
+            before = ch;
+        }
+        this.tokens = undefined;
+        return phrases;
+    },
     get maxError(){
         return MAX_EMB_ERROR;
     },
@@ -88,9 +118,11 @@ export class Tokenizer extends ROCKS({
         const size = tokens.length;
         if (!size)
             return 1;
-        return tokens.reduce((r, t) =>{
+        let error = tokens.reduce((r, t) =>{
             return r + t.error;
-        }, 0) / size;
+        }, 0)
+        error /= size;
+        return  error;
     },
     train(token, phrase){
         if (!phrase.length)
@@ -108,8 +140,8 @@ export class Tokenizer extends ROCKS({
         for (let i = 0; i<cnts.shape[0]; i++){
             phrase[i].cnt = Array.from(cnts.data.slice(this.dim * i, this.dim * i + this.dim));
         }
-        this.error = undefined;
-        return this.error;
+        this.error = undefined//res.data;
+        // return this.error;
     },
     get tokens(){
         return Object.values(this.vocabulary);
