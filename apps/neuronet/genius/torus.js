@@ -29,6 +29,9 @@ export class torus{
         this.#data = data;
         this.id = genId();
     }
+    get isAllowGrad(){
+        return true;
+    }
     get grad(){
         if(this.data.length)
             return this['#grad'] ??= new Float32Array(this.size);
@@ -141,7 +144,7 @@ export class torus{
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
-        let data = new Float32Array(size).map(handler);
+        let data = shape.length?new Float32Array(size).map(handler):handler();
         return torus.from(data).reshape(shape);
     }
     static zeros(...shape) {
@@ -607,15 +610,19 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
 
     let data_idx = (outs.length)?`[++idx]`:'';
     inputs.map((t, i) => {
+
         let expr = ''
-        let m = ''
-        for (let o of t.toReversed()){
-            if (m)
-                expr += ' + ' + m;
-            expr += o.a;
-            m =  '_' + o.a +' * (';
+        if(t.length){
+            expr += `idx${i} = `;
+            let m = ''
+            for (let o of t.toReversed()){
+                if (m)
+                    expr += ' + ' + m;
+                expr += o.a;
+                m =  '_' + o.a +' * (';
+            }
+            expr += ')'.repeat(t.length - 1);
         }
-        expr += ')'.repeat(t.length - 1);
         t.idx_expr = expr;
     })
 
@@ -625,13 +632,12 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
         let res = tab + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){`;
         return res
     }).join('\n')+'\n'
-    const input_for_func = function (ts, back = false){
+    const input_for_func = function (ts){
         const uses = outs.map(o => o.a);
         let result = ''
         let cl = 0;
         let tab = 0
         let tabs = out_tabs;
-        let backs = '';
         inputs.map((input, i)=>{
             for (let axis of input){
                 if (uses.includes(axis.a))
@@ -642,78 +648,56 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
                 tab++
                 tabs = out_tabs + '\t'.repeat(tab)
             }
-            result += tabs+`idx${i} = ${input.idx_expr};\n`;
-            result += tabs+`v${i} = t${i}[idx${i}];\n`;
-            backs += tabs+`grad${i}[idx${i}] += ${inputs.map((_, gi)=>{
-                if (gi !== i)
-                    return 'v'+gi
-            }).filter(n=>n).join(` ${operators[operator]} `)}`;
-            if(inputs.length>1)
-                backs +=' * ';
-            backs += '_g;\n';
-
-
+            if(input.idx_expr){
+                result += tabs + input.idx_expr + ';\n';
+                result += tabs+`v${i} = t${i}[idx${i}];\n`;
+            }
+            else
+                result += tabs+`v${i} = t${i};\n`;
         })
-        if (!back)
-            result += tabs + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
-        else{
-            result += backs;
-        }
+        result += tabs + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
         result += Array(cl).fill('').map((c, i)=> out_tabs + '\t'.repeat(i) + '}').toReversed().join('\n')
         return result + '\n';
     }
 
-    function build_expr(mode = ''){
-        let body = '';
-        switch (mode){
-            case 'mul':{
-                body += input_for_func(inputs, true);
-            } break;
-            default:{
-                body += input_for_func(inputs);
-                body += out_tabs + `out.data${data_idx}`;
-                body += ' = res;';
-            }
-        }
-        // body += '\n'+out_tabs + 'idx++'
+    let body = '';
+    body += input_for_func(inputs);
+    body += out_tabs + `out.data${data_idx}`;
+    body += ' = res;';
 
-        if (mode !== ''){
-            vars += '\nlet grad = out.grad\n';
-            vars += inputs.map((_, i) => `let grad${i} = t[${i}].grad;`).join('\n')
-        }
+    let fwd_expr = vars + '\n';
+    fwd_expr += out_for + '\n'
+    fwd_expr +=  out_tabs + `let res = 0;`;
+    fwd_expr += '\n' + body + '\n';
+    fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
 
-        let result = vars + '\n';
-        result += out_for + '\n'
-        if (mode !== ''){
-            result += out_tabs + `let _g = (grad${data_idx}  || 1)/ ${GRADIENT_DIVIDER}\n`;
-        }
-        else
-            result +=  out_tabs + `let res = 0;`;
-        result += /*axis_for + */'\n' + body + '\n';
-        result += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
-        return result;
-    }
-
-
-    let fwd_expr = build_expr();
     const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
-    const out = torus.from(data);
+    let out = torus.from(data);
     out.reshape(outs.map(i=>i.d));
     out.children = tensors;
     const fn = new Function('t', 'out', fwd_expr);
-    let back_expr = build_expr(operator);
-    const back_fn = new Function('t', 'out', back_expr);
     out._back = function (){
         // console.time(in_expr+'-back')
-        back_fn(tensors, out);
+        out = torus.from(out.grad || 1);
+        tensors.forEach((t, i)=>{
+            if(!t.isAllowGrad) return;
+            let expr =  inputs.map((tt, ii)=>{
+                if(ii === i)
+                    return outs.map(o=>o.a).join('');
+                return tt.map(o=>o.a).join('');
+            }).join(',') + '->' + inputs[i].map(i=>i.a).join('');
+            let sources = tensors.map((tt,ii)=>{
+                if(ii === i)
+                    return out;
+                return tt;
+            })
+            t.grad = torus.einsum(expr, sources)
+        })
         // console.timeEnd(in_expr+'-back')
     }
     // console.time(in_expr)
     fn(tensors, out);
     // console.timeEnd(in_expr)
     out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
-
-
-
     return out;
 }
