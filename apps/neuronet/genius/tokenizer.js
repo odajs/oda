@@ -131,7 +131,7 @@ export class Tokenizer extends ROCKS({
         const emb = torus.param(token.emb);
         const cnts = torus.param(phrase.map(i=>i.cnt).flat());
         cnts.reshape([phrase.length, this.dim]);
-        let res = torus.einsum(`d, id -> i`, emb, cnts);
+        let res = torus.einsum(`d, id -> i`, [emb, cnts]);
         res = res.sigmoid();
         let targets = BINS.slice(0, phrase.length);
         res = res.MSE(targets);
@@ -153,7 +153,7 @@ export class Tokenizer extends ROCKS({
     },
     findToken(tokens, target){
         const matrix = this.outMatrix;
-        let logit = torus.einsum('x, yx -> y', tokens, matrix);
+        let logit = torus.einsum('x, yx -> y', [tokens, matrix]);
         // logit = logit.add(bias);
         logit = logit.softmax();
         const max = Math.max(...logit.data);

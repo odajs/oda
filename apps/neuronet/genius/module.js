@@ -61,18 +61,18 @@ export class Module{
 }
 export class Linear extends Module{
     __init__() {
-        this.W = torus.random([this.d_in, this.d_out]);
+        this.W = torus.rands(this.d_in, this.d_out);
         this.W.label += '/weights';
         this.W = torus.param(this.W);
         if(this.bias){
-            this.bias = torus.random([this.d_out]);
+            this.bias = torus.rands(this.d_out);
             this.bias.label +='/bias';
             this.bias = torus.param(this.bias);
         }
 
     }
     forward(x){
-        x = torus.einsum('i, io -> o', x, this.W);
+        x = torus.einsum('i, io -> o', [x, this.W]);
         if (this.bias)
             x = x.add(this.bias);
         return x;

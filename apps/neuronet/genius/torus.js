@@ -42,7 +42,7 @@ export class torus{
         let axis_out = axis_this.split('');
         axis_out.reverse();
         axis_out = axis_out.join('')
-        return EO.einsum(axis_this+'->'+axis_out, this);
+        return torus.einsum(axis_this+'->'+axis_out, [this]);
     }
     get g(){
         return torus.from(this.grad).reshape(this.shape);
@@ -136,25 +136,32 @@ export class torus{
         const data = array.map(a=>a.data).flat();
         return torus.from(data, 'stack', array);
     }
-    static fill(shape, value, label, children){
+    static fill(shape, value){
         if (!Array.isArray(shape))
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
         let data = new Float32Array(size).map(handler);
-        return torus.from(data, label, children).reshape(shape);
+        return torus.from(data).reshape(shape);
     }
-    static zeros(shape, label, children) {
-        return this.fill(shape, 0, label, children);
+    static zeros(...shape) {
+        return this.fill(shape, 0, );
     }
-    static ones(shape, label, children) {
-        return this.fill(shape, 1, label, children);
+    static ones(...shape) {
+        return this.fill(shape, 1);
     }
-    static random(shape, label, scale = .1) {
-        return this.fill(shape, ()=>(Math.random()-.5) * scale, label);
+    static rands(...shape) {
+        return this.fill(shape, ()=>(Math.random()-.5) * .1);
     }
-    static array(data, label="array"){
-        return torus.from(data, label);
+    static rand(...shape) {
+        return this.fill(shape, ()=>(Math.random()-.5));
+    }
+    static random(...shape) {
+        return this.fill(shape, ()=>Math.random());
+    }
+    static randn(...shape){
+        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2*Math.PI) * Math.random()));
+
     }
     static arange(from = 0, to = 0, step = 1){
         if (!to){
@@ -236,7 +243,7 @@ export class torus{
 }
 
 torus.prototype.sum = function (){
-    const out = EO.einsum('x->', this);
+    const out = torus.einsum('x->', [this]);
     out.label = `sum([${this.shape}])`;
     return out;
 }
@@ -262,7 +269,7 @@ torus.prototype.oper = function (operation , other){
     let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
     let axis_other = other.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
     const expr = `${axis_this}, ${axis_other} -> ${axis_this}:`+operation;
-    const out = EO.einsum(expr, this,  other);
+    const out = torus.einsum(expr, [this,  other]);
     out.label = operation+`: ${this.label}, ${other.label}`;
     return out;
 }
@@ -395,6 +402,120 @@ function num2text(x){
     return x.toExponential(3).padStart(9, ' ')
 }
 
+function genId(){
+    return ++_id;
+}
+let _id = 0;
+
+
+//einops
+
+
+const tests = [
+    (check = 15)=>{
+        const v = Tensor.from([1, 2, 3, 4, 5]);
+        const res = torus.einsum("i->", [v]);
+        if (res.data !== check) throw new Error('Сумма всех значений вектора');
+    },
+    (check = 21)=>{
+        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const res = torus.einsum("ij->", [v]);
+        if (res.data !== check) throw new Error('Сумма всех значений матрицы');
+    },
+    (check = [9, 12])=>{
+        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const res = torus.einsum("ij->j", [v]);
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Сумма значений по столбцам');
+        }
+    },
+    (check = [3, 7, 11])=>{
+        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const res = torus.einsum("ij->i", [v]);
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Сумма значений по строкам');
+        }
+    },
+    (check = [[1, 3, 5], [2, 4, 6]])=>{
+        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const res = torus.einsum("ij->ji", [v]);
+        check = check.flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Транспонирование');
+        }
+    },
+    (check = [[5], [11], [17]])=>{
+        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const v2 = Tensor.from([[1, 2]]);
+        const res = torus.einsum("ij,kj->ik", [v1,  v2]);
+        check = check.flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на вектор');
+        }
+    },
+    (check = [[1, 2], [3, 4], [5, 6]])=>{
+        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
+        const v2 = Tensor.from([[1, 0], [0, 1]]);
+        const res = torus.einsum("ik,kj->ij", [v1,  v2]);
+        check = check.flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на матрицу');
+        }
+    },
+    (check = 6)=>{
+        const v1 = Tensor.from([[1, 2, 3]]);
+        const v2 = Tensor.from([[1, 1, 1]]);
+        const res = torus.einsum("ik,jk->", [v1,  v2]);
+        if (res.data !== check) throw new Error('Скалярное произведение векторов');
+    },
+    (check = 15)=>{
+        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        const res = torus.einsum("ii->", [v1]);
+        if (res.data !== check) throw new Error('След матрицы');
+    },
+    (check = [[1, 0, 0], [0, 5, 0], [0, 0, 9]])=>{
+        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        const v2 = Tensor.from([[1, 0, 0], [0, 1, 0], [0, 0, 1]]);
+        const res = torus.einsum("ij,ij->ij", [v1,  v2]);
+        check = check.flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Адамарово (покомпонентное) произведение');
+        }
+    },
+    (check = [[1, 0, 0], [2, 0, 0], [3, 0, 0]])=>{
+        const v1 = Tensor.from([1, 2, 3]);
+        const v2 = Tensor.from([1, 0, 0]);
+        const res = torus.einsum("i,j->ij", [v1,  v2]);
+        check = check.flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Кронекерово (внешнее) произведение векторов');
+        }
+    },
+    (check = [[[0, 1, 2], [1, 2, 3]], [[1, 2, 3], [2, 3, 4]], [[2, 3, 4], [3, 4, 5]]])=>{
+        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
+        const res = torus.einsum("ijk->jki", [v1]);
+        check = check.flat().flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Транспонирование тензора');
+        }
+    },
+    (check = [[[2, 3], [5, 8], [8, 13]], [[5, 8], [8, 13], [11, 18]], [[8, 13], [11, 18], [14, 23]]])=>{
+        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
+        const v2 = Tensor.from([[1, 2], [2, 3]]);
+        const res = torus.einsum("ijk,nk->ijn", [v1,  v2]);
+        check = check.flat().flat();
+        for(let i = 0; i<check.length; i++){
+            if (res.data[i] !== check[i]) throw new Error('Произведение тензора на матрицу по третьей модев');
+        }
+    },
+]
+if (USE_TESTS){
+    setTimeout(()=>{
+        for (let test of tests)
+            test()
+    })
+}
+
 torus.einsums = {};
 torus.parse_shape = (expr, tensor)=>{
     const shape = tensor.shape;
@@ -414,7 +535,34 @@ torus.parse_shape = (expr, tensor)=>{
         return r
     },{})
 }
-torus.einsum = (in_expr, ...sources)=>{
+
+torus.rearrange = (expr, tensor)=>{
+    //todo
+}
+torus.reduce = (expr, tensor, agg_func = 'max')=>{
+    //todo
+}
+torus.repeat = (expr, tensor, vars = {})=>{
+    //todo
+}
+torus.pack = (expr, inputs)=>{
+    //todo
+}
+torus.unpack = (expr, inputs)=>{
+    //todo
+}
+const operators = {
+    'mul': ' * ',
+    '*': ' * ',
+    'div': ' / ',
+    '/': ' / ',
+    'plus': ' + ',
+    '+': ' + ',
+    'add': ' + ',
+    'minus': ' - ',
+    '-': ' - ',
+}
+torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
     const tensors = sources.map(t => torus.from(t));
     let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
     const axis = [];
@@ -434,8 +582,7 @@ torus.einsum = (in_expr, ...sources)=>{
             return ax;
         })
     });
-    expr = expr[1].split(':');
-    let outs = expr[0].trim().split('').map(a => {   // Разделение выходного терма на индексы и их анализ
+    let outs = expr[1].trim().split('').map(a => {   // Разделение выходного терма на индексы и их анализ
         if(!a) return;
         let idx = axis.findIndex(v => v.a === a);
         if(idx < 0)
@@ -444,8 +591,6 @@ torus.einsum = (in_expr, ...sources)=>{
         axis.splice(idx, 1);
         return ax;
     }).filter(i=>i)
-    expr = expr[1]?.trim();
-    let operator = expr?.length?expr:'mul'; // выбор оператора
     let vars = [
         [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
         inputs.map((_, i) => `let t${i} = t[${i}].data;`).join('\n'),
@@ -569,140 +714,3 @@ torus.einsum = (in_expr, ...sources)=>{
 
     return out;
 }
-torus.rearrange = (expr, tensor)=>{
-    //todo
-}
-torus.reduce = (expr, tensor, agg_func = 'max')=>{
-    //todo
-}
-torus.repeat = (expr, tensor, vars = {})=>{
-    //todo
-}
-torus.pack = (expr, inputs)=>{
-    //todo
-}
-torus.unpack = (expr, inputs)=>{
-    //todo
-}
-const operators = {
-    'mul': ' * ',
-    '*': ' * ',
-    'div': ' / ',
-    '/': ' / ',
-    'plus': ' + ',
-    '+': ' + ',
-    'add': ' + ',
-    'minus': ' - ',
-    '-': ' - ',
-}
-
-
-
-const tests = [
-    (check = 15)=>{
-        const v = Tensor.from([1, 2, 3, 4, 5]);
-        const res = EO.einsum("i->", v);
-        if (res.data !== check) throw new Error('Сумма всех значений вектора');
-    },
-    (check = 21)=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = EO.einsum("ij->", v);
-        if (res.data !== check) throw new Error('Сумма всех значений матрицы');
-    },
-    (check = [9, 12])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = EO.einsum("ij->j", v);
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Сумма значений по столбцам');
-        }
-    },
-    (check = [3, 7, 11])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = EO.einsum("ij->i", v);
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Сумма значений по строкам');
-        }
-    },
-    (check = [[1, 3, 5], [2, 4, 6]])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = EO.einsum("ij->ji", v);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Транспонирование');
-        }
-    },
-    (check = [[5], [11], [17]])=>{
-        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const v2 = Tensor.from([[1, 2]]);
-        const res = EO.einsum("ij,kj->ik", v1,  v2);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на вектор');
-        }
-    },
-    (check = [[1, 2], [3, 4], [5, 6]])=>{
-        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const v2 = Tensor.from([[1, 0], [0, 1]]);
-        const res = EO.einsum("ik,kj->ij", v1,  v2);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на матрицу');
-        }
-    },
-    (check = 6)=>{
-        const v1 = Tensor.from([[1, 2, 3]]);
-        const v2 = Tensor.from([[1, 1, 1]]);
-        const res = EO.einsum("ik,jk->", v1,  v2);
-        if (res.data !== check) throw new Error('Скалярное произведение векторов');
-    },
-    (check = 15)=>{
-        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        const res = EO.einsum("ii->", v1);
-        if (res.data !== check) throw new Error('След матрицы');
-    },
-    (check = [[1, 0, 0], [0, 5, 0], [0, 0, 9]])=>{
-        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        const v2 = Tensor.from([[1, 0, 0], [0, 1, 0], [0, 0, 1]]);
-        const res = EO.einsum("ij,ij->ij", v1,  v2);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Адамарово (покомпонентное) произведение');
-        }
-    },
-    (check = [[1, 0, 0], [2, 0, 0], [3, 0, 0]])=>{
-        const v1 = Tensor.from([1, 2, 3]);
-        const v2 = Tensor.from([1, 0, 0]);
-        const res = EO.einsum("i,j->ij", v1,  v2);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Кронекерово (внешнее) произведение векторов');
-        }
-    },
-    (check = [[[0, 1, 2], [1, 2, 3]], [[1, 2, 3], [2, 3, 4]], [[2, 3, 4], [3, 4, 5]]])=>{
-        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
-        const res = EO.einsum("ijk->jki", v1);
-        check = check.flat().flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Транспонирование тензора');
-        }
-    },
-    (check = [[[2, 3], [5, 8], [8, 13]], [[5, 8], [8, 13], [11, 18]], [[8, 13], [11, 18], [14, 23]]])=>{
-        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
-        const v2 = Tensor.from([[1, 2], [2, 3]]);
-        const res = EO.einsum("ijk,nk->ijn", v1,  v2);
-        check = check.flat().flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Произведение тензора на матрицу по третьей модев');
-        }
-    },
-]
-if (USE_TESTS){
-    setTimeout(()=>{
-        for (let test of tests)
-            test()
-    })
-}
-function genId(){
-    return ++_id;
-}
-let _id = 0;
