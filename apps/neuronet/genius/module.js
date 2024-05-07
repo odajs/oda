@@ -61,11 +61,11 @@ export class Module{
 }
 export class Linear extends Module{
     __init__() {
-        this.W = torus.rands(this.d_in, this.d_out);
+        this.W = torus.rand(this.d_in, this.d_out);
         this.W.label += '/weights';
         this.W = torus.param(this.W);
         if(this.bias){
-            this.bias = torus.rands(this.d_out);
+            this.bias = torus.rand(this.d_out);
             this.bias.label +='/bias';
             this.bias = torus.param(this.bias);
         }
@@ -83,9 +83,9 @@ export class Linear extends Module{
 }
 export class RMSNorm extends Module {
     __init__(dim) {
-        this.W = torus.param(torus.random(dim));
+        this.W = torus.param(torus.rand(dim));
         this.W.label = 'RMSNorm - W'
-        this.bias = torus.param(torus.random(dim));
+        this.bias = torus.param(torus.rand(dim));
         this.bias.label = 'RMSNorm - bias'
         this.eps = 1e-5;
     }

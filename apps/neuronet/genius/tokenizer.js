@@ -20,8 +20,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = torus.random(this.dim).data;
-                res.cnt = Array.from(torus.random(this.dim).data);
+                res.emb = torus.rands(this.dim).data;
+                res.cnt = Array.from(torus.rands(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
                 return res;
@@ -89,8 +89,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = pair;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = torus.random(this.dim).data;
-                res.cnt = Array.from(torus.random(this.dim).data);
+                res.emb = torus.rands(this.dim).data;
+                res.cnt = Array.from(torus.rands(this.dim).data);
                 res.error = 1;
                 return res;
             })()

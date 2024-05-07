@@ -208,7 +208,7 @@ export class torus{
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
-            return `(${data}, shape(${this.shape}), size: ${this.shape.reduce((r, v)=>r*v,1).toLocaleString()} )`;
+            return `shape(${this.shape}), size: ${this.shape.reduce((r, v)=>r*v,1).toLocaleString()}:\n\n(${data}}`;
         }
         return this.data;
     }
@@ -397,8 +397,8 @@ Array.prototype.totorusString = function (max = 4, shape = []){
     return res;
 }
 function num2text(x){
-   if (Number.isInteger(x))
-        return x.toLocaleString();
+   if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
+        return x;
     return x.toExponential(3).padStart(9, ' ')
 }
 

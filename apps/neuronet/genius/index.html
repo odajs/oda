@@ -159,6 +159,7 @@
                     padding: 4px;
                     white-space: pre-wrap;
                     font-family: monospace;
+
                 }
             </style>
             <div class="border header bold horizontal" style="position: sticky; z-index: 1" ~style="{top: 0}">
@@ -168,8 +169,8 @@
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
                 <div class="vertical flex">
-                    <span no-flex>{{tensor?.toString(4)}}</span>
-                    <span disabled header>{{tensor?.g?.toString(4)}}</span>
+                    <span style="font-size: xx-small" no-flex>{{tensor?.toString(4)}}</span>
+                    <span style="font-size: xx-small"  disabled header>{{tensor?.g?.toString(4)}}</span>
                 </div>
                 <div ~if="children?.length" class="no-flex horizontal">
                     <gen-tensor-tree ~for="children" :tensor="$for.item"></gen-tensor-tree>
@@ -253,10 +254,10 @@
                 }
             </style>
             <div flex style="overflow-y: auto;">
-                <div  border ~for="tokenizer?.vocabulary" vertical>
+                <div stadow ~for="tokenizer?.vocabulary" vertical>
                     <div class="horizontal">
                         <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
-                        <div style="height: 16px; " class="flex" ~style="getBackGradient($for.item.emb)"></div>
+                        <div class="flex" ~style="getBackGradient($for.item.emb)"></div>
                         <span style="text-align: right;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
                     </div>
                 </div>
