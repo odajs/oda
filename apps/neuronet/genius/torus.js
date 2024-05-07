@@ -1,6 +1,6 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = .33;
-export const GRADIENT_DIVIDER = 1//.618;
+export const LEARNING_RATE = .1;
+export const GRADIENT_DIVIDER = 1.618;
 export class torus{
     #shape = [];
     #data = null;
@@ -691,7 +691,7 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
                     return out;
                 return tt;
             })
-            t.grad = torus.einsum(expr, sources)
+            t.grad = torus.einsum(expr, sources).data.map(d=>d/GRADIENT_DIVIDER);
         })
         // console.timeEnd(in_expr+'-back')
     }
