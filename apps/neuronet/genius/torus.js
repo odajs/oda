@@ -1,6 +1,6 @@
 const USE_TESTS = false;
 export const LEARNING_RATE = .33;
-export const GRADIENT_DIVIDER = 1.618;
+export const GRADIENT_DIVIDER = 1//.618;
 export class torus{
     #shape = [];
     #data = null;
@@ -149,6 +149,9 @@ export class torus{
     }
     static ones(...shape) {
         return this.fill(shape, 1);
+    }
+    static ones_like(tensor) {
+        return this.ones(...tensor.shape);
     }
     static rands(...shape) {
         return this.fill(shape, ()=>(Math.random()-.5) * .1);
@@ -682,7 +685,7 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
         let result = vars + '\n';
         result += out_for + '\n'
         if (mode !== ''){
-            result += out_tabs + `let _g = grad${data_idx} / ${GRADIENT_DIVIDER}\n`;
+            result += out_tabs + `let _g = (grad${data_idx}  || 1)/ ${GRADIENT_DIVIDER}\n`;
         }
         else
             result +=  out_tabs + `let res = 0;`;

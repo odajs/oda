@@ -2331,13 +2331,12 @@ function extract(items, level, parent) {
         })
     }
     return items.reduce((res, i) => {
-        if (!('__expanded__' in i))
-            Object.defineProperty(i, '__expanded__', {
-                enumerable: false,
-                configurable: true,
-                writable: true,
-                value: i.__expanded__
-            })
+        Object.defineProperty(i, '__expanded__', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: i.__expanded__
+        })
         Object.defineProperty(i, '$forceExpanded', {
             enumerable: false,
             configurable: true,
@@ -2345,27 +2344,24 @@ function extract(items, level, parent) {
             value: i.$forceExpanded
         })
 
-        if (!('__parent__' in i))
-            Object.defineProperty(i, '__parent__', {
-                enumerable: false,
-                configurable: true,
-                writable: true,
-                value: i.__parent__ || null
-            })
-        if (!('__level__' in i))
-            Object.defineProperty(i, '__level__', {
-                enumerable: false,
-                configurable: true,
-                writable: true,
-                value: i.__level__ || 0
-            })
-        if (!('$hasChildren' in i))
-            Object.defineProperty(i, '$hasChildren', {
-                enumerable: false,
-                configurable: true,
-                writable: true,
-                value: i.$hasChildren || false
-            })
+        Object.defineProperty(i, '__parent__', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: i.__parent__ || null
+        })
+        Object.defineProperty(i, '__level__', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: i.__level__ || 0
+        })
+        Object.defineProperty(i, '$hasChildren', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: i.$hasChildren || false
+        })
         if (parent) {
             i.__parent__ = parent;
         }

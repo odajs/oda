@@ -108,7 +108,7 @@
                     let token = phrase.shift();
                     const error = this.tokenizer.train(token, phrase.slice(0, 8));
                     // if (error > this.tokenizer.maxError)
-                    //     continue;
+                        continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = await this.model(token.emb, target.emb);
                     this.tensor = this.err = res;

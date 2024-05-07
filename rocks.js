@@ -300,7 +300,9 @@ in the <${host.localName}>`;
     }
     globalThis.str2arr = str2arr;
     const KEY = Symbol('ROCKS-PROPS');
+    const IS_ROCKS_PROXY = Symbol('IS_ROCKS_PROXY');
     ROCKS.KEY = KEY;
+    ROCKS.IS_ROCKS_PROXY = IS_ROCKS_PROXY;
     function reactor(target) {
         if (!Object.isExtensible(target) || (target.constructor !== Object &&  target.constructor !== Array ) || target?.constructor === Promise)
             return target;
@@ -313,6 +315,13 @@ in the <${host.localName}>`;
         op = Object.create(null);
         const handlers = {
             get: (target, key, resolver) => {
+                if (typeof key === 'symbol') {
+                    switch (key) {
+                        case KEY: return op;
+                        case IS_ROCKS_PROXY: return true;
+                        default: op.target[key]
+                    }
+                }
                 if (key === KEY) return op;
                 let val = op.target[key];
                 if (val){
@@ -786,6 +795,12 @@ in the <${host.localName}>`;
                     if (~idx)
                         this.splice(idx, 1);
                 }
+            }
+        });
+        Object.defineProperty(Array.prototype, 'swap', {
+            enumerable: false, configurable: true,
+            value: function (i1, i2) {
+                return [this[i1], this[i2]] = [this[i2], this[i1]];
             }
         });
     }
