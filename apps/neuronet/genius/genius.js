@@ -11,7 +11,7 @@ export class Genius extends Module{
     }
     __init__() {
         this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1}));
-        this.W = torus.param(torus.rands(this.d, this.d * 2));
+        this.W = torus.param(torus.rand(this.d, this.d));
     }
     reset(){
         this.heads.forEach(h=>h.module.reset());
@@ -20,9 +20,9 @@ export class Genius extends Module{
         let x = torus.from(token);
 
         let result = torus.einsum('x, xy->y', [x, this.W]);
-        let WT = torus.einsum('xy->yx', [this.W]);
-        result = torus.einsum('y, yx->x', [result, WT]);
-        // result = result.sigmoid();
+        // let WT = torus.einsum('xy->yx', [this.W]);
+        // result = torus.einsum('y, yx->x', [result, WT]);
+        result = result.sigmoid();
         result = result.MSE(target);
         result.back();
         //

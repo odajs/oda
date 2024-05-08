@@ -24,8 +24,8 @@
                     font-family: monospace;
                 }
             </style>
-            <gen-vocabulary _opened  slot="right-panel"></gen-vocabulary>
-            <div _opened class="vertical dark" slot="left-panel"  style="padding: 8px">
+            <gen-vocabulary opened  slot="right-panel"></gen-vocabulary>
+            <div opened class="vertical dark" slot="left-panel"  style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
                     <oda-button icon="icons:arrow-forward" allow-toggle ::toggled="isNext"></oda-button>
@@ -106,9 +106,9 @@
                 // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    const error = this.tokenizer.train(token, phrase.slice(0, 8));
+                    const error = this.tokenizer.train(token, phrase);
                     // if (error > this.tokenizer.maxError)
-                        continue;
+                    //     continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = await this.model(token.emb, target.emb);
                     this.tensor = this.err = res;
@@ -126,14 +126,14 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 1, head_count: 1});
+                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 1, head_count: 1});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer(8);
+                return new Tokenizer(16);
             },
         },
         get tokens(){

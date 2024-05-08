@@ -1,6 +1,6 @@
 const USE_TESTS = false;
 export const LEARNING_RATE = .1;
-export const GRADIENT_DIVIDER = 1.618;
+export const GRADIENT_DIVIDER = 1//.618;
 export class torus{
     #shape = [];
     #data = null;
@@ -30,7 +30,7 @@ export class torus{
         this.id = genId();
     }
     get isAllowGrad(){
-        return true;
+        return !!this.children?.some(i=>i.isAllowGrad) || this.isParam;
     }
     get grad(){
         if(this.data.length)
@@ -95,9 +95,6 @@ export class torus{
         if (this.data.length){
             for(let i = 0; i<this.data.length; i++){
                 this.data[i] += this.grad[i] * LEARNING_RATE;
-                if (Number.isNaN(this.data[i])){
-                    console.log(this.grad[i])
-                }
             }
         }
         else{
@@ -312,8 +309,8 @@ torus.prototype.sigmoid = function (){
     out._back = ()=>{
         if (data.length){
             for(let i = 0; i<data.length; i++){
-                let v = data[i];
-                this.grad[i] += (1 - v) * v * out.grad[i] / GRADIENT_DIVIDER;
+                let d = data[i];
+                this.grad[i] += (1 - d) * d * out.grad[i] / GRADIENT_DIVIDER;
             }
         }
         else{
@@ -347,13 +344,16 @@ torus.prototype.MSE = function (other){
     if (other instanceof torus)
         other = other.data;
     let data;
+    let error = 0;
     if(this.data.length)
         data = this.data.map((d, i)=>{
-            return ((other[i] ?? other ?? 0) - d) ** 2;
+            d = (d - other[i]) ** 2;
+            error+=d;
+            return d;
         });
     else
-        data = ((other ?? 0) - this.data) ** 2;
-    const error = (data.length)?(data.reduce((r, d) => r + d, 0) / data.length):data;
+        error = data = (this.data - (other ?? 0)) ** 2;
+    error /= this.size;
     const out = torus.from(error, 'MSE', [this]);
     out._back = ()=>{
         if (data.length){
@@ -677,8 +677,7 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
     out.children = tensors;
     const fn = new Function('t', 'out', fwd_expr);
     out._back = function (){
-        // console.time(in_expr+'-back')
-        out = torus.from(out.grad || 1);
+        out = torus.from(out.grad).reshape(out.shape);
         tensors.forEach((t, i)=>{
             if(!t.isAllowGrad) return;
             let expr =  inputs.map((tt, ii)=>{
@@ -691,13 +690,10 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
                     return out;
                 return tt;
             })
-            t.grad = torus.einsum(expr, sources).data.map(d=>d/GRADIENT_DIVIDER);
+            t.grad = torus.einsum(expr, sources).data.map(d=>d / GRADIENT_DIVIDER);
         })
-        // console.timeEnd(in_expr+'-back')
     }
-    // console.time(in_expr)
     fn(tensors, out);
-    // console.timeEnd(in_expr)
     out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
     return out;
 }

@@ -4,11 +4,11 @@ import {torus} from './torus.js';
 import {Linear} from './module.js';
 // const MAX_WORD_LENGTH = 32;
 const MAX_EMB_ERROR = .1;
-const WORD_DEEP = 48;
+const WINDOW_SIZE = 16;
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
-const BINS = new Float32Array(WORD_DEEP).map((v, i)=>(2. ** -i));
+const BINS = new Float32Array(WINDOW_SIZE).map((v, i)=>(2. ** -i));
 export class Tokenizer extends ROCKS({
     tokenizeByWord(text){
         text = text.toLowerCase();
@@ -127,14 +127,13 @@ export class Tokenizer extends ROCKS({
     train(token, phrase){
         if (!phrase.length)
             return 1;
-        phrase = phrase.slice(0, WORD_DEEP);
+        phrase = phrase.slice(0, WINDOW_SIZE);
         const emb = torus.param(token.emb);
         const cnts = torus.param(phrase.map(i=>i.cnt).flat());
         cnts.reshape([phrase.length, this.dim]);
         let res = torus.einsum(`d, id -> i`, [emb, cnts]);
         res = res.sigmoid();
-        let targets = BINS.slice(0, phrase.length);
-        res = res.MSE(targets);
+        res = res.MSE(BINS);
         token.error = res.data;
         res.back();
         for (let i = 0; i<cnts.shape[0]; i++){
