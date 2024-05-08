@@ -319,10 +319,8 @@ in the <${host.localName}>`;
                     switch (key) {
                         case KEY: return op;
                         case IS_ROCKS_PROXY: return true;
-                        default: op.target[key]
                     }
                 }
-                if (key === KEY) return op;
                 let val = op.target[key];
                 if (val){
                     if (op === val || op.target === val || key.constructor === Symbol || (val instanceof Object && val.constructor?.prototype === val) || val instanceof Function)

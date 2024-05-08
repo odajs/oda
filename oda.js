@@ -538,7 +538,7 @@ if (!window.ODA?.IsReady) {
             }
         }
     }
-    function ODA(prototype = {}, stat = {}) {
+    function ODA(prototype = {}) {
         return ODA.telemetry.prototypes[prototype.is] ??= (() => {
             if (ODA.telemetry.components[prototype.is]) return ODA.telemetry.components[prototype.is];
             prototype.is = prototype.is.toLowerCase();

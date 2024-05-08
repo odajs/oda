@@ -1,7 +1,7 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = .1;
+export const LEARNING_RATE = 1;
 export const GRADIENT_DIVIDER = 1//.618;
-export class torus{
+export class tensor{
     #shape = [];
     #data = null;
     constructor(data, label, children) {
@@ -45,10 +45,10 @@ export class torus{
         let axis_out = axis_this.split('');
         axis_out.reverse();
         axis_out = axis_out.join('')
-        return torus.einsum(axis_this+'->'+axis_out, [this]);
+        return tensor.einsum(axis_this+'->'+axis_out, [this]);
     }
     get g(){
-        return torus.from(this.grad).reshape(this.shape);
+        return tensor.from(this.grad).reshape(this.shape);
     }
     get shape(){
         return this.#shape;
@@ -133,8 +133,8 @@ export class torus{
         return this;
     }
     static stack(array){
-        const data = array.map(a=>a.data).flat();
-        return torus.from(data, 'stack', array);
+        const data = array.map(a=>Array.from(a.data)).flat();
+        return tensor.from(data, 'stack', array);
     }
     static fill(shape, value){
         if (!Array.isArray(shape))
@@ -142,7 +142,7 @@ export class torus{
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
         let data = shape.length?new Float32Array(size).map(handler):handler();
-        return torus.from(data).reshape(shape);
+        return tensor.from(data).reshape(shape);
     }
     static zeros(...shape) {
         return this.fill(shape, 0, );
@@ -150,8 +150,8 @@ export class torus{
     static ones(...shape) {
         return this.fill(shape, 1);
     }
-    static ones_like(tensor) {
-        return this.ones(...tensor.shape);
+    static ones_like(src) {
+        return this.ones(...src.shape);
     }
     static rands(...shape) {
         return this.fill(shape, ()=>(Math.random()-.5) * .1);
@@ -175,7 +175,7 @@ export class torus{
         for(let i = from; i<to; i+=step){
             data.push(i);
         }
-        return torus.from(data);
+        return tensor.from(data);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -187,25 +187,25 @@ export class torus{
                 return 0
             })
         })
-        return torus.from(data, 'hippo');
+        return tensor.from(data, 'hippo');
     }
     static from(data, label, children){
-        if (data instanceof torus)
+        if (data instanceof tensor)
             return data;
-        return new torus(data, label, children)
+        return new tensor(data, label, children)
     }
-    static param(tensor){
-        if (!(tensor instanceof torus)){
-            tensor = torus.from(tensor);
+    static param(src){
+        if (!(src instanceof tensor)){
+            src = tensor.from(src);
         }
-        tensor.isParam = true;
-        return tensor;
+        src.isParam = true;
+        return src;
     }
 
 
     toString(max = 8){
         if (this.shape.length){
-            let data = this.array.totorusString(max, this.shape).split('\r\n');
+            let data = this.array.totensorString(max, this.shape).split('\r\n');
             if (data.length > max){
                 const padding = data[0].length/2 + 2
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
@@ -224,7 +224,7 @@ export class torus{
         let s
         while (s = shape.pop()){
             for (let i = 0; i<data.length; i+=s){
-                res.push(data.slice(i, i+s))
+                res.push(Array.from(data.slice(i, i+s)))
             }
             data = res;
             res = [];
@@ -237,7 +237,7 @@ export class torus{
         for (let size of parts){
             let end = start + size;
             let res = this.data.slice(start,  end);
-            let out = torus.from(res, `slice [${start}-${end}]`, [this]);
+            let out = tensor.from(res, `slice [${start}-${end}]`, [this]);
             result.push(out);
             start = end;
         }
@@ -245,15 +245,15 @@ export class torus{
     }
 }
 
-torus.prototype.sum = function (){
-    const out = torus.einsum('x->', [this]);
+tensor.prototype.sum = function (){
+    const out = tensor.einsum('x->', [this]);
     out.label = `sum([${this.shape}])`;
     return out;
 }
 
-torus.prototype.log = function (){
+tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
-    const out = torus.from(data, 'log', [this]).reshape(this.shape);
+    const out = tensor.from(data, 'log', [this]).reshape(this.shape);
     for(let i = 0; i<this.data.length; i++){
         this.data[i].grads.push(()=>{
             return (1 / this.data[i]) * out.data[i].g;
@@ -262,50 +262,50 @@ torus.prototype.log = function (){
     return out;
 }
 
-torus.prototype.exp = function (){
+tensor.prototype.exp = function (){
     const data = this.data.map(x => x.exp())
-    return torus.from(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
+    return tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
 }
 
-torus.prototype.oper = function (operation , other){
-    other = torus.from(other);
+tensor.prototype.oper = function (operation , other){
+    other = tensor.from(other);
     let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
     let axis_other = other.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
-    const expr = `${axis_this}, ${axis_other} -> ${axis_this}:`+operation;
-    const out = torus.einsum(expr, [this,  other]);
+    const expr = `${axis_this}, ${axis_other} -> ${axis_this}`;
+    const out = tensor.einsum(expr, [this,  other], operation);
     out.label = operation+`: ${this.label}, ${other.label}`;
     return out;
 }
 
-torus.prototype.add = function (other){
+tensor.prototype.add = function (other){
     return this.oper('add', other);
 }
-torus.prototype.minus = function (other){
+tensor.prototype.minus = function (other){
     return this.oper('minus', other);
 }
-torus.prototype.mul = function (other){
+tensor.prototype.mul = function (other){
     return this.oper('mul', other);
 }
-torus.prototype.div = function (other){
+tensor.prototype.div = function (other){
     return this.oper('div', other);
 }
-torus.prototype.tahn = function (){
+tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
-    return torus.from(data, 'tahn', [this]).reshape(this.shape);
+    return tensor.from(data, 'tahn', [this]).reshape(this.shape);
 }
-torus.prototype.pow = function (other){
-    other = torus.from(other);
+tensor.prototype.pow = function (other){
+    other = tensor.from(other);
     let data;
     if (this.shape.length)
         data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
     else
         data = this.data._pow(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    return torus.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
+    return tensor.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
 }
 
-torus.prototype.sigmoid = function (){
+tensor.prototype.sigmoid = function (){
     const data = (this.data.length)?(this.data.map(x => 1 / (1 + Math.exp(-x)))): (1 / (1 + Math.exp(-this.data)));
-    const out = torus.from(data, 'sigmoid', [this]).reshape(this.shape);
+    const out = tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
     out._back = ()=>{
         if (data.length){
             for(let i = 0; i<data.length; i++){
@@ -319,42 +319,42 @@ torus.prototype.sigmoid = function (){
     }
     return out;
 }
-torus.prototype.softplus = function (){
+tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
-    return torus.from(data, 'softplus', [this]).reshape(this.shape);
+    return tensor.from(data, 'softplus', [this]).reshape(this.shape);
 }
-torus.prototype.softmax = function (){
+tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
-    const data = this.data.map((x, i)=> {
-        const out = TNum(Math.exp(x) / exp);
-        x.grads.push(()=>{
+    const data = this.data.map((x, i)=>  Math.exp(x) / exp);
+    const out =  tensor.from(data, 'softmax', [this]).reshape(this.shape);
+    out._back = ()=>{
+        for(let i = 0; i<data.length; i++){
+            let d = data[i];
             let sum = data.reduce((r, sj, j)=>{
                 if (i === j)
-                    return out * (1-out)
-                return -out * sj
-            });
-            sum *= out.g;
-            return sum;
-        })
-        return out;
-    })
-    return torus.from(data, 'softmax', [this]).reshape(this.shape);
+                    return d * (1 - d)
+                return -d * sj
+            }) * out.grad[i];
+            this.grad[i] += sum / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
 }
-torus.prototype.MSE = function (other){
-    if (other instanceof torus)
+tensor.prototype.MSE = function (other){
+    if (other instanceof tensor)
         other = other.data;
     let data;
     let error = 0;
     if(this.data.length)
         data = this.data.map((d, i)=>{
-            d = (d - other[i]) ** 2;
+            d = ((other[i] ?? 0)- d) ** 2;
             error+=d;
             return d;
         });
     else
-        error = data = (this.data - (other ?? 0)) ** 2;
+        error = data = ((other ?? 0) - this.data) ** 2;
     error /= this.size;
-    const out = torus.from(error, 'MSE', [this]);
+    const out = tensor.from(error, 'MSE', [this]);
     out._back = ()=>{
         if (data.length){
             for (let i = 0; i<data.length; i++){
@@ -368,7 +368,7 @@ torus.prototype.MSE = function (other){
     return out;
 }
 
-Array.prototype.totorusString = function (max = 4, shape = []){
+Array.prototype.totensorString = function (max = 4, shape = []){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (d[0]?.map){
@@ -420,31 +420,31 @@ let _id = 0;
 const tests = [
     (check = 15)=>{
         const v = Tensor.from([1, 2, 3, 4, 5]);
-        const res = torus.einsum("i->", [v]);
+        const res = tensor.einsum("i->", [v]);
         if (res.data !== check) throw new Error('Сумма всех значений вектора');
     },
     (check = 21)=>{
         const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = torus.einsum("ij->", [v]);
+        const res = tensor.einsum("ij->", [v]);
         if (res.data !== check) throw new Error('Сумма всех значений матрицы');
     },
     (check = [9, 12])=>{
         const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = torus.einsum("ij->j", [v]);
+        const res = tensor.einsum("ij->j", [v]);
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Сумма значений по столбцам');
         }
     },
     (check = [3, 7, 11])=>{
         const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = torus.einsum("ij->i", [v]);
+        const res = tensor.einsum("ij->i", [v]);
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Сумма значений по строкам');
         }
     },
     (check = [[1, 3, 5], [2, 4, 6]])=>{
         const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = torus.einsum("ij->ji", [v]);
+        const res = tensor.einsum("ij->ji", [v]);
         check = check.flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Транспонирование');
@@ -453,7 +453,7 @@ const tests = [
     (check = [[5], [11], [17]])=>{
         const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
         const v2 = Tensor.from([[1, 2]]);
-        const res = torus.einsum("ij,kj->ik", [v1,  v2]);
+        const res = tensor.einsum("ij,kj->ik", [v1,  v2]);
         check = check.flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на вектор');
@@ -462,7 +462,7 @@ const tests = [
     (check = [[1, 2], [3, 4], [5, 6]])=>{
         const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
         const v2 = Tensor.from([[1, 0], [0, 1]]);
-        const res = torus.einsum("ik,kj->ij", [v1,  v2]);
+        const res = tensor.einsum("ik,kj->ij", [v1,  v2]);
         check = check.flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на матрицу');
@@ -471,18 +471,18 @@ const tests = [
     (check = 6)=>{
         const v1 = Tensor.from([[1, 2, 3]]);
         const v2 = Tensor.from([[1, 1, 1]]);
-        const res = torus.einsum("ik,jk->", [v1,  v2]);
+        const res = tensor.einsum("ik,jk->", [v1,  v2]);
         if (res.data !== check) throw new Error('Скалярное произведение векторов');
     },
     (check = 15)=>{
         const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        const res = torus.einsum("ii->", [v1]);
+        const res = tensor.einsum("ii->", [v1]);
         if (res.data !== check) throw new Error('След матрицы');
     },
     (check = [[1, 0, 0], [0, 5, 0], [0, 0, 9]])=>{
         const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         const v2 = Tensor.from([[1, 0, 0], [0, 1, 0], [0, 0, 1]]);
-        const res = torus.einsum("ij,ij->ij", [v1,  v2]);
+        const res = tensor.einsum("ij,ij->ij", [v1,  v2]);
         check = check.flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Адамарово (покомпонентное) произведение');
@@ -491,7 +491,7 @@ const tests = [
     (check = [[1, 0, 0], [2, 0, 0], [3, 0, 0]])=>{
         const v1 = Tensor.from([1, 2, 3]);
         const v2 = Tensor.from([1, 0, 0]);
-        const res = torus.einsum("i,j->ij", [v1,  v2]);
+        const res = tensor.einsum("i,j->ij", [v1,  v2]);
         check = check.flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Кронекерово (внешнее) произведение векторов');
@@ -499,7 +499,7 @@ const tests = [
     },
     (check = [[[0, 1, 2], [1, 2, 3]], [[1, 2, 3], [2, 3, 4]], [[2, 3, 4], [3, 4, 5]]])=>{
         const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
-        const res = torus.einsum("ijk->jki", [v1]);
+        const res = tensor.einsum("ijk->jki", [v1]);
         check = check.flat().flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Транспонирование тензора');
@@ -508,7 +508,7 @@ const tests = [
     (check = [[[2, 3], [5, 8], [8, 13]], [[5, 8], [8, 13], [11, 18]], [[8, 13], [11, 18], [14, 23]]])=>{
         const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
         const v2 = Tensor.from([[1, 2], [2, 3]]);
-        const res = torus.einsum("ijk,nk->ijn", [v1,  v2]);
+        const res = tensor.einsum("ijk,nk->ijn", [v1,  v2]);
         check = check.flat().flat();
         for(let i = 0; i<check.length; i++){
             if (res.data[i] !== check[i]) throw new Error('Произведение тензора на матрицу по третьей модев');
@@ -522,9 +522,9 @@ if (USE_TESTS){
     })
 }
 
-torus.einsums = {};
-torus.parse_shape = (expr, tensor)=>{
-    const shape = tensor.shape;
+tensor.einsums = {};
+tensor.parse_shape = (expr, src)=>{
+    const shape = src.shape;
     const vars = expr.split('');
     if(vars.length !== shape.length)
         throw new Error(`Shape size [${shape.length}] does not match variable count [${vars.length}]`);
@@ -542,19 +542,19 @@ torus.parse_shape = (expr, tensor)=>{
     },{})
 }
 
-torus.rearrange = (expr, tensor)=>{
+tensor.rearrange = (expr, src)=>{
     //todo
 }
-torus.reduce = (expr, tensor, agg_func = 'max')=>{
+tensor.reduce = (expr, src, agg_func = 'max')=>{
     //todo
 }
-torus.repeat = (expr, tensor, vars = {})=>{
+tensor.repeat = (expr, src, vars = {})=>{
     //todo
 }
-torus.pack = (expr, inputs)=>{
+tensor.pack = (expr, inputs)=>{
     //todo
 }
-torus.unpack = (expr, inputs)=>{
+tensor.unpack = (expr, inputs)=>{
     //todo
 }
 const operators = {
@@ -568,8 +568,8 @@ const operators = {
     'minus': ' - ',
     '-': ' - ',
 }
-torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
-    const tensors = sources.map(t => torus.from(t));
+tensor.einsum = (in_expr, sources = [], operator = 'mul')=>{
+    const tensors = sources.map(t => tensor.from(t));
     let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
     const axis = [];
     const terms = expr[0].trim().split(',');            // Разделение входа на термы
@@ -672,12 +672,12 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
     fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
 
     const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
-    let out = torus.from(data);
+    let out = tensor.from(data);
     out.reshape(outs.map(i=>i.d));
     out.children = tensors;
     const fn = new Function('t', 'out', fwd_expr);
     out._back = function (){
-        out = torus.from(out.grad).reshape(out.shape);
+        out = tensor.from(out.grad).reshape(out.shape);
         tensors.forEach((t, i)=>{
             if(!t.isAllowGrad) return;
             let expr =  inputs.map((tt, ii)=>{
@@ -690,7 +690,7 @@ torus.einsum = (in_expr, sources = [], operator = 'mul')=>{
                     return out;
                 return tt;
             })
-            t.grad = torus.einsum(expr, sources).data.map(d=>d / GRADIENT_DIVIDER);
+            t.grad = tensor.einsum(expr, sources).data.map(d=>d / GRADIENT_DIVIDER);
         })
     }
     fn(tensors, out);

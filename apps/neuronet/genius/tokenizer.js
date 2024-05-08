@@ -1,14 +1,11 @@
 import '../../../rocks.js';
-import {torus} from './torus.js';
-// import {EO} from "./einops.js";
-import {Linear} from './module.js';
-// const MAX_WORD_LENGTH = 32;
+import {tensor} from './torus.js';
 const MAX_EMB_ERROR = .1;
-const WINDOW_SIZE = 16;
+const WINDOW_SIZE = 8;
 const SIGNS = ',()[]{}:;';
 const SPLITTERS = ' \n\t';
 const TERMINATES = '.!?…';
-const BINS = new Float32Array(WINDOW_SIZE).map((v, i)=>(2. ** -i));
+const BINS = Array(WINDOW_SIZE).fill().map((v, i)=>(2. ** -i));
 export class Tokenizer extends ROCKS({
     tokenizeByWord(text){
         text = text.toLowerCase();
@@ -20,8 +17,9 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = torus.rands(this.dim).data;
-                res.cnt = Array.from(torus.rands(this.dim).data);
+                res.emb = tensor.rands(this.dim).data;
+                res.cnt = Array.from(tensor.rands(this.dim).data);
+                res.L = Array.from(tensor.rand(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
                 return res;
@@ -89,8 +87,9 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = pair;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = torus.rands(this.dim).data;
-                res.cnt = Array.from(torus.rands(this.dim).data);
+                res.emb = tensor.rands(this.dim).data;
+                res.cnt = Array.from(tensor.rands(this.dim).data);
+                res.L = Array.from(tensor.rand(this.dim).data);
                 res.error = 1;
                 return res;
             })()
@@ -128,12 +127,23 @@ export class Tokenizer extends ROCKS({
         if (!phrase.length)
             return 1;
         phrase = phrase.slice(0, WINDOW_SIZE);
-        const emb = torus.param(token.emb);
-        const cnts = torus.param(phrase.map(i=>i.cnt).flat());
+        let target = BINS.slice(0, phrase.length);
+        while (phrase.length < WINDOW_SIZE && this.size > WINDOW_SIZE * 2){
+            const idx = Math.ceil(Math.random() * this.size)
+            const t = this.tokens[idx];
+            if (t && !phrase.includes(t)){
+                target.push(0);
+                phrase.push(t);
+            }
+        }
+        const emb = tensor.param(token.emb);
+        const cnts = tensor.param(phrase.map(i=>{
+            return i.cnt
+        }).flat());
         cnts.reshape([phrase.length, this.dim]);
-        let res = torus.einsum(`d, id -> i`, [emb, cnts]);
+        let res = tensor.einsum(`d, id -> i`, [emb, cnts]);
         res = res.sigmoid();
-        res = res.MSE(BINS);
+        res = res.MSE(target);
         token.error = res.data;
         res.back();
         for (let i = 0; i<cnts.shape[0]; i++){
@@ -146,13 +156,13 @@ export class Tokenizer extends ROCKS({
         return Object.values(this.vocabulary);
     },
     get outMatrix(){
-        const w = torus.param(this.tokens.map(t=>t.W.flat()));
+        const w = tensor.param(this.tokens.map(t=>t.L.flat()));
         w.label += ' LOGIT'
         return w;
     },
     findToken(tokens, target){
         const matrix = this.outMatrix;
-        let logit = torus.einsum('x, yx -> y', [tokens, matrix]);
+        let logit = tensor.einsum('x, xy -> y', [tokens, matrix.T]);
         // logit = logit.add(bias);
         logit = logit.softmax();
         const max = Math.max(...logit.data);
@@ -162,7 +172,8 @@ export class Tokenizer extends ROCKS({
         const w = this.tokens.find(i=>i.id === idx).w;
         let error;
         if (target){
-            target = this.tokens.map(i =>(i === target)?1:0);
+            target = Array(this.tokens.length).fill(0);
+            target[idx] = 1;
             error = logit.MSE(target);
             error.back();
         }
@@ -176,6 +187,7 @@ export class Tokenizer extends ROCKS({
             id: 0,
             w: '<end>',
             emb: new Int8Array(dim),
+            L: Array.from(tensor.rand(this.dim).data),
             error: 0
         }
         this.vocabulary['<end>'] = this.ends;

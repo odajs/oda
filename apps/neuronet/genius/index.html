@@ -4,7 +4,7 @@
 <script type="module">
     import '../../../oda.js';
     import {Genius} from './genius.js';
-    import {torus, LEARNING_RATE} from './torus.js';
+    import {tensor, LEARNING_RATE} from './torus.js';
     // import {EO} from "./einops.js";
     import * as mm from './module.js';
     // import {TNum, N} from './num.js';
@@ -106,12 +106,12 @@
                 // this.model.module.reset();
                 while(phrase.length){
                     let token = phrase.shift();
-                    const error = this.tokenizer.train(token, phrase);
-                    // if (error > this.tokenizer.maxError)
+                    this.tokenizer.train(token, phrase);
+                    // if (this.tokenizer.error > this.tokenizer.maxError)
                     //     continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
-                    let res = await this.model(token.emb, target.emb);
-                    this.tensor = this.err = res;
+                    let res = await this.model(token.emb, target);
+                    this.tensor = this.err = res.error;
                     result.push(res.w);
                 }
             }
@@ -126,7 +126,7 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 1.618, deep: 1, head_count: 1});
+                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 1, head_count: 1});
             }
 
         },
@@ -137,7 +137,7 @@
             },
         },
         get tokens(){
-            return this.tokenizer.tokenizeByPair(this.value)
+            return this.tokenizer.tokenizeByWord(this.value)
         }
     })
 
