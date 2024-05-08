@@ -299,8 +299,8 @@ in the <${host.localName}>`;
         return str;
     }
     globalThis.str2arr = str2arr;
-    const KEY = Symbol('ROCKS-PROPS');
-    const IS_ROCKS_PROXY = Symbol('IS_ROCKS_PROXY');
+    const KEY = Symbol.for('ROCKS-PROPS');
+    const IS_ROCKS_PROXY = Symbol.for('IS_ROCKS_PROXY');
     ROCKS.KEY = KEY;
     ROCKS.IS_ROCKS_PROXY = IS_ROCKS_PROXY;
     function reactor(target) {
