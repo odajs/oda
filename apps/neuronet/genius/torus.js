@@ -48,7 +48,7 @@ export class tensor{
         return tensor.einsum(axis_this+'->'+axis_out, [this]);
     }
     get g(){
-        return tensor.from(this.grad).reshape(this.shape);
+        return tensor.from(this.grad).reshape(this);
     }
     get shape(){
         return this.#shape;
@@ -126,6 +126,8 @@ export class tensor{
     reshape(...shape){
         if(Array.isArray(shape[0]))
             shape = shape[0];
+        if(shape[0] instanceof tensor)
+            shape = shape[0].shape;
         const size = shape.reduce((r, v)=>r * v, 1);
         if (size !== this.size)
             throw new Error(`Reshape from (${this.shape}) to (${shape}) not allow.`);
@@ -253,7 +255,7 @@ tensor.prototype.sum = function (){
 
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
-    const out = tensor.from(data, 'log', [this]).reshape(this.shape);
+    const out = tensor.from(data, 'log', [this]).reshape(this);
     for(let i = 0; i<this.data.length; i++){
         this.data[i].grads.push(()=>{
             return (1 / this.data[i]) * out.data[i].g;
@@ -264,7 +266,7 @@ tensor.prototype.log = function (){
 
 tensor.prototype.exp = function (){
     const data = this.data.map(x => x.exp())
-    return tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this.shape);
+    return tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this);
 }
 
 tensor.prototype.oper = function (operation , other){
@@ -278,7 +280,20 @@ tensor.prototype.oper = function (operation , other){
 }
 
 tensor.prototype.add = function (other){
-    return this.oper('add', other);
+    other = tensor.from(other);
+    let data = this.data.map((x, i)=>x+other.data[i]);
+    const out = tensor.from(data, 'add', [this, other]).reshape(this);
+    out._back = ()=>{
+        if (data.length){
+            for (let i = 0; i<data.length; i++){
+                this.grad[i] += out.grad[i] / GRADIENT_DIVIDER;
+            }
+        }
+        else{
+            this.grad += out.grad / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
 }
 tensor.prototype.minus = function (other){
     return this.oper('minus', other);
@@ -291,7 +306,7 @@ tensor.prototype.div = function (other){
 }
 tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
-    return tensor.from(data, 'tahn', [this]).reshape(this.shape);
+    return tensor.from(data, 'tahn', [this]).reshape(this);
 }
 tensor.prototype.pow = function (other){
     other = tensor.from(other);
@@ -300,12 +315,12 @@ tensor.prototype.pow = function (other){
         data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
     else
         data = this.data._pow(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    return tensor.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this.shape);
+    return tensor.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this);
 }
 
 tensor.prototype.sigmoid = function (){
     const data = (this.data.length)?(this.data.map(x => 1 / (1 + Math.exp(-x)))): (1 / (1 + Math.exp(-this.data)));
-    const out = tensor.from(data, 'sigmoid', [this]).reshape(this.shape);
+    const out = tensor.from(data, 'sigmoid', [this]).reshape(this);
     out._back = ()=>{
         if (data.length){
             for(let i = 0; i<data.length; i++){
@@ -321,21 +336,21 @@ tensor.prototype.sigmoid = function (){
 }
 tensor.prototype.softplus = function (){
     const data = this.data.map(x=>x.softplus());
-    return tensor.from(data, 'softplus', [this]).reshape(this.shape);
+    return tensor.from(data, 'softplus', [this]).reshape(this);
 }
 tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
     const data = this.data.map((x, i)=>  Math.exp(x) / exp);
-    const out =  tensor.from(data, 'softmax', [this]).reshape(this.shape);
+    const out =  tensor.from(data, 'softmax', [this]).reshape(this);
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let d = data[i];
             let sum = data.reduce((r, sj, j)=>{
                 if (i === j)
                     return d * (1 - d)
-                return -d * sj
+                return -d * sj;
             }) * out.grad[i];
-            this.grad[i] += sum / GRADIENT_DIVIDER;
+            this.grad[i] += sum * out.grad[i] / GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -677,7 +692,7 @@ tensor.einsum = (in_expr, sources = [], operator = 'mul')=>{
     out.children = tensors;
     const fn = new Function('t', 'out', fwd_expr);
     out._back = function (){
-        out = tensor.from(out.grad).reshape(out.shape);
+        out = tensor.from(out.grad).reshape(out);
         tensors.forEach((t, i)=>{
             if(!t.isAllowGrad) return;
             let expr =  inputs.map((tt, ii)=>{

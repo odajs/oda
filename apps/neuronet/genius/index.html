@@ -224,9 +224,9 @@
             this.time = 0;
             this.result = ''
             try{
-                const fn = new Function('torus', this.value);
+                const fn = new Function('tensor', this.value);
                 let time = Date.now();
-                const res =  fn.call(this, torus) || '';
+                const res =  fn.call(this, tensor) || '';
                 time = Date.now() - time;
                 this.result =  res?.toString();
                 this.time = time;
