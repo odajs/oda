@@ -37,7 +37,7 @@ export class GeniusLayer extends Module{
         // this.d_A = this.d * this.dh;
         this.W = tensor.param(tensor.rand(this.d_in, this.d));
         this.fork_proj = new Linear({d_in: this.d, d_out: this.dh * 2/* + DT_RANK*/, bias: false});
-        this.A = tensor.param(tensor.hippo(this.d));
+        this.Alog = tensor.param(tensor.hippo(this.d));
         this.H = tensor.zeros(this.d, this.d);
         if (this.deep)
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
@@ -53,10 +53,11 @@ export class GeniusLayer extends Module{
         let fork_x = this.fork_proj(xe);
         let [B, C] = fork_x.slice([this.dh, this.dh/*, DT_RANK*/]);
         let xB = tensor.einsum('x, B -> xB', [xe, B]);
-        let A = tensor.einsum('xy, xy -> xy', [xB, this.A]);
-        this.H = A.add(this.H.array);
+        let A = this.Alog.exp().invert();
+        A = tensor.einsum('xy, xy -> xy', [xB, A]);
+        this.H.data = A.plus(this.H).data;
         let y = tensor.einsum('xy, y -> x', [this.H, C]);
-        y = xe.add(y);
+        y = xe.plus(y);
         if (this.subLayer)
             y = this.subLayer(y);
         y = tensor.einsum('y, xy -> x', [y, this.W]);

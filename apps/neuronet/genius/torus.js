@@ -25,6 +25,8 @@ export class tensor{
         else{
             if (data?.length)
                 this.#shape = [data?.length]
+            else
+                data = new Float32Array([data])
         }
         this.#data = data;
         this.id = genId();
@@ -33,9 +35,7 @@ export class tensor{
         return !!this.children?.some(i=>i.isAllowGrad) || this.isParam;
     }
     get grad(){
-        if(this.data.length)
-            return this['#grad'] ??= new Float32Array(this.size);
-        return this['#grad'] ??= 0;
+        return this['#grad'] ??= new Float32Array(this.size);
     }
     set grad(n){
         this['#grad'] = n;
@@ -92,13 +92,8 @@ export class tensor{
     }
     updateParams(){
         if (!this.isParam) return;
-        if (this.data.length){
-            for(let i = 0; i<this.data.length; i++){
-                this.data[i] += this.grad[i] * LEARNING_RATE;
-            }
-        }
-        else{
-            this.data += this.grad * LEARNING_RATE;
+        for(let i = 0; i<this.data.length; i++){
+            this.data[i] += this.grad[i] * LEARNING_RATE;
         }
     }
     back(){
@@ -207,7 +202,7 @@ export class tensor{
 
     toString(max = 8){
         if (this.shape.length){
-            let data = this.array.totensorString(max, this.shape).split('\r\n');
+            let data = this.array.toTensorString(max, this.shape).split('\r\n');
             if (data.length > max){
                 const padding = data[0].length/2 + 2
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
@@ -256,80 +251,149 @@ tensor.prototype.sum = function (){
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
     const out = tensor.from(data, 'log', [this]).reshape(this);
-    for(let i = 0; i<this.data.length; i++){
-        this.data[i].grads.push(()=>{
-            return (1 / this.data[i]) * out.data[i].g;
-        })
+    if (this.isAllowGrad){
+        out._back = ()=>{
+            let _x = this.grad;
+            let _z = out.grad;
+            let x = this.data;
+            for(let i = 0; i<this.data.length; i++){
+                _x[i] = 1 / x[i] * _z[i] / GRADIENT_DIVIDER;
+            }
+        }
     }
     return out;
 }
 
 tensor.prototype.exp = function (){
-    const data = this.data.map(x => x.exp())
-    return tensor.from(data, `exp([${this.shape}])`, [this]).reshape(this);
+    const data = this.data.map(Math.exp);
+    const out = tensor.from(data, `exp`, [this]).reshape(this);
+    if (this.isAllowGrad){
+        out._back = ()=>{
+            let _x = this.grad;
+            let _z = out.grad;
+            let x = this.data;
+            for(let i = 0; i<this.data.length; i++){
+                _x[i] = x[i] * _z[i] / GRADIENT_DIVIDER;
+            }
+        }
+    }
+    return out;
 }
-
-tensor.prototype.oper = function (operation , other){
-    other = tensor.from(other);
-    let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
-    let axis_other = other.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
-    const expr = `${axis_this}, ${axis_other} -> ${axis_this}`;
-    const out = tensor.einsum(expr, [this,  other], operation);
-    out.label = operation+`: ${this.label}, ${other.label}`;
+tensor.prototype.invert = function (){
+    const data = this.data.map(x=>-x);
+    const out = tensor.from(data, `invert`, [this]).reshape(this);
+    if (this.isAllowGrad){
+        out._back = ()=>{
+            let _x = this.grad;
+            let _z = out.grad;
+            for(let i = 0; i<this.data.length; i++){
+                _x[i] = -_z[i] / GRADIENT_DIVIDER;
+            }
+        }
+    }
     return out;
 }
 
-tensor.prototype.add = function (other){
-    other = tensor.from(other);
-    let data = this.data.map((x, i)=>x+other.data[i]);
-    const out = tensor.from(data, 'add', [this, other]).reshape(this);
+tensor.prototype.plus = function (other){
+    let y = other.data;
+    let data = this.data.map((x, i) => x + y[i]);
+    const out = tensor.from(data, 'plus', [this, other]).reshape(this);
     out._back = ()=>{
-        if (data.length){
-            for (let i = 0; i<data.length; i++){
-                this.grad[i] += out.grad[i] / GRADIENT_DIVIDER;
-            }
-        }
-        else{
-            this.grad += out.grad / GRADIENT_DIVIDER;
+        let _x = this.grad;
+        let _y = other.grad;
+        let _z = out.grad;
+        for (let i = 0; i<data.length; i++){
+            let g = _z[i] / GRADIENT_DIVIDER;
+            _x[i] += g;
+            _y[i] += g;
         }
     }
     return out;
 }
 tensor.prototype.minus = function (other){
-    return this.oper('minus', other);
+    let y = other.data;
+    let data = this.data.map((x, i) => x - y[i]);
+    const out = tensor.from(data, 'minus', [this, other]).reshape(this);
+    out._back = ()=>{
+        let _x = this.grad;
+        let _y = other.grad;
+        let _z = out.grad;
+        for (let i = 0; i<data.length; i++){
+            let g = _z[i] / GRADIENT_DIVIDER;
+            _x[i] += g;
+            _y[i] += -g;
+        }
+    }
+    return out;
 }
 tensor.prototype.mul = function (other){
-    return this.oper('mul', other);
+    let y = other.data;
+    let data = this.data.map((x, i) => x * y[i]);
+    const out = tensor.from(data, 'mul', [this, other]).reshape(this);
+    out._back = ()=>{
+        let _x = this.grad;
+        let x = this.data;
+        let _y = other.grad;
+        let _z = out.grad;
+        for (let i = 0; i<data.length; i++){
+            let g = _z[i] / GRADIENT_DIVIDER;
+            _x[i] += y[i] * g;
+            _y[i] += x[i] * g;
+        }
+    }
+    return out;
 }
 tensor.prototype.div = function (other){
-    return this.oper('div', other);
+    let y = other.data;
+    let data = this.data.map((x, i) => x / y[i]);
+    const out = tensor.from(data, 'div', [this, other]).reshape(this);
+    out._back = ()=>{
+        let _x = this.grad;
+        let x = this.data;
+        let _y = other.grad;
+        let _z = out.grad;
+        for (let i = 0; i<data.length; i++){
+            let g = _z[i] / GRADIENT_DIVIDER;
+            _x[i] += 1 / _y[i] * g;
+            _y[i] += -x[i]/(y ** 2) * g;
+        }
+    }
+    return out;
 }
+tensor.prototype.pow = function (other){
+    let y = other.data;
+    let data = this.data.map((x, i)=>x ** y[i])
+    let out =  tensor.from(data, `pow`, [this, other]).reshape(this);
+    out._back = ()=>{
+        let _x = this.grad;
+        let x = this.data;
+        let _y = other.grad;
+        let _z = out.grad;
+        for (let i = 0; i<data.length; i++){
+            let g = _z[i] / GRADIENT_DIVIDER;
+            let yi = y[i];
+            let xi = x[i];
+            _x[i] += yi * x[i] ** (yi - 1) * g;
+            _y[i] += data[i] * Math.ln(xi) * g;
+        }
+    }
+    return out;
+}
+
 tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
     return tensor.from(data, 'tahn', [this]).reshape(this);
 }
-tensor.prototype.pow = function (other){
-    other = tensor.from(other);
-    let data;
-    if (this.shape.length)
-        data = this.data.map((x, i)=>x._pow(other.data[i] ?? other.data))
-    else
-        data = this.data._pow(other.data.reduce?.((r, v)=>r + v, 0) ?? other.data)
-    return tensor.from(data, `pow([${this.shape}] ^ ${other.data})`, [this, other]).reshape(this);
-}
 
 tensor.prototype.sigmoid = function (){
-    const data = (this.data.length)?(this.data.map(x => 1 / (1 + Math.exp(-x)))): (1 / (1 + Math.exp(-this.data)));
+    const data = this.data.map(x => 1 / (1 + Math.exp(-x)))
     const out = tensor.from(data, 'sigmoid', [this]).reshape(this);
     out._back = ()=>{
-        if (data.length){
-            for(let i = 0; i<data.length; i++){
-                let d = data[i];
-                this.grad[i] += (1 - d) * d * out.grad[i] / GRADIENT_DIVIDER;
-            }
-        }
-        else{
-            this.grad += (1 - data) * data * out.grad / GRADIENT_DIVIDER;
+        let _z = out.grad;
+        let _x = this.grad;
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            _x[i] += (1 - x) * x * _z[i] / GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -356,34 +420,24 @@ tensor.prototype.softmax = function (){
     return out;
 }
 tensor.prototype.MSE = function (other){
-    if (other instanceof tensor)
-        other = other.data;
-    let data;
+    let y = other.data ?? other;
     let error = 0;
-    if(this.data.length)
-        data = this.data.map((d, i)=>{
-            d = ((other[i] ?? 0)- d) ** 2;
-            error+=d;
-            return d;
-        });
-    else
-        error = data = ((other ?? 0) - this.data) ** 2;
+    let data = this.data.map((x, i)=>{
+        error += x = ((y[i] ?? 0)- x) ** 2;
+        return x;
+    });
     error /= this.size;
     const out = tensor.from(error, 'MSE', [this]);
     out._back = ()=>{
-        if (data.length){
-            for (let i = 0; i<data.length; i++){
-                this.grad[i] += (-2 * data[i] / GRADIENT_DIVIDER);
-            }
-        }
-        else{
-            this.grad += (-2 * data / GRADIENT_DIVIDER);
+        let _x = this.grad;
+        for (let i = 0; i<data.length; i++){
+            _x[i] += -2 * data[i] / GRADIENT_DIVIDER;
         }
     }
     return out;
 }
 
-Array.prototype.totensorString = function (max = 4, shape = []){
+Array.prototype.toTensorString = function (max = 4, shape = []){
     function recurse(d, idx = 0, l = 0){
         let result = idx?`\r\n${(' ').repeat(l)}[`:'['
         if (d[0]?.map){

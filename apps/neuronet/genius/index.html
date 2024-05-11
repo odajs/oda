@@ -5,9 +5,7 @@
     import '../../../oda.js';
     import {Genius} from './genius.js';
     import {tensor, LEARNING_RATE} from './torus.js';
-    // import {EO} from "./einops.js";
     import * as mm from './module.js';
-    // import {TNum, N} from './num.js';
     import {Tokenizer} from './tokenizer.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
@@ -111,7 +109,8 @@
                     //     continue;
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = await this.model(token.emb, target);
-                    this.tensor = this.err = res.error;
+                    this.tensor = res.error;
+                    this.err = this.tensor.data[0]
                     result.push(res.w);
                 }
             }
@@ -133,7 +132,7 @@
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer(16);
+                return new Tokenizer(4);
             },
         },
         get tokens(){
