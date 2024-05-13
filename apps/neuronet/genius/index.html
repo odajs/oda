@@ -7,6 +7,8 @@
     import {tensor, LEARNING_RATE} from './torus.js';
     import * as mm from './module.js';
     import {Tokenizer} from './tokenizer.js';
+    import '../../apps/popup-form/popup-form.js';
+    import '/web/oda/components/viewers/chart/chart.js';
     ODA({is: 'gen-layout', imports: '@oda/app-layout', extends: 'oda-app-layout',
         template:`
             <style>
@@ -23,10 +25,14 @@
                 }
             </style>
             <gen-vocabulary opened  slot="right-panel"></gen-vocabulary>
+            <oda-popup-form ~if="showChart">
+                <oda-chart id="chart" slot="popup-main" :data="chartData" type="line" :options="chartOptions"></oda-chart>    
+            </oda-popup-form>
             <div opened class="vertical dark" slot="left-panel"  style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
                     <oda-button icon="icons:arrow-forward" allow-toggle ::toggled="isNext"></oda-button>
+                    <oda-button icon="carbon:chart-scatter" allow-toggle ::toggled="showChart"></oda-button>
                 </div>
 
                 <div class="vertical flex">
@@ -96,6 +102,35 @@
             $def: false,
             $save: true
         },
+        showChart: {
+            $def: false,
+            $save: true
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                // yAxes: {
+                //     ticks: {
+                //         beginAtZero: true
+                //     }
+                // }
+            }
+        },
+        chartData: {
+            labels: [],
+            datasets: [{
+                label: 'Test',
+                backgroundColor: 'rgb(255, 99, 132)',
+                // borderColor: 'rgb(255, 99, 132)',
+                // borderWidth: 1,
+                data: [],
+            }]
+        },
+        get chart() {
+            return this.$('#chart');
+        },
+        // errors: [],
         async step(){
             let result = [];
             this.model.module.reset();
@@ -110,7 +145,17 @@
                     let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
                     let res = await this.model(token.emb, target);
                     this.tensor = res.error;
-                    this.err = this.tensor.data[0]
+                    this.err = this.tensor.data[0];
+                    
+                    if (this.showChart) {
+                        //this.errors.push(this.err);
+                        this.chart.data.labels.push('');
+                        this.chart.data.datasets.forEach((dataset) => {
+                            dataset.data.push(this.err);
+                        })
+                        this.chart?.chart.update();
+                    }
+
                     result.push(res.w);
                 }
             }
