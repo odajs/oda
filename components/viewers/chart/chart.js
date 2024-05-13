@@ -14,26 +14,20 @@ ODA({ is: 'oda-chart', imports: './lib/chart.umd.min.js',
         type: {
             $def: 'line',
             $list: ['line', 'bar', 'pie', 'radar', 'doughnut', 'polarArea'],
-            $attr: true,
-            set(v) { this.init() }
+            $attr: true
         },
-        data: { $type: Object, set(v) { this.init() } },
-        options: { $type: Object, set(v) { this.init() } }
+        data: undefined,
+        options: undefined
     },
     get defaultOptions() { return { responsive: true, maintainAspectRatio: false } },
-    get canvas() {
-        return this.$?.('canvas');
-    },
-    attached() {
-        this.init()
-    },
-    init() {
-        this.async(() => {
-            if (this.canvas) {
+    $observers: {
+        async chartChanged(type, data, options) {
+            const canvas = this.$?.('canvas');
+            if (type && data && options && canvas) {
                 this.chart?.destroy() && this.chart.destroy();
-                const ctx = this.canvas.getContext('2d');
+                const ctx = canvas.getContext('2d');
                 this.chart = new Chart(ctx, { type: this.type, data: this.data, options: { ...this.defaultOptions, ...this.options } });
             }
-        }, 50)
+        }
     }
 })
