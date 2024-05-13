@@ -17,11 +17,12 @@ export class Genius extends Module{
     }
     async forward(token, target){
         let x = tensor.from(token);
-        let result = this.heads.map(async (head, i)=>{
-            return head(x);
-        });
-        result =  await Promise.all(result)
-        result = tensor.stack(result);
+        let result = this.heads[0](x)
+        // let result = this.heads.map(async (head, i)=>{
+        //     return head(x);
+        // });
+        // result =  await Promise.all(result)
+        // result = tensor.stack(result);
         result = this.tokenizer.findToken(result, target);
         return result;
     }
@@ -43,7 +44,7 @@ export class GeniusLayer extends Module{
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
     }
     reset(){
-        // this.H = tensor.zeros([this.d, this.d]);
+        this.H = tensor.zeros(this.d, this.d);
         this.subLayer?.reset?.();
     }
     forward(x){

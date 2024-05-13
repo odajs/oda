@@ -19,7 +19,7 @@ export class Tokenizer extends ROCKS({
                 res.id = Object.keys(this.vocabulary).length;
                 res.emb = tensor.rands(this.dim).data;
                 res.cnt = Array.from(tensor.rands(this.dim).data);
-                res.L = Array.from(tensor.rand(this.dim).data);
+                res.L = Array.from(tensor.rands(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
                 return res;

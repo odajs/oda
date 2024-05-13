@@ -1,6 +1,6 @@
 const USE_TESTS = false;
 export const LEARNING_RATE = 1;
-export const GRADIENT_DIVIDER = 1//.618;
+export const GRADIENT_DIVIDER = 1.618;
 export class tensor{
     #shape = [];
     #data = null;
@@ -31,8 +31,8 @@ export class tensor{
         this.#data = data;
         this.id = genId();
     }
-    get isAllowGrad(){
-        return !!this.children?.some(i=>i.isAllowGrad) || this.isParam;
+    get allowGrad(){
+        return (this._back && !!this.children?.some(i=>i.allowGrad)) || this.isParam;
     }
     get grad(){
         return this['#grad'] ??= new Float32Array(this.size);
@@ -233,8 +233,13 @@ export class tensor{
         const result = []
         for (let size of parts){
             let end = start + size;
-            let res = this.data.slice(start,  end);
-            let out = tensor.from(res, `slice [${start}-${end}]`, [this]);
+            let data = this.data.slice(start,  end);
+            let out = tensor.from(data, `slice [${start}-${end}]`, [this]);
+            out._back = ()=>{
+                for(let i = 0; i<data.length; i++){
+                    this.grad[i+start] += out.grad[i];
+                }
+            }
             result.push(out);
             start = end;
         }
@@ -251,7 +256,7 @@ tensor.prototype.sum = function (){
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
     const out = tensor.from(data, 'log', [this]).reshape(this);
-    if (this.isAllowGrad){
+    if (this.allowGrad){
         out._back = ()=>{
             let _x = this.grad;
             let _z = out.grad;
@@ -267,7 +272,7 @@ tensor.prototype.log = function (){
 tensor.prototype.exp = function (){
     const data = this.data.map(Math.exp);
     const out = tensor.from(data, `exp`, [this]).reshape(this);
-    if (this.isAllowGrad){
+    if (this.allowGrad){
         out._back = ()=>{
             let _x = this.grad;
             let _z = out.grad;
@@ -282,7 +287,7 @@ tensor.prototype.exp = function (){
 tensor.prototype.invert = function (){
     const data = this.data.map(x=>-x);
     const out = tensor.from(data, `invert`, [this]).reshape(this);
-    if (this.isAllowGrad){
+    if (this.allowGrad){
         out._back = ()=>{
             let _x = this.grad;
             let _z = out.grad;
@@ -423,7 +428,7 @@ tensor.prototype.MSE = function (other){
     let y = other.data ?? other;
     let error = 0;
     let data = this.data.map((x, i)=>{
-        error += x = ((y[i] ?? 0)- x) ** 2;
+        error += x = (x - y[i]) ** 2;
         return x;
     });
     error /= this.size;
@@ -748,7 +753,7 @@ tensor.einsum = (in_expr, sources = [], operator = 'mul')=>{
     out._back = function (){
         out = tensor.from(out.grad).reshape(out);
         tensors.forEach((t, i)=>{
-            if(!t.isAllowGrad) return;
+            if(!t.allowGrad) return;
             let expr =  inputs.map((tt, ii)=>{
                 if(ii === i)
                     return outs.map(o=>o.a).join('');

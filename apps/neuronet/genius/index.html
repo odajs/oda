@@ -3,6 +3,7 @@
 <gen-layout></gen-layout>
 <script type="module">
     import '../../../oda.js';
+    import '../../../tools/property-grid/property-grid.js';
     import {Genius} from './genius.js';
     import {tensor, LEARNING_RATE} from './torus.js';
     import * as mm from './module.js';
@@ -24,9 +25,12 @@
                     font-family: monospace;
                 }
             </style>
+
+            <gen-vocabulary opened slot="right-panel"></gen-vocabulary>
+            <oda-property-grid  expert-mode :inspected-object="focusedTensor" slot="right-panel"></oda-property-grid>
             <gen-vocabulary opened  slot="right-panel"></gen-vocabulary>
             <oda-popup-form ~if="showChart">
-                <oda-chart id="chart" slot="popup-main" :data="chartData" type="line" :options="chartOptions"></oda-chart>    
+                <oda-chart id="chart" slot="popup-main" :data="chartData" type="line" :options="chartOptions"></oda-chart>
             </oda-popup-form>
             <div opened class="vertical dark" slot="left-panel"  style="padding: 8px">
                 <div class="horizontal">
@@ -131,6 +135,7 @@
             return this.$('#chart');
         },
         // errors: [],
+        errors : [],
         async step(){
             let result = [];
             this.model.module.reset();
@@ -146,7 +151,9 @@
                     let res = await this.model(token.emb, target);
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
-                    
+                    this.errors.push(this.err)
+                    this.err = this.tensor.data[0];
+
                     if (this.showChart) {
                         //this.errors.push(this.err);
                         this.chart.data.labels.push('');
@@ -206,9 +213,9 @@
 
                 }
             </style>
-            <div class="border header bold horizontal" style="position: sticky; z-index: 1" ~style="{top: 0}">
+            <div :error="tensor?.children.length && tensor?._back" :success-invert="tensor?.allowGrad" class="border header bold horizontal" style="position: sticky; z-index: 1" ~style="{top: 0}">
                 <span>{{tensor?.id}}.</span>
-                <span no-flex>{{tensor?.label}}</span>
+                <span flex>{{tensor?.label}}</span>
             </div>
 
             <div ~if="!closed" vertical style="position: sticky; top: 32px;">
