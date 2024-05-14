@@ -408,7 +408,26 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             })
             return result;
         },
-        groups: [],
+        groupColPaths: {
+            $def: [],
+            $save: true
+        },
+        get groups() {
+            if (!this.columns?.length) return [];
+
+            const getColByPath = (columns, path) => {
+                const steps = path.split('/');
+                const step = steps.pop();
+                const col = columns.find(c => c.name === step);
+                if (col) {
+                    if (steps.length) {
+                        return getColByPath(col.items, steps.join('/'));
+                    }
+                    return col;
+                }
+            }
+            return this.groupColPaths.map(p => getColByPath(this.columns, p));
+        },
         pivotLabels: [],
         get filters() {
             return this.columns?.filter(i => i.$filter) || [];
@@ -927,17 +946,27 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
         this.render();
     },
+    getColPath(col) {
+        if (col.$parent)
+            return `${this.getColPath(col.__parent__)}/${col.name}`;
+        return col.name;
+    },
     addGroup(col) {
-        if (this.groups.indexOf(col) < 0) {
-            this.groups.push(col);
+        const path = this.getColPath(col);
+        if (this.groupColPaths.indexOf(path) < 0) {
+            this.groupColPaths.push(path);
+            this.groupColPaths = Array.from(this.groupColPaths);
             this.showGroupingPanel = true;
         }
     },
     removeGroup(col) {
-        let idx = this.groups.indexOf(col);
-        if (idx > -1)
-            this.groups.splice(idx, 1);
-        if (!this.groups.length)
+        const path = this.getColPath(col);
+        const idx = this.groupColPaths.indexOf(path);
+        if (idx > -1) {
+            this.groupColPaths.splice(idx, 1);
+            this.groupColPaths = Array.from(this.groupColPaths);
+        }
+        if (!this.groupColPaths.length)
             this.showGroupingPanel = false;
     },
     _getColumns(row) {
@@ -2494,7 +2523,7 @@ const maxColsCount = 1024;
 function modifyColumn(col) {
     if (col.isModified) return;
     col.isModified = true;
-    col.$saveKey = (col.__parent__?.$saveKey ? col.__parent__?.$saveKey + '/' : '') + (col[this.columnId] || 'empty-name');
+    col.$saveKey = (col.__parent__?.$saveKey ? (col.__parent__?.$saveKey + '/') : 'columns/') + (col[this.columnId] || 'empty-name');
     const storage = this.storage;
     const table = this;
     col['#$width'] = col.$width;
@@ -2526,7 +2555,7 @@ function modifyColumn(col) {
             }
             else {
                 this['#$width'] = v;
-                storage.setToItem(this.$saveKey, 'w', v);
+                storage.setToItem(this.$saveKey, '$width', v);
             }
         },
         get() {
@@ -2545,11 +2574,11 @@ function modifyColumn(col) {
                 return result;
             }
             else {
-                return this['#$width'] ??= storage.getFromItem(this.$saveKey, 'w');
+                return this['#$width'] ??= storage.getFromItem(this.$saveKey, '$width');
             }
         }
     })
-    const props = ['expanded', 'hidden', 'sort', 'order', 'filter'];
+    const props = ['__expanded__', '$hidden', '$sort', '$order', '$filter'];
     for (let i of props)
         addSaveProp.call(col, i, storage);
     if (col.checked !== undefined)
@@ -2601,8 +2630,6 @@ function modifyColumn(col) {
     col.$order ??= order + Math.floor(size) * idx;
 }
 function addSaveProp(name, storage) {
-    const key = name[0];
-    name = '$' + name;
     if (this[name] !== undefined) return;
     const vname = '#' + name;
     if (this[name] !== undefined)
@@ -2614,14 +2641,14 @@ function addSaveProp(name, storage) {
             if (this[name] === v)
                 return;
             this[vname] = v;
-            storage.setToItem(this.$saveKey, key, v || undefined);
+            storage.setToItem(this.$saveKey, name, v || undefined);
         },
         get() {
             if (this.$version !== storage.version)
                 this.$version = storage.version;
             let result = this[vname];
             if (result === undefined)
-                this[vname] = result = storage.getFromItem(this.$saveKey, key);
+                this[vname] = result = storage.getFromItem(this.$saveKey, name);
             return result;
         }
     })
