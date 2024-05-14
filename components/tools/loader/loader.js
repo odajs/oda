@@ -1,50 +1,56 @@
 ODA({
-  is: 'oda-loader',
-  extends: 'oda-icon', imports: '@oda/icon',
-  template: /*html*/`
-  <style>
-      :host{
-          visibility: {{show ? 'visible' : 'hidden'}};
-          opacity: .5
-      }
-      .icon{
-          display: {{show ? '' : 'none'}};
-      }
-  </style>
-  `,
-  iconSize: 128,
-  icon: 'odant:spin',
-  fill: 'var(--info-color)',
-  tasks: [],
-  _show: false,
-  get show() {
-      this.tasks?.length;
-      this.throttle('show', () => {
-          this._show = this.tasks?.length !== 0;
-      }, this.delay);
-      return this._show;
-  },
-  delay: 1000,
-})
+    is: 'oda-loader',
+    extends: 'oda-icon', imports: '@oda/icon',
+    template: /*html*/`
+    <style>
+        :host{
+            position: fixed !important;
+            top: 50%;
+            left: 50%;
+            z-index: 100;
+            transform: translate3d(-50%, -50%, 0);
+            pointer-events: none;
+            opacity: .5;
+        }
+    </style>
+    `,
+    $wake: true,
+    iconSize: 64,
+    icon: 'odant:spin',
+    fill: 'var(--info-color)',
+    tasks: [],
+    _show: {
+        set(v) {
+            this.style.setProperty('visibility', v ? 'visible' : 'hidden');
+        }
+    },
+    delay: 1000,
+    addTask(task) {
 
-export const loader_settings = {};
-
-if(window === window.top) {
-  const loader = document.createElement('oda-loader');
-  loader.style = 'position: fixed;top: 50%;left: 50%;z-index: 100;transform: translate3d(-50%, -50%, 0);pointer-events: none;';
-  loader.iconSize = 64;
-  document.body.appendChild(loader);
-  loader_settings.loader = loader;
-  const $tasks = [];
-  ((obj, methods) => {
-      for (const m of methods) {
-          obj[m] = (...args) => {
-              obj.constructor.prototype[m].apply($tasks, args);
-              loader.tasks = $tasks;
-              if (loader.tasks.length <= 0) {
-                  loader.show = false;
-              }
-          }
-      }
-  })($tasks, ['push', 'splice']);
+        if (!task) return;
+        this.tasks.push(task);
+        this._tasksChanged();
+    },
+    removeTask(task) {
+        if (!task) return;
+        const idx = this.tasks.findIndex(t => t.id === task.id);
+        if (~idx) this.tasks.splice(idx, 1);
+        this._tasksChanged();
+    },
+    _tasksChanged(tasks = this.tasks) {
+        this.debounce('_tasksChanged', () => {
+            this._show = this.tasks.length !== 0;
+        }, this.delay);
+    }
+});
+let loader;
+export async function getLoader() {
+    if (loader) return loader;
+    await ODA.waitReg('oda-loader');
+    loader = document.body.querySelector('oda-loader');
+    if (!loader) {
+        loader = document.createElement('oda-loader');
+        document.body.appendChild(loader);
+    }
+    return loader;
 }
