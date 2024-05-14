@@ -49,7 +49,7 @@ ODA({is: 'oda-ace-editor',
             set(n) {
                 if (n) {
                     this.editor?.execCommand('format');
-                    this.format = false;
+                    // this.format = false;
                 }
             }
         },
