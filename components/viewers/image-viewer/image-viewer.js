@@ -4,6 +4,7 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         :host {
             @apply --vertical;
             @apply --flex;
+            height: 100%;
             background-color: #242424;
             overflow: hidden;
         }
@@ -15,7 +16,6 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         }
         :host .image {
             width: 100%;
-            height: 100%;
             background: no-repeat center;
             background-size: contain;
         }
@@ -24,9 +24,10 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         <oda-button icon="image:rotate-left" fill="white" @tap="_rotateLeft"></oda-button>
         <oda-button icon="image:rotate-right" fill="white" @tap="_rotateRight"></oda-button>
         <oda-button icon="icons:file-download" fill="white" @tap="_download"></oda-button>
+        <oda-button icon="icons:fullscreen" fill="white" @tap="setFullscreen"></oda-button>
     </div>
-    <div id="img" class="img flex" ~style="_imageStyle">
-        <div class="image" ~style="\`background-image: url('\${src}');\`"></div>
+    <div id="img" class="vertical img flex" ~style="_imageStyle">
+        <div class="image flex" ~style="\`background-image: url('\${src}');\`"></div>
     </div>
     `,
     $public: {
@@ -109,5 +110,28 @@ ODA({is: 'oda-image-viewer', imports: '@oda/button',
         this._y = 0;
         this._scale = 1;
         if (withRotate) this.rotate = 0;
+    },
+    setFullscreen() {
+        this.fullscreenMode = !this.fullscreenMode;
+        const element = this;
+        if (this.fullscreenMode) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
 })
