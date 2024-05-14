@@ -113,18 +113,25 @@
         chartOptions: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                // yAxes: {
-                //     ticks: {
-                //         beginAtZero: true
-                //     }
-                // }
+            // scales: {
+            //     yAxes: {
+            //         ticks: {
+            //             beginAtZero: true
+            //         }
+            //     }
+            // },
+            animation: false,
+            showLine: false,
+            elements: {
+                point: {
+                    radius: 2
+                }
             }
         },
         chartData: {
             labels: [],
             datasets: [{
-                label: 'Test',
+                label: 'Errors',
                 backgroundColor: 'rgb(255, 99, 132)',
                 // borderColor: 'rgb(255, 99, 132)',
                 // borderWidth: 1,
@@ -135,7 +142,6 @@
             return this.$('#chart');
         },
         // errors: [],
-        errors : [],
         async step(){
             let result = [];
             this.model.module.reset();
@@ -151,11 +157,9 @@
                     let res = await this.model(token.emb, target);
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
-                    this.errors.push(this.err)
-                    this.err = this.tensor.data[0];
 
                     if (this.showChart) {
-                        //this.errors.push(this.err);
+                        // this.errors.push(this.err);
                         this.chart.data.labels.push('');
                         this.chart.data.datasets.forEach((dataset) => {
                             dataset.data.push(this.err);
