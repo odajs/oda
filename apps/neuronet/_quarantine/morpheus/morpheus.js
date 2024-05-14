@@ -884,9 +884,4 @@ function addVectors(v1, v2){
 //         return crossEntropy(out, target);
 //     })
 // }
-// function crossEntropy(out, target){
-//     const loss = -out.reduce((r, o, i)=>{
-//         return r + target[i] * Math.log(o);
-//     })
-//     return loss;
-// }
+

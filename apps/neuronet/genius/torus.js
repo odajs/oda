@@ -458,8 +458,8 @@ tensor.prototype.silu = function () {
     }
     return out;
 }
-tensor.prototype.MSE = function (other){
-    let y = other.data ?? other;
+tensor.prototype.MSE = function (target){
+    let y = target.data ?? target;
     let error = 0;
     let data = this.data.map((x, i)=>{
         error += x = (x - y[i]) ** 2;
@@ -471,6 +471,24 @@ tensor.prototype.MSE = function (other){
         let _x = this.grad;
         for (let i = 0; i<data.length; i++){
             _x[i] += -2 * data[i] / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
+}
+
+tensor.prototype.crossEntropy = function (target) {
+    let y = target.data ?? target;
+    let error = 0;
+    let data = this.data.map((x, i)=>{
+        error += x = y[i] * Math.log(x);
+        return x;
+    })
+    const out = tensor.from(-error, 'crossEntropy', [this]);
+    out._back = ()=>{
+        let x_grad = this.grad;
+        let x_data = this.data;
+        for(let i = 0; i<data.length; i++){
+            x_grad[i] = this.data[i] - data[i];
         }
     }
     return out;

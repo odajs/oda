@@ -174,7 +174,7 @@ export class Tokenizer extends ROCKS({
         if (target){
             target = Array(this.tokens.length).fill(0);
             target[idx] = 1;
-            error = logit.MSE(target);
+            error = logit.crossEntropy(target);
             error.back();
         }
         return {w, logit, error};
