@@ -113,18 +113,24 @@
         chartOptions: {
             responsive: true,
             maintainAspectRatio: false,
-            // scales: {
-            //     yAxes: {
-            //         ticks: {
-            //             beginAtZero: true
-            //         }
-            //     }
-            // },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    beginAtZero: true
+                }
+            },
             animation: false,
             showLine: false,
             elements: {
                 point: {
-                    radius: 2
+                    radius: 1
                 }
             }
         },
@@ -141,7 +147,7 @@
         get chart() {
             return this.$('#chart');
         },
-        // errors: [],
+        count: 0,
         async step(){
             let result = [];
             this.model.module.reset();
@@ -158,14 +164,20 @@
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
 
-                    if (this.showChart) {
-                        // this.errors.push(this.err);
+                    if (this.showChart/* && this.count%100*/) {
                         this.chart.data.labels.push('');
                         this.chart.data.datasets.forEach((dataset) => {
                             dataset.data.push(this.err);
                         })
-                        this.chart?.chart.update();
+                        if (!this.stopSTO) {
+                            this.stopSTO = setTimeout(() => {
+                                this.chart?.chart.update();
+                                clearTimeout(this.stopSTO);
+                                this.stopSTO = 0;
+                            }, 500)
+                        }
                     }
+                    this.count += 1;
 
                     result.push(res.w);
                 }
