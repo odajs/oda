@@ -1,4 +1,4 @@
-ODA({ is: 'oda-chart', imports: './lib/chart.umd.min.js',
+ODA({ is: 'oda-chart', imports: './lib/chart.js',
     template: `
         <style>
             :host {
