@@ -193,19 +193,19 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 2, head_count: 1});
+                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 3, head_count: 1});
             }
 
         },
         $pdp:{
             tensor: null,
             get tokenizer(){
-                return new Tokenizer(8);
+                return new Tokenizer(16);
             },
             focusedTensor: null,
         },
         get tokens(){
-            return this.tokenizer.tokenizeByPair(this.value)
+            return this.tokenizer.tokenizeByWord(this.value)
         }
     })
 

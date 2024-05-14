@@ -44,6 +44,15 @@ ODA({is: 'oda-ace-editor',
                 this.editor?.setReadOnly(n);
             }
         },
+        format: {
+            $def: false,
+            set(n) {
+                if (n) {
+                    this.editor?.execCommand('format');
+                    this.format = false;
+                }
+            }
+        },
         // fontSize: { $def: 16, set(n) { this.editor?.setOption('fontSize', n) } },
         wrap: { $def: true, set(n) { this.editor?.setOption('wrap', n) } },
         minLines: { $def: 1, set(n) { this.editor?.setOption('minLines', n) } },
@@ -123,7 +132,7 @@ ODA({is: 'oda-ace-editor',
                 await import('./src/beautify-css.js');
                 await import('./src/beautify-html.js');
                 const session = this.editor.getSession();
-                const mode = session.$id;
+                const mode = session.$modeId;
                 const fn = mode.includes('html') ? html_beautify : mode.includes('css') ? css_beautify : js_beautify;
                 session.setValue(fn(session.getValue(), { "end_with_newline": true, }));
             }
