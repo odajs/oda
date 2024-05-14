@@ -17,12 +17,11 @@ export class Genius extends Module{
     }
     async forward(token, target){
         let x = tensor.from(token);
-        let result = this.heads[0](x)
-        // let result = this.heads.map(async (head, i)=>{
-        //     return head(x);
-        // });
-        // result =  await Promise.all(result)
-        // result = tensor.stack(result);
+        let result = this.heads.map(async (head, i)=>{
+            return head(x);
+        });
+        result = await Promise.all(result)
+        result = tensor.stack(result);
         result = this.tokenizer.findToken(result, target);
         return result;
     }
@@ -34,34 +33,60 @@ export class GeniusLayer extends Module{
     get dh(){
         return this.d;//Math.floor(this.d * this.expand);
     }
+    get dt(){
+        return 1;
+    }
     __init__() {
         // this.d_A = this.d * this.dh;
         this.W = tensor.param(tensor.rand(this.d_in, this.d));
-        this.fork_proj = new Linear({d_in: this.d, d_out: this.dh * 2/* + DT_RANK*/, bias: false});
+        this.in_proj = new Linear({d_in: this.d, d_out: this.d * 2, bias: false});
+        this.x_proj = new Linear({d_in: this.dh, d_out: this.dh * 2 + this.dt, bias: false});
+        this.dt_proj = new Linear({d_in: this.dt, d_out: this.dh, bias: true});
         this.Alog = tensor.param(tensor.hippo(this.d));
         this.H = tensor.zeros(this.d, this.d);
         if (this.deep)
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
+        this.D = tensor.param(tensor.ones(1));
     }
     reset(){
         this.H = tensor.zeros(this.d, this.d);
         this.subLayer?.reset?.();
     }
-    forward(x){
+    forward(input){
         // расширение входа
-        let xe = tensor.einsum('x, xy -> y', [x, this.W]);
-        // разделение входа на вектора B, C и Δ
-        let fork_x = this.fork_proj(xe);
-        let [B, C] = fork_x.slice([this.dh, this.dh/*, DT_RANK*/]);
-        let xB = tensor.einsum('x, B -> xB', [xe, B]);
+        let xe = tensor.einsum('x, xy -> y', [input, this.W]);
+        // разделение входа на 2 потока
+        let x_res = this.in_proj(xe);
+        let [x, res] = x_res.slice(this.d, this.d);
+        // x  = this.conv1D(x);
+        x = x.silu();
+        let fork_x = this.x_proj(x)
+        let [B, C, delta] = fork_x.slice(this.dh, this.dh, this.dt);
+        delta = this.dt_proj(delta);
+        delta = delta.softplus();
+
+
+        // let xB = tensor.einsum('x, B -> xB', [xe, B]);
         let A = this.Alog.exp().invert();
-        A = tensor.einsum('xy, xy -> xy', [xB, A]);
-        this.H.data = A.plus(this.H).data;
+        let sum = tensor.einsum('d, dn -> dn', [delta, A])
+        let deltaA = sum.exp();
+        let deltaB_x = tensor.einsum('d, b, d -> db', [delta, B, x]);
+        let h = tensor.from(this.H.data).reshape(this.H)
+
+        let da = tensor.einsum('ab, ab->ab', [deltaA, h]);
+
+        // tensor.einsum('xy, xy -> xy', [xB, A]);
+        this.H = da.plus(deltaB_x);
         let y = tensor.einsum('xy, y -> x', [this.H, C]);
-        y = xe.plus(y);
+        // let xee = tensor.einsum('x, d -> x', [xe, this.D]);
+        y = y.plus(xe);
+        res = res.silu();
+        y = tensor.einsum('y, y -> y', [y, res]);
+        // y =  y.plus(xe);
         if (this.subLayer)
             y = this.subLayer(y);
         y = tensor.einsum('y, xy -> x', [y, this.W]);
+        y = y.plus(input);
         return y;
     }
 }

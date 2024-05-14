@@ -112,9 +112,11 @@ export class tensor{
         })
         this.topo.reverse();
         this.topo.forEach((node) => {
+            if (!node.children) return;
             node._back?.();
         })
         this.topo.forEach((node) => {
+            if (node.children) return;
             node.updateParams();
         })
     }
@@ -129,9 +131,22 @@ export class tensor{
         this.#shape = shape
         return this;
     }
-    static stack(array){
-        const data = array.map(a=>Array.from(a.data)).flat();
-        return tensor.from(data, 'stack', array);
+    static stack(tensors){
+        const data = tensors.map(a=>Array.from(a.data)).flat();
+        const out = tensor.from(data, `stack[${tensors.length}]`, tensors);
+        out._back = ()=>{
+            let start = 0;
+            for (let ci = 0; ci < tensors.length; ci++){
+                let other = tensors[ci];
+                const _z = out.grad.slice(start, start + other.size);
+                let _y = other.grad;
+                for (let i = 0; i<_y.length; i++){
+                    let g = _z[i] / GRADIENT_DIVIDER;
+                    _y[i] += g;
+                }
+            }
+        }
+        return out
     }
     static fill(shape, value){
         if (!Array.isArray(shape))
@@ -208,7 +223,7 @@ export class tensor{
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
-            return `shape(${this.shape}), size: ${this.shape.reduce((r, v)=>r*v,1).toLocaleString()}:\n\n(${data}}`;
+            return `(${data}), shape(${this.shape})`;
         }
         return this.data;
     }
@@ -228,16 +243,17 @@ export class tensor{
         }
         return data.flat();
     }
-    slice(parts = []){
+    slice(...parts){
         let start = 0;
         const result = []
         for (let size of parts){
             let end = start + size;
             let data = this.data.slice(start,  end);
             let out = tensor.from(data, `slice [${start}-${end}]`, [this]);
+            let s = start;
             out._back = ()=>{
                 for(let i = 0; i<data.length; i++){
-                    this.grad[i+start] += out.grad[i];
+                    this.grad[i+s] += out.grad[i];
                 }
             }
             result.push(out);
@@ -245,12 +261,6 @@ export class tensor{
         }
         return result;
     }
-}
-
-tensor.prototype.sum = function (){
-    const out = tensor.einsum('x->', [this]);
-    out.label = `sum([${this.shape}])`;
-    return out;
 }
 
 tensor.prototype.log = function (){
@@ -274,11 +284,11 @@ tensor.prototype.exp = function (){
     const out = tensor.from(data, `exp`, [this]).reshape(this);
     if (this.allowGrad){
         out._back = ()=>{
-            let _x = this.grad;
-            let _z = out.grad;
-            let x = this.data;
-            for(let i = 0; i<this.data.length; i++){
-                _x[i] = x[i] * _z[i] / GRADIENT_DIVIDER;
+            let x_grad = this.grad;
+            let o_grad = out.grad;
+            let x_data = this.data;
+            for(let i = 0; i<x_data.length; i++){
+                x_grad[i] += x_data[i] * o_grad[i] / GRADIENT_DIVIDER;
             }
         }
     }
@@ -289,10 +299,10 @@ tensor.prototype.invert = function (){
     const out = tensor.from(data, `invert`, [this]).reshape(this);
     if (this.allowGrad){
         out._back = ()=>{
-            let _x = this.grad;
-            let _z = out.grad;
+            let x_grad = this.grad;
+            let o_grad = out.grad;
             for(let i = 0; i<this.data.length; i++){
-                _x[i] = -_z[i] / GRADIENT_DIVIDER;
+                x_grad[i] += -o_grad[i] / GRADIENT_DIVIDER;
             }
         }
     }
@@ -394,19 +404,30 @@ tensor.prototype.sigmoid = function (){
     const data = this.data.map(x => 1 / (1 + Math.exp(-x)))
     const out = tensor.from(data, 'sigmoid', [this]).reshape(this);
     out._back = ()=>{
-        let _z = out.grad;
-        let _x = this.grad;
+        let o_grad = out.grad;
+        let x_grad = this.grad;
         for(let i = 0; i<data.length; i++){
             let x = data[i];
-            _x[i] += (1 - x) * x * _z[i] / GRADIENT_DIVIDER;
+            x_grad[i] += (1 - x) * x * o_grad[i] / GRADIENT_DIVIDER;
         }
     }
     return out;
 }
-tensor.prototype.softplus = function (){
-    const data = this.data.map(x=>x.softplus());
-    return tensor.from(data, 'softplus', [this]).reshape(this);
+tensor.prototype.softplus = function () {
+    const data = this.data.map(x => Math.log(1 + Math.exp(x)))
+    const out = tensor.from(data, 'softplus', [this]).reshape(this);
+    out._back = ()=>{
+        let o_grad = out.grad;
+        let x_grad = this.grad;
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            let exp = Math.exp(x);
+            x_grad[i] += (exp / (1 + exp)) * o_grad[i] / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
 }
+
 tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
     const data = this.data.map((x, i)=>  Math.exp(x) / exp);
@@ -424,6 +445,19 @@ tensor.prototype.softmax = function (){
     }
     return out;
 }
+tensor.prototype.silu = function () {
+    const data = this.data.map((x, i)=> x * (1 / (1 + Math.exp(-x))));
+    const out =  tensor.from(data, 'silu', [this]).reshape(this);
+    out._back = ()=>{
+        let o_grad = out.grad;
+        let x_grad = this.grad;
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            x_grad[i] += (1 - x) * x * o_grad[i] / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
+}
 tensor.prototype.MSE = function (other){
     let y = other.data ?? other;
     let error = 0;
@@ -432,7 +466,7 @@ tensor.prototype.MSE = function (other){
         return x;
     });
     error /= this.size;
-    const out = tensor.from(error, 'MSE', [this]);
+    const out = tensor.from([error], 'MSE', [this]);
     out._back = ()=>{
         let _x = this.grad;
         for (let i = 0; i<data.length; i++){
@@ -479,7 +513,7 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
 function num2text(x){
    if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
         return x;
-    return x.toExponential(3).padStart(9, ' ')
+    return x.toExponential(2).padStart(9, ' ')
 }
 
 function genId(){

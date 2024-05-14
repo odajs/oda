@@ -165,14 +165,7 @@ Number.prototype.softmax = function () {
     return out;
 }
 
-Number.prototype.softplus = function () {
-    const exp = Math.exp(this)
-    const out =  TNum(Math.log(1 + exp), 'softplus')
-    this.grads.push(()=>{
-        return ((exp / (1 + exp)) * out.g);
-    })
-    return out;
-}
+
 Number.prototype.sigmoid = function () {
     const out =  TNum(1 / (1 + Math.exp(-this)), 'sigmoid')
     this.grads.push(()=>{
@@ -180,13 +173,7 @@ Number.prototype.sigmoid = function () {
     })
     return out;
 }
-Number.prototype.silu = function () {
-    const out =  TNum(this * (1 / (1 + Math.exp(-this))), 'silu')
-    this.grads.push(()=>{
-        return (out * (1 - out) * out.g);
-    })
-    return out;
-}
+
 Number.prototype.relu = function (leak = 0) {
     const out =  TNum(+(this > 0 ? this : leak), 'relu')
     this.grads.push(()=>{

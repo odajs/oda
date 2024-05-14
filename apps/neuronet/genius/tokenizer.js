@@ -160,9 +160,9 @@ export class Tokenizer extends ROCKS({
         w.label += ' LOGIT'
         return w;
     },
-    findToken(tokens, target){
+    findToken(token, target){
         const matrix = this.outMatrix;
-        let logit = tensor.einsum('x, xy -> y', [tokens, matrix.T]);
+        let logit = tensor.einsum('x, xy -> y', [token, matrix.T]);
         // logit = logit.add(bias);
         logit = logit.softmax();
         const max = Math.max(...logit.data);

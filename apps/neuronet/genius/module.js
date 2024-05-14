@@ -1,6 +1,6 @@
 import {tensor} from "./torus.js";
 export class Module{
-    constructor(params = {}) {
+    constructor(params = {}, label) {
         this.__params__ = params;
         for (let n in params){
             this[n] = params[n];
@@ -8,7 +8,7 @@ export class Module{
         this.__init__();
         const fwd = (...args)=>{
             const out = this.forward(...args);
-            out.label = this.label;
+            out.label += ' ['+this.label+']';
             return out;
         }
         fwd.module = this;
@@ -32,7 +32,7 @@ export class Module{
             if (prop.value?.module){
                 result.push({[n]:prop.value.module})
             }
-            else if (prop.value instanceof Tensor){
+            else if (prop.value instanceof tensor){
                 result.push({[n]:prop.value})
             }
             else if (Array.isArray(prop.value) && prop.value[0]?.module){
@@ -62,11 +62,11 @@ export class Module{
 export class Linear extends Module{
     __init__() {
         this.W = tensor.rand(this.d_in, this.d_out);
-        this.W.label += '/weights';
+        this.W.label += '/linear weights';
         this.W = tensor.param(this.W);
         if(this.bias){
             this.bias = tensor.rand(this.d_out);
-            this.bias.label +='/bias';
+            this.bias.label +='/linear bias';
             this.bias = tensor.param(this.bias);
         }
 
@@ -74,7 +74,7 @@ export class Linear extends Module{
     forward(x){
         x = tensor.einsum('i, io -> o', [x, this.W]);
         if (this.bias)
-            x = x.add(this.bias);
+            x = x.plus(this.bias);
         return x;
     }
     get label(){
@@ -92,11 +92,11 @@ export class RMSNorm extends Module {
     forward(x) {
         let p = x.pow(2);
         let m = p.mean();
-        let eps = m.add(this.eps);
+        let eps = m.plus(this.eps);
         let sqrt = eps.func('_rsqrt');
         let mul = this.W.mul(sqrt);
         let out = mul.mul(x);
-        out = out.add(this.bias)
+        out = out.plus(this.bias)
         return out;
     }
     get label(){
