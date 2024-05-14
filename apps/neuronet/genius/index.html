@@ -28,7 +28,6 @@
 
             <gen-vocabulary opened slot="right-panel"></gen-vocabulary>
             <oda-property-grid  expert-mode :inspected-object="focusedTensor" slot="right-panel"></oda-property-grid>
-            <gen-vocabulary opened  slot="right-panel"></gen-vocabulary>
             <oda-popup-form ~if="showChart">
                 <oda-chart id="chart" slot="popup-main" :data="chartData" type="line" :options="chartOptions"></oda-chart>
             </oda-popup-form>
@@ -164,10 +163,11 @@
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
 
-                    if (this.showChart/* && this.count%100*/) {
+                    if (this.showChart /* && this.count%100 */) {
                         this.chart.data.labels.push('');
                         this.chart.data.datasets.forEach((dataset) => {
-                            dataset.data.push(this.err);
+                            // dataset.data.push(this.err);
+                            dataset.data.push((this.err * 100).toFixed(2));
                         })
                         if (!this.stopSTO) {
                             this.stopSTO = setTimeout(() => {
