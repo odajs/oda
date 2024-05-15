@@ -16,6 +16,8 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
             outline: 0;
             overflow-y: auto;
             padding: 10px;
+            height: 100%;
+            text-wrap: wrap;
         }
 
         .pell-actionbar {

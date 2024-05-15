@@ -14,13 +14,6 @@
         }
     },
     {
-        "name": "pell-editor",
-        "label": "<b style='color: #e689fe'>oda-pell-editor:</b> Pell редактор HTML кода",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
         "name": "executable-editor",
         "label": "<b style='color: #e689fe'>oda-executable-editor:</b> Исполняемый редактор",
         "content": {
@@ -51,13 +44,6 @@
     {
         "name": "wysiwyg",
         "label": "<b style='color: #e689fe'>oda-wysiwyg:</b> WYSIWYG редактор HTML кода",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "html-editor",
-        "label": "<b style='color: #e689fe'>oda-html-editor:</b> Редактор HTML кода",
         "content": {
             "link": "index.html"
         }
