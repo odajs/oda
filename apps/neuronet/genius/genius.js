@@ -21,7 +21,7 @@ export class Genius extends Module{
             return head(x);
         });
         result = await Promise.all(result)
-        result = tensor.stack(result);
+        result = result[0];//tensor.stack(result);
         result = this.tokenizer.findToken(result, target);
         return result;
     }

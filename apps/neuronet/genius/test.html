@@ -2,47 +2,25 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-    import {Tensor} from './torus.js';
-    // let t0 = Tensor.from([[1, 2, 3], [1, 2, 3]]);
-    // let t1 = Tensor.from([[1, 1, 1], [1, 1, 1]]);
-    //
-    let _j = 120;
-    let _l = 120;
-    let _k = 120;
-    let _i = 10;
-    let X = Tensor.random([_i, _j]);
-    console.time('tt')
-    let t0 = X.data;
-    let t1 = X.data;
-    let t2 = X.data;
-    let idx = -1;
-    let grad = Tensor.random([_j, _k, _l]).data
-    let grad0 = X.grad;
-    let grad1 = X.grad;
-    let grad2 = X.grad;
-    let v0, v1, v2, res, g, idx0, idx1, idx2;
-    let k = 1.618
-    for(let j = 0; j < _j; j++){
-        for(let l = 0; l < _l; l++){
-            for(let k = 0; k < _k; k++){
-                g = grad[++idx] /  1.618;
-                for(let i = 0; i < _i; i++){
-                    idx0  = j + _j * (i)
-                    idx1  = k + _k * (i)
-                    idx2  = l + _l * (i)
-                    v0 = t0[idx0] * g;
-                    v1 = t1[idx0] * g;
-                    v2 = t2[idx2] * g;
-                    grad0[idx0] += v1  *  v2
-                    grad1[idx1] += v2  *  v0;
-                    grad2[idx2] += v0  *  v1;
-                }
-
+    import {tensor} from './torus.js';
+    let out = []
+    let _t = 20;
+    let _i = 3;
+    let _j = 2;
+    let k = 6;
+    let start = 0;
+    let step = 1;
+    let max = _i * _j;
+    let x = tensor.from([[ 0.3367,  0.1288,  0.2345],
+        [ 0.2303, -1.1229, -0.1863]])
+        while(start<max){
+            for (let t = 0; t<_t; t++){
+                out.push(...x.data.slice(start, start + step))
             }
+            start+=step
         }
-    }
 
-    console.timeEnd('tt')
-    // console.log(out)
+    out = tensor.from(out).reshape(_t, 3, 2)
+    console.log(out)
 
 </script>

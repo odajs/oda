@@ -1,6 +1,6 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = 1;
-export const GRADIENT_DIVIDER = 1.618;
+export const LEARNING_RATE = .3;
+export const GRADIENT_DIVIDER = 1//.618;
 export class tensor{
     #shape = [];
     #data = null;
@@ -96,7 +96,7 @@ export class tensor{
             this.data[i] += this.grad[i] * LEARNING_RATE;
         }
     }
-    back(){
+    back(grad){
         this.topo = [];
         let visited = new Set();
         let build_topo = (t) => {
@@ -111,6 +111,10 @@ export class tensor{
             node.clearGrad();
         })
         this.topo.reverse();
+        if(grad){
+            this.topo[0].grad = this.topo[0].grad.map(i=>grad)
+        }
+
         this.topo.forEach((node) => {
             if (!node.children) return;
             node._back?.();
@@ -131,20 +135,45 @@ export class tensor{
         this.#shape = shape
         return this;
     }
-    static stack(tensors){
-        const data = tensors.map(a=>Array.from(a.data)).flat();
-        const out = tensor.from(data, `stack[${tensors.length}]`, tensors);
-        out._back = ()=>{
-            let start = 0;
-            for (let ci = 0; ci < tensors.length; ci++){
-                let other = tensors[ci];
-                const _z = out.grad.slice(start, start + other.size);
-                let _y = other.grad;
-                for (let i = 0; i<_y.length; i++){
-                    let g = _z[i] / GRADIENT_DIVIDER;
-                    _y[i] += g;
-                }
+    static cat(tensors, dim= 0){
+
+    }
+    static stack(tensors, dim= 0){
+        let shape = [...tensors[0].shape];
+        let size = tensors[0].size;
+        let step = size;
+        if (dim < 0)
+            dim = shape.length + 1 + dim
+        let d = dim;
+        for (let s of shape){
+            if (!d) break;
+            step /= s;
+            d--;
+        }
+        let start = 0;
+        const data = [];
+        while(start<size){
+            for (let t of tensors){
+                data.push(...t.data.slice(start, start + step))
             }
+            start += step;
+        }
+        shape.splice(dim, 0, tensors.length);
+        const out = tensor.from(data, `stack(${tensors.length})`, tensors).reshape(shape);
+        out._back = ()=>{
+            start = 0;
+            while(start<size){
+                let delta = start
+                for (let t of tensors){
+                    const slice = out.grad.slice(delta, delta + step);
+                    for(let i = 0; i<slice.length; i++){
+                        t.grad[start + i] += slice[i];
+                    }
+                    delta += step
+                }
+                start += step;
+            }
+
         }
         return out
     }
@@ -478,18 +507,10 @@ tensor.prototype.MSE = function (target){
 
 tensor.prototype.crossEntropy = function (target) {
     let y = target.data ?? target;
-    let error = 0;
-    let data = this.data.map((x, i)=>{
-        error += x = y[i] * Math.log(x);
-        return x;
-    })
-    const out = tensor.from(-error, 'crossEntropy', [this]);
+    let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
+    const out = tensor.from(error, 'crossEntropy', [this]);
     out._back = ()=>{
-        let x_grad = this.grad;
-        let x_data = this.data;
-        for(let i = 0; i<data.length; i++){
-            x_grad[i] = this.data[i] - data[i];
-        }
+        this.grad = this.data.map((x, i)=>y[i]-x);
     }
     return out;
 }
@@ -683,21 +704,10 @@ tensor.pack = (expr, inputs)=>{
 tensor.unpack = (expr, inputs)=>{
     //todo
 }
-const operators = {
-    'mul': ' * ',
-    '*': ' * ',
-    'div': ' / ',
-    '/': ' / ',
-    'plus': ' + ',
-    '+': ' + ',
-    'add': ' + ',
-    'minus': ' - ',
-    '-': ' - ',
-}
-tensor.einsum = (in_expr, sources = [], operator = 'mul')=>{
+tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
     const tensors = sources.map(t => tensor.from(t));
     let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
-    const axis = [];
+    const axis = Object.keys(ext_axis).map(a =>({a, d:ext_axis[a]}));
     const terms = expr[0].trim().split(',');            // Разделение входа на термы
     const inputs = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
         term = term.trim();
@@ -781,7 +791,7 @@ tensor.einsum = (in_expr, sources = [], operator = 'mul')=>{
             else
                 result += tabs+`v${i} = t${i};\n`;
         })
-        result += tabs + 'res += ' + inputs.map((_,i)=>'v'+i).join(` ${operators[operator]} `) + ';\n';
+        result += tabs + 'res += ' + inputs.map((_,i)=>'v'+i).join(` * `) + ';\n';
         result += Array(cl).fill('').map((c, i)=> out_tabs + '\t'.repeat(i) + '}').toReversed().join('\n')
         return result + '\n';
     }
