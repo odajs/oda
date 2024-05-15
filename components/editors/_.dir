@@ -14,22 +14,8 @@
         }
     },
     {
-        "name": "executable-editor",
-        "label": "<b style='color: #e689fe'>oda-executable-editor:</b> Исполняемый редактор",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
         "name": "code-editor",
         "label": "<b style='color: #e689fe'>oda-code-editor:</b> Редактор кода",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "markdown-editor",
-        "label": "<b style='color: #e689fe'>oda-markdown-editor:</b> Редактор markdown",
         "content": {
             "link": "index.html"
         }
