@@ -72,7 +72,11 @@ export class Linear extends Module{
 
     }
     forward(x){
-        x = tensor.einsum('i, io -> o', [x, this.W]);
+        let axis = ''
+        if (x.shape.length>1){
+            axis = Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join('')
+        }
+        x = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.W]);
         if (this.bias)
             x = x.plus(this.bias);
         return x;

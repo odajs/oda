@@ -15,10 +15,9 @@ export class Genius extends Module{
     reset(){
         this.heads.forEach(h=>h.module.reset());
     }
-    async forward(token, target){
-        let x = tensor.from(token);
+    async forward(input){
         let result = this.heads.map(async (head, i)=>{
-            return head(x);
+            return head(input);
         });
         result = await Promise.all(result)
         result = result[0];//tensor.stack(result);
@@ -54,7 +53,7 @@ export class GeniusLayer extends Module{
     }
     forward(input){
         // расширение входа
-        let xe = tensor.einsum('x, xy -> y', [input, this.W]);
+        let xe = tensor.einsum('Lx, xy -> Ly', [input, this.W]);
         // разделение входа на 2 потока
         let x_res = this.in_proj(xe);
         let [x, res] = x_res.slice(this.d, this.d);

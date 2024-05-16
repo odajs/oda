@@ -135,7 +135,17 @@ export class tensor{
         this.#shape = shape
         return this;
     }
-    static cat(tensors, dim= 0){
+    static concat(tensors, dim= 0){
+
+    }
+    split(split_sizes, dim = 0){
+        if (Array.isArray(split_sizes)){
+
+        }
+        else if (Number.isInteger(split_sizes)){
+
+        }
+        else throw new Error(`Argument 'split_sizes' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_sizes}'`)
 
     }
     static stack(tensors, dim= 0){
