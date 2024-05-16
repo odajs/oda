@@ -26,7 +26,6 @@ ODA({
     },
     delay: 1000,
     addTask(task) {
-
         if (!task) return;
         this.tasks.push(task);
         this._tasksChanged();
@@ -41,6 +40,9 @@ ODA({
         this.debounce('_tasksChanged', () => {
             this._show = this.tasks.length !== 0;
         }, this.delay);
+        this.debounce('fallback', () => {
+            this._show = this.tasks.length !== 0;
+        }, 5_000);
     }
 });
 let loader;
