@@ -140,6 +140,8 @@ export class tensor{
     }
     static stack(tensors, dim= 0){
         let shape = [...tensors[0].shape];
+        if (shape.length<dim)
+            throw new Error(`Dimension out of range (expected to be in range of [-${shape.length+1}, ${shape.length}], but got ${dim})`)
         let size = tensors[0].size;
         let step = size;
         if (dim < 0)
@@ -150,19 +152,19 @@ export class tensor{
             step /= s;
             d--;
         }
-        let start = 0;
-        const data = [];
-        while(start<size){
-            for (let t of tensors){
-                data.push(...t.data.slice(start, start + step))
-            }
-            start += step;
+        const data = new Float32Array(size * tensors.length);
+        let idx = -1;
+        for (let i = 0; i < size; i += step){
+            tensors.forEach(t => {
+                for (let j = i; j<i + step; j++)
+                    data[++idx] = t.data[j];
+            });
+
         }
         shape.splice(dim, 0, tensors.length);
-        const out = tensor.from(data, `stack(${tensors.length})`, tensors).reshape(shape);
+        const out = tensor.from(data, `stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`, tensors).reshape(shape);
         out._back = ()=>{
-            start = 0;
-            while(start<size){
+            for(let start = 0; start<size; start += step){
                 let delta = start
                 for (let t of tensors){
                     const slice = out.grad.slice(delta, delta + step);
@@ -171,7 +173,6 @@ export class tensor{
                     }
                     delta += step
                 }
-                start += step;
             }
 
         }
