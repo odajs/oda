@@ -120,16 +120,16 @@
                 },
                 y: {
                     grid: {
-                        display: true
+                        display: false
                     },
                     beginAtZero: true
                 }
             },
             animation: false,
-            showLine: true,
+            showLine: false,
             elements: {
                 point: {
-                    radius: 2
+                    radius: 1
                 }
             }
         },
@@ -138,46 +138,60 @@
             datasets: [{
                 label: 'Errors',
                 backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                borderWidth: .5,
+                // borderColor: 'rgb(255, 99, 132)',
+                // borderWidth: 1,
                 data: [],
             }]
         },
         get chart() {
             return this.$('#chart');
         },
+        count: 0,
         async step(){
-            let result = [];
-            this.model.module.reset();
-            let errors = 0, count = 0;
-            this._countStep ||= 0;
-            for(let phrase of this.tokens){
-                phrase = Array.from(phrase);
-                // this.model.module.reset();
-                while(phrase.length){
-                    let token = phrase.shift();
-                    this.tokenizer.train(token, phrase);
-                    // if (this.tokenizer.error > this.tokenizer.maxError)
-                    //     continue;
-                    let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
-                    let res = await this.model(token.emb, target);
-                    this.tensor = res.error;
-                    this.err = this.tensor.data[0];
-                    result.push(res.w);
+            for (let i = 0; i<this.tokens.length; i++){
+                let token = this.tokens[i];
+                let window = this.tokens.slice(i+1, i+1 + this.tokenizer.winSize);
+                this.tokenizer.train(token, window);
+            }
 
-                    count += 1;
-                    errors += this.err || 0;
-                }
-            }
-            if (this.showChart) {
-                this._countStep += 1;
-                errors = errors * 100 / count;
-                this.chart.data.labels.push(this._countStep);
-                this.chart.data.datasets[0].data.push(errors);
-                this.chart.chart.update();
-            }
-            
-            this.result = result.join('');
+            let input = this.tokens.map(t=>Array.from(t.emb));
+            input.push(Array.from(this.tokenizer.vocabulary['<end>'].emb));
+            input = tensor.from(input);
+            this.tensor = this.model(input);
+            // this.err = this.tensor.data[0];
+            // for(let phrase of this.tokens){
+            //     phrase = Array.from(phrase);
+            //     // this.model.module.reset();
+            //     while(phrase.length){
+            //         let token = phrase.shift();
+            //         this.tokenizer.train(token, phrase);
+            //         // if (this.tokenizer.error > this.tokenizer.maxError)
+            //         //     continue;
+            //         let target = this.isNext ? (phrase[0] || this.tokenizer.ends): token;
+            //         let res = await this.model(token.emb, target);
+            //         this.tensor = res.error;
+            //         this.err = this.tensor.data[0];
+            //
+            //         if (this.showChart /* && this.count%100 */) {
+            //             this.chart.data.labels.push('');
+            //             this.chart.data.datasets.forEach((dataset) => {
+            //                 // dataset.data.push(this.err);
+            //                 dataset.data.push((this.err * 100).toFixed(2));
+            //             })
+            //             if (!this.stopSTO) {
+            //                 this.stopSTO = setTimeout(() => {
+            //                     this.chart?.chart.update();
+            //                     clearTimeout(this.stopSTO);
+            //                     this.stopSTO = 0;
+            //                 }, 500)
+            //             }
+            //         }
+            //         this.count += 1;
+            //
+            //         result.push(res.w);
+            //     }
+            // }
+            // this.result = result.join('');
             this.stepCount++;
         },
         result: '',

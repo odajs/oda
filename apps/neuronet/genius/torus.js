@@ -155,10 +155,10 @@ export class tensor{
         const data = new Float32Array(size * tensors.length);
         let idx = -1;
         for (let i = 0; i < size; i += step){
-            tensors.forEach(t => {
+            for (let t of tensors){
                 for (let j = i; j<i + step; j++)
                     data[++idx] = t.data[j];
-            });
+            }
 
         }
         shape.splice(dim, 0, tensors.length);
@@ -183,7 +183,7 @@ export class tensor{
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
-        let data = shape.length?new Float32Array(size).map(handler):handler();
+        let data = new Float32Array(size).map(handler);
         return tensor.from(data).reshape(shape);
     }
     static zeros(...shape) {

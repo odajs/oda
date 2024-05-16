@@ -7,9 +7,8 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
                 position: relative;
             }
         </style>
-        <!-- <iframe style="width: 100%; height: 100%; border: none;"></iframe> -->
         <iframe style="width: 100%; height: 100%; border: none;"></iframe>
-        <oda-button icon="icons:fullscreen" fill="white" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 120px; z-index: 9999"></oda-button>
+        <oda-button icon="icons:fullscreen" fill="lightgray" icon-size="26" @tap="setFullscreen" style="position: absolute; top: 10px; right: -8px; z-index: 9999"></oda-button>
     `,
     url: '',
     file: undefined,

@@ -11,7 +11,7 @@ export class Tokenizer extends ROCKS({
         text = text.toLowerCase();
         let word = '';
         let tokens = [];
-        let phrases = [tokens];
+        // let phrases = [tokens];
         const addToken = (word)=>{
             const token = this.vocabulary[word] ??= (()=>{
                 const res = Object.create(null);
@@ -57,8 +57,8 @@ export class Tokenizer extends ROCKS({
                     if (word)
                         addToken(word + ' ');
                     addToken(ch + ' ');
-                    tokens = [];
-                    phrases.push(tokens);
+                    // tokens = [];
+                    // phrases.push(tokens);
                     word = ''
                 } break;
                 default:{
@@ -73,7 +73,11 @@ export class Tokenizer extends ROCKS({
         word = word.trim();
         if (word)
             addToken(word + ' ');
-        return phrases;
+
+        return tokens;
+    },
+    get winSize(){
+        return WINDOW_SIZE;
     },
     tokenizeByPair(text){
         text = text.toLowerCase();
@@ -126,7 +130,6 @@ export class Tokenizer extends ROCKS({
     train(token, phrase){
         if (!phrase.length)
             return 1;
-        phrase = phrase.slice(0, WINDOW_SIZE);
         let target = BINS.slice(0, phrase.length);
         while (phrase.length < WINDOW_SIZE && this.size > WINDOW_SIZE * 2){
             const idx = Math.ceil(Math.random() * this.size)
