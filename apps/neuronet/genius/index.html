@@ -115,12 +115,12 @@
             scales: {
                 x: {
                     grid: {
-                        display: false
+                        display: true
                     }
                 },
                 y: {
                     grid: {
-                        display: false
+                        display: true
                     },
                     beginAtZero: true
                 }
@@ -161,9 +161,10 @@
                     let res = await this.model(token.emb, target);
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
-
+                    this.count ||= 0;
                     if (this.showChart && !this.raf) {
-                        this.chart.data.labels.push('');
+                        this.chart.data.labels.push(this.count + ' ms');
+                        this.count += 16;
                         this.chart.data.datasets[0].data.push((this.err * 100).toFixed(2));
                         this.raf = requestAnimationFrame(() => {
                             this.chart?.chart.update();
