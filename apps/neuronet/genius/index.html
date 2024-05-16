@@ -115,7 +115,7 @@
             scales: {
                 x: {
                     grid: {
-                        display: true
+                        display: false
                     }
                 },
                 y: {
@@ -149,6 +149,8 @@
         async step(){
             let result = [];
             this.model.module.reset();
+            let errors = 0, count = 0;
+            this._countStep ||= 0;
             for(let phrase of this.tokens){
                 phrase = Array.from(phrase);
                 // this.model.module.reset();
@@ -161,21 +163,20 @@
                     let res = await this.model(token.emb, target);
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
-                    this.count ||= 0;
-                    if (this.showChart && !this.raf) {
-                        this.chart.data.labels.push(this.count + ' ms');
-                        this.count += 16;
-                        this.chart.data.datasets[0].data.push((this.err * 100).toFixed(2));
-                        this.raf = requestAnimationFrame(() => {
-                            this.chart?.chart.update();
-                            cancelAnimationFrame(this.raf);
-                            this.raf = undefined;
-                        })
-                    }
-
                     result.push(res.w);
+
+                    count += 1;
+                    errors += this.err || 0;
                 }
             }
+            if (this.showChart) {
+                this._countStep += 1;
+                errors = errors * 100 / count;
+                this.chart.data.labels.push(this._countStep);
+                this.chart.data.datasets[0].data.push(errors);
+                this.chart.chart.update();
+            }
+            
             this.result = result.join('');
             this.stepCount++;
         },
