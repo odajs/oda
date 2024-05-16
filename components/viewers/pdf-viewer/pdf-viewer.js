@@ -8,9 +8,7 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
             }
         </style>
         <!-- <iframe style="width: 100%; height: 100%; border: none;"></iframe> -->
-        <object type="application/pdf" style="width: 100%; height: 100%; border: none;">
-            <div>No online PDF viewer installed</div>
-        </object>
+        <iframe style="width: 100%; height: 100%; border: none;"></iframe>
         <oda-button icon="icons:fullscreen" fill="white" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 120px; z-index: 9999"></oda-button>
     `,
     url: '',
@@ -22,7 +20,7 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
     $observers: {
         urlChanged(url, isReady) {
             if (isReady)
-                this.$('object').data = url || '';
+                this.$('iframe').src = url || '';
         },
         fileChanged(file, isReady) {
             if (file && isReady) {

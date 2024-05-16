@@ -23,6 +23,9 @@ ODA({
         $def: true,
         set(v) {
             this.style.setProperty('visibility', v ? 'visible' : 'hidden');
+            this.debounce('fallback', () => {
+                this._tasksChanged();
+            }, 5_000);
         }
     },
     delay: 1000,
@@ -41,9 +44,6 @@ ODA({
         this.debounce('_tasksChanged', () => {
             this._show = this.tasks.length !== 0;
         }, this.delay);
-        this.debounce('fallback', () => {
-            this._show = this.tasks.length !== 0;
-        }, 5_000);
     }
 });
 let loader;
