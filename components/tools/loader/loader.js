@@ -20,6 +20,7 @@ ODA({
     fill: 'var(--info-color)',
     tasks: [],
     _show: {
+        $def: true,
         set(v) {
             this.style.setProperty('visibility', v ? 'visible' : 'hidden');
         }
