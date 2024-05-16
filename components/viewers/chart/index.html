@@ -6,7 +6,7 @@
     import '../../../oda.js';
     import './chart.js';
     setTimeout(() => {
-        chart.type = 'bar';
+        chart.type = 'line';
         chart.data = {
             labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
             datasets: [...[{
@@ -30,17 +30,6 @@
                 ],
                 borderWidth: 1
             }]]
-        };
-        chart.options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                yAxes: {
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }
-            }
         }
-    }, 500);
+    }, 500)
 </script>

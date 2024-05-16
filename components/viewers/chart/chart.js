@@ -17,7 +17,7 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             $attr: true
         },
         data: undefined,
-        options: undefined
+        options: {}
     },
     get defaultOptions() { return { responsive: true, maintainAspectRatio: false } },
     $observers: {

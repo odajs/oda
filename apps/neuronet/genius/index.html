@@ -126,10 +126,10 @@
                 }
             },
             animation: false,
-            showLine: false,
+            showLine: true,
             elements: {
                 point: {
-                    radius: 1
+                    radius: 2
                 }
             }
         },
@@ -138,15 +138,14 @@
             datasets: [{
                 label: 'Errors',
                 backgroundColor: 'rgb(255, 99, 132)',
-                // borderColor: 'rgb(255, 99, 132)',
-                // borderWidth: 1,
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: .5,
                 data: [],
             }]
         },
         get chart() {
             return this.$('#chart');
         },
-        count: 0,
         async step(){
             let result = [];
             this.model.module.reset();
@@ -163,21 +162,15 @@
                     this.tensor = res.error;
                     this.err = this.tensor.data[0];
 
-                    if (this.showChart /* && this.count%100 */) {
+                    if (this.showChart && !this.raf) {
                         this.chart.data.labels.push('');
-                        this.chart.data.datasets.forEach((dataset) => {
-                            // dataset.data.push(this.err);
-                            dataset.data.push((this.err * 100).toFixed(2));
+                        this.chart.data.datasets[0].data.push((this.err * 100).toFixed(2));
+                        this.raf = requestAnimationFrame(() => {
+                            this.chart?.chart.update();
+                            cancelAnimationFrame(this.raf);
+                            this.raf = undefined;
                         })
-                        if (!this.stopSTO) {
-                            this.stopSTO = setTimeout(() => {
-                                this.chart?.chart.update();
-                                clearTimeout(this.stopSTO);
-                                this.stopSTO = 0;
-                            }, 500)
-                        }
                     }
-                    this.count += 1;
 
                     result.push(res.w);
                 }
