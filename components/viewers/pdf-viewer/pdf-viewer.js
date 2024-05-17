@@ -7,15 +7,22 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
                 @apply --vertical;
                 @apply --flex;
                 position: relative;
+                height: 100%;
             }
         </style>
         <iframe :src style="width: 100%; height: 100%; border: none;"></iframe>
     `,
-    url: {
-        $def: '',
-        set(n) {
-            this.src = PATH + 'web/viewer.html?file=' + (n?.startsWith('./') ? PATH + n.replace('./', '') : n);
-        }
+    $public: {
+        nativeView: {
+            $def: false,
+            $save: true
+        },
+        url: ''
     },
-    src: ''
+    get src() {
+        const n = this.url;
+        if (this.nativeView)
+            return  n?.startsWith('./') ? PATH + n.replace('./', '') : n;
+        return PATH + 'web/viewer.html?file=' + (n?.startsWith('./') ? PATH + n.replace('./', '') : n);
+    }
 })
