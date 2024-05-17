@@ -24,5 +24,9 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
         if (this.nativeView)
             return  n?.startsWith('./') ? PATH + n.replace('./', '') : n;
         return PATH + 'web/viewer.html?file=' + (n?.startsWith('./') ? PATH + n.replace('./', '') : n);
+    },
+    isReady: false,
+    attached() {
+        this.isReady = true;
     }
 })
