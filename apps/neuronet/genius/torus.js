@@ -139,18 +139,42 @@ export class tensor{
 
     }
     split(split_sizes, dim = 0){
-        if (Array.isArray(split_sizes)){
-
+        let shape = [...this.shape];
+        if (dim < 0)
+            dim = shape.length + dim;
+        if (shape[dim] === undefined)
+            throw new Error(`Dimension out of range (expected to be in range of [-${shape.length}, ${shape.length-1}], but got ${dim})`)
+        let max = shape[dim];
+        if (Number.isInteger(split_sizes)){
+            let arr = [];
+            let i;
+            for (i = 0; i < max; i += split_sizes){
+                if (i + split_sizes < max)
+                    arr.push(split_sizes);
+                else
+                    arr.push(max - i);
+            }
+            split_sizes = arr;
         }
-        else if (Number.isInteger(split_sizes)){
-
-        }
-        else throw new Error(`Argument 'split_sizes' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_sizes}'`)
+        if (!Array.isArray(split_sizes))
+            throw new Error(`Argument 'split_sizes' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_sizes}'`)
+        if(split_sizes.reduce((r, v)=>r + v, 0) !== max)
+                throw new Error(`split_sizes expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_sizes=[${split_sizes}]`);
+        let idx = -1;
+        const src = this.data;
+        const data = split_sizes.map(v=>{
+            shape[dim] = v;
+            const size = shape.reduce((r, s)=>r * s, 1);
+            const d = new Float32Array(size).map(x=>src[++idx]);
+            return tensor.from(d, 'split', [this]).reshape(...shape);
+        });
+        console.log(data)
+        return data;
 
     }
     static stack(tensors, dim= 0){
         let shape = [...tensors[0].shape];
-        if (shape.length<dim)
+        if (shape.length < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${shape.length+1}, ${shape.length}], but got ${dim})`)
         let size = tensors[0].size;
         let step = size;
