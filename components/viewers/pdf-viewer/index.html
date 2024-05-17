@@ -1,15 +1,9 @@
 <meta charset="UTF-8">
 <title>oda-pdf-viewer</title>
-<script type="module" src="../../../oda.js"></script>
-<script type="module" src="./pdf-viewer.js"></script>
 
-<input id="files" type="file" accept=".pdf" style="width: 60ch; position: fixed; padding: 4px; left: 4px; bottom: 4px; border: 1px solid gray; z-index: 99" />
 <oda-pdf-viewer id="pdf_viewer" url="./odant.pdf"></oda-pdf-viewer>
 
-<script>
-    const fileInput = document.querySelector("#files");
-    fileInput.addEventListener("change", ev => {
-        pdf_viewer.file = fileInput.files[0];
-        fileInput.value = null;
-    })
+<script type="module">
+    import '../../../oda.js';
+    import './pdf-viewer.js';
 </script>
