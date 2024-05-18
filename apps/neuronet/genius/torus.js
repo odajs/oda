@@ -4,11 +4,11 @@ export const GRADIENT_DIVIDER = 1//.618;
 export class tensor{
     #shape = [];
     #data = null;
-    constructor(data, label, children) {
-        if (children)
-            this.children = children;
-        if (label)
-            this.label = label;
+    #dType = Float32Array;
+    #label = 'tensor';
+    #src = undefined;
+    constructor(data, dType = Float32Array) {
+        this.#dType = dType;
         if (Array.isArray(data)){
             let shape = [];
             let d = data;
@@ -18,37 +18,70 @@ export class tensor{
                 data = data.flat()
             }
             this.#shape = shape;
-            if (!(data instanceof Float32Array))
-                data = new Float32Array(data);
+            if (!(data instanceof this.dType))
+                data = new this.dType(data);
 
         }
         else{
             if (data?.length)
                 this.#shape = [data?.length]
             else
-                data = new Float32Array([data])
+                data = new this.dType([data])
         }
         this.#data = data;
         this.id = genId();
     }
+    _label(label){
+        this.#label = label;
+        return this;
+    }
+    _src(...src){
+        this.#src = src;
+        return this;
+    }
+    _dType(type){
+        const data = new type(this.data.length);
+        for(let i = 0; i<data.length; i++){
+            data[i] = this.data[i];
+        }
+        this.#data = data;
+        return this;
+    }
+    _shape(...shape){
+        if(Array.isArray(shape[0]))
+            shape = shape[0];
+        if(shape[0] instanceof tensor)
+            shape = shape[0].shape;
+        const size = shape.reduce((r, v)=>r * v, 1);
+        if (size !== this.size)
+            throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
+        this.#shape = shape
+        return this;
+    }
+    get dType(){
+        return this.#dType;
+    }
     get allowGrad(){
-        return (this._back && !!this.children?.some(i=>i.allowGrad)) || this.isParam;
+        return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
     get grad(){
         return this['#grad'] ??= new Float32Array(this.size);
+    }
+    get data(){
+        return this.#data;
     }
     set grad(n){
         this['#grad'] = n;
     }
     get T(){
-        let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i+97) + r, '');
+        let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
         let axis_out = axis_this.split('');
         axis_out.reverse();
         axis_out = axis_out.join('')
         return tensor.einsum(axis_this+'->'+axis_out, [this]);
     }
     get g(){
-        return tensor.from(this.grad).reshape(this);
+        return tensor.from(this.grad)._shape(this);
     }
     get shape(){
         return this.#shape;
@@ -58,9 +91,6 @@ export class tensor{
     }
     get data(){
         return this.#data;
-    }
-    set data(n){
-        this.#data = n;
     }
     get dim(){
         return this.shape.length;
@@ -78,9 +108,6 @@ export class tensor{
                     return `tensor (${this.shape})`;
             }
         })();
-    }
-    set label(n){
-        this['#label'] = n;
     }
     get paramCount(){
         if (this.isParam)
@@ -102,7 +129,7 @@ export class tensor{
         let build_topo = (t) => {
             if (!visited.has(t)) {
                 visited.add(t)
-                t.children?.forEach(ch => build_topo(ch))
+                t.src?.forEach(ch => build_topo(ch))
                 this.topo.push(t)
             }
         }
@@ -114,27 +141,16 @@ export class tensor{
         if(grad){
             this.topo[0].grad = this.topo[0].grad.map(i=>grad)
         }
-
         this.topo.forEach((node) => {
-            if (!node.children) return;
+            if (!node.src) return;
             node._back?.();
         })
         this.topo.forEach((node) => {
-            if (node.children) return;
+            if (node.src) return;
             node.updateParams();
         })
     }
-    reshape(...shape){
-        if(Array.isArray(shape[0]))
-            shape = shape[0];
-        if(shape[0] instanceof tensor)
-            shape = shape[0].shape;
-        const size = shape.reduce((r, v)=>r * v, 1);
-        if (size !== this.size)
-            throw new Error(`Reshape from (${this.shape}) to (${shape}) not allow.`);
-        this.#shape = shape
-        return this;
-    }
+
     static concat(tensors, dim= 0){
 
     }
@@ -166,7 +182,7 @@ export class tensor{
             shape[dim] = v;
             const size = shape.reduce((r, s)=>r * s, 1);
             const d = new Float32Array(size).map(x=>src[++idx]);
-            return tensor.from(d, 'split', [this]).reshape(...shape);
+            return tensor.from(d, 'split', [this])._shape(...shape);
         });
         console.log(data)
         return data;
@@ -196,7 +212,7 @@ export class tensor{
 
         }
         shape.splice(dim, 0, tensors.length);
-        const out = tensor.from(data, `stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`, tensors).reshape(shape);
+        const out = tensor.from(data, `stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`, tensors)._shape(shape);
         out._back = ()=>{
             for(let start = 0; start<size; start += step){
                 let delta = start
@@ -212,13 +228,13 @@ export class tensor{
         }
         return out
     }
-    static fill(shape, value){
+    static fill(shape, value, dType = Float32Array){
         if (!Array.isArray(shape))
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
         let data = new Float32Array(size).map(handler);
-        return tensor.from(data).reshape(shape);
+        return tensor.from(data, dType)._shape(shape);
     }
     static zeros(...shape) {
         return this.fill(shape, 0, );
@@ -263,12 +279,12 @@ export class tensor{
                 return 0
             })
         })
-        return tensor.from(data, 'hippo');
+        return tensor.from(data)._label('hippo');
     }
-    static from(data, label, children){
+    static from(data, dType = Float32Array){
         if (data instanceof tensor)
             return data;
-        return new tensor(data, label, children)
+        return new tensor(data, dType);
     }
     static param(src){
         if (!(src instanceof tensor)){
@@ -329,7 +345,7 @@ export class tensor{
 
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
-    const out = tensor.from(data, 'log', [this]).reshape(this);
+    const out = tensor.from(data, 'log', [this])._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let _x = this.grad;
@@ -345,7 +361,7 @@ tensor.prototype.log = function (){
 
 tensor.prototype.exp = function (){
     const data = this.data.map(Math.exp);
-    const out = tensor.from(data, `exp`, [this]).reshape(this);
+    const out = tensor.from(data, `exp`, [this])._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let x_grad = this.grad;
@@ -360,7 +376,7 @@ tensor.prototype.exp = function (){
 }
 tensor.prototype.invert = function (){
     const data = this.data.map(x=>-x);
-    const out = tensor.from(data, `invert`, [this]).reshape(this);
+    const out = tensor.from(data, `invert`, [this])._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let x_grad = this.grad;
@@ -376,7 +392,7 @@ tensor.prototype.invert = function (){
 tensor.prototype.plus = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x + y[i]);
-    const out = tensor.from(data, 'plus', [this, other]).reshape(this);
+    const out = tensor.from(data, 'plus', [this, other])._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let _y = other.grad;
@@ -392,7 +408,7 @@ tensor.prototype.plus = function (other){
 tensor.prototype.minus = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x - y[i]);
-    const out = tensor.from(data, 'minus', [this, other]).reshape(this);
+    const out = tensor.from(data, 'minus', [this, other])._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let _y = other.grad;
@@ -408,7 +424,7 @@ tensor.prototype.minus = function (other){
 tensor.prototype.mul = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x * y[i]);
-    const out = tensor.from(data, 'mul', [this, other]).reshape(this);
+    const out = tensor.from(data, 'mul', [this, other])._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -425,7 +441,7 @@ tensor.prototype.mul = function (other){
 tensor.prototype.div = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x / y[i]);
-    const out = tensor.from(data, 'div', [this, other]).reshape(this);
+    const out = tensor.from(data, 'div', [this, other])._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -442,7 +458,7 @@ tensor.prototype.div = function (other){
 tensor.prototype.pow = function (other){
     let y = other.data;
     let data = this.data.map((x, i)=>x ** y[i])
-    let out =  tensor.from(data, `pow`, [this, other]).reshape(this);
+    let out =  tensor.from(data, `pow`, [this, other])._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -461,12 +477,12 @@ tensor.prototype.pow = function (other){
 
 tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
-    return tensor.from(data, 'tahn', [this]).reshape(this);
+    return tensor.from(data, 'tahn', [this])._shape(this);
 }
 
 tensor.prototype.sigmoid = function (){
     const data = this.data.map(x => 1 / (1 + Math.exp(-x)))
-    const out = tensor.from(data, 'sigmoid', [this]).reshape(this);
+    const out = tensor.from(data, 'sigmoid', [this])._shape(this);
     out._back = ()=>{
         let o_grad = out.grad;
         let x_grad = this.grad;
@@ -479,7 +495,7 @@ tensor.prototype.sigmoid = function (){
 }
 tensor.prototype.softplus = function () {
     const data = this.data.map(x => Math.log(1 + Math.exp(x)))
-    const out = tensor.from(data, 'softplus', [this]).reshape(this);
+    const out = tensor.from(data, 'softplus', [this])._shape(this);
     out._back = ()=>{
         let o_grad = out.grad;
         let x_grad = this.grad;
@@ -495,7 +511,7 @@ tensor.prototype.softplus = function () {
 tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
     const data = this.data.map((x, i)=>  Math.exp(x) / exp);
-    const out =  tensor.from(data, 'softmax', [this]).reshape(this);
+    const out =  tensor.from(data, 'softmax', [this])._shape(this);
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let d = data[i];
@@ -511,7 +527,7 @@ tensor.prototype.softmax = function (){
 }
 tensor.prototype.silu = function () {
     const data = this.data.map((x, i)=> x * (1 / (1 + Math.exp(-x))));
-    const out =  tensor.from(data, 'silu', [this]).reshape(this);
+    const out =  tensor.from(data, 'silu', [this])._shape(this);
     out._back = ()=>{
         let o_grad = out.grad;
         let x_grad = this.grad;
@@ -530,7 +546,7 @@ tensor.prototype.MSE = function (target){
         return x;
     });
     error /= this.size;
-    const out = tensor.from([error], 'MSE', [this]);
+    const out = tensor.from([error])._src(this)._label('MSE');
     out._back = ()=>{
         let _x = this.grad;
         for (let i = 0; i<data.length; i++){
@@ -543,7 +559,7 @@ tensor.prototype.MSE = function (target){
 tensor.prototype.crossEntropy = function (target) {
     let y = target.data ?? target;
     let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
-    const out = tensor.from(error, 'crossEntropy', [this]);
+    const out = tensor.from(error)._src(this)._label('crossEntropy');
     out._back = ()=>{
         this.grad = this.data.map((x, i)=>y[i]-x);
     }
@@ -844,11 +860,11 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
 
     const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
     let out = tensor.from(data);
-    out.reshape(outs.map(i=>i.d));
-    out.children = tensors;
+    out._shape(outs.map(i=>i.d));
+    out._src(tensors);
     const fn = new Function('t', 'out', fwd_expr);
     out._back = function (){
-        out = tensor.from(out.grad).reshape(out);
+        out = tensor.from(out.grad)._shape(out);
         tensors.forEach((t, i)=>{
             if(!t.allowGrad) return;
             let expr =  inputs.map((tt, ii)=>{
@@ -865,6 +881,6 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         })
     }
     fn(tensors, out);
-    out.label = 'einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):'');
+    out._label('einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):''));
     return out;
 }

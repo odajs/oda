@@ -143,7 +143,7 @@ export class Tokenizer extends ROCKS({
         const cnts = tensor.param(phrase.map(i=>{
             return i.cnt
         }).flat());
-        cnts.reshape([phrase.length, this.dim]);
+        cnts._shape([phrase.length, this.dim]);
         let res = tensor.einsum(`d, id -> i`, [emb, cnts]);
         res = res.sigmoid();
         res = res.MSE(target);

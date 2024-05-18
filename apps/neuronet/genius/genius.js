@@ -15,11 +15,11 @@ export class Genius extends Module{
     reset(){
         this.heads.forEach(h=>h.module.reset());
     }
-    async forward(input){
+    forward(input){
         let result = this.heads.map(async (head, i)=>{
             return head(input);
         });
-        result = await Promise.all(result)
+        // result = Promise.all(result)
         result = result[0];//tensor.stack(result);
         result = this.tokenizer.findToken(result, target);
         return result;
@@ -70,7 +70,7 @@ export class GeniusLayer extends Module{
         let sum = tensor.einsum('d, dn -> dn', [delta, A])
         let deltaA = sum.exp();
         let deltaB_x = tensor.einsum('d, b, d -> db', [delta, B, x]);
-        let h = tensor.from(this.H.data).reshape(this.H)
+        let h = tensor.from(this.H.data)._shape(this.H)
 
         let da = tensor.einsum('ab, ab->ab', [deltaA, h]);
 

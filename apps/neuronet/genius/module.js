@@ -8,7 +8,7 @@ export class Module{
         this.__init__();
         const fwd = (...args)=>{
             const out = this.forward(...args);
-            out.label += ' ['+this.label+']';
+            out._label(out.label + ' ['+this.label+']');
             return out;
         }
         fwd.module = this;
@@ -62,11 +62,11 @@ export class Module{
 export class Linear extends Module{
     __init__() {
         this.W = tensor.rand(this.d_in, this.d_out);
-        this.W.label += '/linear weights';
+        this.W._label(this.W.label + '/linear weights');
         this.W = tensor.param(this.W);
         if(this.bias){
             this.bias = tensor.rand(this.d_out);
-            this.bias.label +='/linear bias';
+            this.bias._label(this.bias._label + '/linear bias');
             this.bias = tensor.param(this.bias);
         }
 
