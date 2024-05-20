@@ -58,6 +58,22 @@ export class tensor{
         this.#shape = shape
         return this;
     }
+    _mul(factor){
+        this.#data = this.data.map(d=>d * factor);
+        return this;
+    }
+    _div(factor){
+        this.#data = this.data.map(d=>d / factor);
+        return this;
+    }
+    _plus(factor){
+        this.#data = this.data.map(d=>d + factor);
+        return this;
+    }
+    _minus(factor){
+        this.#data = this.data.map(d=>d - factor);
+        return this;
+    }
     get dType(){
         return this.#dType;
     }
@@ -155,11 +171,11 @@ export class tensor{
 
     }
     split(split_sizes, dim = 0){
-        let shape = [...this.shape];
+        if (-this.dim < dim || this.dim - 1 > dim)
+            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
-            dim = shape.length + dim;
-        if (shape[dim] === undefined)
-            throw new Error(`Dimension out of range (expected to be in range of [-${shape.length}, ${shape.length-1}], but got ${dim})`)
+            dim = this.dim + dim;
+        let shape = [...this.shape];
         let max = shape[dim];
         if (Number.isInteger(split_sizes)){
             let arr = [];
@@ -181,7 +197,7 @@ export class tensor{
         const data = split_sizes.map(v=>{
             shape[dim] = v;
             const size = shape.reduce((r, s)=>r * s, 1);
-            const d = new Float32Array(size).map(x=>src[++idx]);
+            const d = new this.dType(size).map(x=>src[++idx]);
             return tensor.from(d, 'split', [this])._shape(...shape);
         });
         console.log(data)
@@ -190,19 +206,24 @@ export class tensor{
     }
     static stack(tensors, dim= 0){
         let shape = [...tensors[0].shape];
-        if (shape.length < dim)
-            throw new Error(`Dimension out of range (expected to be in range of [-${shape.length+1}, ${shape.length}], but got ${dim})`)
+        if (this.dim < dim)
+            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim+1}, ${this.dim}], but got ${dim})`)
         let size = tensors[0].size;
         let step = size;
         if (dim < 0)
-            dim = shape.length + 1 + dim
+            dim = this.dim + 1 + dim
         let d = dim;
         for (let s of shape){
             if (!d) break;
             step /= s;
             d--;
         }
-        const data = new Float32Array(size * tensors.length);
+        const max = Math.max(...tokens.map(t=>t.BYTES_PER_ELEMENT));
+        let t = tokens.findItem(t => {
+            return t.BYTES_PER_ELEMENT === max;
+        });
+
+        const data = new t.dType(size * tensors.length);
         let idx = -1;
         for (let i = 0; i < size; i += step){
             for (let t of tensors){
@@ -233,49 +254,71 @@ export class tensor{
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
         const handler = typeof value === 'function'?value:i=>value;
-        let data = new Float32Array(size).map(handler);
+        let data = new dType(size).map(handler);
         return tensor.from(data, dType)._shape(shape);
     }
-    static zeros(shape, dType = Int32Array) {
+    static zeros(shape, dType = Int8Array) {
         return this.fill(shape, 0, dType);
     }
-    static ones(shape, dType = Int32Array) {
+    static ones(shape, dType = Int8Array) {
         return this.fill(shape, 1, shape);
     }
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
     }
-    static rands(shape, dType) {
-        return this.fill(shape, ()=>(Math.random()-.5) * .1, dType);
-    }
-    static rand(shape, dType) {
-        return this.fill(shape, ()=>(Math.random()-.5), dType);
-    }
     static random(shape, dType) {
-        return this.fill(shape, ()=>Math.random(), dType);
+        let fn =   Math.random;
+        switch (dType){
+            case Int8Array:
+            case Int16Array:
+            case Int32Array:
+            case BigInt64Array:
+                fn = ()=> (Math.random() - .5) * 2 ** 8;
+                break;
+            case Uint8Array:
+            case Uint16Array:
+            case Uint32Array:
+            case BigUint64Array:
+                fn = ()=> Math.random() * 2 ** 8;
+                break;
+        }
+        return this.fill(shape, fn, dType);
     }
-    static randn(shape, dType){
+    static rndNorm(shape, dType){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), dType);
 
     }
     static arange(arange_params, dType = Float32Array){
         if (Number.isInteger(arange_params)){
-            arange_params = [0, arange_params, 1];
+            arange_params = [0, arange_params,  1];
         }
         if (!Array.isArray(arange_params))
-            throw new Error('arange arange_params');
+            throw new Error('arange');
         if (arange_params.length === 0)
-            throw new Error('arange arange_params');
-        if (arange_params.length < 2)
+            throw new Error('arange');
+        if (arange_params.length < 2){
+            arange_params[0] = arange_params[0];
             arange_params.unshift(0);
+        }
         if (arange_params.length < 3)
             arange_params.push(1);
         let [from, to, step] = arange_params;
-        const data = new dType(Math.round((to - from)/step));
+        step = Math.abs(step)
+        const size = Math.round((Math.max(from, to) - Math.min(from, to)) / step);
+        const data = new dType(size);
         let idx = -1;
-        for(let d = from; d < to; d += step){
-            data[++idx] = d
+        if (from < to){
+            for(let d = from; d < to; d += step){
+                data[++idx] = d
+            }
         }
+        else if (from > to){
+            for(let d = from; d > to; d -= step){
+                data[++idx] = d
+            }
+        }
+
+
         return tensor.from(data, dType);
     }
     static hippo(size){
@@ -301,6 +344,17 @@ export class tensor{
         }
         src.isParam = true;
         return src;
+    }
+    reverse(dim = 0){
+        if (dim < -this.dim || this.dim - 1 < dim)
+            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
+        if (dim < 0)
+            dim = this.dim + dim;
+
+
+        this.data.reverse();
+
+        return this;
     }
     repeat(...repeat_shape){
         if (repeat_shape.length === 1){
@@ -333,7 +387,7 @@ export class tensor{
                 data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             }
             data = data.join('\r\n')
-            return `(${data}), shape(${this.shape})`;
+            return `(${data}), dType=${this.dType.name}, shape(${this.shape})`;
         }
         return this.data;
     }
@@ -352,24 +406,6 @@ export class tensor{
             res = [];
         }
         return data.flat();
-    }
-    slice(...parts){
-        let start = 0;
-        const result = []
-        for (let size of parts){
-            let end = start + size;
-            let data = this.data.slice(start,  end);
-            let out = tensor.from(data, `slice [${start}-${end}]`, [this]);
-            let s = start;
-            out._back = ()=>{
-                for(let i = 0; i<data.length; i++){
-                    this.grad[i+s] += out.grad[i];
-                }
-            }
-            result.push(out);
-            start = end;
-        }
-        return result;
     }
 }
 
