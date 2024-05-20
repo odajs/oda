@@ -171,7 +171,7 @@ export class tensor{
 
     }
     split(split_sizes, dim = 0){
-        if (-this.dim < dim || this.dim - 1 > dim)
+        if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
             dim = this.dim + dim;
@@ -261,7 +261,7 @@ export class tensor{
         return this.fill(shape, 0, dType);
     }
     static ones(shape, dType = Int8Array) {
-        return this.fill(shape, 1, shape);
+        return this.fill(shape, 1, dType);
     }
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
@@ -346,7 +346,7 @@ export class tensor{
         return src;
     }
     reverse(dim = 0){
-        if (dim < -this.dim || this.dim - 1 < dim)
+        if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
             dim = this.dim + dim;
@@ -546,8 +546,8 @@ tensor.prototype.tahn = function (){
     return tensor.from(data, 'tahn', [this])._shape(this);
 }
 
-tensor.prototype.sigmoid = function (){
-    const data = this.data.map(x => 1 / (1 + Math.exp(-x)))
+tensor.prototype.sigmoid = function (p1 = 1, p2 = 1){
+    const data = this.data.map((x,i) => (p1[i] ?? p1) / ((p2[i] ?? p2) + Math.exp(-x)))
     const out = tensor.from(data, 'sigmoid', [this])._shape(this);
     out._back = ()=>{
         let o_grad = out.grad;

@@ -37,7 +37,7 @@ export class GeniusLayer extends Module{
     }
     __init__() {
         // this.d_A = this.d * this.dh;
-        this.W = tensor.param(tensor.rand([this.d_in, this.d]));
+        this.W = tensor.param(tensor.random([this.d_in, this.d])._minus(.5)._mul(.1));
         this.in_proj = new Linear({d_in: this.d, d_out: this.d * 2, bias: false});
         this.x_proj = new Linear({d_in: this.dh, d_out: this.dh * 2 + this.dt, bias: false});
         this.dt_proj = new Linear({d_in: this.dt, d_out: this.dh, bias: true});
@@ -56,11 +56,11 @@ export class GeniusLayer extends Module{
         let xe = tensor.einsum('Lx, xy -> Ly', [input, this.W]);
         // разделение входа на 2 потока
         let x_res = this.in_proj(xe);
-        let [x, res] = x_res.slice(this.d, this.d);
+        let [x, res] = x_res.split([this.d, this.d], -1);
         // x  = this.conv1D(x);
         x = x.silu();
         let fork_x = this.x_proj(x)
-        let [B, C, delta] = fork_x.slice(this.dh, this.dh, this.dt);
+        let [B, C, delta] = fork_x.split([this.dh, this.dh, this.dt], -1);
         delta = this.dt_proj(delta);
         delta = delta.softplus();
 
