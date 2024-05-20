@@ -61,7 +61,7 @@ export class Module{
 }
 export class Linear extends Module{
     __init__() {
-        this.W = tensor.rand(this.d_in, this.d_out);
+        this.W = tensor.rand([this.d_in, this.d_out]);
         this.W._label(this.W.label + '/linear weights');
         this.W = tensor.param(this.W);
         if(this.bias){

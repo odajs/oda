@@ -87,7 +87,7 @@ export class tensor{
         return this.#shape;
     }
     get size(){
-        return this.shape.reduce((r, v)=>r * v, 1);
+        return this.data.length;
     }
     get data(){
         return this.#data;
@@ -236,38 +236,47 @@ export class tensor{
         let data = new Float32Array(size).map(handler);
         return tensor.from(data, dType)._shape(shape);
     }
-    static zeros(...shape) {
-        return this.fill(shape, 0, );
+    static zeros(shape, dType = Int32Array) {
+        return this.fill(shape, 0, dType);
     }
-    static ones(...shape) {
-        return this.fill(shape, 1);
+    static ones(shape, dType = Int32Array) {
+        return this.fill(shape, 1, shape);
     }
     static ones_like(src) {
-        return this.ones(...src.shape);
+        return this.ones(src.shape, src.dType);
     }
-    static rands(...shape) {
-        return this.fill(shape, ()=>(Math.random()-.5) * .1);
+    static rands(shape, dType) {
+        return this.fill(shape, ()=>(Math.random()-.5) * .1, dType);
     }
-    static rand(...shape) {
-        return this.fill(shape, ()=>(Math.random()-.5));
+    static rand(shape, dType) {
+        return this.fill(shape, ()=>(Math.random()-.5), dType);
     }
-    static random(...shape) {
-        return this.fill(shape, ()=>Math.random());
+    static random(shape, dType) {
+        return this.fill(shape, ()=>Math.random(), dType);
     }
-    static randn(...shape){
-        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2*Math.PI) * Math.random()));
+    static randn(shape, dType){
+        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), dType);
 
     }
-    static arange(from = 0, to = 0, step = 1){
-        if (!to){
-            to = from;
-            from = 0;
+    static arange(arange_params, dType = Float32Array){
+        if (Number.isInteger(arange_params)){
+            arange_params = [0, arange_params, 1];
         }
-        const data = []
-        for(let i = from; i<to; i+=step){
-            data.push(i);
+        if (!Array.isArray(arange_params))
+            throw new Error('arange arange_params');
+        if (arange_params.length === 0)
+            throw new Error('arange arange_params');
+        if (arange_params.length < 2)
+            arange_params.unshift(0);
+        if (arange_params.length < 3)
+            arange_params.push(1);
+        let [from, to, step] = arange_params;
+        const data = new dType(Math.round((to - from)/step));
+        let idx = -1;
+        for(let d = from; d < to; d += step){
+            data[++idx] = d
         }
-        return tensor.from(data);
+        return tensor.from(data, dType);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -281,7 +290,7 @@ export class tensor{
         })
         return tensor.from(data)._label('hippo');
     }
-    static from(data, dType = Float32Array){
+    static from(data, dType){
         if (data instanceof tensor)
             return data;
         return new tensor(data, dType);
@@ -293,8 +302,29 @@ export class tensor{
         src.isParam = true;
         return src;
     }
-
-
+    repeat(...repeat_shape){
+        if (repeat_shape.length === 1){
+            if (Number.isInteger(repeat_shape[0])){
+                repeat_shape = [repeat_shape[0]];
+            }
+            else if (Array.isArray(repeat_shape[0])){
+                repeat_shape = repeat_shape[0];
+            }
+        }
+        const multiply = repeat_shape.reduce((r, v)=>r*v, 1);
+        const new_size = this.size * multiply;
+        let data = new this.dType(new_size);
+        const old_size = this.data.length;
+        for (let i = 0; i < old_size; i++){
+            let d = this.data[i]
+            for (let m = i; m < new_size; m += old_size){
+                data[m] = d;
+            }
+        }
+        this.#data = data;
+        this._shape([...repeat_shape, ...this.shape]);
+        return this;
+    }
     toString(max = 8){
         if (this.shape.length){
             let data = this.array.toTensorString(max, this.shape).split('\r\n');

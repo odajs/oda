@@ -16,7 +16,7 @@ export class Genius extends Module{
         this.heads.forEach(h=>h.module.reset());
     }
     forward(input){
-        let result = this.heads.map(async (head, i)=>{
+        let result = this.heads.map((head, i)=>{
             return head(input);
         });
         // result = Promise.all(result)
@@ -37,12 +37,12 @@ export class GeniusLayer extends Module{
     }
     __init__() {
         // this.d_A = this.d * this.dh;
-        this.W = tensor.param(tensor.rand(this.d_in, this.d));
+        this.W = tensor.param(tensor.rand([this.d_in, this.d]));
         this.in_proj = new Linear({d_in: this.d, d_out: this.d * 2, bias: false});
         this.x_proj = new Linear({d_in: this.dh, d_out: this.dh * 2 + this.dt, bias: false});
         this.dt_proj = new Linear({d_in: this.dt, d_out: this.dh, bias: true});
         this.Alog = tensor.param(tensor.hippo(this.d));
-        this.H = tensor.zeros(this.d, this.d);
+        this.H = tensor.zeros([this.d, this.d]);
         if (this.deep)
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
         this.D = tensor.param(tensor.ones(1));
