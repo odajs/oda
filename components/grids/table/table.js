@@ -2523,7 +2523,7 @@ const maxColsCount = 1024;
 function modifyColumn(col) {
     if (col.isModified) return;
     col.isModified = true;
-    col.$saveKey = (col.__parent__?.$saveKey ? (col.__parent__?.$saveKey + '/') : 'columns/') + (col[this.columnId] || 'empty-name');
+    col.$saveKey = (col.__parent__?.$saveKey ? (col.__parent__?.$saveKey + '/') : '') + (col[this.columnId] || 'empty-name');
     const storage = this.storage;
     const table = this;
     col['#$width'] = col.$width;
