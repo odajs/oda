@@ -17,8 +17,8 @@ export class Tokenizer extends ROCKS({
                 const res = Object.create(null);
                 res.w = word;
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = tensor.random(this.dim).data;
-                res.cnt = Array.from(tensor.random(this.dim).data);
+                res.emb = tensor.random(this.dim, Int8Array).div_(10).data;
+                res.cnt = Array.from(tensor.random(this.dim, Int8Array).div_(10).data);
                 res.L = Array.from(tensor.random(this.dim).data);
                 res.error = 1;
                 this.tokens = undefined;
@@ -92,8 +92,8 @@ export class Tokenizer extends ROCKS({
                 res.w = pair;
                 res.id = Object.keys(this.vocabulary).length;
                 res.emb = tensor.random(this.dim).data;
-                res.cnt = Array.from(tensor.random(this.dim).data);
-                res.L = Array.from(tensor.random(this.dim).data);
+                res.cnt = Array.from(tensor.random(this.dim, Int8Array).div_(10).data);
+                res.L = Array.from(tensor.random(this.dim, Int8Array).div_(10).data);
                 res.error = 1;
                 return res;
             })()
@@ -145,7 +145,7 @@ export class Tokenizer extends ROCKS({
         }).flat());
         cnts._shape([phrase.length, this.dim]);
         let res = tensor.einsum(`d, id -> i`, [emb, cnts]);
-        res = res.sigmoid();
+        res = res.sigm();
         res = res.MSE(target);
         token.error = res.data;
         res.back();
@@ -190,7 +190,7 @@ export class Tokenizer extends ROCKS({
             id: 0,
             w: '<end>',
             emb: new Int8Array(dim),
-            L: Array.from(tensor.random(this.dim).data),
+            L: Array.from(tensor.random(this.dim, Int8Array).div_(10).data),
             error: 0
         }
         this.vocabulary['<end>'] = this.ends;

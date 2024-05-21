@@ -1,9 +1,13 @@
 import {tensor} from "./torus.js";
 export class Module{
-    constructor(params = {}, label) {
-        this.__params__ = params;
-        for (let n in params){
-            this[n] = params[n];
+    #params = Object.create(null);
+    constructor(argumetns) {
+        const names = this.constructor.toString().match(/(?<=\().*?(?=\))/)[0].split(',').map(name => {
+            return name.split('=')[0].trim();
+        });
+        for (let i = 0; i<names.length; i++){
+            const name = names[i]
+            this[name] = this.#params[name] = argumetns[i];
         }
         this.__init__();
         const fwd = (...args)=>{
@@ -14,6 +18,9 @@ export class Module{
         fwd.module = this;
         fwd.toString = this.toString.bind(this);
         return fwd
+    }
+    get params(){
+        return this.#params;
     }
     forward(x){
         return x;
@@ -60,6 +67,9 @@ export class Module{
     }
 }
 export class Linear extends Module{
+    constructor(dim_in, dim_out, bias = false) {
+        super(arguments);
+    }
     __init__() {
         this.W = tensor.param(tensor.random([this.d_in, this.d_out])._minus(.5));
         this.W._label(this.W.label + '/linear weights');
@@ -83,6 +93,20 @@ export class Linear extends Module{
         return this.constructor.name + ` (${this.W.shape}, ${!!this.bias})`
     }
 }
+
+export class conv1D extends Module {
+    __init__(dim) {
+
+    }
+    forward(x) {
+
+    }
+    get label(){
+        return this.constructor.name + ` (${this.W.shape})`
+    }
+}
+
+
 export class RMSNorm extends Module {
     __init__(dim) {
         this.W = tensor.param(tensor.rand(dim));

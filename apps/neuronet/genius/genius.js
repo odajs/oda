@@ -2,14 +2,14 @@ import {tensor} from "./torus.js";
 import {Linear, Module} from "./module.js";
 export class Genius extends Module{
     error = 0;
-    constructor(params = {tokenizer: null, expand: 2, deep: 1, head_count: 1}) {
-        super(params);
+    constructor(tokenizer, expand = 2, deep = 1, head_count = 1) {
+        super(arguments);
     }
     get d(){
         return this.tokenizer.dim // this.head_count;
     }
     __init__() {
-        this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1}));
+        this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer(this.d, this.expand, this.deep - 1));
         // this.W = tensor.param(tensor.rand(this.d, this.d));
     }
     reset(){
@@ -26,21 +26,25 @@ export class Genius extends Module{
     }
 }
 export class GeniusLayer extends Module{
-    get d(){
+    constructor(d_in, expand = 2, deep = 1) {
+        super(arguments);
+    }
+    get d_layer(){
         return Math.floor(this.d_in * this.expand);
     }
-    get dh(){
-        return this.d;//Math.floor(this.d * this.expand);
+    get d_inner(){
+        return Math.floor(this.d_layer * this.expand);
     }
     get dt(){
         return 1;
     }
     __init__() {
-        // this.d_A = this.d * this.dh;
-        this.W = tensor.param(tensor.random([this.d_in, this.d])._minus(.5)._mul(.1));
-        this.in_proj = new Linear({d_in: this.d, d_out: this.d * 2, bias: false});
-        this.x_proj = new Linear({d_in: this.dh, d_out: this.dh * 2 + this.dt, bias: false});
-        this.dt_proj = new Linear({d_in: this.dt, d_out: this.dh, bias: true});
+        this.W = tensor.param(tensor.random([this.d_in, this.d_layer]).minus_(.5).mul_(.1));
+        this.in_proj = new Linear({d_in: this.d_layer, d_out: this.d_inner * 2, bias: false});
+
+
+        this.x_proj = new Linear({d_in: this.d_inner, d_out: this.d_inner * 2 + this.dt, bias: false});
+        this.dt_proj = new Linear({d_in: this.dt, d_out: this.d_inner, bias: true});
         this.Alog = tensor.param(tensor.hippo(this.d));
         this.H = tensor.zeros([this.d, this.d]);
         if (this.deep)
@@ -60,16 +64,16 @@ export class GeniusLayer extends Module{
         // x  = this.conv1D(x);
         x = x.silu();
         let fork_x = this.x_proj(x)
-        let [B, C, delta] = fork_x.split([this.dh, this.dh, this.dt], -1);
+        let [B, C, delta] = fork_x.split([this.d_inner, this.d_inner, this.dt], -1);
         delta = this.dt_proj(delta);
         delta = delta.softplus();
 
 
         // let xB = tensor.einsum('x, B -> xB', [xe, B]);
         let A = this.Alog.exp().invert();
-        let sum = tensor.einsum('d, dn -> dn', [delta, A])
+        let sum = tensor.einsum('Ld, dn -> Ldn', [delta, A])
         let deltaA = sum.exp();
-        let deltaB_x = tensor.einsum('d, b, d -> db', [delta, B, x]);
+        let deltaB_x = tensor.einsum('Ld, Lb, Ld -> Ldb', [delta, B, x]);
         let h = tensor.from(this.H.data)._shape(this.H)
 
         let da = tensor.einsum('ab, ab->ab', [deltaA, h]);

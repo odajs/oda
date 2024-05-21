@@ -58,19 +58,20 @@ export class tensor{
         this.#shape = shape
         return this;
     }
-    _mul(factor){
+    //inplace functions
+    mul_(factor){
         this.#data = this.data.map(d=>d * factor);
         return this;
     }
-    _div(factor){
+    div_(factor){
         this.#data = this.data.map(d=>d / factor);
         return this;
     }
-    _plus(factor){
+    plus_(factor){
         this.#data = this.data.map(d=>d + factor);
         return this;
     }
-    _minus(factor){
+    minus_(factor){
         this.#data = this.data.map(d=>d - factor);
         return this;
     }
@@ -546,9 +547,9 @@ tensor.prototype.tahn = function (){
     return tensor.from(data, 'tahn', [this])._shape(this);
 }
 
-tensor.prototype.sigmoid = function (p1 = 1, p2 = 1){
-    const data = this.data.map((x,i) => (p1[i] ?? p1) / ((p2[i] ?? p2) + Math.exp(-x)))
-    const out = tensor.from(data, 'sigmoid', [this])._shape(this);
+tensor.prototype.sigm = function (y = 1, z = 1, exp = Math.E){
+    const data = this.data.map((x,i) => (y[i] ?? y) / ((z[i] ?? z) + Math.pow((exp[i] ?? exp), -x)))
+    const out = tensor.from(data)._shape(this)._src(this)._label('sigm');
     out._back = ()=>{
         let o_grad = out.grad;
         let x_grad = this.grad;

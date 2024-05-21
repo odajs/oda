@@ -202,7 +202,7 @@
         model:{
             $pdp: true,
             get(){
-                return new Genius({tokenizer: this.tokenizer, expand: 2, deep: 1, head_count: 1});
+                return new Genius(this.tokenizer, 2, 1, 1);
             }
 
         },

@@ -2,25 +2,23 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-    import {tensor} from './torus.js';
-    let out = []
-    let _t = 20;
-    let _i = 3;
-    let _j = 2;
-    let k = 6;
-    let start = 0;
-    let step = 1;
-    let max = _i * _j;
-    let x = tensor.from([[ 0.3367,  0.1288,  0.2345],
-        [ 0.2303, -1.1229, -0.1863]])
-        while(start<max){
-            for (let t = 0; t<_t; t++){
-                out.push(...x.data.slice(start, start + step))
-            }
-            start+=step
-        }
-
-    out = tensor.from(out).reshape(_t, 3, 2)
-    console.log(out)
+   class MyClass{
+       constructor(...args) {
+           console.log(args);
+       }
+   }
+   class MyClass1 extends MyClass{
+       constructor(a, b, c) {
+           super(arguments);
+       }
+   }
+   const object = new MyClass1(1, 2,3)
+   console.log(object);
+   const getParams = (func) => {
+       const names = func.toString().match(/(?<=\().*?(?=\))/)[0].split(',').map(name => name.trim());
+       return (args) => names.reduce((obj, name, index) => (obj[name] = args[index], obj), {});
+   };
+   const args = getParams(MyClass1)
+   console.log(args);
 
 </script>
