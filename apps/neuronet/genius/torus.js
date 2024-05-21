@@ -36,8 +36,11 @@ export class tensor{
         return this;
     }
     _src(...src){
-        this.#src = src;
+        this.#src = src.flat();
         return this;
+    }
+    get src(){
+        return this.#src;
     }
     _dType(type){
         const data = new type(this.data.length);
@@ -267,23 +270,8 @@ export class tensor{
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
     }
-    static random(shape, dType) {
-        let fn =   Math.random;
-        switch (dType){
-            case Int8Array:
-            case Int16Array:
-            case Int32Array:
-            case BigInt64Array:
-                fn = ()=> (Math.random() - .5) * 2 ** 8;
-                break;
-            case Uint8Array:
-            case Uint16Array:
-            case Uint32Array:
-            case BigUint64Array:
-                fn = ()=> Math.random() * 2 ** 8;
-                break;
-        }
-        return this.fill(shape, fn, dType);
+    static rand(shape, dType) {
+        return this.fill(shape, Math.random, dType);
     }
     static rndNorm(shape, dType){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), dType);

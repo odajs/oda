@@ -157,7 +157,7 @@
             let input = this.tokens.map(t=>Array.from(t.emb));
             input.push(Array.from(this.tokenizer.vocabulary['<end>'].emb));
             input = tensor.from(input);
-            this.tensor = this.model(input);
+            // this.tensor = this.model(input);
             // this.err = this.tensor.data[0];
             // for(let phrase of this.tokens){
             //     phrase = Array.from(phrase);
