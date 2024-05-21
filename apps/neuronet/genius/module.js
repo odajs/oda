@@ -5,6 +5,7 @@ export class Module{
         const names = this.constructor.toString().match(/(?<=\().*?(?=\))/)[0].split(',').map(name => {
             return name.split('=')[0].trim();
         });
+
         for (let i = 0; i<names.length; i++){
             const name = names[i]
             this[name] = this.#params[name] = argumetns[i];
@@ -66,16 +67,16 @@ export class Module{
         return s;
     }
 }
-export class Linear extends Module{
-    constructor(dim_in, dim_out, bias = false) {
-        super(arguments);
+class Linear extends Module{
+    constructor(d_in, d_out, bias = false) {
+        super(...arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.random([this.d_in, this.d_out])._minus(.5));
+        this.W = tensor.param(tensor.rand([this.d_in, this.d_out]).minus_(.5));
         this.W._label(this.W.label + '/linear weights');
         if(this.bias){
-            this.bias = tensor.param(tensor.random(this.d_out)._minus(.5));
-            this.bias._label(this.bias._label + '/linear bias');
+            this.B = tensor.param(tensor.rand(this.d_out).minus_(.5));
+            this.B._label(this.bias._label + '/linear bias');
         }
 
     }
@@ -86,7 +87,7 @@ export class Linear extends Module{
         }
         x = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.W]);
         if (this.bias)
-            x = x.plus(this.bias);
+            x = x.plus(this.B);
         return x;
     }
     get label(){
@@ -94,7 +95,7 @@ export class Linear extends Module{
     }
 }
 
-export class conv1D extends Module {
+class conv1D extends Module {
     __init__(dim) {
 
     }
@@ -107,12 +108,14 @@ export class conv1D extends Module {
 }
 
 
-export class RMSNorm extends Module {
-    __init__(dim) {
-        this.W = tensor.param(tensor.rand(dim));
-        this.W.label = 'RMSNorm - W'
-        this.bias = tensor.param(tensor.rand(dim));
-        this.bias.label = 'RMSNorm - bias'
+class RMSNorm extends Module {
+    constructor(dim, bias = false) {
+        super(arguments);
+    }
+    __init__() {
+        this.W = tensor.param(tensor.rand(this.dim))._label('RMSNorm - W');
+        if (this.bias)
+            this.B = tensor.param(tensor.rand(this.dim))._label('RMSNorm - bias');
         this.eps = 1e-5;
     }
     forward(x) {
@@ -122,10 +125,22 @@ export class RMSNorm extends Module {
         let sqrt = eps.func('_rsqrt');
         let mul = this.W.mul(sqrt);
         let out = mul.mul(x);
-        out = out.plus(this.bias)
+        if (this.bias)
+            out = out.plus(this.B)
         return out;
     }
     get label(){
         return this.constructor.name + ` (${this.W.shape})`
+    }
+}
+export const nn = {
+    linear(i_dim, o_dim, bias){
+        return new Linear(arguments);
+    },
+    conv1D(){
+        return new conv1D(arguments);
+    },
+    RMSNorm(){
+        return new RMSNorm(arguments);
     }
 }

@@ -1,5 +1,5 @@
 import {tensor} from "./torus.js";
-import {Linear, Module} from "./module.js";
+import {nn, Module} from "./module.js";
 export class Genius extends Module{
     error = 0;
     constructor(tokenizer, expand = 2, deep = 1, head_count = 1) {
@@ -11,9 +11,6 @@ export class Genius extends Module{
     __init__() {
         this.heads = Array(this.head_count).fill().map(l=>new GeniusLayer(this.d, this.expand, this.deep - 1));
         // this.W = tensor.param(tensor.rand(this.d, this.d));
-    }
-    reset(){
-        this.heads.forEach(h=>h.module.reset());
     }
     forward(input){
         let result = this.heads.map((head, i)=>{
@@ -29,31 +26,25 @@ export class GeniusLayer extends Module{
     constructor(d_in, expand = 2, deep = 1) {
         super(arguments);
     }
-    get d_layer(){
+    get d_x(){
         return Math.floor(this.d_in * this.expand);
     }
     get d_inner(){
-        return Math.floor(this.d_layer * this.expand);
+        return Math.floor(this.d_x * this.expand);
     }
     get dt(){
         return 1;
     }
     __init__() {
-        this.W = tensor.param(tensor.random([this.d_in, this.d_layer]).minus_(.5).mul_(.1));
-        this.in_proj = new Linear({d_in: this.d_layer, d_out: this.d_inner * 2, bias: false});
-
-
-        this.x_proj = new Linear({d_in: this.d_inner, d_out: this.d_inner * 2 + this.dt, bias: false});
-        this.dt_proj = new Linear({d_in: this.dt, d_out: this.d_inner, bias: true});
-        this.Alog = tensor.param(tensor.hippo(this.d));
-        this.H = tensor.zeros([this.d, this.d]);
+        this.W = tensor.param(tensor.rand([this.d_in, this.d_x]).minus_(.5).mul_(.1));
+        this.in_proj = nn.linear(this.d_x, this.d_inner * 2, false);
+        this.x_proj = nn.linear(this.d_inner, this.d_inner * 2 + this.dt, false);
+        this.dt_proj = nn.linear(this.dt, this.d_inner, true);
+        this.Alog = tensor.param(tensor.hippo(this.d_inner));
+        this.H = tensor.zeros([this.d_inner, this.d_inner]);
         if (this.deep)
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
         this.D = tensor.param(tensor.ones(1));
-    }
-    reset(){
-        this.H = tensor.zeros(this.d, this.d);
-        this.subLayer?.reset?.();
     }
     forward(input){
         // расширение входа
