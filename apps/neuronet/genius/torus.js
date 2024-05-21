@@ -8,6 +8,7 @@ export class tensor{
     #label = 'tensor';
     #src = undefined;
     constructor(data, dType = Float32Array) {
+        if(!data) return;
         this.#dType = dType;
         if (Array.isArray(data)){
             let shape = [];
@@ -580,17 +581,63 @@ tensor.prototype.softmax = function (){
     }
     return out;
 }
-tensor.prototype.silu = function () {
-    const data = this.data.map((x, i)=> x * (1 / (1 + Math.exp(-x))));
-    const out =  tensor.from(data, 'silu', [this])._shape(this);
-    out._back = ()=>{
-        let o_grad = out.grad;
-        let x_grad = this.grad;
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            x_grad[i] += (1 - x) * x * o_grad[i] / GRADIENT_DIVIDER;
+tensor.prototype.silu = function (storage_tensor) {
+    let data, const_data, exp_data;
+    let size = this.size;
+    if(storage_tensor){
+        if(!storage_tensor.data){
+            data = new Float32Array(size * 2).fill(1,0, this.size);
+            data.fill(Math.E, size + 1, size * 2);
+            storage_tensor._data(data)._shape(2, size);
+        }
+        const_data = storage_tensor.data.slice(0, size);
+        exp_data = storage_tensor.data.slice(size + 1, size * 2);
+        data = this.data.map((x, i)=> x  / y[i] + exp[i] ** -x);
+    }
+    else
+        data = this.data.map((x, i)=> x  / 1 + Math.exp(-x));
+    const out =  tensor.from(data)._label('silu')._src(this)._shape(this);
+    if(storage_tensor){
+        out._src(this, storage_tensor);
+        out._back = ()=>{
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            let storage_grad = storage_tensor.grad;
+            let exp_grad = this.grad;
+            for(let i = 0; i<data.length; i++){
+                let og = o_grad[i] / GRADIENT_DIVIDER;
+                let x = data[i];
+                let y = const_data[i];
+                let z = exp_data[i];
+                let ex = z ** -x;
+                let onePlusEx = + ex;
+                let onePlusEx2 = onePlusEx ** 2;
+                // x grad
+                let g = (onePlusEx + ex * x * Math.log(z)) / onePlusEx2;
+                x_grad[i] += g * og;
+                //y grad
+                g = -x/onePlusEx2;
+                storage_grad[i] += g * og;
+                //exp grad
+                g = x ** 2 * z ** -(x-1)/onePlusEx2;
+                storage_grad[i+size] += g * og;
+            }
         }
     }
+    else{
+        out._back = ()=>{
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            for(let i = 0; i<data.length; i++){
+                let x = data[i];
+                let ex = Math.exp(-x);
+                let onePlusEx = 1 + ex;
+                let g = (onePlusEx + ex * x) / (onePlusEx ** 2);
+                x_grad[i] += g * o_grad[i] / GRADIENT_DIVIDER;
+            }
+        }
+    }
+
     return out;
 }
 tensor.prototype.MSE = function (target){
