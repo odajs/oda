@@ -44,10 +44,17 @@ export class tensor{
         return this.#src;
     }
     _dType(type){
-        const data = new type(this.data.length);
-        for(let i = 0; i<data.length; i++){
-            data[i] = this.data[i];
+        if (this.#dType !== type){
+            this.#dType = type;
+            const data = new type(this.data.length);
+            for(let i = 0; i<data.length; i++){
+                data[i] = this.data[i];
+            }
+            this.#data = data;
         }
+        return this;
+    }
+    _data(data){
         this.#data = data;
         return this;
     }
@@ -223,9 +230,9 @@ export class tensor{
             step /= s;
             d--;
         }
-        const max = Math.max(...tokens.map(t=>t.BYTES_PER_ELEMENT));
-        let t = tokens.findItem(t => {
-            return t.BYTES_PER_ELEMENT === max;
+        const max = Math.max(...tensors.map(t=>t.dType.BYTES_PER_ELEMENT));
+        let t = tensors.find(t => {
+            return t.dType.BYTES_PER_ELEMENT === max;
         });
 
         const data = new t.dType(size * tensors.length);
@@ -235,10 +242,9 @@ export class tensor{
                 for (let j = i; j<i + step; j++)
                     data[++idx] = t.data[j];
             }
-
         }
         shape.splice(dim, 0, tensors.length);
-        const out = tensor.from(data, `stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`, tensors)._shape(shape);
+        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`)._src(tensors);
         out._back = ()=>{
             for(let start = 0; start<size; start += step){
                 let delta = start
@@ -274,8 +280,8 @@ export class tensor{
     static rand(shape, dType) {
         return this.fill(shape, Math.random, dType);
     }
-    static rndNorm(shape, dType){
-        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), dType);
+    static randNorm(shape){
+        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
 
     }
     static arange(arange_params, dType = Float32Array){
@@ -582,45 +588,44 @@ tensor.prototype.softmax = function (){
     return out;
 }
 tensor.prototype.silu = function (storage_tensor) {
-    let data, const_data, exp_data;
+    let data;
     let size = this.size;
     if(storage_tensor){
         if(!storage_tensor.data){
             data = new Float32Array(size * 2).fill(1,0, this.size);
             data.fill(Math.E, size + 1, size * 2);
-            storage_tensor._data(data)._shape(2, size);
+            storage_tensor._data(data)._shape(2, ...this.shape);
         }
-        const_data = storage_tensor.data.slice(0, size);
-        exp_data = storage_tensor.data.slice(size + 1, size * 2);
-        data = this.data.map((x, i)=> x  / y[i] + exp[i] ** -x);
+        data = storage_tensor.data;
+        data = this.data.map((x, i)=> x  / (data[i] + data[i + size] ** -x));
     }
     else
-        data = this.data.map((x, i)=> x  / 1 + Math.exp(-x));
+        data = this.data.map((x, i)=> x  / (1 + Math.exp(-x)));
     const out =  tensor.from(data)._label('silu')._src(this)._shape(this);
     if(storage_tensor){
         out._src(this, storage_tensor);
         out._back = ()=>{
             let o_grad = out.grad;
             let x_grad = this.grad;
-            let storage_grad = storage_tensor.grad;
-            let exp_grad = this.grad;
+            let s_grad = storage_tensor.grad;
+            let s_data = storage_tensor.data;
             for(let i = 0; i<data.length; i++){
                 let og = o_grad[i] / GRADIENT_DIVIDER;
                 let x = data[i];
-                let y = const_data[i];
-                let z = exp_data[i];
+                let y = s_data[i];
+                let z = s_data[i+size];
                 let ex = z ** -x;
-                let onePlusEx = + ex;
+                let onePlusEx = y + ex;
                 let onePlusEx2 = onePlusEx ** 2;
                 // x grad
                 let g = (onePlusEx + ex * x * Math.log(z)) / onePlusEx2;
                 x_grad[i] += g * og;
                 //y grad
                 g = -x/onePlusEx2;
-                storage_grad[i] += g * og;
+                s_grad[i] += g * og;
                 //exp grad
                 g = x ** 2 * z ** -(x-1)/onePlusEx2;
-                storage_grad[i+size] += g * og;
+                s_grad[i+size] += g * og;
             }
         }
     }

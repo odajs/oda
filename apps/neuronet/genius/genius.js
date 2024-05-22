@@ -23,37 +23,39 @@ export class Genius extends Module{
     }
 }
 export class GeniusLayer extends Module{
-    constructor(d_in, expand = 2, deep = 1) {
+    constructor(dim_x, expand = 2, deep = 1) {
         super(arguments);
     }
-    get d_x(){
-        return Math.floor(this.d_in * this.expand);
-    }
-    get d_inner(){
-        return Math.floor(this.d_x * this.expand);
+    // get d_x(){
+    //     return Math.floor(this.d_in * this.expand);
+    // }
+    get dim(){
+        return Math.floor(this.dim_x * this.expand);
     }
     get dt(){
         return 1;
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([this.d_in, this.d_x]).minus_(.5).mul_(.1));
-        this.in_proj = nn.linear(this.d_x, this.d_inner * 2, false);
-        this.x_proj = nn.linear(this.d_inner, this.d_inner * 2 + this.dt, false);
-        this.dt_proj = nn.linear(this.dt, this.d_inner, true);
-        this.Alog = tensor.param(tensor.hippo(this.d_inner));
-        this.H = tensor.zeros([this.d_inner, this.d_inner]);
+        // this.W = tensor.param(tensor.rand([this.d_in, this.d_x]).minus_(.5).mul_(.1));
+        this.in_proj = nn.linear(this.dim_x, this.dim_x * 2, false);
+        this.x_proj = nn.linear(this.dim_x, this.dim * 2 + this.dt, false);
+        this.dt_proj = nn.linear(this.dt, this.dim, true);
+        this.Alog = tensor.param(tensor.hippo(this.dim));
+        // this.H = tensor.zeros([this.d_inner, this.d_inner]);
         if (this.deep)
             this.subLayer = new GeniusLayer({d_in: this.d, expand: this.expand, deep: this.deep - 1});
         this.D = tensor.param(tensor.ones(1));
+        this.s1 = tensor.param(tensor.from());
+        this.conv1D = nn.conv1D(this.dim_x, this.dim_x, 4, undefined, 3, undefined, undefined, this.dim_x);
     }
     forward(input){
         // расширение входа
-        let xe = tensor.einsum('Lx, xy -> Ly', [input, this.W]);
+        // let xe = tensor.einsum('Lx, xy -> Ly', [input, this.W]);
         // разделение входа на 2 потока
-        let x_res = this.in_proj(xe);
-        let [x, res] = x_res.split([this.d, this.d], -1);
+        let x_res = this.in_proj(input);
+        let [x, res] = x_res.split([this.dim_x, this.dim_x], -1);
         // x  = this.conv1D(x);
-        x = x.silu();
+        x = x.silu(this.s1);
         let fork_x = this.x_proj(x)
         let [B, C, delta] = fork_x.split([this.d_inner, this.d_inner, this.dt], -1);
         delta = this.dt_proj(delta);

@@ -2,19 +2,24 @@ import {tensor} from "./torus.js";
 export class Module{
     #params = Object.create(null);
     constructor(argumetns) {
-        const names = this.constructor.toString().match(/(?<=\().*?(?=\))/)[0].split(',').map(name => {
+
+
+        let expr = this.constructor.toString();
+
+        expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+
+        const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',')/*.map(name => {
             return name.split('=')[0].trim();
-        });
+        });*/
 
         for (let i = 0; i<names.length; i++){
-            const name = names[i]
-            this[name] = this.#params[name] = argumetns[i];
+            let name = names[i]
+            let [n, d] = name.split('=').map(i=>i.trim());
+            this[n] = this.#params[n] = argumetns[i] ?? (new Function("return "+d))();
         }
         this.__init__();
         const fwd = (...args)=>{
-            const out = this.forward(...args);
-            out._label(out.label + ' ['+this.label+']');
-            return out;
+            return this.forward(...args);
         }
         fwd.module = this;
         fwd.toString = this.toString.bind(this);
@@ -28,9 +33,6 @@ export class Module{
     }
     back(g){
         return g;
-    }
-    get label(){
-        return this.constructor.name;
     }
     get __children__(){
         let ch = Object.getOwnPropertyDescriptors(this);
@@ -66,10 +68,13 @@ export class Module{
         }).join('');
         return s;
     }
+    get label(){
+        return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
+    }
 }
 class Linear extends Module{
     constructor(d_in, d_out, bias = false) {
-        super(...arguments);
+        super(arguments);
     }
     __init__() {
         this.W = tensor.param(tensor.rand([this.d_in, this.d_out]).minus_(.5));
@@ -90,20 +95,28 @@ class Linear extends Module{
             x = x.plus(this.B);
         return x;
     }
-    get label(){
-        return this.constructor.name + ` (${this.W.shape}, ${!!this.bias})`
-    }
 }
 
 class conv1D extends Module {
-    __init__(dim) {
+    constructor(in_channels,
+                out_channels /*eee*/,
+                kernel_size = 4,
+                stride = 1,
+                padding = 0,
+                padding_mode = 'zeros', // options('zeros', 'reflect', 'replicate', 'circular')
+                dilation = 1,
+                groups = 1,
+                bias = true) {
+        super(arguments);
+    }
+    __init__() {
 
     }
     forward(x) {
 
     }
-    get label(){
-        return this.constructor.name + ` (${this.W.shape})`
+    getRightPosition(step) {
+        return step * this.stride + (this.kernel_size - 1) * this.dilation + 1;
     }
 }
 
@@ -129,18 +142,15 @@ class RMSNorm extends Module {
             out = out.plus(this.B)
         return out;
     }
-    get label(){
-        return this.constructor.name + ` (${this.W.shape})`
-    }
 }
 export const nn = {
-    linear(i_dim, o_dim, bias){
-        return new Linear(arguments);
+    linear(...args){
+        return new Linear(...args);
     },
-    conv1D(){
-        return new conv1D(arguments);
+    conv1D(...args){
+        return new conv1D(...args);
     },
-    RMSNorm(){
-        return new RMSNorm(arguments);
+    RMSNorm(...args){
+        return new RMSNorm(...args);
     }
 }
