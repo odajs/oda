@@ -6,7 +6,7 @@
     import '../../../tools/property-grid/property-grid.js';
     import {Genius} from './genius.js';
     import {tensor, LEARNING_RATE} from './torus.js';
-    import * as mm from './module.js';
+    import {nn} from './module.js';
     import {Tokenizer} from './tokenizer.js';
     import '../../apps/popup-form/popup-form.js';
     import '/web/oda/components/viewers/chart/chart.js';
@@ -302,9 +302,9 @@
             this.time = 0;
             this.result = ''
             try{
-                const fn = new Function('tensor', this.value);
+                const fn = new Function('tensor', 'nn', this.value);
                 let time = Date.now();
-                const res =  fn.call(this, tensor) || '';
+                const res =  fn.call(this, tensor, nn) || '';
                 time = Date.now() - time;
                 this.result =  res?.toString();
                 this.time = time;

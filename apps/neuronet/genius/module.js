@@ -116,9 +116,9 @@ class conv1D extends Module {
         this.kernel = tensor.param(tensor.rand([this.kernel_size]).minus_(.5));
     }
     forward(x) {
-        if ((x.getDim(-2) || 1) !== this.in_channels)
-            throw new Error(`Given groups=${this.groups}, weight of size [${this.out_channels}, ${this.in_channels / this.groups}, ${this.padding}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
         let k_size = this.kernel_size;
+        if ((x.getDim(-2) || 1) !== this.in_channels)
+            throw new Error(`Given groups=${this.groups}, weight of size [${this.out_channels}, ${this.in_channels / this.groups}, ${k_size}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
         let stride = this.stride;
         let dilation = this.dilation;
         let x_data = x.data;
@@ -127,21 +127,29 @@ class conv1D extends Module {
             return step * stride + (k_size - 1) * dilation + 1;
         }
         let data = [];
-        let s = 0
-        let padded_size = x.shape[x.shape.length-1] + this.padding * 2;
+        let s = 0;
+        let padding = this.padding;
+        let padded_size = x.getDim(-1) + padding * 2;
+        let rpad = padded_size - padding;
         while (getPos(s) <= padded_size) {
             let v = 0;
+
             for (let i = 0; i < k_size; i++) {
-                v += k_data[i] * x_data[s * stride + i * dilation];
+                v += k_data[i] * ((s < padding)?0:((s > rpad)?0:x_data[s * stride + i * dilation]));
             }
+
             data[s] = v;
             s += 1;
         }
-        const out = tensor.from(data)._src(this, this.kernel)._label(this.label)._shape(x)
+        let dim_out = (padded_size - dilation *  (k_size - 1) - 1);
+
+
+        const out = tensor.from(data)._src(x, this.kernel)._label(this.label);//._shape(x)
 
         // let max = data.reduce((r, v) => Math.max(r, Math.abs(v)), 0);
         // data = data.map(d => d / max)
         // data = data.slice(0, step + 1);
+        return out;
     }
 
 }
@@ -171,7 +179,7 @@ export const nn = {
     linear(...args){
         return new Linear(...args);
     },
-    conv1D(...args){
+    Conv1d(...args){
         return new conv1D(...args);
     },
     RMSNorm(...args){

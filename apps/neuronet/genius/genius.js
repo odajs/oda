@@ -54,7 +54,7 @@ export class GeniusLayer extends Module{
         let x_res = this.in_proj(input);
         let [x, res] = x_res.split([this.dim_inner, this.dim_inner], -1);
         x = tensor.einsum('ld -> dl', [x]);
-        x  = this.conv1D(x);
+        x  = this.Conv1d(x);
         x = tensor.einsum('dl -> ld', [x]);
         x = x.silu(this.silu1);
         let fork_x = this.x_proj(x)
