@@ -2,23 +2,17 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-   class MyClass{
-       constructor(...args) {
-           console.log(args);
-       }
-   }
-   class MyClass1 extends MyClass{
-       constructor(a, b, c) {
-           super(arguments);
-       }
-   }
-   const object = new MyClass1(1, 2,3)
-   console.log(object);
-   const getParams = (func) => {
-       const names = func.toString().match(/(?<=\().*?(?=\))/)[0].split(',').map(name => name.trim());
-       return (args) => names.reduce((obj, name, index) => (obj[name] = args[index], obj), {});
-   };
-   const args = getParams(MyClass1)
-   console.log(args);
+    console.time('for');
+   let _i = 20000;
+   let _j = 10000;
+   const data = new Int8Array(_i*_j);
+    let idx = -1;
+    for (let j = 0; j < _j; j++){
+        for (let i = 0; i < _i; i++){
+            data[++idx] = idx/_i;
+        }
+    }
+   console.timeEnd('for');
+   console.log(data.length)
 
 </script>

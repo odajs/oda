@@ -180,15 +180,20 @@ export class tensor{
     }
 
     static concat(tensors, dim= 0){
-
+        throw new Error(`to do`);
     }
-    split(split_sizes, dim = 0){
+    slice(from, to, step){
+        throw new Error(`to do`);
+    }
+    getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
             dim = this.dim + dim;
-        let shape = [...this.shape];
-        let max = shape[dim];
+        return  this.shape[dim];
+    }
+    split(split_sizes, dim = 0){
+        let max = this.getDim(dim);
         if (Number.isInteger(split_sizes)){
             let arr = [];
             let i;
@@ -206,6 +211,9 @@ export class tensor{
                 throw new Error(`split_sizes expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_sizes=[${split_sizes}]`);
         let idx = -1;
         const src = this.data;
+        let shape = [...this.shape];
+        if (dim < 0)
+            dim = this.dim + dim;
         const data = split_sizes.map(v=>{
             shape[dim] = v;
             const size = shape.reduce((r, s)=>r * s, 1);

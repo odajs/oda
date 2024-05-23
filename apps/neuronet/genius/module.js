@@ -96,10 +96,9 @@ class Linear extends Module{
         return x;
     }
 }
-
 class conv1D extends Module {
     constructor(in_channels,
-                out_channels /*eee*/,
+                out_channels,
                 kernel_size = 4,
                 stride = 1,
                 padding = 0,
@@ -107,20 +106,45 @@ class conv1D extends Module {
                 dilation = 1,
                 groups = 1,
                 bias = true) {
+        if (in_channels%groups)
+            throw new Error('out_channels must be divisible by groups');
+        if (out_channels%groups)
+            throw new Error('out_channels must be divisible by groups');
         super(arguments);
     }
     __init__() {
-
+        this.kernel = tensor.param(tensor.rand([this.kernel_size]).minus_(.5));
     }
     forward(x) {
+        if ((x.getDim(-2) || 1) !== this.in_channels)
+            throw new Error(`Given groups=${this.groups}, weight of size [${this.out_channels}, ${this.in_channels / this.groups}, ${this.padding}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
+        let k_size = this.kernel_size;
+        let stride = this.stride;
+        let dilation = this.dilation;
+        let x_data = x.data;
+        let k_data = this.kernel.data;
+        const getPos = (step) => {
+            return step * stride + (k_size - 1) * dilation + 1;
+        }
+        let data = [];
+        let s = 0
+        let padded_size = x.shape[x.shape.length-1] + this.padding * 2;
+        while (getPos(s) <= padded_size) {
+            let v = 0;
+            for (let i = 0; i < k_size; i++) {
+                v += k_data[i] * x_data[s * stride + i * dilation];
+            }
+            data[s] = v;
+            s += 1;
+        }
+        const out = tensor.from(data)._src(this, this.kernel)._label(this.label)._shape(x)
 
+        // let max = data.reduce((r, v) => Math.max(r, Math.abs(v)), 0);
+        // data = data.map(d => d / max)
+        // data = data.slice(0, step + 1);
     }
-    getRightPosition(step) {
-        return step * this.stride + (this.kernel_size - 1) * this.dilation + 1;
-    }
+
 }
-
-
 class RMSNorm extends Module {
     constructor(dim, bias = false) {
         super(arguments);

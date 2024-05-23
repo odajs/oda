@@ -53,7 +53,9 @@ export class GeniusLayer extends Module{
         // разделение входа на 2 потока
         let x_res = this.in_proj(input);
         let [x, res] = x_res.split([this.dim_inner, this.dim_inner], -1);
-        // x  = this.conv1D(x);
+        x = tensor.einsum('ld -> dl', [x]);
+        x  = this.conv1D(x);
+        x = tensor.einsum('dl -> ld', [x]);
         x = x.silu(this.silu1);
         let fork_x = this.x_proj(x)
         let [B, C, delta] = fork_x.split([this.dim_inner, this.dim_inner, this.dt], -1);
