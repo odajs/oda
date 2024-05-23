@@ -206,12 +206,13 @@ if (!globalThis.ROCKS) {
                 }
                 if (!args) {
                     expr = func.toString();
+                    expr = expr.replace(/(\/\*[\w\s\r\n\*]*\*\/)|(\/\/.*(?=[\r\n]))/mg, ''); //remove comments
                     const argsStart = expr.indexOf('(') + 1;
                     const argsEnd = expr.indexOf(')', argsStart);
                     args = str2arr(expr.slice(argsStart, argsEnd));
                 }
 
-                const checkArgs = args.map(a => a.split('.')[0].replace('?', ''));
+                const checkArgs = args.map(s => s.split('=')[0].trim()).map(a => a.split('.')[0].replace('?', ''));
                 const obsName = `${OBS_PREFIX}${name}`
                 prototype[obsName] = {
                     get() {
