@@ -555,49 +555,69 @@ tensor.prototype.sigm = function (y = 1, z = 1, exp = Math.E){
     }
     return out;
 }
-tensor.prototype.softplus = function () {
-    const data = this.data.map(x => Math.log(1 + Math.exp(x)))
-    const out = tensor.from(data, 'softplus', [this])._shape(this);
-    out._back = ()=>{
-        let o_grad = out.grad;
-        let x_grad = this.grad;
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            let exp = Math.exp(x);
-            x_grad[i] += (exp / (1 + exp)) * o_grad[i] / GRADIENT_DIVIDER;
+tensor.prototype.softplus = function (storage_tensor) {
+    let data;
+    let size = this.size;
+    if(storage_tensor){
+        if(!storage_tensor.data){
+            data = new Float32Array(size * 2).fill(1,0, this.size);
+            data.fill(Math.E, size, size * 2);
+            storage_tensor._data(data)._shape(2, ...this.shape);
+        }
+        data = storage_tensor.data;
+        data = this.data.map((x, i)=> Math.log(data[i] + data[i + size] ** x));
+    }
+    else
+        data = this.data.map(x => Math.log(1 + Math.exp(x)))
+    const out =  tensor.from(data)._label('this')._src(this)._shape(this);
+    if(storage_tensor){
+        out._src(this, storage_tensor);
+        out._back = ()=>{
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            let s_grad = storage_tensor.grad;
+            let s_data = storage_tensor.data;
+            for(let i = 0; i<data.length; i++){
+                let og = o_grad[i] / GRADIENT_DIVIDER;
+                let x = data[i];
+                let y = s_data[i];
+                let z = s_data[i+size];
+                let expX = z ** x;
+                let yPlusExpX = y + expX;
+                let lnZ = Math.log(z)
+                x_grad[i] += (expX / yPlusExpX) * og;
+                s_grad[i] += (1 / (lnZ * (yPlusExpX))) * og;
+                s_grad[i+size] += (x * expX * lnZ - Math.log(yPlusExpX) * yPlusExpX) / (z * lnZ ** 2 * yPlusExpX) * og;
+
+            }
+        }
+    }
+    else {
+        out._back = () => {
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            for (let i = 0; i < data.length; i++) {
+                let x = data[i];
+                let exp = Math.exp(x);
+                x_grad[i] += (exp / (1 + exp)) * o_grad[i] / GRADIENT_DIVIDER;
+            }
         }
     }
     return out;
 }
 
-tensor.prototype.softmax = function (){
-    const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
-    const data = this.data.map((x, i)=>  Math.exp(x) / exp);
-    const out =  tensor.from(data, 'softmax', [this])._shape(this);
-    out._back = ()=>{
-        for(let i = 0; i<data.length; i++){
-            let d = data[i];
-            let sum = data.reduce((r, sj, j)=>{
-                if (i === j)
-                    return d * (1 - d)
-                return -d * sj;
-            }) * out.grad[i];
-            this.grad[i] += sum * out.grad[i] / GRADIENT_DIVIDER;
-        }
-    }
-    return out;
-}
+
 tensor.prototype.silu = function (storage_tensor) {
     let data;
     let size = this.size;
     if(storage_tensor){
         if(!storage_tensor.data){
             data = new Float32Array(size * 2).fill(1,0, this.size);
-            data.fill(Math.E, size + 1, size * 2);
+            data.fill(Math.E, size, size * 2);
             storage_tensor._data(data)._shape(2, ...this.shape);
         }
         data = storage_tensor.data;
-        data = this.data.map((x, i)=> x  / (data[i] + data[i + size] ** -x));
+        data = this.data.map((x, i)=> (x  / (data[i] + data[i + size] ** -x)));
     }
     else
         data = this.data.map((x, i)=> x  / (1 + Math.exp(-x)));
@@ -617,15 +637,10 @@ tensor.prototype.silu = function (storage_tensor) {
                 let ex = z ** -x;
                 let onePlusEx = y + ex;
                 let onePlusEx2 = onePlusEx ** 2;
-                // x grad
-                let g = (onePlusEx + ex * x * Math.log(z)) / onePlusEx2;
-                x_grad[i] += g * og;
-                //y grad
-                g = -x/onePlusEx2;
-                s_grad[i] += g * og;
-                //exp grad
-                g = x ** 2 * z ** -(x-1)/onePlusEx2;
-                s_grad[i+size] += g * og;
+
+                x_grad[i] += (onePlusEx + ex * x * Math.log(z)) / onePlusEx2 * og;
+                s_grad[i] += -x/onePlusEx2 * og;
+                s_grad[i+size] += x ** 2 * z ** -(x-1)/onePlusEx2 * og;
             }
         }
     }
@@ -643,6 +658,24 @@ tensor.prototype.silu = function (storage_tensor) {
         }
     }
 
+    return out;
+}
+
+tensor.prototype.softmax = function (){
+    const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
+    const data = this.data.map((x, i)=>  Math.exp(x) / exp);
+    const out =  tensor.from(data, 'softmax', [this])._shape(this);
+    out._back = ()=>{
+        for(let i = 0; i<data.length; i++){
+            let d = data[i];
+            let sum = data.reduce((r, sj, j)=>{
+                if (i === j)
+                    return d * (1 - d)
+                return -d * sj;
+            }) * out.grad[i];
+            this.grad[i] += sum * out.grad[i] / GRADIENT_DIVIDER;
+        }
+    }
     return out;
 }
 tensor.prototype.MSE = function (target){
