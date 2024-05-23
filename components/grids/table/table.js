@@ -357,12 +357,16 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this.$render();
             }, 100)
         },
-
+        disableColumnsSave: false,
         fixedRows: [],
+        modifyColumn(col) {
+            if (!this.disableColumnsSave)
+                modifyColumn.call(this.table, col);
+        },
         get rowColumns() {
             const convert = (cols) => {
                 return cols.filter(i => !i.$hidden).reduce((res, col) => {
-                    modifyColumn.call(this.table, col)
+                    this.modifyColumn(col);
                     if (col.__expanded__ && col.items?.length) {
                         const items = col.items.filter(i => !i.$hidden).map((c, i) => {
                             c.id = col.id + '-' + i;
@@ -379,9 +383,9 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return convert(this.headerColumns);
         },
         get sorts() {
-            const find_sorts = (columns = []) => {
-                modifyColumn.call(this, columns);
-                return columns.reduce((res, i) => {
+            const find_sorts = (col = []) => {
+                this.modifyColumn(col);
+                return col.reduce((res, i) => {
                     res.add(i);
                     let items = i.items;
                     if (items) {
@@ -500,7 +504,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
     get headerColumns() {
         this.columns?.forEach?.((col, i) => {
-            modifyColumn.call(this, col);
+            this.modifyColumn(col);
             let order = i;
             if (col.treeMode)
                 order -= 500;
@@ -2172,11 +2176,11 @@ cells: {
             return this.column.__expanded__;
         },
         get subCols() {
-            return this.column?.items?.map(i => {
-                i.__parent__ ??= this.column;
-                modifyColumn.call(this.table, i);
-                return i;
-            })?.filter(i => !i.$hidden);
+            return this.column?.items?.map(col => {
+                col.__parent__ ??= this.column;
+                this.modifyColumn(col);
+                return col;
+            })?.filter(col => !col.$hidden);
         },
         get sortIcon() {
             if (+this.column.$sort > 0)
@@ -2203,7 +2207,7 @@ cells: {
             resize(e) {
                 if (!this.active || !this.column || this.column.__expanded__ || this.column.$flex) return;
                 e.stopPropagation();
-                modifyColumn.call(this.table, this.column);
+                this.modifyColumn(this.column);
                 this.column.$width = Math.round(this.offsetWidth);
             }
         },
