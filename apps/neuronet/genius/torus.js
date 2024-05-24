@@ -69,6 +69,19 @@ export class tensor{
         this.#shape = shape
         return this;
     }
+    _slice(...dims){
+        if(Array.isArray(dims[0]))
+            dims = dims[0];
+        if (dims.length >= this.dim)
+            throw new Error(`Axis count for _slice(...) must be less then tensor.dim, expected ${dims.length} to have ${this.dim}`);
+        dims.forEach((v, i)=>{
+            if (v >= this.shape[i])
+                throw new Error(`Axis[${i}] for _slice(...) must be less dimension then tensor.shape[${i}], expected ${v} to have ${this.shape[i]}`);
+        })
+        let step =  this.shape.slice(dims.length).reduce((r, v, i)=>r * v, 1);
+        let start = dims.reduce((r, v, i)=>r * v, 1) * step;
+        return this.#data.slice(start, start + step);
+    }
     //inplace functions
     mul_(factor){
         this.#data = this.data.map(d=>d * factor);

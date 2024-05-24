@@ -2,20 +2,20 @@ import {tensor} from "./torus.js";
 export class Module{
     #params = Object.create(null);
     constructor(argumetns) {
-
-
         let expr = this.constructor.toString();
-
         expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+        const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+        if (argumetns.length === 1 && argumetns[0].constructor === Object){
+            argumetns = argumetns[0];
+            for (let n in argumetns){
+                this[n] = this.#params[n] = argumetns[n];
+            }
 
-        const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',')/*.map(name => {
-            return name.split('=')[0].trim();
-        });*/
-
+        }
         for (let i = 0; i<names.length; i++){
             let name = names[i]
             let [n, d] = name.split('=').map(i=>i.trim());
-            this[n] = this.#params[n] = argumetns[i] ?? (new Function("return "+d))();
+            this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
         }
         this.__init__();
         const fwd = (...args)=>{
@@ -106,49 +106,80 @@ class conv1D extends Module {
                 dilation = 1,
                 groups = 1,
                 bias = true) {
-        if (in_channels%groups)
-            throw new Error('out_channels must be divisible by groups');
-        if (out_channels%groups)
-            throw new Error('out_channels must be divisible by groups');
         super(arguments);
     }
     __init__() {
-        this.kernel = tensor.param(tensor.rand([this.kernel_size]).minus_(.5));
+        if (this.in_channels%this.groups)
+            throw new Error('in_channels must be divisible by groups');
+        if (this.out_channels%this.groups)
+            throw new Error('out_channels must be divisible by groups');
+        let k = Math.sqrt(this.groups / (this.in_channels * this.kernel_size))
+        this.weight_shape = [this.out_channels, this.in_channels / this.groups, this.kernel_size];
+        this.weights = tensor.param(tensor.rand(this.weight_shape).minus_(.5).mul_(2 * k));
+        if (this.bias)
+            this.bias_weights = tensor.param(tensor.rand([this.out_channels]).minus_(.5).mul_(2 * k));
+        this.pads = Array(this.padding).fill(0);
     }
     forward(x) {
         let k_size = this.kernel_size;
+        if (x.dim>3)
+            throw new Error(`Expected 2D (unbatched) or 3D (batched) input to conv1d, but got input of size: [${x.shape}]`);
         if ((x.getDim(-2) || 1) !== this.in_channels)
-            throw new Error(`Given groups=${this.groups}, weight of size [${this.out_channels}, ${this.in_channels / this.groups}, ${k_size}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
+            throw new Error(`Given groups=${this.groups}, weight of size [${this.weight_shape}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
         let stride = this.stride;
         let dilation = this.dilation;
         let x_data = x.data;
-        let k_data = this.kernel.data;
-        const getPos = (step) => {
-            return step * stride + (k_size - 1) * dilation + 1;
-        }
-        let data = [];
-        let s = 0;
+        let k_data = this.weights.data;
         let padding = this.padding;
-        let padded_size = x.getDim(-1) + padding * 2;
-        let rpad = padded_size - padding;
-        while (getPos(s) <= padded_size) {
-            let v = 0;
+        let L_in = x.getDim(-1);
+        let padded_size = L_in + padding * 2;
+        let batches = x.dim === 2?1:x.getDim(-3);
+        let dim_out = (padded_size - dilation * (k_size - 1) - 1) / stride + 1;
+        const out_shape = [this.out_channels, dim_out];
+        if (x.dim > 2)
+            out_shape.unshift(batches)
+        const out_size = out_shape.reduce((r, v) => r * v, 1);
+        let data = new Float32Array(out_size);
+        let idx = -1;
 
-            for (let i = 0; i < k_size; i++) {
-                v += k_data[i] * ((s < padding)?0:((s > rpad)?0:x_data[s * stride + i * dilation]));
+        let outs = this.out_channels;
+        let links = this.in_channels / this.groups;
+        let ins = this.in_channels;
+        let groups = this.groups;
+        for (let b = 0; b < batches; b++){
+            for (let o = 0; o < outs; o++){
+                for (let l = 0; l<links; l++){
+                    for (let g = 0; g < groups; g++){
+                        const in_idx = g + l * groups;
+                        let src_data = x_data.slice(in_idx, in_idx + L_in);
+                        console.log(src_data)
+                    }
+                }
+
+                //
+                // for (let s = 0; s < dim_out; s++){
+                //     let sum = 0;
+                //     let src_data =  [...this.pads, ...x_data.slice(0, L_in), ...this.pads]
+                //     for (let link = 0; link < links; link++){
+                //         for (let i = 0; i<k_size; i++){
+                //             sum += 1;
+                //         }
+                //     }
+                //     data[++idx] = sum;
+                // }
             }
-
-            data[s] = v;
-            s += 1;
         }
-        let dim_out = (padded_size - dilation *  (k_size - 1) - 1);
+        // for (let step = 0; step < dim_out; step++) {
+        //     for (let o_chan = 0; o_chan < this.out_chanels; o_chan ++){
+        //         let src_data =  [...this.pads, ...x_data.slice(0, L_in), ...this.pads];
+        //         data[step + o_chan * dim_out] = k_data.reduce((r, k_val, i)=>{
+        //             let idx = step * stride + i * dilation;
+        //             return r + k_val * src_data[idx];
+        //         }, 0)
+        //     }
+        // }
+        const out = tensor.from(data)._src(x, this.kernel)._label(this.label)._shape(out_shape)
 
-
-        const out = tensor.from(data)._src(x, this.kernel)._label(this.label);//._shape(x)
-
-        // let max = data.reduce((r, v) => Math.max(r, Math.abs(v)), 0);
-        // data = data.map(d => d / max)
-        // data = data.slice(0, step + 1);
         return out;
     }
 
