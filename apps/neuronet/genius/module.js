@@ -140,44 +140,42 @@ class conv1D extends Module {
             out_shape.unshift(batches)
         const out_size = out_shape.reduce((r, v) => r * v, 1);
         let data = new Float32Array(out_size);
-        let idx = -1;
 
         let outs = this.out_channels;
         let links = this.in_channels / this.groups;
         let ins = this.in_channels;
         let groups = this.groups;
+        let in_idx = 0;
+        let in_step = x.getDim(-1) * this.groups;
+        const kernels = [];
+        let idx = -1;
         for (let b = 0; b < batches; b++){
-            for (let o = 0; o < outs; o++){
+            let batch_data = x._slice(b);
+            for (let o = 0; o < outs; o++) {
+                let out_idx = dim_out * (o + b * outs);
+                let kernel = kernels[o] ??= this.weights._slice(o);
                 for (let l = 0; l<links; l++){
-                    for (let g = 0; g < groups; g++){
-                        const in_idx = g + l * groups;
-                        let src_data = x_data.slice(in_idx, in_idx + L_in);
-                        console.log(src_data)
+                    let src_idx = l * in_step + o * links;
+                    let src = batch_data.slice(src_idx, src_idx + L_in);
+                    for (let g = 0; g < groups-1; g++){
+                        src_idx += L_in;
+                        const src_grp = batch_data.slice(src_idx, src_idx + L_in);
+                        src = src.map((v, i)=>{
+                            return v+src_grp[i];
+                        })
+                    }
+                    let src_data =  [...this.pads, ...src, ...this.pads];
+                    let k_idx = l * k_size
+                    let k = kernel.slice(k_idx, k_idx + k_size);
+                    for (let step = 0; step < dim_out; step++){
+                        data[++idx] = k.reduce((r, k_val, i)=>{
+                            let idx = step * stride + i * dilation;
+                            return r + k_val * src_data[idx];
+                        }, 0)
                     }
                 }
-
-                //
-                // for (let s = 0; s < dim_out; s++){
-                //     let sum = 0;
-                //     let src_data =  [...this.pads, ...x_data.slice(0, L_in), ...this.pads]
-                //     for (let link = 0; link < links; link++){
-                //         for (let i = 0; i<k_size; i++){
-                //             sum += 1;
-                //         }
-                //     }
-                //     data[++idx] = sum;
-                // }
             }
         }
-        // for (let step = 0; step < dim_out; step++) {
-        //     for (let o_chan = 0; o_chan < this.out_chanels; o_chan ++){
-        //         let src_data =  [...this.pads, ...x_data.slice(0, L_in), ...this.pads];
-        //         data[step + o_chan * dim_out] = k_data.reduce((r, k_val, i)=>{
-        //             let idx = step * stride + i * dilation;
-        //             return r + k_val * src_data[idx];
-        //         }, 0)
-        //     }
-        // }
         const out = tensor.from(data)._src(x, this.kernel)._label(this.label)._shape(out_shape)
 
         return out;

@@ -2,17 +2,68 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-    console.time('for');
-   let _i = 20000;
-   let _j = 10000;
-   const data = new Int8Array(_i*_j);
-    let idx = -1;
-    for (let j = 0; j < _j; j++){
-        for (let i = 0; i < _i; i++){
-            data[++idx] = idx/_i;
-        }
-    }
-   console.timeEnd('for');
-   console.log(data.length)
+    function einsum(equation, ...arrays) {
+        // Разбиваем уравнение на части
+        const parts = equation.split(',');
+        const operations = parts.map(part => part.split('->')[0].trim());
+        const outputShape = parts[parts.length - 1].split('->')[1].trim();
 
+        // Инициализируем результат
+        let result;
+
+        // Обрабатываем операции
+        for (let i = 0; i < operations.length; i++) {
+            const operation = operations[i];
+            const array = arrays[i];
+
+            // Разбиваем операцию на индексы
+            const inputIndices = operation.match(/[a-zA-Z]/g);
+            const outputIndices = outputShape.match(/[a-zA-Z]/g);
+
+            // Проверяем, есть ли суммирование
+            const sumIndices = inputIndices.filter(index => !outputIndices.includes(index));
+
+            // Выполняем операцию
+            if (i === 0) {
+                result = array.reduce((acc, val, index) => {
+                    const indices = inputIndices.map(index => index === sumIndices[0] ? index : index + '_' + index);
+                    indices[indices.indexOf(sumIndices[0])] = sumIndices[0];
+                    const key = indices.join('_');
+                    acc[key] = val;
+                    return acc;
+                }, {});
+            } else {
+                const newResult = {};
+                Object.keys(result).forEach(key => {
+                    const values = key.split('_').map(index => result[key][index]);
+                    const newKey = inputIndices.map((index, j) => index === sumIndices[0] ? index : index + '_' + values[j]).join('_');
+                    newKey[newKey.indexOf(sumIndices[0])] = sumIndices[0];
+                    newResult[newKey] = array.reduce((acc, val, index) => {
+                        const indices = inputIndices.map(index => index === sumIndices[0] ? index : index + '_' + index);
+                        indices[indices.indexOf(sumIndices[0])] = sumIndices[0];
+                        const key = indices.join('_');
+                        acc[key] = val;
+                        return acc;
+                    }, {});
+                });
+                result = newResult;
+            }
+        }
+
+        // Преобразуем результат в массив
+        const finalResult = [];
+        for (let i = 0; i < outputShape.length; i++) {
+            const index = outputShape[i];
+            const values = Object.values(result).map(value => value[index]);
+            finalResult.push(values);
+        }
+
+        return finalResult;
+    }
+
+    // Пример использования
+    const matrixA = [[1, 2], [3, 4]];
+    const matrixB = [[5, 6], [7, 8]];
+    const result = einsum('ij,jk->ik', matrixA, matrixB);
+    console.log(result); // Должно вывести [[19, 22], [43, 50]]
 </script>
