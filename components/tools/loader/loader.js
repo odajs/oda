@@ -24,15 +24,15 @@ ODA({
         $def: [],
         set() {
             if (this.tasks.length > 0) {
-                this._show = true;
+                this._tasksChanged();
             }
             else {
                 this.throttle('set-tasks-throttle', () => {
-                    this._show = this.tasks.length > 0;
+                    this._tasksChanged();
                 }, this.delay);
             }
             this.debounce('set-tasks-debounce', () => {
-                this._show = this.tasks.length > 0;
+                this._tasksChanged();
             }, 5 * this.delay);
         }
     },
@@ -49,6 +49,10 @@ ODA({
         if (~idx) this.tasks.splice(idx, 1);
         this.tasks = [...this.tasks];
     },
+    _tasksChanged() {
+        this._show = this.tasks.length > 0;
+        this.$render();
+    }
 });
 let loader;
 export async function getLoader() {
