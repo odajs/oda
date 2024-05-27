@@ -4,47 +4,51 @@ ODA({
     template: /*html*/`
     <style>
         :host{
+            visibility: {{_show ? 'visible' : 'hidden'}};
             position: fixed !important;
             top: 50%;
             left: 50%;
             z-index: 100;
             transform: translate3d(-50%, -50%, 0);
             pointer-events: none;
-            opacity: .5;
+            opacity: 0.5;
         }
+        {{''}}
     </style>
     `,
     $wake: true,
     iconSize: 64,
     icon: 'odant:spin',
     fill: 'var(--info-color)',
-    tasks: [],
-    _show: {
-        $def: true,
-        set(v) {
-            this.style.setProperty('visibility', v ? 'visible' : 'hidden');
-            this.debounce('fallback', () => {
-                this._tasksChanged();
-            }, 5_000);
+    tasks: {
+        $def: [],
+        set() {
+            if (this.tasks.length > 0) {
+                this._show = true;
+            }
+            else {
+                this.throttle('set-tasks-throttle', () => {
+                    this._show = this.tasks.length > 0;
+                }, this.delay);
+            }
+            this.debounce('set-tasks-debounce', () => {
+                this._show = this.tasks.length > 0;
+            }, 5 * this.delay);
         }
     },
+    _show: false,
     delay: 1000,
     addTask(task) {
         if (!task) return;
-        this.tasks.push(task);
-        this._tasksChanged();
+        this.tasks.push(task)
+        this.tasks = [...this.tasks];
     },
     removeTask(task) {
         if (!task) return;
         const idx = this.tasks.findIndex(t => t.id === task.id);
         if (~idx) this.tasks.splice(idx, 1);
-        this._tasksChanged();
+        this.tasks = [...this.tasks];
     },
-    _tasksChanged(tasks = this.tasks) {
-        this.debounce('_tasksChanged', () => {
-            this._show = this.tasks.length !== 0;
-        }, this.delay);
-    }
 });
 let loader;
 export async function getLoader() {
