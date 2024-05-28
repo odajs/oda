@@ -150,23 +150,24 @@ class conv1D extends Module {
         const kernels = [];
         let idx = -1;
         for (let b = 0; b < batches; b++){
-            let batch_data = x._slice(b);
+            let batch_data = x.dim === 3?x._slice(b):x.data;
+
             for (let o = 0; o < outs; o++) {
                 let out_idx = dim_out * (o + b * outs);
                 let kernel = kernels[o] ??= this.weights._slice(o);
+                let src_idx = 0;
+                let k_idx = 0;
                 for (let l = 0; l<links; l++){
-                    let src_idx = l * in_step + o * links;
-                    let src = batch_data.slice(src_idx, src_idx + L_in);
-                    for (let g = 0; g < groups-1; g++){
-                        src_idx += L_in;
-                        const src_grp = batch_data.slice(src_idx, src_idx + L_in);
+                    let src = new Float32Array(L_in);
+                    for (let g = 0; g < groups; g++){
+                        const src_grp = batch_data.slice(src_idx, src_idx += L_in);
                         src = src.map((v, i)=>{
-                            return v+src_grp[i];
+                            return v + src_grp[i];
                         })
                     }
                     let src_data =  [...this.pads, ...src, ...this.pads];
-                    let k_idx = l * k_size
-                    let k = kernel.slice(k_idx, k_idx + k_size);
+
+                    let k = kernel.slice(k_idx, k_idx += k_size);
                     for (let step = 0; step < dim_out; step++){
                         data[++idx] = k.reduce((r, k_val, i)=>{
                             let idx = step * stride + i * dilation;
