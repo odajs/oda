@@ -1570,8 +1570,8 @@ in the <${host.localName}>`);
             const calls = keyPressMap[key.toLowerCase()] || [];
             calls.forEach(func => func(e))
         }
-    }, true)
-    window.addEventListener('load', async () => {
+    }, true);
+    const loadedCallback = async () => {
         pointerDownListen();
         document.oncontextmenu = (e) => {
             e.target.dispatchEvent(new MouseEvent('menu', e));
@@ -1584,17 +1584,22 @@ in the <${host.localName}>`);
                 document.body.firstElementChild.$wake = true;
                 document.body.firstElementChild.style.visibility = 'hidden';
                 await import('./tools/tester/tester.js');
-                setTimeout(()=>{
+                setTimeout(() => {
                     document.body.firstElementChild.style.visibility = '';
                     // ODA.isHidden = false;
                     document.body.style.visibility = '';
-                }, 200)
+                }, 200);
                 // sleep = 500;
             }
             document.title = document.title || (document.body.firstElementChild.label || document.body.firstElementChild.name || document.body.firstElementChild.localName);
         }
-
-    });
+    };
+    if (document.readyState === "complete" || document.readyState === "interactive"){
+        loadedCallback();
+    }
+    else {
+        window.addEventListener('load', loadedCallback);
+    }
 
     Node:{
         const ob_types = ['function', 'object'];
