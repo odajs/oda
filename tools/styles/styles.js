@@ -40,6 +40,8 @@ let style = /*css*/`
         --selected-color: rgb(0 153 255);
         --selected-background: var(--header-background);
         --selected-filter: brightness(1.2) contrast(0.9);
+        --pointer-color: magenta;
+
         --dark-color: rgb(20, 20, 20);
         --dark-background: gray;
 
@@ -78,6 +80,8 @@ let style = /*css*/`
         --selected-color: navy;
         --selected-background: var(--header-background);
         --selected-filter: brightness(0.8) contrast(1.2);
+        --pointer-color: magenta;
+
         --dark-color: white;
         --dark-background: gray;
 
