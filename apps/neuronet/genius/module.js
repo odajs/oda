@@ -122,8 +122,8 @@ class conv1D extends Module {
     }
     forward(x) {
         let k_size = this.kernel_size;
-        if (x.dim>3)
-            throw new Error(`Expected 2D (unbatched) or 3D (batched) input to conv1d, but got input of size: [${x.shape}]`);
+        // if (x.dim>3)
+        //     throw new Error(`Expected 2D (unbatched) or 3D (batched) input to conv1d, but got input of size: [${x.shape}]`);
         if ((x.getDim(-2) || 1) !== this.in_channels)
             throw new Error(`Given groups=${this.groups}, weight of size [${this.weight_shape}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
         let stride = this.stride;
@@ -133,11 +133,12 @@ class conv1D extends Module {
         let padding = this.padding;
         let L_in = x.getDim(-1);
         let padded_size = L_in + padding * 2;
-        let batches = x.dim === 2?1:x.getDim(-3);
+        let over_axis = x.shape.slice(0, x.dim-2);
+
+        let batches = over_axis.reduce((r,v)=>r*v,1);
         let dim_out = (padded_size - dilation * (k_size - 1) - 1) / stride + 1;
         const out_shape = [this.out_channels, dim_out];
-        if (x.dim > 2)
-            out_shape.unshift(batches)
+        out_shape.unshift(...over_axis)
         const out_size = out_shape.reduce((r, v) => r * v, 1);
         let data = new Float32Array(out_size);
 
@@ -149,9 +150,10 @@ class conv1D extends Module {
         let in_step = x.getDim(-1) * this.groups;
         const kernels = [];
         let idx = -1;
-        for (let b = 0; b < batches; b++){
-            let batch_data = x.dim === 3?x._slice(b):x.data;
-
+        let data_step = this.in_channels * L_in;
+        batches *= data_step
+        for (let b = 0; b < batches; b+=data_step){
+            let batch_data = x.data.slice(b, b+data_step);
             for (let o = 0; o < outs; o++) {
                 let out_idx = dim_out * (o + b * outs);
                 let kernel = kernels[o] ??= this.weights._slice(o);
@@ -177,8 +179,10 @@ class conv1D extends Module {
                 }
             }
         }
-        const out = tensor.from(data)._src(x, this.kernel)._label(this.label)._shape(out_shape)
+        const out = tensor.from(data)._src(x, this.weights)._label(this.label)._shape(out_shape);
+        out._back = ()=>{
 
+        }
         return out;
     }
 

@@ -399,10 +399,10 @@ export class tensor{
     toString(max = 8){
         if (this.shape.length){
             let data = this.array.toTensorString(max, this.shape).split('\r\n');
-            if (data.length > max){
-                const padding = data[0].length/2 + 2
-                data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
-            }
+            // if (data.length > max){
+            //     const padding = data[0].length/2 + 2
+            //     data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
+            // }
             data = data.join('\r\n')
             return `(${data}), dType=${this.dType.name}, shape(${this.shape})`;
         }
@@ -572,6 +572,50 @@ tensor.prototype.sigm = function (y = 1, z = 1, exp = Math.E){
         for(let i = 0; i<data.length; i++){
             let x = data[i];
             x_grad[i] += (1 - x) * x * o_grad[i] / GRADIENT_DIVIDER;
+        }
+    }
+    return out;
+}
+tensor.prototype.mandelbrot = function (storage_tensor){
+    let data;
+    let size = this.size;
+    if(storage_tensor){
+        if(!storage_tensor.data){
+            data = new Float32Array(size * 2).map(i=>Math.random()-.5);
+            data.fill(2, size, size * 2);
+            storage_tensor._data(data)._shape(2, ...this.shape);
+        }
+        data = storage_tensor.data;
+        data = this.data.map((x, i)=> Math.pow(x,  data[i +size]) + data[i]);
+    }
+    else
+        data = this.data.map(x => Math.pow(x,  2) + 1)
+    const out = tensor.from(data)._shape(this)._src(this)._label('mandelbrot');
+    if(storage_tensor){
+        out._src(this, storage_tensor);
+        out._back = ()=>{
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            let s_grad = storage_tensor.grad;
+            let s_data = storage_tensor.data;
+            for(let i = 0; i<data.length; i++){
+                let x = data[i];
+                let y = s_data[i];
+                let z = s_data[i+size];
+                let g = o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += y * Math.pow(x, y-1) * g;
+                s_grad[i] += g;
+                s_grad[i+size] += Math.pow(x, y) * Math.ln(x) * g;
+            }
+        }
+    }
+    else{
+        out._back = ()=>{
+            let o_grad = out.grad;
+            let x_grad = this.grad;
+            for(let i = 0; i<data.length; i++){
+                x_grad[i] += 2 * data[i] * o_grad[i] / GRADIENT_DIVIDER;
+            }
         }
     }
     return out;

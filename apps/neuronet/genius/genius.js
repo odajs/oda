@@ -45,7 +45,7 @@ export class GeniusLayer extends Module{
         this.silu1 = tensor.param(tensor.from());
         this.silu2 = tensor.param(tensor.from());
         this.softplus = tensor.param(tensor.from());
-        this.conv1D = nn.conv1D(this.dim_inner, this.dim_inner, 4, undefined, 3, undefined, undefined, this.dim_inner);
+        this.conv1d = nn.Conv1d(this.dim_inner, this.dim_inner, 4, undefined, 3, undefined, undefined, this.dim_inner);
     }
     forward(input){
         // расширение входа
@@ -54,7 +54,7 @@ export class GeniusLayer extends Module{
         let x_res = this.in_proj(input);
         let [x, res] = x_res.split([this.dim_inner, this.dim_inner], -1);
         x = tensor.einsum('ld -> dl', [x]);
-        x  = this.Conv1d(x);
+        x  = this.conv1d(x);
         x = tensor.einsum('dl -> ld', [x]);
         x = x.silu(this.silu1);
         let fork_x = this.x_proj(x)

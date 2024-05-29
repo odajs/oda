@@ -287,14 +287,20 @@
                     @apply --vertical;
                 }
             </style>
-
-            <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace;"></textarea>
-            <button @tap="calc">EXE ({{time}} ms)</button>
-            <textarea class="flex" style="font-size: xx-small; font-family: monospace;">{{result.toString()}}</textarea>
+            <div>
+                <textarea class="no-flex" ::value  style="font-size: xx-small; font-family: monospace; min-width: 100% !important;  white-space: nowrap;" ~style="{height: height+'px'}"></textarea>
+                <oda-splitter sign="-1" max="0" min="10" ::height align="horizontal"></oda-splitter>
+            </div>
+            <button @tap.stop="calc">EXE ({{time}} ms)</button>
+            <textarea  class="flex" style="font-size: xx-small; font-family: monospace;  white-space: nowrap; min-width: 100% !important;">{{result.toString()}}</textarea>
         `,
         value:{
             $def: '',
             $save: true
+        },
+        height: {
+            $def: 200,
+            $save: true,
         },
         result: '',
         time: 0,
