@@ -287,8 +287,8 @@
                     @apply --vertical;
                 }
             </style>
-            <div>
-                <textarea class="no-flex" ::value  style="font-size: xx-small; font-family: monospace; min-width: 100% !important;  white-space: nowrap;" ~style="{height: height+'px'}"></textarea>
+            <div vertical ~style="{height: height+'px'}">
+                <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace; min-width: 100% !important;  white-space: nowrap;" ></textarea>
                 <oda-splitter sign="-1" max="0" min="10" ::height align="horizontal"></oda-splitter>
             </div>
             <button @tap.stop="calc">EXE ({{time}} ms)</button>

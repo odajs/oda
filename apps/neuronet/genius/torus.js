@@ -404,7 +404,7 @@ export class tensor{
             //     data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
             // }
             data = data.join('\r\n')
-            return `(${data}), dType=${this.dType.name}, shape(${this.shape})`;
+            return `(${data}),\r\ndType=${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})`;
         }
         return this.data;
     }

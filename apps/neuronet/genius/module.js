@@ -152,8 +152,8 @@ class conv1D extends Module {
         let idx = -1;
         let data_step = this.in_channels * L_in;
         batches *= data_step
-        for (let b = 0; b < batches; b+=data_step){
-            let batch_data = x.data.slice(b, b+data_step);
+        for (let b = 0; b < batches; b += data_step){
+            let batch_data = x.data.slice(b, b + data_step);
             for (let o = 0; o < outs; o++) {
                 let out_idx = dim_out * (o + b * outs);
                 let kernel = kernels[o] ??= this.weights._slice(o);
@@ -181,7 +181,12 @@ class conv1D extends Module {
         }
         const out = tensor.from(data)._src(x, this.weights)._label(this.label)._shape(out_shape);
         out._back = ()=>{
+            for (let b = 0; b < batches; b += data_step) {
+                let batch_data = x.data.slice(b, b + data_step);
+                for (let o = 0; o < outs; o++) {
 
+                }
+            }
         }
         return out;
     }
