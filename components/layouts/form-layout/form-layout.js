@@ -125,11 +125,20 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             $def: null,
             $attr: true
         },
+        __allowMove: {
+            $def: false,
+            set(v, o) {
+                this._updateTrackListen();
+            }
+        },
         sizeMode: {
             $list: ['normal', 'max'],
             $def: 'normal',
             $save: true,
-            $attr: true
+            $attr: true,
+            // set(v){
+            //     this._updateTrackListen();
+            // }
         },
         pos: {
             $def: {
@@ -163,6 +172,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             $def: 0
         },
         hideMinMax: false,
+        __trackListen: false
     },
     $listeners: {
         pointermove(e) {
@@ -188,76 +198,95 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 } else {
                     this.style.cursor = '';
                 }
+                this._updateTrackListen();
             });
 
-        },
-        track(e, d) {
-            if (this.sizeMode === 'max') return;
-            if (this.autosize) return;
-            if (!this.float/*  || e.sourceEvent.button !== 0 */) return;
-            // console.log(e)
-            switch (d.state) {
-                case 'start': {
-                    if (!this.style.cursor && this.__allowMove)
-                        this.style.cursor = `move`;
-                } break;
-                case 'track': {
-                    let _pos = Object.assign({}, this.pos);
-                    const x = d.ddx || 0;
-                    const y = d.ddy || 0;
-                    switch (this.style.cursor) {
-                        case 'move': {
-                            _pos = { ..._pos, ...{ x: _pos.x += x, y: _pos.y += y } };
-                        } break;
-                        case 'e-resize': {
-                            _pos.width += x;
-                        } break;
-                        case 'w-resize': {
-                            _pos.width -= x;
-                            _pos.x += this.pos.width - _pos.width;
-                        } break;
-                        case 's-resize': {
-                            _pos.height += y;
-                        } break;
-                        case 'n-resize': {
-                            _pos.height -= y;
-                            _pos.y += this.pos.height - _pos.height;
-                        } break;
-
-                        case 'ne-resize': {
-                            _pos.width += x;
-                            _pos.height -= y;
-                            _pos.y += this.pos.height - _pos.height;
-                        } break;
-                        case 'nw-resize': {
-                            _pos.width -= x;
-                            _pos.x += this.pos.width - _pos.width;
-                            _pos.height -= y;
-                            _pos.y += this.pos.height - _pos.height;
-                        } break;
-                        case 'se-resize': {
-                            _pos.width += x;
-                            _pos.height += y;
-                        } break;
-                        case 'sw-resize': {
-                            _pos.height += y;
-                            _pos.width -= x;
-                            _pos.x += this.pos.width - _pos.width;
-                        } break;
-                    }
-                    this._fixPos(_pos);
-                    this.pos = { ...this.pos, ..._pos };
-                    // console.log(this.style.cursor)
-                } break;
-                case 'end': {
-                    this.style.cursor = '';
-                } break;
-            }
         },
         resize: '_resize',
     },
     $observers: {
         _setTransform: ['float', 'pos']
+    },
+    _updateTrackListen() {
+        if (this.sizeMode === 'normal') {
+            if (this.__trackListen) {
+                if (!this.style.cursor.endsWith('resize') && !(this.__allowMove || (this.style.cursor === 'move'))) {
+                    this.unlisten('track', 'track');
+                    this.__trackListen = false;
+                }
+            }
+            else {
+                if (this.style.cursor.endsWith('resize') || this.__allowMove) {
+                    this.listen('track', 'track');
+                    this.__trackListen = true;
+                    return;
+                }
+            }
+        }
+    },
+    track(e, d) {
+        d ??= e.detail;
+        if (this.sizeMode === 'max') return;
+        if (this.autosize) return;
+        if (!this.float/*  || e.sourceEvent.button !== 0 */) return;
+        // console.log(e)
+        switch (d.state) {
+            case 'start': {
+                if (!this.style.cursor && this.__allowMove)
+                    this.style.cursor = `move`;
+            } break;
+            case 'track': {
+                let _pos = Object.assign({}, this.pos);
+                const x = d.ddx || 0;
+                const y = d.ddy || 0;
+                switch (this.style.cursor) {
+                    case 'move': {
+                        _pos = { ..._pos, ...{ x: _pos.x += x, y: _pos.y += y } };
+                    } break;
+                    case 'e-resize': {
+                        _pos.width += x;
+                    } break;
+                    case 'w-resize': {
+                        _pos.width -= x;
+                        _pos.x += this.pos.width - _pos.width;
+                    } break;
+                    case 's-resize': {
+                        _pos.height += y;
+                    } break;
+                    case 'n-resize': {
+                        _pos.height -= y;
+                        _pos.y += this.pos.height - _pos.height;
+                    } break;
+
+                    case 'ne-resize': {
+                        _pos.width += x;
+                        _pos.height -= y;
+                        _pos.y += this.pos.height - _pos.height;
+                    } break;
+                    case 'nw-resize': {
+                        _pos.width -= x;
+                        _pos.x += this.pos.width - _pos.width;
+                        _pos.height -= y;
+                        _pos.y += this.pos.height - _pos.height;
+                    } break;
+                    case 'se-resize': {
+                        _pos.width += x;
+                        _pos.height += y;
+                    } break;
+                    case 'sw-resize': {
+                        _pos.height += y;
+                        _pos.width -= x;
+                        _pos.x += this.pos.width - _pos.width;
+                    } break;
+                }
+                this._fixPos(_pos);
+                this.pos = { ...this.pos, ..._pos };
+                // console.log(this.style.cursor)
+            } break;
+            case 'end': {
+                this.style.cursor = '';
+            } break;
+        }
     },
     _setTransform(float = this.float, pos = this.pos) {
         if (this.autosize) return;

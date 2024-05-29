@@ -1706,19 +1706,45 @@ in the <${host.localName}>`);
                 'k_down': 'keydown',
                 'k_up': 'keyup',
             }
-            const func = EventTarget.prototype.addEventListener;
-            EventTarget.prototype.__addEventListener = func
+            const __listen = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.__addEventListener = __listen;
             EventTarget.prototype.addEventListener = function (name, handler, ...args) {
                 if (name === 'track')
-                    return listenTrack(this, handler, ...args)
+                    return listenTrack(this, handler, ...args);
 
-                const type = EVENT_MAP[name] || name
-                return func.call(this, type, handler, ...args)
+                const type = EVENT_MAP[name] || name;
+                return __listen.call(this, type, handler, ...args);
+            };
+            const __unlisten = EventTarget.prototype.removeEventListener;
+            EventTarget.prototype.__removeEventListener = __unlisten;
+            EventTarget.prototype.removeEventListener = function (name, handler, ...args) {
+                if (name === 'track')
+                    return unlistenTrack(this, handler, ...args);
+
+                const type = EVENT_MAP[name] || name;
+                return __unlisten.call(this, type, handler, ...args);
             };
             function listenTrack(target, handler, params) {
+                if (!('__trackHandlers' in target)){
+                    Object.defineProperty(target, '__trackHandlers', {
+                        enumerable: false,
+                        configurable: true,
+                        writable: true,
+                        value: new Map()
+                    });
+                }
+                const info = { target: {}, window: {} };
+                if (target.__trackHandlers.has(handler)) {
+                    __unlisten.call(target, handler);
+                }
+                target.__trackHandlers.set(handler, info);
+
                 let detail;
-                target.addEventListener('pointerdown', (e) => {
-                    if ((target !== e.target && !(target.contains(e.target)))|| e.buttons !== 1) return;
+                target.addEventListener('pointerdown', pointerDown);
+                info.target.pointerdown = pointerDown;
+
+                function pointerDown(e){
+                    if ((target !== e.target && !(target.contains(e.target))) || e.buttons !== 1) return;
                     detail = {
                         start: {
                             x: e.clientX,
@@ -1726,56 +1752,75 @@ in the <${host.localName}>`);
                         }, ddx: 0, ddy: 0, dx: 0, dy: 0,
                         target,
                         startButton: e.button
-                    }
-                    window.addEventListener('pointermove', moveHandler)
-                    window.addEventListener('dragstart', upHandler)
-                    window.addEventListener('pointerup', upHandler)
-                    target.addEventListener('pointerleave', leave, {once: true})
-                })
+                    };
+                    window.addEventListener('pointermove', moveHandler);
+                    window.addEventListener('dragstart', upHandler);
+                    window.addEventListener('pointerup', upHandler);
+                    target.addEventListener('pointerleave', leave, { once: true });
+                    info.window.pointermove = moveHandler;
+                    info.window.dragstart = upHandler;
+                    info.window.pointerup = upHandler;
+                    info.target.pointerleave = leave;
+                }
                 function leave(e) {
                     if ((target === e.target || target.contains(e.target)) && detail && !detail.state)
                         start(e);
                 }
-                function start(e){
+                function start(e) {
                     target.removeEventListener('pointerleave', leave);
+                    delete info.target.pointerleave;
                     target.setPointerCapture(e.pointerId);
-                    detail.state = 'start'
-                    fireTrack(e)
+                    detail.state = 'start';
+                    fireTrack(e);
                 }
                 function moveHandler(e) {
                     if (detail && !detail.state) {
-                        const x = Math.abs(detail.start.x - e.clientX)
-                        const y = Math.abs(detail.start.y - e.clientY)
+                        const x = Math.abs(detail.start.x - e.clientX);
+                        const y = Math.abs(detail.start.y - e.clientY);
                         if (Math.max(x, y) > 2)
                             start(e);
                     }
                     else if (detail) {
-                        detail.state = 'track'
-                        detail.x = e.clientX
-                        detail.y = e.clientY
-                        detail.ddx = -(detail.dx - (e.clientX - detail.start.x))
-                        detail.ddy = -(detail.dy - (e.clientY - detail.start.y))
-                        detail.dx = e.clientX - detail.start.x
-                        detail.dy = e.clientY - detail.start.y
-                        fireTrack(e)
+                        detail.state = 'track';
+                        detail.x = e.clientX;
+                        detail.y = e.clientY;
+                        detail.ddx = -(detail.dx - (e.clientX - detail.start.x));
+                        detail.ddy = -(detail.dy - (e.clientY - detail.start.y));
+                        detail.dx = e.clientX - detail.start.x;
+                        detail.dy = e.clientY - detail.start.y;
+                        fireTrack(e);
                     }
                 }
                 function fireTrack(e) {
-                    const ce = new odaCustomEvent('track', { detail: Object.assign({}, detail) }, e)
-                    handler(ce, ce.detail)
+                    const ce = new odaCustomEvent('track', { detail: Object.assign({}, detail) }, e);
+                    handler(ce, ce.detail);
                 }
 
                 function upHandler(e) {
-                    window.removeEventListener('pointermove', moveHandler)
-                    window.removeEventListener('pointerup', upHandler)
+                    window.removeEventListener('pointermove', moveHandler);
+                    window.removeEventListener('pointerup', upHandler);
                     target.removeEventListener('pointerleave', leave);
+                    delete info.window.pointermove;
+                    delete info.window.pointerup;
+                    delete info.target.pointerleave;
                     if (detail?.state) {
-                        detail.ddx = 0
-                        detail.ddy = 0
-                        detail.state = 'end'
-                        fireTrack(e)
+                        detail.ddx = 0;
+                        detail.ddy = 0;
+                        detail.state = 'end';
+                        fireTrack(e);
                     }
                 }
+            }
+            function unlistenTrack(target, handler, params) {
+                if (!('__trackHandlers' in target)) return;
+                const info = target.__trackHandlers.get(handler);
+                if (!info) return;
+                [...Object.keys(info)].forEach(t => {
+                    [...Object.keys(info[t])].forEach(k => {
+                        ({window, target})[t].removeEventListener(k, info[t][k]);
+                    })
+                });
+                target.__trackHandlers.delete(handler);
             }
         }
     }
