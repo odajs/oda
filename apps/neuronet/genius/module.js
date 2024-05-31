@@ -1,4 +1,4 @@
-import {tensor} from "./torus.js";
+import {GRADIENT_DIVIDER, tensor} from "./torus.js";
 export class Module{
     #params = Object.create(null);
     constructor(argumetns) {
@@ -122,8 +122,6 @@ class conv1D extends Module {
     }
     forward(x) {
         let k_size = this.kernel_size;
-        // if (x.dim>3)
-        //     throw new Error(`Expected 2D (unbatched) or 3D (batched) input to conv1d, but got input of size: [${x.shape}]`);
         if ((x.getDim(-2) || 1) !== this.in_channels)
             throw new Error(`Given groups=${this.groups}, weight of size [${this.weight_shape}], expected input[${x.shape}] to have ${this.in_channels} channels, but got ${(x.getDim(-2) || 1)} channels instead`);
         let stride = this.stride;
@@ -155,7 +153,6 @@ class conv1D extends Module {
         for (let b = 0; b < batches; b += data_step){
             let batch_data = x.data.slice(b, b + data_step);
             for (let o = 0; o < outs; o++) {
-                let out_idx = dim_out * (o + b * outs);
                 let kernel = kernels[o] ??= this.weights._slice(o);
                 let src_idx = 0;
                 let k_idx = 0;
@@ -172,8 +169,8 @@ class conv1D extends Module {
                     let k = kernel.slice(k_idx, k_idx += k_size);
                     for (let step = 0; step < dim_out; step++){
                         data[++idx] = k.reduce((r, k_val, i)=>{
-                            let idx = step * stride + i * dilation;
-                            return r + k_val * src_data[idx];
+                            let x_idx = step * stride + i * dilation;
+                            return r + k_val * src_data[x_idx];
                         }, 0)
                     }
                 }
@@ -181,10 +178,31 @@ class conv1D extends Module {
         }
         const out = tensor.from(data)._src(x, this.weights)._label(this.label)._shape(out_shape);
         out._back = ()=>{
-            for (let b = 0; b < batches; b += data_step) {
-                let batch_data = x.data.slice(b, b + data_step);
+            let out_idx = -1;
+            let in_idx = -1;
+            let o_grad = out.grad;
+            let k_step = this.weights.size / this.weights.shape[0];
+            let k_grad = this.weights.grad;
+            for (let b = 0; b < batches; b += data_step){
                 for (let o = 0; o < outs; o++) {
-
+                    let src_idx = 0;
+                    let k_idx = o * k_step;
+                    for (let gr = 0; gr < groups; gr++){
+                        for (let l = 0; l<links; l++){
+                            let x_idx = (in_idx++) - this.padding;
+                            // const src_grp = batch_data.slice(src_idx, src_idx += L_in);
+                            let src_data =  [...this.pads, ...src_grp, ...this.pads];
+                            for (let step = 0; step < dim_out; step++){
+                                const g = o_grad[++out_idx] / GRADIENT_DIVIDER;
+                                for (let i = 0; i<k_size; i++){
+                                    let x_idx = step * stride + i * dilation;
+                                    k_grad[k_idx] += src_data[x_idx] * g;
+                                    x_data[x_idx] += k_data[k_idx] * g;
+                                    k_idx++;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -223,5 +241,101 @@ export const nn = {
     },
     RMSNorm(...args){
         return new RMSNorm(...args);
+    }
+}
+
+function Conv1d(in_channels, out_channels, kernel_size, stride = 1, padding = 0, dilation = 1, groups = 1, bias = true, padding_mode = 'zeros') {
+    const weight = new tensor([out_channels, in_channels / groups, kernel_size], 'float32');
+    const input = new tensor([1, in_channels, input_data.length], 'float32');
+
+    if (bias) {
+        const bias_data = new Array(out_channels).fill(0);
+        this.bias = new tensor([out_channels], 'float32', bias_data);
+    }
+
+    this.forward = function(input_data) {
+        input.data = input_data;
+
+        const output_length = Math.floor((input.shape[2] + 2 * padding - kernel_size) / stride) + 1;
+        const output = new tensor([1, out_channels, output_length], 'float32');
+
+        if (padding_mode === 'zeros') {
+            const padded_input = tensor.pad(input, [0, 0, padding, padding], 'constant', 0);
+            for (let g = 0; g < groups; g++) {
+                for (let out_channel = g; out_channel < out_channels; out_channel += groups) {
+                    for (let i = 0; i < output_length; i++) {
+                        for (let j = 0; j < kernel_size; j++) {
+                            const input_index = i * stride + j * dilation;
+                            const in_channel = Math.floor(weight.data[out_channel + j * weight.shape[1] + g]) / groups;
+
+                            output.data[i + out_channel * output_length] +=
+                                padded_input.data[input_index + in_channel * padded_input.shape[2]] *
+                                weight.data[out_channel + j * weight.shape[1] + g];
+                        }
+                    }
+                    if (bias) {
+                        output.data[i + out_channel * output_length] += bias.data[out_channel];
+                    }
+                }
+            }
+        } else {
+            // Реализация других режимов заполнения (padding_mode)
+        }
+
+        return output;
+    }
+}
+
+
+function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, padding = 0, dilation = 1, groups = 1) {
+    const in_channels = input.shape[1];
+    const out_channels = grad_output.shape[1];
+    const kernel_size = weight.shape[2];
+
+    const grad_input = new Tensor(input.shape, 'float32');
+    if (bias !== null) {
+        const grad_bias = new Tensor(bias.shape, 'float32');
+        for (let i = 0; i < out_channels; i++) {
+            grad_bias.data[i] = grad_output.sum(0, i);
+        }
+        return [grad_input, grad_weight, grad_bias];
+    } else {
+        const grad_weight = new Tensor(weight.shape, 'float32');
+        for (let g = 0; g < groups; g++) {
+            for (let i = 0; i < out_channels; i++) {
+                if (g === i % groups) {
+                    for (let j = 0; j < kernel_size; j++) {
+                        const weight_index = i * weight.shape[1] * weight.shape[2] + (g + j * groups) * weight.shape[2] + j;
+                        for (let k = 0; k < in_channels / groups; k++) {
+                            const input_index = k * in_channels / groups + g + j * dilation;
+                            const output_index = k * out_channels + i;
+                            grad_weight.data[weight_index] += input.data[input_index] * grad_output.data[output_index];
+                        }
+                    }
+                }
+            }
+        }
+
+        if (padding_mode === 'zeros') {
+            const padded_input = Tensor.pad(input, [0, 0, padding, padding], 'constant', 0);
+            for (let g = 0; g < groups; g++) {
+                for (let i = 0; i < in_channels / groups; i++) {
+                    for (let j = 0; j < out_channels; j++) {
+                        if (g === j % groups) {
+                            for (let k = 0; k < kernel_size; k++) {
+                                const weight_index = j * weight.shape[1] * weight.shape[2] + (g + k * groups) * weight.shape[2] + k;
+                                const input_index = i * in_channels / groups + g + k * dilation;
+                                const output_index = i * out_channels + j;
+                                grad_input.data[input_index] += weight.data[weight_index] * grad_output.data[output_index];
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Реализация других режимов заполнения (padding_mode)
+        }
+
+        return [grad_input, grad_weight];
     }
 }

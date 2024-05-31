@@ -1089,3 +1089,102 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
     out._label('einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):''));
     return out;
 }
+
+tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) {
+    let new_shape = this.shape.slice();
+    for (let i = 0; i < paddings.length; i++) {
+        new_shape[i] += paddings[i] * 2;
+    }
+    let new_data = new this.dType(new_shape.reduce((a, b) => a * b, 1)).fill(constant_value);
+    let offsets = paddings.slice();
+    let strides = [1];
+    for (let i = this.dim - 1; i >= 0; i--) {
+        strides[i] = strides[i + 1] * this.shape[i];
+    }
+    let index = (indices) => {
+        let offset = 0;
+        for (let i = 0; i < indices.length; i++) {
+            offset += indices[i] * strides[i];
+        }
+        return offset;
+    }
+    let unpadded_indices = (indices) => {
+        let result = [];
+        for (let i = 0; i < indices.length; i++) {
+            result.push(Math.max(Math.min(indices[i] - offsets[i], this.shape[i]), 0));
+        }
+        return result;
+    }
+    let padded_indices = (indices) => {
+        let result = [];
+        for (let i = 0; i < indices.length; i++) {
+            result.push(Math.max(Math.min(indices[i], new_shape[i]), 0));
+        }
+        return result;
+    }
+    for (let i = 0; i < this.data.length; i++) {
+        let indices = unpadded_indices(index(i));
+        new_data[index(indices)] = this.data[i];
+    }
+    if (mode === 'reflect') {
+        for (let i = 0; i < paddings.length; i++) {
+            let axis_size = this.shape[i];
+            let padding_size = paddings[i];
+            for (let j = 0; j < axis_size; j++) {
+                let left_index = index([...Array(i).fill(0), j, ...Array(this.dim - i - 1).fill(0)]);
+                let right_index = index([...Array(i).fill(0), axis_size - 1 - j, ...Array(this.dim - i - 1).fill(0)]);
+                let left_offset = Math.floor((left_index - padding_size) / (axis_size + padding_size * 2));
+                let right_offset = Math.floor((right_index - padding_size) / (axis_size + padding_size * 2));
+                for (let k = 1; k <= padding_size; k++) {
+                    let left_padded_index = index([...Array(i).fill(0), padding_size - k + left_offset * (axis_size + padding_size * 2), ...Array(this.dim - i - 1).fill(0)]);
+                    let right_padded_index = index([...Array(i).fill(0), padding_size - k + right_offset * (axis_size + padding_size * 2), ...Array(this.dim - i - 1).fill(0)]);
+                    new_data[left_padded_index] = this.data[left_index];
+                    new_data[right_padded_index] = this.data[right_index];
+                }
+            }
+        }
+    } else if (mode === 'replicate') {
+        for (let i = 0; i < paddings.length; i++) {
+            let axis_size = this.shape[i];
+            let padding_size = paddings[i];
+            for (let j = 0; j < axis_size; j++) {
+                let left_index = index([...Array(i).fill(0), j, ...Array(this.dim - i - 1).fill(0)]);
+                let right_index = index([...Array(i).fill(0), axis_size - 1 - j, ...Array(this.dim - i - 1).fill(0)]);
+                for (let k = 1; k <= padding_size; k++) {
+                    let left_padded_index = index([...Array(i).fill(0), padding_size - k, ...Array(this.dim - i - 1).fill(0)]);
+                    let right_padded_index = index([...Array(i).fill(0), new_shape[i] - padding_size + k, ...Array(this.dim - i - 1).fill(0)]);
+                    new_data[left_padded_index] = this.data[left_index];
+                    new_data[right_padded_index] = this.data[right_index];
+                }
+            }
+        }
+    } else if (mode === 'circular') {
+        for (let i = 0; i < paddings.length; i++) {
+            let axis_size = this.shape[i];
+            let padding_size = paddings[i];
+            for (let j = 0; j < axis_size; j++) {
+                let left_index = index([...Array(i).fill(0), j, ...Array(this.dim - i - 1).fill(0)]);
+                let right_index = index([...Array(i).fill(0), axis_size - 1 - j, ...Array(this.dim - i - 1).fill(0)]);
+                for (let k = 1; k <= padding_size; k++) {
+                    let left_padded_index = index([...Array(i).fill(0), padding_size - k, ...Array(this.dim - i - 1).fill(0)]);
+                    let right_padded_index = index([...Array(i).fill(0), new_shape[i] - padding_size + k, ...Array(this.dim - i - 1).fill(0)]);
+                    new_data[left_padded_index] = this.data[index([...Array(i).fill(0), (left_index + k) % axis_size, ...Array(this.dim - i - 1).fill(0)])];
+                    new_data[right_padded_index] = this.data[index([...Array(i).fill(0), (right_index + k) % axis_size, ...Array(this.dim - i - 1).fill(0)])];
+                }
+            }
+        }
+    }
+    let result = new tensor(new_data, this.dType);
+    result._shape(new_shape);
+    result._label(`pad(${paddings}, ${mode}, ${constant_value})`);
+    result._src(this);
+    result._back = () => {
+        let unpadded_grad = new this.dType(this.data.length);
+        for (let i = 0; i < this.data.length; i++) {
+            let indices = unpadded_indices(index(i));
+            unpadded_grad[i] = result.grad[index(indices)];
+        }
+        this.grad = unpadded_grad;
+    }
+    return result;
+}
