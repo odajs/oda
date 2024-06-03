@@ -715,10 +715,10 @@ class JupyterCell extends ROCKS({
         return this.metadata?.id;
     },
     get sources() {
-        return this.data?.sources || [];
+        return this.data?.source || [];
     },
     get src() {
-        return this.sources.join('\r\n');
+        return this.sources.join('');
     },
     get collapsed() {
         return this.metadata?.collapsed;
