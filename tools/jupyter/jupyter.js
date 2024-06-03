@@ -21,12 +21,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         iconSize: 24,
         readOnly: false,
         file_path: String,
-        get url(){
+        get url() {
             if (this.file_path?.startsWith('http'))
                 return this.file_path;
             return path + '/' + this.file_path;
         },
-        showHiddenInfo: {
+        showCollapsedInfo: {
             $def: false,
             $save: true
         },
@@ -34,12 +34,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             $def: 0,
             $save: true
         },
+        editMode: false
     },
     $pdp: {
         get jupyter() {
             return this;
         },
-        get notebook(){
+        get notebook() {
             return new JupyterNotebook(this.url);
         },
         editors: {
@@ -54,7 +55,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         hasChanged(detail) {
             this.fire('changed', detail);
         },
-        get cells(){
+        get cells() {
             return this.notebook?.cells;
         },
         // isChanged: false,
@@ -99,8 +100,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         //     })
         //     let min = 6;
         //     cells.forEach(i => {
-        //         if (i.$cell.cell_type)
-        //             i.collapsed = i.$cell.metadata?.collapsed;
+        //         if (i.cell_type)
+        //             i.collapsed = i.metadata?.collapsed;
         //         const l = (i.level || i._level);
         //         min = l < min ? l : min;
         //     })
@@ -112,7 +113,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get path() { return path },
         get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
         scrollToCell(idx = this.selectedIdx) {
-            this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            // this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
     },
     getID() {
@@ -120,25 +121,25 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
     },
 })
 
-ODA({
-    is: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-cell',
     template: `
         <style>
             :host{
                 @apply --vertical; 
                 @apply --no-flex;
+                position: relative;
             }
         </style>
         <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div ~is="editor" :cell :shadow="selected" @tap.stop="selectedCell = cell"></div>
         <oda-jupyter-divider style="margin-top: 4px;"></oda-jupyter-divider>
     `,
-    get editor(){
+    get editor() {
         return this.editors[this.cell.type].editor;
     },
-    $pdp:{
+    $pdp: {
         cell: null,
-        get selected(){
+        get selected() {
             return this.selectedCell === this.cell;
         },
     }
@@ -180,16 +181,15 @@ ODA({ is: 'oda-jupyter-divider',
             <oda-button ~if="!_readOnly && !$for.item.hide" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
         </div>
     `,
-    idx: -2,
     addCell(i) {
-        let idx = this.idx + 1;
-        this.selectedIdx = this.editIdx = -1;
-        this.notebook ||= {};
-        this.notebook.cells ||= [];
-        this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
-        this.jupyter.hasChanged({ type: 'addCell', cell: this.cell });
-        this.selectedIdx = idx;
-        this.editIdx = idx;
+        // let idx = this.idx + 1;
+        // this.selectedIdx = this.editIdx = -1;
+        // this.notebook ||= {};
+        // this.notebook.cells ||= [];
+        // this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
+        // this.jupyter.hasChanged({ type: 'addCell', cell: this.cell });
+        // this.selectedIdx = idx;
+        // this.editIdx = idx;
     }
 })
 
@@ -212,12 +212,11 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top">
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap="cell.move(1)"></oda-button>
-            <oda-button :hidden="cell?.$cell?.cell_type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
+            <oda-button :hidden="cell?.type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button ~if="cell?.$cell?.cell_type !== 'code'" :icon-size :icon="editIdx===idx?'icons:close':'editor:mode-edit'" @tap="editIdx = editIdx===idx ? -1 : idx"> </oda-button>
+            <oda-button ~if="cell?.type !== 'code'" :icon-size icon="editor:mode-edit"></oda-button>
         </div>
     `,
-    idx: -2,
     cell: null,
     iconSize: 20,
     deleteCell() {
@@ -225,7 +224,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         this.cell.delete();
     },
     showSettings() {
-        ODA.showModal('oda-property-grid', { inspectedObject: this.control}, { minWidth: '400px', animation: 500, title: 'Settings' })
+        ODA.showModal('oda-property-grid', { inspectedObject: this.control }, { minWidth: '400px', animation: 500, title: 'Settings' })
     }
 })
 //
@@ -277,11 +276,11 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
 //     //     set(n) {
 //     //         let src;
 //     //         if (Array.isArray(n?.$cell?.source))
-//     //             src = n.$cell.source.join('');
+//     //             src = n.source.join('');
 //     //         this.src = src || n?.$cell?.source || '';
 //     //         this.setCellMode && this.setCellMode(this.src);
 //     //         n.$cmp = this;
-//     //         if (n.$cell.metadata?.autoRun && this.run)
+//     //         if (n.metadata?.autoRun && this.run)
 //     //             this.run();
 //     //     }
 //     // },
@@ -289,7 +288,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
 //     opacity: 0,
 //     loaded(e) {
 //         this.cell.isLoaded = true;
-//         let isLoaded = this.cells.every(i => i.isLoaded || i.$cell.metadata?.hideCode);
+//         let isLoaded = this.cells.every(i => i.isLoaded || i.metadata?.hideCode);
 //         this.opacity = 1;
 //         if (isLoaded) {
 //             this.isReady = true;
@@ -298,8 +297,8 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
 //         }
 //     },
 //     toggleCollapse() {
-//         this.cell.$cell.metadata ||= {};
-//         this.cell.collapsed = this.cell.$cell.metadata.collapsed = !this.cell.collapsed;
+//         this.cell.metadata ||= {};
+//         this.cell.collapsed = this.cell.metadata.collapsed = !this.cell.collapsed;
 //     },
 //     get levelsCount() {
 //         return this.cell?.levels?.length || ''
@@ -325,7 +324,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 padding: 0 8px;
             }
             .md {
-                max-height: {{editIdx === idx ? 'calc(100vh - ' + editModeIndents + 'px)' : 'unset'}}; 
+                max-height: {{editMode && selected === cell ? 'calc(100vh - ' + editModeIndents + 'px)' : 'unset'}};
             }
             oda-simplemde-editor {
                 max-height: calc(100vh - {{editModeIndents}}px);
@@ -339,31 +338,35 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             <div ~if="isReady && levelsCount" class="vertical" ~style="{width: iconSize+'px'}">
                 <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
             </div>
-            <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="src" ~if="!readOnly && editIdx===idx" @change="editorValueChanged"></oda-simplemde-editor>
+            <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="cell?.src" ~if="isEditMode" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
-                <oda-markdown-wasm-viewer @loaded="loaded" :presetcss tabindex=0 class="flex" :src="src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
+                <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="cell?.src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="showHiddenInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
     `,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
     editModeIndents: '120',
-    get divMD(){
+    get divMD() {
         return this.$('div.md-result') || undefined;
     },
     get noSrcOpacity() {
-        return this.src ? 1 : .3;
+        return this.cell?.src ? 1 : .3;
     },
     editorValueChanged(e) {
-        this.cell.$cell.source = this.src = e.detail.value;
-        this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
+        // this.cell.source = e.detail.value;
+        // this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
     markedClick(e) {
-        this.selectedIdx = this.idx;
+        // this.selectedIdx = this.idx;
+    },
+    get isEditMode() {
+        return !this.readOnly && this.editMode && this.selected === this.cell;
     },
     changeEditMode() {
-        this.editIdx = this.editIdx === this.idx ? -1 : this.idx;
+        this.editMode = true;
+        this.selected = this.cell;
     }
 })
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
@@ -430,7 +433,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
             </div>
             <div class="vertical flex">
-                <oda-ace-editor ~if="!hideCode" :src :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" @loaded="aceLoaded" :show-gutter="showGutter" :read-only></oda-ace-editor>
+                <oda-ace-editor ~if="!hideCode" :src="cell.src" :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" :show-gutter="showGutter" :read-only></oda-ace-editor>
                 <div id="splitter1" ~if="!hideCode && !hideResult && isRun && mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
                 <div id="result">
                     <iframe ~if="!hideResult && isRun && mode==='html'" :srcdoc></iframe>
@@ -441,26 +444,28 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 </div>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="showHiddenInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
         <div class="cell-select"></div>
     `,
     $public: {
         readOnly: {
             $def: false,
             set(n) { this.setMeta('readOnly', n) },
-            get() { return this.meta?.readOnly;
+            get() {
+                return this.meta?.readOnly;
             }
         },
         autoRun: {
             $def: false,
             set(n) { this.setMeta('autoRun', n) },
-            get() { return this.meta?.autoRun;
+            get() {
+                return this.meta?.autoRun;
             }
         },
         hideRun: {
             $def: false,
             set(n) { this.setMeta('hideRun', n) },
-            get() { return this.meta?.hideRun}
+            get() { return this.meta?.hideRun }
         },
         hideCode: {
             $def: false,
@@ -491,7 +496,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         theme: {
             $def: '',
             $list: ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme', 'kuroir', 'merbivore', 'merbivore_soft', 'monokai', 'mono_industrial', 'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver', 'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink', 'xcode'],
-            set(n)  { this.setMeta('theme', n) },
+            set(n) { this.setMeta('theme', n) },
             get() { return this.meta?.theme }
         },
         border: {
@@ -501,8 +506,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         },
     },
     setMeta(prop, n) {
-        this.cell.$cell.metadata ||= {}; 
-        this.cell.$cell.metadata[prop] = n;
+        this.cell.metadata ||= {};
+        this.cell.metadata[prop] = n;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
     iconSize: 18,
@@ -520,7 +525,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         return `color: ${colors[i.method]}`;
     },
     aceLoaded(e) {
-        this.loaded();
+        // this.loaded();
         const ace = this.$('oda-ace-editor');
         ace?.editor.setOption('fontSize', '16px');
     },
@@ -538,7 +543,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     editorValueChanged(e) {
         this.iconCloseTop = undefined;
-        this.cell.$cell.source = this.src = e.detail.value;
+        // this.cell.source = this.src = e.detail.value;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
         this.setCellMode();
     },
@@ -547,14 +552,14 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.runConsoleData = undefined;
         this.iconCloseTop = undefined;
         this.srcdoc = '';
-        let src = this.src;
+        let src = this.cell.src;
         if (this.mode !== 'html') {
             let fn = Function('w', this.fnStr);
             fn();
             this.runConsoleData = [...window._runConsoleData];
             window.runConsoleData = this.runConsoleData;
             this.isRun = true;
-            try {   
+            try {
                 fn = new Function(`try { ${src} } catch (e) { console.error(e) }`);
                 fn();
             } catch (e) { console.error(e) }
@@ -568,30 +573,30 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         } else {
             this.isRun = true;
             this.async(() => {
-                let source = this.cell.$cell.source;
+                let source = this.cell.source;
                 const iframe = this.$('iframe');
                 let code = '',
                     _code = source.matchAll(new RegExp('</oda-' + '(.*)' + '>', 'g'));
                 _code = Array.from(_code, x => x[1]);
                 _code = _code.map(i => 'oda-' + i);
                 // console.log(_code)
-                for (let i = 0; i < this.idx; i++) {
-                    const cell = this.cells[i].$cell;
-                    let src = cell.source,
-                        _path = path.replace('tools/jupyter', '');
-                    if (src.includes('import ')) {
-                        Object.keys(aliases).forEach(k => {
-                            if (src.includes(k)) {
-                                src = src.replaceAll(k, _path + aliases[k]);
-                            }
-                        })
-                    }
-                    if (cell.cell_type === 'code' && cell.metadata?.mode !== 'html') {
-                        if (_code.some(v => source.includes(v))) {
-                            code += src + '\n';
-                        } 
-                    }
-                }
+                // for (let i = 0; i < this.idx; i++) {
+                //     const cell = this.cells[i]; // .$cell;
+                //     let src = cell.source,
+                //         _path = path.replace('tools/jupyter', '');
+                //     if (src.includes('import ')) {
+                //         Object.keys(aliases).forEach(k => {
+                //             if (src.includes(k)) {
+                //                 src = src.replaceAll(k, _path + aliases[k]);
+                //             }
+                //         })
+                //     }
+                //     if (cell.cell_type === 'code' && cell.metadata?.mode !== 'html') {
+                //         if (_code.some(v => source.includes(v))) {
+                //             code += src + '\n';
+                //         } 
+                //     }
+                // }
                 let srcdoc = `
 <!DOCTYPE html>
 <style>
@@ -616,7 +621,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
 <script type="module">
     import '${this.pathODA}';
     ${code || ''}
-</script>` + this.src;
+</script>` + this.cell?.src;
                 iframe.addEventListener('load', () => {
                     this.runConsoleData = [...(iframe.contentWindow._runConsoleData || [])];
                     iframe.contentWindow.runConsoleData = this.runConsoleData;
@@ -674,15 +679,15 @@ if (!w.useJConsole) {
         `
 })
 class JupyterNotebook extends ROCKS({
-    data: {cells: []},
-    get cells(){
-        return this.data.cells.map(cell=>new JupyterCell(cell, this));
+    data: { cells: [] },
+    get cells() {
+        return this.data.cells.map(cell => new JupyterCell(cell, this));
     },
-    async load(url){
+    async load(url) {
         this.data = await ODA.loadJSON(url);
         this.url = url;
     },
-    save(url){
+    save(url) {
 
     }
 }) {
@@ -696,41 +701,41 @@ class JupyterNotebook extends ROCKS({
 class JupyterCell extends ROCKS({
     data: null,
     level: 0,
-    type:{
+    type: {
         $def: 'text',
         $list: ['text', 'code'],
-        get (){
+        get() {
             return this.data.cell_type;
         }
     },
-    get metadata(){
+    get metadata() {
         return this.data.metadata;
     },
-    get id(){
+    get id() {
         return this.metadata?.id;
     },
-    get sources(){
-        return this.data.sources;
+    get sources() {
+        return this.data?.sources || [];
     },
-    get src(){
+    get src() {
         return this.sources.join('\r\n');
     },
-    get collapsed(){
+    get collapsed() {
         return this.metadata?.collapsed;
     },
-    get index(){
+    get index() {
         return this.notebook.data.cells.indexOf(this.data);
     },
-    get prev(){
+    get prev() {
         return this.notebook.data.cells[this.index - 1]
     },
-    get next(){
+    get next() {
         return this.notebook.data.cells[this.index + 1];
     },
-    delete(){
+    delete() {
 
     },
-    move(direct){
+    move(direct) {
 
     }
 })
@@ -766,7 +771,7 @@ class JupyterCell extends ROCKS({
 //         this.hidden = cell.hidden;
 //         this.$cell = cell.$cell;
 //         this.levels = cell.levels;
-//         this.id = cell.$cell.metadata?.id || cell.id;
+//         this.id = cell.metadata?.id || cell.id;
 //         this.label = cell.label;
 //         this._level = cell._level;
 //         this.level = cell.level;
