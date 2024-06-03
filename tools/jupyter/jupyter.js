@@ -1,4 +1,5 @@
-const path = import.meta.url.split('/').slice(0, -1).join('/');
+const jupyter_path = import.meta.url.split('/').slice(0, -1).join('/');
+const path = window.location.href.split('/').slice(0, -1).join('/');
 
 ODA({ is: 'oda-jupyter', imports: '@oda/button',
     template: `
@@ -9,28 +10,18 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
                 padding: 12px 6px;
             }
         </style>
-        <div ~if="!isReady" class="horizontal flex" style="position: fixed;top: 50%;left: 50%;z-index: 100;transform: translate3d(-50%, -50%, 0);pointer-events: none;">
-            <oda-icon icon="odant:spin" icon-size="64"></oda-icon>
-        </div>
-        <oda-jupyter-divider idx="-1" :hover="isReady && !cells?.length"></oda-jupyter-divider>
-        <oda-jupyter-cell-container ~for="cells" :item="$for.item" :index="$for.index"></oda-jupyter-cell-container>
+        <oda-jupyter-divider></oda-jupyter-divider>
+        <oda-jupyter-cell-container ~for="cells" :cell="$for.item"></oda-jupyter-cell-container>
     `,
     $public: {
         $pdp: true,
         iconSize: 24,
-        readOnly: {
-            $def: false,
-            $save: true
-        },
-        set url(n) {
-            if (n) {
-                if (!n.startsWith('http'))
-                    n = path + '/' + n;
-                ODA.loadJSON(n).then(async res => {
-                    this.notebook = res;
-                    // this.isReady = true;
-                })
-            }
+        readOnly: false,
+        file_path: String,
+        get url(){
+            if (this.file_path?.startsWith('http'))
+                return this.file_path;
+            return path + '/' + this.file_path;
         },
         showHiddenInfo: {
             $def: false,
@@ -45,100 +36,75 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         get jupyter() {
             return this;
         },
-        notebook: Object,
+        get notebook(){
+            return new JupyterNotebook(this.url);
+        },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' },
             markdown: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
         },
-        get selected() {
-            return this.cells[this.selectedIdx];
-        },
-        set selected(n) {
-            if (n)
-                this.selectedIdx = this.cells.findIndex(i => i.id === n.id);
-        },
-        selectedIdx: {
-            $def: -1,
-            set(n) {
-                this.editIdx = -1;
-            }
-        },
-        editIdx: {
-            $def: -1,
-            set(n) {
-                if (n >= 0) {
-                    this.async(() => {
-                        this.scrollToCell();
-                        if (this.editIdx >= 0) {
-                            const ace = this.cells[n].$cmp?.$('oda-ace-editor');
-                            ace?.editor.focus();
-                            const mde = this.cells[n].$cmp?.$('oda-simplemde-editor');
-                            mde?.simpleMde.codemirror?.focus();
-                            // mde && (mde.focus = true);
-                        }
-                    }, 300)
-                }
-            }
-        },
+        selectedCell: null,
         get _readOnly() {
             return this.notebook?.readOnly || this.readOnly;
         },
         hasChanged(detail) {
             this.fire('changed', detail);
-            // this.isChanged = true;
+        },
+        get cells(){
+            return this.notebook?.cells;
         },
         // isChanged: false,
-        get cells() {
-            let level = 0, ids = {}, cells = [];
-            this.notebook?.cells.map((i, idx) => {
-                let src = '',
-                    firstStr = '',
-                    id = i.metadata?.id || this.getID(),
-                    cell = { id, idx, $cell: i, levels: [] };
-                if (Array.isArray(i.source)) {
-                    src = i.source;
-                } else if (typeof i.source === 'string') {
-                    src = i.source.split('\n');
-                }
-                firstStr = src[0] || '';
-                cell._level = level > 6 ? 6 : level;
-                if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
-                    let str = firstStr.split(' ');
-                    cell.label = src[0].replace(str[0], '').trim();
-                    level = str[0].length;
-                    cell.level = level = level > 6 ? 6 : level;
-                    if (level === 1) ids = {};
-                    ids[level] = id;
-                } else if (firstStr?.includes('@title ') ) {
-                    cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
-                    cell.label ||= '...';
-                    cell.level = level = 3;
-                    ids[level] = id;
-                    i.collapsed ??= cell.label === '...' ? false : true;
-                }
-                let _cell = new CELL(cell);
-                for (let i = 1; i <= level; i++) {
-                    if (ids[i]) {
-                        let up = cells.filter(c => c.id === ids[i])[0];
-                        if (up && !cell.level || i < cell.level) {
-                            up.levels.push(_cell);
-                        }
-                    }
-                }
-                cells.push(_cell);
-            })
-            let min = 6;
-            cells.forEach(i => {
-                if (i.$cell.cell_type)
-                    i.collapsed = i.$cell.metadata?.collapsed;
-                const l = (i.level || i._level);
-                min = l < min ? l : min;
-            })
-            
-            this.minLevel = min < 1 ? 1 : min;
-            return cells;
-        },
+        // get cells() {
+        //     let level = 0, ids = {}, cells = [];
+        //     this.notebook?.cells.map((i, idx) => {
+        //         let src = '',
+        //             firstStr = '',
+        //             id = i.metadata?.id || this.getID(),
+        //             cell = { id, idx, $cell: i, levels: [] };
+        //         if (Array.isArray(i.source)) {
+        //             src = i.source;
+        //         } else if (typeof i.source === 'string') {
+        //             src = i.source.split('\n');
+        //         }
+        //         firstStr = src[0] || '';
+        //         cell._level = level > 6 ? 6 : level;
+        //         if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
+        //             let str = firstStr.split(' ');
+        //             cell.label = src[0].replace(str[0], '').trim();
+        //             level = str[0].length;
+        //             cell.level = level = level > 6 ? 6 : level;
+        //             if (level === 1) ids = {};
+        //             ids[level] = id;
+        //         } else if (firstStr?.includes('@title ') ) {
+        //             cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
+        //             cell.label ||= '...';
+        //             cell.level = level = 3;
+        //             ids[level] = id;
+        //             i.collapsed ??= cell.label === '...' ? false : true;
+        //         }
+        //         let _cell = new CELL(cell);
+        //         for (let i = 1; i <= level; i++) {
+        //             if (ids[i]) {
+        //                 let up = cells.filter(c => c.id === ids[i])[0];
+        //                 if (up && !cell.level || i < cell.level) {
+        //                     up.levels.push(_cell);
+        //                 }
+        //             }
+        //         }
+        //         cells.push(_cell);
+        //     })
+        //     let min = 6;
+        //     cells.forEach(i => {
+        //         if (i.$cell.cell_type)
+        //             i.collapsed = i.$cell.metadata?.collapsed;
+        //         const l = (i.level || i._level);
+        //         min = l < min ? l : min;
+        //     })
+        //
+        //     this.minLevel = min < 1 ? 1 : min;
+        //     return cells;
+        // },
         isReady: false,
         get path() { return path },
         get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
@@ -168,11 +134,15 @@ ODA({
                 @apply --no-flex;
             }
         </style>
-        <div ~is="editors?.[item.$cell.cell_type || 'code'].editor" :idx="index" :cell="item" :shadow="selectedIdx === index" :selected="selectedIdx === index" @tap.stop="selectedIdx = (_readOnly ? -1 : index);"></div>
-        <oda-jupyter-divider :idx="index" style="margin-top: 4px;"></oda-jupyter-divider>
+        <div ~is="editor" :cell :shadow="selectedCell === cell" :selected="selectedCell === cell" @tap.stop="selectedCell = cell"></div>
+        <oda-jupyter-divider style="margin-top: 4px;"></oda-jupyter-divider>
     `,
-    item: null,
-    index: -1,
+    get editor(){
+        return this.editors[this.cell.type].editor;
+    },
+    $pdp:{
+        cell: null,
+    },
     id: {
         $attr: true,
         get(){
@@ -732,40 +702,77 @@ if (!w.useJConsole) {
 }
         `
 })
+class JupyterNotebook extends ROCKS({
+    data: {cells: []},
+    get cells(){
+        return this.data.cells.map(cell=>new JupyterCell(cell));
+    },
+    async load(url){
+        this.data = await ODA.loadJSON(url);
+        this.url = url;
+    },
+    save(url){
 
-class CELL extends ROCKS({
-    levels: undefined,
-    hidden: {
-        $def: false,
-    },
-    collapsed: {
-        $def: false,
-        set(v) {
-            this.levels?.map(i => i.hidden = v);
-            if (!v) {
-                this.levels.forEach(i => {
-                    if (i.collapsed) {
-                        i.levels.forEach(l => {
-                            l.hidden = true;
-                        })
-                    }
-                })
-            }
-        }
-    },
-    _init(cell){
-        this.hidden = cell.hidden;
-        this.$cell = cell.$cell;
-        this.levels = cell.levels;
-        this.id = cell.$cell.metadata?.id || cell.id;
-        this.label = cell.label;
-        this._level = cell._level;
-        this.level = cell.level;
-        this.collapsed = cell.collapsed;
     }
 }) {
-    constructor(cell) {
+    url = '';
+    constructor(url) {
         super();
-        this._init(cell);
+        this.load(url);
     }
 }
+
+class JupyterCell extends ROCKS({
+    data: null,
+    level: 0,
+    type:{
+        $def: 'text',
+        $list: ['text', 'code'],
+        get (){
+            return this.data.cell_type;
+        }
+    }
+})
+{
+    constructor(data) {
+        super();
+        this.data = data;
+    }
+}
+
+// class CELL extends ROCKS({
+//     levels: undefined,
+//     hidden: {
+//         $def: false,
+//     },
+//     collapsed: {
+//         $def: false,
+//         set(v) {
+//             this.levels?.map(i => i.hidden = v);
+//             if (!v) {
+//                 this.levels.forEach(i => {
+//                     if (i.collapsed) {
+//                         i.levels.forEach(l => {
+//                             l.hidden = true;
+//                         })
+//                     }
+//                 })
+//             }
+//         }
+//     },
+//     _init(cell){
+//         this.hidden = cell.hidden;
+//         this.$cell = cell.$cell;
+//         this.levels = cell.levels;
+//         this.id = cell.$cell.metadata?.id || cell.id;
+//         this.label = cell.label;
+//         this._level = cell._level;
+//         this.level = cell.level;
+//         this.collapsed = cell.collapsed;
+//     }
+// }) {
+//     constructor(cell) {
+//         super();
+//         this._init(cell);
+//     }
+// }

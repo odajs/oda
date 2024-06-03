@@ -31,7 +31,7 @@
             <oda-popup-form ~if="showChart">
                 <oda-chart id="chart" slot="popup-main" :data="chartData" type="line" :options="chartOptions"></oda-chart>
             </oda-popup-form>
-            <div opened class="vertical dark" slot="left-panel"  style="padding: 8px">
+            <div _opened class="vertical dark" slot="left-panel"  style="padding: 8px">
                 <div class="horizontal">
                     <oda-button icon="eva:f-eye" allow-toggle ::toggled="showMain"></oda-button>
                     <oda-button icon="icons:arrow-forward" allow-toggle ::toggled="isNext"></oda-button>
@@ -280,13 +280,14 @@
 
     })
 
-    ODA({is: 'gen-test',
+    ODA({is: 'gen-test', imports: '@tools/jupyter',
         template:`
             <style>
                 :host{
                     @apply --vertical;
                 }
             </style>
+            <oda-jupyter></oda-jupyter>
             <div vertical ~style="{height: height+'px'}">
                 <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace; min-width: 100% !important;  white-space: nowrap;" ></textarea>
                 <oda-splitter sign="-1" max="0" min="10" ::height align="horizontal"></oda-splitter>
