@@ -1,21 +1,4 @@
 let style = /*css*/`
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-
-}
-::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: var(--body-background);
-   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-}
-::-webkit-scrollbar-thumb:hover {
-    @apply --dark;
-    width: 16px;
-}
 @media (prefers-color-scheme: dark) {
     :root{
         --content-background: rgb(60 60 60);
