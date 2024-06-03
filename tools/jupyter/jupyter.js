@@ -33,8 +33,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         levelMargin: {
             $def: 0,
             $save: true
-        },
-        editMode: false
+        }
     },
     $pdp: {
         get jupyter() {
@@ -45,16 +44,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
-            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' },
-            markdown: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text', hide: true }
+            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' }
         },
         selectedCell: null,
-        get _readOnly() {
-            return this.notebook?.readOnly || this.readOnly;
-        },
-        hasChanged(detail) {
-            this.fire('changed', detail);
-        },
         get cells() {
             return this.notebook?.cells;
         },
@@ -109,12 +101,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         //     this.minLevel = min < 1 ? 1 : min;
         //     return cells;
         // },
-        isReady: false,
-        get path() { return path },
-        get pathODA() { return path.replace('tools/jupyter', 'oda.js') },
-        scrollToCell(idx = this.selectedIdx) {
-            // this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
+        // scrollToCell(idx = this.selectedIdx) {
+        //     // this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // }
     },
     getID() {
         return Math.floor(Math.random() * Date.now()).toString(16);
@@ -129,19 +118,30 @@ ODA({ is: 'oda-jupyter-cell',
                 @apply --no-flex;
                 position: relative;
             }
+            #control{
+                margin-left: {{levelMargin * cell.level}}px;
+            }
         </style>
-        <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div ~is="editor" :cell :shadow="selected" @tap.stop="selectedCell = cell"></div>
+        <oda-jupyter-toolbar ::edit-mode :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
+        <div id="control" ~is="editor" :cell :shadow="selected" @tap.stop="selectedCell = cell" :edit-mode></div>
         <oda-jupyter-divider style="margin-top: 4px;"></oda-jupyter-divider>
     `,
+
+    get control(){
+        return this.$('#control');
+    },
     get editor() {
-        return this.editors[this.cell.type].editor;
+        return this.editors[this.cell.type]?.editor ?? this.editors.text.editor;
     },
     $pdp: {
+        editMode: false,
         cell: null,
         get selected() {
             return this.selectedCell === this.cell;
         },
+    },
+    get expanderIcon(){
+        return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
     }
 })
 
@@ -177,20 +177,10 @@ ODA({ is: 'oda-jupyter-divider',
             }
         </style>
         <div class="horizontal center">
-            <div ~if="!_readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!_readOnly && !$for.item.hide" :icon-size icon="icons:add" ~for="Object.values(editors)" @tap.stop="addCell($for.item)">{{$for.item.label}}</oda-button>
+            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
+            <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="notebook.add(cell, $for.key)">{{$for.key}}</oda-button>
         </div>
-    `,
-    addCell(i) {
-        // let idx = this.idx + 1;
-        // this.selectedIdx = this.editIdx = -1;
-        // this.notebook ||= {};
-        // this.notebook.cells ||= [];
-        // this.notebook.cells.splice(idx, 0, { cell_type: i.type, source: '', metadata: { id: this.jupyter.getID() } });
-        // this.jupyter.hasChanged({ type: 'addCell', cell: this.cell });
-        // this.selectedIdx = idx;
-        // this.editIdx = idx;
-    }
+    `
 })
 
 ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-grid',
@@ -212,9 +202,9 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top">
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap="cell.move(1)"></oda-button>
-            <oda-button :hidden="cell?.type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
+            <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button ~if="cell?.type !== 'code'" :icon-size icon="editor:mode-edit"></oda-button>
+            <oda-button ~if="control?.allowEdit" allow-toggle ::toggled="editMode" :icon-size icon="editor:mode-edit"></oda-button>
         </div>
     `,
     cell: null,
@@ -223,8 +213,8 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
     },
-    showSettings() {
-        ODA.showModal('oda-property-grid', { inspectedObject: this.control }, { minWidth: '400px', animation: 500, title: 'Settings' })
+    showSettings(e) {
+        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '$public'}, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
 //
@@ -303,9 +293,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
 //     get levelsCount() {
 //         return this.cell?.levels?.length || ''
 //     },
-//     get expanderIcon(){
-//         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
-//     }
+
 // })
 
 ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/markdown-wasm-viewer',
@@ -335,16 +323,17 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="horizontal flex">
-            <div ~if="isReady && levelsCount" class="vertical" ~style="{width: iconSize+'px'}">
-                <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>
-            </div>
+<!--            <div class="vertical" ~style="{width: iconSize+'px'}">-->
+<!--                <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>-->
+<!--            </div>-->
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="cell?.src" ~if="isEditMode" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="cell?.src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто ??? ячеек</div>
     `,
+    allowEdit: true,
     _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
     editModeIndents: '120',
@@ -421,10 +410,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 filter: unset;
             }
         </style>
-        <div ~if="isReady && cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
-            <div class="vertical" ~style="{width: iconSize+'px'}">
-                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 6px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>
-            </div>
+        <div ~if="cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
+<!--            <div class="vertical" ~style="{width: iconSize+'px'}">-->
+<!--                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 6px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>-->
+<!--            </div>-->
             <h3 class="cell-h3">{{cell.label}}</h3>
         </div>
         <div ~show="!cell.collapsed" class="horizontal">
@@ -444,7 +433,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 </div>
             </div>
         </div>
-        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто {{levelsCount+1}} ячеек</div>
+        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто ??? ячеек</div>
         <div class="cell-select"></div>
     `,
     $public: {
@@ -680,6 +669,7 @@ if (!w.useJConsole) {
 })
 class JupyterNotebook extends ROCKS({
     data: { cells: [] },
+    isChanged: false,
     get cells() {
         return this.data.cells.map(cell => new JupyterCell(cell, this));
     },
@@ -689,6 +679,15 @@ class JupyterNotebook extends ROCKS({
     },
     save(url) {
 
+    },
+    add(cell, cell_type='text'){
+        const data = {
+            metadata:{
+                cell_type
+            }
+        }
+        this.data.splice(cell?.index ?? 0, 0, data);
+        this.isChanged = true;
     }
 }) {
     url = '';
@@ -700,7 +699,6 @@ class JupyterNotebook extends ROCKS({
 
 class JupyterCell extends ROCKS({
     data: null,
-    level: 0,
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -732,8 +730,26 @@ class JupyterCell extends ROCKS({
     get next() {
         return this.notebook.data.cells[this.index + 1];
     },
+    get h(){
+        let h = this.sources[0]?.trim().toLowerCase();
+        if (h?.startsWith('#')){
+            let i = -1;
+            while(h[++i] === '#' && i<10){}
+            return i;
+        }
+        return 0;
+    },
+    level:{
+        $def: 0,
+        get(){
+            if (this.h > this.prev?.level)
+                return this.prev.level + 1;
+            return this.prev?.level ?? 0;
+        }
+    },
     delete() {
-
+        this.notebook.data.splice(this.index, 1);
+        this.notebook.isChanged = true;
     },
     move(direct) {
 
@@ -746,40 +762,3 @@ class JupyterCell extends ROCKS({
         this.data = data;
     }
 }
-
-// class CELL extends ROCKS({
-//     levels: undefined,
-//     hidden: {
-//         $def: false,
-//     },
-//     collapsed: {
-//         $def: false,
-//         set(v) {
-//             this.levels?.map(i => i.hidden = v);
-//             if (!v) {
-//                 this.levels.forEach(i => {
-//                     if (i.collapsed) {
-//                         i.levels.forEach(l => {
-//                             l.hidden = true;
-//                         })
-//                     }
-//                 })
-//             }
-//         }
-//     },
-//     _init(cell){
-//         this.hidden = cell.hidden;
-//         this.$cell = cell.$cell;
-//         this.levels = cell.levels;
-//         this.id = cell.metadata?.id || cell.id;
-//         this.label = cell.label;
-//         this._level = cell._level;
-//         this.level = cell.level;
-//         this.collapsed = cell.collapsed;
-//     }
-// }) {
-//     constructor(cell) {
-//         super();
-//         this._init(cell);
-//     }
-// }
