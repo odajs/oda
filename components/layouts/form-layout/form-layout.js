@@ -1,5 +1,6 @@
 const ALL_FORMS = new Set();
-ODA({is: 'oda-form-layout', imports: '@oda/button',
+ODA({
+    is: 'oda-form-layout', imports: '@oda/button',
     template: /*html*/`
     <style>
         :host {
@@ -7,7 +8,6 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             @apply --flex;
             @apply --content;
             overflow: hidden;
-            height: 100%;
             touch-action: manipulation;
             white-space: nowrap;
             --top-padding: {{topPadding}}px;
@@ -44,15 +44,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             box-sizing: border-box;
             box-shadow: var(--box-shadow);
             filter: opacity(1);
-            min-width: {{minWidth}}px;
-            min-height: {{minHeight}}px;
             border: {{sizeMode === 'normal' ? \`\${_bw}px solid transparent\` : 'none'}};
             padding-bottom: {{statusBar.show ? iconSize : 0}}px;
-            width: {{_getSize('width')}};
-            height: {{_getSize('height')}};
             flex: {{sizeMode === 'normal' ? '0 0 auto' : '1 0 auto'}};
-            left: {{_getPosition('left')}};
-            top: {{_getPosition('top')}};
         }
         :host(:not([autosize])[float][is-minimized]) {
             min-height: {{iconSize * 1.5}}px;
@@ -65,10 +59,18 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
             margin: 0 0 0 50%;
             transform: translate3d(-50%, 0, 0);
         }
+        :host(:not([autosize]):not([is-minimized])[float][size-mode=normal]){
+            left: {{drawPos.l}}px;
+            top: {{drawPos.t}}px;
+            right: {{drawPos.r}}px;
+            bottom: {{drawPos.b}}px;
+        }
         :host(:not([autosize]):not([is-minimized])[float][size-mode=max]){
             /*padding: 8px;*/
             padding-top: var(--top-padding);
             background-color: rgba(0,0,0,.25);
+            width: 100%;
+            height: 100%;
             /*padding-bottom: {{iconSize + 8}}px;*/
         }
         {{''}}
@@ -142,12 +144,15 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         },
         pos: {
             $def: {
-                x: Math.max(0, Math.round(document.body.offsetWidth / 2 - 200)),
-                y: Math.max(0, Math.round(document.body.offsetHeight / 2 - 150)),
-                width: 500,
-                height: 300,
+                l: ~~(document.body.offsetWidth / 2 - 200),
+                t: ~~(document.body.offsetHeight / 2 - 150),
+                r: ~~(document.body.offsetWidth / 2 - 200),
+                b: ~~(document.body.offsetHeight / 2 - 150),
             },
             $save: true
+        },
+        drawPos: {
+            $def: {}
         },
         title: '',
         statusBar: {
@@ -161,8 +166,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         },
         minHeight: 300,
         _resizeDir: String,
-        // _curPos: String,
-        _bw: 2, //border-width,
+        _bw: 4, //border-width,
         _parentWidth: {
             $type: Number,
             $def: 0
@@ -181,8 +185,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
 
             const bw = this._bw;
             const bw2 = bw * 2;
-            const h = this.pos.height;
-            const w = this.pos.width;
+            const h = this.offsetHeight;
+            const w = this.offsetWidth;
 
             let str = '';
             if (e.currentTarget === e.target) {
@@ -205,7 +209,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         resize: '_resize',
     },
     $observers: {
-        _setTransform: ['float', 'pos']
+        _setTransform: ['float']
     },
     _updateTrackListen() {
         if (this.sizeMode === 'normal') {
@@ -223,6 +227,9 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 }
             }
         }
+        else {
+            this.unlisten('track', 'track');
+        }
     },
     track(e, d) {
         d ??= e.detail;
@@ -236,57 +243,49 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                     this.style.cursor = `move`;
             } break;
             case 'track': {
-                let _pos = Object.assign({}, this.pos);
                 const x = d.ddx || 0;
                 const y = d.ddy || 0;
-                switch (this.style.cursor) {
-                    case 'move': {
-                        _pos = { ..._pos, ...{ x: _pos.x += x, y: _pos.y += y } };
-                    } break;
-                    case 'e-resize': {
-                        _pos.width += x;
-                    } break;
-                    case 'w-resize': {
-                        _pos.width -= x;
-                        _pos.x += this.pos.width - _pos.width;
-                    } break;
-                    case 's-resize': {
-                        _pos.height += y;
-                    } break;
-                    case 'n-resize': {
-                        _pos.height -= y;
-                        _pos.y += this.pos.height - _pos.height;
-                    } break;
-
-                    case 'ne-resize': {
-                        _pos.width += x;
-                        _pos.height -= y;
-                        _pos.y += this.pos.height - _pos.height;
-                    } break;
-                    case 'nw-resize': {
-                        _pos.width -= x;
-                        _pos.x += this.pos.width - _pos.width;
-                        _pos.height -= y;
-                        _pos.y += this.pos.height - _pos.height;
-                    } break;
-                    case 'se-resize': {
-                        _pos.width += x;
-                        _pos.height += y;
-                    } break;
-                    case 'sw-resize': {
-                        _pos.height += y;
-                        _pos.width -= x;
-                        _pos.x += this.pos.width - _pos.width;
-                    } break;
+                if (this.style.cursor === 'move') {
+                    this.pos = {
+                        l: this.pos.l + x,
+                        t: this.pos.t + y,
+                        r: this.pos.r - x,
+                        b: this.pos.b - y
+                    };
+                    this._applyMove();
                 }
-                this._fixPos(_pos);
-                this.pos = { ...this.pos, ..._pos };
-                // console.log(this.style.cursor)
+                else if (this.style.cursor.endsWith('resize')) {
+                    const directions = this.style.cursor.split('-')[0];
+                    for (const dir of directions) {
+                        switch (dir) {
+                            case 'w': this.pos.l += x; break;
+                            case 'n': this.pos.t += y; break;
+                            case 'e': this.pos.r -= x; break;
+                            case 's': this.pos.b -= y; break;
+                        }
+                    }
+                    this._applyResize();
+                }
             } break;
             case 'end': {
                 this.style.cursor = '';
+                this.pos = { ...this.drawPos };
             } break;
         }
+    },
+    _applyMove() {
+        const width = this.offsetWidth;
+        const height = this.offsetHeight;
+        this.drawPos.l = Math.max(0, Math.min(this.pos.l || 0, this._parentWidth - width));
+        this.drawPos.t = Math.max(0, Math.min(this.pos.t || 0, this._parentHeight - height));
+        this.drawPos.r = Math.max(0, Math.min(this.pos.r || 0, this._parentWidth - width));
+        this.drawPos.b = Math.max(0, Math.min(this.pos.b || 0, this._parentHeight - height));
+    },
+    _applyResize() {
+        this.drawPos.l = Math.max(0, Math.min(this.pos.l || 0, this._parentWidth - this.minWidth - this.drawPos.r));
+        this.drawPos.t = Math.max(0, Math.min(this.pos.t || 0, this._parentHeight - this.minHeight - this.drawPos.b));
+        this.drawPos.r = Math.max(0, Math.min(this.pos.r || 0, this._parentWidth - this.minWidth - this.drawPos.l));
+        this.drawPos.b = Math.max(0, Math.min(this.pos.b || 0, this._parentHeight - this.minHeight - this.drawPos.t));
     },
     _setTransform(float = this.float, pos = this.pos) {
         if (this.autosize) return;
@@ -294,39 +293,15 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         if (!parent) return;
         this._parentWidth = parent.offsetWidth;
         this._parentHeight = parent.offsetHeight;
-        this._fixPos();
+        this._applyMove();
+        this._applyResize();
     },
     _resize() {
         if (this.autosize) return;
-        // this.throttle('resize', ()=>{
         if (this.float && this.sizeMode !== 'max' && window.innerWidth < this.maxWidth) {
             this.sizeMode = 'max';
         }
-        const parent = this.parentElement;
-        if (!parent) return;
-        this._parentWidth = parent.offsetWidth;
-        this._parentHeight = parent.offsetHeight;
-        this._fixPos();
-        // })
-
-    },
-    _fixPos(pos = this.pos) {
-        if (this.autosize) return;
-        pos.width = Math.min(Math.max(this.minWidth, pos.width || this.minWidth), this._parentWidth);
-        pos.height = Math.min(Math.max(this.minHeight, pos.height || this.minHeight), this._parentHeight);
-        const maxW = this._parentWidth - (this.isMinimized ? 300 : pos.width);
-        const maxH = this._parentHeight - (this.isMinimized ? ((this.iconSize) + 6) : pos.height);
-        pos.x = Math.min(Math.max(0, pos.x || 0), maxW);
-        pos.y = Math.min(Math.max(0, pos.y || 0), maxH);
-
-    },
-    _getSize(dir = 'width') {
-        if (this.float && this.sizeMode === 'normal') return `${this.pos[dir]}px`;
-        else return '100%';
-    },
-    _getPosition(dir = 'left') {
-        if (this.float && this.sizeMode === 'normal') return `${this.pos[{ left: 'x', top: 'y' }[dir]]}px`;
-        else return 0;
+        this._setTransform();
     },
     attached() {
         if (!this.isMinimized) {
@@ -334,6 +309,7 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
                 this.async(() => {
                     const forms = this._getFloatForms();
                     if (forms.length) {
+                        if (!this.pos) this.pos = { ...this.drawPos };
                         for (const m of forms) {
                             if (
                                 this.pos.x >= m.pos.x
@@ -401,7 +377,8 @@ ODA({is: 'oda-form-layout', imports: '@oda/button',
         this._getFloatForms().forEach(f => f !== this && (f.sizeMode = this.sizeMode));
     },
 });
-ODA({is: 'form-status-bar',
+ODA({
+    is: 'form-status-bar',
     template: /*html*/`
     <style ~if="show">
         :host {
