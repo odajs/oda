@@ -46,6 +46,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
             }
             input{
                 width: 0px;
+                padding: 8px;
             }
         </style>
         <div class="horizontal" style="padding: 4px; align-items: center;">

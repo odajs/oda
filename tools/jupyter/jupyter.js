@@ -12,7 +12,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         </style>
         <div class="no-flex vertical" style="overflow: visible;">
             <oda-jupyter-divider></oda-jupyter-divider>
-            <oda-jupyter-cell ~for="cells" :cell="$for.item" ~show="!$for.item.collapsed"></oda-jupyter-cell>
+            <oda-jupyter-cell ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
@@ -40,7 +40,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
             return this;
         },
         get notebook() {
-            return new JupyterNotebook(this.url);
+            const nb =  new JupyterNotebook(this.url);
+            nb.listen('changed', (e)=>{
+                this.$render();
+            })
+            return nb;
         },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
@@ -49,61 +53,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         selectedCell: null,
         get cells() {
             return this.notebook?.cells;
-        },
-        // isChanged: false,
-        // get cells() {
-        //     let level = 0, ids = {}, cells = [];
-        //     this.notebook?.cells.map((i, idx) => {
-        //         let src = '',
-        //             firstStr = '',
-        //             id = i.metadata?.id || this.getID(),
-        //             cell = { id, idx, $cell: i, levels: [] };
-        //         if (Array.isArray(i.source)) {
-        //             src = i.source;
-        //         } else if (typeof i.source === 'string') {
-        //             src = i.source.split('\n');
-        //         }
-        //         firstStr = src[0] || '';
-        //         cell._level = level > 6 ? 6 : level;
-        //         if (firstStr?.startsWith('#') && i.cell_type !== 'code') {
-        //             let str = firstStr.split(' ');
-        //             cell.label = src[0].replace(str[0], '').trim();
-        //             level = str[0].length;
-        //             cell.level = level = level > 6 ? 6 : level;
-        //             if (level === 1) ids = {};
-        //             ids[level] = id;
-        //         } else if (firstStr?.includes('@title ') ) {
-        //             cell.label = firstStr.split('@title ')[1].replace('-->', '').trim();
-        //             cell.label ||= '...';
-        //             cell.level = level = 3;
-        //             ids[level] = id;
-        //             i.collapsed ??= cell.label === '...' ? false : true;
-        //         }
-        //         let _cell = new CELL(cell);
-        //         for (let i = 1; i <= level; i++) {
-        //             if (ids[i]) {
-        //                 let up = cells.filter(c => c.id === ids[i])[0];
-        //                 if (up && !cell.level || i < cell.level) {
-        //                     up.levels.push(_cell);
-        //                 }
-        //             }
-        //         }
-        //         cells.push(_cell);
-        //     })
-        //     let min = 6;
-        //     cells.forEach(i => {
-        //         if (i.cell_type)
-        //             i.collapsed = i.metadata?.collapsed;
-        //         const l = (i.level || i._level);
-        //         min = l < min ? l : min;
-        //     })
-        //
-        //     this.minLevel = min < 1 ? 1 : min;
-        //     return cells;
-        // },
-        // scrollToCell(idx = this.selectedIdx) {
-        //     // this.jupyter.$('#cell-' + this.cells[idx]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        // }
+        }
     },
     getID() {
         return Math.floor(Math.random() * Date.now()).toString(16);
@@ -118,15 +68,24 @@ ODA({ is: 'oda-jupyter-cell',
                 @apply --no-flex;
                 position: relative;
             }
-            #control{
-                margin-left: {{levelMargin * cell.level}}px;
-            }
         </style>
         <oda-jupyter-toolbar ::edit-mode :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div id="control" ~is="editor" :cell :shadow="selected" @tap.stop="selectedCell = cell" :edit-mode></div>
+        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
+            <div class="horizontal" >
+                <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                <div id="control" ~is="editor" :cell :shadow="selected" @tap.stop="selectedCell = cell" :edit-mode></div>
+            </div>
+            <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
+                <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
+                <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
+            </div>
+        </div>
+  
         <oda-jupyter-divider style="margin-top: 4px;"></oda-jupyter-divider>
     `,
-
+    get childIcon(){
+        return this.cell.childCodes.length?'av:play-circle-outline':;
+    },
     get control(){
         return this.$('#control');
     },
@@ -208,7 +167,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     cell: null,
-    iconSize: 20,
     deleteCell() {
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
@@ -217,84 +175,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '$public'}, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
-//
-// ODA({ is: 'oda-jupyter-cell',
-//     template: `
-//         <style>
-//             :host {
-//                 @apply --no-flex;
-//                 position: relative;
-//                 padding: 1px;
-//                 margin: 0 2px;
-//                 opacity: {{opacity}};
-//                 transition: opacity ease-out .1s;
-//                 margin-left: {{marginLeft}};
-//             }
-//             oda-jupyter-toolbar {
-//                 position: sticky;
-//                 top: 21px;
-//                 width: 120px;
-//                 margin-left: auto;
-//                 z-index: 100;
-//             }
-//             .collapsed {
-//                 font-style: italic;
-//                 opacity: .5;
-//                 height: 12px;
-//                 background: #f7f7f7;
-//                 font-size: x-small;
-//                 padding: 4px;
-//                 border: 1px solid var(--border-color);
-//             }
-//         </style>
-//         <oda-jupyter-toolbar :cell :idx ~if="!_readOnly && selected"></oda-jupyter-toolbar>
-//     `,
-//     get marginLeft() {
-//         let lm = this.levelMargin || 0,
-//             min = this.jupyter.minLevel,
-//             level = (this.cell.level || this.cell?._level || min) - min;
-//         return  level * (lm < 0 ? 0 : lm) + 'px';
-//     },
-//     idx: -2,
-//     selected: false,
-//     get meta() {
-//         return this.cell?.metadata;
-//     },
-//     cell: null,
-//     // cell: {
-//     //     $def: null,
-//     //     set(n) {
-//     //         let src;
-//     //         if (Array.isArray(n?.$cell?.source))
-//     //             src = n.source.join('');
-//     //         this.src = src || n?.$cell?.source || '';
-//     //         this.setCellMode && this.setCellMode(this.src);
-//     //         n.$cmp = this;
-//     //         if (n.metadata?.autoRun && this.run)
-//     //             this.run();
-//     //     }
-//     // },
-//     src: '',
-//     opacity: 0,
-//     loaded(e) {
-//         this.cell.isLoaded = true;
-//         let isLoaded = this.cells.every(i => i.isLoaded || i.metadata?.hideCode);
-//         this.opacity = 1;
-//         if (isLoaded) {
-//             this.isReady = true;
-//             console.log('jupyter-loaded');
-//             this.jupyter.fire('jupyter-loaded');
-//         }
-//     },
-//     toggleCollapse() {
-//         this.cell.metadata ||= {};
-//         this.cell.collapsed = this.cell.metadata.collapsed = !this.cell.collapsed;
-//     },
-//     get levelsCount() {
-//         return this.cell?.levels?.length || ''
-//     },
-
-// })
 
 ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/markdown-wasm-viewer',
     template: `
@@ -323,9 +203,6 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
             }
         </style>
         <div class="horizontal flex">
-<!--            <div class="vertical" ~style="{width: iconSize+'px'}">-->
-<!--                <oda-icon :icon="expanderIcon" style="position: sticky; top: 0; cursor: pointer; padding: 4px; margin: auto 0; margin-left: -3px" @tap="toggleCollapse"></oda-icon>-->
-<!--            </div>-->
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" :value="cell?.src" ~if="isEditMode" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
                 <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="cell?.src || _src" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
@@ -368,10 +245,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 outline: {{border || '1px solid var(--border-color)'}};
                 position: relative;
             }
-            oda-icon {
-                padding: 4px;
-                height: {{iconSize}}px;
-            }
+
             #icon-close {
                 margin-top: {{iconCloseTop}};
                 top: {{iconSize}}px;
@@ -408,33 +282,37 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             oda-ace-editor {
                 opacity: 1;
                 filter: unset;
+                margin: 16px;
+            }
+            oda-icon{
+                margin: 4px;
             }
         </style>
-        <div ~if="cell.label" class="horizontal" ~style="{borderBottom: cell?.collapsed ? 0 : 1 + 'px solid var(--border-color)'}" @dblclick="toggleCollapse">
-<!--            <div class="vertical" ~style="{width: iconSize+'px'}">-->
-<!--                <oda-icon :icon="expanderIcon" style="margin-left: -4px; margin-top: 6px; cursor: pointer;" @tap="toggleCollapse"></oda-icon>-->
+        <div  class="horizontal header">
+            <div>
+                <oda-icon ~if="!hideRun" :icon-size :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
+            </div>
+            <oda-ace-editor ~if="!hideCode" :src="cell.src" :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" :show-gutter="showGutter" :read-only></oda-ace-editor>                        
+        </div>
+<!--        <div class="horizontal">-->
+<!--            <div ~if="!hideCode && !hideRun" class="btns vertical">-->
+<!--                -->
+<!--                <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>-->
 <!--            </div>-->
-            <h3 class="cell-h3">{{cell.label}}</h3>
-        </div>
-        <div ~show="!cell.collapsed" class="horizontal">
-            <div ~if="!hideCode && !hideRun" class="btns vertical">
-                <oda-icon ~if="!hideRun" :icon-size="iconSize" :icon="iconRun" @pointerover="iconRunOver='av:play-circle-outline'" @tap="run" @pointerout="iconRunOver=''" style="cursor: pointer; position: sticky; top: 0" :fill="isRun ? 'green' : 'black'"></oda-icon>
-                <oda-icon id="icon-close" ~if="!hideResult && !hideConsole && isRun && iconCloseShow" :icon-size="iconSize" icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
-            </div>
-            <div class="vertical flex">
-                <oda-ace-editor ~if="!hideCode" :src="cell.src" :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" :show-gutter="showGutter" :read-only></oda-ace-editor>
-                <div id="splitter1" ~if="!hideCode && !hideResult && isRun && mode==='html'" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-                <div id="result">
-                    <iframe ~if="!hideResult && isRun && mode==='html'" :srcdoc></iframe>
-                    <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(--border-color)' : 'none'}"></div>
-                    <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">
-                        <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто ??? ячеек</div>
-        <div class="cell-select"></div>
+<!--            <div class="vertical flex">-->
+<!--                -->
+<!--                <div id="splitter1" ~if="!hideCode && !hideResult && isRun && mode==='html'" ~style="{borderTop: isRun ? '1px solid var(&#45;&#45;border-color)' : 'none'}"></div>-->
+<!--                <div id="result">-->
+<!--                    <iframe ~if="!hideResult && isRun && mode==='html'" :srcdoc></iframe>-->
+<!--                    <div id="splitter2" ~if="!hideResult && !hideConsole && isRun && runConsoleData?.length" ~style="{borderTop: isRun ? '1px solid var(&#45;&#45;border-color)' : 'none'}"></div>-->
+<!--                    <div ~if="!hideConsole && isRun && runConsoleData?.length" style="min-height: 36px; margin: 2px 0;">-->
+<!--                        <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="collapsed horizontal flex" ~if="showCollapsedInfo && cell?.collapsed && cell.levels.length">Скрыто ??? ячеек</div>-->
+<!--        <div class="cell-select"></div>-->
     `,
     $public: {
         readOnly: {
@@ -499,7 +377,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.cell.metadata[prop] = n;
         this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
     },
-    iconSize: 18,
     srcdoc: '',
     get iconRun() {
         return this.isRun ? 'av:play-circle-outline' : this.iconRunOver || 'bootstrap:code-square';
@@ -678,7 +555,8 @@ class JupyterNotebook extends ROCKS({
         this.url = url;
     },
     save(url) {
-
+        //todo save
+        this.isChanged = false;
     },
     add(cell, cell_type='text'){
         const data = {
@@ -688,6 +566,10 @@ class JupyterNotebook extends ROCKS({
         }
         this.data.splice(cell?.index ?? 0, 0, data);
         this.isChanged = true;
+    },
+    change(){
+        this.isChanged = true;
+        this.fire('changed');
     }
 }) {
     url = '';
@@ -699,6 +581,7 @@ class JupyterNotebook extends ROCKS({
 
 class JupyterCell extends ROCKS({
     data: null,
+    notebook: null,
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -721,6 +604,23 @@ class JupyterCell extends ROCKS({
     get collapsed() {
         return this.metadata?.collapsed;
     },
+    set collapsed(n){
+        this.setMetadata('collapsed', n);
+    },
+    setMetadata(attr, val){
+        const metadata = this.metadata ??= Object.create(null);
+        metadata[attr] = val;
+        this.notebook.change();
+    },
+    get childrenCount(){
+        let next = this.next;
+        let cnt = 0;
+        while(next && next.h > this.h){
+            cnt++;
+            next = next.next;
+        }
+        return cnt;
+    },
     get index() {
         return this.notebook.cells.indexOf(this);
     },
@@ -730,29 +630,50 @@ class JupyterCell extends ROCKS({
     get next() {
         return this.notebook.cells[this.index + 1];
     },
+    get allowExpand(){
+        return (this.h < 7 && this.next?.h > this.h);
+    },
     get h(){
         let h = this.sources[0]?.trim().toLowerCase();
         if (h?.startsWith('#')){
             let i = -1;
-            while(h[++i] === '#' && i<10){}
+            while(h[++i] === '#' && i<7){}
             return i;
         }
-        return 0;
+        return 7;
     },
     level:{
         $def: 0,
         get(){
-            if (this.h > this.prev?.level)
-                return this.prev.level + 1;
-            return this.prev?.level ?? 0;
+            return this.h - 1;
+        }
+    },
+    get childCodes(){
+        let next = this.next;
+        const codes = [];
+        while(next && next.h > this.h){
+            if (next.type === 'code')
+                codes.push(next);
+            next = next.next;
+        }
+        return codes;
+    },
+    hidden:{
+        $def: false,
+        get(){
+            let prev = this.prev;
+            while (prev && prev.h >= this.h){
+                prev = prev.prev;
+            }
+            return prev?.collapsed || prev?.hidden;
         }
     },
     delete() {
         this.notebook.data.splice(this.index, 1);
-        this.notebook.isChanged = true;
+        this.notebook.change();
     },
     move(direct) {
-
+        //todo move
     }
 })
 {
