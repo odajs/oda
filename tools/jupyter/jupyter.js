@@ -722,13 +722,13 @@ class JupyterCell extends ROCKS({
         return this.metadata?.collapsed;
     },
     get index() {
-        return this.notebook.data.cells.indexOf(this.data);
+        return this.notebook.cells.indexOf(this);
     },
     get prev() {
-        return this.notebook.data.cells[this.index - 1]
+        return this.notebook.cells[this.index - 1]
     },
     get next() {
-        return this.notebook.data.cells[this.index + 1];
+        return this.notebook.cells[this.index + 1];
     },
     get h(){
         let h = this.sources[0]?.trim().toLowerCase();
