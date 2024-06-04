@@ -292,12 +292,29 @@
                 <textarea class="flex" ::value  style="font-size: xx-small; font-family: monospace; min-width: 100% !important;  white-space: nowrap;" ></textarea>
                 <oda-splitter sign="-1" max="0" min="10" ::height align="horizontal"></oda-splitter>
             </div>
-            <button @tap.stop="calc">EXE ({{time}} ms)</button>
+            <div class="horizontal">
+                <button flex @tap.stop="calc">EXE ({{time}} ms)</button>
+                <button no-flex @tap="save"><a :href="saveUrl" download="file">SAVE</a></button>
+            </div>
+
             <textarea  class="flex" style="font-size: xx-small; font-family: monospace;  white-space: nowrap; min-width: 100% !important;">{{result.toString()}}</textarea>
         `,
+        // attached(){
+        //     fetch(this.saveUrl).then(res=>{
+        //         console.log(res);
+        //     })
+        // },
+        save(){
+            let data = new Blob([this.value], {type: 'text/plain'});
+            this.saveUrl = window.URL.createObjectURL(data);
+        },
+        saveUrl:{
+            $def: '',
+            $save: true,
+        },
         value:{
             $def: '',
-            $save: true
+            $save: true,
         },
         height: {
             $def: 200,
