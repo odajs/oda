@@ -3,8 +3,8 @@ import './lib/mathjax-config.js';
 import './lib/mathjax/tex-mml-chtml.js';
 await markdown.ready;
 await MathJax.startup.promise;
-const PATH = import.meta.url.replace('markdown-wasm-viewer.js','');
-ODA({ is: 'oda-markdown-wasm-viewer', template: /*html*/`
+const PATH = import.meta.url.replace('markdown-viewer.js','');
+ODA({ is: 'oda-markdown-viewer', template: /*html*/`
     <style>
         :host {
             @apply --flex;

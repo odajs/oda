@@ -1,5 +1,5 @@
-const PATH = import.meta.url.replace('simplemde-editor.js', '');
-ODA({ is: 'oda-simplemde-editor', imports: './lib/simplemde.min.js', template: /*html*/`
+const PATH = import.meta.url.replace('markdown-editor.js', '');
+ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*html*/`
     <style>
         :host { @apply --vertical; height: 100%; }
         .CodeMirror-wrap { height: 100%; min-height: 24px; }

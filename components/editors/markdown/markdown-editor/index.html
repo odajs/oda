@@ -4,7 +4,7 @@
     <oda-markdown-editor id="mdviewer"></oda-markdown-editor>
 </oda-tester>
 <script type="module">
-    import '../../../oda.js';
+    import '../../../../oda.js';
     import './markdown-editor.js';
     mdviewer.value = await fetch('./lib/readme.md').then(r => r.text());
 </script>
