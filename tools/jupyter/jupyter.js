@@ -226,6 +226,7 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 @apply --flex;
                 position: relative;
                 text-wrap: wrap;
+                min-height: 32px;
                 /* outline: {{cell?.collapsed && cell.levels.length ? '1px dotted var(--border-color)' :'none'}}; */
             }
             oda-markdown-wasm-viewer {
@@ -665,7 +666,8 @@ class JupyterNotebook extends ROCKS({
                 id
             }
         }
-        this.data.cells.splice(cell?.index + 1, 0, data);
+        const idx = cell?.index || cell.index === 0 ? cell.index + 1 : 0;
+        this.data.cells.splice(idx, 0, data);
         this.async(()=>{
             this.change();
         })
