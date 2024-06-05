@@ -78,7 +78,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
-            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' }
+            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' },
+            html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
         },
         selectedCell: null,
         get cells() {
@@ -257,6 +258,44 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
     get divMD() {
         return this.$('div.md-result') || undefined;
     },
+    editorValueChanged(e) {
+        // this.cell.source = e.detail.value;
+    },
+    get isEditMode() {
+        return !this.readOnly && this.editMode && this.selected === this.cell;
+    },
+    changeEditMode() {
+        this.editMode = true;
+        this.selected = this.cell;
+    }
+})
+
+ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/wysiwyg',
+    template: `
+        <style>
+            :host {
+                @apply --vertical;
+                @apply --flex;
+                position: relative;
+                min-height: 32px;
+            }
+            oda-wysiwyg{
+                max-height: calc(100vh - {{editModeIndents}}px);
+                width: 100%; 
+                padding: 0px; 
+                margin: 0px;
+            }
+            iframe {
+                width: 100%;
+                height: 32px;
+                border: none;
+            }
+        </style>
+        <oda-wysiwyg :value ~if="isEditMode" @change="editorValueChanged"></oda-wysiwyg>
+        <iframe @dblclick="changeEditMode"></iframe>
+    `,
+    value: '',
+    editModeIndents: '120',
     editorValueChanged(e) {
         // this.cell.source = e.detail.value;
     },

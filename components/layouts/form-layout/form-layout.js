@@ -27,11 +27,16 @@ ODA({
         :host>.body {
             @apply --flex;
         }
-        :host .title-bar {
-            align-items: center;
+        :host #titleBar {
+            display: flex;
+            flex-direction: {{_getTitleFlexDir()}};
+            align-items: justify;
             background-color: {{focused ? 'var(--focused-color) !important' : 'var(--dark-background)'}};
             color: var(--content-background);
             fill: var(--content-background);
+        }
+        :host #titleButtons{
+            align-self: {{_getTitleButtonsAlign()}};
         }
         /*:host([float]) .title-bar, :host([show-close-btn]) .title-bar {*/
         /*    min-height: {{iconSize * 1.5}}px;*/
@@ -75,17 +80,19 @@ ODA({
         }
         {{''}}
     </style>
-    <div class="title-bar horizontal" @mouseenter="_in" @mouseleave="_out">
+    <div id="titleBar" @mouseenter="_in" @mouseleave="_out">
         <oda-icon ~if="title && icon" :icon :sub-icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" name="title-bar"></slot>
         <label ~if="title" ~html="title" style="margin-left: 8px;  overflow: hidden; text-overflow: ellipsis;"></label>
         <div class="flex"></div>
-        <slot ~show="!isMinimized" class="horizontal no-flex" name="title-buttons" style="align-self: flex-start;height: 100%;"></slot>
-        <div ~if="float && !hideMinMax" style="align-self: flex-start;" class="horizontal no-flex">
-            <oda-button ~if="float" :icon-size :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-            <oda-button ~if="float && !isMinimized" :icon-size :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+        <slot id="titleButtons" ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
+        <div slot="title-buttons" class="horizontal" style="order: 10000;">
+            <div ~if="float && !hideMinMax" style="align-self: flex-start;" class="horizontal no-flex">
+                <oda-button ~if="float" :icon-size :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
+                <oda-button ~if="float && !isMinimized" :icon-size :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
+            </div>
+            <oda-button ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red; align-self: flex-start;"></oda-button>
         </div>
-        <oda-button ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red; align-self: flex-start;"></oda-button>
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" ~props="statusBar"></form-status-bar>`,
     _in() {
@@ -93,6 +100,22 @@ ODA({
     },
     _out() {
         this.__allowMove = false;
+    },
+    _checkTitleIsSmall() {
+        const titleButtons = this.$('slot[name=title-buttons]');
+        const titleBar = this.$('#titleBar');
+        if (titleButtons && titleBar) {
+            return titleButtons.offsetWidth * 2 > titleBar.offsetWidth ? true : false;
+        }
+        else {
+            return false;
+        }
+    },
+    _getTitleFlexDir() {
+        return this._checkTitleIsSmall() ? 'column-reverse' : 'row';
+    },
+    _getTitleButtonsAlign() {
+        return this._checkTitleIsSmall() ? 'flex-end' : 'flex-start';
     },
     $public: {
         unique: String,
