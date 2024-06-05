@@ -1,6 +1,6 @@
 const libPath = import.meta.url.split('/').slice(0, -1).join('/') + '/lib/';
 
-ODA({ is: 'oda-excalidraw-editor',
+ODA({ is: 'oda-diagram-editor',
     template: `
         <style>
             :host {

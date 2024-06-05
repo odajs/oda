@@ -5,18 +5,21 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="ODA Framework - designed for rapid development of websites, mobile PWAs and web applications using web components technology - https://odajs.org/" />
-        <title>oda-excalidraw-editor</title>
+        <title>oda-diagram-editor</title>
     </head>
 
     <body>
-        <oda-excalidraw-editor  id="excalidraw"></oda-excalidraw-editor >
+        <oda-diagram-editor  id="diagram" lang-code="ru-RU"></oda-diagram-editor >
 
         <script type="module">
             import '../../../oda.js';
-            import './excalidraw-editor.js';
+            import './diagram-editor.js';
             const init = async () => {
-                const { chess } = await import('./chess-set.js');
-                excalidraw.data = chess;
+                const { demo } = await import('./demo.js');
+                const { lib } = await import('./lib.js');
+                const { google } = await import('./google-icons.js');
+                diagram.data = demo;
+                diagram.lib = [...lib, ...google];
             }
             init();
         </script>

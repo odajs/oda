@@ -14,15 +14,15 @@
         }
     },
     {
-        "name": "code-editor",
-        "label": "<b style='color: #e689fe'>oda-code-editor:</b> Редактор кода",
+        "name": "html-editor",
+        "label": "<b style='color: #e689fe'>oda-html-editor:</b> Редактор HTML/CSS кода",
         "content": {
             "link": "index.html"
         }
     },
     {
-        "name": "simplemde-editor",
-        "label": "<b style='color: #e689fe'>oda-simplemde-editor:</b> simpleMDE редактор",
+        "name": "markdown",
+        "label": "<b style='color: #e689fe'>oda-markdown:</b> markdown редактор",
         "content": {
             "link": "index.html"
         }
@@ -49,8 +49,8 @@
         }
     },
     {
-        "name": "excalidraw-editor",
-        "label": "<b style='color: #e689fe'>oda-excalidraw-editor:</b> Редактор диаграмм",
+        "name": "diagram-editor",
+        "label": "<b style='color: #e689fe'>oda-diagram-editor:</b> Редактор диаграмм",
         "content": {
             "link": "index.html"
         }
