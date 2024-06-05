@@ -374,7 +374,6 @@ ODA({
             <div border>
                 <oda-icon  :icon-size icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;"></oda-icon>
             </div>
-            
         </div>
 <!--        <div class="horizontal">-->
 <!--            <div ~if="!hideCode && !hideRun" class="btns vertical">-->
@@ -512,7 +511,7 @@ ODA({
         this.value = e.detail.value;
     },
     async run() {
-        let src = this.cell.src;
+        let src = this.value;
         let fn = new Function('context', `try { ${src} } catch (e) { console.error(e) }`);
         const result = run_context.console_data = [];
         console.log(result);
