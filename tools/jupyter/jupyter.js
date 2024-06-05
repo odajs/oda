@@ -230,7 +230,6 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
                 /* outline: {{cell?.collapsed && cell.levels.length ? '1px dotted var(--border-color)' :'none'}}; */
             }
             oda-markdown-wasm-viewer {
-                opacity: {{noSrcOpacity}};
                 padding: 0 8px;
             }
             .md {
@@ -247,27 +246,19 @@ ODA({ is: 'oda-jupyter-text-editor', imports: '@oda/simplemde-editor,  @oda/mark
         <div class="horizontal flex">
             <oda-simplemde-editor autofocus :sync-scroll-with="divMD" ::value ~if="isEditMode" @change="editorValueChanged"></oda-simplemde-editor>
             <div class="md md-result vertical flex" style="overflow-y: auto">
-                <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="value" @dblclick="changeEditMode" @click="markedClick"></oda-markdown-wasm-viewer>
+                <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="value" @dblclick="changeEditMode"></oda-markdown-wasm-viewer>
             </div>
         </div>
     `,
     value: '',
     allowEdit: true,
-    // _src: 'Чтобы изменить содержимое ячейки, дважды нажмите на нее',
     presetcss: path + '/preset.css',
     editModeIndents: '120',
     get divMD() {
         return this.$('div.md-result') || undefined;
     },
-    get noSrcOpacity() {
-        return this.cell?.src ? 1 : .3;
-    },
     editorValueChanged(e) {
         // this.cell.source = e.detail.value;
-        // this.jupyter.hasChanged({ type: 'editCell', cell: this.cell });
-    },
-    markedClick(e) {
-        // this.selectedIdx = this.idx;
     },
     get isEditMode() {
         return !this.readOnly && this.editMode && this.selected === this.cell;
@@ -338,7 +329,7 @@ ODA({
             <div border>
                 <oda-icon ~if="!hideRun" :icon-size :icon="iconRun" @tap="run" :fill="isRun ? 'green' : 'black'"></oda-icon>
             </div>
-            <oda-ace-editor ~if="!hideCode" ::value :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" :show-gutter="showGutter" :read-only></oda-ace-editor>                        
+            <oda-ace-editor ~if="!hideCode" :src="value" :mode="mode || 'javascript'" :theme="theme || ''" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" :show-gutter="showGutter" :read-only @change="editorValueChanged"></oda-ace-editor>                        
         </div>
         <div ~if="!hideResult && !hideConsole && isRun && iconCloseShow" class="horizontal info">
             <div border>
@@ -464,7 +455,6 @@ ODA({
     setMeta(prop, n) {
         this.cell.metadata ||= {};
         this.cell.metadata[prop] = n;
-        this.jupyter.hasChanged({type: 'editCell', cell: this.cell});
     },
     srcdoc: '',
     get iconRun() {
@@ -479,30 +469,9 @@ ODA({
         let colors = {log: 'gray', info: 'blue', warn: 'orange', error: 'red'};
         return `color: ${colors[i.method]}`;
     },
-    aceLoaded(e) {
-        // this.loaded();
-        const ace = this.$('oda-ace-editor');
-        ace?.editor.setOption('fontSize', '16px');
+    editorValueChanged(e) {
+        this.value = e.detail.value;
     },
-    setCellMode(src = this.$('oda-ace-editor')?.value || this.src || '') {
-        if (this.mode) return;
-        if (this.meta?.colab) {
-            this.mode = 'python';
-            return;
-        }
-        this.mode = 'javascript';
-        let arr = ['<!DOCTYPE html>', '<!--', '</script>', '</html>', '</body>', '</head>', '<link', '<meta ', '</'];
-        let regx = new RegExp(arr.join('|'));
-        if (regx.test(src))
-            this.mode = 'html';
-    },
-    // editorValueChanged(e) {
-    //     this.value = e.detail.value;
-    //     // this.iconCloseTop = undefined;
-    //     // // this.cell.source = this.src = e.detail.value;
-    //     // this.jupyter.hasChanged({type: 'editCell', cell: this.cell});
-    //     // this.setCellMode();
-    // },
     async run() {
         let src = this.cell.src;
         let fn = new Function('context', `try { ${src} } catch (e) { console.error(e) }`);
