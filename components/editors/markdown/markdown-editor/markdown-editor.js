@@ -3,6 +3,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <style>
         :host {
             @apply --vertical; 
+            height: 100%;
         }
         .CodeMirror-wrap {
             min-height: 24px; 

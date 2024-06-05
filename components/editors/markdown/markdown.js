@@ -12,7 +12,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         </style>
         <div class="horizontal flex">
             <div flex vertical ~if="editMode">
-                <oda-markdown-editor :url ::value></oda-markdown-editor>
+                <oda-markdown-editor ::value></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
             <div flex vertical style="padding: 8px;" @dblclick="editMode = true">
@@ -23,7 +23,12 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
     `,
     $public:{
         value: '',
-        url: '',
+        url:{
+            $type: String,
+            async set(n) {
+                this.value = await fetch(n).then(r => r.text());
+            }
+        },
         editMode: false
     },
     get editor(){
