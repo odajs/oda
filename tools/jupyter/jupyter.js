@@ -18,7 +18,7 @@ run_context.error = (...e) => console.error(...e);
 
 window.run_context = run_context;
 
-ODA({ is: 'oda-jupyter', imports: '@oda/button',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
             :host{
@@ -78,7 +78,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button',
         },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
-            text: { label: 'Text', editor: 'oda-jupyter-text-editor', type: 'text' },
+            text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
             html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
         },
         selectedCell: null,
@@ -218,57 +218,52 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     }
 })
 
-ODA({ is: 'oda-jupyter-text-editor', imports: ' @oda/markdown-editor',
-    template: `
-        <style>
-            oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
-            :host {
-                @apply --vertical;
-                @apply --flex;
-                position: relative;
-                text-wrap: wrap;
-                min-height: 32px;
-                /* outline: {{cell?.collapsed && cell.levels.length ? '1px dotted var(--border-color)' :'none'}}; */
-            }
-            oda-markdown-wasm-viewer {
-                padding: 0 8px;
-            }
-            .md {
-                max-height: {{editMode && selected === cell ? 'calc(100vh - ' + editModeIndents + 'px)' : 'unset'}};
-            }
-            oda-simplemde-editor {
-                max-height: calc(100vh - {{editModeIndents}}px);
-                max-width: 50%; 
-                min-width: 50%; 
-                padding: 0px; 
-                margin: 0px;
-            }
-        </style>
-        <div class="horizontal flex">
-            <oda-simplemde-editor autofocus :sync-scroll-with="divMD" ::value ~if="isEditMode" @change="editorValueChanged"></oda-simplemde-editor>
-            <div class="md md-result vertical flex" style="overflow-y: auto">
-                <oda-markdown-wasm-viewer :presetcss tabindex=0 class="flex" :src="value" @dblclick="changeEditMode"></oda-markdown-wasm-viewer>
-            </div>
-        </div>
-    `,
-    value: '',
-    allowEdit: true,
-    presetcss: path + '/preset.css',
-    editModeIndents: '120',
-    get divMD() {
-        return this.$('div.md-result') || undefined;
-    },
-    editorValueChanged(e) {
-        // this.cell.source = e.detail.value;
-    },
-    get isEditMode() {
-        return !this.readOnly && this.editMode && this.selected === this.cell;
-    },
-    changeEditMode() {
-        this.editMode = true;
-        this.selected = this.cell;
-    }
-})
+// ODA({ is: 'oda-jupyter-text-editor', imports: ' @oda/markdown',
+//     template: `
+//         <style>
+//             oda-md-viewer::-webkit-scrollbar { width: 0px; height: 0px; }
+//             :host {
+//                 @apply --vertical;
+//                 @apply --flex;
+//                 position: relative;
+//                 text-wrap: wrap;
+//                 min-height: 32px;
+//                 /* outline: {{cell?.collapsed && cell.levels.length ? '1px dotted var(--border-color)' :'none'}}; */
+//             }
+//             oda-markdown-wasm-viewer {
+//                 padding: 0 8px;
+//             }
+//             .md {
+//                 max-height: {{editMode && selected === cell ? 'calc(100vh - ' + editModeIndents + 'px)' : 'unset'}};
+//             }
+//             oda-simplemde-editor {
+//                 max-height: calc(100vh - {{editModeIndents}}px);
+//                 max-width: 50%;
+//                 min-width: 50%;
+//                 padding: 0px;
+//                 margin: 0px;
+//             }
+//         </style>
+//         <oda-markdown autofocus :sync-scroll-with="divMD" ::value ~if="isEditMode" @change="editorValueChanged"></oda-markdown>
+//     `,
+//     value: '',
+//     allowEdit: true,
+//     presetcss: path + '/preset.css',
+//     editModeIndents: '120',
+//     get divMD() {
+//         return this.$('div.md-result') || undefined;
+//     },
+//     editorValueChanged(e) {
+//         // this.cell.source = e.detail.value;
+//     },
+//     get isEditMode() {
+//         return !this.readOnly && this.editMode && this.selected === this.cell;
+//     },
+//     changeEditMode() {
+//         this.editMode = true;
+//         this.selected = this.cell;
+//     }
+// })
 
 ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/wysiwyg',
     template: `

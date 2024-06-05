@@ -1,15 +1,28 @@
 const PATH = import.meta.url.replace('markdown-editor.js', '');
 ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*html*/`
     <style>
-        :host { @apply --vertical; height: 100%; }
-        .CodeMirror-wrap { height: 100%; min-height: 24px; }
-        .editor-toolbar { display: flex; flex-wrap: wrap; }
+        :host {
+            @apply --vertical; 
+        }
+        .CodeMirror-wrap {
+            min-height: 24px; 
+        }
+        .editor-toolbar { 
+            display: flex; 
+            flex-wrap: wrap; 
+        }
     </style>
     <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">
     <link rel="stylesheet" type="text/css" href="${PATH}lib/font-awesome.min.css">
     <textarea></textarea>
     `,
     $public: {
+        url:{
+            $type: String,
+            async set(n) {
+                this.value = await fetch(n).then(r => r.text());
+            }
+        },
         value: {
             $type: String,
             set(n) {
@@ -23,6 +36,9 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             $def: false,
             $attr: true
         }
+    },
+    get toolBar() {
+        return this.$('.editor-toolbar');
     },
     get scrollableElement() {
         return this.$('.CodeMirror-scroll') || undefined;
