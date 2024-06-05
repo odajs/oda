@@ -170,10 +170,8 @@ function editDictionary(lang = ODA.language) {
     return new Promise(resolve => editDictionary_resolve = resolve)
 }
 
-/* Нажатие клавиши */
-ODA.localization.showDialog = false
-window.addEventListener('keydown', async e => {
-    if (e.code !== 'KeyL' || !e.altKey || ODA.localization.showDialog) return;
+ODA.localization.showDialogF = async () => {
+    if (ODA.localization.showDialog) return
     ODA.localization.showDialog = true;
     let changedEvent;
     try{
@@ -219,6 +217,13 @@ window.addEventListener('keydown', async e => {
     finally {
         ODA.localization.showDialog = false;
     }
+}
+
+/* Нажатие клавиши */
+ODA.localization.showDialog = false
+window.addEventListener('keydown', async e => {
+    if (e.code !== 'KeyL' || !e.altKey) return;
+    else ODA.localization.showDialogF()
 })
 
 
