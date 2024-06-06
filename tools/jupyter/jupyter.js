@@ -68,8 +68,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         get notebook() {
             this.style.opacity = 0;
             const nb =  new JupyterNotebook(this.url);
-            nb.listen('changed', (e)=>{
-                this.$render();
+            nb.listen('changed', async (e)=>{
+                await this.$render();
+                if (e.detail.value){
+                    const added = this.$$('oda-jupyter-cell').find(cell=>cell.cell.id === this.selectedCell.id);
+                    added.editMode = true;
+                }
             })
             this.async(()=>{
                 this.style.opacity = 1;
@@ -84,7 +88,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         selectedCell: null,
         get cells() {
             return this.notebook?.cells;
-        }
+        },
+        editMode: false
     }
 })
 
@@ -132,7 +137,15 @@ ODA({ is: 'oda-jupyter-cell',
         }
     },
     $pdp: {
-        editMode: false,
+        editMode: {
+            $def: false,
+            get(){
+                return this.jupyter.editMode && this.selected
+            },
+            set(n){
+                this.jupyter.editMode = n
+            }
+        },
         cell: null,
         get selected() {
             return this.selectedCell === this.cell;
@@ -183,6 +196,7 @@ ODA({ is: 'oda-jupyter-divider',
     `,
     add(cell, key){
         this.selectedCell = this.notebook.add(cell, key);
+
     }
 })
 
@@ -589,14 +603,14 @@ class JupyterNotebook extends ROCKS({
         const idx = cell?.index || cell.index === 0 ? cell.index + 1 : 0;
         this.data.cells.splice(idx, 0, data);
         this.async(()=>{
-            this.change();
+            this.change(true);
         })
         this.cells = undefined;
         return this.cells.find(i=>i.id === id)
     },
-    change(){
+    change(add_new){
         this.isChanged = true;
-        this.fire('changed');
+        this.fire('changed', add_new);
     }
 }) {
     url = '';

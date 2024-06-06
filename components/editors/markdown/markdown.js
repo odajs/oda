@@ -6,9 +6,10 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             :host{
                 @apply --vertical;
                 overflow-x: hidden;
-                
             }
-        
+            oda-markdown-viewer {
+                width: {{editMode ? 0 : 'unset'}};
+            }
         </style>
         <div class="flex horizontal" style="height: 100%; position: relative;">
             <div ~if="editMode" class="horizontal" style="min-width: 120px; width: 50%;  position: relative;">
