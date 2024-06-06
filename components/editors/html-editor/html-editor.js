@@ -1,22 +1,20 @@
-ODA({is: 'oda-html-editor', imports: '@oda/divider, @oda/ace-editor, @oda/monaco-editor',
+ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monaco-editor',
     template:`
         <style>
-           :host{
-                @apply --horizontal;
+            :host {
+                @apply --vertical;
                 @apply --flex;
-                min-height: 20px;
-                width: 100%;
-                height: 100%;
+                position: relative;
             }
         </style>
-        <div style="display: flex; flex: 1; overflow: hidden; height: 100%;">
-            <div ~if="showCode || editMode" style="overflow: hidden; position: relative" ~style="{width: showPreview ? '50%' : '100%'}">
-                <oda-ace-editor ~if="type==='ace'" :src @change="onchange" class="flex" highlight-active-line="false" show-print-margin="false" theme="cobalt" mode="html" min-lines=1 max-lines=0></oda-ace-editor></oda-ace-editor>
+        <div class="horizontal flex" style="width: 100%;">
+            <div ~if="editMode" class="horizontal" style="min-width: 120px; position: relative;" ~style="{width: editMode && showPreview ? '50%' : '100%'}">
+                <oda-ace-editor  ~if="type==='ace'" :src @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="true" max-lines="Infinity"></oda-ace-editor>                        
                 <oda-monaco-editor ~if="type==='monaco'" ::value="src" @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
+                <oda-splitter></oda-splitter>
             </div>
-            <oda-divider ~if="showCode" size="3" color="transparent"></oda-divider>
-            <div ~if="showPreview" class="flex" style="overflow: auto; flex: 1">
-                <iframe :srcdoc="source" style="border: none; width: 100%; height: 100%;"></iframe>
+            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto;">
+                <iframe :srcdoc="source" style="border: none; width: 100%;"></iframe>
             </div>
         </div>
     `,
@@ -30,19 +28,30 @@ ODA({is: 'oda-html-editor', imports: '@oda/divider, @oda/ace-editor, @oda/monaco
             }
         },
         showPreview: false,
-        showCode: false
+        editMode: false
     },
     src: '',
     set source(v) {
         if (v !== undefined && !this.src)
             this.src = v;
     },
-    editMode: false,
     onchange(e) {
         this.source = e.detail.value;
     },
     attached() {
         this.async(() => this.setArgs());
+        // const iframe= this.$('iframe');
+        // if (!iframe) return;
+        // iframe.addEventListener('load', () => {
+        //     this.runConsoleData = [...(iframe.contentWindow._runConsoleData || [])];
+        //     iframe.contentWindow.runConsoleData = this.runConsoleData;
+        //     const resizeObserver = new ResizeObserver((e) => {
+        //         iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+        //         iframe.style.opacity = 1;
+        //         this.opacity = 1;
+        //     })
+        //     resizeObserver.observe(iframe.contentDocument.body);
+        // })
     },
     args: '',
     get argsType() { return 'args-' + this.type },
