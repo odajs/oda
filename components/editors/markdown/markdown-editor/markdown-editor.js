@@ -16,6 +16,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">
     <link rel="stylesheet" type="text/css" href="${PATH}lib/font-awesome.min.css">
     <textarea></textarea>
+    <div flex></div>
     `,
     $public: {
         url:{
