@@ -7,13 +7,21 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
         }
         .CodeMirror-wrap {
             min-height: 24px; 
+            margin-top: 32px;
         }
         .CodeMirror-scroll {
             min-height: 100px; 
         }
         .editor-toolbar { 
             display: flex; 
-            flex-wrap: wrap; 
+            /* flex-wrap: wrap; */
+            width: 300%;
+            position: absolute;
+            z-index: 99;
+            opacity: 1;
+            border: none;
+            border-bottom: 1px solid gray;
+            background: white;
         }
     </style>
     <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">

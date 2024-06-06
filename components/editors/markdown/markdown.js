@@ -9,6 +9,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             }
             oda-markdown-viewer {
                 width: {{editMode ? 0 : 'unset'}};
+                margin: {{editMode ? '8px' : 0}};
+                margin-top: {{editMode ? '32px' : 0}};
             }
         </style>
         <div class="flex horizontal" style="height: 100%; position: relative;">
