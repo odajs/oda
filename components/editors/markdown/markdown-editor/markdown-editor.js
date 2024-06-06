@@ -8,6 +8,9 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
         .CodeMirror-wrap {
             min-height: 24px; 
         }
+        .CodeMirror-scroll {
+            min-height: 100px; 
+        }
         .editor-toolbar { 
             display: flex; 
             flex-wrap: wrap; 

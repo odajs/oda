@@ -96,16 +96,18 @@ ODA({ is: 'oda-jupyter-cell',
                 @apply --no-flex;
                 position: relative;
                 margin-bottom: 2px;
+                width: 100%;
+                min-height: 50px;
             }
             oda-icon:hover{
                 @apply --success;
             }
         </style>
-        <oda-jupyter-toolbar ::edit-mode :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
+        <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
+        <div class="vertical" ~style="{marginLeft: (editMode?0:levelMargin * cell.level)+'px'}">
             <div class="horizontal" >
                 <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                <div id="control" ~is="editor" :cell  @tap.stop="selectedCell = cell" :edit-mode ::value show-preview></div>
+                <div flex id="control" ~is="editor" :cell  @tap.stop="selectedCell = cell" ::edit-mode ::value show-preview></div>
             </div>
             <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
                 <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>

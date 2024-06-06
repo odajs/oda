@@ -15,7 +15,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
                 <oda-markdown-editor flex ::value style="overflow: hidden"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <oda-markdown-viewer flex :value  @dblclick="editMode = true" style="text-wrap: wrap; padding: 8px; min-width: 120px; width: 0"></oda-markdown-viewer>
+            <oda-markdown-viewer flex :value  @dblclick="editMode = true" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
         </div>
     `,
     $public:{
@@ -26,7 +26,12 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
                 this.value = await fetch(n).then(r => r.text());
             }
         },
-        editMode: false
+        editMode: {
+            $def: false,
+            set(n){
+                console.log(n)
+            }
+        }
     },
     get editor(){
         return this.$('oda-markdown-editor');
