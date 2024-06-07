@@ -326,6 +326,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         const expr = this.value.trim().split('\n');
         expr[expr.length-1] = 'return '+ expr[expr.length-1];
         return `return (async ()=>{${expr.join('\n')}})()`;
+    },
+    attached() {
+        this.$('oda-ace-editor').$('div').classList.add("light");
     }
 })
 
