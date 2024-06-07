@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Scanner</title>
+  <script src="../../../oda.js" type="module"></script>
+  <script src="../../../tools/containers/containers.js" type="module"></script>
+  <script src="./barcode-scanner.js" type="module"></script>
+</head>
+<body>
+  <oda-barcode-scanner id="scannerButton" class="no-flex"></oda-barcode-scanner>
+  <textarea id="results"></textarea>
+  <script>
+    scannerButton.addEventListener('scan-complete', ()=>{
+      results.value = scannerButton.result.rawValue;
+    });
+    scannerButton.addEventListener('scan-canceled', () => {
+        results.value = '';
+      });
+  </script>
+</body>
+</html>
