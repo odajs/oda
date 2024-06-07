@@ -266,6 +266,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     get iconRun() {
         return this.isRun ? 'av:play-circle-outline' : this.iconRunOver || 'bootstrap:code-square';
     },
+    iconRunOver: '',
     isRun: false,
     runConsoleData: undefined,
     runConsoleStyle(i) {
