@@ -2,6 +2,8 @@ let style = /*css*/`
 @media (prefers-color-scheme: dark) {
     :root{
         --content-background: rgb(60 60 60);
+        --light-background: gray;
+        --light-color: #eee;
         --bar-background: var(--content-background);
         --stroke-color: transparent;
         --content-color: rgb(200 200 200);
@@ -42,6 +44,8 @@ let style = /*css*/`
 @media (prefers-color-scheme: light) {
     :root{
         --content-background: white;
+        --light-background: #eee;
+        --light-color: gray;
         --bar-background: var(--content-background);
         --stroke-color: transparent;
         --content-color: black;
@@ -87,6 +91,11 @@ let style = /*css*/`
         background-color: var(--content-background, white);
         color: var(--content-color, black);
         fill: var(--content-color, black);
+    };
+    --light:{
+        background-color: var(--light-background, #eee);
+        color: var(--light-color, gray);
+        fill: var(--light-color, gray);
     };
     --font-150:{
         font-size: 150%;

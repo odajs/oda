@@ -5,6 +5,7 @@ ODA({
         :host{
             @apply --vertical;
             position: relative;
+            overflow: hidden;
         }
         :host video{
             @apply --flex;

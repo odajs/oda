@@ -1,21 +1,20 @@
 const jupyter_path = import.meta.url.split('/').slice(0, -1).join('/');
 const path = window.location.href.split('/').slice(0, -1).join('/');
 
-// const run_context = Object.create(null);
-// run_context.console_data = [];
-// const console_original = console.log;
-// console.log = (...e) => {
-//     console_original.call(window.console, ...e);
-//     run_context.console_data.push({method: 'log', data: e});
-//     return e;
-// }
+const run_context = Object.create(null);
+run_context.output_data = undefined;
+const console_original = console.log;
+console.log = (...e) => {
+    console_original.call(window.console, ...e);
+    run_context.output_data?.push(e);
+}
 
-// run_context.print = (...e) => console.log(...e);
-// run_context.log = (...e) => console.log(...e);
-// run_context.info = (...e) => console.info(...e);
-// run_context.warn = (...e) => console.warn(...e);
-// run_context.error = (...e) => console.error(...e);
-// window.run_context = run_context;
+window.print = (...e) => console.log(...e);
+window.log = (...e) => console.log(...e);
+window.info = (...e) => console.info(...e);
+window.warn = (...e) => console.warn(...e);
+window.error = (...e) => console.error(...e);
+window.run_context = run_context;
 
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
     template: `
@@ -99,22 +98,39 @@ ODA({ is: 'oda-jupyter-cell',
                 width: 100%;
                 min-height: 50px;
             }
-            oda-icon:hover{
-                @apply --success;
+            .sticky{
+                cursor: pointer; 
+                position: sticky;
+                top: 0px;
+            }
+            oda-icon{
+                cursor: pointer;
             }
         </style>
         <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical" ~style="{marginLeft: (editMode?0:levelMargin * cell.level)+'px'}">
-            <div class="horizontal" >
-                <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                <div flex id="control" ~is="editor" :cell  @tap.stop="selectedCell = cell" ::edit-mode ::value show-preview></div>
+        <div class="vertical" ~style="{marginLeft: (editMode?0:levelMargin * cell.level)+'px'}" @tap.stop="selectedCell = cell">
+            <div class="vertical">
+                <div class="horizontal" >
+                    <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                    <div flex id="control" ~is="editor" :cell tabindex="0"  ::edit-mode ::value show-preview></div>
+                </div>
+                <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
+                    <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
+                    <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
+                </div>
             </div>
-            <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
-                <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
-                <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
-            </div>
+            <div ~if="cell?.outputs?.length" class="horizontal" style="max-height: 100%;">
+                <div style="width: 30px">
+                    <oda-icon class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;"></oda-icon>
+                </div>
+                <div  class="vertical">
+                    <div ~for="cell.outputs" style="padding: 4px;">
+                        <object ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                    </div>
+                </div>
+                
+            </div>        
         </div>
-  
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
     get childIcon() {
@@ -151,7 +167,11 @@ ODA({ is: 'oda-jupyter-cell',
     },
     get expanderIcon() {
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
-    }
+    },
+    runConsoleStyle(i) {
+        let colors = { log: 'black', info: 'blue', warn: 'orange', error: 'red' };
+        return `color: ${colors[i.method]}`;
+    },
 })
 
 ODA({ is: 'oda-jupyter-divider',
@@ -161,7 +181,6 @@ ODA({ is: 'oda-jupyter-divider',
                 @apply --vertical;
                 height: 3px;
                 justify-content: center;
-                z-index: 99;
                 opacity: 0;
                 transition: opacity ease-out .1s;
                 position: relative;
@@ -197,6 +216,11 @@ ODA({ is: 'oda-jupyter-divider',
 ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-grid',
     template: `
         <style>
+            :host{
+                position: sticky;
+                top: 20px;
+                z-index: 3;
+            }
             .top {
                 @apply --horizontal;
                 @apply --no-flex;
@@ -206,7 +230,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 right: 8px;
                 padding: 1px;
                 border-radius: 4px;
-                z-index: 100;
                 margin-top: -20px;
             }
         </style>
@@ -236,8 +259,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 @apply --flex;
                 position: relative;
             }
-            oda-icon{
-                margin: 4px;
+            .sticky{
                 cursor: pointer; 
                 position: sticky;
                 top: 0px;
@@ -251,86 +273,60 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 margin: 16px;
             }
         </style>
-        <div  class="horizontal header" @pointerover="iconRunOver='av:play-circle-outline'" @pointerout="iconRunOver=''">
-            <div border>
-                <oda-icon :icon-size :icon="iconRun" @tap="run" :fill="isRun ? 'green' : 'black'"></oda-icon>
-                <oda-icon id="icon-close" ~if="isRun" :icon-size icon="eva:o-close-circle-outline" @tap="isRun=false; runConsoleData = undefined;" style="cursor: pointer; position: sticky;"></oda-icon>
+        <div  class="horizontal light" @pointerover="isHover = true" @pointerout="isHover = false">
+            <div vertical style="width: 30px; align-items: center;"> 
+                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
+                <oda-icon class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run" :fill="isRun ? 'green' : 'black'"></oda-icon>
             </div>
-            <oda-ace-editor :src="value" mode="javascript" font-size="12" class="flex" show-gutter="true" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
+            <oda-ace-editor @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
         </div>
-        <div ~if="isRun" border style="width: 100%; height: 120px; overflow: auto;">
-            <div ~for="runConsoleData" style="padding: 4px;" ~style="runConsoleStyle($for.item)">{{$for.item.str}}</div>
-        </div>
+ 
     `,
+    _keypress(e){
+        if (e.ctrlKey && e.keyCode === 10){
+            this.run();
+        }
+    },
+    get isReadyRun(){
+        return this.isHover || this.selected || this.isRun;
+    },
+    isHover: false,
     value: '',
-    get iconRun() {
-        return this.isRun ? 'av:play-circle-outline' : this.iconRunOver || 'bootstrap:code-square';
+    get icon() {
+        return this.isRun ? 'spinners:8-dots-rotate':'av:play-circle-outline';
     },
-    iconRunOver: '',
     isRun: false,
-    runConsoleData: undefined,
-    runConsoleStyle(i) {
-        let colors = { log: 'black', info: 'blue', warn: 'orange', error: 'red' };
-        return `color: ${colors[i.method]}`;
-    },
+
     editorValueChanged(e) {
         this.value = e.detail.value;
     },
     async run() {
-        let fn = Function('w', this.fnStr);
-        fn();
-        this.runConsoleData = [...window._runConsoleData];
-        window.runConsoleData = this.runConsoleData;
         this.isRun = true;
-
-        // fn = new Function('context', src);
-        // fn(run_context);
-        // this.runConsoleData = run_context.console_data = [];
-        // console.log(result);
-        // console.log(...run_context.console_data);
-
-        let src = this.value;
-        try {
-            fn = new Function(`try { ${src} } catch (e) { console.error(e) }`);
-            fn(src);
-        } catch (e) { console.error(e) }
-        src = src.split('\n').filter(i => i).at(-1).trim();
-        window[src] && console.log(window[src]);
-    },
-    fnStr: `
-w = window;
-let console = w.console;
-if (!console) return;
-this.runConsoleData = [];
-w.runConsoleData = undefined;
-w._runConsoleData = [];
-if (!w.useJConsole) {
-    w.useJConsole = true;
-    w.print = (e) => console.log(e);
-    w.log = (e) => console.log(e);
-    w.info = (e) => console.info(e);
-    w.warn = (e) => console.warn(e);
-    w.error = (e) => console.error(e);
-    let intercept = (method) => {
-        let original = console[method];
-        console[method] = function () {
-            let message = arguments;
-            if (original.apply) {
-                original.apply(console, arguments);
-            } else {
-                message = Array.prototype.slice.apply(arguments).join(' ');
-                original(message);
-            }
-            if (w.runConsoleData) {
-                w.runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-            } else {
-                w._runConsoleData.push({ method, str: Array.prototype.slice.apply(message).join(' ') });
-            }
+        try{
+            let fn = new Function('context', this.code);
+            run_context.output_data = [];
+            const res = await fn(run_context);
+            if (res)
+                run_context.output_data.push(res);
+            this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
         }
+        catch (e){
+            this.cell.outputs = [{data:{"text/plain":e.message}}];
+        }
+        finally {
+            // run_context.output_data = undefined;
+            this.isRun = false;
+            this.async(()=>{
+                this.$('oda-ace-editor').focus();
+            })
+
+        }
+    },
+    get code(){
+        const expr = this.value.trim().split('\n');
+        expr[expr.length-1] = 'return '+ expr[expr.length-1];
+        return `return (async ()=>{${expr.join('\n')}})()`;
     }
-    ['log', 'info', 'warn', 'error'].forEach(i => intercept(i));
-}    
-`
 })
 
 class JupyterNotebook extends ROCKS({
@@ -390,6 +386,13 @@ class JupyterCell extends ROCKS({
     },
     get id() {
         return this.metadata?.id;
+    },
+    get outputs() {
+        return this.data?.outputs || [];
+    },
+    set outputs(n) {
+        this.data.outputs = n;
+        this.notebook.change();
     },
     get sources() {
         return this.data?.source || [];

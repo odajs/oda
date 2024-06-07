@@ -37,7 +37,7 @@ ODA({
                     console.error(err);
                 }
                 finally {
-                    this.async(fn, 300);
+                    this.async(fn, 500);
                 }
             };
             fn();
@@ -91,6 +91,7 @@ ODA({
             overflow: hidden;
             text-overflow: ellipsis;
             margin: 4px;
+            min-height: 1em;
         }
     </style>
     <div ~for="barcodes" class="box" ~style="_getBoxStyle($for.item.boundingBox)" :value-text="$for.item.rawValue" @tap="_selectBarcode($for.item)"></div>

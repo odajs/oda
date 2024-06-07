@@ -17,7 +17,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             /* flex-wrap: wrap; */
             width: 300%;
             position: absolute;
-            z-index: 99;
+            z-index: 2;
             opacity: 1;
             border: none;
             border-bottom: 1px solid gray;

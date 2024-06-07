@@ -8,6 +8,7 @@ ODA({is: 'oda-ace-editor',
             .ace_hidden-cursors {
                 opacity: {{showCursor ? 1 : 0}};
             }
+
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
@@ -52,6 +53,9 @@ ODA({is: 'oda-ace-editor',
                     // this.format = false;
                 }
             }
+        },
+        focus(){
+            this.editor.focus();
         },
         // fontSize: { $def: 16, set(n) { this.editor?.setOption('fontSize', n) } },
         wrap: { $def: true, set(n) { this.editor?.setOption('wrap', n) } },
