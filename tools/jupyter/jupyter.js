@@ -27,11 +27,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 @apply --vertical;
                 @apply --flex;
                 padding: 12px 6px;
+                outline: none !important;
             }
         </style>
         <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" @blur="editMode = false" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item" ~style="{zIndex: cells.length - $for.index}" ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-cell  @tap="selectedCell = $for.item" @blur="editMode = false" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
@@ -40,9 +41,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         $attr: true
     },
     $keyBindings:{
-        Enter(e){
-            if (!this.editMode)
-                this.editMode = true;
+        enter(e){
+            this.editmode = true;
+        },
+        arrowup(e){
+            if (this.selectedCell.index>0)
+                this.selectedCell = this.cells[this.selectedCell.index - 1]
+        },
+        arrowdown(e){
+            if (this.cells.length - 1 > this.selectedCell.index)
+                this.selectedCell = this.cells[this.selectedCell.index + 1]
         }
     },
     $public: {
@@ -112,8 +120,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin-bottom: 2px;
                 width: 100%;
-                min-height: 50px;
-                z-index: 0;
+                min-height: 64px;
             }
             .sticky{
                 cursor: pointer; 
@@ -258,11 +265,11 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="top">
-            <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap="cell.move(-1)"></oda-button>
-            <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap="cell.move(1)"></oda-button>
-            <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap="showSettings"></oda-button>
-            <oda-button :icon-size icon="icons:delete" @tap="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button allow-toggle ::toggled="editMode" :icon-size icon="editor:mode-edit"></oda-button>
+            <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="cell.move(-1)"></oda-button>
+            <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
+            <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell" style="padding: 0 8px;"></oda-button>
+            <oda-button allow-toggle ::toggled="editMode"  :icon-size icon="editor:mode-edit"></oda-button>
         </div>
     `,
     cell: null,
