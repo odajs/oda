@@ -282,7 +282,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '$public' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
-
+const AsyncFunction = async function () {}.constructor;
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     template: `
         <style>
@@ -338,10 +338,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         this.isRun = true;
         try{
+
             run_context.output_data = [];
-            const res = await eval.call(window, this.code);
-            if (res)
+            const fn = new AsyncFunction(this.value);
+            let res =  await fn();
+            // let res = await eval.call(window, this.code);
+            if (res){
                 run_context.output_data.push(res);
+            }
+
             this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
         }
         catch (e){
@@ -359,7 +364,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.$('oda-ace-editor').$('div').classList.add("light");
     },
     get code(){
-        return this.value
+        return ` ${this.value} `;
     }
 })
 
