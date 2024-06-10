@@ -3,17 +3,21 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 
 const run_context = Object.create(null);
 run_context.output_data = undefined;
-const console_original = console.log;
-console.log = (...e) => {
+let console_original = console.log;
+window.log = window.print = console.log = (...e) => {
     console_original.call(window.console, ...e);
-    run_context.output_data?.push(e);
+    run_context.output_data?.push([...e].join('\n'));
 }
-
-window.print = (...e) => console.log(...e);
-window.log = (...e) => console.log(...e);
-window.info = (...e) => console.info(...e);
-window.warn = (...e) => console.warn(...e);
-window.error = (...e) => console.error(...e);
+console_original =  console.warning;
+window.warn =  console.warning = (...e) => {
+    console_original.call(window.console, ...e);
+    run_context.output_data?.push('warning:\n'+[...e].join('\n'));
+}
+console_original =  console.error;
+window.err = console.error = (...e) => {
+    console_original.call(window.console, ...e);
+    run_context.output_data?.push( 'error:\n'+ [...e].join('\n'));
+} 
 window.run_context = run_context;
 
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
@@ -129,7 +133,7 @@ ODA({ is: 'oda-jupyter-cell',
                 </div>
                 <div  class="vertical">
                     <div ~for="cell.outputs" style="padding: 4px;">
-                        <object ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                        <object :warning="$$for.item.startsWith('warning:')" :error="$$for.item.startsWith('error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
                     </div>
                 </div>
                 
@@ -315,9 +319,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         this.isRun = true;
         try{
-            let fn = new Function('context', this.code);
             run_context.output_data = [];
-            const res = await fn(run_context);
+            const res = await eval.call(window, this.value);
             if (res)
                 run_context.output_data.push(res);
             this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
@@ -326,18 +329,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             this.cell.outputs = [{data:{"text/plain":e.message}}];
         }
         finally {
-            // run_context.output_data = undefined;
             this.isRun = false;
             this.async(()=>{
                 this.$('oda-ace-editor').focus();
             })
 
         }
-    },
-    get code(){
-        const expr = this.value.trim().split('\n');
-        expr[expr.length-1] = 'return '+ expr[expr.length-1];
-        return `return (async ()=>{${expr.join('\n')}})()`;
     },
     attached() {
         this.$('oda-ace-editor').$('div').classList.add("light");

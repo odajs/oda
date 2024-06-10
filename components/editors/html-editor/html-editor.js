@@ -14,7 +14,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 <oda-splitter></oda-splitter>
             </div>
             <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto;">
-                <iframe :srcdoc="source" style="border: none; width: 100%;"></iframe>
+                <div ~html="source" style="border: none; width: 100%;"></div>
             </div>
         </div>
     `,
