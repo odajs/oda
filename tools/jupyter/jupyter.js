@@ -30,11 +30,21 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             }
         </style>
         <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
-            <oda-jupyter-divider></oda-jupyter-divider>
-            <oda-jupyter-cell :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
+            <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" @blur="editMode = false" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item" ~style="{zIndex: cells.length - $for.index}" ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
+    tabindex:{
+        $def: 0,
+        $attr: true
+    },
+    $keyBindings:{
+        Enter(e){
+            if (!this.editMode)
+                this.editMode = true;
+        }
+    },
     $public: {
         $pdp: true,
         isChanged: {
@@ -72,7 +82,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 await this.$render();
                 if (e.detail.value) {
                     const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
-                    added.editMode = true;
                     added.focus();
                 }
             })
@@ -115,12 +124,12 @@ ODA({ is: 'oda-jupyter-cell',
                 cursor: pointer;
             }
         </style>
-        <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}" @tap.stop="selectedCell = cell">
+        <oda-jupyter-toolbar :icon-size="iconSize * .66" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
+        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
             <div class="vertical">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                    <div flex id="control" ~is="editor" :cell tabindex="0"  ::edit-mode ::value show-preview></div>
+                    <div flex id="control" ~is="editor" :cell  ::edit-mode ::value show-preview></div>
                 </div>
                 <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
                     <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
@@ -160,6 +169,7 @@ ODA({ is: 'oda-jupyter-cell',
             this.cell.src = n
         }
     },
+
     $pdp: {
         editMode: {
             $def: false,
@@ -217,11 +227,12 @@ ODA({ is: 'oda-jupyter-divider',
             }
         </style>
         <div class="horizontal center" style="z-index: 1">
-            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
+            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 3px;"></div>
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
     `,
     add(key) {
+        this.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, key);
     }
 })
@@ -255,6 +266,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     cell: null,
+    iconSize: 16,
     deleteCell() {
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
@@ -320,7 +332,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.isRun = true;
         try{
             run_context.output_data = [];
-            const res = await eval.call(window, this.value);
+            const res = await eval.call(window, this.code);
             if (res)
                 run_context.output_data.push(res);
             this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
@@ -338,6 +350,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     attached() {
         this.$('oda-ace-editor').$('div').classList.add("light");
+    },
+    get code(){
+        return this.value
     }
 })
 

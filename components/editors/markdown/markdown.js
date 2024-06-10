@@ -40,7 +40,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
     },
     focus() {
         this.async(() => {
-            this.$('oda-markdown-editor').focus();
+            this.$('oda-markdown-editor')?.focus();
         }, 300)
     },
     get editor(){

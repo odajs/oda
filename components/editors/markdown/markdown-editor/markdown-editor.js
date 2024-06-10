@@ -3,14 +3,17 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <style>
         :host {
             @apply --vertical; 
-            height: 100%;
+            /*height: 100%;*/
+        }
+        .CodeMirror{
+            padding: 0px 0px 4px 0px;
         }
         .CodeMirror-wrap {
             min-height: 24px; 
             margin-top: 32px;
         }
         .CodeMirror-scroll {
-            min-height: 100px; 
+            min-height: 0px; 
         }
         .editor-toolbar { 
             display: flex; 
@@ -30,6 +33,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <div flex></div>
     `,
     $public: {
+        status: false,
         url:{
             $type: String,
             async set(n) {
@@ -69,6 +73,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             autoDownloadFontAwesome: false,
             element: this.$('textarea'),
             spellChecker: false,
+            status: this.status,
             toolbar: [
                 "heading-1", 'heading-2', 'heading-3', 'heading-smaller', 'heading-bigger', 'bold', 'italic', '|',
                 'quote', 'unordered-list', 'ordered-list', 'horizontal-rule', '|',
