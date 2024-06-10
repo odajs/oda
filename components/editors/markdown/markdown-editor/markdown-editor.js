@@ -90,13 +90,13 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             this.listen('scroll', 'onScroll', { target: this.scrollableElement });
 
         if (this.autofocus)
-            this.simpleMde.codemirror.on('focus', this.onFocus);
+            this.simpleMde.codemirror.on('focus', this.focus);
     },
-    onFocus(codeMirror) {
-        codeMirror.focus();
+    focus() {
+        this.simpleMde.codemirror.focus();
     },
     detached() {
         this.unlisten('scroll', 'onScroll', { target: this.scrollableElement });
-        this.simpleMde.codemirror.off('focus', this.onFocus);
+        this.simpleMde.codemirror.off('focus', this.focus);
     }
 })

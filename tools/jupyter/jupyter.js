@@ -25,7 +25,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 padding: 12px 6px;
             }
         </style>
-        <div class="no-flex vertical" style="overflow: visible;">
+        <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
             <oda-jupyter-divider></oda-jupyter-divider>
             <oda-jupyter-cell :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
@@ -69,6 +69,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 if (e.detail.value) {
                     const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
                     added.editMode = true;
+                    added.focus();
                 }
             })
             this.async(() => {
@@ -99,6 +100,7 @@ ODA({ is: 'oda-jupyter-cell',
                 margin-bottom: 2px;
                 width: 100%;
                 min-height: 50px;
+                z-index: 0;
             }
             .sticky{
                 cursor: pointer; 
@@ -110,7 +112,7 @@ ODA({ is: 'oda-jupyter-cell',
             }
         </style>
         <oda-jupyter-toolbar :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical" ~style="{marginLeft: (editMode?0:levelMargin * cell.level)+'px'}" @tap.stop="selectedCell = cell">
+        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}" @tap.stop="selectedCell = cell">
             <div class="vertical">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
@@ -135,6 +137,11 @@ ODA({ is: 'oda-jupyter-cell',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    focus() {
+        this.async(() => {
+            this.$('#control').focus();
+        }, 300)
+    },
     get childIcon() {
         return this.cell.childCodes.length ? 'av:play-circle-outline' : 'bootstrap:text-left';
     },
@@ -186,7 +193,6 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: 0;
                 transition: opacity ease-out .1s;
                 position: relative;
-                z-index: 2;
             }
             :host([hover]) {
                 box-shadow: none !important;
@@ -206,7 +212,7 @@ ODA({ is: 'oda-jupyter-divider',
                 border-radius: 4px;
             }
         </style>
-        <div class="horizontal center">
+        <div class="horizontal center" style="z-index: 1">
             <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
@@ -285,6 +291,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </div>
  
     `,
+    focus() {
+        this.$('oda-ace-editor').focus();
+    },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
             this.run();
@@ -358,7 +367,6 @@ class JupyterNotebook extends ROCKS({
             }
         }
         if (cell === undefined){
-            // this.data.cells.push(data);
             this.data.cells.splice(0, 0, data);
         }
         else{
