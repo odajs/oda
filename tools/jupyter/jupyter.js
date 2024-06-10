@@ -48,7 +48,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         get url() {
             if (this.file_path?.startsWith('http'))
                 return this.file_path;
-            return path + '/' + this.file_path;
+            if(this.file_path)
+                return path + '/' + this.file_path;
+            return '';
         },
         levelMargin: {
             $def: 0,
@@ -184,6 +186,7 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: 0;
                 transition: opacity ease-out .1s;
                 position: relative;
+                z-index: 2;
             }
             :host([hover]) {
                 box-shadow: none !important;
@@ -205,11 +208,11 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center">
             <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 2px solid gray;"></div>
-            <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add(cell, $for.key)">{{$for.key}}</oda-button>
+            <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
     `,
-    add(cell, key) {
-        this.selectedCell = this.notebook.add(cell, key);
+    add(key) {
+        this.selectedCell = this.notebook.add(this.cell, key);
     }
 })
 
@@ -354,8 +357,14 @@ class JupyterNotebook extends ROCKS({
                 id
             }
         }
-        const idx = cell?.index || cell.index === 0 ? cell.index + 1 : 0;
-        this.data.cells.splice(idx, 0, data);
+        if (cell === undefined){
+            // this.data.cells.push(data);
+            this.data.cells.splice(0, 0, data);
+        }
+        else{
+            const idx = cell.index + 1;
+            this.data.cells.splice(idx, 0, data);
+        }
         this.async(() => {
             this.change(true);
         })
@@ -370,7 +379,8 @@ class JupyterNotebook extends ROCKS({
     url = '';
     constructor(url) {
         super();
-        this.load(url);
+        if (url)
+            this.load(url);
     }
 }
 
@@ -475,11 +485,14 @@ class JupyterCell extends ROCKS({
         }
     },
     delete() {
-        this.notebook.data.splice(this.index, 1);
+        this.notebook.data.cells.splice(this.index, 1);
         this.notebook.change();
     },
     move(direct) {
-        //todo move
+        direct = this.index + direct;
+        const cells = this.notebook.data.cells.splice(this.index, 1);
+        this.notebook.data.cells.splice(direct, 0, cells[0]);
+        this.notebook.change();
     }
 })
 {
