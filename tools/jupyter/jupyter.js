@@ -45,11 +45,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             this.editmode = true;
         },
         arrowup(e){
-            if (this.selectedCell.index>0)
+            if (!this.editMode && this.selectedCell.index > 0)
                 this.selectedCell = this.cells[this.selectedCell.index - 1]
         },
         arrowdown(e){
-            if (this.cells.length - 1 > this.selectedCell.index)
+            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
                 this.selectedCell = this.cells[this.selectedCell.index + 1]
         }
     },
