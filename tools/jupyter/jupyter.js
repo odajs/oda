@@ -149,7 +149,7 @@ ODA({ is: 'oda-jupyter-cell',
                 </div>
                 <div  class="vertical">
                     <div ~for="cell.outputs" style="padding: 4px;">
-                        <object :warning="$$for.item.startsWith('warning:')" :error="$$for.item.startsWith('error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                        <object :warning="console($$for.item, 'warning:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
                     </div>
                 </div>
                 
@@ -157,6 +157,10 @@ ODA({ is: 'oda-jupyter-cell',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    console(i, type) {
+        i = Array.isArray(i) ? i.join('\n') : i;
+        return i.startsWith(type);
+    },
     focus() {
         this.async(() => {
             this.$('#control').focus();
