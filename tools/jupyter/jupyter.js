@@ -74,8 +74,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 return path + '/' + this.file_path;
             return '';
         },
-        levelMargin: {
-            $def: 0,
+        levelStep: {
+            $def: 8,
             $save: true
         }
     },
@@ -141,7 +141,7 @@ ODA({ is: 'oda-jupyter-cell',
             }
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical flex" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
+        <div class="vertical flex" ~style="{marginLeft: (levelStep * cell.level)+'px'}">
             <div class="vertical flex">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
