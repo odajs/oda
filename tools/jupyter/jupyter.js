@@ -197,7 +197,7 @@ ODA({ is: 'oda-jupyter-cell',
         },
         cell: null,
         get selected() {
-            return this.selectedCell === this.cell;
+            return this.selectedCell === this.cell || this.selectedCell?.id === this.cell?.id;
         },
         get control() {
             return this.$('#control');
