@@ -14,8 +14,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             }
         </style>
         <div class="flex horizontal">
-            <div ~if="editMode" class="horizontal" style="min-width: 120px; width: 50%; overflow: hidden;">
-                <oda-markdown-editor flex ::value></oda-markdown-editor>
+            <div ~if="editMode" class="horizontal" style="min-width: 120px; width: 50%;  position: relative;">
+                <oda-markdown-editor flex ::value style="overflow: hidden"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
             <oda-markdown-viewer flex :value="value || (!editMode ? '<b><u>Double click for edit...</u></b>' : '')"  @dblclick="editMode = true" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>

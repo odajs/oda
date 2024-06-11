@@ -5,17 +5,17 @@ const run_context = Object.create(null);
 run_context.output_data = undefined;
 let console_original = console.log;
 window.log = window.print = console.log = (...e) => {
-    console_original.call(window.console, ...e);
+    console_original.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
 console_original =  console.warning;
 window.warn =  console.warning = (...e) => {
-    console_original.call(window.console, ...e);
+    console_original.call(window, ...e);
     run_context.output_data?.push('warning:\n'+[...e].join('\n'));
 }
 console_original =  console.error;
 window.err = console.error = (...e) => {
-    console_original.call(window.console, ...e);
+    console_original.call(window, ...e);
     run_context.output_data?.push( 'error:\n'+ [...e].join('\n'));
 } 
 window.run_context = run_context;
@@ -136,7 +136,7 @@ ODA({ is: 'oda-jupyter-cell',
             <div class="vertical">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                    <div flex id="control" ~is="editor" :cell  ::edit-mode ::value show-preview></div>
+                    <div flex id="control" ~is="editor" :cell ::edit-mode ::value show-preview></div>
                 </div>
                 <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
                     <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
