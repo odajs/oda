@@ -32,7 +32,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         </style>
         <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap="selectedCell = $for.item" @blur="editMode = false" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-cell  @tap="selectedCell = $for.item" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
@@ -103,7 +103,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
             html: { label: 'HTML', editor: 'oda-html-editor', type: 'html' }
         },
-        selectedCell: null,
+        selectedCell: {
+            $def: null,
+            set(n) {
+                this.editMode = false;
+            }
+        },
         get cells() {
             return this.notebook?.cells;
         },
@@ -247,7 +252,6 @@ ODA({ is: 'oda-jupyter-divider',
         </div>
     `,
     add(key) {
-        this.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, key);
     }
 })
