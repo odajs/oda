@@ -123,9 +123,9 @@ ODA({ is: 'oda-jupyter-cell',
                 @apply --vertical; 
                 @apply --no-flex;
                 position: relative;
-                margin-bottom: 2px;
+                margin-bottom: 6px;
                 width: 100%;
-                min-height: 66px;
+                min-height: 48px;
             }
             .sticky{
                 cursor: pointer; 
@@ -140,9 +140,9 @@ ODA({ is: 'oda-jupyter-cell',
                 @apply --active;
             }
         </style>
-        <oda-jupyter-toolbar :icon-size="iconSize * .66" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
-        <div class="vertical" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
-            <div class="vertical">
+        <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
+        <div class="vertical flex" ~style="{marginLeft: (levelMargin * cell.level)+'px'}">
+            <div class="vertical flex">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                     <div flex id="control" ~is="editor" :cell ::edit-mode ::value show-preview></div>
@@ -281,7 +281,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
             <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button allow-toggle ::toggled="editMode"  :icon-size icon="editor:mode-edit"></oda-button>
+            <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size icon="editor:mode-edit"></oda-button>
         </div>
     `,
     cell: null,
