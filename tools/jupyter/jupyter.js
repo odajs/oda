@@ -120,7 +120,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin-bottom: 2px;
                 width: 100%;
-                min-height: 64px;
+                min-height: 66px;
             }
             .sticky{
                 cursor: pointer; 
@@ -129,6 +129,10 @@ ODA({ is: 'oda-jupyter-cell',
             }
             oda-icon{
                 cursor: pointer;
+            }
+            oda-button:hover{
+                border-radius: 50%;
+                @apply --active;
             }
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .66" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
@@ -145,7 +149,7 @@ ODA({ is: 'oda-jupyter-cell',
             </div>
             <div ~if="cell?.outputs?.length" class="horizontal" style="max-height: 100%;">
                 <div style="width: 30px">
-                    <oda-icon class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;"></oda-icon>
+                    <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;"></oda-button>
                 </div>
                 <div  class="vertical">
                     <div ~for="cell.outputs" style="padding: 4px;">
@@ -300,8 +304,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 position: sticky;
                 top: 0px;
             }
-            #icon-close:hover {
-                fill: red;
+            oda-button:hover{
+                border-radius: 50%;
+                @apply --active;
             }
             oda-ace-editor {
                 opacity: 1;
@@ -312,7 +317,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         <div  class="horizontal light" @pointerover="isHover = true" @pointerout="isHover = false">
             <div vertical style="width: 30px; align-items: center;"> 
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
-                <oda-icon class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run" :fill="isRun ? 'green' : 'black'"></oda-icon>
+                <oda-button class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run" :fill="isRun ? 'green' : 'black'"></oda-button>
             </div>
             <oda-ace-editor @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
         </div>
