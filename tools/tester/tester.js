@@ -7,7 +7,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
         <span class="flex" slot="center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
     </app-layout-toolbar>
     <slot style="display: none" @slotchange="onSlot" class="flex"></slot>
-    <oda-property-grid group-expanding-mode="all" slot="right-panel" :inspected-object="component" opened allow-expert-mode></oda-property-grid>
+    <oda-property-grid group-expanding-mode="all" slot="right-panel" :label :inspected-object="component" opened allow-expert-mode></oda-property-grid>
     <div ~is="focused?.is" slot="main" :component class="flex" style="width: 100%; height: 100%;"></div>
     `,
     attached(){
@@ -36,9 +36,10 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
         },
         get hideToolbar() { return false }
     },
-    onSlot(e) {
+    async onSlot(e) {
         if (this.component) return;
         const els = e.target.assignedElements();
+        await ODA.waitReg(els[0].localName);
         this.component = els[0];
     }
 });
