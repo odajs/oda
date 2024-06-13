@@ -3,19 +3,19 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 
 const run_context = Object.create(null);
 run_context.output_data = undefined;
-let console_original = console.log;
+const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
-    console_original.call(window, ...e);
+    console_log.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
-console_original =  console.warning;
-window.warn =  console.warning = (...e) => {
-    console_original.call(window, ...e);
-    run_context.output_data?.push('warning:\n'+[...e].join('\n'));
+const console_warn=  console.warn;
+window.warn =  console.warn = (...e) => {
+    console_warn.call(window, ...e);
+    run_context.output_data?.push('warn:\n'+[...e].join('\n'));
 }
-console_original =  console.error;
+const console_error =  console.error;
 window.err = console.error = (...e) => {
-    console_original.call(window, ...e);
+    console_error.call(window, ...e);
     run_context.output_data?.push( 'error:\n'+ [...e].join('\n'));
 } 
 window.run_context = run_context;
@@ -164,7 +164,7 @@ ODA({ is: 'oda-jupyter-cell',
                 </div>
                 <div  class="vertical">
                     <div ~for="cell.outputs" style="padding: 4px;">
-                        <object :warning="console($$for.item, 'warning:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                        <object :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
                     </div>
                 </div>
                 
@@ -392,7 +392,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.$('oda-ace-editor').$('div').classList.add("light");
     },
     get code(){
-        let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'import($1$2$3)');
+        let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, 'let $1 = await import($2$3$4)');
+        code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
         return code;
     }
 })

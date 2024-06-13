@@ -38,11 +38,15 @@ ODA({ is: 'oda-splitter',
             z-index: 1;
             background-color: {{color}};
             overflow: visible;
-            transition: background-color .4s;
+            /*transition: background-color .4s;*/
             align-items: center;
             justify-content: center;
             max-width: {{align === 'vertical' ? (+this.size >= 0 ? this.size + 'px' : '1px') : '100%'}};
             max-height: {{align === 'vertical' ? '100%' : (+this.size >= 0 ? this.size + 'px' : '1px')}};
+        }
+        :host(:hover){
+            background-color: black;
+            @apply --shadow;
         }
 
     </style>
