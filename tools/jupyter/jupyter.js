@@ -368,7 +368,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         try{
 
             run_context.output_data = [];
-            const fn = new AsyncFunction(this.value);
+            const fn = new AsyncFunction(this.code);
             let res =  await fn();
             // let res = await eval.call(window, this.code);
             if (res){
@@ -392,7 +392,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.$('oda-ace-editor').$('div').classList.add("light");
     },
     get code(){
-        return ` ${this.value} `;
+        let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'import($1$2$3)');
+        return code;
     }
 })
 
