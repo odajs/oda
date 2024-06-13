@@ -13,7 +13,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 <oda-monaco-editor ~if="type==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto;" @dblclick="_dblClick">
+            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto; min-height: 24px" @dblclick="_dblClick">
                 <div ~html="value || (!editMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
             </div>
         </div>
