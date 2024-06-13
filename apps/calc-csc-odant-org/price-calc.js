@@ -6,18 +6,42 @@ import '../../oda.js';
             :host {max-width:900px; margin:0 auto; padding:20px;}
             
             #calc { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 5px 15px; height:180px;}
-            #calc .u {grid-column-start: 1;}
-            #calc .s {grid-column-start: 2;}
-            #calc input {}
-            #calc .lab {background:#25a0db; color:#fff; font-size:24px; border-radius: 3px; text-align:center; padding:5px;}
+            #calc .u {grid-column: 1;}
+            #calc .s {grid-column: 2;}
+            #calc .lab {background:#25a0db; color:#fff; font-size:24px; border-radius: 3px; padding:5px; 
+                        display: flex; align-items: center; justify-content: center; }
             #calc .cost {color:#25a0db; font-size:20px; text-align:right;}
-            #calc label b {margin-left:.5em;}
+            #calc label { display: flex; align-items: end;  }
 
-            #tab {margin-top:30px; padding:2px; display: grid; grid-template-columns: 1fr 2fr 1fr 1fr;  height:350px;
-                    background:#25a0db; grid-gap: 1px; grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr; }
+            #tab {margin-top:30px; padding:2px; display: grid; grid-template-columns: 1fr 2fr 1fr 1fr;  height:520px;
+                    background:#25a0db; grid-gap: 1px; grid-template-rows: repeat(6, 1fr); }
             #tab > b {background: #d3ecf8; display: flex; align-items: center; justify-content: center; padding: 2px 3px;}
             #tab > div {background:#e2f2fa; display: flex; align-items: center; padding: 2px 3px;}
-            #tab .c3, #tab .c4 {color:green; text-align:center; font-weight:bold; justify-content: center;}
+            #tab div.c3, #tab div.c4 {color:green; text-align:center; font-weight:bold; justify-content: center;}
+
+            @media (max-width: 600px) { 
+                #calc .lab {grid-column: 1 / 3;}
+                #calc label {grid-column: 1 !important; justify-content: end;}
+                #calc input {grid-column: 2 !important; }
+                #calc .lab.s {grid-row:5}
+                #calc label.s.core, #calc input.s.core {grid-row:6}
+
+                #tab { grid-template-columns: 2fr 1fr;  grid-template-rows: repeat(12, 1fr); }
+                #tab .c1, #tab .c2 {grid-column: 1 !important;}
+                #tab .c3, #tab .c4 {grid-column: 2 !important;}
+                #tab b.c3 {grid-row:1}
+                #tab .c3.r1 {grid-row:3}
+                #tab .c3.r2 {grid-row:5}
+                #tab .c3.r3 {grid-row:7}
+                #tab .c3.r4 {grid-row:9}
+                #tab .c3.r5 {grid-row:11}
+             }
+
+             @media (max-width: 380px) {
+                :host {padding:2px;}
+             } 
+
+
         </style>
         <div id='calc'>
             <div class="u lab">модель "Пользователь"</div>
@@ -32,17 +56,17 @@ import '../../oda.js';
         </div>
 
         <div id='tab'>
-        <b>Название</b><b>Участник рынка</b><b>Пользователь</b><b>Сервер</b>
+        <b class='c1'>Название</b><b class='c2'>Участник рынка</b><b class='c3'>Пользователь</b><b class='c4'>Сервер</b>
         <div class='c1'>Коммерческая Commercial</div>   <div class='c2'>Коммерческие организации</div>
-            <div class='c3'>{{uCost(1)}}</div>   <div class='c4'> {{sCost(1)}} </div>
+            <div class='c3 r1'>{{uCost(1)}}</div>   <div class='c4'> {{sCost(1)}} </div>
         <div class='c1'>Государственная Goverment</div> <div class='c2'>Компании с государственным участием</div> 
-            <div class='c3'>{{uCost(.8)}}</div>  <div class='c4'> {{sCost(.8)}} </div> 
+            <div class='c3 r2'>{{uCost(.8)}}</div>  <div class='c4'> {{sCost(.8)}} </div> 
         <div class='c1'> Форвард Forward</div>          <div class='c2'> Любой участник </div>
-            <div class='c3'>{{uCost(.7)}}</div>  <div class='c4'> {{sCost(.7)}} </div> 
+            <div class='c3 r3'>{{uCost(.7)}}</div>  <div class='c4'> {{sCost(.7)}} </div> 
         <div class='c1'>OEM</div>                            <div class='c2'>Партнеры </div> 
-            <div class='c3'>{{uCost(.6)}}</div> <div class='c4'> {{sCost(.6)}} </div>   
+            <div class='c3 r4'>{{uCost(.6)}}</div> <div class='c4'> {{sCost(.6)}} </div>   
         <div class='c1'> Академическая Academic </div class='c4'>  <div class='c2'>  Учебные заведений   </div>  
-            <div class='c3'>{{uCost(.2)}}</div> <div class='c4'>  {{sCost(.2)}}  </div> 
+            <div class='c3 r5'>{{uCost(.2)}}</div> <div class='c4'>  {{sCost(.2)}}  </div> 
         </div>
         `,
 
