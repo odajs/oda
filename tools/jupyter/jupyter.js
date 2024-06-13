@@ -122,7 +122,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
     }
 })
 
-ODA({ is: 'oda-jupyter-cell',
+ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     template: `
         <style>
             :host{
@@ -160,9 +160,9 @@ ODA({ is: 'oda-jupyter-cell',
             </div>
             <div ~if="cell?.outputs?.length" class="horizontal" style="max-height: 100%;">
                 <div style="width: 30px">
-                    <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;"></oda-button>
+                    <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                 </div>
-                <div  class="vertical">
+                <div id="out" class="vertical content">
                     <div ~for="cell.outputs" style="padding: 4px;">
                         <object :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
                     </div>
@@ -172,6 +172,21 @@ ODA({ is: 'oda-jupyter-cell',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    async showMenu(e){
+        const {control} = await ODA.showDropdown('oda-menu', {items:[
+                {label: "Hide", icon: 'bootstrap:eye-slash', execute:()=>{
+                        //todo hide
+
+                    }},
+                {label: "Clear", icon: 'icons:clear', execute:()=>{
+                        this.cell.outputs = []
+                    }},
+                {label: "Full screen", icon: 'icons:fullscreen', execute:()=>{
+                        this.$('#out').requestFullscreen();
+                    }}
+            ]}, {parent: e.target, anchor: 'right-top'});
+        control.focusedItem.execute();
+    },
     console(i, type) {
         i = Array.isArray(i) ? i.join('\n') : i;
         return i.startsWith(type);
@@ -193,6 +208,11 @@ ODA({ is: 'oda-jupyter-cell',
         },
         set(n) {
             this.cell.src = n
+        }
+    },
+    $listeners:{
+        dblclick(e){
+            this.editMode = true;
         }
     },
     $pdp: {
