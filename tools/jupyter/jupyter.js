@@ -208,7 +208,7 @@ ODA({ is: 'oda-jupyter-cell',
         cell: null,
         selected:{
             $def: false,
-            $attr: 'shadow',
+            $attr: 'raised',
             get() {
                 return !this.readOnly &&  (this.selectedCell === this.cell || this.selectedCell?.id === this.cell?.id);
             }
@@ -278,7 +278,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 @apply --horizontal;
                 @apply --no-flex;
                 @apply --content;
-                @apply --shadow;
+                @apply --raised;
                 position: absolute;
                 right: 8px;
                 padding: 1px;
