@@ -32,7 +32,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         </style>
         <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap="selectedCell = $for.item" :shadow="$for.item === selectedCell || $for.item.id === selectedCell?.id" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-cell  @tap="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
@@ -112,7 +112,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         get cells() {
             return this.notebook?.cells;
         },
-        editMode: false
+        editMode: {
+            $def: false,
+            set(n){
+                if (n && this.readOnly)
+                    this.editMode = false;
+            }
+        }
     }
 })
 
@@ -145,7 +151,7 @@ ODA({ is: 'oda-jupyter-cell',
             <div class="vertical flex">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                    <div flex id="control" ~is="editor" :cell ::edit-mode ::value show-preview></div>
+                    <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview></div>
                 </div>
                 <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
                     <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
@@ -189,21 +195,30 @@ ODA({ is: 'oda-jupyter-cell',
             this.cell.src = n
         }
     },
-
+    $listeners:{
+        dblclick(e){
+            this.editMode = true;
+        }
+    },
     $pdp: {
         editMode: {
             $def: false,
             get() {
-                return this.jupyter.editMode && this.selected
+                return !this.readOnly && this.jupyter.editMode && this.selected;
             },
             set(n) {
-                this.jupyter.editMode = n
+                this.jupyter.editMode = n;
             }
         },
         cell: null,
-        get selected() {
-            return this.selectedCell === this.cell || this.selectedCell?.id === this.cell?.id;
-        },
+        selected:{
+            $def: false,
+            $attr: 'shadow',
+            get() {
+                return !this.readOnly &&  (this.selectedCell === this.cell || this.selectedCell?.id === this.cell?.id);
+            }
+        }
+        ,
         get control() {
             return this.$('#control');
         },
@@ -323,7 +338,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
                 <oda-button class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run" :fill="isRun ? 'green' : 'black'"></oda-button>
             </div>
-            <oda-ace-editor @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
+            <oda-ace-editor :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
         </div>
  
     `,

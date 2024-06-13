@@ -32,10 +32,13 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             $def: false,
             set(n){
                 if (n) {
+                    if(this.readOnly)
+                        this.editMode = false
                     this.focus();
                 }  
             }
         },
+        readOnly: false
     },
     focus() {
         this.async(() => {
