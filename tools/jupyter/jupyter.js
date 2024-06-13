@@ -131,7 +131,7 @@ ODA({ is: 'oda-jupyter-cell',
                 position: relative;
                 margin-bottom: 6px;
                 width: 100%;
-                min-height: 48px;
+                min-height: 24px;
             }
             .sticky{
                 cursor: pointer; 
@@ -193,11 +193,6 @@ ODA({ is: 'oda-jupyter-cell',
         },
         set(n) {
             this.cell.src = n
-        }
-    },
-    $listeners:{
-        dblclick(e){
-            this.editMode = true;
         }
     },
     $pdp: {

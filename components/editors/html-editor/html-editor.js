@@ -13,8 +13,8 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 <oda-monaco-editor ~if="type==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto;">
-                <div ~html="value" style="border: none; width: 100%;"></div>
+            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: auto;" @dblclick="_dblClick">
+                <div ~html="value || (!editMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
             </div>
         </div>
     `,
@@ -27,10 +27,28 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
             }
         },
         showPreview: false,
-        editMode: false
+        editMode: {
+            $def: false,
+            set(n){
+                if (n) {
+                    if(this.readOnly)
+                        this.editMode = false
+                    this.focus();
+                }  
+            }
+        }
     },
     value: '',
     onchange(e) {
         this.value = e.detail.value;
+    },
+    focus() {
+        this.async(() => {
+            this.$('oda-ace-editor')?.focus();
+        }, 500)
+    },
+    _dblClick() {
+        // if (!this.value)
+        this.editMode = !this.editMode;
     }
 })

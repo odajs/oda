@@ -17,7 +17,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
                 <oda-markdown-editor flex ::value style="overflow: hidden"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <oda-markdown-viewer flex :value="value || (!editMode ? '<b><u>Double click for edit...</u></b>' : '')"  @dblclick="editMode = true" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
+            <oda-markdown-viewer flex :value="value || (!editMode ? '<b><u>Double click for Markdown edit...</u></b>' : '')"  @dblclick="_dblClick" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
         </div>
     `,
     $public:{
@@ -50,5 +50,9 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
     },
     get viewer(){
         return this.$('oda-markdown-viewer');
+    },
+    _dblClick() {
+        // if (!this.value)
+        this.editMode = !this.editMode;
     }
 })
