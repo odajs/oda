@@ -29,14 +29,14 @@ ODA({
         }
         :host #titleBar {
             display: flex;
-            flex-direction: {{_getTitleFlexDir()}};
+            flex-direction: {{_titleFlexDir}};
             align-items: justify;
             background-color: {{focused ? 'var(--focused-color) !important' : 'var(--dark-background)'}};
             color: var(--content-background);
             fill: var(--content-background);
         }
         :host #titleButtons{
-            align-self: {{_getTitleButtonsAlign()}};
+            align-self: {{_titleButtonsAlign}};
         }
         /*:host([float]) .title-bar, :host([show-close-btn]) .title-bar {*/
         /*    min-height: {{iconSize * 1.5}}px;*/
@@ -111,10 +111,10 @@ ODA({
             return false;
         }
     },
-    _getTitleFlexDir() {
+    get _titleFlexDir() {
         return this._checkTitleIsSmall() ? 'column-reverse' : 'row';
     },
-    _getTitleButtonsAlign() {
+    get _titleButtonsAlign() {
         return this._checkTitleIsSmall() ? 'flex-end' : 'flex-start';
     },
     $public: {
@@ -309,6 +309,11 @@ ODA({
         this.drawPos.t = Math.max(0, Math.min(this.pos.t || 0, this._parentHeight - this.minHeight - this.drawPos.b));
         this.drawPos.r = Math.max(0, Math.min(this.pos.r || 0, this._parentWidth - this.minWidth - this.drawPos.l));
         this.drawPos.b = Math.max(0, Math.min(this.pos.b || 0, this._parentHeight - this.minHeight - this.drawPos.t));
+
+        this.async(() => {
+            this._titleFlexDir = undefined;
+            this._titleButtonsAlign = undefined;
+        }, 100);
     },
     _setTransform(float = this.float, pos = this.pos) {
         if (this.autosize) return;
