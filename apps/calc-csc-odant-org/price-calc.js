@@ -18,6 +18,7 @@ import '../../oda.js';
             #tab > b {background: #d3ecf8; display: flex; align-items: center; justify-content: center; padding: 2px 3px;}
             #tab > div {background:#e2f2fa; display: flex; align-items: center; padding: 2px 3px;}
             #tab div.c3, #tab div.c4 {color:green; text-align:center; font-weight:bold; justify-content: center;}
+            #tab > div.r2, #tab > div.r4 {background: #d3ecf8 !important;}
 
             @media (max-width: 600px) { 
                 #calc .lab {grid-column: 1 / 3;}
@@ -57,16 +58,16 @@ import '../../oda.js';
 
         <div id='tab'>
         <b class='c1'>Название</b><b class='c2'>Участник рынка</b><b class='c3'>Пользователь</b><b class='c4'>Сервер</b>
-        <div class='c1'>Коммерческая Commercial</div>   <div class='c2'>Коммерческие организации</div>
-            <div class='c3 r1'>{{uCost(1)}}</div>   <div class='c4'> {{sCost(1)}} </div>
-        <div class='c1'>Государственная Goverment</div> <div class='c2'>Компании с государственным участием</div> 
-            <div class='c3 r2'>{{uCost(.8)}}</div>  <div class='c4'> {{sCost(.8)}} </div> 
-        <div class='c1'> Форвард Forward</div>          <div class='c2'> Любой участник </div>
-            <div class='c3 r3'>{{uCost(.7)}}</div>  <div class='c4'> {{sCost(.7)}} </div> 
-        <div class='c1'>OEM</div>                            <div class='c2'>Партнеры </div> 
-            <div class='c3 r4'>{{uCost(.6)}}</div> <div class='c4'> {{sCost(.6)}} </div>   
-        <div class='c1'> Академическая Academic </div class='c4'>  <div class='c2'>  Учебные заведений   </div>  
-            <div class='c3 r5'>{{uCost(.2)}}</div> <div class='c4'>  {{sCost(.2)}}  </div> 
+        <div class='c1 r1'>Коммерческая Commercial</div>   <div class='c2 r1'>Коммерческие организации</div>
+            <div class='c3 r1'>{{uCost(1)}}</div>   <div class='c4 r1'> {{sCost(1)}} </div>
+        <div class='c1 r2'>Государственная Goverment</div> <div class='c2 r2'>Компании с государственным участием</div> 
+            <div class='c3 r2'>{{uCost(.8)}}</div>  <div class='c4 r2'> {{sCost(.8)}} </div> 
+        <div class='c1 r3'> Форвард Forward</div>          <div class='c2 r3'> Любой участник </div>
+            <div class='c3 r3'>{{uCost(.7)}}</div>  <div class='c4 r3'> {{sCost(.7)}} </div> 
+        <div class='c1 r4'>OEM</div>                            <div class='c2 r4'>Партнеры </div> 
+            <div class='c3 r4'>{{uCost(.6)}}</div> <div class='c4 r4'> {{sCost(.6)}} </div>   
+        <div class='c1 r5'> Академическая Academic </div>  <div class='c2 r5'>  Учебные заведений   </div>  
+            <div class='c3 r5'>{{uCost(.2)}}</div> <div class='c4 r5'>  {{sCost(.2)}}  </div> 
         </div>
         `,
 
