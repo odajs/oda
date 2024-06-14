@@ -30,9 +30,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 outline: none !important;
             }
         </style>
-        <div class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
+        <div @tap="selectedCell = null" class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
 
     `,
@@ -165,7 +165,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div id="out" class="vertical content" style="width: 100%;">
                     <div ~if="!cell?.metadata?.hideRun">
                         <div ~for="cell.outputs" style="padding: 4px;">
-                            <object :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                            <div :src="outSrc" :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" ~is="outIs($$for)" ~html="outHtml" style="white-space: break-spaces;"></div>
                         </div>
                     </div>
                     <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -175,6 +175,17 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    outSrc: '',
+    outHtml: '',
+    outIs(i) {
+        this.outSrc = this.outHtml = '';
+        if (i.key === 'image/png') {
+            this.outSrc = 'data:image/png;base64,' + i.item;
+            return 'img';
+        }
+        this.outHtml = i.item;
+        return 'div';
+    },
     hideRun() {
         this.cell.metadata.hideRun = !this.cell.metadata.hideRun;
         this.$render();
