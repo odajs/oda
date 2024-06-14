@@ -162,23 +162,30 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div style="width: 30px">
                     <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                 </div>
-                <div id="out" class="vertical content">
-                    <div ~for="cell.outputs" style="padding: 4px;">
-                        <object :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                <div id="out" class="vertical content" style="width: 100%;">
+                    <div ~if="!cell?.metadata?.hideRun">
+                        <div ~for="cell.outputs" style="padding: 4px;">
+                            <object :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" :type="$$for.key" ~html="$$for.item" style="white-space: break-spaces;"></object>
+                        </div>
                     </div>
+                    <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
                 </div>
                 
             </div>        
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    hideRun() {
+        this.cell.metadata.hideRun = !this.cell.metadata.hideRun;
+        this.$render();
+    },
     async showMenu(e){
         const {control} = await ODA.showDropdown('oda-menu', {items:[
-                {label: "Hide", icon: 'bootstrap:eye-slash', execute:()=>{
-                        //todo hide
-
+                {label: "Hide/Show", icon: 'bootstrap:eye-slash', execute:()=>{
+                        this.hideRun();
                     }},
                 {label: "Clear", icon: 'icons:clear', execute:()=>{
+                        this.cell.metadata.hideRun = false;
                         this.cell.outputs = []
                     }},
                 {label: "Full screen", icon: 'icons:fullscreen', execute:()=>{
@@ -254,15 +261,9 @@ ODA({ is: 'oda-jupyter-divider',
                 @apply --vertical;
                 height: 3px;
                 justify-content: center;
-                opacity: 0;
+                opacity: {{cells?.length?0:1}};
                 transition: opacity ease-out .1s;
                 position: relative;
-            }
-            :host([hover]) {
-                box-shadow: none !important;
-            }
-            :host([hover]) {
-                opacity: 1;
             }
             :host(:hover) {
                 opacity: 1;
@@ -379,6 +380,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.value = e.detail.value;
     },
     async run() {
+        this.cell.metadata.hideRun = false;
         this.isRun = true;
         try{
 
@@ -429,7 +431,7 @@ class JupyterNotebook extends ROCKS({
         this.isChanged = false;
     },
     add(cell, cell_type = 'text') {
-        let id = getID()
+        let id = getID();
         const data = {
             cell_type,
             metadata: {
@@ -476,7 +478,7 @@ class JupyterCell extends ROCKS({
         return this.data.metadata;
     },
     get id() {
-        return this.metadata?.id;
+        return this.metadata?.id || getID();
     },
     get outputs() {
         return this.data?.outputs || [];
@@ -489,7 +491,7 @@ class JupyterCell extends ROCKS({
         return this.data?.source || [];
     },
     get src() {
-        return this.sources.join('');
+        return Array.isArray(this.sources) ? this.sources.join('') : this.sources;
     },
     set src(n) {
         this.data.source = [n];
