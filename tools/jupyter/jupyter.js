@@ -55,15 +55,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
     },
     $public: {
         $pdp: true,
-        isChanged: {
-            $type: Boolean,
-            get() {
-                return this.notebook.isChanged;
-            },
-            set(n) {
-                this.notebook.isChanged = n;
-            }
-        },
         iconSize: 24,
         readOnly: false,
         file_path: String,
@@ -92,6 +83,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                     const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
                     added.focus();
                 }
+                this.fire('changed');
             })
             this.async(() => {
                 this.style.opacity = 1;
