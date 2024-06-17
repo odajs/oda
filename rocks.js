@@ -307,7 +307,9 @@ in the <${host.localName}>`;
     function reactor(target) {
         if (!Object.isExtensible(target) || (target.constructor !== Object &&  target.constructor !== Array ) || target?.constructor === Promise)
             return target;
-
+        if (target[Symbol.for('IS_DATA_PROXY')]) {
+            return target[Symbol.for('DATA')].proxy;
+        }
         let op = target[KEY];
         if (op){
             op.hosts.add(this);
@@ -368,8 +370,14 @@ in the <${host.localName}>`;
         if (a === b) return true;
         if (!(a instanceof Object) || !(b instanceof Object))
             return false;
-        if ((a?.[KEY] || a) === (b?.[KEY] || b))
-            return true;
+        if(a?.[Symbol.for('IS_DATA_PROXY')]){
+            if(a[Symbol.for('DATA')] === b[Symbol.for('DATA')])
+                return true;
+        }
+        else{
+            if ((a?.[KEY] || a) === (b?.[KEY] || b))
+                return true;
+        }
         if (a instanceof Function && a.constructor === b.constructor)
             return a.toString() === b.toString();
         if (a instanceof Date && a.constructor === b.constructor) {

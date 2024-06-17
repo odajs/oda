@@ -872,6 +872,9 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this.focusRow(e, d);
         }
     },
+    getRowIndex(row) {
+        return this.rows.findIndex(r => Object.equal(r, row));
+    },
     selectRow(e, d) {
         if (this.allowSelection !== 'none') {
             const item = d?.value || e.target.item;
@@ -888,10 +891,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
                 return;
             }
-            if (!~this.selectionStartIndex) this.selectionStartIndex = this.rows.indexOf(this.selectedRows[0] || item);
+            if (!~this.selectionStartIndex) this.selectionStartIndex = this.getRowIndex(this.selectedRows[0] || item);
             if (e.shiftKey) {
                 let from = this.selectionStartIndex;
-                let to = this.rows.indexOf(item);
+                let to = this.getRowIndex(item);
                 this.clearSelection();
                 if (from <= to) {
                     while (from <= to) {
