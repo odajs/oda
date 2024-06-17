@@ -1,5 +1,5 @@
 import '../../../rocks.js';
-import {tensor} from './torus.js';
+import {tensor} from './torus/torus.js';
 const MAX_EMB_ERROR = .1;
 const WINDOW_SIZE = 8;
 const SIGNS = ',()[]{}:;';

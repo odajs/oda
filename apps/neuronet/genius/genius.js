@@ -1,4 +1,4 @@
-import {tensor} from "./torus.js";
+import {tensor} from "./torus/torus.js";
 import {nn, Module} from "./module.js";
 export class Genius extends Module{
     error = 0;

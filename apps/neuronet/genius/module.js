@@ -1,4 +1,4 @@
-import {GRADIENT_DIVIDER, tensor} from "./torus.js";
+import {GRADIENT_DIVIDER, tensor} from "./torus/torus.js";
 export class Module{
     #params = Object.create(null);
     constructor(argumetns) {
