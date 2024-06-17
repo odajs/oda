@@ -10,9 +10,7 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
         okDisabled: false,
         okLabel: 'OK',
         footerText: '',
-        get focusedButton() {
-            return this.buttons.find(b => b.focused) || null;
-        }
+        focusedButton: null //??? больше не нужно
     },
     $keyBindings:{
         enter(e){
@@ -43,6 +41,9 @@ ODA({is: 'oda-dialog-footer',
                 border-radius: 4px;
                 outline: none;
             }
+            oda-button:focus{
+                @apply --focused;
+            }
             oda-button:hover {
                 opacity: 1;
             }
@@ -53,14 +54,28 @@ ODA({is: 'oda-dialog-footer',
         <div class="flex horizontal">
             <slot class="flex"></slot>
             <slot class="flex" name="footer"></slot>
-            <oda-button ~is="$for.item?.is || 'oda-button'" class="no-flex" ~props="$for.item" @tap="ok($for.item)" :icon="$for.item.icon" :sub-icon="$for.item.subIcon" :focused="$for.item === focusedButton" ~for="buttons"  :item="$for.item" :tabindex="$for.index+1" @focus="focusedButton = $for.item" :label="$for.item?.label?.call?.(this, control) || $for.item?.label" :disabled="$for.item?.disabled?.call?.(this, control) ?? $for.item?.disabled"></oda-button>
+            <oda-button
+                ~for="buttons"
+                ~is="$for.item?.is || 'oda-button'"
+                ~props="$for.item"
+                :tabindex="0"
+                :item="($for.item.preFocused && $this.focus()), $for.item"
+                :icon="$for.item.icon"
+                :sub-icon="$for.item.subIcon"
+                :label="$for.item?.label?.call?.(this, control) || $for.item?.label"
+                :disabled="$for.item?.disabled?.call?.(this, control) ?? $for.item?.disabled"
+                @tap="ok($for.item)"
+                @focus="focusedButton = $for.item"
+                @blur="focusedButton = null"
+                class="no-flex"
+            ></oda-button>
         </div>
         <div class="flex horizontal" style="align-items: center;">
             <label class="flex">{{footerText}}</label>
         </div>
         <div class="no-flex horizontal">
-            <oda-button hide-icon ~if="!hideOkButton" @tap.stop="ok" :disabled="okDisabled" style="font-weight: bold;" :focused="!focusedButton"  tabindex="0" @focus="focusedButton = null">{{okLabel}}</oda-button>
-            <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px">Cancel</oda-button>
+            <oda-button hide-icon ~if="!hideOkButton" @tap.stop="ok" :disabled="okDisabled" style="font-weight: bold;" tabindex="0" @focus="focusedButton = null">{{okLabel}}</oda-button>
+            <oda-button hide-icon ~if="!hideCancelButton" @tap="cancel" style="width: 70px" tabindex="-1" @focus="focusedButton = null">Cancel</oda-button>
         </div>
     `,
 })
