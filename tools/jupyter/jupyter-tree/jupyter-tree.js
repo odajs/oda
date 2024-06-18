@@ -4,8 +4,8 @@ ODA({ is: 'oda-jupyter-tree', extends: 'oda-tree',
         return this.notebook?.items
     },
     attached() {
-        this.jupyter.addEventListener('changed', (e) => {
-            this.async(()=>{ this.items = undefined; });
-        });
+        // this.jupyter.addEventListener('changed', (e) => {
+        //     this.async(()=>{ this.items = undefined; });
+        // });
     }
  });
