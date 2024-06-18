@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<oda-tester>
+    <oda-jupyter-layout id="jupyterlayout"></oda-jupyter-layout>
+</oda-tester>
+
+<script type="module">
+    import '../../../oda.js';
+    import '../jupyter.js';
+    import './jupyter-tree.js';
+    ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter', template: `
+        <oda-jupyter-tree class="no-flex"></oda-jupyter-tree>
+    ` });
+    jupyterlayout.file_path = 'colab.ipynb';
+</script>
+ 

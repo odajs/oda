@@ -24,13 +24,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
     template: `
         <style>
             :host{
-                @apply --vertical;
+                @apply --horizontal;
                 @apply --flex;
-                padding: 12px 6px;
                 outline: none !important;
+                overflow: hidden;
             }
         </style>
-        <div @tap="selectedCell = null" class="no-flex vertical" style="overflow: visible; border-bottom: 1px dotted gray; padding-bottom: 30px">
+        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 0 30px 0;">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
@@ -42,7 +42,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
     },
     $keyBindings:{
         enter(e){
-            this.editmode = true;
+            this.editMode = true;
         },
         arrowup(e){
             if (!this.editMode && this.selectedCell.index > 0)
@@ -425,6 +425,9 @@ class JupyterNotebook extends ROCKS({
     get cells() {
         return this.data.cells.map(cell => new JupyterCell(cell, this));
     },
+    get items() {
+        return this.cells.filter(cell => cell.level === 0);
+    },
     async load(url) {
         this.data = await ODA.loadJSON(url);
         this.url = url;
@@ -477,6 +480,24 @@ class JupyterCell extends ROCKS({
             return this.data.cell_type;
         }
     },
+    get items() {
+        // if(this.collapsed) return [{}];
+        return this.notebook.cells.filter(cell => cell.parent === this || cell.parent?.id === this.id);
+    },
+    get parent() {
+        let prev = this.prev;
+        while(prev && prev.level !== this.level - 1){
+            prev = prev.prev;
+        }
+        return prev;
+    },
+    get name() {
+        switch (this.type) {
+            case 'text':
+            case 'markdown': return this.src.split('\n')[0] || (this.type + ' [empty]');
+        }
+        return this.type
+    },
     get metadata() {
         return this.data.metadata;
     },
@@ -504,7 +525,14 @@ class JupyterCell extends ROCKS({
         return this.metadata?.collapsed;
     },
     set collapsed(n) {
+        this['__expanded__'] = !n;
         this.setMetadata('collapsed', n);
+    },
+    get __expanded__() {
+        return !this.collapsed;
+    },
+    set __expanded__(n) {
+        this.collapsed = !n;
     },
     setMetadata(attr, val) {
         const metadata = this.metadata ??= Object.create(null);
@@ -514,7 +542,7 @@ class JupyterCell extends ROCKS({
     get childrenCount() {
         let next = this.next;
         let cnt = 0;
-        while (next && next.h > this.h) {
+        while (next && next.level > this.level) {
             cnt++;
             next = next.next;
         }
@@ -530,7 +558,7 @@ class JupyterCell extends ROCKS({
         return this.notebook.cells[this.index + 1];
     },
     get allowExpand() {
-        return (this.h < 7 && this.next?.h > this.h);
+        return (this.h && this.next && (this.next?.h > this.h || !this.next?.h));
     },
     get h() {
         let h = this.sources[0]?.trim().toLowerCase();
@@ -539,12 +567,25 @@ class JupyterCell extends ROCKS({
             while (h[++i] === '#' && i < 7) { }
             return i;
         }
-        return 7;
+        return 0;
     },
     level: {
         $def: 0,
         get() {
-            return this.h - 1;
+            let prev = this.prev;
+            while (prev) {
+                if (this.h === 1) return 0;
+                // if (this.h === 0 && prev?.h) return prev.level + 1;
+                if(this.h === 0) {
+                    if(prev.h) return prev.level + 1;
+                    return prev.level;
+                } else {
+                    if(prev.h && prev.h < this.h) return prev.level + 1;
+                }
+                // if (prev.h < this.h) return prev.level + 1;
+                prev = prev.prev;
+            }
+            return 0;
         }
     },
     get childCodes() {
@@ -561,7 +602,7 @@ class JupyterCell extends ROCKS({
         $def: false,
         get() {
             let prev = this.prev;
-            while (prev && prev.h >= this.h) {
+            while (prev && prev.level >= this.level) {
                 prev = prev.prev;
             }
             return prev?.collapsed || prev?.hidden;
