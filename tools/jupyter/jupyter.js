@@ -142,7 +142,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <div class="vertical flex" ~style="{marginLeft: (levelStep * cell.level)+'px'}">
             <div class="vertical flex">
                 <div class="horizontal" >
-                    <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @tap="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                    <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                     <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview></div>
                 </div>
                 <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
