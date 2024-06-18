@@ -543,7 +543,7 @@ if (!window.ODA?.IsReady) {
             if (ODA.telemetry.components[prototype.is]) return ODA.telemetry.components[prototype.is];
             prototype.is = prototype.is.toLowerCase();
             prototype.$system ??= Object.create(null);
-            const matches = (new Error()).stack.match(regexUrl);
+            const matches = (new Error()).stack.trim().match(regexUrl);
             prototype.$system.url = matches[matches.length - 1];
             prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
             prototype.extends = str2arr(prototype.extends);
