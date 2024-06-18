@@ -80,10 +80,11 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         // })
     },
     $observers: {
-        load(value) {
-            if (!this.text)
-                this.text = value;
-        }
+        load: 'value'
+    },
+    load(value) {
+        if (!this.text)
+            this.text = value;
     },
     // get text() {
     //     switch (typeof this.value) {
