@@ -277,14 +277,45 @@ ODA({is: 'app-layout-drawer',
         }
     </style>
     <div @touchmove="hideTabs=false" id="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
-        <div class="vertical bt" style="height: 100%;">
+        <div class="vertical bt" style="height: 100%;"
+            ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
             <div ~show="!hideTabs" class="no-flex vertical">
-                <oda-button :error="$for.item?.error || $for.item.hasAttribute('error')" :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0" :label="$for.item?.label || $for.item?.getAttribute?.('label')" style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;" :icon-size="iconSize *.8 " class="no-flex tab" default="icons:help" :item="$for.item" ~style="getStyle($for.item)" ~for="controls" @down.stop="setFocus($for.item)" :title="$for.item?.getAttribute('bar-title') || $for.item?.title || $for.item?.getAttribute('title') || ''" :icon="$for.item?.getAttribute('bar-icon') || $for.item?.icon || $for.item?.getAttribute('icon') || 'icons:menu'" :sub-icon="$for.item?.getAttribute('sub-icon')" :toggled="focused === $for.item" :bubble="$for.item.bubble" ~class="{outline: lastFocused === $for.item}"></oda-button>
+                <oda-button
+                    ~for="controls"
+                    ~style="getStyle($for.item)"
+                    style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
+                    ~class="{outline: lastFocused === $for.item}"
+                    class="no-flex tab"
+                    :error="$for.item?.error || $for.item.hasAttribute('error')"
+                    :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0"
+                    :label="$for.item?.label || $for.item?.getAttribute?.('label')"
+                    :icon-size="iconSize *.8 "
+                    default="icons:help"
+                    :item="$for.item"
+                    :title="$for.item?.getAttribute('bar-title') || $for.item?.title || $for.item?.getAttribute('title') || ''"
+                    :icon="$for.item?.getAttribute('bar-icon') || $for.item?.icon || $for.item?.getAttribute('icon') || 'icons:menu'"
+                    :sub-icon="$for.item?.getAttribute('sub-icon')"
+                    :toggled="focused === $for.item"
+                    :bubble="$for.item.bubble"
+                    @down.stop="setFocus($for.item)"
+                ></oda-button>
             </div>
             <div class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
                 <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :rotate="hideTabs?0:180" :icon-size ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
             </div>
-            <oda-button ~show="!hideTabs" ~is="$for.item.is || 'oda-button'" style="padding: 4px; margin: 2px; border: 1px dotted transparent;" :icon-size ~for="buttons" @down.stop="execTap($event, $for.item)" ~props="$for.item" :item="$for.item" :focused="$for.item.focused" default="icons:help" ~text="$for.item.is && $for.item.text"></oda-button>
+            <oda-button
+                ~for="buttons"
+                ~is="$for.item.is || 'oda-button'"
+                ~show="!hideTabs"
+                ~props="$for.item"
+                ~text="$for.item.is && $for.item.text"
+                style="padding: 4px; margin: 2px; border: 1px dotted transparent;"
+                :icon-size
+                :item="$for.item"
+                :focused="$for.item.focused"
+                default="icons:help"
+                @down.stop="execTap($event, $for.item)"
+            ></oda-button>
         </div>
     </div>
     <div @tap.stop class="horizontal shadow content drawer no-flex"
@@ -399,6 +430,7 @@ ODA({is: 'app-layout-drawer',
         const label = ctrl?.label || ctrl.getAttribute('label');
         const order = ctrl?.order || ctrl.getAttribute('order') || 0;
         const res = { order }
+        res['max-width'] = (this.iconSize + 2) + 'px'; // для firefox
         if (label)
             res.transform = `rotate(180deg)`;
         return res;
