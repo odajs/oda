@@ -493,7 +493,7 @@ class JupyterCell extends ROCKS({
     get name() {
         switch (this.type) {
             case 'text':
-            case 'markdown': return this.src.split('\n')[0] || (this.type + ' [empty]');
+            case 'markdown': return this.src.split('\n')[0].substring(this.h).trim() || (this.type + ' [empty]');
         }
         return this.type
     },
