@@ -2431,37 +2431,19 @@ function extract(items, level, parent) {
             return 0;
         });
     }
+    /**@typedef {[!string, any?]} KeysDefs */
+    /**@type {KeysDefs[]} */
+    const keys = [['__expanded__'], ['$forceExpanded'], ['__parent__', null], ['__level__', 0], ['$hasChildren', false]];
     return items.reduce((res, i) => {
-        Object.defineProperty(i, '__expanded__', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: i.__expanded__
-        });
-        Object.defineProperty(i, '$forceExpanded', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: i.$forceExpanded
-        });
-
-        Object.defineProperty(i, '__parent__', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: i.__parent__ || null
-        });
-        Object.defineProperty(i, '__level__', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: i.__level__ || 0
-        });
-        Object.defineProperty(i, '$hasChildren', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: i.$hasChildren || false
+        keys.forEach(([k, def]) => {
+            if (!(k in i)) {
+                Object.defineProperty(i, k, {
+                    enumerable: false,
+                    configurable: true,
+                    writable: true,
+                    value: i[k] || def
+                });
+            }
         });
         if (parent) {
             i.__parent__ = parent;
