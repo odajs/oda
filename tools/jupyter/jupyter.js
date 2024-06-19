@@ -30,7 +30,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 overflow: hidden;
             }
         </style>
-        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 0 30px 0;">
+        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         </div>
@@ -481,7 +481,6 @@ class JupyterCell extends ROCKS({
         }
     },
     get items() {
-        // if(this.collapsed) return [{}];
         return this.notebook.cells.filter(cell => cell.parent === this || cell.parent?.id === this.id);
     },
     get parent() {
@@ -575,14 +574,12 @@ class JupyterCell extends ROCKS({
             let prev = this.prev;
             while (prev) {
                 if (this.h === 1) return 0;
-                // if (this.h === 0 && prev?.h) return prev.level + 1;
                 if(this.h === 0) {
                     if(prev.h) return prev.level + 1;
                     return prev.level;
                 } else {
                     if(prev.h && prev.h < this.h) return prev.level + 1;
                 }
-                // if (prev.h < this.h) return prev.level + 1;
                 prev = prev.prev;
             }
             return 0;

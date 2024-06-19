@@ -9,8 +9,9 @@
     import '../jupyter.js';
     import './jupyter-tree.js';
     ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter', template: `
-        <oda-jupyter-tree class="no-flex"></oda-jupyter-tree>
-    ` });
+        <oda-jupyter-tree ::focused-row="selectedCell" class="no-flex"></oda-jupyter-tree>
+        `,
+    });
     jupyterlayout.file_path = 'colab.ipynb';
 </script>
  
