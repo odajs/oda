@@ -491,11 +491,12 @@ class JupyterCell extends ROCKS({
         return prev;
     },
     get name() {
+        const firstSource = this.src.split('\n')[0];
         switch (this.type) {
             case 'text':
-            case 'markdown': return this.src.split('\n')[0].substring(this.h).trim() || (this.type + ' [empty]');
+            case 'markdown': return firstSource.substring(this.h).trim() || (this.type + ' [empty]');
         }
-        return this.type
+        return firstSource ? this.type : this.type + ' [empty]';
     },
     get metadata() {
         return this.data.metadata;
@@ -524,7 +525,6 @@ class JupyterCell extends ROCKS({
         return this.metadata?.collapsed;
     },
     set collapsed(n) {
-        this['__expanded__'] = !n;
         this.setMetadata('collapsed', n);
     },
     get __expanded__() {

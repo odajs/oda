@@ -12,10 +12,5 @@ ODA({ is: 'oda-jupyter-tree', extends: 'oda-tree',
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === e.target.item.id);
         cellElement?.scrollIntoView();
-    },
-    attached() {
-        // this.jupyter.addEventListener('changed', (e) => {
-        //     this.async(()=>{ this.items = undefined; });
-        // });
     }
  });
