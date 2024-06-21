@@ -21,8 +21,10 @@ export class NeuroModule {
         const fwd = (...args)=>{
             return this.forward(...args);
         }
-        fwd.module = this;
-        fwd.toString = this.toString.bind(this);
+        fwd.$module = this;
+        const props = Object.getOwnPropertyDescriptors(this);
+        Object.defineProperties(fwd, props);
+        // fwd.toString = this.toString.bind(this);
         return fwd
     }
     get params(){
@@ -39,14 +41,14 @@ export class NeuroModule {
         const result = []
         for (let n in ch){
             const prop = ch[n]
-            if (prop.value?.module){
-                result.push({[n]:prop.value.module})
+            if (prop.value?.$module){
+                result.push({[n]:prop.value.$module})
             }
             else if (prop.value instanceof tensor){
                 result.push({[n]:prop.value})
             }
-            else if (Array.isArray(prop.value) && prop.value[0]?.module){
-                result.push({[n]:prop.value.map(i=>i.module)})
+            else if (Array.isArray(prop.value) && prop.value[0]?.$module){
+                result.push({[n]:prop.value.map(i=>i.$module)})
             }
         }
         return result;
