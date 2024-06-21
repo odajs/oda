@@ -5,7 +5,7 @@ const run_context = Object.create(null);
 run_context.output_data = undefined;
 const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
-    console_log.call(window, ...e);
+    // console_log.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
 const console_warn=  console.warn;
