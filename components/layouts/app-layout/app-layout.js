@@ -178,7 +178,7 @@ ODA({is: 'app-layout-toolbar',
         :host {
             @apply --no-flex;
             @apply --horizontal;
-            @apply --shadow;
+            /*@apply --shadow;*/
             align-items: center;
         }
         ::slotted(.raised) {
