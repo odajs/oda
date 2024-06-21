@@ -104,7 +104,6 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
             ::width="$for.item.width"
             ::hide-tabs="$for.item.hideTabs"
             ::opened="$for.item.opened"
-            ~show="!allowCompact || !compact || !$for.item.opened"
             ::pinned="$for.item.pinned"
         >
             <slot :name="$for.item.pos + '-header'" class="flex" slot="panel-header"></slot>
@@ -137,7 +136,10 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
         allowCompact: true,
         autoCompact: true,
         opened: {
-            $type: Boolean
+            $type: Boolean,
+            get() {
+                return this.panels.some(p => p.opened);
+            }
         },
     },
     get appHeader() {
@@ -342,7 +344,7 @@ ODA({is: 'app-layout-drawer',
             <div ~if="showTitle || showPin || openedTitle" invert class="horizontal content shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="align-items: center; padding: 2px" @tap.stop>
                 <oda-icon :icon-size ~if="opened?.titleIcon" :icon="opened?.titleIcon"></oda-icon>
                 <label ~if="openedTitle || showPin" class="flex title-label" ~text="openedTitle"></label>
-                <oda-button ~if="showPin &&  domHost.offsetWidth > this.compactThreshold" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size style="transform: scale(.5)"></oda-button>
+                <oda-button ~if="showPin" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size style="transform: scale(.5)"></oda-button>
 <!--                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="opened = null"></oda-button>-->
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
@@ -355,7 +357,9 @@ ODA({is: 'app-layout-drawer',
     },
     buttons: [],
     delta: 0,
-    showPin: true,
+    showPin: {
+        $type: Boolean
+    },
     $public: {
         $pdp: true,
         iconSize: 24,
@@ -398,7 +402,9 @@ ODA({is: 'app-layout-drawer',
                     i.$sleep = i.hidden = i !== n;
                 }
                 const idx = this.controls.indexOf(n);
-                this.focusedIndex = ~idx ? idx : 0;
+                if (~idx) {
+                    this.focusedIndex = idx;
+                }
                 this.async(() => {
                     this.opened?.dispatchEvent(new CustomEvent('activate'));
                 });
@@ -426,7 +432,7 @@ ODA({is: 'app-layout-drawer',
         const panelW = `${this.panel?.offsetWidth || 0}px`;
         return {
             flexDirection: `row${({ right: '-reverse', left: '' })[this.pos]}`,
-            // maxWidth: cpt ? '70vw' : `${this.width||0}px`,
+            maxWidth: cpt ? '70vw' : `${this.width||0}px`,
             // minWidth: `${this.width||0}px`,
             width: `${this.width || 0}px`,
             display: (this.hideTabs || !this.opened) ? 'none' : '',
@@ -481,7 +487,7 @@ ODA({is: 'app-layout-drawer',
     },
     setOpened(item) {
         this.hideTabs = false;
-        if (item.isButton) {
+        if (item?.isButton) {
             item.click();
         }
         else {
@@ -514,10 +520,12 @@ ODA({is: 'app-layout-drawer',
         // })
 
     },
-    opening(pinned, controls) {
-        if (pinned && !this.opened && !this.opened && controls.length) {
-            this.setOpened(controls[this.focusedIndex]);
-        }
+    opening() {
+        this.async(() => {
+            if (this.pinned && !this.opened && !this.opened && this.controls.length) {
+                this.setOpened(this.controls[this.focusedIndex]);
+            }
+        }, 300);
     },
     _onKeyDown(e) {
         if (this.controls && e.ctrlKey && '123456789'.includes(e.key)) {
