@@ -4,46 +4,5 @@
 <script type="module">
     import {tensor} from './torus.js';
 
-    let _t = 70;
-    let _j = 70;
-    let _i = 70;
-    let _k = 70;
-    let _u = 70;
-    let t = tensor.ones([_t, _j, _i], Float32Array);
-    let out = tensor.zeros([_j, _k], Float32Array);
-    console.time('einsum');
 
-    let t0 = t.data;
-    let t1 = t.data;
-    let idx0 = 0;
-    let idx1 = 0;
-    let idx2 = 0;
-
-
-
-    let v0 = 0;
-    let v1 = 0;
-    let idx = -1;
-
-    for(let t = 0; t < _t; t++){
-        for(let j = 0; j < _j; j++){
-            let res = 0;
-            for(let i = 0; i < _i; i++){
-                for(let k = 0; k < _k; k++){
-                    idx0 = k + _k * (j + _j * (i));
-                    v0 = t0[idx0];
-                    v1 = 0;
-                    for(let u = 0; u < _u; u++){
-                        idx1 = k + _k * (u + _u * (t));
-                        v1 += t1[idx1];
-
-                    }
-                    res += v0 * v1;
-                }
-            }
-            out.data[++idx] = res;
-        }
-    }
-    console.timeEnd('einsum');
-    console.log(out.data)
 </script>
