@@ -808,7 +808,7 @@ Array.prototype.toTensorString = function (max = 4, shape = []){
 function num2text(x){
    if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
         return x;
-    return x.toExponential(2).padStart(9, ' ')
+    return x.toExponential(2).padStart(9, ' ');
 }
 
 function genId(){
