@@ -165,7 +165,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 
             </div>        
         </div>
-        <oda-jupyter-divider></oda-jupyter-divider>
+        <oda-jupyter-divider ></oda-jupyter-divider>
     `,
     outSrc: '',
     outHtml: '',
@@ -264,7 +264,7 @@ ODA({ is: 'oda-jupyter-divider',
                 @apply --vertical;
                 height: 3px;
                 justify-content: center;
-                opacity: {{cells?.length?0:1}};
+                opacity: {{!visible?0:1}};
                 transition: opacity ease-out .1s;
                 position: relative;
             }
@@ -285,6 +285,13 @@ ODA({ is: 'oda-jupyter-divider',
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
     `,
+    get visible(){
+        if (!this.cells?.length)
+            return true;
+        if(this.cell?.isLast)
+            return true;
+        return false
+    },
     add(key) {
         this.selectedCell = this.notebook.add(this.cell, key);
     }
@@ -614,6 +621,9 @@ class JupyterCell extends ROCKS({
         const cells = this.notebook.data.cells.splice(this.index, 1);
         this.notebook.data.cells.splice(direct, 0, cells[0]);
         this.notebook.change();
+    },
+    get isLast(){
+        return this.notebook.cells.last === this;
     }
 })
 {
