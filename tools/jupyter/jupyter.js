@@ -33,6 +33,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <div style="min-height: 50%"></div>
         </div>
 
     `,
@@ -111,6 +112,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                     this.editMode = false;
             }
         }
+    },
+    scrollToCell(cell) {
+        const cellElements = this.jupyter.$$('oda-jupyter-cell');
+        const cellElement = cellElements.find(el => el.cell.id === cell.id);
+        cellElement?.scrollIntoView();
     }
 })
 
@@ -488,11 +494,11 @@ class JupyterCell extends ROCKS({
         }
     },
     get items() {
-        return this.notebook.cells.filter(cell => cell.parent === this || cell.parent?.id === this.id);
+        return this.notebook.cells.filter(cell => cell.parent?.id === this.id);
     },
     get parent() {
         let prev = this.prev;
-        while(prev && prev.level !== this.level - 1){
+        while(prev && prev.level !== this.level - 1) {
             prev = prev.prev;
         }
         return prev;
@@ -558,7 +564,7 @@ class JupyterCell extends ROCKS({
         return this.notebook.cells.indexOf(this);
     },
     get prev() {
-        return this.notebook.cells[this.index - 1]
+        return this.notebook.cells[this.index - 1];
     },
     get next() {
         return this.notebook.cells[this.index + 1];

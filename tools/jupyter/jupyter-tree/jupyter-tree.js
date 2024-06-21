@@ -8,11 +8,7 @@ ODA({ is: 'oda-jupyter-tree', extends: 'oda-tree',
     cellTemplate: 'oda-jupyter-tree-cell',
     onTapRows(e) {
         this.$super('oda-table', 'onTapRows', e);
-        // const selector = `oda-jupyter-cell[id="${e.target.item.id}"]`;
-        // this.jupyter.$(selector)?.scrollIntoView();
-        const cellElements = this.jupyter.$$('oda-jupyter-cell');
-        const cellElement = cellElements.find(el => el.cell.id === e.target.item.id);
-        cellElement?.scrollIntoView();
+        this.scrollToCell?.(e.target.item);
     }
  });
 ODA({
