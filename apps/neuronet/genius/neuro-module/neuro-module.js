@@ -1,5 +1,5 @@
-import {GRADIENT_DIVIDER, tensor} from "./torus/torus.js";
-export class Module{
+import {GRADIENT_DIVIDER, tensor} from "../torus/torus.js";
+export class NeuroModule {
     #params = Object.create(null);
     constructor(argumetns) {
         let expr = this.constructor.toString();
@@ -72,7 +72,7 @@ export class Module{
         return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
     }
 }
-class Linear extends Module{
+class Linear extends NeuroModule{
     constructor(d_in, d_out, bias = false) {
         super(arguments);
     }
@@ -96,7 +96,7 @@ class Linear extends Module{
         return x;
     }
 }
-class conv1D extends Module {
+class conv1D extends NeuroModule {
     constructor(in_channels,
                 out_channels,
                 kernel_size = 4,
@@ -210,7 +210,7 @@ class conv1D extends Module {
     }
 
 }
-class RMSNorm extends Module {
+class RMSNorm extends NeuroModule {
     constructor(dim, bias = false) {
         super(arguments);
     }
@@ -232,7 +232,7 @@ class RMSNorm extends Module {
         return out;
     }
 }
-export const nn = {
+export const nm = {
     linear(...args){
         return new Linear(...args);
     },

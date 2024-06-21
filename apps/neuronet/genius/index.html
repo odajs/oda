@@ -6,7 +6,7 @@
     import '../../../tools/property-grid/property-grid.js';
     import {Genius} from './genius.js';
     import {tensor, LEARNING_RATE} from './torus/torus.js';
-    import {nn} from './module.js';
+    import {nm} from './neuro-module/neuro-module.js';
     import {Tokenizer} from './tokenizer.js';
     import '../../apps/popup-form/popup-form.js';
     import '/web/oda/components/viewers/chart/chart.js';
@@ -326,9 +326,9 @@
             this.time = 0;
             this.result = ''
             try{
-                const fn = new Function('tensor', 'nn', this.value);
+                const fn = new Function('tensor', 'nm', this.value);
                 let time = Date.now();
-                const res =  fn.call(this, tensor, nn) || '';
+                const res =  fn.call(this, tensor, nm) || '';
                 time = Date.now() - time;
                 this.result =  res?.toString();
                 this.time = time;

@@ -1,6 +1,6 @@
 import {tensor} from "./torus/torus.js";
-import {nn, Module} from "./module.js";
-export class Genius extends Module{
+import {nm, NeuroModule} from "./neuro-module/neuro-module.js";
+export class Genius extends NeuroModule{
     error = 0;
     constructor(tokenizer, expand = 2, deep = 1, head_count = 1) {
         super(arguments);
@@ -22,7 +22,7 @@ export class Genius extends Module{
         return result;
     }
 }
-export class GeniusLayer extends Module{
+export class GeniusLayer extends NeuroModule{
     constructor(dim_x, expand = 2, deep = 1) {
         super(arguments);
     }
@@ -34,9 +34,9 @@ export class GeniusLayer extends Module{
     }
     __init__() {
         // this.W = tensor.param(tensor.rand([this.d_in, this.d_x]).minus_(.5).mul_(.1));
-        this.in_proj = nn.linear(this.dim_x, this.dim_inner * 2, false);
-        this.x_proj = nn.linear(this.dim_inner, this.dim_inner * 2 + this.dt, false);
-        this.dt_proj = nn.linear(this.dt, this.dim_inner, true);
+        this.in_proj = nm.linear(this.dim_x, this.dim_inner * 2, false);
+        this.x_proj = nm.linear(this.dim_inner, this.dim_inner * 2 + this.dt, false);
+        this.dt_proj = nm.linear(this.dt, this.dim_inner, true);
         this.Alog = tensor.param(tensor.hippo(this.dim_inner));
         // this.H = tensor.zeros([this.d_inner, this.d_inner]);
         if (this.deep)
@@ -45,7 +45,7 @@ export class GeniusLayer extends Module{
         this.silu1 = tensor.param(tensor.from());
         this.silu2 = tensor.param(tensor.from());
         this.softplus = tensor.param(tensor.from());
-        this.conv1d = nn.Conv1d(this.dim_inner, this.dim_inner, 4, undefined, 3, undefined, undefined, this.dim_inner);
+        this.conv1d = nm.Conv1d(this.dim_inner, this.dim_inner, 4, undefined, 3, undefined, undefined, this.dim_inner);
     }
     forward(input){
         // расширение входа
