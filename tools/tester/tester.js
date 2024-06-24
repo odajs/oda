@@ -12,7 +12,7 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
     `,
     attached(){
         this.async(()=>{
-            this.leftPanel.showPin = true;
+            this.leftPanelElement.showPin = true;
         })
     },
     $public: {

@@ -112,6 +112,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     </div>
     <slot ~show="!isMinimized" name="footer" class="horizontal no-flex" style="overflow: visible; border-top: 1px solid gray;"></slot>
     `,
+    leftButtons: [],
+    rightButtons: [],
     $public: {
         $pdp: true,
         get layoutHost() {
@@ -151,6 +153,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     get rightPanelElement() {
         return this.$('app-layout-drawer[pos=right]') || undefined;
     },
+    $observers: {
+        buttonsChanged(leftButtons, rightButtons) {
+            this.panels[0].buttons = this.leftButtons;
+            this.panels[1].buttons = this.rightButtons;
+        }
+    },
     $listeners: {
         'resize': 'updateCompact',
     },
@@ -180,7 +188,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     },
     closeDrawers() {
         [this.leftPanelElement, this.rightPanelElement].forEach(i => i?.close?.());
-    },
+    }
 });
 
 ODA({is: 'app-layout-toolbar',
