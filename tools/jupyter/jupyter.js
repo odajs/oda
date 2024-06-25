@@ -79,6 +79,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             this.style.opacity = 0;
             const nb = new JupyterNotebook(this.url);
             nb.listen('changed', async (e) => {
+                if(this.selectedCell) {
+                    const selectedFromCells = this.cells.find(cell => cell.id === this.selectedCell.id);
+                    if(selectedFromCells && this.selectedCell !== selectedFromCells)
+                        this.selectedCell = selectedFromCells;
+                }
                 await this.$render();
                 if (e.detail.value) {
                     const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
@@ -246,7 +251,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             $def: false,
             $attr: 'raised',
             get() {
-                return !this.readOnly &&  (this.selectedCell === this.cell || this.selectedCell?.id === this.cell?.id);
+                return !this.readOnly &&  (this.selectedCell === this.cell/* || this.selectedCell?.id === this.cell?.id*/);
             }
         }
         ,
