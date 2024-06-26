@@ -51,7 +51,7 @@ yarn add oda-framework
 <div id='Native'></div>
 <script type="module">
     class myClass extends ROCKS({
-        rocks: 'Это свойство создано функцией ROCKS'
+        rocks: "Это свойство создано функцией ROCKS"
     }) {
         native = "Это нативное свойство";
         constructor() {
@@ -81,7 +81,7 @@ yarn add oda-framework
 <div id='Native2'></div>
 <script type="module">
     class myClass extends ROCKS({
-        rocks: 'Это свойство создано функцией ROCKS'
+        rocks: "Это свойство создано функцией ROCKS"
     }) {
         native = "Это нативное свойство";
         constructor() {
@@ -110,7 +110,7 @@ yarn add oda-framework
 <div id='Rocks'></div>
 <script type="module">
     class myClass extends ROCKS({
-        rocks: 'Это свойство создано функцией ROCKS'
+        rocks: "Это свойство создано функцией ROCKS"
     }) {
         rocks = "Это нативное свойство";
         constructor() {

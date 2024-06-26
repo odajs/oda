@@ -1,30 +1,35 @@
 ﻿Для добавления расширенной функциональности фреймворк **ROCKS** использует несколько механизмов.
 
-Для расширения функциональности свойств элементарных типов, функция **ROCKS** добавляет к ним геттеры и сеттеры, в которых реализуется дополнительный функционал, указанный при описании свойств.
+Для расширения функциональности свойств элементарных типов, функция **ROCKS** заменяет их на пару одноимённых геттеров и сеттеров, в которых реализуется дополнительный функционал, указанный при описании свойств.
 
 Например,
 
-```html run_edit_h=35_
+```html run_edit_h=55_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
 <script type="module" src="./rocks.js"></script>
-<div id='div'></div>
+<div id='Rocks'></div>
+<div id='Native'></div>
 <script type="module">
     class myClass extends ROCKS({
-        counter: 0
+        rocks: "Это свойство создано функцией ROCKS"
     }) {
+        native = "Это нативное свойство";
         constructor() {
             super();
         }
     }
 
     let myObject = new myClass();
-    let div = document.getElementById("div");
-    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__, "counter");
-    div.innerText = "Дескрипторы: " + Object.getOwnPropertyNames( descr );
+    let divRocks = document.getElementById("Rocks");
+    let divNative = document.getElementById("Native");
+    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__, "rocks");
+    divRocks.innerText = "Дескрипторы свойства rocks: " + Object.getOwnPropertyNames( descr );
+    descr = Object.getOwnPropertyDescriptor(myObject, "native");
+    divNative.innerText = "Дескрипторы свойства native: " + Object.getOwnPropertyNames( descr );
 </script>
 ```
 
-В данном примере с помощью метода **Object.getOwnPropertyDescriptor** были получены дескрипторы свойства **counter**. Можно видеть в списке дескрипторов методы **get** и **set**. Они были автоматически добавлены функцией **ROCKS** для расширения функционала свойства.
+В данном примере с помощью метода **Object.getOwnPropertyDescriptor** были получены дескрипторы свойства **rocks**. Можно видеть в списке дескрипторов методы **get** и **set**. Они были автоматически добавлены функцией **ROCKS** для расширения функционала свойства. Для сравнения в нативной части класса объявлено свойство **native**. Можно видеть, что в него методы **get** и **set** добавлены небыли.
 
 Для расширения функциональности вычисляемых свойств, таких как геттеры и сеттеры, функция **ROCKS** добавляет к ним дополнительный код, в котором реализуется дополнительный функционал.
 
@@ -121,6 +126,43 @@
 
 ![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-1.png "Консоль браузера")
 
+В **Proxy**-объект оборачивается не только объект верхнего уровня, но и все вложенные в него объекты, независимо от глубины вложения. Таким образом расширенную функциональность получают все свойства объекта независимо от глубины вложенности.
+
+Например,
+
+```html run_edit_h=40_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<button id='button'>Вывести объекты в консоль</button>
+<script type="module">
+    class myClass extends ROCKS({
+        test: {
+            test1: {
+                test2: {
+                    prop: 0
+                }
+            }
+        }
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let button = document.getElementById("button");
+    button.onclick = function() {
+        console.log( myObject.test );
+        console.log( myObject.test.test1 );
+        console.log( myObject.test.test1.test2 );
+    }
+</script>
+```
+
+В данном примере по нажатию кнопки в консоль браузера выводится объект **test** и вложенные в него объекты **test1** и **test2**. Откройте консоль и исследуйте их. Видно, что все объекты являются **Proxy**-объектами с методами-ловушками **get** и **set**.
+
+![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-2.png "Консоль браузера")
+
 Аналогичным образом функция **ROCKS** оборачивает массивы в специальный объект **Proxy**, для добавления расширенной функциональности.
 
 Например,
@@ -148,7 +190,7 @@
 
 Данный пример аналогичен предыдущему, за исключение того, что по нажатию кнопки в консоль браузера выводится массив **test**, объявленный в функции **ROCKS**. Видно, что массив тоже является **Proxy**-объектом с методами-ловушками **get** и  **set**.
 
-![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-2.png "Консоль браузера")
+![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-3.png "Консоль браузера")
 
 После того как функция **ROCKS** обернула объект в **Proxy**, все его свойства получают одинаковый базовый функционал, определяемый методами-ловушками **get** и **set**.
 
@@ -191,5 +233,5 @@
 
 В данном примере в объекте **test** объявлено свойство **prop** с модификатором **$def**. Можно видеть в списке дескрипторов свойства методы **get** и **set**. Они были автоматически добавлены функцией **ROCKS** для расширения функционала свойства. Сам объект **test** создан функцией **ROCKS** на основе класса **RocksObject**. Нажмите кнопку, чтобы вывести в консоль браузера объект **test**. Откройте консоль и исследуйте его. Видно, что объект **test** не является **Proxy**-объектом.
 
-![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-3.png "Консоль браузера")
+![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-4.png "Консоль браузера")
 
