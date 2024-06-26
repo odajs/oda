@@ -72,7 +72,7 @@ ODA({ is: 'oda-m4t-test',  template: /*HTML*/ `
     </div>
     <oda-button :icon :icon-size="iconSize*1.3" style="font-size:large;" success-invert :disabled="wait" label='GO!' @tap='_go()' slot='footer'></oda-button>
     <div class="flex" style='overflow-y:auto;'>
-        <oda-m4t-test-rez ~for='results' :el='$for.item'></oda-m4t-test-rez>
+        <oda-m4t-test-rez ~for='results.filter(i => !i.hidden)' :el='$for.item'></oda-m4t-test-rez>
     </div>
 
     `,
@@ -307,7 +307,10 @@ ODA({ is: 'oda-m4t-test-rez', template: /*HTML*/ `
         audio {width: 100%; height:30px; padding: 5px 0;}
     </style>
     <div class='border'>
-        <oda-button ~class='cls' :label='language' :icon disabled></oda-button>
+        <div class="horizontal flex">
+            <oda-button class="flex" ~class='cls' :label='language' :icon disabled></oda-button>
+            <oda-button icon="icons:close" style="border-bottom: 1px solid gray; fill: red;" @tap="el.hidden=true"></oda-button>
+        </div>
         <div class='text' ~if='el.outType==="text"'>{{el.text}}</div>
         <audio ~if='el.outType==="voice"' controls :src="fixPath">
             <a :href="fixPath"> Download audio </a>
