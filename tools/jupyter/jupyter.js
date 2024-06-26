@@ -289,10 +289,11 @@ ODA({ is: 'oda-jupyter-divider',
                 @apply --border;
                 padding: 0px 4px 0px 0px;
                 border-radius: 4px;
+                opacity: 1;
             }
         </style>
         <div class="horizontal center" style="z-index: 1">
-            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 3px;"></div>
+            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 1px dashed;"></div>
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
     `,
@@ -431,7 +432,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     get code(){
         let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, 'let v =  $1 = await import($2$3$4);\n for(let i in v) run_context.i = v[i]');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4);\n for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
         code = 'with (context) {'+ code + '}';
         return code;
