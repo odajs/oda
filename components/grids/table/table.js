@@ -2224,7 +2224,7 @@ cells: {
             <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.__expanded__?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand ~if="column?.items?.length" :item class="no-flex"></oda-table-expand>
-                    <label class="label flex" :title="column.label || column.name" ~text="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
+                    <label class="label flex" :title="column.label || column.name" ~html="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon :disabled="column?.__expanded__ && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
