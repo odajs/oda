@@ -406,8 +406,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         try{
 
             run_context.output_data = [];
-            const fn = new AsyncFunction(this.code);
-            let res =  await fn();
+            const fn = new AsyncFunction('context', this.code);
+            let res =  await fn(run_context);
             // let res = await eval.call(window, this.code);
             if (res){
                 run_context.output_data.push(res);
@@ -431,8 +431,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     get code(){
         let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, 'let $1 = await import($2$3$4)');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, 'let v =  $1 = await import($2$3$4);\n for(let i in v) run_context.i = v[i]');
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
+        code = 'with (context) {'+ code + '}';
         return code;
     }
 })
