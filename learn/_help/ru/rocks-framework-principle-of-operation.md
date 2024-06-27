@@ -99,9 +99,10 @@
 
 Например,
 
-```html run_edit_h=40_
+```html run_edit_h=55_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
 <script type="module" src="./rocks.js"></script>
+<div id='div'></div>
 <button id='button'>Вывести объект в консоль</button>
 <script type="module">
     class myClass extends ROCKS({
@@ -115,6 +116,9 @@
     }
 
     let myObject = new myClass();
+    let div = document.getElementById("div");
+    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__.test, "prop");
+    div.innerText = "Дескрипторы свойства prop: " + Object.getOwnPropertyNames( descr );
     let button = document.getElementById("button");
     button.onclick = function() {
         console.log( myObject.test );
@@ -122,7 +126,7 @@
 </script>
 ```
 
-В данном примере по нажатию кнопки в консоль браузера выводится объект **test**, объявленный в функции **ROCKS**. Откройте консоль и исследуйте его. Видно, что объект **test** является **Proxy**-объектом с методами-ловушками **get** и **set**.
+В данном примере по нажатию кнопки в консоль браузера выводится объект **test**, объявленный в функции **ROCKS**. Откройте консоль и исследуйте его. Видно, что объект **test** является **Proxy**-объектом с методами-ловушками **get** и **set**. Обратите внимание, что в свойство **prop** этого объекта методы **get** и **set** добавлены не были. Расширение функционала свойства осуществляется за счет методов-ловушек **Proxy**-объекта.
 
 ![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-1.png "Консоль браузера")
 
@@ -188,9 +192,38 @@
 </script>
 ```
 
-Данный пример аналогичен предыдущему, за исключение того, что по нажатию кнопки в консоль браузера выводится массив **test**, объявленный в функции **ROCKS**. Видно, что массив тоже является **Proxy**-объектом с методами-ловушками **get** и  **set**.
+Данный пример аналогичен предыдущему, за исключение того, что по нажатию кнопки в консоль браузера выводится массив **test**, объявленный в функции **ROCKS**. Видно, что массив тоже является **Proxy**-объектом с методами-ловушками **get** и **set**.
 
 ![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-3.png "Консоль браузера")
+
+Если элементами массива являются объекты, то они тоже обертываются в **Proxy**-объекты, и их свойства получают расширенную функциональность.
+
+Например,
+
+```html run_edit_h=40_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<button id='button'>Вывести элемент массива в консоль</button>
+<script type="module">
+    class myClass extends ROCKS({
+        test: [{a:1, b:2}]
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let button = document.getElementById("button");
+    button.onclick = function() {
+        console.log( myObject.test[0] );
+    }
+</script>
+```
+
+В данном примере по нажатию кнопки в консоль браузера выводится элемент массива, являющийся объектом. Видно, что функция **ROCKS** обернула его в **Proxy**-объект с методами-ловушками **get** и **set**.
+
+![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-4.png "Консоль браузера")
 
 После того как функция **ROCKS** обернула объект в **Proxy**, все его свойства получают одинаковый базовый функционал, определяемый методами-ловушками **get** и **set**.
 
@@ -233,5 +266,5 @@
 
 В данном примере в объекте **test** объявлено свойство **prop** с модификатором **$def**. Можно видеть в списке дескрипторов свойства методы **get** и **set**. Они были автоматически добавлены функцией **ROCKS** для расширения функционала свойства. Сам объект **test** создан функцией **ROCKS** на основе класса **RocksObject**. Нажмите кнопку, чтобы вывести в консоль браузера объект **test**. Откройте консоль и исследуйте его. Видно, что объект **test** не является **Proxy**-объектом.
 
-![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-4.png "Консоль браузера")
+![Консоль браузера](learn/_help/ru/_images/rocks-framework-principle-of-operation-5.png "Консоль браузера")
 
