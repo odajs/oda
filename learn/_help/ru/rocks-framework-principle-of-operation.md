@@ -117,7 +117,7 @@
 
     let myObject = new myClass();
     let div = document.getElementById("div");
-    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__.test, "prop");
+    let descr = Object.getOwnPropertyDescriptor(myObject.test, "prop");
     div.innerText = "Дескрипторы свойства prop: " + Object.getOwnPropertyNames( descr );
     let button = document.getElementById("button");
     button.onclick = function() {

@@ -81,20 +81,61 @@
 
 Этот пример аналогичен предыдущему, за исключением того, что модификатор **$public** убран из объявления свойства **counter** и использован для него как группирующий. Такой подход также позволил указать начальное значение непосредственно в свойстве и убрать из его описания модификатор **$def**, что сократило объем кода и сделало его более наглядным.
 
-Свойства объектов, объявленных в функции **ROCKS**, всегда остаются перечисляемыми, даже если у них указать модификатор **$public** со значением **false**.
+Свойства объектов, объявленных в функции **ROCKS**, по умолчанию являются перечисляемыми.
 
 Например,
 
-```html run_edit_h=35_
+```html run_edit_h=55_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
 <script type="module" src="./rocks.js"></script>
-<div id='div'></div>
+<div id='div1'></div>
+<div id='div2'></div>
 <script type="module">
     class myClass extends ROCKS({
         test: {
-            counter: {
-                $def: 0,
-                $public: false
+            counter: 0
+        }
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let div1 = document.getElementById("div1");
+    let div2 = document.getElementById("div2");
+    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__, "test");
+    div1.innerText = "Значение дескриптора enumerable у объекта: " + descr.enumerable;
+    descr = Object.getOwnPropertyDescriptor(myObject.test, "counter");
+    div2.innerText = "Значение дескриптора enumerable у свойства: " + descr.enumerable;
+</script>
+```
+
+В данном примере на экран выводятся дескрипторы объекта **test** и его свойства **counter**. Можно видеть, что по умолчанию объекты являются неперечисляемыми, а его свойства перечисляемыми.
+
+
+
+
+
+
+
+Однако, если у свойства объекта указать модификатор **$public** со значением **false**, то свойство тоже станет неперечисляемым.
+
+Например,
+
+```html run_edit_h=55_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<div id='div1'></div>
+<div id='div2'></div>
+<script type="module">
+    class myClass extends ROCKS({
+        test: {
+            $def: {
+                counter: {
+                    $def: 0,
+                    $public: false
+                }
             }
         }
     }) {
@@ -104,13 +145,16 @@
     }
 
     let myObject = new myClass();
-    let div = document.getElementById("div");
-    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__.test, "counter");
-    div.innerText = "Значение дескриптора enumerable: " + descr.enumerable;
+    let div1 = document.getElementById("div1");
+    let div2 = document.getElementById("div2");
+    let descr = Object.getOwnPropertyDescriptor(myObject.__proto__.__proto__, "test");
+    div1.innerText = "Значение дескриптора enumerable у объекта: " + descr.enumerable;
+    descr = Object.getOwnPropertyDescriptor(myObject.test.__proto__.__proto__, "counter");
+    div2.innerText = "Значение дескриптора enumerable у свойства: " + descr.enumerable;
 </script>
 ```
 
-В данном примере свойство **counter** объекта **test** объявлено с модификатором **$public**, имеющим значение **false**, однако можно видеть, что оно осталось перечисляемым.
+Этот пример аналогичен предыдущему, за исключением того, что свойство **counter** объекта **test** объявлено с модификатором **$public** со значением **false**. Видно, что оно стало неперечисляемым.
 
 Геттеры и сеттеры, объявленные в функции **ROCKS**, являются неперечисляемыми по умолчанию.
 
@@ -219,9 +263,9 @@
 Например,
 
 ```javascript_hideGutter_error
-counter: {
+methodName: {
     $def: function() {
-              return 0;
+              //тело метода
           },
     $public: false
 }
@@ -288,3 +332,4 @@ counter: {
 ```faq_md
 В отличие от методов, свойства являются неперечисляемыми по умолчанию, поэтому символ подчеркивания в начале имени не оказывает на дескриптор **enumerable** никакого влияния. Однако рекомендуется начинать с символа подчеркивания имена свойств, которые разработчик рассматривает как приватные, доступные только внутри кода объекта. Это сделает код объекта более легким для понимания.
 ```
+
