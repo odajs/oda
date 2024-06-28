@@ -1834,7 +1834,7 @@ cells: {
                     @apply --flex;
                 }
             </style>
-            <span class="field-control" ~is="template" :column :item ::value style="overflow: hidden">{{value || ''}}</span>`,
+            <span class="field-control" ~is="template" :column :item ::value style="overflow: hidden">{{value ?? ''}}</span>`,
         focused: {
             $type: Boolean,
             $def: false,
