@@ -150,6 +150,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
+        <div class="horizontal">
+            <div style="width: 24px; font-size: xx-small; text-align: center; white-space: break-spaces;" >{{status}}</div>
         <div class="vertical flex" ~style="{marginLeft: (levelStep * cell.level)+'px'}">
             <div class="vertical flex">
                 <div class="horizontal" >
@@ -176,6 +178,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 
             </div>        
         </div>
+        </div>
+        
         <oda-jupyter-divider ></oda-jupyter-divider>
     `,
     outSrc: '',
@@ -237,6 +241,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
     },
     $pdp: {
+        status: '',
         editMode: {
             $def: false,
             get() {
@@ -389,7 +394,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         }
     },
     get isReadyRun(){
-        return this.isHover || this.selected// || this.isRun;
+        return this.isHover || this.selected;// || this.isRun;
     },
     isHover: false,
     value: '',
@@ -406,31 +411,29 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.cell.metadata.hideRun = false;
         this.icon = 'spinners:8-dots-rotate';
         this.$render();
-        // this.isRun = true;
         this.async(async ()=>{
             try{
+                let time = Date.now();
                 run_context.output_data = [];
                 const fn = new AsyncFunction('context', this.code);
                 let res =  await fn(run_context);
-                // let res = await eval.call(window, this.code);
+                this.status = Date.now() - time;
                 if (res){
                     run_context.output_data.push(res);
                 }
-
                 this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
             }
             catch (e){
                 this.cell.outputs = [{data:{"text/plain":e.message}}];
             }
             finally {
-                // this.isRun = false;
                 this.icon = 'av:play-circle-outline';
                 this.async(()=>{
                     this.$('oda-ace-editor').focus();
                 })
 
             }
-        },100)
+        }, 100)
     },
     attached() {
         this.$('oda-ace-editor').$('div').classList.add("light");
@@ -550,7 +553,7 @@ class JupyterCell extends ROCKS({
         return this.metadata?.collapsed;
     },
     set collapsed(n) {
-        this.setMetadata('collapsed', n);
+        this.writeMetadata('collapsed', n);
     },
     get __expanded__() {
         return !this.collapsed;
@@ -558,7 +561,10 @@ class JupyterCell extends ROCKS({
     set __expanded__(n) {
         this.collapsed = !n;
     },
-    setMetadata(attr, val) {
+    readMetadata(attr, def = ''){
+        return this.metadata?.[attr] ?? def;
+    },
+    writeMetadata(attr, val) {
         const metadata = this.metadata ??= Object.create(null);
         metadata[attr] = val;
         this.notebook.change();
@@ -583,6 +589,12 @@ class JupyterCell extends ROCKS({
     },
     get allowExpand() {
         return (this.h && this.next && (this.next?.h > this.h || !this.next?.h));
+    },
+    get time(){
+        
+    },
+    set time(n){
+        this.writeMetadata('time', n);
     },
     get h() {
         let h = this.sources[0]?.trim().toLowerCase();
