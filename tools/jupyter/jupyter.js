@@ -267,11 +267,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     get expanderIcon() {
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
-    },
-    runConsoleStyle(i) {
-        let colors = { log: 'black', info: 'blue', warn: 'orange', error: 'red' };
-        return `color: ${colors[i.method]}`;
-    },
+    }
 })
 
 ODA({ is: 'oda-jupyter-divider',
@@ -400,11 +396,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     isHover: false,
     value: '',
     icon: 'av:play-circle-outline',
-    // get icon() {
-    //     return this.isRun ? 'spinners:8-dots-rotate':'av:play-circle-outline';
-    // },
-    // isRun: false,
-
     editorValueChanged(e) {
         this.value = e.detail.value;
     },
@@ -423,12 +414,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 let time_str = '';
                 let t = time.getMinutes();
                 if (t)
-                    time_str += t + ' m\n';
+                    time_str += t + 'min\n';
                 t = time.getSeconds();
                 if (time_str  || t)
-                    time_str += t + ' s\n';
+                    time_str += t + 'sec\n';
                 t = time.getMilliseconds();
-                time_str += t + ' ms';
+                time_str += t + 'ms';
                 this.status = time_str;
 
                 if (res){
