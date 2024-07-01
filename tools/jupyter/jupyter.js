@@ -11,12 +11,12 @@ window.log = window.print = console.log = (...e) => {
 const console_warn=  console.warn;
 window.warn =  console.warn = (...e) => {
     console_warn.call(window, ...e);
-    run_context.output_data?.push('warn:\n'+[...e].join('\n'));
+    run_context.output_data?.push('<b>warning</b>:\n'+[...e].join('\n'));
 }
 const console_error =  console.error;
 window.err = console.error = (...e) => {
     console_error.call(window, ...e);
-    run_context.output_data?.push( 'error:\n'+ [...e].join('\n'));
+    run_context.output_data?.push( '<b>error:</b>\n'+ [...e].join('\n'));
 } 
 window.run_context = run_context;
 
@@ -171,7 +171,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div id="out" class="vertical" style="width: 100%;">
                     <div ~if="!cell?.metadata?.hideRun">
                         <div ~for="cell.outputs" style="padding: 4px;" >
-                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.startsWith('error')" :warning="outHtml.startsWith('warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
+                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.startsWith('<b>error')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
                         </div>
                     </div>
                     <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -414,12 +414,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 let time_str = '';
                 let t = time.getMinutes();
                 if (t)
-                    time_str += t + 'min\n';
+                    time_str += t + ' m\n';
                 t = time.getSeconds();
                 if (time_str  || t)
-                    time_str += t + 'sec\n';
+                    time_str += t + ' s\n';
                 t = time.getMilliseconds();
-                time_str += t + 'ms';
+                time_str += t + ' ms';
                 this.status = time_str;
 
                 if (res){
@@ -428,7 +428,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
             }
             catch (e){
-                this.cell.outputs = [{data:{"text/plain":e.message, type: 'error'}}];
+                this.cell.outputs = [{data:{"text/plain":'<b>error:</b>\n'+e.message}}];
             }
             finally {
                 this.icon = 'av:play-circle-outline';
