@@ -303,7 +303,7 @@ export class tensor{
         switch (dType){
             case BigUint64Array:{
                 handler = ()=>{
-                    return Math.random() * 2 ** 64;
+                    return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
                 }
             } break;
         }

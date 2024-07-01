@@ -170,7 +170,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 </div>
                 <div id="out" class="vertical" style="width: 100%;">
                     <div ~if="!cell?.metadata?.hideRun">
-                        <div ~for="cell.outputs" style="padding: 4px;" >
+                        <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" >
                             <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.startsWith('<b>error')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
                         </div>
                     </div>
