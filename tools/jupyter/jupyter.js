@@ -143,6 +143,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
             oda-icon{
                 cursor: pointer;
+                max-height: 64px;
             }
             oda-button:hover{
                 border-radius: 50%;
@@ -151,8 +152,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div class="horizontal">
-            <div style="width: 24px; font-size: xx-small; text-align: center; white-space: break-spaces;" >{{status}}</div>
-        <div class="vertical flex" ~style="{marginLeft: (levelStep * cell.level)+'px'}">
+            <div style="width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" >{{status}}</div>
+        <div class="vertical flex">
             <div class="vertical flex">
                 <div class="horizontal" >
                     <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
@@ -411,13 +412,25 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.cell.metadata.hideRun = false;
         this.icon = 'spinners:8-dots-rotate';
         this.$render();
+        this.status = '';
         this.async(async ()=>{
             try{
                 let time = Date.now();
                 run_context.output_data = [];
                 const fn = new AsyncFunction('context', this.code);
                 let res =  await fn(run_context);
-                this.status = Date.now() - time;
+                time = new Date(Date.now() - time);
+                let time_str = '';
+                let t = time.getMinutes();
+                if (t)
+                    time_str += t + ' m\n';
+                t = time.getSeconds();
+                if (time_str  || t)
+                    time_str += t + ' s\n';
+                t = time.getMilliseconds();
+                time_str += t + ' ms';
+                this.status = time_str;
+
                 if (res){
                     run_context.output_data.push(res);
                 }
