@@ -164,14 +164,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                 </div>
             </div>
-            <div ~if="cell?.outputs?.length" class="horizontal info border" style="max-height: 100%;">
+            <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
                 <div style="width: 30px">
                     <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                 </div>
                 <div id="out" class="vertical" style="width: 100%;">
                     <div ~if="!cell?.metadata?.hideRun">
-                        <div ~for="cell.outputs" style="padding: 4px;">
-                            <div :src="outSrc" :warning="console($$for.item, 'warn:')" :error="console($$for.item, 'error:')" ~for="$for.item.data" ~is="outIs($$for)" ~html="outHtml" style="white-space: break-spaces;"></div>
+                        <div ~for="cell.outputs" style="padding: 4px;" >
+                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.startsWith('error')" :warning="outHtml.startsWith('warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
                         </div>
                     </div>
                     <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -428,7 +428,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
             }
             catch (e){
-                this.cell.outputs = [{data:{"text/plain":e.message}}];
+                this.cell.outputs = [{data:{"text/plain":e.message, type: 'error'}}];
             }
             finally {
                 this.icon = 'av:play-circle-outline';
