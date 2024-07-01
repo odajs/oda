@@ -299,7 +299,15 @@ export class tensor{
         return this.ones(src.shape, src.dType);
     }
     static rand(shape, dType) {
-        return this.fill(shape, Math.random, dType);
+        let handler = Math.random;
+        switch (dType){
+            case BigUint64Array:{
+                handler = ()=>{
+                    return Math.random() * 2 ** 64;
+                }
+            } break;
+        }
+        return this.fill(shape, handler, dType);
     }
     static randNorm(shape){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
