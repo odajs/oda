@@ -336,7 +336,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
             <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell" style="padding: 0 8px;"></oda-button>
-            <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size icon="editor:mode-edit"></oda-button>
+            <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
     `,
     cell: null,
@@ -524,11 +524,15 @@ class JupyterCell extends ROCKS({
     },
     get name() {
         const firstSource = this.src.split('\n')[0];
+        let t = this.type;
         switch (this.type) {
             case 'text':
-            case 'markdown': return firstSource.substring(this.h).trim() || (this.type + ' [empty]');
+            case 'markdown': return firstSource.substring(this.h).trim() || (t + ' [empty]');
         }
-        return firstSource ? this.type : this.type + ' [empty]';
+        t += ' ' + (this.notebook.cells.filter(i=>{
+            return i.type === this.type;
+        }).indexOf(this) + 1);
+        return firstSource ? t : t + ' [empty]';
     },
     get metadata() {
         return this.data.metadata;
