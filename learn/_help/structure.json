@@ -554,67 +554,67 @@
                                             "label": {
                                                 "ru": "Список модификаторов"
                                             },
-                                            "name": "structure-props-props-modifiers-list-props-modifiers.md"
+                                            "name": "structure-props-modifiers-list-modifiers.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>default</b>: Модификатор начального значения"
                                             },
-                                            "name": "structure-props-props-modifiers-default-modifier.md"
+                                            "name": "structure-props-modifiers-default.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>type</b>: Модификатор типа"
                                             },
-                                            "name": "structure-props-props-modifiers-type-modifier.md"
+                                            "name": "structure-props-modifiers-type.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>reflectToAttribute</b>: Модификатор атрибутов хоста"
                                             },
-                                            "name": "structure-props-props-modifiers-reflect-to-attribute-modifier.md"
+                                            "name": "structure-props-modifiers-reflect-to-attribute.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>reactive</b>: Модификатор реактивности"
                                             },
-                                            "name": "structure-props-props-modifiers-reactive-modifier.md"
+                                            "name": "structure-props-modifiers-reactive.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>freeze</b>: Модификатор блокировки реактивности"
                                             },
-                                            "name": "structure-props-props-modifiers-freeze-modifier.md"
+                                            "name": "structure-props-modifiers-freeze.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>label</b>: Модификатор имени"
                                             },
-                                            "name": "structure-props-props-modifiers-label-modifier.md"
+                                            "name": "structure-props-modifiers-label.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>category</b>: Модификатор группы"
                                             },
-                                            "name": "structure-props-props-modifiers-category-modifier.md"
+                                            "name": "structure-props-modifiers-category.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>list</b>: Модификатор списка значений"
                                             },
-                                            "name": "structure-props-props-modifiers-list-modifier.md"
+                                            "name": "structure-props-modifiers-list.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>shared</b>: Модификатор сквозного биндинга"
                                             },
-                                            "name": "structure-props-props-modifiers-shared-modifier.md"
+                                            "name": "structure-props-modifiers-shared.md"
                                         },
                                         {
                                             "label": {
                                                 "ru": "<b style='color: brown'>$save</b>: Модификатор сохранения"
                                             },
-                                            "name": "structure-props-props-modifiers-$save-modifier.md"
+                                            "name": "structure-props-modifiers-$save.md"
                                         }
                                     ]
                                 },

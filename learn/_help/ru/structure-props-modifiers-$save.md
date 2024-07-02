@@ -8,9 +8,9 @@
 
 Для примера объявим компонент, сохраняющий в Web-хранилище значение, введенное в строку ввода:
 
-```javascript _run_edit_[test-component.js]
+```javascript _run_edit_[test-component1.js]
 ODA({
-    is: 'test-component',
+    is: 'test-component1',
     template: `
         <input ::value>
         <button @tap="clear">Очистить</button>
@@ -32,9 +32,9 @@ ODA({
 
 Например,
 
-```javascript _run_edit_[test2-component.js]
+```javascript _run_edit_[test-component2.js]
 ODA({
-    is: 'test2-component',
+    is: 'test-component2',
     template: `
         <input ::value>
         <button @tap="clear">Очистить</button>
@@ -80,16 +80,32 @@ ODA({
 
 Например,
 
-```javascript _run_edit_[my-component.js]_{test-component.js}
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'test-component3',
+    template: `
+        <input ::value>
+        <button @tap="clear">Очистить</button>
+    `,
+    value: {
+        $def: 'Пример для $save',
+        $save: true
+    },
+    clear() {
+        this.$resetSettings();
+        window.location.reload(true);
+    }
+});
+
 ODA({
     is: 'new-component',
-    extends: 'test-component'
+    extends: 'test-component3'
 });
 
 ODA({
     is: 'my-component',
     template:`
-        test-component: <test-component></test-component><br>
+        test-component: <test-component3></test-component3><br>
         new-component: <new-component></new-component>
         `
 });
@@ -107,7 +123,7 @@ ODA({
 
 ```javascript _run_edit_error_[my-component.js]
 ODA({
-    is: 'test-component',
+    is: 'test-component4',
     template: `
         <input type="range" ::value="value[0]">
         <button @tap="clear">Очистить</button>
@@ -125,7 +141,7 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component ~save-key="'key3'"></test-component>
+        <test-component4></test-component4>
     `
 });
 ```
@@ -136,7 +152,7 @@ ODA({
 
 ```javascript _run_edit_[my-component.js]
 ODA({
-    is: 'test-component',
+    is: 'test-component5',
     template: `
         <input type="range" ::value="value[0]" @change="value=[...value]">
         <button @tap="clear">Очистить</button>
@@ -154,12 +170,12 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component ~save-key="'key4'"></test-component>
+        <test-component5></test-component5>
     `
 });
 ```
 
-Можно видеть, что теперь положение ползунка сохраняется между перезагрузками страницы.
+Можно видеть, что теперь положение ползунка сохраняется при перезагрузке страницы.
 
 Аналогично, автосохранение объектов срабатывает только при изменении указателя на объект, а не при изменении его отдельных свойств.
 
@@ -167,16 +183,15 @@ ODA({
 
 ```javascript _run_edit_error_[my-component.js]
 ODA({
-    is: 'test-component',
+    is: 'test-component6',
     template: `
         <input type="range" ::value="value.prop">
         <button @tap="clear">Очистить</button>
     `,
-    value: {
-        $def: {
+    $save: {
+        value: {
             prop: 0
-        },
-        $save: true
+        }
     },
     clear() {
         this.$resetSettings();
@@ -187,7 +202,7 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component ~save-key="'key5'"></test-component>
+        <test-component6></test-component6>
     `
 });
 ```
@@ -198,16 +213,15 @@ ODA({
 
 ```javascript _run_edit_[my-component.js]
 ODA({
-    is: 'test-component',
+    is: 'test-component7',
     template: `
         <input type="range" ::value="value.prop" @change="value={...value}">
         <button @tap="clear">Очистить</button>
     `,
-    value: {
-        $def: {
+    $save: {
+        value: {
             prop: 0
-        },
-        $save: true
+        }
     },
     clear() {
         this.$resetSettings();
@@ -218,12 +232,47 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component ~save-key="'key6'"></test-component>
+        <test-component7></test-component7>
     `
 });
 ```
 
-Можно видеть, что теперь положение ползунка сохраняется между перезагрузками страницы.
+Можно видеть, что теперь положение ползунка сохраняется при перезагрузке страницы.
+
+Объект можно сохранять только целиком. Объявление отдельного свойства объекта с модификатором **$save** не приводит к сохранению этого свойства в хранилище.
+
+Например,
+
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'test-component8',
+    template: `
+        <input type="range" ::value="value.prop">
+        <button @tap="clear">Очистить</button>
+    `,
+    value: {
+        $def: {
+            prop: {
+                $def: 0,
+                $save: true
+            }
+        }
+    },
+    clear() {
+        this.$resetSettings();
+        window.location.reload(true);
+    }
+});
+
+ODA({
+    is: 'my-component',
+    template:`
+        <test-component8></test-component8>
+    `
+});
+```
+
+В данном примере положение ползунка передается в свойство **prop** объекта **value**, которое объявлено с модификатором **$save**. Переместите ползунок и перезагрузите страницу, чтобы убедиться, что данные из свойства **prop** не восстанавливаются, т.к. не сохраняются в хранилище.
 
 ```like_md
 Узнать больше о работе с Web-хранилищем можно в статье посвященной директиве [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md).
