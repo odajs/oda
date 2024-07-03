@@ -529,10 +529,10 @@ class JupyterCell extends ROCKS({
         if (this.type !== 'code') return;
         let clear = false;
         for (let codeCell of this.notebook.codes){
-            if (clear)
-                codeCell.status = '';
             if (codeCell === this)
                 clear = true;
+            if (clear)
+                codeCell.status = '';
         }
     },
     get collapsed() {
