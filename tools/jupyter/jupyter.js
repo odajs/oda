@@ -171,7 +171,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div id="out" class="vertical" style="width: 100%;">
                     <div ~if="!cell?.metadata?.hideRun">
                         <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" >
-                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.startsWith('<b>error')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
+                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
                         </div>
                     </div>
                     <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -373,7 +373,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             oda-ace-editor {
                 opacity: 1;
                 filter: unset;
-                margin: 16px;
+                margin: 8px 0px;
             }
         </style>
         <div  class="horizontal light" @pointerover="isHover = true" @pointerout="isHover = false">
@@ -381,7 +381,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
                 <oda-button class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run"></oda-button>
             </div>
-            <oda-ace-editor :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
+            <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
         </div>
  
     `,
@@ -675,7 +675,7 @@ class JupyterCell extends ROCKS({
             this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
         }
         catch (e){
-            this.outputs = [{data:{"text/plain":'<b>error:</b>\n'+e.toString()}}];
+            this.outputs = [{data:{"text/plain": e.stack}}];
             this.status = 'error';
         }
         finally {
