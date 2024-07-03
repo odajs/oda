@@ -364,7 +364,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             .sticky{
                 cursor: pointer; 
                 position: sticky;
-                top: 0px;
+                top: -10px;
             }
             oda-button:hover{
                 border-radius: 50%;
@@ -379,7 +379,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         <div  class="horizontal light" @pointerover="isHover = true" @pointerout="isHover = false">
             <div vertical style="width: 30px; align-items: center;"> 
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
-                <oda-button class="sticky" ~style="{visibility: isReadyRun?'visible':'hidden'}" :icon-size :icon @tap="run"></oda-button>
+                <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
             <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
         </div>
