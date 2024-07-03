@@ -152,7 +152,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div class="horizontal">
-            <div style="width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" >{{status}}</div>
+            <div style="width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
         <div class="vertical flex">
             <div class="vertical flex">
                 <div class="horizontal" >
@@ -394,63 +394,27 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         }
     },
     get isReadyRun(){
-        return this.isHover || this.selected;// || this.isRun;
+        return this.isHover || this.selected || this.cell?.isRun;
     },
     isHover: false,
     value: '',
-    icon: 'av:play-circle-outline',
+    get icon(){
+        return this.cell?.isRun? 'spinners:8-dots-rotate': 'av:play-circle-outline';
+    },
     editorValueChanged(e) {
         this.value = e.detail.value;
     },
-    run() {
-        this.cell.metadata.hideRun = false;
-        this.icon = 'spinners:8-dots-rotate';
-        this.$render();
-        this.cell.status = '';
-        this.async(async ()=>{
-            try{
-                let time = Date.now();
-                run_context.output_data = [];
-                const fn = new AsyncFunction('context', this.code);
-                let res =  await fn(run_context);
-                time = new Date(Date.now() - time);
-                let time_str = '';
-                let t = time.getMinutes();
-                if (t)
-                    time_str += t + ' m\n';
-                t = time.getSeconds();
-                if (time_str  || t)
-                    time_str += t + ' s\n';
-                t = time.getMilliseconds();
-                time_str += t + ' ms';
-                this.cell.status = time_str;
-
-                if (res){
-                    run_context.output_data.push(res);
-                }
-                this.cell.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
-            }
-            catch (e){
-                this.cell.outputs = [{data:{"text/plain":'<b>error:</b>\n'+e.message}}];
-            }
-            finally {
-                this.icon = 'av:play-circle-outline';
-                this.async(()=>{
-                    this.$('oda-ace-editor').focus();
-                })
-
-            }
-        }, 100)
+    async run() {
+        for (let code of this.notebook.codes){
+            if (code === this) break;
+            await code.run();
+            await this.$render();
+        }
+        await this.cell.run();
+        this.focus();
     },
     attached() {
         this.$('oda-ace-editor').$('div').classList.add("light");
-    },
-    get code(){
-        let code = this.value.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4);\n for(let i in __v__) run_context.i = __v__[i]');
-        code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
-        code = 'with (context) {'+ code + '}';
-        return code;
     }
 })
 
@@ -459,6 +423,9 @@ class JupyterNotebook extends ROCKS({
     isChanged: false,
     get cells() {
         return this.data.cells.map(cell => new JupyterCell(cell, this));
+    },
+    get codes() {
+        return this.cells.filter(i=>i.type === 'code');
     },
     get items() {
         return this.cells.filter(cell => cell.level === 0);
@@ -509,6 +476,7 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     status: '',
+    isRun: false,
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -533,9 +501,7 @@ class JupyterCell extends ROCKS({
             case 'text':
             case 'markdown': return firstSource.substring(this.h).trim() || (t + ' [empty]');
         }
-        t += ' ' + (this.notebook.cells.filter(i=>{
-            return i.type === this.type;
-        }).indexOf(this) + 1);
+        t += ' ' + (this.notebook.codes.indexOf(this) + 1);
         return firstSource ? t : t + ' [empty]';
     },
     get metadata() {
@@ -560,6 +526,14 @@ class JupyterCell extends ROCKS({
     set src(n) {
         this.data.source = [n];
         this.notebook.change();
+        if (this.type !== 'code') return;
+        let clear = false;
+        for (let codeCell of this.notebook.codes){
+            if (clear)
+                codeCell.status = '';
+            if (codeCell === this)
+                clear = true;
+        }
     },
     get collapsed() {
         return this.metadata?.collapsed;
@@ -673,6 +647,47 @@ class JupyterCell extends ROCKS({
         super();
         this.notebook = notebook;
         this.data = data;
+    }
+    async run(){
+        this.metadata.hideRun = false;
+        this.status = '';
+        this.isRun = true;
+        try{
+            let time = Date.now();
+            run_context.output_data = [];
+            const fn = new AsyncFunction('context', this.code);
+            let res =  await fn(run_context);
+            time = new Date(Date.now() - time);
+            let time_str = '';
+            let t = time.getMinutes();
+            if (t)
+                time_str += t + ' m\n';
+            t = time.getSeconds();
+            if (time_str  || t)
+                time_str += t + ' s\n';
+            t = time.getMilliseconds();
+            time_str += t + ' ms';
+            this.status = time_str;
+
+            if (res){
+                run_context.output_data.push(res);
+            }
+            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
+        }
+        catch (e){
+            this.outputs = [{data:{"text/plain":'<b>error:</b>\n'+e.toString()}}];
+            this.status = 'error';
+        }
+        finally {
+            this.isRun = false;
+        }
+    }
+    get code(){
+        let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4);\n for(let i in __v__) run_context.i = __v__[i]');
+        code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
+        code = 'with (context) {'+ code + '}';
+        return code;
     }
 }
 function getID() {
