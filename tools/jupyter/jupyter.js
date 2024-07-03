@@ -406,7 +406,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     async run() {
         for (let code of this.notebook.codes){
-            if (code === this) break;
+            if (code === this.cell) break;
             await code.run();
             await this.$render();
         }
@@ -675,7 +675,15 @@ class JupyterCell extends ROCKS({
             this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
         }
         catch (e){
-            this.outputs = [{data:{"text/plain": e.stack}}];
+            let error = e.stack.split('\n');
+            let pos = error[1];
+            pos = pos.substring(pos.indexOf('>') + 1);
+            pos = pos.split(':');
+            pos[1] = +pos[1] - 2;
+            pos.shift();
+            pos = pos.join(':');
+            error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+            this.outputs = [{data:{"text/plain": error}}];
             this.status = 'error';
         }
         finally {
@@ -684,9 +692,9 @@ class JupyterCell extends ROCKS({
     }
     get code(){
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4);\n for(let i in __v__) run_context.i = __v__[i]');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
-        code = 'with (context) {'+ code + '}';
+        code = 'with (context) {' + code + '}';
         return code;
     }
 }
