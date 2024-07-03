@@ -241,8 +241,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.editMode = true;
         }
     },
+    get status(){
+        return this.cell.status;
+    },
     $pdp: {
-        status: '',
+
         editMode: {
             $def: false,
             get() {
@@ -403,7 +406,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.cell.metadata.hideRun = false;
         this.icon = 'spinners:8-dots-rotate';
         this.$render();
-        this.status = '';
+        this.cell.status = '';
         this.async(async ()=>{
             try{
                 let time = Date.now();
@@ -420,7 +423,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                     time_str += t + ' s\n';
                 t = time.getMilliseconds();
                 time_str += t + ' ms';
-                this.status = time_str;
+                this.cell.status = time_str;
 
                 if (res){
                     run_context.output_data.push(res);
@@ -505,6 +508,7 @@ class JupyterNotebook extends ROCKS({
 class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
+    status: '',
     type: {
         $def: 'text',
         $list: ['text', 'code'],
