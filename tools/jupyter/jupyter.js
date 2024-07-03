@@ -5,7 +5,6 @@ const run_context = Object.create(null);
 run_context.output_data = undefined;
 const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
-    // console_log.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
 const console_warn=  console.warn;
@@ -407,6 +406,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
+            if (code.status) continue;
             await code.run();
             await this.$render();
         }
@@ -688,6 +688,7 @@ class JupyterCell extends ROCKS({
         }
         finally {
             this.isRun = false;
+            // run_context.output_data = [];
         }
     }
     get code(){
