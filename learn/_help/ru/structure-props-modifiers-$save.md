@@ -331,6 +331,7 @@ ODA({
         window.location.reload(true);
     }
 });
+
 ODA({
     is: 'my-component',
     template:`
@@ -342,16 +343,37 @@ ODA({
 
 В данном примере два экземпляра компонента **test-component10** формируют на экране два ползунка. Переместите ползунки и убедитесь, что после перезагрузки страницы оба ползунка принимают одинаковое положение, которое соответствует положению последнего перемещённого ползунка.
 
-Чтобы заставить фреймворк сохранять данные разных экземпляров одного компонента независимо друг от друга, необходимо с помощью директивы **~save-key** указать этим экземплярам уникальные идентификаторы хранилища.
+Чтобы заставить фреймворк сохранять данные разных экземпляров одного компонента независимо друг от друга, необходимо с помощью директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) указать этим экземплярам уникальные идентификаторы.
 
+Например,
 
+```javascript _run_edit_[my-component.js]
+ODA({
+    is: 'test-component10',
+    template: `
+        <input type="range" ::value>
+        <button @tap="clear">Очистить</button>
+    `,
+    value: {
+        $def: 0,
+        $save: true
+    },
+    clear() {
+        this.$resetSettings();
+        window.location.reload(true);
+    }
+});
 
+ODA({
+    is: 'my-component',
+    template:`
+        <test-component10 ~save-key="'key1'"></test-component10><br>
+        <test-component10 ~save-key="'key2'"></test-component10>
+    `
+});
+```
 
-
-
-
-
-
+Данный пример аналогичен предыдущему, только в теги обоих компонентов **test-component10** были добавлены директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) со строковыми значениями **'key1'** и **'key1'**. Теперь положение ползунков сохраняется и сбрасывается независимо друг от друга, хотя сами ползунки являются экземплярами одного и того же компонента.
 
 ```like_md
 Узнать больше о работе директивы **~save-key** можно [в этой статье](./index.html#structure-template-jsx-directives-~save-key.md).
