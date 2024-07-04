@@ -30,12 +30,12 @@ ODA({
             return !!this.item?.h
         }
     },
-    header:{
-        $attr: true,
-        get(){
-            return !!this.item?.h
-        }
-    },
+    // header:{
+    //     $attr: true,
+    //     get(){
+    //         return !!this.item?.h
+    //     }
+    // },
     get icon(){
         switch (this.item.type){
             case 'code':
