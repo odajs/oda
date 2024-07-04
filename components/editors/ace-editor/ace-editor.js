@@ -126,6 +126,7 @@ ODA({is: 'oda-ace-editor',
         this.setOptions();
         this.setValue(this.src || this.value || '');
         this.src ||= this.editor.getValue();
+        this.editor.getSession().setUndoManager(new ace.UndoManager());
         this.editor.setReadOnly(this.readOnly);
         this.editor.commands.addCommand({
             name: 'format',
