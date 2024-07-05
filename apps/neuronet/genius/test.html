@@ -2,51 +2,22 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-    import {tensor} from './torus.js';
-    const context = {}
-    context.__v__ =  {NeuroModule} = await ODA.import('@apps/neuro-module'); for(let i in __v__) run_context.i = __v__[i];
-    context.__v__ =  {tensor} = await ODA.import('@apps/torus'); for(let i in __v__) run_context.i = __v__[i];
-        BitLayer = class BitLayer extends NeuroModule{
-            constructor(dim_in = 8,  dim_out = 8, bias = 0) {
-                super(arguments);
-            }
-            __init__(){
-                this.WEIGHTS = tensor.param(tensor.rand(Math.ceil(this.dim_in * this.dim_out / 64), BigUint64Array));
-            }
 
-            forward(x) {
-                const out = this.forwardFunc(...x.data);
-                out._back = ()=>{
-
-                })
-                return out;
-            }
-            get forwardFunc(){
-                if(!this._func){
-                    let p = new Array(this.dim_in).fill(0).map((_,i) => 'x' + i);
-                    this._func = new Function(...p, this.code);
-                }
-                return this._func;
-            }
-            get code(){
-                const bits = this.bits;
-                let code = new Array(this.dim_out).fill('').map((_, i)=>`out[${i}] = 0`);
-                for(let y = 0; y < this.dim_out; y++){
-                    for(let x = 0; x < this.dim_in; x++){
-                        let i = x * y + x;
-                        if(+bits[i])
-                            code[y] += ' + x' + x;
-                        else
-                            code[y] += ' - x' + x;
-                    }
-                }
-                code = code.join(';\n');
-                code = `const out = new Float32Array(${this.dim_out});\n`+code+'\nreturn new tensor(out);';
-                return code;
-            }
-            get bits(){
-                return this._bits ??= Array.prototype.map.call(this.WEIGHTS.data, w=>w.toString(2).padStart(64, '0')).join('');
-            }
-        }
-
+    let s = '';
+    let size = 10000000;
+    console.time('1')
+    for (let i = 0 ;i<size; i++){
+        s+='0'
+    }
+    console.log(s.length)
+    console.timeEnd('1')
+    console.time('2')
+    let array = []
+    s = '';
+    for (let i = 0 ;i<size; i++){
+        array.push('0')
+    }
+    s = array.join('')
+    console.log(s.length)
+    console.timeEnd('2')
 </script>

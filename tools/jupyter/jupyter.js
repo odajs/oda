@@ -151,33 +151,33 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div class="horizontal">
-            <div style="width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
-        <div class="vertical flex">
+            <div style="min-width: 32px; max-width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
             <div class="vertical flex">
-                <div class="horizontal" >
-                    <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                    <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview></div>
-                </div>
-                <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
-                    <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
-                    <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
-                </div>
-            </div>
-            <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
-                <div style="width: 30px">
-                    <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
-                </div>
-                <div id="out" class="vertical" style="width: 100%;">
-                    <div ~if="!cell?.metadata?.hideRun">
-                        <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" >
-                            <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
-                        </div>
+                <div class="vertical flex">
+                    <div class="horizontal" >
+                        <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                        <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview></div>
                     </div>
-                    <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
+                    <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
+                        <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
+                        <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
+                    </div>
                 </div>
-                
-            </div>        
-        </div>
+                <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
+                    <div style="width: 30px">
+                        <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
+                    </div>
+                    <div id="out" class="vertical" style="width: 100%;">
+                        <div ~if="!cell?.metadata?.hideRun">
+                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" >
+                                <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces;"></div>
+                            </div>
+                        </div>
+                        <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
+                    </div>
+                    
+                </div>        
+            </div>
         </div>
         
         <oda-jupyter-divider ></oda-jupyter-divider>
@@ -375,7 +375,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 margin: 8px 0px;
             }
         </style>
-        <div  class="horizontal light" @pointerover="isHover = true" @pointerout="isHover = false">
+        <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
             <div vertical style="width: 30px; align-items: center;"> 
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
@@ -413,9 +413,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         await this.cell.run();
         this.focus();
     },
-    attached() {
-        this.$('oda-ace-editor').$('div').classList.add("light");
-    }
+    // attached() {
+    //     this.$('oda-ace-editor').$('div').classList.add("light");
+    // }
 })
 
 class JupyterNotebook extends ROCKS({
