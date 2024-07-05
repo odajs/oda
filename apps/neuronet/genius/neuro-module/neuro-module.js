@@ -73,6 +73,12 @@ export class NeuroModule {
     get label(){
         return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
     }
+    serialize(){
+        return {}
+    }
+    load(net = {}){
+
+    }
 }
 class Linear extends NeuroModule{
     constructor(d_in, d_out, bias = false) {
