@@ -114,6 +114,27 @@ export class tensor{
     set grad(n){
         this['#grad'] = n;
     }
+    get binSize(){
+        switch (this.dType){
+            case BigUint64Array:
+                return 64;
+            case Float32Array:
+            case Uint32Array:
+            case Int32Array:
+                return 32;
+            case Uint16Array:
+            case Int16Array:
+                return 16;
+            case Uint8Array:
+            case Int8Array:
+                return 8;
+        }
+        return 0;
+    }
+    get bins(){
+        const size = this.binSize;
+        return Array.prototype.map.call(this.data, d => d.toString(2).padStart(size, '0'));
+    }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
         let axis_out = axis_this.split('');
@@ -130,6 +151,7 @@ export class tensor{
     get size(){
         return this.data.length;
     }
+
     get data(){
         return this.#data;
     }
