@@ -98,6 +98,93 @@ class Linear extends NeuroModule{
         return x;
     }
 }
+class BinLayer extends NeuroModule{
+    constructor(dim_in,  dim_out, bias = 0) {
+        super(arguments);
+    }
+    __init__(){
+        this._wSize = this.dim_in * this.dim_out;
+        this.WEIGHTS = tensor.rand(Math.ceil(this._wSize / 64), BigUint64Array);
+    }
+
+    forward(x) {
+        let x_data = x.data
+        const out = this.forwardFunc(...x_data);
+        out._back = ()=>{
+            x.grad = this.backFunc(...out.grad);
+            let bins = this.bins;
+            let res = [];
+            x_data.forEach((data, i)=>{
+                i *= this.dim_out;
+                let d = data * LEARNING_RATE;
+                out.grad.forEach((err, y)=>{
+                    i += y
+                    res.push((+bins[i] +  err * d)>0?'1':'0');
+                })
+            })
+            res = res.join('').padEnd(bins.length, '0');
+            if(res !== bins){
+                for(let i = 0; i<this.WEIGHTS.size; i++){
+                    this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
+                }
+                this._bins = undefined;
+                this._func = undefined;
+                this._backFunc = undefined;
+            }
+        }
+        out._src(x)._label('BinLayer');
+        return out;
+    }
+    get forwardFunc(){
+        if(!this._func){
+            let p = new Array(this.dim_in).fill(0).map((_,i) => 'x' + i);
+            this._func = new Function(...p, this.code);
+        }
+        return this._func;
+    }
+    get code(){
+        const bits = this.bins;
+        let code = new Array(this.dim_out).fill('').map((_, i)=>`out[${i}] = 0`);
+        for(let x = 0; x < this.dim_in; x ++){
+            let i = x * this.dim_out;
+            for(let y = 0; y < this.dim_out; y++){
+                if(+bits[i + y])
+                    code[y] += ' + x' + x;
+                else
+                    code[y] += ' - x' + x;
+            }
+        }
+        code = code.join(';\n');
+        code = `const out = new Float32Array(${this.dim_out});\n`+code+'\nreturn tensor.from(out);';
+        return code;
+    }
+    get backFunc(){
+        if(!this._backFunc){
+            let p = new Array(this.dim_out).fill(0).map((_,i) => 'y' + i);
+            this._backFunc = new Function(...p, this.codeBack);
+        }
+        return this._backFunc;
+    }
+    get codeBack(){
+        const bits = this.bins;
+        let code = new Array(this.dim_in).fill('').map((_, i)=>`grad[${i}] = 0`);
+        for(let x = 0; x < this.dim_in; x++){
+            let i = x * this.dim_out;
+            for(let y = 0; y < this.dim_out; y++){
+                if(+bits[i + y])
+                    code[x] += ' + y' + y;
+                else
+                    code[x] += ' - y' + y;
+            }
+        }
+        code = code.join(';\n');
+        code = `const grad = new Float32Array(${this.dim_in});\n`+code+'\nreturn grad;';
+        return code;
+    }
+    get bins(){
+        return this._bins ??= this.WEIGHTS.bins.join('');
+    }
+}
 class conv1D extends NeuroModule {
     constructor(in_channels,
                 out_channels,
@@ -237,6 +324,9 @@ class RMSNorm extends NeuroModule {
 export const nm = {
     linear(...args){
         return new Linear(...args);
+    },
+    binLayer(...args){
+        return new BinLayer(...args);
     },
     Conv1d(...args){
         return new conv1D(...args);
