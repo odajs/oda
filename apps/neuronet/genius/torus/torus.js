@@ -202,7 +202,7 @@ export class tensor{
         })
         this.topo.reverse();
         if(grad){
-            this.topo[0].grad = this.topo[0].grad.map(i=>grad)
+            this.topo[0].grad = grad;
         }
         this.topo.forEach((node) => {
             if (!node.src) return;

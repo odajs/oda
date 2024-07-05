@@ -695,7 +695,7 @@ class JupyterCell extends ROCKS({
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
-        code = 'with (context) {' + code + '}';
+        code = 'with (context) {\n\t' + code + '\n\n}';
         return code;
     }
 }
