@@ -336,7 +336,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top">
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
-            <oda-button :hidden="control?.type !== 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell" style="padding: 0 8px;"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
@@ -348,7 +348,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         this.cell.delete();
     },
     showSettings(e) {
-        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '$public' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
+        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
 const AsyncFunction = async function () {}.constructor;
@@ -413,9 +413,21 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         await this.cell.run();
         this.focus();
     },
-    // attached() {
-    //     this.$('oda-ace-editor').$('div').classList.add("light");
-    // }
+    $public:{
+        autoRun:{
+            $def: false,
+            get(){
+                return this.cell?.readMetadata('autoRun', false)
+            },
+            set(n){
+                this.cell?.writeMetadata('autoRun', n)
+            }
+        }
+    },
+    attached() {
+        if (this.autoRun)
+            this.run();
+    }
 })
 
 class JupyterNotebook extends ROCKS({
