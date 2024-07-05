@@ -759,7 +759,7 @@ tensor.prototype.silu = function (storage_tensor) {
 tensor.prototype.softmax = function (){
     const exp = this.data.map(Math.exp).reduce((r, v) => r + v);
     const data = this.data.map((x, i)=>  Math.exp(x) / exp);
-    const out =  tensor.from(data, 'softmax', [this])._shape(this);
+    const out =  tensor.from(data)._src(this)._label('softmax')._shape(this);
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let d = data[i];
