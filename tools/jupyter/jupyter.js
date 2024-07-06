@@ -134,6 +134,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 margin-bottom: 6px;
                 width: 100%;
                 min-height: 24px;
+            
             }
             .sticky{
                 cursor: pointer; 
@@ -152,7 +153,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div class="horizontal">
             <div style="min-width: 32px; max-width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
-            <div class="vertical flex">
+            <div class="vertical flex" style="overflow: hidden;">
                 <div class="vertical flex">
                     <div class="horizontal" >
                         <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
@@ -167,9 +168,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div style="width: 30px">
                         <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                     </div>
-                    <div flex vertival id="out" class="vertical" style="width: 100%;">
-                        <div ~if="!cell?.metadata?.hideRun">
-                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" >
+                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
+                        <div flex vertical  ~if="!cell?.metadata?.hideRun">
+                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" > 
                                 <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></div>
                             </div>
                         </div>
