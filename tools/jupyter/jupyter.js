@@ -165,12 +165,12 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
-                    <div style="width: 30px">
+                    <div style="width: 32px">
                         <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                     </div>
-                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
+                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding-bottom: 4px;">
                         <div flex vertical  ~if="!cell?.metadata?.hideRun">
-                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" > 
+                            <div ~for="cell.outputs" style="padding: 4px;  border-top: 1px dashed gray;" > 
                                 <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></div>
                             </div>
                         </div>
@@ -373,12 +373,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             oda-ace-editor {
                 opacity: 1;
                 filter: unset;
-                margin: 8px 0px;
             }
         </style>
         <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
-            <div vertical style="width: 30px; align-items: center;"> 
-                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
+            <div vertical style="width: 32px; align-items: center; min-height: 32px;"> 
+                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 8px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
             <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
