@@ -73,12 +73,20 @@ export class NeuroModule {
     get label(){
         return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
     }
-    serialize(){
-        return {}
+    get model(){
+        const props = Object.getOwnPropertyDescriptors(this);
+        const modules = props.filter(m=>m.value instanceof NeuroModule).map(m=>m.model);
+        const params = props.filter(m=>m.value instanceof tensor && value.isSerializable);
+        return {
+            props: this.params,
+            modules,
+            params
+        }
     }
-    load(net = {}){
+    set model(n){
 
     }
+
 }
 class Linear extends NeuroModule{
     constructor(d_in, d_out, bias = false) {

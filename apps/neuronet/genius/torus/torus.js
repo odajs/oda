@@ -390,6 +390,7 @@ export class tensor{
             src = tensor.from(src);
         }
         src.isParam = true;
+        src.isSerializable = true;
         return src;
     }
     reverse(dim = 0){
