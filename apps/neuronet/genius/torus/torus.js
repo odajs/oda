@@ -32,6 +32,9 @@ export class tensor{
         this.#data = data;
         this.id = genId();
     }
+    get model(){
+        return {dType: this.dType.name, data: this.data}
+    }
     _label(label){
         this.#label = label;
         return this;

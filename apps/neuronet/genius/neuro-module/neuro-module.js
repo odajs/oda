@@ -75,11 +75,15 @@ export class NeuroModule {
     }
     get model(){
         const props = Object.getOwnPropertyDescriptors(this);
-        const modules = props.filter(m=>m.value instanceof NeuroModule).map(m=>m.model);
-        const params = props.filter(m=>m.value instanceof tensor && value.isSerializable);
+        const params = {};
+        for(let key in props){
+            const obj = props[key];
+            if(obj.value?.isSerializable){
+                params[key] = obj.value.model;
+            }
+        }
         return {
-            props: this.params,
-            modules,
+            args: this.params,
             params
         }
     }
