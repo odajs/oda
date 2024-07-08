@@ -407,10 +407,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
-            await code.run();
+            await code.run(this.jupyter);
             await this.$render();
         }
-        await this.cell.run();
+        await this.cell.run(this.jupyter);
         this.focus();
     },
     $public:{
@@ -660,7 +660,7 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    async run(){
+    async run(jupyter){
         this.metadata.hideRun = false;
         this.status = '';
         this.isRun = true;
@@ -668,7 +668,7 @@ class JupyterCell extends ROCKS({
             let time = Date.now();
             run_context.output_data = [];
             const fn = new AsyncFunction('context', this.code);
-            let res =  await fn(run_context);
+            let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
             let t = time.getMinutes();
