@@ -3,21 +3,15 @@
 <meta charset="UTF-8">
 <script type="module">
 
-    let s = '';
-    let size = 10000000;
-    console.time('1')
-    for (let i = 0 ;i<size; i++){
-        s+='0'
+    class myClass {
+        get a(){
+            return 100
+        }
+        toJSON(){
+            return {'a': this.a}
+        }
     }
-    console.log(s.length)
-    console.timeEnd('1')
-    console.time('2')
-    let array = []
-    s = '';
-    for (let i = 0 ;i<size; i++){
-        array.push('0')
-    }
-    s = array.join('')
-    console.log(s.length)
-    console.timeEnd('2')
+
+    const obj = new myClass()
+    console.log(JSON.stringify(obj))
 </script>

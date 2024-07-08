@@ -73,19 +73,22 @@ export class NeuroModule {
     get label(){
         return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
     }
-    get model(){
+    toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
         const res = Object.assign({},this.params);
         for(let key in props){
             const obj = props[key];
-            if(obj.value?.$module){
-                res[key] = obj.value.$module.nodel;
+            if(obj.value?.$module){ // вложенный модуль
+                res[key] = obj.value.$module.toJSON();
             }
-            else if(obj.value?.isSerializable){
-                res[key] = obj.value.model;
+            else if(obj.value?.isSerializable){ //вложенный тензор
+                res[key] = obj.value.toJSON();
             }
-            else if (Array.isArray(obj.value) && obj.value[0].$module)
-                res[key] = obj.value.map(i=>i.$module.model);
+            else if (Array.isArray(obj.value)) //список вложенных
+                if(obj.value[0].$module) // модулей
+                    res[key] = obj.value.map(i=>i.$module.toJSON());
+                else if(obj.value[0].isSerializable)  //тензоров
+                    res[key] = obj.value.map(i=>i.toJSON());
         }
         return res
     }
@@ -125,6 +128,7 @@ class BinLayer extends NeuroModule{
     __init__(){
         this._wSize = this.dim_in * this.dim_out;
         this.WEIGHTS = tensor.rand(Math.ceil(this._wSize / 64), BigUint64Array);
+        this.WEIGHTS.isSerializable = true;
     }
 
     forward(x) {

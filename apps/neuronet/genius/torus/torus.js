@@ -32,8 +32,8 @@ export class tensor{
         this.#data = data;
         this.id = genId();
     }
-    get model(){
-        return {shape: this.shape.toString(), dType: this.dType.name, data: this.data?.toString()}
+    toJSON(){
+        return {shape: this.shape.toString(), dType: this.dType.name, data: this.data?.toString()};
     }
     _label(label){
         this.#label = label;
