@@ -82,7 +82,7 @@ ODA({
 
 Например,
 
-```javascript _run_edit_error_[my-component.js]
+```javascript _run_edit_error_[test-component3.js]
 ODA({
     is: 'test-component3',
     template: `
@@ -98,20 +98,13 @@ ODA({
         window.location.reload(true);
     }
 });
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component3></test-component3>
-    `
-});
 ```
 
 В данном примере положение ползунка передается в элемент с индексом **0** массива **value**, который объявлен с модификатором **$save**. Переместите ползунок и перезагрузите страницу, чтобы убедиться, что данные из массива **value** не восстанавливаются, т.к. не сохраняются в хранилище.
 
 Добавим в HTML-элемент **input** перехват события **change**, в обработчике которого будем присваивать указателю **value** новый массив с актуальным положением ползунка.
 
-```javascript _run_edit_[my-component.js]
+```javascript _run_edit_[test-component4.js]
 ODA({
     is: 'test-component4',
     template: `
@@ -127,13 +120,6 @@ ODA({
         window.location.reload(true);
     }
 });
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component4></test-component4>
-    `
-});
 ```
 
 Можно видеть, что теперь положение ползунка сохраняется при перезагрузке страницы.
@@ -142,7 +128,7 @@ ODA({
 
 Например,
 
-```javascript _run_edit_error_[my-component.js]
+```javascript _run_edit_error_[test-component5.js]
 ODA({
     is: 'test-component5',
     template: `
@@ -159,20 +145,13 @@ ODA({
         window.location.reload(true);
     }
 });
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component5></test-component5>
-    `
-});
 ```
 
 В данном примере положение ползунка передается в свойство **prop** объекта **value**, который объявлен с модификатором **$save**. Переместите ползунок и перезагрузите страницу, чтобы убедиться, что данные из объекта **value** не восстанавливаются, т.к. не сохраняются в хранилище.
 
 Добавим в HTML-элемент **input** перехват события **change**, в обработчике которого будем присваивать указателю **value** новый объект с актуальным положением ползунка.
 
-```javascript _run_edit_[my-component.js]
+```javascript _run_edit_[test-component6.js]
 ODA({
     is: 'test-component6',
     template: `
@@ -189,13 +168,6 @@ ODA({
         window.location.reload(true);
     }
 });
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component6></test-component6>
-    `
-});
 ```
 
 Можно видеть, что теперь положение ползунка сохраняется при перезагрузке страницы.
@@ -204,7 +176,7 @@ ODA({
 
 Например,
 
-```javascript _run_edit_[my-component.js]
+```javascript _run_edit_[test-component7.js]
 ODA({
     is: 'test-component7',
     template: `
@@ -226,22 +198,15 @@ ODA({
         window.location.reload(true);
     }
 });
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component7></test-component7>
-    `
-});
 ```
 
-Данный пример аналогичен предыдущему, за исключением того, что свойство **prop** объявлено с модификатором **$save** со значением **false**. Можно видеть, что ползунок по-прежнему сохраняет своё положение при перезагрузке страницы. Значит, модификатор **$save** на отдельные свойства объектов не влияет.
+Данный пример аналогичен предыдущему, за исключением того, что свойство **prop** объекта **value** объявлено с модификатором **$save**, имеющим значение **false**. Можно видеть, что ползунок по-прежнему сохраняет своё положение при перезагрузке страницы. Значит, модификатор **$save** на отдельные свойства объектов не влияет.
 
 Объект можно сохранять только целиком. Объявление отдельного свойства объекта с модификатором **$save** не приводит к сохранению этого свойства в хранилище.
 
 Например,
 
-```javascript _run_edit_[my-component.js]
+```javascript _run_edit_[test-component8.js]
 ODA({
     is: 'test-component8',
     template: `
@@ -260,13 +225,6 @@ ODA({
         this.$resetSettings();
         window.location.reload(true);
     }
-});
-
-ODA({
-    is: 'my-component',
-    template:`
-        <test-component8></test-component8>
-    `
 });
 ```
 
@@ -296,20 +254,20 @@ ODA({
 });
 
 ODA({
-    is: 'new-component',
+    is: 'test-component10',
     extends: 'test-component9'
 });
 
 ODA({
     is: 'my-component',
     template:`
-        test-component: <test-component9></test-component9><br>
-        new-component: <new-component></new-component>
+        test-component9: <test-component9></test-component9><br>
+        test-component10: <test-component10></test-component10>
         `
 });
 ```
 
-В данном примере из компонента **test-component9** был создан наследный компонент **new-component**. Каждый из них формируют на экране свой ползунок. Переместите ползунки и убедитесь, что после перезагрузки страницы оба ползунка сохраняют заданное им положение. Т.к. с точки зрения фреймворка это компоненты разного типа, то их данные сохраняются и восстанавливаются независимо друг от друга.
+В данном примере из компонента **test-component9** был создан наследный компонент **test-component10**. Оба этих компонента вложены в компонент **my-component**, который с их помощью формирует на экране два ползунка. Переместите ползунки и убедитесь, что после перезагрузки страницы оба ползунка сохраняют заданное им положение. Т.к. с точки зрения фреймворка ползунки формируются компонентами разного типа, то их данные сохраняются и восстанавливаются независимо друг от друга.
 
 Если в проекте применяется несколько экземпляров одного и того же компонента, то в хранилище будет записываться значение из того свойства, которое изменено последним, независимо от того, в каком экземпляре компонента оно находится. В этом случае при обновлении страницы сохраненное значение будет восстанавливаться для всех однотипных компонентов.
 
@@ -317,7 +275,7 @@ ODA({
 
 ```javascript _run_edit_[my-component.js]
 ODA({
-    is: 'test-component10',
+    is: 'test-component11',
     template: `
         <input type="range" ::value>
         <button @tap="clear">Очистить</button>
@@ -335,13 +293,13 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component10></test-component10><br>
-        <test-component10></test-component10>
+        <test-component11></test-component11><br>
+        <test-component11></test-component11>
     `
 });
 ```
 
-В данном примере два экземпляра компонента **test-component10** формируют на экране два ползунка. Переместите ползунки и убедитесь, что после перезагрузки страницы оба ползунка принимают одинаковое положение, которое соответствует положению последнего перемещённого ползунка.
+В данном примере два экземпляра компонента **test-component11** формируют на экране два ползунка. Переместите ползунки и убедитесь, что после перезагрузки страницы оба ползунка принимают одинаковое положение, которое соответствует положению последнего перемещённого ползунка.
 
 Чтобы заставить фреймворк сохранять данные разных экземпляров одного компонента независимо друг от друга, необходимо с помощью директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) указать этим экземплярам уникальные идентификаторы.
 
@@ -349,7 +307,7 @@ ODA({
 
 ```javascript _run_edit_[my-component.js]
 ODA({
-    is: 'test-component10',
+    is: 'test-component11',
     template: `
         <input type="range" ::value>
         <button @tap="clear">Очистить</button>
@@ -367,13 +325,13 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <test-component10 ~save-key="'key1'"></test-component10><br>
-        <test-component10 ~save-key="'key2'"></test-component10>
+        <test-component11 ~save-key="'key1'"></test-component11><br>
+        <test-component11 ~save-key="'key2'"></test-component11>
     `
 });
 ```
 
-Данный пример аналогичен предыдущему, только в теги обоих компонентов **test-component10** были добавлены директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) со строковыми значениями **'key1'** и **'key1'**. Теперь положение ползунков сохраняется и сбрасывается независимо друг от друга, хотя сами ползунки являются экземплярами одного и того же компонента.
+Данный пример аналогичен предыдущему, только в теги обоих компонентов **test-component11** были добавлены директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) со строковыми значениями **'key1'** и **'key1'**. Теперь положение ползунков сохраняется и сбрасывается независимо друг от друга, хотя сами ползунки являются экземплярами одного и того же компонента.
 
 ```like_md
 Узнать больше о работе директивы **~save-key** можно [в этой статье](./index.html#structure-template-jsx-directives-~save-key.md).
