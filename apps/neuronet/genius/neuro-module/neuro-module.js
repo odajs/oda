@@ -75,17 +75,19 @@ export class NeuroModule {
     }
     get model(){
         const props = Object.getOwnPropertyDescriptors(this);
-        const params = {};
+        const res = Object.assign({},this.params);
         for(let key in props){
             const obj = props[key];
-            if(obj.value?.isSerializable){
-                params[key] = obj.value.model;
+            if(obj.value?.$module){
+                res[key] = obj.value.$module.nodel;
             }
+            else if(obj.value?.isSerializable){
+                res[key] = obj.value.model;
+            }
+            else if (Array.isArray(obj.value) && obj.value[0].$module)
+                res[key] = obj.value.map(i=>i.$module.model);
         }
-        return {
-            args: this.params,
-            params
-        }
+        return res
     }
     set model(n){
 
