@@ -1,6 +1,6 @@
 import {GRADIENT_DIVIDER, tensor} from "../torus/torus.js";
 export class NeuroModule extends Function{
-    #params = Object.create(null);
+    _params = Object.create(null);
     constructor(argumetns) {
         super()
         let expr = this.constructor.toString();
@@ -9,14 +9,14 @@ export class NeuroModule extends Function{
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
             argumetns = argumetns[0];
             for (let n in argumetns){
-                this[n] = this.#params[n] = argumetns[n];
+                this[n] = this._params[n] = argumetns[n];
             }
 
         }
         for (let i = 0; i<names.length; i++){
             let name = names[i]
             let [n, d] = name.split('=').map(i=>i.trim());
-            this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+            this[n] = this._params[n] ??= argumetns[i] ?? (new Function("return "+d))();
         }
         this.__init__();
         return new Proxy(this, {
@@ -24,17 +24,9 @@ export class NeuroModule extends Function{
                 return target.forward(...args)
             }
         })
-        // const fwd = (...args)=>{
-        //     return this.forward(...args);
-        // }
-        // fwd.$module = this;
-        // Object.de        const props = Object.getOwnPropertyDescriptors(this);
-        // fineProperties(fwd, props);
-        // // fwd.toString = this.toString.bind(this);
-        // return fwd
     }
     get params(){
-        return this['#params'];
+        return this._params;
     }
     forward(x){
         return x;
@@ -77,17 +69,17 @@ export class NeuroModule extends Function{
         return s;
     }
     get label(){
-        return `${this.constructor.name} (${Object.keys(this.#params).map(k=>k+'='+this.#params[k])})`;
+        return `${this.constructor.name} (${Object.keys(this.params).map(k=>k+'='+this.params[k])})`;
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
         const res = Object.assign({},this.params);
         for(let key in props){
             const obj = props[key];
-            if(obj.value.toJSON){ // вложенный модуль
+            if(obj?.value?.toJSON){ // вложенный модуль
                 res[key] = obj.value.toJSON();
             }
-            else if (Array.isArray(obj.value)) //список вложенных
+            else if (Array.isArray(obj?.value)) //список вложенных
                 if(obj.value[0].toJSON) // модулей
                     res[key] = obj.value.map(i=>i.toJSON());
         }

@@ -6,7 +6,7 @@ run_context.output_data = undefined;
 const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
-        if (typeof i === 'object')
+        if (i?.toJSON)
             return JSON.stringify(i);
         return i;
     })
@@ -21,7 +21,7 @@ const console_error =  console.error;
 window.err = console.error = (...e) => {
     console_error.call(window, ...e);
     run_context.output_data?.push( '<b>error:</b>\n'+ [...e].join('\n'));
-} 
+}
 window.run_context = run_context;
 
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
@@ -158,7 +158,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell ~if="!readOnly && selected"></oda-jupyter-toolbar>
         <div class="horizontal">
             <div style="min-width: 32px; max-width: 32px; padding-top: 8px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
-            <div class="vertical flex" style="overflow: hidden;">
+            <div class="vertical flex">
                 <div class="vertical flex">
                     <div class="horizontal" >
                         <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
@@ -170,13 +170,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
-                    <div style="width: 32px">
+                    <div style="width: 30px">
                         <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
                     </div>
-                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding-bottom: 4px;">
+                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
                         <div flex vertical  ~if="!cell?.metadata?.hideRun">
-                            <div ~for="cell.outputs" style="padding: 4px;  border-top: 1px dashed gray;" > 
-                                <div :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></div>
+                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" > 
+                                <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -197,7 +197,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return 'img';
         }
         this.outHtml = i.item;
-        return 'div';
+        return 'span';
     },
     hideRun() {
         this.cell.metadata.hideRun = !this.cell.metadata.hideRun;
@@ -378,11 +378,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             oda-ace-editor {
                 opacity: 1;
                 filter: unset;
+                margin: 8px 0px;
             }
         </style>
         <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
-            <div vertical style="width: 32px; align-items: center; min-height: 32px;"> 
-                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 8px;">[ ]</span>
+            <div vertical style="width: 30px; align-items: center;"> 
+                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
             <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
@@ -412,10 +413,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
-            await code.run(this.jupyter);
+            await code.run();
             await this.$render();
         }
-        await this.cell.run(this.jupyter);
+        await this.cell.run();
         this.focus();
     },
     $public:{
@@ -594,7 +595,7 @@ class JupyterCell extends ROCKS({
         return (this.h && this.next && (this.next?.h > this.h || !this.next?.h));
     },
     get time(){
-        
+
     },
     set time(n){
         this.writeMetadata('time', n);
@@ -665,7 +666,7 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    async run(jupyter){
+    async run(){
         this.metadata.hideRun = false;
         this.status = '';
         this.isRun = true;
@@ -673,7 +674,7 @@ class JupyterCell extends ROCKS({
             let time = Date.now();
             run_context.output_data = [];
             const fn = new AsyncFunction('context', this.code);
-            let res =  await fn.call(jupyter, run_context);
+            let res =  await fn(run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
             let t = time.getMinutes();
