@@ -1,8 +1,8 @@
 import {GRADIENT_DIVIDER, tensor} from "../torus/torus.js";
-export class NeuroModule {
+export class NeuroModule extends Function{
     #params = Object.create(null);
     constructor(argumetns) {
-
+        super()
         let expr = this.constructor.toString();
         expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
         const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
@@ -20,11 +20,13 @@ export class NeuroModule {
         }
         this.__init__();
         return new Proxy(this, {
-            apply(target, _, args) { return target.forward(...args) }
+            apply(target, _, args) {
+                return target.forward(...args)
+            }
         })
-        const fwd = (...args)=>{
-            return this.forward(...args);
-        }
+        // const fwd = (...args)=>{
+        //     return this.forward(...args);
+        // }
         // fwd.$module = this;
         // Object.de        const props = Object.getOwnPropertyDescriptors(this);
         // fineProperties(fwd, props);
@@ -32,7 +34,7 @@ export class NeuroModule {
         // return fwd
     }
     get params(){
-        return this.#params;
+        return this['#params'];
     }
     forward(x){
         return x;
@@ -82,16 +84,11 @@ export class NeuroModule {
         const res = Object.assign({},this.params);
         for(let key in props){
             const obj = props[key];
-            if(obj.value?.$module){ // вложенный модуль
-                res[key] = obj.value.$module.toJSON();
-            }
-            else if(obj.value?.isSerializable){ //вложенный тензор
+            if(obj.value.toJSON){ // вложенный модуль
                 res[key] = obj.value.toJSON();
             }
             else if (Array.isArray(obj.value)) //список вложенных
-                if(obj.value[0].$module) // модулей
-                    res[key] = obj.value.map(i=>i.$module.toJSON());
-                else if(obj.value[0].isSerializable)  //тензоров
+                if(obj.value[0].toJSON) // модулей
                     res[key] = obj.value.map(i=>i.toJSON());
         }
         return res
