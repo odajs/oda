@@ -7,7 +7,7 @@ const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
         if (i?.toJSON)
-            return JSON.stringify(i);
+            return JSON.stringify(i, null,  4);
         return i;
     })
     run_context.output_data?.push([...e].join('\n'));

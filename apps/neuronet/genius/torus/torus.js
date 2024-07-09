@@ -33,7 +33,7 @@ export class tensor{
         this.id = genId();
     }
     toJSON(){
-        return {shape: this.shape.toString(), dType: this.dType.name, data: this.data?.toString()};
+        return {shape: this.shape.toString(), dType: this.dType.name, data: this.array.join(' ').toString()};
     }
     _label(label){
         this.#label = label;

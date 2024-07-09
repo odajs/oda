@@ -39,14 +39,14 @@ export class NeuroModule extends Function{
         const result = []
         for (let n in ch){
             const prop = ch[n]
-            if (prop.value?.$module){
-                result.push({[n]:prop.value.$module})
+            if (prop.value instanceof  NeuroModule){
+                result.push({[n]:prop.value})
             }
             else if (prop.value instanceof tensor){
                 result.push({[n]:prop.value})
             }
-            else if (Array.isArray(prop.value) && prop.value[0]?.$module){
-                result.push({[n]:prop.value.map(i=>i.$module)})
+            else if (Array.isArray(prop.value) && prop.value[0]  instanceof  NeuroModule ){
+                result.push({[n]:prop.value.map(i=>i)})
             }
         }
         return result;
@@ -73,7 +73,7 @@ export class NeuroModule extends Function{
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
-        const res = Object.assign({},this.params);
+        const res = Object.assign({name: this.constructor.name},this.params);
         for(let key in props){
             const obj = props[key];
             if(obj?.value?.toJSON){ // вложенный модуль
