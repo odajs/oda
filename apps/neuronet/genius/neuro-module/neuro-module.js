@@ -7,7 +7,7 @@ export class NeuroModule extends Function{
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
             argumetns = argumetns[0];
             for (let n in argumetns){
-                if (argumetns[n] instanceof 'object')
+                if (typeof argumetns[n] === 'object')
                     subItems[n] = argumetns[n]
                 else
                     this[n] = this._params[n] = argumetns[n];
@@ -29,11 +29,11 @@ export class NeuroModule extends Function{
             const item = subItems[n];
             if (Array.isArray(item)){
                 this[n] = item.map(i=> {
-                    return new globalthis[i.$](i);
+                    return new globalThis[i.$](i);
                 })
             }
             else{
-                this[n] = new globalthis[item.$](item);
+                this[n] = new globalThis[item.$](item);
             }
         }
         return new Proxy(this, {

@@ -9,31 +9,42 @@ export class tensor{
     #src = undefined;
     constructor(data, dType = Float32Array) {
         if(!data) return;
-        this.#dType = dType;
-        if (Array.isArray(data)){
-            let shape = [];
-            let d = data;
-            while(Array.isArray(d) && d.length){
-                shape.push(d.length);
-                d = d[0];
-                data = data.flat()
-            }
-            this.#shape = shape;
-            if (!(data instanceof this.dType))
-                data = new this.dType(data);
+        if (data?.$ === this.constructor.name){
+            this.#dType = globalThis[data.dType];
+            this.#shape = data.shape.split(',');
+            data = data.data.split(' ');
+            if (this.dType === BigUint64Array)
+                data = data.map(i=>BigInt('0b'+i));
+            this.#data = new this.dType(data);
 
         }
         else{
-            if (data?.length)
-                this.#shape = [data?.length]
-            else
-                data = new this.dType([data])
+            this.#dType = dType;
+            if (Array.isArray(data)){
+                let shape = [];
+                let d = data;
+                while(Array.isArray(d) && d.length){
+                    shape.push(d.length);
+                    d = d[0];
+                    data = data.flat()
+                }
+                this.#shape = shape;
+                if (!(data instanceof this.dType))
+                    data = new this.dType(data);
+
+            }
+            else{
+                if (data?.length)
+                    this.#shape = [data?.length]
+                else
+                    data = new this.dType([data])
+            }
+            this.#data = data;
         }
-        this.#data = data;
         this.id = genId();
     }
     toJSON(){
-        return {$: this.constructor.name, shape: this.shape.toString(), dType: this.dType.name, data: this.data.join(' ').toString()};
+        return {$: this.constructor.name, shape: this.shape.toString(), isSerializable: this.isSerializable, isParam: this.isParam, dType: this.dType.name, data: this.data.join(' ').toString()};
     }
     _label(label){
         this.#label = label;

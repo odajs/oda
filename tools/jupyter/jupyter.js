@@ -667,6 +667,7 @@ class JupyterCell extends ROCKS({
         this.data = data;
     }
     async run(jupyter){
+        this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
         this.isRun = true;
