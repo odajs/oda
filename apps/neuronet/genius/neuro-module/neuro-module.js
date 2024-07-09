@@ -29,11 +29,11 @@ export class NeuroModule extends Function{
             const item = subItems[n];
             if (Array.isArray(item)){
                 this[n] = item.map(i=> {
-                    return new globalThis[i.$](i);
+                    return new (eval(i.$))(i);
                 })
             }
             else{
-                this[n] = new globalThis[item.$](item);
+                this[n] = new (eval(item.$))(item);
             }
         }
         return new Proxy(this, {

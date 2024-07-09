@@ -13,8 +13,8 @@ export class tensor{
             this.#dType = globalThis[data.dType];
             this.#shape = data.shape.split(',');
             data = data.data.split(' ');
-            if (this.dType === BigUint64Array)
-                data = data.map(i=>BigInt('0b'+i));
+            // if (this.dType === BigUint64Array)
+            //     data = data.map(i=>BigInt('0b'+i));
             this.#data = new this.dType(data);
 
         }
