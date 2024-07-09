@@ -2,6 +2,7 @@ import {GRADIENT_DIVIDER, tensor} from "../torus/torus.js";
 export class NeuroModule {
     #params = Object.create(null);
     constructor(argumetns) {
+
         let expr = this.constructor.toString();
         expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
         const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
@@ -18,14 +19,17 @@ export class NeuroModule {
             this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
         }
         this.__init__();
+        return new Proxy(this, {
+            apply(target, _, args) { return target.forward(...args) }
+        })
         const fwd = (...args)=>{
             return this.forward(...args);
         }
-        fwd.$module = this;
-        const props = Object.getOwnPropertyDescriptors(this);
-        Object.defineProperties(fwd, props);
-        // fwd.toString = this.toString.bind(this);
-        return fwd
+        // fwd.$module = this;
+        // Object.de        const props = Object.getOwnPropertyDescriptors(this);
+        // fineProperties(fwd, props);
+        // // fwd.toString = this.toString.bind(this);
+        // return fwd
     }
     get params(){
         return this.#params;
@@ -93,6 +97,11 @@ export class NeuroModule {
         return res
     }
     set model(n){
+
+    }
+    train(){
+
+
 
     }
 
