@@ -3,22 +3,39 @@ export class NeuroModule extends Function{
     _params = Object.create(null);
     constructor(argumetns) {
         super()
-        let expr = this.constructor.toString();
-        expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
-        const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+        const subItems = Object.create(null);
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
             argumetns = argumetns[0];
             for (let n in argumetns){
-                this[n] = this._params[n] = argumetns[n];
+                if (argumetns[n] instanceof 'object')
+                    subItems[n] = argumetns[n]
+                else
+                    this[n] = this._params[n] = argumetns[n];
             }
+        }
+        else{
+            let expr = this.constructor.toString();
+            expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+            const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+            for (let i = 0; i<names.length; i++){
+                let name = names[i]
+                let [n, d] = name.split('=').map(i=>i.trim());
+                this[n] = this._params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+            }
+        }
 
-        }
-        for (let i = 0; i<names.length; i++){
-            let name = names[i]
-            let [n, d] = name.split('=').map(i=>i.trim());
-            this[n] = this._params[n] ??= argumetns[i] ?? (new Function("return "+d))();
-        }
         this.__init__();
+        for (let n in subItems){
+            const item = subItems[n];
+            if (Array.isArray(item)){
+                this[n] = item.map(i=> {
+                    return new globalthis[i.$](i);
+                })
+            }
+            else{
+                this[n] = new globalthis[item.$](item);
+            }
+        }
         return new Proxy(this, {
             apply(target, _, args) {
                 return target.forward(...args)
@@ -73,7 +90,7 @@ export class NeuroModule extends Function{
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
-        const res = Object.assign({name: this.constructor.name},this.params);
+        const res = Object.assign({$: this.constructor.name},this.params);
         for(let key in props){
             const obj = props[key];
             if(obj?.value?.toJSON){ // вложенный модуль
