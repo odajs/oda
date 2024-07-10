@@ -3,12 +3,13 @@ export class NeuroModule extends Function{
     _params = Object.create(null);
     constructor(argumetns) {
         super()
-        const subItems = Object.create(null);
+        let model;
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
             argumetns = argumetns[0];
+            model = Object.create(null)
             for (let n in argumetns){
                 if (typeof argumetns[n] === 'object')
-                    subItems[n] = argumetns[n]
+                    model[n] = argumetns[n]
                 else
                     this[n] = this._params[n] = argumetns[n];
             }
@@ -23,18 +24,23 @@ export class NeuroModule extends Function{
                 this[n] = this._params[n] ??= argumetns[i] ?? (new Function("return "+d))();
             }
         }
-
-        this.__init__();
-        for (let n in subItems){
-            const item = subItems[n];
-            if (Array.isArray(item)){
-                this[n] = item.map(i=> {
-                    return new (eval(i.$))(i);
-                })
+        if (model){
+            for (let n in model){
+                const item = model[n];
+                if (Array.isArray(item)){
+                    this[n] = item.map(i=> {
+                        return new (eval(i.$))(i);
+                    })
+                }
+                else{
+                    this[n] = new (eval(item.$))(item);
+                }
             }
-            else{
-                this[n] = new (eval(item.$))(item);
-            }
+        }
+        else{
+            setTimeout(()=>{
+                this.__init__();
+            }, 0)
         }
         return new Proxy(this, {
             apply(target, _, args) {
