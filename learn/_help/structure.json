@@ -281,12 +281,6 @@
                                             },
                                             {
                                                 "label": {
-                                                    "ru": "<b style='color: brown'>~save-key</b>: Дополнительные сведения"
-                                                },
-                                                "name": "structure-template-jsx-directives-~save-key2.md"
-                                            },
-                                            {
-                                                "label": {
                                                     "ru": "<b style='color: brown'>~wake</b>: Директива пробуждения"
                                                 },
                                                 "name": "structure-template-jsx-directives-~wake.md"
@@ -615,6 +609,12 @@
                                                 "ru": "<b style='color: brown'>$save</b>: Модификатор сохранения"
                                             },
                                             "name": "structure-props-modifiers-$save.md"
+                                        },
+                                        {
+                                            "label": {
+                                                "ru": "<b style='color: brown'>$save</b>: Дополнительные сведения"
+                                            },
+                                            "name": "structure-props-modifiers-$save-additional.md"
                                         }
                                     ]
                                 },
