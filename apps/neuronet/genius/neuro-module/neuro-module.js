@@ -137,7 +137,7 @@ class Linear extends NeuroModule{
     }
 }
 class BinLayer extends NeuroModule{
-    constructor(dim_in,  dim_out, bias = 0) {
+    constructor(dim_in,  dim_out, bias = false) {
         super(arguments);
     }
     __init__(){

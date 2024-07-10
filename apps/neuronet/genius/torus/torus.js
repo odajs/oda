@@ -72,6 +72,10 @@ export class tensor{
         this.#data = data;
         return this;
     }
+    _param(){
+        this.isParam = true;
+        return this;
+    }
     _shape(...shape){
         if(Array.isArray(shape[0]))
             shape = shape[0];
