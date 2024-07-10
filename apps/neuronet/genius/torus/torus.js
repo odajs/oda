@@ -6,12 +6,18 @@ BigInt.prototype.toBin = function (){
 }
 globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _binSize = 0;
-    _self = undefined;
+    // _self = undefined;
     constructor(size) {
         super(Math.ceil(size/64));
         this._binSize = 100;
-        this._self = this;
+        // this._self = this;
         return new Proxy(this, {
+            get: (target, key, receiver) =>{
+                const v =  target[key];
+                if (typeof v === 'function')
+                    return v.bind(target);
+                return v;
+            },
             set: (target, key, value) => {
                 switch (value?.constructor){
                     case Number:{
@@ -53,9 +59,9 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     get binSize(){
         return this._binSize;
     }
-    map(h){
-        return this._self.map(h)
-    }
+    // map(h){
+    //     return Array.from(this._self).map(h)
+    // }
 }
 export class tensor{
     #shape = [];
