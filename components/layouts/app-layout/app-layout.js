@@ -504,7 +504,11 @@ ODA({is: 'app-layout-drawer',
     },
     slotchange(e) {
         if (e.target.domHost === this) return;
-        this.controls = e.target.assignedNodes();
+        this.controls = Array.from(e.target.assignedNodes()).sort((a, b) => { 
+            const a_order = a.order ?? a.getAttribute('order') ?? 0;
+            const b_order = b.order ?? b.getAttribute('order') ?? 0;
+            return a_order - b_order;
+        });
         this.controls.forEach(c => {
             if (c.hasAttribute('close-event')) {
                 this.allowPin = true;
