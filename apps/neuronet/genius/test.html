@@ -2,16 +2,11 @@
 <html lang="en">
 <meta charset="UTF-8">
 <script type="module">
-
-    class myClass {
-        get a(){
-            return 100
-        }
-        toJSON(){
-            return {'a': this.a}
-        }
-    }
-
-    const obj = new myClass()
-    console.log(JSON.stringify(obj))
+    import './torus/torus.js'
+    const array = new BinaryArray(3546);
+    array[4] = '1';
+    array[1] = '0101010'
+    array[300] = false
+    array[500] = true
+    console.log(array);
 </script>

@@ -1,6 +1,57 @@
 const USE_TESTS = false;
 export const LEARNING_RATE = .3;
 export const GRADIENT_DIVIDER = 1//.618;
+BigInt.prototype.toBin = function (){
+    return this.toString(2).padStart(64, '0');
+}
+globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
+    #binSize = 0;
+    constructor(size) {
+        super(Math.ceil(size/64));
+        this.#binSize = 100;
+        return new Proxy(this, {
+            set: (target, key, value) => {
+                switch (value?.constructor){
+                    case Number:{
+                        target[key] = BigInt(value);
+                    } break;
+                    case Boolean:
+                        value = value?'1':'0';
+                    case String:{
+                        switch (value){
+                            case '1':
+                            case '0':{
+                                key = +key
+                                let idx = (key / 64);
+                                key = Math.floor(idx);
+                                idx = (idx - key) * 64;
+                                let bin = target[key].toBin();
+                                bin = '0b' + bin.substr(0, idx) + value + bin.substr(idx + 1);
+                                target[key] = BigInt(bin);
+                            } break;
+                            default:{
+                                if (value.startsWith('0b'))
+                                    target[key] = BigInt(value);
+                                else
+                                    target[key] = BigInt('0b'+value.padStart(64, '0'));
+                            }
+                        }
+                    } break;
+                }
+                return true;
+            },
+        })
+    }
+    get bins(){
+        return Array.prototype.map.call(this, d => d.toBin());
+    }
+    set set(n){
+        console.log()
+    }
+    get binSize(){
+        return this.#binSize;
+    }
+}
 export class tensor{
     #shape = [];
     #data = null;
