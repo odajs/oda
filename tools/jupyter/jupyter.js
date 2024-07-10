@@ -413,7 +413,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
-            await code.run(this.jupyter);
+            await new Promise(async (resolve)=>{
+                await code.run(this.jupyter);
+                this.async(resolve)
+            })
             await this.$render();
         }
         await this.cell.run(this.jupyter);

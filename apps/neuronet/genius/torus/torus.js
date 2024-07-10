@@ -325,7 +325,14 @@ export class tensor{
         if (!Array.isArray(shape))
             shape = [shape];
         const size = shape.reduce((r, v)=>r * v, 1);
-        const handler = typeof value === 'function'?value:i=>value;
+        let handler;
+        switch (dType){
+            case BigUint64Array:
+                handler = typeof value === 'function'?value:i=>BigInt(value);
+                break;
+            default:
+                handler = typeof value === 'function'?value:i=>value;
+        }
         let data = new dType(size).map(handler);
         return tensor.from(data, dType)._shape(shape);
     }
