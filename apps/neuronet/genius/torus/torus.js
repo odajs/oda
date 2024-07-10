@@ -5,10 +5,12 @@ BigInt.prototype.toBin = function (){
     return this.toString(2).padStart(64, '0');
 }
 globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
-    #binSize = 0;
+    _binSize = 0;
+    _self = undefined;
     constructor(size) {
         super(Math.ceil(size/64));
-        this.#binSize = 100;
+        this._binSize = 100;
+        this._self = this;
         return new Proxy(this, {
             set: (target, key, value) => {
                 switch (value?.constructor){
@@ -49,7 +51,10 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         console.log()
     }
     get binSize(){
-        return this.#binSize;
+        return this._binSize;
+    }
+    map(h){
+        return this._self.map(h)
     }
 }
 export class tensor{
@@ -378,13 +383,17 @@ export class tensor{
         const size = shape.reduce((r, v)=>r * v, 1);
         let handler;
         switch (dType){
+            case BinaryArray:
+                handler = typeof value === 'function'?value:i=>BigInt(value);
+                break;
             case BigUint64Array:
                 handler = typeof value === 'function'?value:i=>BigInt(value);
                 break;
             default:
                 handler = typeof value === 'function'?value:i=>value;
         }
-        let data = new dType(size).map(handler);
+        let data = new dType(size);
+        data = data.map(handler);
         return tensor.from(data, dType)._shape(shape);
     }
     static zeros(shape, dType = Int8Array) {

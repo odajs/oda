@@ -722,7 +722,7 @@ if (!window.ODA?.IsReady) {
             let value = el.textContent.trim();
             if (!value) return;
             if (INLINE_EXPRESSION.test(value)){
-                let expr = value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
+                let expr = '""+' + value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
