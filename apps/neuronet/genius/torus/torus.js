@@ -14,6 +14,8 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         return new Proxy(this, {
             get: (target, key, receiver) =>{
                 const v =  target[key];
+                if(typeof v == "function")
+                    return v.bind(target);
                 return v;
             },
             set: (target, key, value) => {
@@ -404,7 +406,10 @@ export class tensor{
         }
         let data = new dType(size);
         data = data.map(handler);
-        return tensor.from(data, dType)._shape(shape);
+        const res =  tensor.from(data, dType);
+        if (shape.length>1)
+            res._shape(shape);
+        return res;
     }
     static zeros(shape, dType = Int8Array) {
         return this.fill(shape, 0, dType);

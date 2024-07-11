@@ -43,6 +43,9 @@ export class NeuroModule extends Function{
             }, 0)
         }
         return new Proxy(this, {
+            get(target, p, receiver) {
+                return target[p];
+            },
             apply(target, _, args) {
                 return target.forward(...args)
             }
