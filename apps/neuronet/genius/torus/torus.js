@@ -386,12 +386,12 @@ export class tensor{
     static fill(shape, value, dType = Float32Array){
         if (!Array.isArray(shape))
             shape = [shape];
-        const size = shape.reduce((r, v)=>r * v, 1);
+        let size = shape.reduce((r, v)=>r * v, 1);
         let handler;
         switch (dType){
-            case BinaryArray:
-                handler = typeof value === 'function'?value:i=>BigInt(value);
-                break;
+            // case BinaryArray:
+            //     handler = typeof value === 'function'?value:i=>BigInt(value);
+            //     break;
             case BigUint64Array:
                 handler = typeof value === 'function'?value:i=>BigInt(value);
                 break;
