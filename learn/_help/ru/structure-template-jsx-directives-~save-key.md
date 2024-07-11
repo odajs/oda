@@ -11,7 +11,7 @@ ODA({
     is: 'test-component',
     template: `
         <input ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: 'Пример для ~save-key',

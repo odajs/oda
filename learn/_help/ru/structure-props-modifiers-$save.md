@@ -13,7 +13,7 @@ ODA({
     is: 'test-component1',
     template: `
         <input ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: 'Пример для $save',
@@ -37,7 +37,7 @@ ODA({
     is: 'test-component2',
     template: `
         <input ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     $save: {
         value: 'Пример для $save'
@@ -87,7 +87,7 @@ ODA({
     is: 'test-component3',
     template: `
         <input type="range" ::value="value[0]">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: [0],
@@ -109,7 +109,7 @@ ODA({
     is: 'test-component4',
     template: `
         <input type="range" ::value="value[0]" @change="value=[...value]">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: [0],
@@ -133,7 +133,7 @@ ODA({
     is: 'test-component5',
     template: `
         <input type="range" ::value="value.prop">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     $save: {
         value: {
@@ -156,7 +156,7 @@ ODA({
     is: 'test-component6',
     template: `
         <input type="range" ::value="value.prop" @change="value={...value}">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     $save: {
         value: {
@@ -181,7 +181,7 @@ ODA({
     is: 'test-component7',
     template: `
         <input type="range" ::value="value.prop" @change="value={...value}">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     $save: {
         value: {
@@ -211,7 +211,7 @@ ODA({
     is: 'test-component8',
     template: `
         <input type="range" ::value="value.prop">
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: {
@@ -241,7 +241,7 @@ ODA({
     is: 'test-component9',
     template: `
         <input type="range" ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: 0,
@@ -278,7 +278,7 @@ ODA({
     is: 'test-component11',
     template: `
         <input type="range" ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: 0,
@@ -294,7 +294,8 @@ ODA({
     is: 'my-component',
     template:`
         <test-component11></test-component11><br>
-        <test-component11></test-component11>
+        <test-component11></test-component11><br>
+        <button @tap="window.location.reload(true)">Обновить</button>
     `
 });
 ```
@@ -310,7 +311,7 @@ ODA({
     is: 'test-component11',
     template: `
         <input type="range" ::value>
-        <button @tap="clear">Очистить</button>
+        <button @tap="clear">Очистить хранилище</button>
     `,
     value: {
         $def: 0,
