@@ -9,17 +9,18 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _self = undefined;
     constructor(size) {
         super(Math.ceil(size/64));
-        this._binSize = 100;
+        this._binSize = size;
         this._self = this;
         return new Proxy(this, {
-            // get: (target, key, receiver) =>{
-            //     const v =  target[key];
-            //     if (typeof v === 'function')
-            //         return v.bind(target);
-            //     return v;
-            // },
+            get: (target, key, receiver) =>{
+                const v =  target[key];
+                return v;
+            },
             set: (target, key, value) => {
                 switch (value?.constructor){
+                    case BigInt:{
+                        target[key] = value;
+                    } break;
                     case Number:{
                         target[key] = BigInt(value);
                     } break;
@@ -60,7 +61,10 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         return this._binSize;
     }
     map(h){
-        return this._self.map(h)
+        return this._self.reduce((res, v, i)=>{
+            res[i] = h(v, i, this._self);
+            return res;
+        }, new BinaryArray(this._binSize))
     }
 }
 export class tensor{
