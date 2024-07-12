@@ -1,6 +1,6 @@
 import {GRADIENT_DIVIDER, tensor} from "../torus/torus.js";
 export class NeuroModule extends Function{
-    _params = Object.create(null);
+    #params = Object.create(null);
     constructor(argumetns) {
         super()
         let model;
@@ -11,7 +11,7 @@ export class NeuroModule extends Function{
                 if (typeof argumetns[n] === 'object')
                     model[n] = argumetns[n]
                 else
-                    this[n] = this._params[n] = argumetns[n];
+                    this[n] = this.#params[n] = argumetns[n];
             }
         }
         else{
@@ -21,20 +21,27 @@ export class NeuroModule extends Function{
             for (let i = 0; i<names.length; i++){
                 let name = names[i]
                 let [n, d] = name.split('=').map(i=>i.trim());
-                this[n] = this._params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+                this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
             }
         }
         if (model){
             for (let n in model){
                 const item = model[n];
-                if (Array.isArray(item)){
-                    this[n] = item.map(i=> {
-                        return new (eval(i.$))(i);
-                    })
-                }
-                else{
-                    this[n] = new (eval(item.$))(item);
-                }
+                this[n] ??= ((item)=>{
+                    function recurse (obj){
+                        if (Array.isArray(obj)){
+                            return item.map(i=> {
+                                if (i.$)
+                                    return new (eval(i.$))(i);
+                                return recurse (i);
+                            })
+                        }
+                        if (obj.$)
+                            return new (eval(obj.$))(i);
+                        return recurse (obj)
+                    }
+                    return recurse (item);
+                })()
             }
         }
         else{
@@ -52,7 +59,7 @@ export class NeuroModule extends Function{
         })
     }
     get params(){
-        return this._params;
+        return this.#params;
     }
     forward(x){
         return x;
