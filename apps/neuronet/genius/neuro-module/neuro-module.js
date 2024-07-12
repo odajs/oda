@@ -106,8 +106,8 @@ export class NeuroModule extends Function{
                 res[key] = obj.value.toJSON();
             }
             else if (Array.isArray(obj?.value)) //список вложенных
-                if(obj.value[0].toJSON) // модулей
-                    res[key] = obj.value.map(i=>i.toJSON());
+                 // if(obj.value[0].toJSON) // модулей
+                    res[key] = obj.value.map(i=>i.toString());
         }
         return res
     }
