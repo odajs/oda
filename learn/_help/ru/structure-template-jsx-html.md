@@ -132,7 +132,7 @@ ODA({
     template: `
         <div>Значение свойства class:<b>{{this.class}}</b></div>
     `,
-    class: 'Hello, template!'
+    class: ' Hello, template!'
 });
 ```
 
@@ -145,7 +145,7 @@ ODA({
     template: `
         <div>Значение свойства class:<b>{{class}}</b></div>
     `,
-    class: 'Hello, template!'
+    class: ' Hello, template!'
 });
 ```
 

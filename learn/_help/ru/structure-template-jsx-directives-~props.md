@@ -228,7 +228,7 @@ ODA({
 ODA({
     is: 'my-component',
     template: `
-        <input ~props="attr" :value="'Текст из директивы биндинга'">
+        <input ~props="attr" :value="'Прямое указание текста'">
     `,
     attr: {
         value: 'Текст из директивы'
