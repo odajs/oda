@@ -378,7 +378,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             oda-ace-editor {
                 opacity: 1;
                 filter: unset;
-                margin: 8px 0px;
             }
         </style>
         <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
