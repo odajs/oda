@@ -102,12 +102,12 @@ export class NeuroModule extends Function{
         const res = Object.assign({$: this.constructor.name},this.params);
         for(let key in props){
             const obj = props[key];
-            if(obj?.value?.toJSON){ // вложенный модуль
-                res[key] = obj.value.toJSON();
+            if(obj?.value && typeof obj.value === 'object'){ // вложенный модуль
+                res[key] = JSON.parse(JSON.stringify(obj.value));
             }
-            else if (Array.isArray(obj?.value)) //список вложенных
-                 // if(obj.value[0].toJSON) // модулей
-                    res[key] = obj.value.map(i=>i.toString());
+            // else if (Array.isArray(obj?.value)) //список вложенных
+            //      // if(obj.value[0].toJSON) // модулей
+            //         res[key] = JSON.parse(obj.value.map(i=>JSON.stringify(i)))
         }
         return res
     }
