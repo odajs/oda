@@ -28,17 +28,18 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
     template: `
         <style>
             :host{
-                @apply --horizontal;
+                @apply --vertical;
                 @apply --flex;
                 outline: none !important;
-                overflow: hidden;
+                /*overflow: hidden;*/
+                border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;"
             }
         </style>
-        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">
+<!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
-        </div>
+<!--        </div>-->
 
     `,
     tabindex:{
@@ -54,7 +55,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 this.selectedCell = this.cells[this.selectedCell.index - 1]
         },
         arrowdown(e){
-            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
+            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index){}
                 this.selectedCell = this.cells[this.selectedCell.index + 1]
         }
     },
@@ -109,6 +110,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             $def: null,
             set(n) {
                 this.editMode = false;
+                this.scrollToCell(n)
             }
         },
         get cells() {
@@ -369,7 +371,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             .sticky{
                 cursor: pointer; 
                 position: sticky;
-                top: -10px;
+                top: 0px;
             }
             oda-button:hover{
                 border-radius: 50%;
