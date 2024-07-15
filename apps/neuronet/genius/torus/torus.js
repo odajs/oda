@@ -112,7 +112,15 @@ export class tensor{
         this.id = genId();
     }
     toJSON(){
-        return {$: this.constructor.name, shape: this.shape.toString(), isSerializable: this.isSerializable, isParam: this.isParam, dType: this.dType.name, data: this.data.join(' ').toString()};
+
+        return {
+            $: this.constructor.name,
+            shape: this.shape.toString(),
+            isSerializable: this.isSerializable,
+            isParam: this.isParam,
+            dType: this.dType.name,
+            data: this.data.join(' ').toString()
+        }
     }
     _label(label){
         this.#label = label;

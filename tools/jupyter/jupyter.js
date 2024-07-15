@@ -711,12 +711,15 @@ class JupyterCell extends ROCKS({
         catch (e){
             let error = e.stack.split('\n');
             let pos = error[1];
-            pos = pos.substring(pos.indexOf('>') + 1);
-            pos = pos.split(':');
-            pos[1] = +pos[1] - 2;
-            pos.shift();
-            pos = pos.join(':');
-            error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+            if (pos){
+                pos = pos.substring(pos.indexOf('>') + 1);
+                pos = pos.split(':');
+                pos[1] = +pos[1] - 2;
+                pos.shift();
+                pos = pos.join(':');
+                error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+            }
+
             this.outputs = [{data:{"text/plain": error}}];
             this.status = 'error';
         }

@@ -112,9 +112,6 @@ export class NeuroModule extends Function{
             if(obj?.value && typeof obj.value === 'object'){ // вложенный модуль
                 res[key] = JSON.parse(JSON.stringify(obj.value));
             }
-            // else if (Array.isArray(obj?.value)) //список вложенных
-            //      // if(obj.value[0].toJSON) // модулей
-            //         res[key] = JSON.parse(obj.value.map(i=>JSON.stringify(i)))
         }
         return res
     }
