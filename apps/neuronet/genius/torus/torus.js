@@ -112,8 +112,7 @@ export class tensor{
         this.id = genId();
     }
     toJSON(){
-
-        return {
+        const result =  {
             $: this.constructor.name,
             shape: this.shape.toString(),
             isSerializable: this.isSerializable,
@@ -121,6 +120,11 @@ export class tensor{
             dType: this.dType.name,
             data: this.data.join(' ').toString()
         }
+        // if (this.dType === BinaryArray){
+        //     result.binShape = this.binShape;
+        //     result.bins = this.bins;
+        // }
+        return result;
     }
     _label(label){
         this.#label = label;
@@ -210,6 +214,7 @@ export class tensor{
     }
     get binSize(){
         switch (this.dType){
+            case BinaryArray:
             case BigUint64Array:
                 return 64;
             case Float32Array:
@@ -224,6 +229,14 @@ export class tensor{
                 return 8;
         }
         return 0;
+    }
+    get binShape(){
+        if (this.dType === BinaryArray){
+            const shape = [...this.shape];
+            shape[shape.length - 1] *= 64;
+            return shape;
+        }
+        return []
     }
     get bins(){
         const size = this.binSize;

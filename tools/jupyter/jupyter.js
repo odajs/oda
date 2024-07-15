@@ -187,7 +187,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
                         <div flex vertical  ~if="!cell?.metadata?.hideRun">
-                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed;" > 
+                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" > 
                                 <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
                             </div>
                         </div>
