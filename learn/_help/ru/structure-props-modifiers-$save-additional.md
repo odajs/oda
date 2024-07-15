@@ -36,7 +36,6 @@ ODA({
 
 ![Вид записи в Web-хранилище](learn/_help/ru/_images/structure-props-modifiers-$save-additional-1.png "Вид записи в Web-хранилище")
 
-
 Если в проекте применён только один экземпляр компонента, то такой сокращенный ключ, состоящий только из одного имени компонента, не будет приводить к коллизиям. Однако если в проекте используется несколько экземпляров одного и того же компонента, то в хранилище будут находиться данные только от одного из них, от того, в котором данные изменились последними. При перезагрузке страницы они попадут во все остальные экземпляры.
 
 Например,
@@ -72,64 +71,45 @@ ODA({
 
 ![Вид записи в Web-хранилище](learn/_help/ru/_images/structure-props-modifiers-$save-additional-2.png "Вид записи в Web-хранилище")
 
+Если свойство перешло в наследный компонент через механизм наследования, то ключ его сохранения будет включать имя наследного компонента, а не родительского, и оно будет храниться вместе с «родными» свойствами наследника под одним ключом.
 
----
+Например,
 
-
-
-
-Реальный ключ, которым оперирует свойство **window.localStorage**, гораздо длиннее ключа, указанного в директиве **~save-key**. Полный ключ состоит из имени компонента, и ключа, указанного в директиве **~save-key**. Имя компонента и ключ соединяются точкой. Полный ключ однозначно определяет экземпляр компонента, которому принадлежат сохраненные данные.
-
-Пример 1
-
-```javascript _edit_[my-input-component.js]
+```javascript _run_edit_[new-storage.js]_{test-storage.js}
 ODA({
-    is: 'my-input-component',
-    template: `
-        <input ::value="value1">
-        <input ::value="value2">
-        <button @tap="_clear">Очистить хранилище</button>
+    is: 'new-storage',
+    extends: 'test-storage',
+    template:`
+        <br>
+        <input type="range" ::value="prop">
     `,
-    $public: {
-        value1: {
-            $def: 'Введите текст 1',
-            $save: true
-        },
-        value2: {
-            $def: 'Введите текст 2',
-            $save: true
-        }
+    prop: {
+        $def: 0,
+        $save: true
     },
-    _clear() {
-        this.clearSaves();
-        window.location.reload(true);
-    }
 });
 ```
 
-```javascript _run_edit_[my-component.js]_{my-input-component.js}
-ODA({
-    is: 'my-component',
-    template:`
-        <my-input-component ~save-key="'key4'"></my-input-component>
-        <div>В хранилище: {{window.localStorage.getItem("my-input-component.key4")}}</div>
-    `
-});
-```
+В данном примере компонент **new-storage** наследует свойство **value** из компонента **test-storage**. Кроме того, он содержит свойство **prop** связанное с ползунком. Введите что-нибудь в строку ввода (например, «тест 1»), и подвигайте ползунок (например, установите его в крайнее правое положение). Затем откройте окно инструментов разработчика и убедитесь, что свойства **value** и **prop** сохранены в одной записи с ключом **new-storage**.
 
-В данном примере полный ключ имеет вид:
+![Вид записи в Web-хранилище](learn/_help/ru/_images/structure-props-modifiers-$save-additional-3.png "Вид записи в Web-хранилище")
 
-**my-input-component.key4**.
+
+
 
 ---
 
 
-```javascript _run_edit_[my-component.js]_{my-input-component.js}
+Компонент может быть вложен в другой компонент, однако ключ хранилища всегда зависит только от имени самого компонента и от значения директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) в его теге. Охватывающие компоненты не оказывают влияния на формирование ключа.
+
+Например,
+
+```javascript _run_edit_[my-component.js]_{test-storage.js}
 
 ODA({
-    is: 'my-new-component',
+    is: 'my-storage',
     template:`
-        <my-input-component ~save-key="'key44'"></my-input-component>
+        <test-storage ~save-key="'key3'"></test-storage>
     `
 });
 
@@ -138,14 +118,13 @@ ODA({
 ODA({
     is: 'my-component',
     template:`
-        <my-new-component ~save-key="'key55'"></my-new-component>
-        <my-new-component ~save-key="'key66'"></my-new-component>
-        <div>В хранилище: {{window.localStorage.getItem("my-input-component/key4")}}</div>
+        <my-storage ~save-key="'key4'"></my-storage><br>
+        <my-storage ~save-key="'key5'"></my-storage>
     `
 });
 ```
 
-
+В данном примере компонент **test-storage** помещен в охватывающий компонент **my-storage**. В свою очередь два экземпляра компонента **my-storage** находятся в компоненте **my-component**. В тегах всех вложенных компонентов в директивах [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) заданы различающиеся ключи. Экземпляры компонента **my-storage** создают на странице два поля ввода. Введите в них различающиеся значения и перезагрузите страницу. После перезагрузки значения в полях ввода будут совпадать, это значит, что оба экземпляра используют один и тот же ключ хранилища. Откройте содержимое хранилища в инструментах разработчика браузера и убедитесь, что независимо от экземпляра заполняемого поля ввода данные сохраняются под одним ключом **test-storage/key3**, что соответствует компоненту, в котором объявлено сохраняемое свойство, и ключу, заданному в его теге.
 
 
 ---
