@@ -38,11 +38,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         </style>
 <!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap.stop="selectedCell = $for.item" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+            <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
 <!--        </div>-->
 
     `,
+    cellSelect(item){
+        this['selectedCell'] = item;
+        // this.$render();
+    },
     tabindex:{
         $def: 0,
         $attr: true
@@ -117,9 +121,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         },
         selectedCell: {
             $def: null,
-            set(n) {
-                this.editMode = false;
-                this.scrollToCell(n)
+            set(n, o) {
+                if (n){
+                    this.editMode = false;
+                    this.scrollToCell(n)
+                }
+                else if (o){
+                    this.selectedCell = o
+                }
             }
         },
         get cells() {
@@ -134,9 +143,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         }
     },
     scrollToCell(cell) {
+        if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
-        if (cellElement.offsetTop<this.scrollTop || cellElement.offsetTop>(this.scrollTop + this.offsetHeight))
+        if (cellElement.offsetTop>(this.scrollTop + this.offsetHeight) || (cellElement.offsetTop + this.offsetHeight)<this.scrollTop)
             cellElement?.scrollIntoView();
     }
 })
