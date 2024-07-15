@@ -294,10 +294,6 @@ ODA({is: 'app-layout-drawer',
         .hider:hover > * {
             opacity: .5;
         }
-        .outline {
-            outline: gray dashed 1px;
-            outline-offset: -2px;
-        }
         [toggled] {
             @apply --success;
             border-color: var(--header-background, black);
@@ -311,7 +307,7 @@ ODA({is: 'app-layout-drawer',
                     ~for="controls"
                     ~style="getStyle($for.item)"
                     style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
-                    ~class="{outline: focused === $for.item}"
+                    ~class="{accent: focused === $for.item}"
                     class="no-flex tab"
                     :error="$for.item?.error || $for.item.hasAttribute('error')"
                     :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0"
@@ -504,7 +500,7 @@ ODA({is: 'app-layout-drawer',
     },
     slotchange(e) {
         if (e.target.domHost === this) return;
-        this.controls = Array.from(e.target.assignedNodes()).sort((a, b) => { 
+        this.controls = Array.from(e.target.assignedNodes()).sort((a, b) => {
             const a_order = a.order ?? a.getAttribute('order') ?? 0;
             const b_order = b.order ?? b.getAttribute('order') ?? 0;
             return a_order - b_order;

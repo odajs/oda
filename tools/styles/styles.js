@@ -332,6 +332,7 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--accent-color) !important;
         fill: var(--accent-color) !important;
         border-color: var(--accent-color) !important;
+        outline: var(--accent-color) dashed 2px;
     };
     --accent-invert: {
         background-color: var(--accent-color) !important;

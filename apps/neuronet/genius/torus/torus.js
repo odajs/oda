@@ -573,8 +573,8 @@ export class tensor{
         const shape = Array.from(this.shape);
         let s
         while (s = shape.pop()){
-            for (let i = 0; i<data.length; i+=s){
-                res.push(Array.from(data.slice(i, i+s)))
+            for (let i = 0; i < data.length; i += s){
+                res.push(Array.from(data.slice(i, i + s)))
             }
             data = res;
             res = [];
