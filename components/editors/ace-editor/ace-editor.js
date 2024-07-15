@@ -58,7 +58,7 @@ ODA({is: 'oda-ace-editor',
             this.editor.focus();
         },
         // fontSize: { $def: 16, set(n) { this.editor?.setOption('fontSize', n) } },
-        wrap: { $def: true, set(n) { this.editor?.setOption('wrap', n) } },
+        wrap: { $def: false, set(n) { this.editor?.setOption('wrap', n) } },
         minLines: { $def: 1, set(n) { this.editor?.setOption('minLines', n) } },
         maxLines: { $def: '', set(n) { this.editor?.setOption('maxLines', n) } },
         showGutter: { $def: true, set(n) { this.editor?.setOption('showGutter', n) } },
