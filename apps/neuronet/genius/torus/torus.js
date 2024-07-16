@@ -413,24 +413,17 @@ export class tensor{
     static fill(shape, value, dType = Float32Array){
         if (!Array.isArray(shape))
             shape = [shape];
-        let size = shape.reduce((r, v)=>r * v, 1);
-        let handler;
-        switch (dType){
-            // case BinaryArray:
-            //     handler = typeof value === 'function'?value:i=>BigInt(value);
-            //     break;
-            case BigUint64Array:
-                handler = typeof value === 'function'?value:i=>BigInt(value);
-                break;
-            default:
-                handler = typeof value === 'function'?value:i=>value;
+        let size, handler = typeof value === 'function'?value:i=>value;
+        if (dType === BinaryArray){
+            let binShape = [...shape];
+            binShape[binShape.length-1] = Math.ceil(binShape[binShape.length-1]/64);
+            size = binShape.reduce((r, v)=>r * v, 1);
         }
+        else
+            size = shape.reduce((r, v)=>r * v, 1);
         let data = new dType(size);
         data = data.map(handler);
-        const res =  tensor.from(data, dType);
-        if (shape.length>1)
-            res._shape(shape);
-        return res;
+        return tensor.from(data, dType)._shape(shape);
     }
     static zeros(shape, dType = Int8Array) {
         return this.fill(shape, 0, dType);
@@ -443,23 +436,15 @@ export class tensor{
     }
     static rand(shape, dType) {
         let handler = Math.random;
-        switch (dType){
-            case BinaryArray:{
-                handler = ()=>{
-                    return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
-                }
-            } break;
-            case BigUint64Array:{
-                handler = ()=>{
-                    return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
-                }
-            } break;
+        if (dType === BinaryArray){
+            handler = ()=>{
+                return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+            }
         }
         return this.fill(shape, handler, dType);
     }
     static randNorm(shape){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
-
     }
     static arange(arange_params, dType = Float32Array){
         if (Number.isInteger(arange_params)){
@@ -582,7 +567,38 @@ export class tensor{
         return data.flat();
     }
 }
+tensor.prototype.matmul = function (other){
+    let expr, label;
+    const other_shape = [...other.shape];
+    const out_shape = [];
+    while (other_shape.length>2){
+        out_shape.unshift(other_shape.shift())
+    }
+    if (other.dType === BinaryArray){
+        if (this.dType === BinaryArray){
 
+        }
+    }
+    else{
+        switch (this.dim){ //todo дописать различные варианты
+            case 1:{
+                switch (other.dim){
+                    case 1:{
+                        expr = 'x,y=>xy';
+                    } break;
+                    case 2:{
+                        if (other.shape[0] === this.size)
+                            expr = 'x, xy=>y';
+                        else if (other.shape[1] === this.size)
+                            expr = 'x, yx=>y';
+                        else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
+                    }
+                }
+            } break;
+        }
+        return tensor.einsum(expr, [this, matrix])._label(label);
+    }
+}
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
     const out = tensor.from(data, 'log', [this])._shape(this);
