@@ -104,7 +104,8 @@ export class tensor{
 
             }
             else if(this.dType === BinaryArray) {
-                this['#shape'] = [data?.binlength];
+                if (data?.length)
+                    this.#shape = [data?.binLength];
             }
             else{
                 if (data?.length)
