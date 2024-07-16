@@ -6,10 +6,12 @@ BigInt.prototype.toBin = function (){
 }
 globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _binSize = 0;
+    #length = 0;
     _self = undefined;
     constructor(size) {
         super(Math.ceil(size/64));
         this._binSize = size;
+        this['#length'] = size;
         this._self = this;
         return new Proxy(this, {
             get: (target, key, receiver) =>{
@@ -56,8 +58,8 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     get bins(){
         return Array.prototype.map.call(this, d => d.toBin());
     }
-    set set(n){
-        console.log()
+    get binLength(){
+        return this['#length']
     }
     get binSize(){
         return this._binSize;
@@ -100,6 +102,9 @@ export class tensor{
                 if (!(data instanceof this.dType))
                     data = new this.dType(data);
 
+            }
+            else if(this.dType === BinaryArray) {
+                this['#shape'] = [data?.binlength];
             }
             else{
                 if (data?.length)
@@ -256,7 +261,7 @@ export class tensor{
         return this.#shape;
     }
     get size(){
-        return this.data.length;
+        return this.shape.reduce((r, v)=>r * v, 1);
     }
 
     get data(){
@@ -413,14 +418,8 @@ export class tensor{
     static fill(shape, value, dType = Float32Array){
         if (!Array.isArray(shape))
             shape = [shape];
-        let size, handler = typeof value === 'function'?value:i=>value;
-        if (dType === BinaryArray){
-            let binShape = [...shape];
-            binShape[binShape.length-1] = Math.ceil(binShape[binShape.length-1]/64);
-            size = binShape.reduce((r, v)=>r * v, 1);
-        }
-        else
-            size = shape.reduce((r, v)=>r * v, 1);
+        let handler = typeof value === 'function'?value:i=>value;
+        let size = shape.reduce((r, v)=>r * v, 1);
         let data = new dType(size);
         data = data.map(handler);
         return tensor.from(data, dType)._shape(shape);
