@@ -578,6 +578,9 @@ tensor.prototype.matmul = function (other){
         if (this.dType === BinaryArray){
 
         }
+        else{
+
+        }
     }
     else{
         switch (this.dim){ //todo дописать различные варианты
