@@ -22,7 +22,7 @@ ODA({
                 transform: scale(.7);
             }
         </style>
-        <oda-icon ~if="!bold" :icon></oda-icon>
+        <oda-icon :icon></oda-icon>
     `,
     bold:{
         $attr: true,
@@ -30,16 +30,10 @@ ODA({
             return !!this.item?.h
         }
     },
-    // header:{
-    //     $attr: true,
-    //     get(){
-    //         return !!this.item?.h
-    //     }
-    // },
     get icon(){
         switch (this.item.type){
             case 'code':
-                return 'av:play-circle-outline';
+                return 'bootstrap:code';
             case 'html':
                 return 'box:i-code-alt';
         }

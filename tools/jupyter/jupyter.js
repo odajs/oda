@@ -545,7 +545,7 @@ class JupyterCell extends ROCKS({
             case 'markdown': return firstSource.substring(this.h).trim() || (t + ' [empty]');
         }
         t += ' ' + (this.notebook.codes.indexOf(this) + 1);
-        return firstSource ? t : t + ' [empty]';
+        return firstSource ? t + ': '+firstSource : t + ' [empty]';
     },
     get metadata() {
         return this.data.metadata;
