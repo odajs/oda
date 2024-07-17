@@ -1714,7 +1714,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             e.stopPropagation();
             this.selectRow(e, { value: (this.allowPointer && this.pointerRow) || this.focusedRow });
         },
-        'space'(e) {
+        'alt+space'(e) {
             e.preventDefault();
             e.stopPropagation();
             const row = (this.allowPointer && this.pointerRow) || this.focusedRow;
