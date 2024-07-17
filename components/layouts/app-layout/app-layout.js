@@ -449,7 +449,7 @@ ODA({is: 'app-layout-drawer',
         return ({ left: -1, right: 1 })[this.pos];//this.pos === "left" ? 1 : -1;
     },
     $observers: {
-        opening: 'pinned, controls'
+        opening: 'focusedIndex, pinned, controls'
     },
     $listeners: {
         resize(e) {
@@ -512,8 +512,8 @@ ODA({is: 'app-layout-drawer',
             }
         });
         this.hidden = this.controls.length === 0;
-        if (this.opened && !this.controls.some(c => c === this.opened))
-            this.opened = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы
+        // if (this.opened && !this.controls.some(c => c === this.opened))
+        //     this.opened = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы
         this.controls.forEach(el => {
             el.$sleep = el.hidden = true;
             if (this.opened === el || el.hasAttribute?.('bar-autofocus') || el.hasAttribute?.('bar-opened') || el.hasAttribute?.('opened')) {
@@ -529,11 +529,9 @@ ODA({is: 'app-layout-drawer',
 
     },
     opening() {
-        this.async(() => {
-            if (this.pinned && !this.opened && !this.opened && this.controls.length) {
-                this.setOpened(this.controls[this.focusedIndex]);
-            }
-        }, 300);
+        if (this.pinned && !this.opened && this.controls.length) {
+            this.setOpened(this.controls[this.focusedIndex]);
+        }
     },
     _onKeyDown(e) {
         if (this.controls && e.ctrlKey && '123456789'.includes(e.key)) {
