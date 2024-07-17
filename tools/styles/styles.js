@@ -217,7 +217,7 @@ let style = /*css*/`
 
 }
 html {
-    touch-action: manipulation;
+    touch-action: none;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     height: 100%;
