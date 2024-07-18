@@ -124,7 +124,7 @@ export class NeuroModule extends Function{
             for (let j=0; j <inputs.length; j++ ) {
                 this(inputs[j]); 
             }
-            let loss = this[loss_type](target);
+            let loss = this.MSE(target);
             loss.back();
             if (i % los_steps === 0) console.log(loss)
         }
