@@ -573,7 +573,8 @@ tensor.prototype.matmul = function (other){
         let out = other.map(o=>{
             return this.matmul(o);
         })
-        return tensor.from(out);
+        out = tensor.from(out)._src(this, ...other);
+        return out;
     }
     else{
         const other_shape = [...other.shape];
