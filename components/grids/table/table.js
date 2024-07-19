@@ -31,14 +31,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
 
     },
-    async openSettings(parent) {
-        await ODA.import('@tools/containers');
-        await ODA.showDropdown(
-            'oda-table-settings',
-            { table: this.table },
-            { parent, align: 'left', minHeight: '100%', title: 'Settings', hideCancelButton: true }
-        );
-    },
+    // async openSettings(parent) {
+    //     this.showSettings = !this.showSettings;
+    //     // await ODA.import('@tools/containers');
+    //     // await ODA.showDropdown(
+    //     //     'oda-table-settings',
+    //     //     { table: this.table },
+    //     //     { parent, align: 'left', minHeight: '100%', title: 'Settings', hideCancelButton: true }
+    //     // );
+    // },
     get storage() {
         return ODA.LocalStorage.create(this.$savePath);
     },
@@ -158,6 +159,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     $public: {
         $pdp: true,
+        showSettings: false,
         selectByCheck: false,
         allowFocusCell: {
             $def: 'none',
@@ -1470,7 +1472,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
 
 ODA({is: 'oda-table-header', extends: 'oda-table-cols',
     template: /*html*/`
-         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" @tap.stop="openSettings($this)"></oda-button>
+         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" allow-toggle ::toggled="showSettings"></oda-button>
     `,
     getTemplate(col) {
         return col.headerTemplate || this.headerTemplate;
@@ -2540,7 +2542,7 @@ settings: {
             :host {
                 @apply --horizontal;
                 width: {{width}}px;
-                min-width: 350px;
+                min-width: 300px;
                 @apply --flex;
                 overflow: hidden;
             }
@@ -2576,7 +2578,7 @@ settings: {
         $public: {
             width: {
                 $def: 300,
-                // $save: true,
+                $save: true,
             }
         },
         $listeners: {
