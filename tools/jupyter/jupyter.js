@@ -404,7 +404,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         </style>
         <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
             <div vertical style="width: 30px; align-items: center;"> 
-                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding-top: 4px;">[ ]</span>
+                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding: 8px 0px 10px 0px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
             <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        

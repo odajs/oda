@@ -295,8 +295,20 @@ export class tensor{
     }
     updateParams(){
         if (!this.isParam) return;
-        for(let i = 0; i<this.data.length; i++){
-            this.data[i] += this.grad[i] * LEARNING_RATE;
+        if (this.dType === BinaryArray){
+            for(let b = 0; b<this.bins.length; b++){
+                let bb = bb * 64;
+                let bin = this.bins[i].map((v, i)=>{
+                    let nv = (+v || -1) + this.grad[bb + i] * LEARNING_RATE;
+                    return nv>0?1:-1;
+                });
+
+            }
+        }
+        else{
+            for(let i = 0; i<this.data.length; i++){
+                this.data[i] += this.grad[i] * LEARNING_RATE;
+            }
         }
     }
     back(grad){

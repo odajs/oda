@@ -182,7 +182,7 @@ constructor(dim_in,  dim_out) {
             })
             res = res.join('').padEnd(bins.length, '0');
             if(res !== bins){
-                for(let i = 0; i<this.WEIGHTS.size; i++){
+                for(let i = 0; i<this.WEIGHTS.data.length; i++){
                     this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
                 }
                 this._bins = undefined;
