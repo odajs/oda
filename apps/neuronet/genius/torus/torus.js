@@ -573,6 +573,7 @@ tensor.prototype.matmul = function (other){
         let out = other.map(o=>{
             return this.matmul(o);
         })
+        return tensor.from(out);
     }
     else{
         const other_shape = [...other.shape];
@@ -582,7 +583,17 @@ tensor.prototype.matmul = function (other){
         }
         if (other.dType === BinaryArray){
             if (this.dType === BinaryArray){
+                let out = other.bins.reduce((r_bins, o_bins, i_bins)=>{
+                    let this_bins = this.bins[i_bins].split('');
+                    return r_bins + o_bins.split('').reduce((r, o, i)=>{
+                        let x = +this_bins[i] || -1;
+                        if (+o)
+                            return r + x;
+                        return r - x;
 
+                    }, 0)
+                }, 0)
+                return out;
             }
             else{
 

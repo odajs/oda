@@ -240,7 +240,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             $def: false,
             $save: true,
             set(n) {
-                console.log(n, n);
             }
         },
         showFooter: false,
@@ -262,6 +261,19 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         },
         treeStep: 24,
+        get scrollBoxWidth() {
+            const div = document.createElement('div');
+            div.style.setProperty('overflow-y', 'scroll');
+            div.style.setProperty('overflow-x', 'hidden');
+            div.style.setProperty('min-height', '1px');
+            div.style.setProperty('position', 'fixed');
+            div.style.setProperty('visibility', 'hidden');
+            document.body.appendChild(div);
+            requestAnimationFrame(() => {
+                div.remove();
+            });
+            return div.offsetWidth;
+        }
     },
     pointerRow: Object,
     expandLevel: -1,
@@ -406,7 +418,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         fixedRows: [],
         modifyColumn(col) {
             if (!this.disableColumnsSave)
-                modifyColumn.call(this.table, col);
+                modifyColumn(this.table, col);
         },
         get rowColumns() {
             const convert = (cols) => {
@@ -414,7 +426,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     this.modifyColumn(col);
                     if (col.__expanded__ && col.items?.length) {
                         const items = col.items.filter(i => !i.$hidden).map((c, i) => {
-                            c.id = col.id + '-' + i;
+                            c.id = `${col.id}-${i}`;
                             c.__parent__ ??= col;
                             return c;
                         });
@@ -452,10 +464,9 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             result = result.filter(i => {
                 return i.$sort;
             });
-            result = result.sort((a, b) => {
+            return result.sort((a, b) => {
                 return Math.abs(a.$sort) > Math.abs(b.$sort) ? 1 : -1;
             });
-            return result;
         },
         groupColPaths: {
             $def: [],
@@ -536,7 +547,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                                 if (to > d)
                                     to = d;
                                 if (d)
-                                    d = d.toLocaleString() + '  [ ' + (this.screenFrom).toLocaleString() + ' ... ' + to.toLocaleString() + ' ]';
+                                    d = `${d.toLocaleString()}  [ ${(this.screenFrom).toLocaleString()} ... ${to.toLocaleString()} ]`;
                             }
                             obj[c[this.columnId]] = d || '';
                         }
@@ -583,7 +594,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return res;
         }, 0);
 
-        cols.filter(i => i.fix === 'right').reduce((res, i) => {
+        cols.filter(i => i.fix === 'right').toReversed().sort((a, b) => b.order - a.order).reduce((res, i) => {
             i.right = res;
             res += i.width || i.$width || 0;
             return res;
@@ -597,44 +608,83 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     colStyles: {
         $pdp: true,
         get() {
-            const result = this.rowColumns.map(col => {
-                if (col.id === undefined)
-                    return '';
-                let style = `.col-${col.id}{/*${col[this.columnId]}*/\n\t\n\torder: ${col.$order};`;
-                if (col.__parent__)
-                    style += '\n\tbackground-color: whitesmoke;';
-                if (col.$flex)
-                    style += '\n\tflex: 1;\n\tflex-basis: "100%";';
-                else {
-                    style += '\n\tposition: sticky;';
-                    if (col.width) {
-                        style += `\n\tmin-width: ${col.width}px; \n\tmax-width: ${col.width}px;\n\tflex: 0;`;
-                    }
-                    else {
-                        if (this.autoWidth && this.rowColumns.last === col)
-                            style += `\n\tflex: 1 !important;`;
-                        style += `\n\tmin-width: 16px;`;
-                    }
-                    col.$width = col.$width || col.width || 150;
-                    style += `\n\twidth: ${col.$width}px;`;
+            const parts = ['left', 'middle', 'right'];
+            /** @typedef {{cols: *[], fixWidthCols: *[], simpleWidthCols: *[], fixWidth: number}} ColsDataWrite */
+            /** @type {{[key: string]: ColsDataWrite}} */
+            const colsData = {};
 
-
-                    const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
-                    const max = col.$width + 'px';
-                    if (col.fix) {
-                        style += `\n\tz-index: 1;`;
-                        if (col.fix === 'left') {
-                            style += `\n\tleft: ${col.left}px;`;
+            for (const c of this.rowColumns) {
+                for (const part of parts) {
+                    if ((part === parts[1] && !c.fix) || (c.fix === part)) {
+                        colsData[part] ??= {cols: [], fixWidthCols: [], simpleWidthCols: [], fixWidth: 0};
+                        colsData[part].cols.push(c);
+                        if (c.width) {
+                            colsData[part].fixWidthCols.push(c);
                         }
-                        else if (col.fix === 'right') {
-                            style += `\n\tright: ${col.right}px;`;
+                        else {
+                            colsData[part].simpleWidthCols.push(c);
                         }
                     }
                 }
-                style += '\n}\n';
-                return style;
-            }).join('\n');
-            return result;
+            }
+
+            const calcFixWidth = (res, c) => res += c.width;
+            for (const k in colsData) {
+                for (const part in colsData) {
+                    colsData[part].fixWidth = colsData[part].fixWidthCols?.reduce(calcFixWidth, 0) || 0;
+                }
+            }
+
+            const partWidth = this.$width / 3;
+            const leftWidth = colsData.left ? partWidth : 0;
+            const rightWidth = colsData.right ? partWidth : 0;
+            const middleWidth =  this.$width - (leftWidth + rightWidth);
+
+            const leftColWidth = colsData.left ? ((leftWidth - colsData.left.fixWidth) / colsData.left.simpleWidthCols.length) || 0 : 0;
+            const middleColWidth = colsData.middle ? ((middleWidth - colsData.middle.fixWidth) / colsData.middle.simpleWidthCols.length) || 0 : 0;
+            const rightColWidth = colsData.right ? ((rightWidth - colsData.right.fixWidth) / colsData.right.simpleWidthCols.length) || 0 : 0;
+
+            const result = [];
+
+            for (const part in colsData) {
+                for (const c of colsData[part].cols) {
+                    let style = `.col-${c.id}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`
+                    if (c.__parent__) {
+                        style += '\n\tbackground-color: whitesmoke;';
+                    }
+                    if (c.$flex) {
+                        style += `\n\tflex: 1;\n\tflex-basis: 100%;`
+                    }
+                    else if (c.width) {
+                        style += `\n\tmin-width: ${c.width}px; \n\tmax-width: ${c.width}px;\n\tflex: 0;`;
+                    }
+                    else {
+                        const width = this.autoWidth
+                            ? ({ left: leftColWidth, middle: middleColWidth, right: rightColWidth })[part]
+                            : c.$width
+                        style += `\n\tmin-width: ${width}px; \n\tmax-width: ${width}px;\n\tflex: 0;`;
+                        // if (this.autoWidth && this.rowColumns.at(-1) === c){
+                        //     style += `\n\tflex: 1 !important;`;
+                        // }
+                        // style += `\n\tmin-width: 16px;`;
+                    }
+                    c.$width = c.$width || c.width || 150;
+                    style += `\n\twidth: ${c.$width}px;`;
+                    if (c.fix) {
+                        style += '\n\tposition: sticky;';
+                        style += `\n\tz-index: 1;`;
+                        if (c.fix === 'left') {
+                            style += `\n\tleft: ${c.left}px;`;
+                        }
+                        else if (c.fix === 'right') {
+                            style += `\n\tright: ${c.right}px;`;
+                        }
+                    }
+                    style += '\n}\n';
+                    result.push(style);
+                }
+            };
+            return result.join('\n');
         }
     },
 
@@ -652,7 +702,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const evt = e.sourceEvent || e;
         if (evt.which !== 1) return;
         this.pointerRow = null;
-        const item = e.target.item;
         this.selectRow(evt);
         this.setPointerToRow(evt);
     },
@@ -670,7 +719,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     this._sort(items);
                 const node = old || row;
                 if ((node.items && node.__expanded__)) {
-                    for (let i in items) {
+                    for (const i in items) {
                         const n = items[i];
                         const o = (this.idName ? node.items.find(i => i[this.idName] === n[this.idName]) : node.items[i]) || node.items[i];
                         n.__expanded__ = !!o?.__expanded__;
@@ -694,9 +743,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 row.$loading = false;
             });
         }
-        else {
-            row.items = items;
-        }
+        row.items = items;
         return items;
     },
     _beforeExpand(item) {
@@ -711,12 +758,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     _useColumnFilters(array) {
         this.filters?.forEach(col => {
-            let name = col[this.columnId];
+            const name = col[this.columnId];
             let filter = String(col.$filter).toLowerCase().replace('&&', '&').replace('||', '|');
             filter = filter.replaceAll(' and ', '&').replaceAll('&&', '&').replaceAll(' or ', '|').replaceAll('||', '|');
             filter = filter.split('&').reduce((res, and) => {
-                let or = and.split('|').reduce((res, or) => {
-                    let space = or.split(' ').reduce((res, space) => {
+                const or = and.split('|').reduce((res, or) => {
+                    const space = or.split(' ').reduce((res, space) => {
                         if (space.trim())
                             res.push(`String(val).toLowerCase().includes('${space.trim()}')`);
                         return res;
@@ -730,7 +777,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 return res;
 
             }, []).join(' && ');
-            let func = new Function('val', `return (${filter})`);
+            const func = new Function('val', `return (${filter})`);
 
             // array.splice(0, array.length, ...array.filter(item => { return func(item[name]) }));
             array.splice(0, array.length, ...array.filter(item => {
@@ -794,8 +841,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this._sortGroups(result, this.groups[0].$sortGroups);
             }
             if (__level__ < this.groups.length - 1) {
-                for (let i = 0; i < groups.length; i++) {
-                    const group = groups[i];
+                for (const group of groups) {
                     group.items = grouping(group.items, __level__ + 1, group);
                 }
             }
@@ -876,57 +922,62 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         return this.rows.findIndex(r => Object.equal(r, row));
     },
     selectRow(e, d) {
-        if (this.allowSelection !== 'none') {
-            const item = d?.value || e.target.item;
-            if (!item) return;
-            if (this.selectByCheck) {
-                if (!item.disabled) {
-                    if (this.selectedRows.includes(item)) {
-                        const idx = this.selectedRows.indexOf(item);
-                        this.selectedRows.splice(idx, 1);
-                    } else {
-                        this.selectedRows.push(item);
-                    }
-                    this.selectedRows = [...this.selectedRows];
-                }
-                return;
-            }
-            if (!~this.selectionStartIndex) this.selectionStartIndex = this.getRowIndex(this.selectedRows[0] || item);
-            if (e.shiftKey) {
-                let from = this.selectionStartIndex;
-                let to = this.getRowIndex(item);
-                this.clearSelection();
-                if (from <= to) {
-                    while (from <= to) {
-                        this.addSelection(this.rows[from]);
-                        from++;
-                    }
-                } else {
-                    while (from >= to) {
-                        this.addSelection(this.rows[from]);
-                        from--;
-                    }
-                }
-            } else if (e.ctrlKey) {
-                this._selectedAll = false;
-                const idx = this.selectedRows.indexOf(item);
-                if (idx < 0)
-                    this.addSelection(item);
-                else {
-                    this.selectedRows.splice(idx, 1);
-                    // this.fire('selected-rows-changed', this.selectedRows);
-                    if (item === this.selectionStartRow) {
-                        this.selectionStartRow = this.selectedRows[0] || null;
-                    }
-                    this.selectedRows = [...this.selectedRows];
-                }
-            } else if (!item.disabled) {
-                this.selectionStartIndex = -1;
-                this.selectedRows.clear();
-                this.addSelection(item);
-            }
-            //this.render();
+        if (this.allowSelection === 'none') {
+            return;
         }
+        const item = d?.value || e.target.item;
+        if (!item) return;
+        if (this.selectByCheck) {
+            if (!item.disabled) {
+                if (this.selectedRows.includes(item)) {
+                    const idx = this.selectedRows.indexOf(item);
+                    this.selectedRows.splice(idx, 1);
+                } else {
+                    this.selectedRows.push(item);
+                }
+                this.selectedRows = [...this.selectedRows];
+            }
+            return;
+        }
+        if (!~this.selectionStartIndex) this.selectionStartIndex = this.getRowIndex(this.selectedRows[0] || item);
+        if (e.shiftKey) {
+            let from = this.selectionStartIndex;
+            const to = this.getRowIndex(item);
+            this.clearSelection();
+            if (from <= to) {
+                while (from <= to) {
+                    this.addSelection(this.rows[from]);
+                    from++;
+                }
+            } else {
+                while (from >= to) {
+                    this.addSelection(this.rows[from]);
+                    from--;
+                }
+            }
+            return;
+        }
+        if (e.ctrlKey) {
+            this._selectedAll = false;
+            const idx = this.selectedRows.indexOf(item);
+            if (idx < 0)
+                this.addSelection(item);
+            else {
+                this.selectedRows.splice(idx, 1);
+                // this.fire('selected-rows-changed', this.selectedRows);
+                if (item === this.selectionStartRow) {
+                    this.selectionStartRow = this.selectedRows[0] || null;
+                }
+                this.selectedRows = [...this.selectedRows];
+            }
+            return;
+        }
+        if (item.disabled) {
+            return;
+        }
+        this.selectionStartIndex = -1;
+        this.selectedRows.clear();
+        this.addSelection(item);
     },
     addSelection(item) {
         if (!item || item.__group__ || item.$allowSelection === false) return;
@@ -966,14 +1017,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const idx = this.items.findIndex(i => {
             return Object.equal(i, item);
         });
-        if (idx > -1) {
-            const pos = idx * this.rowHeight;
-            const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
-            if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
-                this.throttle('changeScrollTop', () => { // for finishig of rendering
-                    this.body.scrollTop = (pos - shift < 0) ? 0 : pos - shift;
-                }, 100);
-            }
+        if (idx <= -1) {
+            return;
+        }
+        const pos = idx * this.rowHeight;
+        const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
+        if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
+            this.throttle('changeScrollTop', () => { // for finishig of rendering
+                this.body.scrollTop = (pos - shift < 0) ? 0 : pos - shift;
+            }, 100);
         }
     },
     selectItem(item) {
@@ -996,8 +1048,8 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this._selectedAll = true;
         const items = this.items;
         if (items.length && this.allowSelection !== 'none') {
-            for (let i = 0; i < items.length; i++) {
-                this.addSelection(items[i]);
+            for (const item of items) {
+                this.addSelection(item);
             }
         }
         this.render();
@@ -1009,11 +1061,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     addGroup(col) {
         const path = this.getColPath(col);
-        if (this.groupColPaths.indexOf(path) < 0) {
-            this.groupColPaths.push(path);
-            this.groupColPaths = Array.from(this.groupColPaths);
-            this.showGroupingPanel = true;
+        if (this.groupColPaths.includes(path)) {
+            return;
         }
+        this.groupColPaths.push(path);
+        this.groupColPaths = Array.from(this.groupColPaths);
+        this.showGroupingPanel = true;
     },
     removeGroup(col) {
         const path = this.getColPath(col);
@@ -1067,7 +1120,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     deleteItems(callback, once = false) {
         const items = once ? [this._find(callback)] : this._filter(callback);
         items.forEach(i => {
-            const array = i.__parent__ && i.__parent__.items || this.dataSet;
+            const array = i.__parent__?.items || this.dataSet;
             const idx = array.indexOf(i);
             if (~idx) {
                 array.splice(idx, 1);
@@ -1077,14 +1130,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     //#region drag & drop
     _onDragStart(e) {
         const el = e.path.find(p => p.row);
-        if (el && (this.allowDrag || el.row.drag)) {
-            e.dataTransfer.clearData();
-            this._setDragImage(e);
-            this.draggedRows = this.selectedRows.includes(el.row) ? this.selectedRows : [el.row];
-            this._getDragData(this.draggedRows).forEach(data => {
-                e.dataTransfer.setData(data.mime, data.data);
-            });
+        if (!(el && (this.allowDrag || el.row.drag))) {
+            return;
         }
+        e.dataTransfer.clearData();
+        this._setDragImage(e);
+        this.draggedRows = this.selectedRows.includes(el.row) ? this.selectedRows : [el.row];
+        this._getDragData(this.draggedRows).forEach(data => {
+            e.dataTransfer.setData(data.mime, data.data);
+        });
     },
     _setDragImage(e) {
         try {
@@ -1204,10 +1258,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             let res = items.find(callback);
             if (!res) {
                 res = items.find(i => {
-                    return i.items && i.items.length && find(i.items);
+                    return i.items?.length && find(i.items);
                 });
                 if (res)
-                    res = find(res.items);
+                    return find(res.items);
             }
             return res;
         };
@@ -1376,6 +1430,8 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
             @apply --dark;
             margin-bottom: 1px;
             z-index: 1;
+            padding-right: {{scrollBoxWidth}}px;
+            {{''}}
         }
     </style>
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;" ~style="{maxWidth: this.autoWidth?'100%':'auto'}">
@@ -1423,7 +1479,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         :host {
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
-            overflow-y: {{showHeader?'auto':'auto'}};
+            overflow-y: scroll;
             @apply --vertical;
         }
         .row {
@@ -1589,8 +1645,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     },
     _getCellClasses(row, col, elem) {
         const res = ['cell'];
-        res.push('col-' + col.id);
-        if (row.__group__ || col.$flex) {
+        res.push(`col-${col.id}`);
+        if (row.__group__ || col.$flex || this.autoWidth) {
             res.push('flex');
         }
         else {
@@ -1615,7 +1671,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     },
     _getFocus(row, col, elem) {
         // this.focusedCellEnd = {};
-        const res = this._cellSelection.rows.indexOf(row) > -1 && this._cellSelection.cols.indexOf(col) > -1;
+        const res = this._cellSelection.rows.includes(row) && this._cellSelection.cols.includes(col);
         if (res) {
             elem.firstElementChild.$('input, textarea, *[tabindex]')?.focus();
         }
@@ -1695,7 +1751,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         },
         tab(e) {
             e.preventDefault();
-            const d = !e.shiftKey ? 1 : -1;
+            const d = e.shiftKey ? -1 : 1;
             this.movePointer(d, 0);
         },
         escape() {
@@ -1758,7 +1814,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         if (row.templates) {
             console.warn('!!!row.templates', row);
         }
-        let template = row[`${PROP_PREFIX}templates`]?.[col] || col.cellTemplate || this.cellTemplate;
+        const template = row[`${PROP_PREFIX}templates`]?.[col] || col.cellTemplate || this.cellTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
@@ -1866,7 +1922,7 @@ cells: {
             return this.item?.__level__ !== -1 && !this.item?.$forceExpanded;
         },
         get _style() {
-            return { opacity: (!this.icon) ? 0 : (this.item?.disabled ? .5 : 1) };
+            return { opacity: this.icon ? (this.item?.disabled ? .5 : 1) : 0 };
         },
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
@@ -1941,7 +1997,7 @@ cells: {
                 if (this.item.template) {
                     console.warn('!!!item.template', this.item);
                 }
-                return this.item?.[this.column[this.columnId] + `.${PROP_PREFIX}subTemplate`] || this.item?.[`${PROP_PREFIX}subTemplate`] || this.column?.cellTemplate || this.cellTemplate || 'label';
+                return this.item?.[`${this.column[this.columnId]}.${PROP_PREFIX}subTemplate`] || this.item?.[`${PROP_PREFIX}subTemplate`] || this.column?.cellTemplate || this.cellTemplate || 'label';
             },
             get expBackground() {
                 return this.item?.['sys:color'] || 'transparent';
@@ -1953,17 +2009,18 @@ cells: {
             $public: {
                 scrolledChildren: {
                     get() {
-                        let idx = this.raisedRows.indexOf(this.item);
-                        if (idx > -1) {
-                            let next = this.raisedRows[idx + 1] || this.rows?.[0];
-                            let counter = 0;
-                            for (let i = 0; i < this.item?.items?.length || 0; i++) {
-                                if (this.item?.items[i] === next)
-                                    break;
-                                counter++;
-                            }
-                            return counter || '';
+                        const idx = this.raisedRows.indexOf(this.item);
+                        if (idx <= -1) {
+                            return;
                         }
+                        const next = this.raisedRows[idx + 1] || this.rows?.[0];
+                        let counter = 0;
+                        for (let i = 0; i < this.item?.items?.length || 0; i++) {
+                            if (this.item?.items[i] === next)
+                                break;
+                            counter++;
+                        }
+                        return counter || '';
                     },
                     $attr: true
                 },
@@ -1972,7 +2029,7 @@ cells: {
                 return this.item?.__level__;
             },
             get myStyle() {
-                return { width: (+this.level * this.stepWidth) + 'px', ...this.stepStyle };
+                return { width: `${+this.level * this.stepWidth}px`, ...this.stepStyle };
             },
             get endStepStyle() {
                 if (!this.showTreeLines || !this.stepWidth) return {};
@@ -1981,7 +2038,7 @@ cells: {
                 const post = `${pre} + ${thickness}px`;
                 const color = this.treeLineStyle.color || 'rgba(0, 0, 0, 0.25)';
                 return {
-                    width: this.stepWidth - Math.round((this.iconSize + thickness) / 2) + 'px',
+                    width: `${this.stepWidth - Math.round((this.iconSize + thickness) / 2)}px`,
                     background: `linear-gradient(0deg, transparent 0, transparent calc(${pre}), ${color} calc(${pre}), ${color} calc(${post}), transparent calc(${post}))`
                 };
             },
@@ -2042,11 +2099,12 @@ cells: {
 
                 const checkChildren = (item, clear = false) => {
                     (item.items || []).forEach(i => {
-                        if (item.checked !== 'intermediate') {
-                            i.checked = clear ? false : item.checked;
-                            updateCheckedRows(i);
-                            checkChildren(i, clear);
+                        if (item.checked === 'intermediate') {
+                            return;
                         }
+                        i.checked = clear ? false : item.checked;
+                        updateCheckedRows(i);
+                        checkChildren(i, clear);
                     });
                 };
                 const updateChecked = (item, clear = false) => {
@@ -2075,13 +2133,12 @@ cells: {
                         parent = parent.__parent__;
                     }
                 };
-                switch (this.item.checked) {
-                    case 'checked': {
+                if (this.item.checked === 'checked') {
+                    {
                         this.item.checked = 'unchecked';
-                    } break;
-                    default: {
-                        this.item.checked = 'checked';
                     }
+                } else {
+                    this.item.checked = 'checked';
                 }
                 // this.item.checked = !(!!this.item.checked);
                 updateCheckedRows(this.item);
@@ -2240,6 +2297,9 @@ cells: {
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
+        get fix() {
+            return this.column?.fix;
+        },
         get expanded() {
             return this.column.__expanded__;
         },
@@ -2318,7 +2378,7 @@ cells: {
             await ODA.import('@oda/menu');
             const menu = [
                 {
-                    label: this.table.groups.includes(this.column) ? 'Ungrouping' : 'Grouping' + ' by this column',
+                    label: this.table.groups.includes(this.column) ? 'Ungrouping' : 'Grouping by this column',
                     icon: 'icons:open-in-browser',
                     execute: () => {
                         if (this.table.groups.includes(this.column))
@@ -2335,14 +2395,14 @@ cells: {
                     }
                 },
                 {
-                    label: (this.table.showGroupingPanel ? 'Hide' : 'Show') + ' grouping panel',
+                    label: `${this.table.showGroupingPanel ? 'Hide' : 'Show'} grouping panel`,
                     icon: 'icons:credit-card',
                     group: 'more', execute: () => {
                         this.table.showGroupingPanel = !this.table.showGroupingPanel;
                     }
                 },
                 {
-                    label: (this.showFilter ? 'Hide' : 'Show') + ' filter row',
+                    label: `${this.showFilter ? 'Hide' : 'Show'} filter row`,
                     icon: 'icons:filter',
                     execute: () => {
                         this.showFilter = !this.showFilter;
@@ -2354,20 +2414,11 @@ cells: {
         },
         setSort(e) {
             if (!this.allowSort) return;
-            const sort = this.column.$sort;
             if (this.column.$sort > 0) {
                 this.column.$sort = -this.column.$sort;
             }
-            else if (this.column.$sort < 0) {
-                this.column.$sort = 0;
-                this.async(() => {
-                    this.sorts.forEach((i, idx) => {
-                        i.$sort = (idx + 1) * Math.sign(i.$sort);
-                    });
-                });
-            }
             else {
-                this.column.$sort = this.sorts.length + 1;
+                this.column.$sort = this.column.$sort < 0 ? 0 : this.sorts.length + 1;
                 this.async(() => {
                     this.sorts.forEach((i, idx) => {
                         i.$sort = (idx + 1) * Math.sign(i.$sort);
@@ -2388,8 +2439,6 @@ cells: {
             this.async(() => {
                 list.focus();
             }, 300);
-            const res = await ODA.showDropdown(list, {}, { parent: this });
-            console.log(res);
         }
     });
     ODA({is: 'oda-table-cell-group', extends: 'oda-table-cell-base',
@@ -2422,7 +2471,7 @@ cells: {
 function extract(items, level, parent) {
     if (!this.groups.length && this.sorts.length) {
         items.sort((a, b) => {
-            for (let col of this.sorts) {
+            for (const col of this.sorts) {
                 const va = a[col.name];
                 const vb = b[col.name];
                 if (va > vb) return col.$sort;
@@ -2460,12 +2509,7 @@ function extract(items, level, parent) {
             has_children.then(res => i.$hasChildren = res);
         else
             i.$hasChildren = has_children;
-        if ((i.__expanded__ === undefined && (this.expandAll || (this.expandLevel >= i.__level__))) || (level < 0 && !i.__expanded__)) {
-            i.$forceExpanded = true;
-        }
-        else {
-            i.$forceExpanded = false;
-        }
+        i.$forceExpanded = (i.__expanded__ === undefined && (this.expandAll || (this.expandLevel >= i.__level__))) || (level < 0 && !i.__expanded__) ? true : false;
         if (i.__expanded__ || i.$forceExpanded) {
             if (i.items?.length)
                 res.push(...extract.call(this, i.items, level + 1, i));
@@ -2574,105 +2618,117 @@ settings: {
     });
 }
 const maxColsCount = 1024;
-function modifyColumn(col) {
+const saveColProps = ['__expanded__', '$hidden', '$sort', '$order', '$filter'];
+function modifyColumn(table, col) {
     if (col.isModified) return;
     col.isModified = true;
-    col.$saveKey = (col.__parent__?.$saveKey ? (col.__parent__?.$saveKey + '/') : '') + (col[this.columnId] || 'empty-name');
-    const storage = this.storage;
-    const table = this;
+    col.$saveKey = (col.__parent__?.$saveKey ? (`${col.__parent__?.$saveKey}/`) : '') + (col[table.columnId] || 'empty-name');
+    const storage = table.storage;
     col['#$width'] = col.$width;
-    Object.defineProperty(col, '$width', {
-        configurable: false,
-        enumerable: false,
-        set(v) {
-            if (!v) return;
-            const min = this.items?.filter(i => !i.$hidden).length ? 32 : 16;
-            v = Math.round(v);
-            if (v < min)
-                v = min;
-            if (this['$width'] === v)
-                return;
-            if (this.__expanded__ && col.items?.length) {
-                let w = this.items?.filter(i => !i.$hidden).reduce((res, i) => {
-                    i.__parent__ = i.__parent__ || col;
-                    modifyColumn.call(table, i);
-                    i.$width ??= v / this.items?.filter(i => !i.$hidden).length;
-                    res += i.$width;
-                    return res;
-                }, 0);
-                if (w && v != w) {
-                    w /= v;
-                    this.items?.filter(i => !i.$hidden).forEach(i => {
-                        i.$width = i.$width / w;
-                    });
+    Object.defineProperties(col, {
+        'visibleItems': {
+            configurable: false,
+            enumerable: false,
+            get() {
+                return col['#visibleItems'] ??= col.items?.filter(i => !i.$hidden);
+            },
+        },
+        '$width': {
+            configurable: false,
+            enumerable: false,
+            set(v) {
+                if (!v) return;
+                const min = col.visibleItems?.length ? 32 : 16;
+                v = Math.round(v);
+                if (v < min)
+                    v = min;
+                if (col.$width === v)
+                    return;
+                if (col.__expanded__ && col.items?.length) {
+                    let w = col.visibleItems?.reduce((res, i) => {
+                        i.__parent__ = i.__parent__ || col;
+                        modifyColumn(table, i);
+                        i.$width ??= v / col.visibleItems?.length;
+                        res += i.$width;
+                        return res;
+                    }, 0);
+                    if (w && v != w) {
+                        w /= v;
+                        col.visibleItems?.forEach(i => {
+                            i.$width /= w;
+                        });
+                    }
+                }
+                else {
+                    col['#$width'] = v;
+                    storage.setToItem(col.$saveKey, '$width', v);
+                }
+            },
+            get() {
+                if (col.width)
+                    return col.width;
+                if (col.__expanded__ && col.items?.length) {
+                    if (col.$version !== storage.version)
+                        col.$version = storage.version;
+                    return col.visibleItems?.reduce((res, i) => {
+                        i.__parent__ ??= col;
+                        modifyColumn(table, i);
+                        i.$width ??= col.visibleItems?.length;
+                        res += i.$width;
+                        return res;
+                    }, 0);
+                }
+                else {
+                    return col['#$width'] ??= storage.getFromItem(col.$saveKey, '$width');
                 }
             }
-            else {
-                this['#$width'] = v;
-                storage.setToItem(this.$saveKey, '$width', v);
+        },
+        'checked': {
+            configurable: true,
+            enumerable: true,
+            set(v) {
+                col.$hidden = (v === 'unchecked');
+            },
+            get() {
+                return col.$hidden ? 'unchecked' : 'checked';
             }
         },
-        get() {
-            if (this.width)
-                return this.width;
-            if (this.__expanded__ && this.items?.length) {
-                if (this.$version !== storage.version)
-                    this.$version = storage.version;
-                const result = this.items?.filter(i => !i.$hidden).reduce((res, i) => {
-                    i.__parent__ ??= this;
-                    modifyColumn.call(table, i);
-                    i.$width ??= this.items?.filter(i => !i.$hidden).length;
-                    res += i.$width;
-                    return res;
-                }, 0);
-                return result;
+        '$version': {
+            configurable: true,
+            enumerable: true,
+            set(v) {
+                clear();
+                col['#$version'] = v;
+            },
+            get() {
+                return col['#$version'];
             }
-            else {
-                return this['#$width'] ??= storage.getFromItem(this.$saveKey, '$width');
+        },
+        'reset': {
+            value(attr) {
+                storage.setItem(col.$saveKey, undefined);
+                clear(attr);
             }
         }
-    });
-    const props = ['__expanded__', '$hidden', '$sort', '$order', '$filter'];
-    for (let i of props)
+    })
+    for (const i of saveColProps)
         addSaveProp.call(col, i, storage);
+
     if (col.checked !== undefined)
         col['#checked'] = col.checked;
-    Object.defineProperty(col, 'checked', {
-        configurable: true,
-        enumerable: true,
-        set(v) {
-            col.$hidden = (v === 'unchecked');
-        },
-        get() {
-            return col.$hidden ? 'unchecked' : 'checked';
-        }
-    });
-    Object.defineProperty(col, '$version', {
-        configurable: true,
-        enumerable: true,
-        set(v) {
-            clear();
-            col['#$version'] = v;
-        },
-        get() {
-            return col['#$version'];
-        }
-    });
-    col.reset = function (attr) {
-        storage.setItem(col.$saveKey, undefined);
-        clear(attr);
-    };
+
     function clear(attr) {
         if (attr)
-            col['#' + attr] = undefined;
+            col[`#${attr}`] = undefined;
         else {
             col['#$width'] = undefined;
-            for (let i of props)
-                col['#$' + i] = undefined;
+            for (const i of saveColProps)
+                col[`#$${i}`] = undefined;
         }
     }
-    if (!col.__parent__)
-        return;
+
+    if (!col.__parent__) return;
+
     let parent = col.__parent__;
     let size = maxColsCount;
     while (parent) {
@@ -2685,7 +2741,7 @@ function modifyColumn(col) {
 }
 function addSaveProp(name, storage) {
     if (this[name] !== undefined) return;
-    const vname = '#' + name;
+    const vname = `#${name}`;
     if (this[name] !== undefined)
         this[vname] = this[name];
     Object.defineProperty(this, name, {
