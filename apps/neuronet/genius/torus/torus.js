@@ -297,11 +297,11 @@ export class tensor{
         if (!this.isParam) return;
         if (this.dType === BinaryArray){
             for(let b = 0; b<this.bins.length; b++){
-                let bb = bb * 64;
+                let bb = b * 64;
                 let bin = this.bins[b].split('').map((v, i)=>{
-                    let nv = (+v || -1) + this.grad[bb + i] * LEARNING_RATE;
+                    let nv = (+v || -1) + this.grad[bb + i]// * LEARNING_RATE;
                     return nv>0?1:0;
-                }).join();
+                }).join('');
                 this.data[b] = BigInt('0b'+bin);
             }
         }
@@ -586,6 +586,9 @@ tensor.prototype.matmul = function (other){
             return this.matmul(o);
         })
         out = tensor.from(out)._src(this, ...other);
+        out._back = ()=>{
+            console.log(out.grad)
+        }
         return out;
     }
     else{
@@ -606,6 +609,7 @@ tensor.prototype.matmul = function (other){
 
                     }, 0)
                 }, 0)
+
                 return out;
             }
             else{
