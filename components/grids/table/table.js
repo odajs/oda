@@ -36,7 +36,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         await ODA.showDropdown(
             'oda-table-settings',
             { table: this.table },
-            { parent, align: 'left', minHeight: '100%', maxWidth: 300, title: 'Settings', hideCancelButton: true }
+            { parent, align: 'left', minHeight: '100%', title: 'Settings', hideCancelButton: true }
         );
     },
     get storage() {
@@ -635,10 +635,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
 
-            const partWidth = this.$width / 3;
+            const tableWidth = this.$width - this.scrollBoxWidth;
+
+            const partWidth = tableWidth / 3;
             const leftWidth = colsData.left ? partWidth : 0;
             const rightWidth = colsData.right ? partWidth : 0;
-            const middleWidth =  this.$width - (leftWidth + rightWidth);
+            const middleWidth =  tableWidth - (leftWidth + rightWidth);
 
             const leftColWidth = colsData.left ? ((leftWidth - colsData.left.fixWidth) / colsData.left.simpleWidthCols.length) || 0 : 0;
             const middleColWidth = colsData.middle ? ((middleWidth - colsData.middle.fixWidth) / colsData.middle.simpleWidthCols.length) || 0 : 0;
@@ -648,7 +650,8 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
             for (const part in colsData) {
                 for (const c of colsData[part].cols) {
-                    let style = `.col-${c.id}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`
+                    c.className = `col-${c.id}`;
+                    let style = `.${c.className}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`
                     if (c.__parent__) {
                         style += '\n\tbackground-color: whitesmoke;';
                     }
@@ -659,9 +662,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                         style += `\n\tmin-width: ${c.width}px; \n\tmax-width: ${c.width}px;\n\tflex: 0;`;
                     }
                     else {
-                        const width = this.autoWidth
+                        let width = (this.autoWidth
                             ? ({ left: leftColWidth, middle: middleColWidth, right: rightColWidth })[part]
-                            : c.$width
+                            : c.$width);
+                        // if (c === this.rowColumns.at(-1)) {
+                        //     width += this.scrollBoxWidth;
+                        // }
                         style += `\n\tmin-width: ${width}px; \n\tmax-width: ${width}px;\n\tflex: 0;`;
                         // if (this.autoWidth && this.rowColumns.at(-1) === c){
                         //     style += `\n\tflex: 1 !important;`;
@@ -1023,7 +1029,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const pos = idx * this.rowHeight;
         const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
         if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
-            this.throttle('changeScrollTop', () => { // for finishig of rendering
+            this.throttle('changeScrollTop', () => { // for complete of rendering
                 this.body.scrollTop = (pos - shift < 0) ? 0 : pos - shift;
             }, 100);
         }
@@ -1435,7 +1441,14 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
         }
     </style>
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;" ~style="{maxWidth: this.autoWidth?'100%':'auto'}">
-        <div ~for="columns" ~is="getTemplate($for.item)" :item="getItem($for.item)" :column="$for.item" ~class="['col-' + $for.item.id, $for.item.$flex?'flex':'auto']"></div>
+        <div
+            ~for="columns"
+            ~is="getTemplate($for.item)"
+            :item="getItem($for.item)"
+            :column="$for.item"
+            ~class="[$for.item.className]"
+            ~style="{'margin-right': $for.index === columns.length-1 ?(-this.scrollBoxWidth) + 'px' : 0}"
+        ></div>
     </div>
     <div ~if="$scrollHeight > $height" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
     `,
@@ -2527,9 +2540,8 @@ settings: {
             :host {
                 @apply --horizontal;
                 width: {{width}}px;
+                min-width: 350px;
                 @apply --flex;
-                /*min-height: 100vh;*/
-                min-width: 200px;
                 overflow: hidden;
             }
             div > div {

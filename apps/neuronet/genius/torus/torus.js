@@ -298,11 +298,11 @@ export class tensor{
         if (this.dType === BinaryArray){
             for(let b = 0; b<this.bins.length; b++){
                 let bb = bb * 64;
-                let bin = this.bins[i].map((v, i)=>{
+                let bin = this.bins[b].split('').map((v, i)=>{
                     let nv = (+v || -1) + this.grad[bb + i] * LEARNING_RATE;
-                    return nv>0?1:-1;
-                });
-
+                    return nv>0?1:0;
+                }).join();
+                this.data[b] = BigInt('0b'+bin);
             }
         }
         else{
