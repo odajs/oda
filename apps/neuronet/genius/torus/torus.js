@@ -569,38 +569,46 @@ export class tensor{
 }
 tensor.prototype.matmul = function (other){
     let expr, label;
-    const other_shape = [...other.shape];
-    const out_shape = [];
-    while (other_shape.length>2){
-        out_shape.unshift(other_shape.shift())
-    }
-    if (other.dType === BinaryArray){
-        if (this.dType === BinaryArray){
-
-        }
-        else{
-
-        }
+    if(Array.isArray(other)){
+        let out = other.map(o=>{
+            return this.matmul(o);
+        })
     }
     else{
-        switch (this.dim){ //todo дописать различные варианты
-            case 1:{
-                switch (other.dim){
-                    case 1:{
-                        expr = 'x,y=>xy';
-                    } break;
-                    case 2:{
-                        if (other.shape[0] === this.size)
-                            expr = 'x, xy=>y';
-                        else if (other.shape[1] === this.size)
-                            expr = 'x, yx=>y';
-                        else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
-                    }
-                }
-            } break;
+        const other_shape = [...other.shape];
+        const out_shape = [];
+        while (other_shape.length>2){
+            out_shape.unshift(other_shape.shift())
         }
-        return tensor.einsum(expr, [this, matrix])._label(label);
+        if (other.dType === BinaryArray){
+            if (this.dType === BinaryArray){
+
+            }
+            else{
+
+            }
+        }
+        else{
+            switch (this.dim){ //todo дописать различные варианты
+                case 1:{
+                    switch (other.dim){
+                        case 1:{
+                            expr = 'x,y=>xy';
+                        } break;
+                        case 2:{
+                            if (other.shape[0] === this.size)
+                                expr = 'x, xy=>y';
+                            else if (other.shape[1] === this.size)
+                                expr = 'x, yx=>y';
+                            else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
+                        }
+                    }
+                } break;
+            }
+            return tensor.einsum(expr, [this, matrix])._label(label);
+        }
     }
+
 }
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
