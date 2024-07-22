@@ -618,9 +618,18 @@ tensor.prototype.matmul = function (other){
                 }, 0)
                 let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
                 out._back = ()=>{
+                    let gradient = out.grad[0] / GRADIENT_DIVIDER;
                     let x_grad = this.grad;
                     let o_grad = other.grad;
-                    console.log(out.grad)
+                    other.bins.forEach((b, i_bins)=>{
+                        let o_bin = b.split('');
+                        let x_bin = this.bins[i_bins].split('');
+                        for (let i = 0; i<64; i++){
+                            let idx = i_bins + i;
+                            x_grad[idx] += o_bin[i]>0?gradient:-gradient;
+                            o_grad[idx] += x_bin[i]>0?gradient:-gradient;
+                        }
+                    })
                 }
                 return out;
             }
