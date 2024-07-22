@@ -618,6 +618,8 @@ tensor.prototype.matmul = function (other){
                 }, 0)
                 let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
                 out._back = ()=>{
+                    let x_grad = this.grad;
+                    let o_grad = other.grad;
                     console.log(out.grad)
                 }
                 return out;
