@@ -583,7 +583,7 @@ tensor.prototype.matmul = function (other){
     let expr, label;
     if(Array.isArray(other)){
         let out = other.map(o=>{
-            return this.matmul(o);
+            return this.matmul(o).data;
         })
         out = tensor.from(out)._src(this, ...other);
         out._back = ()=>{
@@ -609,7 +609,10 @@ tensor.prototype.matmul = function (other){
 
                     }, 0)
                 }, 0)
-
+                out = tensor.from(out)._src(this, other);
+                out._back = ()=>{
+                    console.log(out.grad)
+                }
                 return out;
             }
             else{
