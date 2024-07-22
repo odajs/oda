@@ -582,10 +582,13 @@ export class tensor{
 tensor.prototype.matmul = function (other){
     let expr, label;
     if(Array.isArray(other)){
-        let out = other.map(o=>{
-            return this.matmul(o).data;
+        let mm = other.map(o=>{
+            return this.matmul(o);
         })
-        out = tensor.from(out)._src(this, ...other)._label('matmul tensor X Array');
+        let data = mm.map(i=>{
+            return i.data;
+        })
+        let out = tensor.from(data)._src(...other)._label('matmul tensor X Array');
         out._back = ()=>{
             // for (let x = 0; x < this.data.le)
             out.grad.reduce((o, i)=>{
