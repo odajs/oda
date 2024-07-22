@@ -585,8 +585,13 @@ tensor.prototype.matmul = function (other){
         let out = other.map(o=>{
             return this.matmul(o).data;
         })
-        out = tensor.from(out)._src(this, ...other);
+        out = tensor.from(out)._src(this, ...other)._label('matmul tensor X Array');
         out._back = ()=>{
+            // for (let x = 0; x < this.data.le)
+            out.grad.reduce((o, i)=>{
+                let grad = out.grad[i];
+              //  return this.matmul(o).data;
+            })
             console.log(out.grad)
         }
         return out;
@@ -609,7 +614,7 @@ tensor.prototype.matmul = function (other){
 
                     }, 0)
                 }, 0)
-                out = tensor.from(out)._src(this, other);
+                out = tensor.from(out)._src(this, other)._label('matmul 1 bin X 1 bin');
                 out._back = ()=>{
                     console.log(out.grad)
                 }
