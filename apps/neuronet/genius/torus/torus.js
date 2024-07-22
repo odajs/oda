@@ -299,13 +299,17 @@ export class tensor{
     updateParams(){
         if (!this.isParam) return;
         if (this.dType === BinaryArray){
-            for(let b = 0; b<this.bins.length; b++){
-                let bb = b * 64;
-                let bin = this.bins[b].split('').map((v, i)=>{
-                    let nv = (+v || -1) - this.grad[bb + i]// * LEARNING_RATE;
-                    return nv>0?1:0;
-                }).join('');
-                this.data[b] = BigInt('0b'+bin);
+            let bins = this.bins;
+            for(let b = 0; b<bins.length; b++){
+                let idx_grad = b * 64;
+                let bin = bins[b]
+                let val = ''
+                for (let i = 0; i<64; i++){
+                    let v = bin[i];
+                    let nv = (+v || -1) + this.grad[idx_grad + i] * LEARNING_RATE
+                    val += nv<0?0:1;
+                }
+                this.data[b] = BigInt('0b'+val);
             }
         }
         else{

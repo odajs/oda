@@ -184,9 +184,9 @@ constructor(dim_in,  dim_out) {
             //     for(let i = 0; i<this.WEIGHTS.data.length; i++){
             //         this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
             //     }
-            //     this._bins = undefined;
-            //     this._func = undefined;
-            //     this._backFunc = undefined;
+            this._bins = undefined;
+            this._func = undefined;
+            this._backFunc = undefined;
             // }
         }
         out._src(x, this.WEIGHTS)._label('BitLayer');
