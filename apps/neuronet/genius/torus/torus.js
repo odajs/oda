@@ -210,6 +210,9 @@ export class tensor{
         return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
     get grad(){
+        // if (!this.data) return [];
+        // if(this.dType === BinaryArray)
+        //     return this['#grad'] ??= new Float32Array(this.data.binSize);
         return this['#grad'] ??= new Float32Array(this.size);
     }
     get data(){
