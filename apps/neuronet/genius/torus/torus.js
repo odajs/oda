@@ -588,14 +588,13 @@ tensor.prototype.matmul = function (other){
         let data = mm.map(i=>{
             return i.data;
         })
-        let out = tensor.from(data)._src(...other)._label('matmul tensor X Array');
+        let out = tensor.from(data)._src(...mm)._label('matmul tensor X Array');
         out._back = ()=>{
-            // for (let x = 0; x < this.data.le)
-            out.grad.reduce((o, i)=>{
-                let grad = out.grad[i];
-              //  return this.matmul(o).data;
+            mm.forEach((o, i)=>{
+                for (let gi = 0; gi<o.grad.length; gi++){
+                    o.grad[gi] += out.grad[i + gi];
+                }
             })
-            console.log(out.grad)
         }
         return out;
     }
@@ -607,7 +606,7 @@ tensor.prototype.matmul = function (other){
         }
         if (other.dType === BinaryArray){
             if (this.dType === BinaryArray){
-                let out = other.bins.reduce((r_bins, o_bins, i_bins)=>{
+                let data = other.bins.reduce((r_bins, o_bins, i_bins)=>{
                     let this_bins = this.bins[i_bins].split('');
                     return r_bins + o_bins.split('').reduce((r, o, i)=>{
                         let x = +this_bins[i] || -1;
@@ -617,7 +616,7 @@ tensor.prototype.matmul = function (other){
 
                     }, 0)
                 }, 0)
-                out = tensor.from(out)._src(this, other)._label('matmul 1 bin X 1 bin');
+                let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
                 out._back = ()=>{
                     console.log(out.grad)
                 }
