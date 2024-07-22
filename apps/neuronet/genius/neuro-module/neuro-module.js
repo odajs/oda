@@ -161,8 +161,7 @@ constructor(dim_in,  dim_out) {
         super(arguments);
     }
     __init__(){
-        this.WEIGHTS = tensor.rand([this.dim_in, this.dim_out], BinaryArray);
-        this.WEIGHTS.isSerializable = true;
+        this.WEIGHTS = tensor.param(tensor.rand([this.dim_in, this.dim_out], BinaryArray));
     }
     
     forward(x) {
@@ -170,27 +169,27 @@ constructor(dim_in,  dim_out) {
         const out = this.forwardFunc(...x_data);
         out._back = ()=>{
             x.grad = this.backFunc(...out.grad);
-            let bins = this.bins;
-            let res = [];
-            x_data.forEach((data, i)=>{
-                i *= this.dim_out;
-                let d = data * LEARNING_RATE;
-                out.grad.forEach((err, y)=>{
-                    i += y
-                    res.push((+bins[i] +  err * d)>0?'1':'0');
-                })
-            })
-            res = res.join('').padEnd(bins.length, '0');
-            if(res !== bins){
-                for(let i = 0; i<this.WEIGHTS.data.length; i++){
-                    this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
-                }
-                this._bins = undefined;
-                this._func = undefined;
-                this._backFunc = undefined;
-            }
+            // let bins = this.bins;
+            // let res = [];
+            // x_data.forEach((data, i)=>{
+            //     i *= this.dim_out;
+            //     let d = data * LEARNING_RATE;
+            //     out.grad.forEach((err, y)=>{
+            //         i += y
+            //         res.push((+bins[i] +  err * d)>0?'1':'0');
+            //     })
+            // })
+            // res = res.join('').padEnd(bins.length, '0');
+            // if(res !== bins){
+            //     for(let i = 0; i<this.WEIGHTS.data.length; i++){
+            //         this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
+            //     }
+            //     this._bins = undefined;
+            //     this._func = undefined;
+            //     this._backFunc = undefined;
+            // }
         }
-        out._src(x)._label('BitLayer');
+        out._src(x, this.WEIGHTS)._label('BitLayer');
         return out;
     }
     get forwardFunc(){
