@@ -299,7 +299,7 @@ export class tensor{
             for(let b = 0; b<this.bins.length; b++){
                 let bb = b * 64;
                 let bin = this.bins[b].split('').map((v, i)=>{
-                    let nv = (+v || -1) + this.grad[bb + i]// * LEARNING_RATE;
+                    let nv = (+v || -1) - this.grad[bb + i]// * LEARNING_RATE;
                     return nv>0?1:0;
                 }).join('');
                 this.data[b] = BigInt('0b'+bin);
@@ -626,8 +626,8 @@ tensor.prototype.matmul = function (other){
                         let x_bin = this.bins[i_bins].split('');
                         for (let i = 0; i<64; i++){
                             let idx = i_bins + i;
-                            x_grad[idx] += o_bin[i]>0?gradient:-gradient;
-                            o_grad[idx] += x_bin[i]>0?gradient:-gradient;
+                            x_grad[idx] += (+o_bin[i]>0?gradient:-gradient);
+                            o_grad[idx] += (+x_bin[i]>0?gradient:-gradient);
                         }
                     })
                 }
