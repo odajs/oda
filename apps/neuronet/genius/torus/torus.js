@@ -974,10 +974,9 @@ tensor.prototype.softmax = function (){
         for(let i = 0; i<data.length; i++){
             let d = data[i];
             let sum = data.reduce((r, sj, j)=>{
-                if (i === j)
-                    return d * (1 - d)
-                return -d * sj;
-            }) * out.grad[i];
+                let v = (i === j) ?d * (1 - d): -d * sj;
+                return r + v
+            })// * out.grad[i];
             this.grad[i] += sum * out.grad[i] / GRADIENT_DIVIDER;
         }
     }
