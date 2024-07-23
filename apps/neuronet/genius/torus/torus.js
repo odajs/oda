@@ -593,12 +593,21 @@ tensor.prototype.matmul = function (other){
                                 for (let y = 0; y < y_size; y++){
                                     let y_out = 0;
                                     for (let x = 0; x < x_size; x++){
-                                        let idx = y + x * y_size;
-                                        y_out += (y_bins[idx] === 1)?this.data[x]:-this.data[x]
+                                        let idx = x + y * x_size;
+                                        if (y_bins[idx] === '1')
+                                            y_out += this.data[x];
+                                        else
+                                            y_out -= this.data[x];
                                     }
                                     data[y] = y_out;
                                 }
                                 const out = tensor.from(data)._src(x, other)._label(`matmul: ${x_size} x (${other.shape}, Bin)`);
+                                out._back = ()=>{
+                                    const out_grad = tensor.from(out.grad)
+                                    this.grad = out_grad.matmul(other);
+                                    other.grad = out_grad.matmul(this); //todo
+                                }
+                                return out;
                             } break;
                         }
 
