@@ -45,9 +45,9 @@ export class NeuroModule extends Function{
             }
         }
         else{
-            setTimeout(()=>{
+            // setTimeout(()=>{
                 this.__init__();
-            }, 0)
+            // }, 0)
         }
         return new Proxy(this, {
             get(target, p, receiver) {
@@ -132,7 +132,7 @@ export class NeuroModule extends Function{
     }
 
 }
-class Linear extends NeuroModule{
+export class Linear extends NeuroModule{
     constructor(d_in, d_out, bias = false) {
         super(arguments);
     }
@@ -169,27 +169,11 @@ export class BinLayer extends NeuroModule{
         const out = this.forwardFunc(...x_data);
         out._back = ()=>{
             x.grad = this.backFunc(...out.grad);
-            // let bins = this.bins;
-            // let res = [];
-            // x_data.forEach((data, i)=>{
-            //     i *= this.dim_out;
-            //     let d = data * LEARNING_RATE;
-            //     out.grad.forEach((err, y)=>{
-            //         i += y
-            //         res.push((+bins[i] +  err * d)>0?'1':'0');
-            //     })
-            // })
-            // res = res.join('').padEnd(bins.length, '0');
-            // if(res !== bins){
-            //     for(let i = 0; i<this.WEIGHTS.data.length; i++){
-            //         this.WEIGHTS.data[i] = BigInt('0b' + res.substr(i * 64, 64));
-            //     }
             this._bins = undefined;
             this._func = undefined;
             this._backFunc = undefined;
-            // }
         }
-        out._src(x, this.WEIGHTS)._label('BitLayer');
+        out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
         return out;
     }
     get forwardFunc(){
@@ -242,7 +226,7 @@ export class BinLayer extends NeuroModule{
         return this._bins ??= this.WEIGHTS.bins.join('');
     }
 }
-class conv1D extends NeuroModule {
+export class conv1D extends NeuroModule {
     constructor(in_channels,
                 out_channels,
                 kernel_size = 4,
@@ -356,7 +340,7 @@ class conv1D extends NeuroModule {
     }
 
 }
-class RMSNorm extends NeuroModule {
+export class RMSNorm extends NeuroModule {
     constructor(dim, bias = false) {
         super(arguments);
     }

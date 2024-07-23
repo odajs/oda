@@ -807,11 +807,9 @@ tensor.prototype.sigm = function (y = 1, z = 1, exp = Math.E){
     const data = this.data.map((x,i) => (y[i] ?? y) / ((z[i] ?? z) + Math.pow((exp[i] ?? exp), -x)))
     const out = tensor.from(data)._shape(this)._src(this)._label('sigm');
     out._back = ()=>{
-        let o_grad = out.grad;
-        let x_grad = this.grad;
         for(let i = 0; i<data.length; i++){
             let x = data[i];
-            x_grad[i] += (1 - x) * x * o_grad[i] / GRADIENT_DIVIDER;
+            this.grad[i] += (1 - x) * x * out.grad[i] / GRADIENT_DIVIDER;
         }
     }
     return out;
