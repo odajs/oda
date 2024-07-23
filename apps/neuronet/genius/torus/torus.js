@@ -588,12 +588,12 @@ tensor.prototype.matmul = function (other){
                                     throw new Error();
                                 let y_bins = other.bins;
                                 let x_size = this.shape[0];
-                                let y_size = other.shape[0];
+                                let y_size = other.shape[1];
                                 const data = new Float32Array(y_size);
                                 for (let y = 0; y < y_size; y++){
                                     let y_out = 0;
                                     for (let x = 0; x < x_size; x++){
-                                        let idx = x + y * x_size;
+                                        let idx = y + y_size * x;
                                         if (y_bins[idx] === '1')
                                             y_out += this.data[x];
                                         else
@@ -604,7 +604,7 @@ tensor.prototype.matmul = function (other){
                                 const out = tensor.from(data)._src(x, other)._label(`matmul: ${x_size} x (${other.shape}, Bin)`);
                                 out._back = ()=>{
                                     const out_grad = tensor.from(out.grad)
-                                    this.grad = out_grad.matmul(other);
+                                    this.grad = out_grad.matmul(other.T);
                                     other.grad = out_grad.matmul(this); //todo
                                 }
                                 return out;
@@ -1245,7 +1245,12 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
     }).filter(i=>i)
     let vars = [
         [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
-        inputs.map((_, i) => `let t${i} = t[${i}].data;`).join('\n'),
+        inputs.map((_, i) => {
+            const t = tensors[i]
+            let str =  `let dType${i} = ${t.dType.name};\n`;
+            str += `let t${i} = dType${i} === BinaryArray?t[${i}].bins:t[${i}].data;`
+            return str;
+        }).join('\n'),
         inputs.map((_, i) => `let idx${i} = 0;`).join('\n'),
         inputs.map((_, i) => `let v${i} = 0;`).join('\n')
     ].join('\n');
