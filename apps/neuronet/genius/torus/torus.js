@@ -158,10 +158,10 @@ export class tensor{
         this.isParam = true;
         return this;
     }
-    _shape(...shape){
+    _shape(...shape){ // shape or tensor
         if(Array.isArray(shape[0]))
             shape = shape[0];
-        if(shape[0] instanceof tensor)
+        if(Object.equal(shape[0]?.constructor, tensor))
             shape = shape[0].shape;
         const size = shape.reduce((r, v)=>r * v, 1);
         if (size !== this.size)
@@ -218,7 +218,7 @@ export class tensor{
         return this.dType.BYTES_PER_ELEMENT * 8;
     }
     get bins(){
-        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(this.size);
+        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(0, this.size);
     }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
@@ -480,14 +480,12 @@ export class tensor{
         return tensor.from(data)._label('hippo');
     }
     static from(data, dType){
-        if (data instanceof tensor)
+        if (Object.equal(data.constructor, tensor))
             return data;
         return new tensor(data, dType);
     }
     static param(src){
-        if (!(src instanceof tensor)){
-            src = tensor.from(src);
-        }
+        src = tensor.from(src);
         src.isParam = true;
         src.isSerializable = true;
         return src;
@@ -577,69 +575,102 @@ tensor.prototype.matmul = function (other){
     else{
         let x = this.data;
         if (this.dType === BinaryArray){
-            this.bins
-        }
-
-
-        const other_shape = [...other.shape];
-        const out_shape = [];
-        while (other_shape.length>2){
-            out_shape.unshift(other_shape.shift())
-        }
-
-
-        if (other.dType === BinaryArray){
-            if (this.dType === BinaryArray){
-                let data = other.bins.reduce((r_bins, o_bins, i_bins)=>{
-                    let this_bins = this.bins[i_bins].split('');
-                    return r_bins + o_bins.split('').reduce((r, o, i)=>{
-                        let x = +this_bins[i] || -1;
-                        if (+o)
-                            return r + x;
-                        return r - x;
-
-                    }, 0)
-                }, 0)
-                let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
-                out._back = ()=>{
-                    let gradient = out.grad[0] / GRADIENT_DIVIDER;
-                    let x_grad = this.grad;
-                    let o_grad = other.grad;
-                    other.bins.forEach((b, i_bins)=>{
-                        let o_bin = b.split('');
-                        let x_bin = this.bins[i_bins].split('');
-                        for (let i = 0; i<64; i++){
-                            let idx = i_bins + i;
-                            x_grad[idx] += (+o_bin[i]>0?gradient:-gradient);
-                            o_grad[idx] += (+x_bin[i]>0?gradient:-gradient);
-                        }
-                    })
-                }
-                return out;
-            }
-            else{
-
-            }
+            // todo
         }
         else{
-            switch (this.dim){ //todo дописать различные варианты
-                case 1:{
-                    switch (other.dim){
-                        case 1:{
-                            expr = 'x,y=>xy';
-                        } break;
-                        case 2:{
-                            if (other.shape[0] === this.size)
-                                expr = 'x, xy=>y';
-                            else if (other.shape[1] === this.size)
-                                expr = 'x, yx=>y';
-                            else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
+
+            if (other.dType === BinaryArray){
+                switch (this.dim){
+                    case 1:{
+                        switch (other.dim){
+                            case 2:{
+                                if (this.shape[0] !== other.shape[0])
+                                    throw new Error();
+                                let y_bins = other.bins;
+                                let x_size = this.shape[0];
+                                let y_size = other.shape[0];
+                                const data = new Float32Array(y_size);
+                                for (let y = 0; y < y_size; y++){
+                                    let y_out = 0;
+                                    for (let x = 0; x < x_size; x++){
+                                        let idx = y + x * y_size;
+                                        y_out += (y_bins[idx] === 1)?this.data[x]:-this.data[x]
+                                    }
+                                    data[y] = y_out;
+                                }
+                                const out = tensor.from(data)._src(x, other)._label(`matmul: ${x_size} x (${other.shape}, Bin)`);
+                            } break;
                         }
-                    }
-                } break;
+
+                    } break;
+
+                }
             }
-            return tensor.einsum(expr, [this, matrix])._label(label);
+            else {
+                // todo
+            }
         }
+    //
+    //
+    //     const other_shape = [...other.shape];
+    //     const out_shape = [];
+    //     while (other_shape.length>2){
+    //         out_shape.unshift(other_shape.shift())
+    //     }
+    //
+    //
+    //     if (other.dType === BinaryArray){
+    //         if (this.dType === BinaryArray){
+    //             let data = other.bins.reduce((r_bins, o_bins, i_bins)=>{
+    //                 let this_bins = this.bins[i_bins].split('');
+    //                 return r_bins + o_bins.split('').reduce((r, o, i)=>{
+    //                     let x = +this_bins[i] || -1;
+    //                     if (+o)
+    //                         return r + x;
+    //                     return r - x;
+    //
+    //                 }, 0)
+    //             }, 0)
+    //             let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
+    //             out._back = ()=>{
+    //                 let gradient = out.grad[0] / GRADIENT_DIVIDER;
+    //                 let x_grad = this.grad;
+    //                 let o_grad = other.grad;
+    //                 other.bins.forEach((b, i_bins)=>{
+    //                     let o_bin = b.split('');
+    //                     let x_bin = this.bins[i_bins].split('');
+    //                     for (let i = 0; i<64; i++){
+    //                         let idx = i_bins + i;
+    //                         x_grad[idx] += (+o_bin[i]>0?gradient:-gradient);
+    //                         o_grad[idx] += (+x_bin[i]>0?gradient:-gradient);
+    //                     }
+    //                 })
+    //             }
+    //             return out;
+    //         }
+    //         else{
+    //
+    //         }
+    //     }
+    //     else{
+    //         switch (this.dim){ //todo дописать различные варианты
+    //             case 1:{
+    //                 switch (other.dim){
+    //                     case 1:{
+    //                         expr = 'x,y=>xy';
+    //                     } break;
+    //                     case 2:{
+    //                         if (other.shape[0] === this.size)
+    //                             expr = 'x, xy=>y';
+    //                         else if (other.shape[1] === this.size)
+    //                             expr = 'x, yx=>y';
+    //                         else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
+    //                     }
+    //                 }
+    //             } break;
+    //         }
+    //         return tensor.einsum(expr, [this, matrix])._label(label);
+    //     }
     }
 
 }
