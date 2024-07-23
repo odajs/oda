@@ -1438,8 +1438,6 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
             @apply --dark;
             margin-bottom: 1px;
             z-index: 1;
-            padding-right: {{scrollBoxWidth}}px;
-            {{''}}
         }
     </style>
     <div :scroll-left="$scrollLeft" class="horizontal flex" style="overflow-x: hidden;" ~style="{maxWidth: this.autoWidth?'100%':'auto'}">
@@ -1449,7 +1447,6 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
             :item="getItem($for.item)"
             :column="$for.item"
             ~class="[$for.item.className]"
-            ~style="{'margin-right': $for.index === columns.length-1 ?(-this.scrollBoxWidth) + 'px' : 0}"
         ></div>
     </div>
     <div ~if="$scrollHeight > $height" class="no-flex" style="overflow-y: scroll; visibility: hidden;"></div>
@@ -1661,7 +1658,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     _getCellClasses(row, col, elem) {
         const res = ['cell'];
         res.push(`col-${col.id}`);
-        if (row.__group__ || col.$flex || this.autoWidth) {
+        if (row.__group__ || col.$flex) {
             res.push('flex');
         }
         else {
