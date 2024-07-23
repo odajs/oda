@@ -1,8 +1,8 @@
 const USE_TESTS = false;
 export const LEARNING_RATE = .3;
 export const GRADIENT_DIVIDER = 1//.618;
-BigInt.prototype.toBin = function (){
-    return this.toString(2).padStart(64, '0');
+BigInt.prototype.toBin = function (dim = 64){
+    return this.toString(2).padStart(dim, '0');
 }
 globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _binSize = 0;
@@ -56,7 +56,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         })
     }
     get bins(){
-        return Array.prototype.map.call(this, d => d.toBin());
+        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin());
     }
     get binLength(){
         return this['#length']
@@ -126,10 +126,6 @@ export class tensor{
             dType: this.dType.name,
             data: this.data.join(' ').toString()
         }
-        // if (this.dType === BinaryArray){
-        //     result.binShape = this.binShape;
-        //     result.bins = this.bins;
-        // }
         return result;
     }
     _label(label){
@@ -210,9 +206,6 @@ export class tensor{
         return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
     get grad(){
-        // if (!this.data) return [];
-        // if(this.dType === BinaryArray)
-        //     return this['#grad'] ??= new Float32Array(this.data.binSize);
         return this['#grad'] ??= new Float32Array(this.size);
     }
     get data(){
@@ -221,35 +214,11 @@ export class tensor{
     set grad(n){
         this['#grad'] = n;
     }
-    get binSize(){
-        switch (this.dType){
-            case BinaryArray:
-            case BigUint64Array:
-                return 64;
-            case Float32Array:
-            case Uint32Array:
-            case Int32Array:
-                return 32;
-            case Uint16Array:
-            case Int16Array:
-                return 16;
-            case Uint8Array:
-            case Int8Array:
-                return 8;
-        }
-        return 0;
-    }
-    get binShape(){
-        if (this.dType === BinaryArray){
-            const shape = [...this.shape];
-            shape[shape.length - 1] *= 64;
-            return shape;
-        }
-        return []
+    get BiTES_PER_ELEMENT(){
+        return this.dType.BYTES_PER_ELEMENT * 8;
     }
     get bins(){
-        const size = this.binSize;
-        return Array.prototype.map.call(this.data, d => d.toString(2).padStart(size, '0'));
+        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(this.size);
     }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
@@ -606,11 +575,19 @@ tensor.prototype.matmul = function (other){
         return out;
     }
     else{
+        let x = this.data;
+        if (this.dType === BinaryArray){
+            this.bins
+        }
+
+
         const other_shape = [...other.shape];
         const out_shape = [];
         while (other_shape.length>2){
             out_shape.unshift(other_shape.shift())
         }
+
+
         if (other.dType === BinaryArray){
             if (this.dType === BinaryArray){
                 let data = other.bins.reduce((r_bins, o_bins, i_bins)=>{

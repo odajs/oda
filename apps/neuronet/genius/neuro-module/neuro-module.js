@@ -163,7 +163,6 @@ export class BinLayer extends NeuroModule{
     __init__(){
         this.WEIGHTS = tensor.param(tensor.rand([this.dim_in, this.dim_out], BinaryArray));
     }
-    
     forward(x) {
         x = tensor.from(x);
         const out = x.matmul(this.WEIGHTS);
