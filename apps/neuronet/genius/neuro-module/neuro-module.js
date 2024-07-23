@@ -165,65 +165,10 @@ export class BinLayer extends NeuroModule{
     }
     
     forward(x) {
-        let x_data = x.data
-        const out = this.forwardFunc(...x_data);
-        out._back = ()=>{
-            x.grad = this.backFunc(...out.grad);
-            this._bins = undefined;
-            this._func = undefined;
-            this._backFunc = undefined;
-        }
+        x = tensor.from(x);
+        const out = x.matmul(this.WEIGHTS);
         out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
         return out;
-    }
-    get forwardFunc(){
-        if(!this._func){
-            let p = new Array(this.dim_in).fill(0).map((_,i) => 'x' + i);
-            this._func = new Function(...p, this.code);
-        }
-        return this._func;
-    }
-    get code(){
-        const bits = this.bins;
-        let code = new Array(this.dim_out).fill('').map((_, i)=>`out[${i}] = 0`);
-        for(let x = 0; x < this.dim_in; x ++){
-            let i = x * this.dim_out;
-            for(let y = 0; y < this.dim_out; y++){
-                if(+bits[i + y])
-                    code[y] += ' + x' + x;
-                else
-                    code[y] += ' - x' + x;
-            }
-        }
-        code = code.join(';\n');
-        code = `const out = new Float32Array(${this.dim_out});\n`+code+'\nreturn tensor.from(out);'; 
-        return code;
-    }
-    get backFunc(){
-        if(!this._backFunc){
-            let p = new Array(this.dim_out).fill(0).map((_,i) => 'y' + i);
-            this._backFunc = new Function(...p, this.codeBack);
-        }
-        return this._backFunc;
-    }
-    get codeBack(){
-        const bits = this.bins;
-        let code = new Array(this.dim_in).fill('').map((_, i)=>`grad[${i}] = 0`);
-        for(let x = 0; x < this.dim_in; x++){
-            let i = x * this.dim_out;
-            for(let y = 0; y < this.dim_out; y++){
-                if(+bits[i + y])
-                    code[x] += ' + y' + y;
-                else
-                    code[x] += ' - y' + y;
-            }
-        }
-        code = code.join(';\n');
-        code = `const grad = new Float32Array(${this.dim_in});\n`+code+'\nreturn grad;'; 
-        return code;
-    }
-    get bins(){
-        return this._bins ??= this.WEIGHTS.bins.join('');
     }
 }
 export class conv1D extends NeuroModule {
