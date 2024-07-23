@@ -1248,14 +1248,19 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         inputs.map((_, i) => {
             const t = tensors[i]
             let str =  `let dType${i} = ${t.dType.name};\n`;
-            str += `let t${i} = dType${i} === BinaryArray?t[${i}].bins:t[${i}].data;`
+            if (t.dType === BinaryArray)
+                str += `let t${i} = t[${i}].bins;`
+            else
+                str += `let t${i} = t[${i}].data;`
             return str;
         }).join('\n'),
         inputs.map((_, i) => `let idx${i} = 0;`).join('\n'),
         inputs.map((_, i) => `let v${i} = 0;`).join('\n')
     ].join('\n');
+    vars += `\nlet mult;`;
     if (outs.length)
         vars += `\nlet idx = -1;\n`;
+
 
     const out_tabs = '\t'.repeat(outs.length);
 
@@ -1306,7 +1311,8 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
             else
                 result += tabs+`v${i} = t${i};\n`;
         })
-        result += tabs + 'res += ' + inputs.map((_,i)=>'v'+i).join(` * `) + ';\n';
+        result += tabs + 'mult = ' + inputs.map((_,i)=>'v'+i).join(` * `) + ';\n';
+        result += tabs + 'res += mult;\n';
         result += Array(cl).fill('').map((c, i)=> out_tabs + '\t'.repeat(i) + '}').toReversed().join('\n')
         return result + '\n';
     }
