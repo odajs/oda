@@ -55,7 +55,7 @@ ODA({is: 'oda-ace-editor',
             }
         },
         focus(){
-            this.editor.focus();
+            this.editor?.focus();
         },
         // fontSize: { $def: 16, set(n) { this.editor?.setOption('fontSize', n) } },
         wrap: { $def: false, set(n) { this.editor?.setOption('wrap', n) } },

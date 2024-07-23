@@ -156,8 +156,8 @@ class Linear extends NeuroModule{
         return x;
     }
 }
-class BinLayer extends NeuroModule{
-constructor(dim_in,  dim_out) {
+export class BinLayer extends NeuroModule{
+    constructor(dim_in,  dim_out) {
         super(arguments);
     }
     __init__(){
