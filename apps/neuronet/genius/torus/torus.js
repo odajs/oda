@@ -1179,7 +1179,6 @@ if (USE_TESTS){
     })
 }
 
-tensor.einsums = {};
 tensor.parse_shape = (expr, src)=>{
     const shape = src.shape;
     const vars = expr.split('');

@@ -51,6 +51,21 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         $def: 0,
         $attr: true
     },
+    savedIndex:{
+        set(n){
+            if (this.selectedCell)
+                this.selectedCell = this.cells[n]
+            else{
+                this.async(()=>{
+                    this.selectedCell = this.cells[n]
+                }, 1000)
+            }
+        },
+        $save: true
+    },
+    get $saveKey(){
+        return this.notebook.url
+    },
     $keyBindings:{
         "ctrl+home"(e){
             this.selectedCell = this.cells[0];
@@ -124,6 +139,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             set(n, o) {
                 if (n){
                     this.editMode = false;
+                    this.savedIndex = n.index;
                     this.scrollToCell(n)
                 }
                 else if (o){
@@ -147,8 +163,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        if (cellElement.offsetTop>(this.scrollTop + this.offsetHeight) || (cellElement.offsetTop + cellElement.offsetHeight)<this.scrollTop)
+        if (cellElement.offsetTop>(this.scrollTop + this.offsetHeight) || (cellElement.offsetTop + cellElement.offsetHeight)<this.scrollTop){
             cellElement?.scrollIntoView();
+            this.async(()=>{
+                this.scrollTop -= 10;
+            })
+        }
     }
 })
 
