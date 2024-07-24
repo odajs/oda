@@ -133,14 +133,14 @@ export class NeuroModule extends Function{
 
 }
 export class Linear extends NeuroModule{
-    constructor(d_in, d_out, bias = false) {
+    constructor(d_in, d_out, bias = false, dType = Float32Array) {
         super(arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([this.d_in, this.d_out]).minus_(.5));
+        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], dType).minus_(.5));
         this.W._label(this.W.label + '/linear weights');
         if(this.bias){
-            this.B = tensor.param(tensor.rand(this.d_out).minus_(.5));
+            this.B = tensor.param(tensor.rand([this.d_out], dType).minus_(.5));
             this.B._label(this.bias._label + '/linear bias');
         }
 
@@ -165,7 +165,7 @@ export class BinLayer extends NeuroModule{
     }
     forward(x) {
         x = tensor.from(x);
-        const out = x.matmul(this.WEIGHTS);
+        const out = tensor.einsum('x, xy->y', [x, this.WEIGHTS]);
         out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
         return out;
     }
