@@ -1310,7 +1310,17 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
             else
                 result += tabs+`v${i} = t${i};\n`;
         })
-        result += tabs + 'mult = ' + inputs.map((_,i)=>'v'+i).join(` * `) + ';\n';
+        result += tabs + 'sign = ' + inputs.map((_,i)=>{
+            const t = tensors[i];
+            if (t.dType === BinaryArray)
+                return '(v'+i+' - 1)';
+        }).filter(l=>l).join(` + `) + '$1;\n';
+
+        result += tabs + 'mult = ' + inputs.map((_,i)=>{
+            const t = tensors[i];
+            if (t.dType !== BinaryArray)
+                return 'v'+i;
+        }).filter(l=>l).join(` * `) + ';\n';
         result += tabs + 'res += mult;\n';
         result += Array(cl).fill('').map((c, i)=> out_tabs + '\t'.repeat(i) + '}').toReversed().join('\n')
         return result + '\n';
