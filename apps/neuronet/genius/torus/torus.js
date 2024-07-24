@@ -1256,10 +1256,10 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         inputs.map((_, i) => {
             const t = tensors[i]
             let str =  `let dType${i} = ${t.dType.name};\n`;
-            // if (t.dType === BinaryArray)
-            //     str += `let t${i} = t[${i}].bins;`
-            // else
-            str += `let t${i} = t[${i}].data;`
+            if (t.dType === BinaryArray)
+                str += `let t${i} = t[${i}].bins;`
+            else
+                str += `let t${i} = t[${i}].data;`
             return str;
         }).join('\n'),
         inputs.map((_, i) => `let idx${i} = 0;`).join('\n'),
@@ -1303,7 +1303,6 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         let tab = 0
         let tabs = out_tabs;
         inputs.map((input, i)=>{
-            let t = tensors[i]
             for (let axis of input){
                 if (uses.includes(axis.a))
                     continue;
@@ -1315,10 +1314,7 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
             }
             if(input.idx_expr){
                 result += tabs + input.idx_expr + ';\n';
-                if (t.dType === BinaryArray)
-                    result += tabs+`v${i} = t${i}.getBit(idx${i});\n`;
-                else
-                    result += tabs+`v${i} = t${i}[idx${i}];\n`;
+                result += tabs+`v${i} = t${i}[idx${i}];\n`;
             }
             else
                 result += tabs+`v${i} = t${i};\n`;
