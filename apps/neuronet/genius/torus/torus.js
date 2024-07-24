@@ -8,6 +8,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _binSize = 0;
     #length = 0;
     _self = undefined;
+    bit_mask = BigInt(1);
     constructor(size) {
         super(Math.ceil(size/64));
         this._binSize = size;
@@ -69,6 +70,11 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
             res[i] = h(v, i, this._self);
             return res;
         }, new BinaryArray(this._binSize))
+    }
+    getBit(idx){
+        const data_idx = idx>>6;
+        idx = 63-(idx&63);
+        return (this[data_idx]>>BigInt(idx))&this.bit_mask;
     }
 }
 export class tensor{
@@ -219,6 +225,9 @@ export class tensor{
     }
     get bins(){
         return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(0, this.size);
+    }
+    getBit(idx){
+        return this.data.getBit(idx);
     }
     get T(){
         let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
@@ -1247,10 +1256,10 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         inputs.map((_, i) => {
             const t = tensors[i]
             let str =  `let dType${i} = ${t.dType.name};\n`;
-            if (t.dType === BinaryArray)
-                str += `let t${i} = t[${i}].bins;`
-            else
-                str += `let t${i} = t[${i}].data;`
+            // if (t.dType === BinaryArray)
+            //     str += `let t${i} = t[${i}].bins;`
+            // else
+            str += `let t${i} = t[${i}].data;`
             return str;
         }).join('\n'),
         inputs.map((_, i) => `let idx${i} = 0;`).join('\n'),
@@ -1294,6 +1303,7 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
         let tab = 0
         let tabs = out_tabs;
         inputs.map((input, i)=>{
+            let t = tensors[i]
             for (let axis of input){
                 if (uses.includes(axis.a))
                     continue;
@@ -1305,7 +1315,10 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
             }
             if(input.idx_expr){
                 result += tabs + input.idx_expr + ';\n';
-                result += tabs+`v${i} = t${i}[idx${i}];\n`;
+                if (t.dType === BinaryArray)
+                    result += tabs+`v${i} = t${i}.getBit(idx${i});\n`;
+                else
+                    result += tabs+`v${i} = t${i}[idx${i}];\n`;
             }
             else
                 result += tabs+`v${i} = t${i};\n`;
