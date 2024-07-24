@@ -166,7 +166,7 @@ export class BinLayer extends NeuroModule{
     forward(x) {
         x = tensor.from(x);
         const out = tensor.einsum('x, xy->y', [x, this.WEIGHTS]);
-        out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
+        // out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
         return out;
     }
 }
