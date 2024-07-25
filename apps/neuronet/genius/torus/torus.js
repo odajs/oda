@@ -282,9 +282,10 @@ export class tensor{
             let idx = 0;
             let val = '';
             for(let i = 0; i<bins.length; i++){
-                let v = +bins[i] || -1;
-                let nv = v + this.grad[i] // * LEARNING_RATE;
-                val += nv>0?1:0;
+                // let v = +bins[i] || -1;
+                Math.sign(this.grad[i])
+                // let nv = v + this.grad[i] // * LEARNING_RATE;/**/
+                val += Math.sign(this.grad[i])>0?1:0;
                 if (val.length === 64){
                     this.data[idx] = BigInt('0b'+val);
                     val = ''
