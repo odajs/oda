@@ -305,6 +305,7 @@ export class tensor{
             if (val.length){
                 this.data[idx] = BigInt('0b'+val.padEnd(64, '0'));
             }
+            this['#bins'] = undefined
         }
         else{
             for(let i = 0; i<this.data.length; i++){
@@ -1501,12 +1502,8 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
     return result;
 }
 
-// function binarize (grad_i) {return grad_i>0} 
+ //function binarize (grad_i) {return grad_i>0}
 function binarize (grad_i) {
-    // console.log(grad_i)
-    if (Math.abs(grad_i)>0.9) {
-        console.log(grad_i)
-    }
-    return grad_i>0
-
+    let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
+    return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
 }
