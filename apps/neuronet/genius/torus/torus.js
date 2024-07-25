@@ -288,10 +288,10 @@ export class tensor{
                         val += bins[i];
                         break;
                     case 1:
-                        val += bins[i];
+                        val += 1;
                         break;
                     case -1:
-                        val += bins[i]?0:1;
+                        val += 0;
                         break;
                 }
                 if (val.length === 64){
@@ -1022,17 +1022,18 @@ tensor.prototype.softmax = function (){
 }
 tensor.prototype.MSE = function (target){
     let y = target.data ?? target;
-    let error = 0;
-    let data = this.data.map((x, i)=>{
-        error += x = (x - y[i]) ** 2;
+    let loss = 0;
+    let errors = this.data.map((x, i)=>{
+        x = (x - y[i]);
+        loss += x ** 2;
         return x;
     });
-    error /= this.size;
-    const out = tensor.from([error])._src(this)._label('MSE');
+    loss /= this.size;
+    const out = tensor.from([loss])._src(this)._label('MSE');
     out._back = ()=>{
         let _x = this.grad;
-        for (let i = 0; i<data.length; i++){
-            _x[i] += -2 * data[i] / GRADIENT_DIVIDER;
+        for (let i = 0; i<errors.length; i++){
+            _x[i] += -2 * errors[i];
         }
     }
     return out;
