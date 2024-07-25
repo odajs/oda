@@ -282,18 +282,20 @@ export class tensor{
             let idx = 0;
             let val = '';
             for(let i = 0; i<bins.length; i++){
-                let v = Math.sign(this.grad[i])
-                switch (v){
-                    case 0:
-                        val += bins[i];
-                        break;
-                    case 1:
-                        val += 1;
-                        break;
-                    case -1:
-                        val += 0;
-                        break;
-                }
+                val += binarize(this.grad[i])? bins[i] : bins[i] ? 0: 1
+                // let v = Math.sign(this.grad[i])
+                // switch (v){
+                //     case 0:
+                //         val += bins[i];
+                //         break;
+                //     case 1:
+                //         val += 1;
+                //         break;
+                //     case -1:
+                //         val += 0;
+                //         break;
+                // }
+
                 if (val.length === 64){
                     this.data[idx] = BigInt('0b'+val);
                     val = ''
@@ -1497,4 +1499,14 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
         this.grad = unpadded_grad;
     }
     return result;
+}
+
+// function binarize (grad_i) {return grad_i>0} 
+function binarize (grad_i) {
+    // console.log(grad_i)
+    if (Math.abs(grad_i)>0.9) {
+        console.log(grad_i)
+    }
+    return grad_i>0
+
 }
