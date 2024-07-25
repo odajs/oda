@@ -282,17 +282,20 @@ export class tensor{
             let idx = 0;
             let val = '';
             for(let i = 0; i<bins.length; i++){
-                let g = this.grad[i]
-
+                val += binarize(this.grad[i])? bins[i] : bins[i] ? 0: 1
                 // let v = Math.sign(this.grad[i])
-                switch (Math.sign(g)){
-                    case 0:
-                        val += bins[i];
-                        break;
-                    default:{
-                        val += binarize(g)? bins[i] : bins[i] ? 0: 1;
-                    } break;
-                }
+                // switch (v){
+                //     case 0:
+                //         val += bins[i];
+                //         break;
+                //     case 1:
+                //         val += 1;
+                //         break;
+                //     case -1:
+                //         val += 0;
+                //         break;
+                // }
+
                 if (val.length === 64){
                     this.data[idx] = BigInt('0b'+val);
                     val = ''
@@ -1499,10 +1502,8 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
     return result;
 }
 
- function binarize (grad_i) {
-    return grad_i>0;
+// function binarize (grad_i) {return grad_i>0} 
+function binarize (grad_i) {
+    let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
+    return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
 }
-// function binarize (grad_i) {
-//     let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
-//     return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
-// }
