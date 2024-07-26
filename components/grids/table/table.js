@@ -263,19 +263,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         },
         treeStep: 24,
-        get scrollBoxWidth() {
-            const div = document.createElement('div');
-            div.style.setProperty('overflow-y', 'scroll');
-            div.style.setProperty('overflow-x', 'hidden');
-            div.style.setProperty('min-height', '1px');
-            div.style.setProperty('position', 'fixed');
-            div.style.setProperty('visibility', 'hidden');
-            document.body.appendChild(div);
-            requestAnimationFrame(() => {
-                div.remove();
-            });
-            return div.offsetWidth;
-        }
     },
     pointerRow: Object,
     expandLevel: -1,
@@ -637,7 +624,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
 
-            const tableWidth = this.$width - this.scrollBoxWidth;
+            const tableWidth = this.$width;
 
             const partWidth = tableWidth / 3;
             const leftWidth = colsData.left ? partWidth : 0;
@@ -667,9 +654,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                         let width = (this.autoWidth
                             ? ({ left: leftColWidth, middle: middleColWidth, right: rightColWidth })[part]
                             : c.$width);
-                        // if (c === this.rowColumns.at(-1)) {
-                        //     width += this.scrollBoxWidth;
-                        // }
                         style += `\n\tmin-width: ${width}px; \n\tmax-width: ${width}px;\n\tflex: 0;`;
                         // if (this.autoWidth && this.rowColumns.at(-1) === c){
                         //     style += `\n\tflex: 1 !important;`;
@@ -1491,7 +1475,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         :host {
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
-            overflow-y: scroll;
+            overflow-y: auto;
             @apply --vertical;
         }
         .row {

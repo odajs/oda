@@ -287,16 +287,12 @@ export class tensor{
                 let value = bins[i];
                 switch (sign){
                     case 1: //g>0
-                        // if(value)
-                            value = 1;
-                        // else if (Math.max(0,Math.min(1,(g + 1)/2))>.5)
-                        //     value = 1
+                        // if(!value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
+                           value = 1
                         break;
                     case -1: //g<0
-                        if(!value)
-                            value = 0;
-                        else if (Math.max(0,Math.min(1,(g + 1)/2))<.5)
-                            value = 0
+                        // if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
+                           value = 0
                         break;
                 }
                 val += value;
@@ -456,7 +452,8 @@ export class tensor{
         let handler = Math.random;
         if (dType === BinaryArray){
             handler = ()=>{
-                return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+                return 6148914691236517205n
+                // return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
             }
         }
         return this.fill(shape, handler, dType);
