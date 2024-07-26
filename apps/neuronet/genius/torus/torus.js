@@ -1502,8 +1502,8 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
     return result;
 }
 
-// function binarize (grad_i) {return grad_i>0} 
-function binarize (grad_i) {
-    let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
-    return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
-}
+function binarize (grad_i) {return grad_i>0} 
+// function binarize (grad_i) {
+//     let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
+//     return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
+// }
