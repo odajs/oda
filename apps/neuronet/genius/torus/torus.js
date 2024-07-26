@@ -451,9 +451,10 @@ export class tensor{
     static rand(shape, dType) {
         let handler = Math.random;
         if (dType === BinaryArray){
+            // handler = BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
             handler = ()=>{
-                return 6148914691236517205n
-                // return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+                // return 5508166759905001231n
+                return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
             }
         }
         return this.fill(shape, handler, dType);
@@ -1351,8 +1352,9 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
                 const t = tensors[i];
                 if (t.dType === BinaryArray)
                     return '(v'+i+' - 1)';
-            }).filter(l=>l).join(` * `) + ');\n';
-            //}).filter(l=>l).join(` + `) + ')%2||1;\n';
+            }).filter(l=>l).join(` + `) + ')&1;\n';
+            // }).filter(l=>l).join(` * `) + ');\n';
+            // }).filter(l=>l).join(` + `) + ')%2||1;\n';
             if (mult)
                 result += tabs + 'res += sign?-mult:mult;\n';
             else
