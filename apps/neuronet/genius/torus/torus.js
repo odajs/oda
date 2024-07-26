@@ -282,20 +282,27 @@ export class tensor{
             let idx = 0;
             let val = '';
             for(let i = 0; i<bins.length; i++){
-                val += binarize(this.grad[i])? bins[i] : bins[i] ? 0: 1
-                // let v = Math.sign(this.grad[i])
-                // switch (v){
-                //     case 0:
-                //         val += bins[i];
-                //         break;
-                //     case 1:
-                //         val += 1;
-                //         break;
-                //     case -1:
-                //         val += 0;
-                //         break;
-                // }
-
+                let sign = Math.sign(this.grad[i])
+                let value = bins[i];
+                switch (sign){
+                    case 1: //g>0
+                        if(value)
+                            value = 1;
+                        else
+                            value = 1
+                        // else{
+                        //     let p = Math.max(0,Math.min(1,(sign+1)/2));
+                        //     value = p<Math.random()?0:1
+                        // }
+                        break;
+                    case -1: //g<0
+                        if(!value)
+                            value = 0;
+                        else
+                            value = 0
+                        break;
+                }
+                val += value;
                 if (val.length === 64){
                     this.data[idx] = BigInt('0b'+val);
                     val = ''
