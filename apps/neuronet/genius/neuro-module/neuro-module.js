@@ -119,16 +119,17 @@ export class NeuroModule extends Function{
 
     }
     train(dataset, getTrain, steps=1000, los_steps=100, loss_type='MSE', test_size=0.2, banch=10) {
-        for (let i= 0; i < steps; i++) {
-            let [inputs,target] = getTrain(dataset, test_size, banch)
-            for (let j=0; j <inputs.length; j++ ) {
-                this(inputs[j]); 
-            }
-            let loss = this.MSE(target);
-            loss.back();
-            if (i % los_steps === 0) console.log(loss)
-        }
-        return this    
+        // for (let i= 0; i < steps; i++) {
+        //     let [inputs,target] = getTrain(dataset, test_size, banch)
+        //     for (let j=0; j <inputs.length; j++ ) {
+
+        //         this(inputs[j]); 
+        //     }
+        //     let loss = .MSE(target);
+        //     loss.back();
+        //     if (i % los_steps === 0) console.log(loss)
+        // }
+        // return this    
     }
 
 }
@@ -137,15 +138,16 @@ export class Linear extends NeuroModule{
         super(arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], dType).minus_(.5));
+        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], this.dType).minus_(.5));
         this.W._label(this.W.label + '/linear weights');
         if(this.bias){
-            this.B = tensor.param(tensor.rand([this.d_out], dType).minus_(.5));
+            this.B = tensor.param(tensor.rand([this.d_out], this.dType).minus_(.5));
             this.B._label(this.bias._label + '/linear bias');
         }
 
     }
     forward(x){
+        x=tensor.from(x)
         let axis = ''
         if (x.shape.length>1){
             axis = Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join('')

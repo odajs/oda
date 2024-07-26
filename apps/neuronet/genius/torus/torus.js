@@ -1,5 +1,5 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = .1;
+export const LEARNING_RATE = .3;
 export const GRADIENT_DIVIDER = 1//.618;
 BigInt.prototype.toBin = function (dim = 64){
     return this.toString(2).padStart(dim, '0');
