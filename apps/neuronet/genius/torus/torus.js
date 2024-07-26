@@ -848,8 +848,8 @@ tensor.prototype.tahn = function (){
     return tensor.from(data, 'tahn', [this])._shape(this);
 }
 
-tensor.prototype.sigm = function (y = 1, z = 1, exp = Math.E){
-    const data = this.data.map((x,i) => (y[i] ?? y) / ((z[i] ?? z) + Math.pow((exp[i] ?? exp), -x)))
+tensor.prototype.sigm = function (t){
+    const data = this.data.map(x => (1 / (1 + Math.exp(-x))))
     const out = tensor.from(data)._shape(this)._src(this)._label('sigm');
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
