@@ -1,5 +1,5 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = .3;
+export const LEARNING_RATE = .1;
 export const GRADIENT_DIVIDER = 1//.618;
 BigInt.prototype.toBin = function (dim = 64){
     return this.toString(2).padStart(dim, '0');
@@ -282,23 +282,20 @@ export class tensor{
             let idx = 0;
             let val = '';
             for(let i = 0; i<bins.length; i++){
-                let sign = Math.sign(this.grad[i])
+                let g = this.grad[i];
+                let sign = Math.sign(g)
                 let value = bins[i];
                 switch (sign){
                     case 1: //g>0
-                        if(value)
+                        // if(value)
                             value = 1;
-                        else
-                            value = 1
-                        // else{
-                        //     let p = Math.max(0,Math.min(1,(sign+1)/2));
-                        //     value = p<Math.random()?0:1
-                        // }
+                        // else if (Math.max(0,Math.min(1,(g + 1)/2))>.5)
+                        //     value = 1
                         break;
                     case -1: //g<0
                         if(!value)
                             value = 0;
-                        else
+                        else if (Math.max(0,Math.min(1,(g + 1)/2))<.5)
                             value = 0
                         break;
                 }
