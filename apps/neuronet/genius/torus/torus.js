@@ -1350,7 +1350,8 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
                 const t = tensors[i];
                 if (t.dType === BinaryArray)
                     return '(v'+i+' - 1)';
-            }).filter(l=>l).join(` + `) + ')&1;\n';
+            }).filter(l=>l).join(` * `) + ');\n';
+            //}).filter(l=>l).join(` + `) + ')%2||1;\n';
             if (mult)
                 result += tabs + 'res += sign?-mult:mult;\n';
             else
