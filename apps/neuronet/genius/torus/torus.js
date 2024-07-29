@@ -586,7 +586,7 @@ export class tensor{
     }
 }
 tensor.GRADIENT_DIVIDER = 1;
-tensor.LEARNING_RATE = .1;
+tensor.LEARNING_RATE = 0.1;
 tensor.prototype.matmul = function (other){
     let expr, label;
     if(Array.isArray(other)){

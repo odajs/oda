@@ -263,6 +263,19 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         },
         treeStep: 24,
+        get scrollBoxWidth() {
+            const div = document.createElement('div');
+            div.style.setProperty('overflow-y', 'scroll');
+            div.style.setProperty('overflow-x', 'hidden');
+            div.style.setProperty('min-height', '1px');
+            div.style.setProperty('position', 'fixed');
+            div.style.setProperty('visibility', 'hidden');
+            document.body.appendChild(div);
+            requestAnimationFrame(() => {
+                div.remove();
+            });
+            return div.offsetWidth;
+        }
     },
     pointerRow: Object,
     expandLevel: -1,
@@ -624,7 +637,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
 
-            const tableWidth = this.$width;
+            const tableWidth = this.$width - this.scrollBoxWidth;
 
             const partWidth = tableWidth / 3;
             const leftWidth = colsData.left ? partWidth : 0;
@@ -1475,7 +1488,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         :host {
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
-            overflow-y: auto;
+            overflow-y: scroll;
             @apply --vertical;
         }
         .row {
