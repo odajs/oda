@@ -1076,40 +1076,47 @@ tensor.prototype.crossEntropy = function (target) {
     return out;
 }
 
-Array.prototype.toTensorString = function (max = 4, shape = []){
-    function recurse(d, idx = 0, l = 0){
-        let result = idx?`\r\n${(' ').repeat(l)}[`:'['
-        if (d[0]?.map){
-            let list = Array.from(d).map((v, i)=>{
-                return recurse(v, i, l + 1);
-            })
-            result += list;
-        }
-        else{
-            if (d.length > max){
-                const showing = Math.floor(max/2);
-                result += Array.from(d.slice(0, showing)).map(x=>{
-                    return  num2text(x);
-                }).join(' ') ;
-                result +=  `  ...  `;
-                result +=  Array.from(d.slice(-showing)).map(x=>{
-                    return num2text(x);
-                }).join(' ')
-            }
-            else{
-                result += Array.from(d).map(x=>{
-                    return num2text(x);
-                }).join(' ') || num2text(d);
-            }
-        }
+if (!Array.prototype.toTensorString) {
+    Object.defineProperty(Array.prototype, 'toTensorString', {
+        configurable:true,
+        enumerable:false,
+        value (max = 4, shape = []) {
+            function recurse(d, idx = 0, l = 0){
+                let result = idx?`\r\n${(' ').repeat(l)}[`:'['
+                if (d[0]?.map){
+                    let list = Array.from(d).map((v, i)=>{
+                        return recurse(v, i, l + 1);
+                    })
+                    result += list;
+                }
+                else{
+                    if (d.length > max){
+                        const showing = Math.floor(max/2);
+                        result += Array.from(d.slice(0, showing)).map(x=>{
+                            return  num2text(x);
+                        }).join(' ') ;
+                        result +=  `  ...  `;
+                        result +=  Array.from(d.slice(-showing)).map(x=>{
+                            return num2text(x);
+                        }).join(' ')
+                    }
+                    else{
+                        result += Array.from(d).map(x=>{
+                            return num2text(x);
+                        }).join(' ') || num2text(d);
+                    }
+                }
 
-        result = result + ']'
-        return result
-    }
-    let res = recurse(this);
-    res = res.slice(1, -1);
-    return res;
+                result = result + ']'
+                return result
+            }
+            let res = recurse(this);
+            res = res.slice(1, -1);
+            return res;
+        }
+    } )
 }
+
 function num2text(x){
    if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
         return x;

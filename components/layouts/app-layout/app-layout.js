@@ -47,7 +47,7 @@ class PanelProps extends ROCKS({
         ODA.LocalStorage.create(this.$savePath).clear();
     }
 }
-ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/touch-router', extends: 'oda-form-layout, oda-touch-router',
+ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 'oda-form-layout',
     template: /*html*/`
     <style>
         .main {
@@ -172,18 +172,16 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter, @tools/tou
     _scroll(e) {
         if (!this.hideHeader || e.ctrlKey || e.shiftKey || e.altKey) return;
         this.throttle('hide-header', () => {
-            let h = this.appHeader;
-            let t = e.target;
+            const h = this.appHeader;
+            const t = e.target;
             if (e.detail && e.detail.value === 'clearScroll') {
                 h.style.marginTop = '0';
                 return;
             }
             if (t.slot !== 'main') return;
-            if (e.wheelDelta >= 0 || e.detail > 0) {
-                h.style.marginTop = '0';
-            } else {
-                h.style.marginTop = `-${h.offsetHeight}px`;
-            }
+            h.style.marginTop = e.wheelDelta >= 0 || e.detail > 0
+                ? '0'
+                : `-${h.offsetHeight}px`;
         });
     },
     closeDrawers() {
@@ -302,9 +300,9 @@ ODA({is: 'app-layout-drawer',
     <div @touchmove="hideTabs=false" id="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;"
             ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
-            <div ~show="!hideTabs" class="no-flex vertical">
+            <div ~show="!hideTabs" class="no-flex vertical" style="overflow-y: auto">
                 <oda-button
-                    ~for="controls"
+                    ~for="visibleControls"
                     ~style="getStyle($for.item)"
                     style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
                     ~class="{accent: focused === $for.item}"
@@ -322,9 +320,11 @@ ODA({is: 'app-layout-drawer',
                     :bubble="$for.item.bubble"
                     @down.stop="setOpened($for.item)"
                 ></oda-button>
+                <oda-button ~if="collapsedControls.length > 0" style="order: 1000" icon="iconoir:more-horiz-circle" @tap="_showCollapsedControls"></oda-button>
             </div>
-            <div class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;" >
-                <oda-icon @down.stop="hideTabs=!hideTabs" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :rotate="hideTabs?0:180" :icon-size ~style="{filter: hideTabs ? 'invert(1)' : ''}"></oda-icon>
+            <div class="flex"></div>
+            <div ~if="hideTabs"class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;filter: invert(1);" >
+                <oda-icon @down.stop="hideTabs=false" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :icon-size></oda-icon>
             </div>
             <oda-button
                 ~for="buttons"
@@ -353,7 +353,7 @@ ODA({is: 'app-layout-drawer',
             </div>
             <slot style="overflow: hidden;" @slotchange="slotchange" class="flex vertical"></slot>
         </div>
-        <oda-splitter :sign ~if="!hideResize" ::width></oda-splitter>
+        <oda-splitter :sign ~if="!hideResize" ::width @touchstart.stop></oda-splitter>
     </div>
     `,
     get $saveKey() {
@@ -395,6 +395,8 @@ ODA({is: 'app-layout-drawer',
             $attr: true
         },
         controls: Array,
+        visibleControls: [],
+        collapsedControls: [],
         opened: {
             $def: null,
             set(n, o) {
@@ -402,7 +404,7 @@ ODA({is: 'app-layout-drawer',
                     n.titleIcon = n.getAttribute('title-icon');
                     n.hidden = false;
                 }
-                for (let i of (this.controls || [])) {
+                for (const i of (this.controls || [])) {
                     i.$sleep = i.hidden = i !== n;
                 }
                 const idx = this.controls.indexOf(n);
@@ -426,7 +428,7 @@ ODA({is: 'app-layout-drawer',
             get() {
                 return this.opened?.title;
             }
-        }
+        },
     },
     get panel() {
         return this.$('#panel') || undefined;
@@ -461,6 +463,57 @@ ODA({is: 'app-layout-drawer',
     },
     attached() {
         this.listen('keydown', '_onKeyDown', { target: document });
+        if ('ontouchstart' in window) {
+            /**@param {TouchEvent} e*/
+            const touchStart = (e) => {
+                if (e.touches.length > 1) {
+                    return;
+                }
+                const touch = e.touches[0];
+                const { screenX: x, screenY: y } = touch;
+                const startPos = { x, y };
+                const status = { dir: '', dist: 0 };
+                let stopID = 0;
+                /**@param {TouchEvent} e*/
+                const touchMove = (e) => {
+                    stopID = setTimeout(() => {
+                        touchcancel();
+                    }, 1000);
+                    const touch = e.changedTouches[0];
+                    const { screenX: x, screenY: y } = touch;
+                    const curPos = { x, y };
+                    const yDist = curPos.y - startPos.y;
+                    const xDist = curPos.x - startPos.x;
+                    status.dir = xDist > 0 ? 'right' : 'left';
+                    status.xDist = Math.abs(xDist);
+                    status.yDist = Math.abs(yDist);
+                    if (status.yDist > status.xDist && status.yDist > 20) {
+                        touchcancel();
+                        return;
+                    }
+                }
+                /**@param {TouchEvent} e*/
+                const touchEnd = (e) => {
+                    if (status.xDist > (this.opened ? 150 : 5) && status.dir === this.pos) {
+                        this.hideTabs = true;
+                        this.close();
+                    }
+                    touchcancel();
+                };
+                const touchcancel = () => {
+                    clearTimeout(stopID);
+                    stopID = 0;
+                    status.dir = '';
+                    status.xDist = 0;
+                    ODA.top.removeEventListener('touchcancel', touchEnd);
+                    ODA.top.removeEventListener('touchend', touchEnd);
+                }
+                ODA.top.addEventListener('touchmove', touchMove);
+                ODA.top.addEventListener('touchcancel', touchEnd);
+                ODA.top.addEventListener('touchend', touchEnd);
+            };
+            this.listen('touchstart', touchStart);
+        }
     },
     detached() {
         this.unlisten('keydown', '_onKeyDown', { target: document });
@@ -532,6 +585,24 @@ ODA({is: 'app-layout-drawer',
         if (this.pinned && !this.opened && this.controls.length) {
             this.setOpened(this.controls[this.focusedIndex]);
         }
+        const height = this.offsetHeight/2;
+        if (!height) return;
+        let sum = 0;
+        const visible = [];
+        const collapsed = [];
+        for (const i in this.controls) {
+            const e = this.controls[i];
+            const label = e.getAttribute('label');
+            sum += ((label.length || 0) * 8) + 40;
+            if(sum < height || i == this.focusedIndex){
+                visible.push(e);
+            }
+            else{
+                collapsed.push(e);
+            }
+        }
+        this.visibleControls = visible;
+        this.collapsedControls = collapsed;
     },
     _onKeyDown(e) {
         if (this.controls && e.ctrlKey && '123456789'.includes(e.key)) {
@@ -542,11 +613,43 @@ ODA({is: 'app-layout-drawer',
                 if (idx < this.buttons.sort((a, b) => parseInt(a.order || 0) < parseInt(b.order || 0) ? -1 : 1).length) {
                     this.buttons[idx]?.tap();
                 }
-            } else {
-                if (idx < this.controls.sort((a, b) => parseInt(a.getAttribute('order') || 0) < parseInt(b.getAttribute('order') || 0) ? -1 : 1).length) {
-                    this.setOpened(this.controls[idx]);
-                }
+            } else if (idx < this.controls.sort((a, b) => parseInt(a.getAttribute('order') || 0) < parseInt(b.getAttribute('order') || 0) ? -1 : 1).length) {
+                this.setOpened(this.controls[idx]);
             }
+        }
+    },
+    _showCollapsedControls({ target: parent }) {
+        ODA.showMenu({
+            template: 'oda-collapsed-buttons-menu-item',
+            items: this.collapsedControls.map(c => ({
+                focused: c === this.focused,
+                icon: c.getAttribute('icon'),
+                label: c.getAttribute('label'),
+                tap: () => {
+                    this.setOpened(c);
+                }
+            })),
+            parent
+        });
+    },
+});
+ODA({is: 'oda-collapsed-buttons-menu-item',
+    template: /*html*/`
+    <style>
+        :host{
+            @apply --horizontal;
+            width: 232px;
+            padding: 4px;
+        }
+    </style>
+    <oda-icon :icon="item.icon"></oda-icon>
+    <span ~text="item.label"></span>
+    `,
+    item: null,
+    focused: {
+        $attr: true,
+        get() {
+            return this.item.focused;
         }
     }
 });
@@ -572,12 +675,7 @@ ODA({is: 'app-layout-tabs',
     focused: {
         set(n) {
             this.elements.forEach(e => {
-                if (e === n.element) {
-                    e.$sleep = e.hidden = false;
-                }
-                else {
-                    e.$sleep = e.hidden = true;
-                }
+                e.$sleep = e.hidden = e !== n.element;
             });
         }
     },
@@ -588,11 +686,10 @@ ODA({is: 'app-layout-tabs',
             return e;
         });
         this.tabs = this.elements.map(e => {
-            const element = e;
             const icon = e.getAttribute('icon') || e.icon;
             const subIcon = e.getAttribute('sub-icon') || e.subIcon;
             const label = e.getAttribute('label') || e.getAttribute('name') || e.getAttribute('title') || e.label || e.name || e.localName;
-            return { element, icon, subIcon, label };
+            return { element: e, icon, subIcon, label };
         });
         this.async(() => {
             if (!this.focused) {
