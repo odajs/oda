@@ -1,4 +1,7 @@
 const USE_TESTS = false;
+globalThis.LEARNING_RATE = 0.1;
+globalThis.GRADIENT_DIVIDER = 1;
+
 BigInt.prototype.toBin = function (dim = 64){
     return this.toString(2).padStart(dim, '0');
 }
@@ -584,9 +587,22 @@ export class tensor{
         }
         return data.flat();
     }
+    static get LEARNING_RATE() {
+        return globalThis.LEARNING_RATE
+    }
+    static set LEARNING_RATE(n) {
+        globalThis.LEARNING_RATE = n
+    }
+    static get GRADIENT_DIVIDER() {
+        return globalThis.GRADIENT_DIVIDER
+    }
+    static set GRADIENT_DIVIDER(n) {
+        globalThis.GRADIENT_DIVIDER = n
+    }
+
 }
-tensor.GRADIENT_DIVIDER = 1;
-tensor.LEARNING_RATE = 0.1;
+// tensor.GRADIENT_DIVIDER = 1;
+// tensor.LEARNING_RATE = 0.1;
 tensor.prototype.matmul = function (other){
     let expr, label;
     if(Array.isArray(other)){

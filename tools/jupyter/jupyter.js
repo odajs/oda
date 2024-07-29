@@ -88,7 +88,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         $pdp: true,
         iconSize: 24,
         readOnly: false,
-        file_path: String,
+        file_path: {
+            $def: '',
+            set(n) {
+                console.log(n)
+            }
+        },
         get url() {
             if (this.file_path?.startsWith('http'))
                 return this.file_path;
