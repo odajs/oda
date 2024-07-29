@@ -11,9 +11,15 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _self = undefined;
     bit_mask = BigInt(1);
     constructor(size) {
-        super(Math.ceil(size/64));
-        this._binSize = size;
-        this['#length'] = size;
+        super(Math.ceil((Array.isArray(size)?size.length:size)/64));
+        if (Array.isArray(size)){
+            let data = size;
+            this['#length'] = this._binSize = data.length;
+
+        }
+        else{
+            this['#length'] = this._binSize = size;
+        }
         this._self = this;
         return new Proxy(this, {
             get: (target, key, receiver) =>{
