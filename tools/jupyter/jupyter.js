@@ -88,12 +88,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         $pdp: true,
         iconSize: 24,
         readOnly: false,
-        file_path: {
-            $def: '',
-            set(n) {
-                console.log(n)
-            }
-        },
+        file_path: String,
         get url() {
             if (this.file_path?.startsWith('http'))
                 return this.file_path;
@@ -117,7 +112,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 this.async(async () => {
                     await this.$render();
                     this.style.visibility = 'visible';
-                }, 500);
+                    if (!this.selectedCell && this.cells?.[this.savedIndex]) {
+                        this.async(() => {
+                            this.selectedCell = this.cells[this.savedIndex];
+                        }, 500)
+                    }
+                }, 500)
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
