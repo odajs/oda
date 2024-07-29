@@ -14,7 +14,7 @@ class PanelProps extends ROCKS({
             $save: true
         },
         pinned: {
-            $type: Boolean,
+            $def: false,
             $save: true
         },
     },
@@ -320,7 +320,7 @@ ODA({is: 'app-layout-drawer',
                     :bubble="$for.item.bubble"
                     @down.stop="setOpened($for.item)"
                 ></oda-button>
-                <oda-button ~if="collapsedControls.length > 0" style="order: 1000" icon="iconoir:more-horiz-circle" @tap="_showCollapsedControls"></oda-button>
+                <oda-button ~if="collapsedControls.length > 0" style="order: 1000;" icon="iconoir:more-horiz-circle" @tap="_showCollapsedControls"></oda-button>
             </div>
             <div class="flex"></div>
             <div ~if="hideTabs"class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;filter: invert(1);" >
@@ -368,7 +368,7 @@ ODA({is: 'app-layout-drawer',
         $pdp: true,
         iconSize: 24,
         pinned: {
-            $type: Boolean,
+            $def: false,
             set(n) {
                 if (!n) {
                     this.close();
@@ -585,7 +585,7 @@ ODA({is: 'app-layout-drawer',
         if (this.pinned && !this.opened && this.controls.length) {
             this.setOpened(this.controls[this.focusedIndex]);
         }
-        const height = this.offsetHeight/2;
+        const height = this.offsetHeight / 2;
         if (!height) return;
         let sum = 0;
         const visible = [];
@@ -594,10 +594,10 @@ ODA({is: 'app-layout-drawer',
             const e = this.controls[i];
             const label = e.getAttribute('label');
             sum += ((label.length || 0) * 8) + 40;
-            if(sum < height || i == this.focusedIndex){
+            if (sum < height || i == this.focusedIndex) {
                 visible.push(e);
             }
-            else{
+            else {
                 collapsed.push(e);
             }
         }

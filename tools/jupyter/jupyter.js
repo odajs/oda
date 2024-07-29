@@ -580,7 +580,7 @@ class JupyterCell extends ROCKS({
         return this.metadata?.id || getID();
     },
     get outputs() {
-        return /*this.data?.outputs || */[];
+        return this.data?.outputs || [];
     },
     set outputs(n) {
         this.data.outputs = n;
