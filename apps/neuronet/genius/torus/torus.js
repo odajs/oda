@@ -1,6 +1,4 @@
 const USE_TESTS = false;
-export const LEARNING_RATE = .3;
-export const GRADIENT_DIVIDER = 1//.618;
 BigInt.prototype.toBin = function (dim = 64){
     return this.toString(2).padStart(dim, '0');
 }
@@ -123,6 +121,7 @@ export class tensor{
         }
         this.id = genId();
     }
+    
     toJSON(){
         const result =  {
             $: this.constructor.name,
@@ -309,7 +308,7 @@ export class tensor{
         }
         else{
             for(let i = 0; i<this.data.length; i++){
-                this.data[i] += this.grad[i] * LEARNING_RATE;
+                this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }
         }
     }
@@ -581,6 +580,8 @@ export class tensor{
         return data.flat();
     }
 }
+tensor.GRADIENT_DIVIDER = 1;
+tensor.LEARNING_RATE = .1;
 tensor.prototype.matmul = function (other){
     let expr, label;
     if(Array.isArray(other)){
@@ -670,7 +671,7 @@ tensor.prototype.matmul = function (other){
     // //             }, 0)
     // //             let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
     // //             out._back = ()=>{
-    // //                 let gradient = out.grad[0] / GRADIENT_DIVIDER;
+    // //                 let gradient = out.grad[0] /tensor.GRADIENT_DIVIDER;
     // //                 let x_grad = this.grad;
     // //                 let o_grad = other.grad;
     // //                 other.bins.forEach((b, i_bins)=>{
@@ -720,7 +721,7 @@ tensor.prototype.log = function (){
             let _z = out.grad;
             let x = this.data;
             for(let i = 0; i<this.data.length; i++){
-                _x[i] = 1 / x[i] * _z[i] / GRADIENT_DIVIDER;
+                _x[i] = 1 / x[i] * _z[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -736,7 +737,7 @@ tensor.prototype.exp = function (){
             let o_grad = out.grad;
             let x_data = this.data;
             for(let i = 0; i<x_data.length; i++){
-                x_grad[i] += x_data[i] * o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += x_data[i] * o_grad[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -750,7 +751,7 @@ tensor.prototype.invert = function (){
             let x_grad = this.grad;
             let o_grad = out.grad;
             for(let i = 0; i<this.data.length; i++){
-                x_grad[i] += -o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += -o_grad[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -766,7 +767,7 @@ tensor.prototype.plus = function (other){
         let _y = other.grad;
         let _z = out.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] / GRADIENT_DIVIDER;
+            let g = _z[i] /tensor.GRADIENT_DIVIDER;
             _x[i] += g;
             _y[i] += g;
         }
@@ -782,7 +783,7 @@ tensor.prototype.minus = function (other){
         let _y = other.grad;
         let _z = out.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] / GRADIENT_DIVIDER;
+            let g = _z[i] /tensor.GRADIENT_DIVIDER;
             _x[i] += g;
             _y[i] += -g;
         }
@@ -799,7 +800,7 @@ tensor.prototype.mul = function (other){
         let _y = other.grad;
         let _z = out.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] / GRADIENT_DIVIDER;
+            let g = _z[i] /tensor.GRADIENT_DIVIDER;
             _x[i] += y[i] * g;
             _y[i] += x[i] * g;
         }
@@ -816,7 +817,7 @@ tensor.prototype.div = function (other){
         let _y = other.grad;
         let _z = out.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] / GRADIENT_DIVIDER;
+            let g = _z[i] /tensor.GRADIENT_DIVIDER;
             _x[i] += 1 / _y[i] * g;
             _y[i] += -x[i]/(y ** 2) * g;
         }
@@ -833,7 +834,7 @@ tensor.prototype.pow = function (other){
         let _y = other.grad;
         let _z = out.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] / GRADIENT_DIVIDER;
+            let g = _z[i] /tensor.GRADIENT_DIVIDER;
             let yi = y[i];
             let xi = x[i];
             _x[i] += yi * x[i] ** (yi - 1) * g;
@@ -854,7 +855,7 @@ tensor.prototype.sigm = function (t){
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let x = data[i];
-            this.grad[i] += (1 - x) * x * out.grad[i] / GRADIENT_DIVIDER;
+            this.grad[i] += (1 - x) * x * out.grad[i] /tensor.GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -885,7 +886,7 @@ tensor.prototype.mandelbrot = function (storage_tensor){
                 let x = data[i];
                 let y = s_data[i];
                 let z = s_data[i+size];
-                let g = o_grad[i] / GRADIENT_DIVIDER;
+                let g = o_grad[i] /tensor.GRADIENT_DIVIDER;
                 x_grad[i] += y * Math.pow(x, y-1) * g;
                 s_grad[i] += g;
                 s_grad[i+size] += Math.pow(x, y) * Math.ln(x) * g;
@@ -897,7 +898,7 @@ tensor.prototype.mandelbrot = function (storage_tensor){
             let o_grad = out.grad;
             let x_grad = this.grad;
             for(let i = 0; i<data.length; i++){
-                x_grad[i] += 2 * data[i] * o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += 2 * data[i] * o_grad[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -926,7 +927,7 @@ tensor.prototype.softplus = function (storage_tensor) {
             let s_grad = storage_tensor.grad;
             let s_data = storage_tensor.data;
             for(let i = 0; i<data.length; i++){
-                let og = o_grad[i] / GRADIENT_DIVIDER;
+                let og = o_grad[i] /tensor.GRADIENT_DIVIDER;
                 let x = data[i];
                 let y = s_data[i];
                 let z = s_data[i+size];
@@ -947,7 +948,7 @@ tensor.prototype.softplus = function (storage_tensor) {
             for (let i = 0; i < data.length; i++) {
                 let x = data[i];
                 let exp = Math.exp(x);
-                x_grad[i] += (exp / (1 + exp)) * o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += (exp / (1 + exp)) * o_grad[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -978,7 +979,7 @@ tensor.prototype.silu = function (storage_tensor) {
             let s_grad = storage_tensor.grad;
             let s_data = storage_tensor.data;
             for(let i = 0; i<data.length; i++){
-                let og = o_grad[i] / GRADIENT_DIVIDER;
+                let og = o_grad[i] /tensor.GRADIENT_DIVIDER;
                 let x = data[i];
                 let y = s_data[i];
                 let z = s_data[i+size];
@@ -1001,7 +1002,7 @@ tensor.prototype.silu = function (storage_tensor) {
                 let ex = Math.exp(-x);
                 let onePlusEx = 1 + ex;
                 let g = (onePlusEx + ex * x) / (onePlusEx ** 2);
-                x_grad[i] += g * o_grad[i] / GRADIENT_DIVIDER;
+                x_grad[i] += g * o_grad[i] /tensor.GRADIENT_DIVIDER;
             }
         }
     }
@@ -1020,7 +1021,7 @@ tensor.prototype.softmax = function (){
                 let v = (i === j) ?d * (1 - d): -d * sj;
                 return r + v
             })// * out.grad[i];
-            this.grad[i] += sum * out.grad[i] / GRADIENT_DIVIDER;
+            this.grad[i] += sum * out.grad[i] /tensor.GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -1399,7 +1400,7 @@ tensor.einsum = (in_expr, sources = [], ext_axis={})=>{
                     return out;
                 return tt;
             })
-            t.grad = tensor.einsum(expr, sources).data.map(d=>d / GRADIENT_DIVIDER);
+            t.grad = tensor.einsum(expr, sources).data.map(d=>d /tensor.GRADIENT_DIVIDER);
         })
     }
     fn(tensors, out);

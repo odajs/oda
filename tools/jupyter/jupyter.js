@@ -559,7 +559,7 @@ class JupyterCell extends ROCKS({
         return prev;
     },
     get name() {
-        const firstSource = this.src.split('\n')[0];
+        const firstSource = this.src.trim().split('\n')[0];
         let t = this.type;
         switch (this.type) {
             case 'text':
