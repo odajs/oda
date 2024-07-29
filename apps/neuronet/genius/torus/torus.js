@@ -280,16 +280,21 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
+            const mean = this.grad.reduce((r, v)=>{
+                return r + Math.abs(v);
+            })/this.grad.length
             for(let i = 0; i<bins.length; i++){
                 let g = this.grad[i];
                 let sign = Math.sign(g)
-                let value = bins[i];
+                let value = +bins[i];
                 switch (sign){
                     case 1: //g>0
                         // if(!value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
+                        if(!value && g > mean)
                            value = 1
                         break;
                     case -1: //g<0
+                        if(value && -g > mean)
                         // if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
                            value = 0
                         break;
