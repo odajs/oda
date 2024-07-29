@@ -15,7 +15,13 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         if (Array.isArray(size)){
             let data = size;
             this['#length'] = this._binSize = data.length;
-
+            const str = data.map(i=>i===1?1:0).join('');
+            let step = 0;
+            let v;
+            while (v = str.substr(step * 64, step * 64 + 64)){
+                this[step] = '0b'+v.padEnd(64, '0');
+                step++
+            }
         }
         else{
             this['#length'] = this._binSize = size;

@@ -296,33 +296,38 @@ ODA({is: 'app-layout-drawer',
             @apply --success;
             border-color: var(--header-background, black);
         }
+        .scroll-button{
+            max-height: 8px;
+        }
     </style>
     <div @touchmove="hideTabs=false" id="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;"
             ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
-            <div ~show="!hideTabs" class="no-flex vertical" style="overflow-y: auto">
-                <oda-button
-                    ~for="visibleControls"
-                    ~style="getStyle($for.item)"
-                    style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
-                    ~class="{accent: focused === $for.item}"
-                    class="no-flex tab"
-                    :error="$for.item?.error || $for.item.hasAttribute('error')"
-                    :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0"
-                    :label="$for.item?.label || $for.item?.getAttribute?.('label')"
-                    :icon-size="iconSize *.8 "
-                    default="icons:help"
-                    :item="$for.item"
-                    :title="$for.item?.getAttribute('bar-title') || $for.item?.title || $for.item?.getAttribute('title') || ''"
-                    :icon="$for.item?.getAttribute('bar-icon') || $for.item?.icon || $for.item?.getAttribute('icon') || 'icons:menu'"
-                    :sub-icon="$for.item?.getAttribute('sub-icon')"
-                    :toggled="opened === $for.item"
-                    :bubble="$for.item.bubble"
-                    @down.stop="setOpened($for.item)"
-                ></oda-button>
-                <oda-button ~if="collapsedControls.length > 0" style="order: 1000;" icon="iconoir:more-horiz-circle" @tap="_showCollapsedControls"></oda-button>
+            <div ~show="!hideTabs" class="flex vertical" style="overflow: auto;">
+                <oda-button ~if="controlsOverflow" icon="icons:arrow-drop-up" @tap="$this.nextElementSibling.scrollTop -= 100;" class="scroll-button"></oda-button>
+                <div class="flex vertical" style="overflow-y: auto;scrollbar-width: thin;scrollbar-color: var(--dark-color) var(--dark-background);" @resize="_onControlsPanelResize">
+                    <oda-button
+                        ~for="controls"
+                        ~style="getStyle($for.item)"
+                        style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
+                        ~class="{accent: focused === $for.item}"
+                        class="no-flex tab"
+                        :error="$for.item?.error || $for.item.hasAttribute('error')"
+                        :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0"
+                        :label="$for.item?.label || $for.item?.getAttribute?.('label')"
+                        :icon-size="iconSize *.8 "
+                        default="icons:help"
+                        :item="$for.item"
+                        :title="$for.item?.getAttribute('bar-title') || $for.item?.title || $for.item?.getAttribute('title') || ''"
+                        :icon="$for.item?.getAttribute('bar-icon') || $for.item?.icon || $for.item?.getAttribute('icon') || 'icons:menu'"
+                        :sub-icon="$for.item?.getAttribute('sub-icon')"
+                        :toggled="opened === $for.item"
+                        :bubble="$for.item.bubble"
+                        @down.stop="setOpened($for.item)"
+                    ></oda-button>
+                </div>
+                <oda-button ~if="controlsOverflow" icon="icons:arrow-drop-down"  @tap="$this.previousElementSibling.scrollTop += 100;" class="scroll-button"></oda-button>
             </div>
-            <div class="flex"></div>
             <div ~if="hideTabs"class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;filter: invert(1);" >
                 <oda-icon @down.stop="hideTabs=false" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :icon-size></oda-icon>
             </div>
@@ -395,8 +400,7 @@ ODA({is: 'app-layout-drawer',
             $attr: true
         },
         controls: Array,
-        visibleControls: [],
-        collapsedControls: [],
+        controlsOverflow: false,
         opened: {
             $def: null,
             set(n, o) {
@@ -417,6 +421,13 @@ ODA({is: 'app-layout-drawer',
             }
         },
         get focused() {
+            this.async(() => {
+                const btn = this.$('oda-button.accent');
+                if (!btn) return;
+                if (btn.offsetTop < btn.parentElement.scrollTop || btn.offsetTop > btn.parentElement.scrollTop + btn.parentElement.offsetHeight){
+                    btn.scrollIntoView({inline: 'center'});
+                }
+            }, 300);
             return this.controls?.[this.focusedIndex];
         },
         focusedIndex: {
@@ -585,24 +596,6 @@ ODA({is: 'app-layout-drawer',
         if (this.pinned && !this.opened && this.controls.length) {
             this.setOpened(this.controls[this.focusedIndex]);
         }
-        const height = this.offsetHeight / 2;
-        if (!height) return;
-        let sum = 0;
-        const visible = [];
-        const collapsed = [];
-        for (const i in this.controls) {
-            const e = this.controls[i];
-            const label = e.getAttribute('label');
-            sum += ((label.length || 0) * 8) + 40;
-            if (sum < height || i == this.focusedIndex) {
-                visible.push(e);
-            }
-            else {
-                collapsed.push(e);
-            }
-        }
-        this.visibleControls = visible;
-        this.collapsedControls = collapsed;
     },
     _onKeyDown(e) {
         if (this.controls && e.ctrlKey && '123456789'.includes(e.key)) {
@@ -618,20 +611,10 @@ ODA({is: 'app-layout-drawer',
             }
         }
     },
-    _showCollapsedControls({ target: parent }) {
-        ODA.showMenu({
-            template: 'oda-collapsed-buttons-menu-item',
-            items: this.collapsedControls.map(c => ({
-                focused: c === this.focused,
-                icon: c.getAttribute('icon'),
-                label: c.getAttribute('label'),
-                tap: () => {
-                    this.setOpened(c);
-                }
-            })),
-            parent
-        });
-    },
+    _onControlsPanelResize(e) {
+        const { target } = e;
+        this.controlsOverflow = target.offsetHeight < target.scrollHeight;
+    }
 });
 ODA({is: 'oda-collapsed-buttons-menu-item',
     template: /*html*/`
