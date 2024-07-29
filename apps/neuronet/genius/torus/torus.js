@@ -294,7 +294,7 @@ export class tensor{
                            value = 1
                         break;
                     case -1: //g<0
-                        if(value && -g >= mean)
+                        if(value && -g > mean)
                         // if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
                            value = 0
                         break;
