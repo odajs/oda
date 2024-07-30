@@ -220,19 +220,21 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
                     <div style="width: 30px">
                         <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; opacity: .5;" @tap="showMenu"></oda-button>
-                        <oda-button class="sticky" ~if="cell?.outputs?.length > maxOutputsRow" :icon-size icon="box:i-chevrons-up" style="top: 28px; cursor: pointer; opacity: .5;" @tap="setOutputsStep($event, -1)"></oda-button>
-                        <oda-button class="sticky" ~if="cell?.outputs?.length > maxOutputsRow" :icon-size icon="box:i-chevrons-down" style="top: 56px; cursor: pointer; opacity: .5;" @tap="setOutputsStep($event, 1)"></oda-button>
                     </div>
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: auto;">
-                            <div ~for="cell.outputs.slice(maxOutputsRow * outputsStep, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >   
+                            <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >   
                             <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
                     </div>
-                    
                 </div>        
+                <div class="horizontal left info flex" ~if="cell?.outputs?.length > maxOutputsRow" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
+                    <span>Показано {{Math.round(maxOutputsRow * (outputsStep + 1))}} из {{cell?.outputs?.length}} </span>
+                    <oda-button :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
+                    <oda-button :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
+                </div>
             </div>
         </div>
         
@@ -325,7 +327,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             e.preventDefault();
             e.stopPropagation();
             this.outputsStep += sign;
-            if (this.outputsStep > this.cell?.outputs?.length / this.maxOutputsRow - 1)
+            if (this.outputsStep > this.cell?.outputs?.length / this.maxOutputsRow - 1 || sign === 0)
                 this.outputsStep = this.cell.outputs.length / this.maxOutputsRow - 1;
             if (this.outputsStep < 0)
                 this.outputsStep = 0;
