@@ -304,13 +304,13 @@ export class tensor{
                 let value = +bins[i];
                 switch (sign){
                     case 1: //g>0
-                        // if(!value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
-                        if(!value && g >= mean)
+                        if(!value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
+                        // if(!value && g >= mean)
                            value = 1
                         break;
                     case -1: //g<0
-                        // if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
-                        if(value &&  Math.abs(g) > mean)
+                        if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
+                        // if(value &&  Math.abs(g) > mean)
                            value = 0
                         break;
                 }
@@ -950,6 +950,11 @@ tensor.prototype.crossEntropy = function (target) {
     let y = target.data ?? target;
     let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
     const out = tensor.from(error)._src(this)._label('crossEntropy');
+    this._back = ()=>{
+        this.src.forEach(src=>{
+            src.grad = this.grad;
+        })
+    }
     out._back = ()=>{
         this.grad = this.data.map((x, i)=>y[i]-x);
     }
