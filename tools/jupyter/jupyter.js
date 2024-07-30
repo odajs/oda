@@ -219,12 +219,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 </div>
                 <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
                     <div style="width: 30px">
-                        <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; position: sticky; opacity: .5;" @tap="showMenu"></oda-button>
+                        <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; opacity: .5;" @tap="showMenu"></oda-button>
+                        <oda-button class="sticky" ~if="cell?.outputs?.length > maxOutputsRow" :icon-size icon="box:i-chevrons-up" style="top: 28px; cursor: pointer; opacity: .5;" @tap="setOutputsStep($event, -1)"></oda-button>
+                        <oda-button class="sticky" ~if="cell?.outputs?.length > maxOutputsRow" :icon-size icon="box:i-chevrons-down" style="top: 56px; cursor: pointer; opacity: .5;" @tap="setOutputsStep($event, 1)"></oda-button>
                     </div>
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden;">
-                        <div flex vertical  ~if="!cell?.metadata?.hideRun">
-                            <div ~for="cell.outputs" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" > 
-                                <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
+                        <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: auto;">
+                            <div ~for="cell.outputs.slice(maxOutputsRow * outputsStep, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >   
+                            <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -315,11 +317,21 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             get() {
                 return !this.readOnly &&  (this.selectedCell === this.cell/* || this.selectedCell?.id === this.cell?.id*/);
             }
-        }
-        ,
+        },
         get control() {
             return this.$('#control');
         },
+        setOutputsStep(e, sign) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.outputsStep += sign;
+            if (this.outputsStep > this.cell?.outputs?.length / this.maxOutputsRow - 1)
+                this.outputsStep = this.cell.outputs.length / this.maxOutputsRow - 1;
+            if (this.outputsStep < 0)
+                this.outputsStep = 0;
+        },
+        maxOutputsRow: 50,
+        outputsStep: 0
     },
     get expanderIcon() {
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
@@ -580,6 +592,7 @@ class JupyterCell extends ROCKS({
         return this.metadata?.id || getID();
     },
     get outputs() {
+        // return [ ...Array(40000).keys() ];
         return this.data?.outputs || [];
     },
     set outputs(n) {
