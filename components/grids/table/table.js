@@ -1025,13 +1025,13 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (idx <= -1) {
             return;
         }
-        const pos = idx * this.rowHeight;
-        const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
-        if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
-            this.throttle('changeScrollTop', () => { // for complete of rendering
+        this.throttle('changeScrollTop', () => { // for complete of rendering
+            const pos = idx * this.rowHeight;
+            const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
+            if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
                 this.body.scrollTop = (pos - shift < 0) ? 0 : pos - shift;
-            }, 100);
-        }
+            }
+        }, 100);
     },
     selectItem(item) {
         this.clearSelection();

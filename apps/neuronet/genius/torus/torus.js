@@ -295,22 +295,22 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-            const mean = this.grad.reduce((r, v)=>{
-                return r + Math.abs(v);
-            }) / this.grad.length * tensor.LEARNING_RATE;
+            // const mean = this.grad.reduce((r, v)=>{
+            //     return r + Math.abs(v);
+            // }) / this.grad.length * tensor.LEARNING_RATE;
             for(let i = 0; i<bins.length; i++){
-                let g = this.grad[i] * tensor.LEARNING_RATE;
+                let g = this.grad[i]// * tensor.LEARNING_RATE;
                 let sign = Math.sign(g)
                 let value = +bins[i];
                 switch (sign){
                     case 1: //g>0
-                        // if(!value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
-                        if(!value && g >= mean)
+                        if(!value && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
+                        // if(!value && g >= mean)
                            value = 1
                         break;
                     case -1: //g<0
-                        // if(value && Math.max(0,Math.min(1,(g + 1)/2))>Math.random())
-                        if(value &&  g <= mean)
+                        if(value && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
+                        // if(value &&  g <= mean)
                            value = 0
                         break;
                 }
@@ -950,7 +950,7 @@ tensor.prototype.crossEntropy = function (target) {
     let y = target.data ?? target;
     let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
     error /= this.size  // todo дополнительные измерения
-    const out = tensor.from(error)._src(this)._label('crossEntropy');
+    const out = tensor.from([error])._src(this)._label('crossEntropy');
     this._back = ()=>{
         this.src.forEach(src=>{
             src.grad = this.grad;

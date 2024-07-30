@@ -115,6 +115,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.async(() => {
                             this.selectedCell = this.cells[this.savedIndex];
+                            this.isReady = true;
                         }, 500)
                     }
                 }, 500)
@@ -145,7 +146,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 if (n){
                     this.editMode = false;
                     this.savedIndex = n.index;
-                    this.scrollToCell(n)
+                    this.scrollToCell(n);
                 }
                 else if (o){
                     this.selectedCell = o
@@ -163,12 +164,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             }
         }
     },
-    scrollToCell(cell) {
-        if (!cell) return;
+    scrollToCell(cell, sure = false) {
+        if (!cell || !this.isReady) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        if (cellElement.offsetTop>(this.scrollTop + this.offsetHeight) || (cellElement.offsetTop + cellElement.offsetHeight)<this.scrollTop){
+        if (sure || cellElement.offsetTop>(this.scrollTop + this.offsetHeight) || (cellElement.offsetTop + cellElement.offsetHeight)<this.scrollTop){
             cellElement?.scrollIntoView();
             this.async(()=>{
                 this.scrollTop -= 10;
@@ -218,6 +219,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div ~if="cell?.outputs?.length" class="horizontal info border"  style="max-height: 100%;">
+
                     <div style="width: 30px">
                         <oda-button class="sticky" :icon-size icon="icons:expand-tree" style="cursor: pointer; opacity: .5;" @tap="showMenu"></oda-button>
                     </div>
@@ -255,19 +257,28 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.metadata.hideRun = !this.cell.metadata.hideRun;
         this.$render();
     },
-    async showMenu(e){
-        const {control} = await ODA.showDropdown('oda-menu', {items:[
-                {label: "Hide/Show", icon: 'bootstrap:eye-slash', execute:()=>{
+    async showMenu(e) {
+        const { control } = await ODA.showDropdown('oda-menu', {
+            items: [
+                {
+                    label: "Hide/Show", icon: 'bootstrap:eye-slash', execute: () => {
                         this.hideRun();
-                    }},
-                {label: "Clear", icon: 'icons:clear', execute:()=>{
+                    }
+                },
+                {
+                    label: "Clear", icon: 'icons:clear', execute: () => {
                         this.cell.metadata.hideRun = false;
-                        this.cell.outputs = []
-                    }},
-                {label: "Full screen", icon: 'icons:fullscreen', execute:()=>{
+                        this.cell.outputs = [];
+                        this.jupyter.scrollToCell(this.selectedCell, true);
+                    }
+                },
+                {
+                    label: "Full screen", icon: 'icons:fullscreen', execute: () => {
                         this.$('#out').requestFullscreen();
-                    }}
-            ]}, {parent: e.target, anchor: 'right-top'});
+                    }
+                }
+            ]
+        }, { parent: e.target, anchor: 'right-top' });
         control.focusedItem.execute();
     },
     console(i, type) {
@@ -419,6 +430,37 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
+
+ODA({ is: 'oda-jupyter-outputs-toolbar', imports: '@tools/containers, @tools/property-grid',
+    template: `
+        <style>
+            :host{
+                position: sticky;
+                top: 20px;
+                z-index: 3;
+            }
+            .top {
+                @apply --horizontal;
+                @apply --no-flex;
+                @apply --content;
+                @apply --raised;
+                position: absolute;
+                right: 8px;
+                padding: 1px;
+                border-radius: 4px;
+                margin-top: -20px;
+            }
+        </style>
+        <div class="top">
+            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell" style="padding: 0 8px;"></oda-button>
+            <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
+        </div>
+    `,
+    cell: null,
+    iconSize: 16
+})
+
 const AsyncFunction = async function () {}.constructor;
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     template: `
