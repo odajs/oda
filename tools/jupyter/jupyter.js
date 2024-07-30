@@ -390,11 +390,11 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 left: 28px;
             }
         </style>
-        <div class="top outputs" ~if="cell?.outputs?.length && selected">
-            <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun()" title="Hide/Show"></oda-button>
-            <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" style="padding: 0 8px;" title="Clear outputs"></oda-button>
-            <oda-button :icon-size icon="icons:fullscreen" @tap="cellControl.$('#out').requestFullscreen();" title="Full screen"></oda-button>
-        </div>
+<!--        <div class="top outputs" ~if="cell?.outputs?.length && selected">-->
+<!--            <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun()" title="Hide/Show"></oda-button>-->
+<!--            <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" style="padding: 0 8px;" title="Clear outputs"></oda-button>-->
+<!--            <oda-button :icon-size icon="icons:fullscreen" @tap="cellControl.$('#out').requestFullscreen();" title="Full screen"></oda-button>-->
+<!--        </div>-->
         <div class="top" ~if="!readOnly && selected" >
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
