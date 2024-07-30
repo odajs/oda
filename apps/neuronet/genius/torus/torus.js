@@ -613,141 +613,9 @@ export class tensor{
     }
 
 }
-// tensor.GRADIENT_DIVIDER = 1;
-// tensor.LEARNING_RATE = 0.1;
-tensor.prototype.matmul = function (other){
-    let expr, label;
-    if(Array.isArray(other)){
-        let mm = other.map(o=>{
-            return tensor.einsum('x,x ->', [this, o]);
-        })
-        let data = mm.map(i=>{
-            return i.data;
-        })
-        let out = tensor.from(data)._src(...mm)._label('matmul tensor X Array');
-        out._back = ()=>{
-            mm.forEach((o, i)=>{
-                for (let gi = 0; gi<o.grad.length; gi++){
-                    o.grad[gi] += out.grad[i + gi];
-                }
-            })
-        }
-        return out;
-    }
-    else{
-    //     let x = this.data;
-    //     if (this.dType === BinaryArray){
-    //         // todo
-    //     }
-    //     else{
-    //
-    //         if (other.dType === BinaryArray){
-    //             switch (this.dim){
-    //                 case 1:{
-    //                     switch (other.dim){
-    //                         case 2:{
-    //                             if (this.shape[0] !== other.shape[0])
-    //                                 throw new Error();
-    //                             let y_bins = other.bins;
-    //                             let x_size = this.shape[0];
-    //                             let y_size = other.shape[1];
-    //                             const data = new Float32Array(y_size);
-    //                             for (let y = 0; y < y_size; y++){
-    //                                 let y_out = 0;
-    //                                 for (let x = 0; x < x_size; x++){
-    //                                     let idx = y + y_size * x;
-    //                                     if (y_bins[idx] === '1')
-    //                                         y_out += this.data[x];
-    //                                     else
-    //                                         y_out -= this.data[x];
-    //                                 }
-    //                                 data[y] = y_out;
-    //                             }
-    //                             const out = tensor.from(data)._src(x, other)._label(`matmul: ${x_size} x (${other.shape}, Bin)`);
-    //                             out._back = ()=>{
-    //                                 const out_grad = tensor.from(out.grad)
-    //                                 this.grad = out_grad.matmul(other.T);
-    //                                 other.grad = out_grad.matmul(this); //todo
-    //                             }
-    //                             return out;
-    //                         } break;
-    //                     }
-    //
-    //                 } break;
-    //
-    //             }
-    //         }
-    //         else {
-    //             // todo
-    //         }
-    //     }
-    // //
-    // //
-    // //     const other_shape = [...other.shape];
-    // //     const out_shape = [];
-    // //     while (other_shape.length>2){
-    // //         out_shape.unshift(other_shape.shift())
-    // //     }
-    // //
-    // //
-    // //     if (other.dType === BinaryArray){
-    // //         if (this.dType === BinaryArray){
-    // //             let data = other.bins.reduce((r_bins, o_bins, i_bins)=>{
-    // //                 let this_bins = this.bins[i_bins].split('');
-    // //                 return r_bins + o_bins.split('').reduce((r, o, i)=>{
-    // //                     let x = +this_bins[i] || -1;
-    // //                     if (+o)
-    // //                         return r + x;
-    // //                     return r - x;
-    // //
-    // //                 }, 0)
-    // //             }, 0)
-    // //             let out = tensor.from(data)._src(this, other)._label('matmul 1 bin X 1 bin');
-    // //             out._back = ()=>{
-    // //                 let gradient = out.grad[0] /tensor.GRADIENT_DIVIDER;
-    // //                 let x_grad = this.grad;
-    // //                 let o_grad = other.grad;
-    // //                 other.bins.forEach((b, i_bins)=>{
-    // //                     let o_bin = b.split('');
-    // //                     let x_bin = this.bins[i_bins].split('');
-    // //                     for (let i = 0; i<64; i++){
-    // //                         let idx = i_bins + i;
-    // //                         x_grad[idx] += (+o_bin[i]>0?gradient:-gradient);
-    // //                         o_grad[idx] += (+x_bin[i]>0?gradient:-gradient);
-    // //                     }
-    // //                 })
-    // //             }
-    // //             return out;
-    // //         }
-    // //         else{
-    // //
-    // //         }
-    // //     }
-    // //     else{
-    // //         switch (this.dim){ //todo дописать различные варианты
-    // //             case 1:{
-    // //                 switch (other.dim){
-    // //                     case 1:{
-    // //                         expr = 'x,y=>xy';
-    // //                     } break;
-    // //                     case 2:{
-    // //                         if (other.shape[0] === this.size)
-    // //                             expr = 'x, xy=>y';
-    // //                         else if (other.shape[1] === this.size)
-    // //                             expr = 'x, yx=>y';
-    // //                         else throw new Error(`One of the matrix axes must have the same dimension as the input vector, but the vector has dimension ${this.shape} and the matrix is ${other.shape}`)
-    // //                     }
-    // //                 }
-    // //             } break;
-    // //         }
-    // //         return tensor.einsum(expr, [this, matrix])._label(label);
-    // //     }
-    }
-
-}
 tensor.prototype.log = function (){
     const data = this.data.map(Math.log);
-    const out = tensor.from(data, 'log', [this])._shape(this);
+    const out = tensor.from(data)._label('log')._src(this)._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let _x = this.grad;
@@ -763,7 +631,7 @@ tensor.prototype.log = function (){
 
 tensor.prototype.exp = function (){
     const data = this.data.map(Math.exp);
-    const out = tensor.from(data, `exp`, [this])._shape(this);
+    const out = tensor.from(data)._label(`exp`)._src(this)._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let x_grad = this.grad;
@@ -778,7 +646,7 @@ tensor.prototype.exp = function (){
 }
 tensor.prototype.invert = function (){
     const data = this.data.map(x=>-x);
-    const out = tensor.from(data, `invert`, [this])._shape(this);
+    const out = tensor.from(data)._label(`invert`)._src(this)._shape(this);
     if (this.allowGrad){
         out._back = ()=>{
             let x_grad = this.grad;
@@ -794,7 +662,7 @@ tensor.prototype.invert = function (){
 tensor.prototype.plus = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x + y[i]);
-    const out = tensor.from(data, 'plus', [this, other])._shape(this);
+    const out = tensor.from(data)._label('plus')._src(this, other)._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let _y = other.grad;
@@ -810,7 +678,7 @@ tensor.prototype.plus = function (other){
 tensor.prototype.minus = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x - y[i]);
-    const out = tensor.from(data, 'minus', [this, other])._shape(this);
+    const out = tensor.from(data)._label('minus')._src(this, other)._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let _y = other.grad;
@@ -826,7 +694,7 @@ tensor.prototype.minus = function (other){
 tensor.prototype.mul = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x * y[i]);
-    const out = tensor.from(data, 'mul', [this, other])._shape(this);
+    const out = tensor.from(data)._label('mul')._src(this, other)._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -843,7 +711,7 @@ tensor.prototype.mul = function (other){
 tensor.prototype.div = function (other){
     let y = other.data;
     let data = this.data.map((x, i) => x / y[i]);
-    const out = tensor.from(data, 'div', [this, other])._shape(this);
+    const out = tensor.from(data)._label('div')._src(this, other)._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -860,7 +728,7 @@ tensor.prototype.div = function (other){
 tensor.prototype.pow = function (other){
     let y = other.data;
     let data = this.data.map((x, i)=>x ** y[i])
-    let out =  tensor.from(data, `pow`, [this, other])._shape(this);
+    let out =  tensor.from(data)._label(`pow`)._src(this, other)._shape(this);
     out._back = ()=>{
         let _x = this.grad;
         let x = this.data;
@@ -879,7 +747,7 @@ tensor.prototype.pow = function (other){
 
 tensor.prototype.tahn = function (){
     const data = this.data.map(x=>x.tahn());
-    return tensor.from(data, 'tahn', [this])._shape(this);
+    return tensor.from(data)._label('tahn')._src(this)._shape(this);
 }
 
 tensor.prototype.sigm = function (t){
