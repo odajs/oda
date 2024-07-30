@@ -138,10 +138,10 @@ export class Linear extends NeuroModule{
         super(arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], this.dType).minus_(.5));
+        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], this.dType).minus_(.5).mul_(.1));
         this.W._label(this.W.label + '/linear weights');
         if(this.bias){
-            this.B = tensor.param(tensor.rand([this.d_out], this.dType).minus_(.5));
+            this.B = tensor.param(tensor.rand([this.d_out], this.dType).minus_(.5).mul_(.1));
             this.B._label(this.bias._label + '/linear bias');
         }
 

@@ -1071,9 +1071,8 @@ tensor.prototype.MSE = function (target){
     loss /= this.size;
     const out = tensor.from([loss])._src(this)._label('MSE');
     out._back = ()=>{
-        let _x = this.grad;
         for (let i = 0; i<errors.length; i++){
-            _x[i] += -2 * errors[i];
+            this.grad[i] += -errors[i];
         }
     }
     return out;
