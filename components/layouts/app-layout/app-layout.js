@@ -210,7 +210,7 @@ ODA({is: 'app-layout-toolbar',
     <slot name="right" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
 });
 
-ODA({is: 'app-layout-drawer',
+ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
     template: /*html*/`
     <style>
         :host {
@@ -303,31 +303,14 @@ ODA({is: 'app-layout-drawer',
     <div @touchmove="hideTabs=false" id="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;"
             ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
-            <div ~show="!hideTabs" class="flex vertical" style="overflow: auto;">
-                <oda-button ~if="controlsOverflow" icon="icons:arrow-drop-up" @tap="$this.nextElementSibling.scrollTop -= 100;" class="scroll-button"></oda-button>
-                <div class="flex vertical" style="overflow-y: auto;scrollbar-width: thin;scrollbar-color: var(--dark-color) var(--dark-background);" @resize="_onControlsPanelResize">
-                    <oda-button
-                        ~for="controls"
-                        ~style="getStyle($for.item)"
-                        style="padding: 4px; writing-mode: tb; border: 1px dotted transparent;"
-                        ~class="{accent: focused === $for.item}"
-                        class="no-flex tab"
-                        :error="$for.item?.error || $for.item.hasAttribute('error')"
-                        :rotate="($for.item?.label || $for.item.getAttribute('label'))?90:0"
-                        :label="$for.item?.label || $for.item?.getAttribute?.('label')"
-                        :icon-size="iconSize *.8 "
-                        default="icons:help"
-                        :item="$for.item"
-                        :title="$for.item?.getAttribute('bar-title') || $for.item?.title || $for.item?.getAttribute('title') || ''"
-                        :icon="$for.item?.getAttribute('bar-icon') || $for.item?.icon || $for.item?.getAttribute('icon') || 'icons:menu'"
-                        :sub-icon="$for.item?.getAttribute('sub-icon')"
-                        :toggled="opened === $for.item"
-                        :bubble="$for.item.bubble"
-                        @down.stop="setOpened($for.item)"
-                    ></oda-button>
-                </div>
-                <oda-button ~if="controlsOverflow" icon="icons:arrow-drop-down"  @tap="$this.previousElementSibling.scrollTop += 100;" class="scroll-button"></oda-button>
-            </div>
+            <oda-tabs
+                ~show="!hideTabs"
+                direction="vertical"
+                class="flex"
+                :items="tabs"
+                ::index="focusedIndex"
+                @tab-tapped="setOpened(controls[focusedIndex])"
+            ></oda-tabs>
             <div ~if="hideTabs"class="flex hider vertical" style="justify-content: center; margin: 8px 0px; align-items: center;filter: invert(1);" >
                 <oda-icon @down.stop="hideTabs=false" class="border pin no-flex" :icon="({left: 'icons:chevron-right', right: 'icons:chevron-left'})[pos]" :icon-size></oda-icon>
             </div>
@@ -400,6 +383,17 @@ ODA({is: 'app-layout-drawer',
             $attr: true
         },
         controls: Array,
+        get tabs() {
+            if (!this.controls?.length) return;
+            return this.controls.map(c => ({
+                icon: c.getAttribute('bar-icon') || c.icon || c.getAttribute('icon') || 'icons:menu',
+                subIcon: c.getAttribute('sub-icon'),
+                label: c.label || c.getAttribute?.('label'),
+                title: c.getAttribute('bar-title') || c.title || c.getAttribute('title') || '',
+                order: c.order || c.getAttribute('order') || 0,
+                $item: c,
+            }));
+        },
         controlsOverflow: false,
         opened: {
             $def: null,
@@ -531,8 +525,7 @@ ODA({is: 'app-layout-drawer',
     },
     getStyle(ctrl) {
         const label = ctrl?.label || ctrl.getAttribute('label');
-        const order = ctrl?.order || ctrl.getAttribute('order') || 0;
-        const res = { order };
+        const res = { };
         res['max-width'] = (this.iconSize + 2) + 'px'; // для firefox
         if (label)
             res.transform = `rotate(180deg)`;
@@ -595,6 +588,9 @@ ODA({is: 'app-layout-drawer',
     opening() {
         if (this.pinned && !this.opened && this.controls.length) {
             this.setOpened(this.controls[this.focusedIndex]);
+        }
+        else {
+            this.focused = undefined;
         }
     },
     _onKeyDown(e) {

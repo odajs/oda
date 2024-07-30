@@ -12,7 +12,7 @@ let style = /*css*/`
         --border-color: darkgray;
         --border-radius: 0px;
 
-        --accent-color: rgb(0 100 255);
+        --accent-color: oklch(0.72 0.16 259.27);
         --success-color: green;
         --error-color: yellow;
         --error-background: red;

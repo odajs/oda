@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oda-tabs</title>
+</head>
+<body>
+    <div style="max-width: 500px;overflow: hidden;" class="flex vertical">
+        <oda-tabs id="tabsH" direction="horizontal"></oda-tabs>
+    </div>
+    <div style="max-height: 500px;overflow: hidden;" class="flex horizontal">
+        <oda-tabs id="tabsV" direction="vertical"></oda-tabs>
+    </div>
+    <div style="max-width: 500px;overflow: hidden;" class="flex vertical">
+        <oda-tabs id="tabsH2" direction="horizontal"></oda-tabs>
+    </div>
+    <div style="max-height: 500px;overflow: hidden;" class="flex horizontal">
+        <oda-tabs id="tabsV2" direction="vertical"></oda-tabs>
+    </div>
+    <script type="module">
+        import '../../../../oda/oda.js';
+        import './tabs.js';
+
+        const items = Array.from({length: 100}).map((_, i) => ({label: i}));
+        tabsH.index = 50;
+        tabsV.index = 50;
+        tabsH.items = items;
+        tabsV.items = items;
+
+        const items2 = Array.from({length: 3}).map((_, i) => ({label: i}));
+        tabsH2.items = items2;
+        tabsV2.items = items2;
+    </script>
+</body>
+</html>
