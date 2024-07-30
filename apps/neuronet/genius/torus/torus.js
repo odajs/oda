@@ -295,21 +295,21 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-            // const mean = this.grad.reduce((r, v)=>{
-            //     return r + Math.abs(v);
-            // }) / this.grad.length * tensor.LEARNING_RATE;
+            const mean = this.grad.reduce((r, v)=>{
+                return r + Math.abs(v);
+            }) / this.grad.length * tensor.LEARNING_RATE;
             for(let i = 0; i<bins.length; i++){
                 let g = this.grad[i]// * tensor.LEARNING_RATE;
                 let sign = Math.sign(g)
                 let value = +bins[i];
                 switch (sign){
                     case 1: //g>0
-                        if(!value && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
+                        if(!value && g >= mean && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
                         // if(!value && g >= mean)
                            value = 1
                         break;
                     case -1: //g<0
-                        if(value && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
+                        if(value &&  g <= mean && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()/2))
                         // if(value &&  g <= mean)
                            value = 0
                         break;
