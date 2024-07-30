@@ -231,14 +231,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>        
                 <div class="horizontal left info flex" ~if="cell?.outputs?.length > maxOutputsRow" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
-                    <span>Показано {{Math.round(maxOutputsRow * (outputsStep + 1))}} из {{cell?.outputs?.length}} </span>
-                    <oda-button :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
-                    <oda-button :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
+                    <span style="padding: 9px;">Показано {{showAllOutputsRow ? cell.outputs.length : Math.round(maxOutputsRow * (outputsStep + 1))}} из {{cell?.outputs?.length}}</span>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
                 </div>
             </div>
         </div>
         
-        <oda-jupyter-divider ></oda-jupyter-divider>
+        <oda-jupyter-divider></oda-jupyter-divider>
     `,
     outSrc: '',
     outHtml: '',
@@ -302,7 +302,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.cell.status;
     },
     $pdp: {
-
         editMode: {
             $def: false,
             get() {
@@ -323,17 +322,18 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         get control() {
             return this.$('#control');
         },
-        setOutputsStep(e, sign) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.outputsStep += sign;
-            if (this.outputsStep > this.cell?.outputs?.length / this.maxOutputsRow - 1 || sign === 0)
-                this.outputsStep = this.cell.outputs.length / this.maxOutputsRow - 1;
-            if (this.outputsStep < 0)
-                this.outputsStep = 0;
-        },
+        showAllOutputsRow: false,
         maxOutputsRow: 50,
         outputsStep: 0
+    },
+    setOutputsStep(e, sign) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.outputsStep += sign;
+        if (this.outputsStep > this.cell?.outputs?.length / this.maxOutputsRow - 1 || sign === 0) {
+            this.outputsStep = this.cell.outputs.length / this.maxOutputsRow - 1;
+            this.showAllOutputsRow = true;
+        }
     },
     get expanderIcon() {
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
@@ -471,6 +471,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.value = e.detail.value;
     },
     async run() {
+        this.outputsStep = 0;
+        this.showAllOutputsRow = false;
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
