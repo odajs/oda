@@ -361,7 +361,7 @@ ODA({ is: 'oda-jupyter-divider',
     }
 })
 
-ODA({ is: 'oda-jupyter-toolbar',
+ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-grid',
     template: `
         <style>
             :host{
@@ -395,6 +395,9 @@ ODA({ is: 'oda-jupyter-toolbar',
     deleteCell() {
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
+    },
+    showSettings(e) {
+        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
 
