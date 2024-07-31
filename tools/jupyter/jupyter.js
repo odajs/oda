@@ -166,7 +166,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        cellElement.scrollIntoView({ block: "start", behavior: "smooth" });
+        cellElement.scrollIntoView();
         // this.async(()=>{
         //     this.scrollTop -= 10;
         // })
