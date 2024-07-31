@@ -34,6 +34,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 overflow-y: auto;
                 overflow-x: hidden;
                 padding: 12px 6px 30px 6px;
+                transition: opacity 2s;
             }
         </style>
 <!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
@@ -99,15 +100,17 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         },
         get notebook() {
             this.style.visibility = 'hidden';
+            this.style.opacity = 0;
             const nb = new JupyterNotebook(this.url);
             nb.listen('ready', (e) => {
                 this.async(async () => {
+                    this.style.visibility = 'visible';
                     await this.$render();
-                     this.style.visibility = 'visible';
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
                         this.async(() => {
                             this.scrollToCell();
+                            this.style.opacity = 1;
                         }, 500)
                     }
                 }, 500)
