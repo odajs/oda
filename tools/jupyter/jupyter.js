@@ -422,7 +422,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                 margin-top: -20px;
             }
         </style>
-        <div class="top" ~if="cell?.outputs?.length && selected">
+        <div class="top" ~if="cell?.outputs?.length">
             <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun()" title="Hide/Show"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
             <oda-button :icon-size icon="icons:fullscreen" @tap="cellControl?.$('#out').requestFullscreen();" title="Full screen"></oda-button>

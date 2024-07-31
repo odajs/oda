@@ -1026,6 +1026,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return;
         }
         this.throttle('changeScrollTop', () => { // for complete of rendering
+            if (!this.body) return;
             const pos = idx * this.rowHeight;
             const shift = this.rowHeight * Math.floor(this.body.offsetHeight / (3 * this.rowHeight));
             if ((this.body.scrollTop + 0.8 * this.rowHeight > pos) || (this.body.offsetHeight + this.body.scrollTop - 1.5 * this.rowHeight < pos)) {
