@@ -1,7 +1,7 @@
 const jupyter_path = import.meta.url.split('/').slice(0, -1).join('/');
 const path = window.location.href.split('/').slice(0, -1).join('/');
 
-const run_context = Object.create(null);
+window.run_context = Object.create(null);
 run_context.output_data = undefined;
 const console_log= console.log;
 window.log = window.print = console.log = (...e) => {
@@ -103,9 +103,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             nb.listen('ready', (e) => {
                 this.async(async () => {
                     await this.$render();
-                    this.style.visibility = 'visible';
+                     this.style.visibility = 'visible';
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
-                        this.scrollToCell(this.cells[this.savedIndex]);
+                        this.selectedCell = this.cells[this.savedIndex];
+                        this.async(() => {
+                            this.scrollToCell();
+                        }, 500)
                     }
                 }, 500)
             })
@@ -152,7 +155,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             }
         }
     },
-    scrollToCell(cell) {
+    scrollToCell(cell = this.selectedCell) {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
