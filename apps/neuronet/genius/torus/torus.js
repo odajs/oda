@@ -473,7 +473,9 @@ export class tensor{
             // handler = BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
             handler = ()=>{
                 // return 5508166759905001231n
-                return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+                let value = Math.random().toString(2).substring(2);
+                return BigInt('0b' + value.padEnd(64, value))
+                //return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
             }
         }
         return this.fill(shape, handler, dType);

@@ -630,7 +630,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
 
-            const calcFixWidth = (res, c) => res += c.width;
+            const calcFixWidth = (res, c) => res += (c.width || 0);
             for (const k in colsData) {
                 for (const part in colsData) {
                     colsData[part].fixWidth = colsData[part].fixWidthCols?.reduce(calcFixWidth, 0) || 0;
@@ -653,12 +653,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             for (const part in colsData) {
                 for (const c of colsData[part].cols) {
                     c.className = `col-${c.id}`;
-                    let style = `.${c.className}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`
+                    let style = `.${c.className}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`;
                     if (c.__parent__) {
                         style += '\n\tbackground-color: whitesmoke;';
                     }
                     if (c.$flex) {
-                        style += `\n\tflex: 1;\n\tflex-basis: 100%;`
+                        style += `\n\tflex: 1;\n\tflex-basis: 100%;`;
                     }
                     else if (c.width) {
                         style += `\n\tmin-width: ${c.width}px; \n\tmax-width: ${c.width}px;\n\tflex: 0;`;
