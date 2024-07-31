@@ -34,7 +34,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 overflow-y: auto;
                 overflow-x: hidden;
                 padding: 12px 6px 30px 6px;
-                transition: opacity 2s;
+                opacity: 0;
+                transition: opacity 1s;
             }
         </style>
 <!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
@@ -102,18 +103,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
             this.style.visibility = 'hidden';
             this.style.opacity = 0;
             const nb = new JupyterNotebook(this.url);
-            nb.listen('ready', (e) => {
+            nb.listen('ready', async (e) => {
+                await this.$render();
                 this.async(async () => {
-                    this.style.visibility = 'visible';
-                    await this.$render();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
-                        this.async(() => {
-                            this.scrollToCell();
-                            this.style.opacity = 1;
-                        }, 500)
+                        this.scrollToCell();
                     }
-                }, 500)
+                    this.style.visibility = 'visible';
+                    this.style.opacity = 1;
+                }, 1000)
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
@@ -128,6 +127,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
                 }
                 this.fire('changed');
             })
+            if (!this.url) {
+                this.style.visibility = 'visible';
+                this.style.opacity = 1;
+            }
             return nb;
         },
         editors: {
@@ -163,10 +166,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        cellElement.scrollIntoView();
-        this.async(()=>{
-            this.scrollTop -= 10;
-        })
+        cellElement.scrollIntoView({ block: "start", behavior: "smooth" });
+        // this.async(()=>{
+        //     this.scrollTop -= 10;
+        // })
     }
 })
 
@@ -533,9 +536,14 @@ class JupyterNotebook extends ROCKS({
         return this.cells.filter(cell => cell.level === 0);
     },
     async load(url) {
-        this.data = await ODA.loadJSON(url);
-        this.url = url;
-        this.fire('ready');
+        try {
+            this.data = await ODA.loadJSON(url);
+            this.url = url;
+        } catch (err) {
+
+        } finally {
+            this.fire('ready');
+        }
     },
     save(url) {
         //todo save
