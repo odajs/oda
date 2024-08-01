@@ -3,13 +3,14 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 
 window.run_context = Object.create(null);
 run_context.output_data = undefined;
-const console_log= console.log;
+const console_log = console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
         if (typeof i === 'object' || i.toJSON)
             return JSON.stringify(i, null,  4);
         return i;
     })
+    console_log.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
 const console_warn=  console.warn;
