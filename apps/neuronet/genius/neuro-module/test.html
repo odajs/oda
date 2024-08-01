@@ -23,6 +23,8 @@
         __init__(){
             this.layer1 = new Linear(this.dim*this.dim,this.dim*this.dim/2,true)
             this.layer2 = new Linear(this.dim*this.dim/2,10,true)
+            // this.layer1 = new BinLayer(this.dim*this.dim,this.dim*this.dim/2);
+            // this.layer2 = new BinLayer(this.dim*this.dim/2,10)
         }    
         forward(x){
             x=tensor.from(x)
@@ -127,6 +129,7 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         newP.push(this.loss[lL-1])
         return newP
     },
+    bezier:false,
 
     go:false,
     _go(){
@@ -153,21 +156,23 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
 
     step() {
         let dat = this.getTrain(undefined, 1)
-        let loss, rez;
+        let loss, rez, lossArr=[];
         for (let i=0; i<dat.inputs.length; i++) {
             rez = this.mnist(dat.inputs[i])
             loss = rez.crossEntropy (dat.targets[i]);
-            this.loss.push(loss.data[0])
+            // this.loss.push(loss.data[0])
+            lossArr.push(loss.data[0])
             loss.back();
             if (i===0) {
                 this.input = dat.inputs[i]
                 this.result = rez.data
             }
+            this.loss.push(lossArr.reduce((a,c)=>a+c)/lossArr.length) 
             // console.log(loss.data[0])
         }
     },
     steps(){
-        if (this.go) setTimeout(() => {
+        if (this.go) this.async(() => {
             this.step()
             this.steps()
         }, 0)            
