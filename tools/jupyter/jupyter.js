@@ -386,7 +386,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top" ~if="!readOnly && selected" >
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
