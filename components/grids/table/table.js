@@ -596,9 +596,9 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return res;
         }, 0);
 
-        cols.filter(i => i.fix === 'right').toReversed().sort((a, b) => b.order - a.order).reduce((res, i) => {
+        cols.filter(i => i.fix === 'right').toReversed().reduce((res, i) => {
             i.right = res;
-            res += i.width || i.$width || 0;
+            res += i.width ?? i.$width ?? 0;
             return res;
         }, 0);
         cols.forEach((c, i) => {
@@ -611,17 +611,22 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         $pdp: true,
         get() {
             const parts = ['left', 'middle', 'right'];
-            /** @typedef {{cols: *[], fixWidthCols: *[], simpleWidthCols: *[], fixWidth: number}} ColsDataWrite */
+            /** @typedef {{cols: TableColumn[], fixWidthCols: *[], fixAutoWidthCols: *[], simpleWidthCols: *[], fixWidth: number, fixAutoWidthWidths: *[]}} ColsDataWrite */
             /** @type {{[key: string]: ColsDataWrite}} */
             const colsData = {};
 
             for (const c of this.rowColumns) {
                 for (const part of parts) {
                     if ((part === parts[1] && !c.fix) || (c.fix === part)) {
-                        colsData[part] ??= {cols: [], fixWidthCols: [], simpleWidthCols: [], fixWidth: 0};
+                        colsData[part] ??= {cols: [], fixWidthCols: [], fixAutoWidthCols: [], simpleWidthCols: [], fixWidth: 0, fixAutoWidthWidths: []};
                         colsData[part].cols.push(c);
                         if (c.width) {
-                            colsData[part].fixWidthCols.push(c);
+                            if (c.autoWidth) {
+                                colsData[part].fixAutoWidthCols.push(c);
+                            }
+                            else {
+                                colsData[part].fixWidthCols.push(c);
+                            }
                         }
                         else {
                             colsData[part].simpleWidthCols.push(c);
@@ -629,7 +634,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     }
                 }
             }
-
             const calcFixWidth = (res, c) => res += (c.width || 0);
             for (const k in colsData) {
                 for (const part in colsData) {
@@ -661,7 +665,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                         style += `\n\tflex: 1;\n\tflex-basis: 100%;`;
                     }
                     else if (c.width) {
-                        style += `\n\tmin-width: ${c.width}px; \n\tmax-width: ${c.width}px;\n\tflex: 0;`;
+                        style += `\n\tmin-width: ${c.$width}px; \n\tmax-width: ${c.$width}px;\n\tflex: 0;`;
                     }
                     else {
                         let width = (this.autoWidth
@@ -2288,9 +2292,9 @@ cells: {
             }
         </style>
         <div class="flex vertical" style="cursor: pointer"  :disabled="!column.name">
-            <div @tap.stop="setSort" class="flex horizontal"  ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.__expanded__?'auto':'100%'}">
+            <div @tap.stop="setSort" class="flex horizontal" ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.__expanded__?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
-                    <oda-table-expand ~if="column?.items?.length" :item class="no-flex"></oda-table-expand>
+                    <oda-table-expand ~if="showExpander" :item class="no-flex"></oda-table-expand>
                     <label class="label flex" :title="column.label || column.name" ~html="column.label || column.name" draggable="true" @dragover="_dragover" @dragstart="_dragstart" @dragend="_dragend" @drop="_drop"></label>
                     <oda-icon :disabled="column?.__expanded__ && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
@@ -2307,6 +2311,9 @@ cells: {
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
+        get showExpander() {
+            return this.column?.items?.length;
+        },
         get fix() {
             return this.column?.fix;
         },
