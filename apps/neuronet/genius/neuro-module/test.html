@@ -88,7 +88,7 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         </svg>
     </div>
     <div class='block' style='grid-area:loss;'>
-        <h3>loss:</h3>
+        <h3>loss: {{lastLoss}}</h3>
         <svg class='box' :width :height xmlns='http://www.w3.org/2000/svg' :viewBox="'0 0 ' + width + ' ' + height">
             <rect x="0" y="0" :width :height fill='#a9caff'/>
             <path :d='pathD' fill="none" stroke="#070637" stroke-width="2"/>
@@ -145,7 +145,7 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         $def: new Array(28*28).fill(0)
     },
     result:{
-        $def: new Array(10).fill(0.1)
+        $def:[]//$def: new Array(10).fill(0.1)
     },
     loss:{
         $def:[]//new Array(20000).fill(0).map(_=> Math.random()*5-2)
@@ -156,6 +156,7 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
 
     step() {
         let dat = this.getTrain(undefined, 1)
+        
         let loss, rez, lossArr=[];
         for (let i=0; i<dat.inputs.length; i++) {
             rez = this.mnist(dat.inputs[i])
@@ -167,16 +168,20 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
                 this.input = dat.inputs[i]
                 this.result = rez.data
             }
-            this.loss.push(lossArr.reduce((a,c)=>a+c)/lossArr.length) 
-            // console.log(loss.data[0])
         }
+        let newLoss = lossArr.reduce((a,c)=>a+c)/lossArr.length
+        this.loss.push(newLoss)
+        this.lastLoss = newLoss.toFixed(4)
+
     },
     steps(){
         if (this.go) this.async(() => {
             this.step()
             this.steps()
-        }, 0)            
-    }
+        }, 1)            
+    },
+    lastLoss:'',
+
 
 })
 

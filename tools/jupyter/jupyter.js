@@ -574,6 +574,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
+        this.jupyter.$$('oda-jupyter-cell').map(i => {
+            if (i.control.previewMode === 'iframe') {
+                i.control.setIframe();
+            }
+        })
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
