@@ -1276,7 +1276,6 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
                 if (t.dType !== BinaryArray){
                     if (func_key)
                         return `t${i}[\${idx${i}}]`;
-                        // return '\${v'+i+'}';
                     return 'v'+i;
                 }
 
@@ -1284,7 +1283,7 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
 
             if (mult){
                 if (func_key)
-                    result += tabs + 'mult = \`' + mult + '\`;\n';
+                    result += tabs + 'mult = \` + ' + mult + '\`;\n';
                 else
                     result += tabs + 'mult = ' + mult + ';\n';
             }
@@ -1294,8 +1293,6 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
                     if (t.dType === BinaryArray)
                         return '(v'+i+' - 1)';
                 }).filter(l=>l).join(` + `) + ')&1;\n';
-                // }).filter(l=>l).join(` * `) + ');\n';
-                // }).filter(l=>l).join(` + `) + ')%2||1;\n';
                 if (mult)
                     result += tabs + 'res += sign?-mult:mult;\n';
                 else
@@ -1323,7 +1320,7 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
         let fwd_expr = vars + '\n';
         fwd_expr += out_for + '\n'
         if (func_key) {
-            fwd_expr +=  out_tabs + `let res = 'out.data[\${++idx}]=';`;
+            fwd_expr +=  out_tabs + `let res = \`out.data[\${++idx}]= 0 \`;`;
         }
         else{
             fwd_expr +=  out_tabs + `let res = 0;`;
@@ -1331,12 +1328,15 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
 
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
+        if (func_key)
+            fwd_expr += 'return out;'
 
 
         fn = new Function('t', 'out', fwd_expr);
         if (func_key){
             fwd_expr = fn(tensors, []);
-            einsum_funtions[in_expr + ': ' + func_key] = new Function('t', 'out', fwd_expr);
+            fwd_expr = vars + '\n' + fwd_expr.join(';\n')
+            fn = einsum_funtions[in_expr + ': ' + func_key] = new Function('t', 'out', fwd_expr);
         }
     }
 
