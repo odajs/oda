@@ -1162,7 +1162,7 @@ tensor.unpack = (expr, inputs)=>{
 const einsum_funtions = {};
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
-    let func_key = tensors.map(i=>i.shape.toString()).join('-');
+    let func_key = '';//tensors.map(i=>i.shape.toString()).join('-');
     let fn = func_key && einsum_funtions[in_expr + ': ' + func_key];
     let inputs, outs;
     if (!fn){

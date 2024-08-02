@@ -164,21 +164,20 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
             // this.loss.push(loss.data[0])
             lossArr.push(loss.data[0])
             loss.back();
-            if (i===0) {
-                this.input = dat.inputs[i]
-                this.result = rez.data
-            }
         }
+        this.input = dat.inputs.last
+        this.result = rez.data
         let newLoss = lossArr.reduce((a,c)=>a+c)/lossArr.length
         this.loss.push(newLoss)
         this.lastLoss = newLoss.toFixed(4)
 
     },
     steps(){
-        if (this.go) this.async(() => {
+        if (!this.go) return;
+        this.async(() => {
             this.step()
             this.steps()
-        }, 1)            
+        }, 100)
     },
     lastLoss:'',
 
