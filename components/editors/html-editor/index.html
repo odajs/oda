@@ -19,9 +19,10 @@
 <span id="counter" class="counter">0</span>
 
 <script type="module">
-    let upto = 10;
+    let upto = 0;
     setInterval(() => {
-        counter.innerHTML = ++upto;
+        upto += 10;
+        counter.innerHTML = upto;
     }, 100)
 
     import '/web/oda/oda.js'

@@ -1257,10 +1257,18 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
                 }
                 if(input.idx_expr){
                     result += tabs + input.idx_expr + ';\n';
-                    result += tabs+`v${i} = t${i}[idx${i}];\n`;
+                    if (func_key)
+                        result += tabs+`v${i} = 't${i}[idx${i}]';\n`;
+                    else
+                        result += tabs+`v${i} = t${i}[idx${i}];\n`;
                 }
-                else
-                    result += tabs+`v${i} = t${i};\n`;
+                else{
+                    if (func_key)
+                        result += tabs+`v${i} = 't${i}';\n`;
+                    else
+                    if (func_key)
+                }
+
             })
             const has_bins = tensors.some(t=>t.dType === BinaryArray)
             const mult = inputs.map((_,i)=>{
@@ -1294,12 +1302,23 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
 
         let body = '';
         body += input_for_func(inputs);
-        body += out_tabs + `out.data${data_idx}`;
-        body += ' = res;';
+        if (func_key){
+            body += out_tabs + `out.push(res)`;
+        }
+        else{
+            body += out_tabs + `out.data${data_idx}`;
+            body += ' = res;';
+        }
 
         let fwd_expr = vars + '\n';
         fwd_expr += out_for + '\n'
-        fwd_expr +=  out_tabs + `let res = 0;`;
+        if (func_key) {
+            fwd_expr +=  out_tabs + `let res = 'out.data[++idx]=';`;
+        }
+        else{
+            fwd_expr +=  out_tabs + `let res = 0;`;
+        }
+
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
 
