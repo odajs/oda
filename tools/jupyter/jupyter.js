@@ -398,7 +398,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         this.cell.delete();
     },
     showSettings(e) {
-        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
+        ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }
 })
 
@@ -457,7 +457,7 @@ ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-
             }
         },
         editorHeight: {
-            $def: 'ow',
+            $def: '',
             get(){
                 return this.cell?.readMetadata('editorHeight', '');
             },
