@@ -1257,27 +1257,37 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
                 }
                 if(input.idx_expr){
                     result += tabs + input.idx_expr + ';\n';
-                    if (func_key)
-                        result += tabs+`v${i} = 't${i}[idx${i}]';\n`;
-                    else
+                    if (!func_key)
+                       // result += tabs+`v${i} = 't${i}[\${idx${i}}]';\n`;
+                  //  else
                         result += tabs+`v${i} = t${i}[idx${i}];\n`;
                 }
-                else{
-                    if (func_key)
-                        result += tabs+`v${i} = 't${i}';\n`;
-                    else
-                    if (func_key)
+                else if (!func_key){
+
+                        // result += tabs+`v${i} = 't$\${{i}}';\n`;
+                  //  else
+                        result += tabs+`v${i} = t${i};\n`;
                 }
 
             })
             const has_bins = tensors.some(t=>t.dType === BinaryArray)
-            const mult = inputs.map((_,i)=>{
+            let mult = inputs.map((_,i)=>{
                 const t = tensors[i];
-                if (t.dType !== BinaryArray)
+                if (t.dType !== BinaryArray){
+                    if (func_key)
+                        return `t${i}[\${idx${i}}]`;
+                        // return '\${v'+i+'}';
                     return 'v'+i;
-            }).filter(l=>l).join(` * `)
-            if (mult)
-                result += tabs + 'mult = ' + mult + ';\n';
+                }
+
+            }).filter(l=>l).join(` * `);
+
+            if (mult){
+                if (func_key)
+                    result += tabs + 'mult = \`' + mult + '\`;\n';
+                else
+                    result += tabs + 'mult = ' + mult + ';\n';
+            }
             if (has_bins){
                 result += tabs + 'sign = (' + inputs.map((_,i)=>{
                     const t = tensors[i];
@@ -1313,7 +1323,7 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
         let fwd_expr = vars + '\n';
         fwd_expr += out_for + '\n'
         if (func_key) {
-            fwd_expr +=  out_tabs + `let res = 'out.data[++idx]=';`;
+            fwd_expr +=  out_tabs + `let res = 'out.data[\${++idx}]=';`;
         }
         else{
             fwd_expr +=  out_tabs + `let res = 0;`;
