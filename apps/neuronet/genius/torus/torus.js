@@ -1336,8 +1336,14 @@ tensor.einsum = (in_expr, sources = [], func_key)=>{
         if (func_key){
             fwd_expr = fn(tensors, []);
             fwd_expr = vars + '\n' + fwd_expr.join(';\n')
-            fn = einsum_funtions[in_expr + ': ' + func_key] = new Function('t', 'out', fwd_expr);
+            fn = (einsum_funtions[in_expr + ': ' + func_key] = {fn:new Function('t', 'out', fwd_expr), outs, inputs}).fn;
+            fwd_expr = '';
         }
+    }
+    else{
+        outs = fn.outs;
+        inputs = fn.inputs;
+        fn = fn.fn
     }
 
     const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
