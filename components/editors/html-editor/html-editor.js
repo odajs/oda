@@ -9,31 +9,35 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 overflow: auto;
                 width: 100%;
             }
-            .monaco {
-                height: {{direction === 'row' ? '100%' : monacoHeight}}px;
+            .editors {
+                height: {{editorHeight ? editorHeight : '100%'}};
+            }
+            .monaco, .ace {
+                width: 100%;
+                height: 100%;
             }
         </style>
-        <div class="editor" style="overflow: auto;">
-            <div ~if="editMode" class="horizontal" style="overflow: hidden; min-width: 120px; position: relative" ~style="{width: editMode && showPreview && direction==='row' ? '50%' : '100%'}">
-                <oda-ace-editor  ~if="type==='ace'" :src="value" @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="false" min-lines="3" max-lines="Infinity" :wrap="!noWrap"></oda-ace-editor>                        
-                <oda-monaco-editor class="monaco" ~if="type==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
+        <div class="editor" style="overflow: auto; width: 100%; position: relative;">
+            <div class="editors" ~if="isEditMode" class="horizontal" style="overflow: hidden;overflow-y: auto; min-width: 120px; position: relative" ~style="{width: isEditMode && showPreview && direction==='row' ? '50%' : '100%'}">
+                <oda-ace-editor  class="ace" ~if="editorType==='ace'" :src="value" @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="false" min-lines="3" max-lines="Infinity" :wrap="!noWrap"></oda-ace-editor>                        
+                <oda-monaco-editor class="monaco" ~if="editorType==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <div ~if="!editMode || showPreview" class="vertical flex" style="overflow: hidden; min-height: 24px" @dblclick="_dblClick">
-                <div ~if="previewMode === 'html'" ~html="value || (!editMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
+            <div ~if="!isEditMode || showPreview" class="vertical flex" style="overflow: hidden; min-height: 24px" @dblclick="_dblClick">
+                <div ~if="previewMode === 'html'" ~html="value || (!isEditMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
                 <iframe ~if="previewMode === 'iframe'" style="border: none; width: 100%; overflow: hidden;"></iframe>
             </div>
         </div>
     `,
     $public:{
-        type:{
+        editorType:{
             $def: 'ace',
             $list: ['ace', 'monaco'],
             set(n) {
                 this.src = this.value;
             }
         },
-        monacoHeight: 200,
+        editorHeight: '',
         direction: {
             $def: 'row',
             $list: ['row', 'column'],
@@ -49,12 +53,12 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 }, 100)
             }
         },
-        editMode: {
+        isEditMode: {
             $def: false,
             set(n){
                 if (n) {
                     if(this.readOnly)
-                        this.editMode = false
+                        this.isEditMode = false
                     this.focus();
                 }  
             }
@@ -76,7 +80,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
     },
     _dblClick() {
         // if (!this.value)
-        this.editMode = !this.editMode;
+        this.isEditMode = !this.isEditMode;
     },
     attached() {
         this.setIframe();
@@ -92,6 +96,6 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
             resizeObserver.observe(iframe.contentDocument.body);
             this.isReady = true;
         })
-        iframe.srcdoc = this.value || (this.editMode ? '' : '<b><u>Double click for HTML edit...</u></b>');
+        iframe.srcdoc = this.value || (this.isEditMode ? '' : '<b><u>Double click for HTML edit...</u></b>');
     }
 })

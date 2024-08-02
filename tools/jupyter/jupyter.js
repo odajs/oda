@@ -25,7 +25,7 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
             :host{
@@ -137,7 +137,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
-            html: { label: 'HTML', editor: 'oda-html-editor', type: 'html' }
+            html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
         },
         selectedCell: {
             $def: null,
@@ -443,6 +443,82 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     }
 })
 
+ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-html-editor',
+    $public:{
+        editorType:{
+            $def: 'ace',
+            $list: ['ace', 'monaco'],
+            get(){
+                return this.cell?.readMetadata('editorType', 'ace');
+            },
+            set(n) {
+                this.src = this.value;
+                this.cell?.writeMetadata('editorType', n);
+            }
+        },
+        editorHeight: {
+            $def: 'ow',
+            get(){
+                return this.cell?.readMetadata('editorHeight', '');
+            },
+            set(n) {
+                this.cell?.writeMetadata('editorHeight', n);
+            }
+        },
+        direction: {
+            $def: 'row',
+            $list: ['row', 'column'],
+            get(){
+                return this.cell?.readMetadata('direction', 'row');
+            },
+            set(n) {
+                this.src = this.value;
+                this.cell?.writeMetadata('direction', n);
+            }
+        },
+        noWrap: {
+            $def: false,
+            get(){
+                return this.cell?.readMetadata('noWrap', false);
+            },
+            set(n) {
+                this.cell?.writeMetadata('noWrap', n);
+            }
+        },
+        showPreview: {
+            $def: false,
+            get(){
+                return this.cell?.readMetadata('showPreview', false);
+            },
+            set(n) {
+                this.cell?.writeMetadata('showPreview', n);
+            }
+        },
+        previewMode: {
+            $def: 'html',
+            $list: ['html', 'iframe'],
+            get(){
+                return this.cell?.readMetadata('previewMode', 'html');
+            },
+            set(n){
+                this.async(() => {
+                    this.setIframe();  
+                }, 100)
+                this.cell?.writeMetadata('previewMode', n);
+            }
+        },
+        isEditMode: {
+            $def: false,
+            get() {
+                return this.cell?.readMetadata('isEditMode', false) || this.editMode;
+            },
+            set(n) {
+                this.editMode = n;
+                this.cell?.writeMetadata('isEditMode', n);
+            }
+        }
+    }
+})
 const AsyncFunction = async function () {}.constructor;
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     template: `
