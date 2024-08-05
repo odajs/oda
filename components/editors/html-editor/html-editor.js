@@ -100,6 +100,9 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
             })
             resizeObserver.observe(iframe.contentDocument.body);
             this.isReady = true;
+            iframe.contentDocument.body.addEventListener('click', e => {
+                this.click();
+            })
         })
         iframe.srcdoc = this.value || (this.isEditMode ? '' : '<b><u>Double click for HTML edit...</u></b>');
     }
