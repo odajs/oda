@@ -483,38 +483,24 @@ export class tensor{
     static randNorm(shape){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
     }
-    static arange(arange_params, dType = Float32Array){
-        if (Number.isInteger(arange_params)){
-            arange_params = [0, arange_params,  1];
+    static arange(shape, from = 0, to){
+        if (!Array.isArray(shape))
+            shape = [shape];
+        let steps = shape.pop();
+        let repeat = shape.reduce((r,v)=>r * v, 1);
+        shape.push(steps);
+        if (to === undefined){
+            to = from + steps;
         }
-        if (!Array.isArray(arange_params))
-            throw new Error('arange');
-        if (arange_params.length === 0)
-            throw new Error('arange');
-        if (arange_params.length < 2){
-            arange_params[0] = arange_params[0];
-            arange_params.unshift(0);
-        }
-        if (arange_params.length < 3)
-            arange_params.push(1);
-        let [from, to, step] = arange_params;
-        step = Math.abs(step)
-        const size = Math.round((Math.max(from, to) - Math.min(from, to)) / step);
-        const data = new dType(size);
+        let step = (to - from) / steps;
+        let data = new Float32Array(steps);
         let idx = -1;
-        if (from < to){
-            for(let d = from; d < to; d += step){
-                data[++idx] = d
-            }
+        for (let i = from; i < to; i += step){
+            data[++idx] = i;
         }
-        else if (from > to){
-            for(let d = from; d > to; d -= step){
-                data[++idx] = d
-            }
-        }
-
-
-        return tensor.from(data, dType);
+        if (repeat>1)
+            data = new Float32Array(Array(repeat).fill([]).map(_=>data).flat());
+        return tensor.from(data)._shape(shape);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
@@ -1326,6 +1312,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         else{
             fwd_expr +=  out_tabs + `let res = 0;`;
         }
+
 
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
