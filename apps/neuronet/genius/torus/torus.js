@@ -490,16 +490,15 @@ export class tensor{
         let repeat = shape.reduce((r,v)=>r * v, 1);
         shape.push(steps);
         if (to === undefined){
-            to = from + steps;
+            to = from + steps - 1;
         }
-        let step = (to - from) / steps;
-        let data = new Float32Array(steps);
+        let step = (to - from) / (steps - 1);
+        let data = [];
         let idx = -1;
-        for (let i = from; i < to; i += step){
+        for (let i = from; i <= to; i += step){
             data[++idx] = i;
         }
-        if (repeat>1)
-            data = new Float32Array(Array(repeat).fill([]).map(_=>data).flat());
+        data = new Float32Array(Array(repeat).fill(data).flat());
         return tensor.from(data)._shape(shape);
     }
     static hippo(size){
