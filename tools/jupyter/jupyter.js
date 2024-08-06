@@ -218,7 +218,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding: 4px 0;">
                         <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: auto;">
                             <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >   
-                            <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
+                                <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -241,7 +241,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
         }
-        this.outHtml = i.item;
+        // this.outHtml = i.item;
         return 'span';
     },
     hideRun() {

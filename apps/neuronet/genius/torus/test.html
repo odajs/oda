@@ -5,37 +5,73 @@
     <title>Title</title>
 </head>
 <body>
+    <button id="btn">PRESS</button>
 </body>
 <script type="module">
     import '../../../../oda.js';
     import {tensor} from "./torus.js";
 
-    let _x = 5;
-    let _k = 3;
-    let _y = 10;
-    let _z = 20;
-    let _m = 7;
+    btn.onclick = (e)=>{
+        console.time('time')
+        let _x = 50;
+        let _k = 30;
+        let _y = 100;
+        let _z = 200;
+        let _m = 70;
 
-    let out = tensor.zeros([_z, _y, _k]).data
-    let t0 = tensor.rand([_x, _k, _m]).data;
-    let t1 = tensor.rand([_x, _y]).data;
-    let t2 = tensor.rand([_y, _z]).data;
-    let t4 = t0
-    let v0, v1, v2, v3;
-    let _k_m = _k * _m;
-    for(let x = 0; x <_x ; x++) {
-        for (let k = 0; k < _k; k++) {
-            for (let m = 0; m < _m; m++) {
-                let idx0 = m + _m * (k + _k * x);
-                for (let y = 0; y < _y; y++) {
-                    let idx1 = x + _x * y;
-                    for (let z = 0; z < _z; z++) {
-                        let idx2 = y + _y * z
+        let out = tensor.zeros([_z, _y, _k], Float32Array).data
+        let t0 = tensor.arange([_x, _k, _m]).data;
+        let t1 = tensor.arange([_y, _x]).data;
+        let t2 = tensor.arange([_z, _y]).data;
+        let t4 = t0
+        let v0, v1, v2, v3;
+        // for(let x = 0; x <_x ; x++) {
+        //     let _kx = _k * x
+        //     for (let m = 0; m < _m; m++) {
+        //         let idx = -1;
+        //         for (let y = 0; y < _y; y++) {
+        //             let idx1 = x + _x * y;
+        //             v1 = t1[idx1];
+        //             for (let k = 0; k < _k; k++) {
+        //                 let idx0 = m + _m * (k + _kx)
+        //                 v0 = v3 = t0[idx0];
+        //                 let v013 = v0 * v1 * v3
+        //                 for (let z = 0; z < _z; z++) {
+        //                     let idx2 = y + _y * z;
+        //                     v2 = t2[idx2];
+        //                     out[++idx] += v013 * v2;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        let idx = -1;
+        let sum;
+        for (let y = 0; y < _y; y++) {
+            for (let k = 0; k < _k; k++) {
+                for (let z = 0; z < _z; z++) {
+                    v2 = t2[y + _y * z];
+                    sum = 0;
+                    for(let x = 0; x <_x ; x++) {
+                        v1 = t1[x + _x * y];
+                        for (let m = 0; m < _m; m++) {
+                            v0 = v3 = t0[m + _m * (k + _k * x)];
+                            sum += v0 * v1 * v2 * v3;
+                        }
                     }
+
+                    out[++idx] = sum;
                 }
             }
         }
+
+
+        console.timeEnd('time')
+        console.log(out)
     }
+
+
 
 </script>
 </html>
