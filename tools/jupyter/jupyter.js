@@ -231,15 +231,27 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
                     </div>
                 </div>        
-                <div class="horizontal left info flex" ~if="cell?.outputs?.length > maxOutputsRow" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
-                    <span style="padding: 9px;">Показано {{showAllOutputsRow ? cell.outputs.length : Math.round(maxOutputsRow * (outputsStep + 1))}} из {{cell?.outputs?.length}}</span>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
+                <div class="horizontal left info flex" ~if="showOutInfo" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
+                    <span style="padding: 9px;">{{outInfo}}</span>
+                    <oda-button ~if="!diff && !showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
+                    <oda-button ~if="!diff && !showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
                 </div>
             </div>
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    get outInfo() {
+        if (this.diff) {
+            return `Показано ${this.maxOutLength} из ${this.outLength}`;
+        }
+        return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length : Math.round(this.maxOutputsRow * (this.outputsStep + 1))} из ${this.cell?.outputs?.length}`;
+    },
+    get showOutInfo() {
+        return this.cell?.outputs?.length > this.maxOutputsRow || this.diff > 0;
+    },
+    diff: 0,
+    outLength: 0,
+    maxOutLength: 100000,
     outSrc: '',
     outHtml: '',
     outIs(i) {
@@ -248,7 +260,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
         }
-        this.outHtml = i.item.substring(0, 100000);
+        this.outHtml = i.item.substring(0, this.maxOutLength);
+        let _diff = i.item.length - this.maxOutLength;
+        // console.log(i)
+        if (_diff > 0 && !this._isCalculated) {
+            this._isCalculated = true;
+            this.diff +=  _diff;
+            this.outLength += i.item.length;
+        }
         return 'span';
     },
     hideRun() {
