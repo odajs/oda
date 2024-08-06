@@ -905,10 +905,10 @@ class JupyterCell extends ROCKS({
             finally {
                 this.async(() =>{
                     jupyter.showLoader = this.isRun = false;
-                })
+                }, 500)
                 // run_context.output_data = [];
             }
-        }, 1000)
+        }, 500)
     }
     get code(){
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
