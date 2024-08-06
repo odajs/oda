@@ -241,7 +241,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
         }
-        // this.outHtml = i.item;
+        this.outHtml = i.item.substring(0, 100000);
         return 'span';
     },
     hideRun() {
