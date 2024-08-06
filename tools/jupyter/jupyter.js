@@ -25,6 +25,7 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
+import { getLoader } from '/web/oda/components/tools/loader/loader.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
@@ -38,25 +39,13 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: 0;
                 transition: opacity 1s;
             }
-            .loader {
-                visibility: {{showLoader ? 'visible' : 'hidden'}};
-                position: fixed !important;
-                top: 50%;
-                left: 50%;
-                z-index: 100;
-                transform: translate3d(-50%, -50%, 0);
-                pointer-events: none;
-                opacity: 0.5;
-            }
         </style>
 <!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
 <!--        </div>-->
-            <div class="loader">
-                <oda-icon icon="odant:spin" icon-size="64" fill="var(--info-color)"></oda-icon>
-            </div>
+
     `,
     cellSelect(item){
         this['selectedCell'] = item;
@@ -109,7 +98,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         }
     },
     $pdp: {
-        showLoader: false,
+        get odaLoader() {
+            return top.document.body.getElementsByTagName('oda-loader')?.[0];
+        },
         get jupyter() {
             return this;
         },
@@ -173,6 +164,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 if (n && this.readOnly)
                     this.editMode = false;
             }
+        },
+        attached() {
+            if (!this.odaLoader) getLoader();
         }
     },
     scrollToCell(cell = this.selectedCell) {
@@ -862,7 +856,7 @@ class JupyterCell extends ROCKS({
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        jupyter.showLoader = this.isRun = true;
+        jupyter.odaLoader._show = this.isRun = true;
         jupyter.$render();
         this.async(async () => {
             try{
@@ -904,7 +898,7 @@ class JupyterCell extends ROCKS({
             }
             finally {
                 this.async(() =>{
-                    jupyter.showLoader = this.isRun = false;
+                    jupyter.odaLoader._show = this.isRun = false;
                 }, 500)
                 // run_context.output_data = [];
             }
