@@ -25,10 +25,10 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/loader',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
-            :host{
+            :host {
                 @apply --vertical;
                 @apply --flex;
                 outline: none !important;
@@ -38,14 +38,25 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/loader',
                 opacity: 0;
                 transition: opacity 1s;
             }
+            .loader {
+                visibility: {{showLoader ? 'visible' : 'hidden'}};
+                position: fixed !important;
+                top: 50%;
+                left: 50%;
+                z-index: 100;
+                transform: translate3d(-50%, -50%, 0);
+                pointer-events: none;
+                opacity: 0.5;
+            }
         </style>
 <!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
 <!--        </div>-->
-            <oda-loader :_show="showLoader"></oda-loader>
-
+            <div class="loader">
+                <oda-icon icon="odant:spin" icon-size="64" fill="var(--info-color)"></oda-icon>
+            </div>
     `,
     cellSelect(item){
         this['selectedCell'] = item;
@@ -97,11 +108,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/loader',
             $save: true
         }
     },
-    _showLoader: true,
-    get showLoader() {
-        return this.selectedCell?.isRun || this._showLoader
-    },
     $pdp: {
+        showLoader: false,
         get jupyter() {
             return this;
         },
@@ -116,7 +124,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/loader',
                         this.selectedCell = this.cells[this.savedIndex];
                         this.scrollToCell();
                     }
-                    this._showLoader = false;
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                 }, 1000)
@@ -563,7 +570,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
-            this.run(this.jupyter);
+            this.run();
         }
     },
     get isReadyRun(){
@@ -610,7 +617,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     },
     attached() {
         if (this.autoRun)
-            this.run(this.jupyter);
+            this.run();
     }
 })
 
@@ -851,54 +858,57 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    async run(jupyter){
+    run(jupyter){
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        this.isRun = true;
-        try{
-            let time = Date.now();
-            run_context.output_data = [];
-            const fn = new AsyncFunction('context', this.code);
-            let res =  await fn.call(jupyter, run_context);
-            time = new Date(Date.now() - time);
-            let time_str = '';
-            let t = time.getMinutes();
-            if (t)
-                time_str += t + ' m\n';
-            t = time.getSeconds();
-            if (time_str  || t)
-                time_str += t + ' s\n';
-            t = time.getMilliseconds();
-            time_str += t + ' ms';
-            this.status = time_str;
-
-            if (res){
-                run_context.output_data.push(res);
+        jupyter.showLoader = this.isRun = true;
+        jupyter.$render();
+        this.async(async () => {
+            try{
+                let time = Date.now();
+                run_context.output_data = [];
+                const fn = new AsyncFunction('context', this.code);
+                let res =  await fn.call(jupyter, run_context);
+                time = new Date(Date.now() - time);
+                let time_str = '';
+                let t = time.getMinutes();
+                if (t)
+                    time_str += t + ' m\n';
+                t = time.getSeconds();
+                if (time_str  || t)
+                    time_str += t + ' s\n';
+                t = time.getMilliseconds();
+                time_str += t + ' ms';
+                this.status = time_str;
+    
+                if (res){
+                    run_context.output_data.push(res);
+                }
+                this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
             }
-            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
-        }
-        catch (e){
-            let error = e.stack.split('\n');
-            let pos = error[1];
-            if (pos){
-                pos = pos.substring(pos.indexOf('>') + 1);
-                pos = pos.split(':');
-                pos[1] = +pos[1] - 2;
-                pos.shift();
-                pos = pos.join(':');
-                error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+            catch (e){
+                let error = e.stack.split('\n');
+                let pos = error[1];
+                if (pos){
+                    pos = pos.substring(pos.indexOf('>') + 1);
+                    pos = pos.split(':');
+                    pos[1] = +pos[1] - 2;
+                    pos.shift();
+                    pos = pos.join(':');
+                    error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+                }
+    
+                this.outputs = [{data:{"text/plain": error}}];
+                this.status = 'error';
             }
-
-            this.outputs = [{data:{"text/plain": error}}];
-            this.status = 'error';
-        }
-        finally {
-            this.async(() =>{
-                this.isRun = false;
-            }, 1000)
-            // run_context.output_data = [];
-        }
+            finally {
+                this.async(() =>{
+                    jupyter.showLoader = this.isRun = false;
+                })
+                // run_context.output_data = [];
+            }
+        }, 1000)
     }
     get code(){
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
