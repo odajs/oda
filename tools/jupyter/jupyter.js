@@ -25,7 +25,7 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/loader',
     template: `
         <style>
             :host{
@@ -44,6 +44,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
 <!--        </div>-->
+            <oda-loader :_show="showLoader"></oda-loader>
 
     `,
     cellSelect(item){
@@ -96,6 +97,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             $save: true
         }
     },
+    _showLoader: true,
+    get showLoader() {
+        return this.selectedCell?.isRun || this._showLoader
+    },
     $pdp: {
         get jupyter() {
             return this;
@@ -111,6 +116,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                         this.selectedCell = this.cells[this.savedIndex];
                         this.scrollToCell();
                     }
+                    this._showLoader = false;
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                 }, 1000)
@@ -888,7 +894,9 @@ class JupyterCell extends ROCKS({
             this.status = 'error';
         }
         finally {
-            this.isRun = false;
+            this.async(() =>{
+                this.isRun = false;
+            }, 1000)
             // run_context.output_data = [];
         }
     }
