@@ -224,53 +224,44 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell :cell-control></oda-jupyter-outputs-toolbar>
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding: 4px 0;">
                         <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: auto;">
-                            <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >   
-                                <span :src="outSrc" ~for="$for.item.data" ~is="outIs($$for)" :error="outHtml.includes('Error:')" :warning="outHtml.startsWith('<b>warn')" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
+                            <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >
+                                <div ~for="$for.item.data">
+                                    <span :src="outSrc" ~is="outIs($$for)" :error="outHtml($$for).includes('Error:')" :warning="outHtml($$for).startsWith('<b>warn')" ~html="outHtml($$for)" style="white-space: break-spaces; user-select: text;"></span>
+                                    <div class="horizontal left info flex" ~if="$$for.item.length - this.maxOutLength > 0" style="width: 100%; font-size: small; align-items: center; border-top: 1px dotted; ">
+                                        <span style="color: red;">Показано {{maxOutLength}} из {{$$for.item.length}}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div ~if="cell?.metadata?.hideRun" info ~if="cell?.metadata?.hideRun" style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
+                        <div ~if="cell?.metadata?.hideRun" info style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
                     </div>
                 </div>        
                 <div class="horizontal left info flex" ~if="showOutInfo" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
                     <span style="padding: 9px;">{{outInfo}}</span>
-                    <oda-button ~if="!diff && !showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
-                    <oda-button ~if="!diff && !showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
                 </div>
             </div>
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
     get outInfo() {
-        if (this.diff) {
-            return `Показано ${this.maxOutLength} из ${this.outLength}`;
-        }
         return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length : Math.round(this.maxOutputsRow * (this.outputsStep + 1))} из ${this.cell?.outputs?.length}`;
     },
     get showOutInfo() {
-        return this.cell?.outputs?.length > this.maxOutputsRow || this.diff > 0;
+        return this.cell?.outputs?.length > this.maxOutputsRow;
     },
-    diff: {
-        $def: 0,
-        $pdp: true
+    maxOutLength: 10000,
+    outHtml(i) {
+        return i.item.substring(0, this.maxOutLength);
     },
-    outLength: 0,
-    maxOutLength: 100000,
     outSrc: '',
-    outHtml: '',
     outIs(i) {
-        this.outSrc = this.outHtml = '';
+        this.outSrc = '';
         if (i.key === 'image/png') {
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
-        }
-        this.outHtml = i.item.substring(0, this.maxOutLength);
-        let _diff = i.item.length - this.maxOutLength;
-        // console.log(i)
-        if (_diff > 0 && !this._isCalculated) {
-            this._isCalculated = true;
-            this.diff +=  _diff;
-            this.outLength += i.item.length;
-        }
+        } 
         return 'span';
     },
     hideRun() {
@@ -468,7 +459,6 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     clearOutputs() {
         this.cell.metadata.hideRun = false;
         this.cell.outputs = [];
-        this.cellControl.diff = 0;
         this.jupyter.scrollToCell(this.cell);
     }
 })
@@ -602,13 +592,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.value = e.detail.value;
     },
     async run() {
-        this.outputsStep = this.diff = 0;
+        this.outputsStep = 0;
         this.showAllOutputsRow = false;
-        this.jupyter.$$('oda-jupyter-cell').map(i => {
-            if (i.control.previewMode === 'iframe') {
-                i.control.setIframe();
-            }
-        })
         for (let code of this.notebook.codes){
             if (code === this.cell) break;
             if (code.status) continue;
@@ -619,6 +604,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             await this.$render();
         }
         await this.cell.run(this.jupyter);
+        this.async(() => {
+            this.jupyter.$$('oda-jupyter-cell').map(i => {
+                if (i.control.previewMode === 'iframe') {
+                    i.control.setIframe();
+                }
+            })
+        }, 500)
         this.focus();
     },
     $public:{
