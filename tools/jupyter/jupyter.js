@@ -249,7 +249,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get showOutInfo() {
         return this.cell?.outputs?.length > this.maxOutputsRow || this.diff > 0;
     },
-    diff: 0,
+    diff: {
+        $def: 0,
+        $pdp: true
+    },
     outLength: 0,
     maxOutLength: 100000,
     outSrc: '',
@@ -465,7 +468,8 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     clearOutputs() {
         this.cell.metadata.hideRun = false;
         this.cell.outputs = [];
-        this.jupyter.scrollToCell(this.selectedCell);
+        this.cellControl.diff = 0;
+        this.jupyter.scrollToCell(this.cell);
     }
 })
 
@@ -598,7 +602,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.value = e.detail.value;
     },
     async run() {
-        this.outputsStep = 0;
+        this.outputsStep = this.diff = 0;
         this.showAllOutputsRow = false;
         this.jupyter.$$('oda-jupyter-cell').map(i => {
             if (i.control.previewMode === 'iframe') {
