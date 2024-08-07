@@ -10,6 +10,7 @@ ODA({
             min-{{direction === 'horizontal' ? 'height' : 'width'}}: {{iconSize + 14}}px;
         }
         :host #container{
+            @apply --flex;
             display: flex;
             flex-direction: {{direction === 'horizontal' ? 'row' : 'column'}};
             overflow-{{direction === 'horizontal' ? 'x' : 'y'}}: auto;
@@ -50,6 +51,7 @@ ODA({
             <oda-icon ~if="typeof $for.item.close === 'function'" icon="icons:close" @tap.stop="$for.item.close()"></oda-icon>
         </div>
     </div>
+    <oda-button ~if="items.some(i => typeof i.close === 'function')"  icon="icons:close" style="fill: red;" title="close all tabs" @tap="_closeAll"></oda-button>
     `,
     $public: {
         $pdp: true,
@@ -113,6 +115,10 @@ ODA({
         this.focused = this.items[this.index];
         this.fire('tab-tapped', { value: this.focused });
     },
+    async _closeAll() {
+        await ODA.showConfirm('Close all tabs?');
+        this.items.forEach(i => i.close?.());
+    }
 })
 
 ODA({
