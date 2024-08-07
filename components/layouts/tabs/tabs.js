@@ -128,7 +128,7 @@ ODA({
             margin: 2px;
         }
     </style>
-    <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
+    <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' && item.label ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
     <div ~text="item.label"></div>
     `,
     item: null,
