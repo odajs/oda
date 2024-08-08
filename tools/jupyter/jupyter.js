@@ -261,7 +261,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding: 4px 0;">
                         <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: hidden;">
                             <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for"></oda-jupyter-cell-out>
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxStr"></oda-jupyter-cell-out>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -276,6 +276,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    get maxOutputsRow() {
+        return this.control.maxRow;
+    },
     get outInfo() {
         return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length : Math.round(this.maxOutputsRow * (this.outputsStep + 1))} из ${this.cell?.outputs?.length}`;
     },
@@ -342,7 +345,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return this.$('#control');
         },
         showAllOutputsRow: false,
-        maxOutputsRow: 50,
         outputsStep: 0
     },
     setOutputsStep(e, sign) {
@@ -639,6 +641,26 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
             },
             set(n){
                 this.cell?.writeMetadata('autoRun', n)
+            }
+        },
+        maxStr:{
+            $pdp: true,
+            $def: 10000,
+            get(){
+                return this.cell?.readMetadata('maxStr', 10000)
+            },
+            set(n){
+                this.cell?.writeMetadata('maxStr', n)
+            }
+        },
+        maxRow:{
+            $pdp: true,
+            $def: 50,
+            get(){
+                return this.cell?.readMetadata('maxRow', 50)
+            },
+            set(n){
+                this.cell?.writeMetadata('maxRow', n)
             }
         }
     },
