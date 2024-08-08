@@ -175,9 +175,45 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
         cellElement.scrollIntoView();
-        // this.async(()=>{
-        //     this.scrollTop -= 10;
-        // })
+    }
+})
+
+ODA ({ is: 'oda-jupyter-cell-out', template: `
+        <span :src="outSrc" ~is="outIs" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
+        <div ~if="row.item.length - max > 0" class="horizontal left info flex" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
+            <span style="padding: 9px;">Показано {{max * (step + 1)}} из {{row.item.length}}</span>
+            <oda-button ~if="!showAll" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setStep($event, 1)">Показать следующие {{max}}</oda-button>
+            <oda-button ~if="!showAll" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setStep($event, 0)">Показать все</oda-button>
+        </div>
+    `,
+    row: undefined,
+    showAll: false,
+    max: 10000,
+    step: 0,
+    setStep(e, sign) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.step += sign;
+        if (this.step > this.row.item.length / this.max - 1 || sign === 0) {
+            this.step = this.row.item.length / this.max - 1;
+            this.showAll = true;
+        }
+    },
+    outSrc: '',
+    outIs(i = this.row) {
+        this.outSrc = '';
+        if (i.key === 'image/png') {
+            this.outSrc = 'data:image/png;base64,' + i.item;
+            return 'img';
+        } 
+        return 'span';
+    },
+    outHtml() {
+        return this.row?.item?.substring(0, this.max * (this.step + 1)) || '';
+    },
+    attached() {
+        this.step = 0;
+        this.showAll = false;
     }
 })
 
@@ -223,14 +259,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div ~if="cell?.outputs?.length" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell :cell-control></oda-jupyter-outputs-toolbar>
                     <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding: 4px 0;">
-                        <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: auto;">
+                        <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: hidden;">
                             <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >
-                                <div ~for="$for.item.data">
-                                    <span :src="outSrc" ~is="outIs($$for)" :error="outHtml($$for).includes('Error:')" :warning="outHtml($$for).startsWith('<b>warn')" ~html="outHtml($$for)" style="white-space: break-spaces; user-select: text;"></span>
-                                    <div class="horizontal left info flex" ~if="$$for.item.length - this.maxOutLength > 0" style="width: 100%; font-size: small; align-items: center; border-top: 1px dotted; ">
-                                        <span style="color: red;">Показано {{maxOutLength}} из {{$$for.item.length}}</span>
-                                    </div>
-                                </div>
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for"></oda-jupyter-cell-out>
                             </div>
                         </div>
                         <div ~if="cell?.metadata?.hideRun" info style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
@@ -250,19 +281,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     get showOutInfo() {
         return this.cell?.outputs?.length > this.maxOutputsRow;
-    },
-    maxOutLength: 10000,
-    outHtml(i) {
-        return i.item.substring(0, this.maxOutLength);
-    },
-    outSrc: '',
-    outIs(i) {
-        this.outSrc = '';
-        if (i.key === 'image/png') {
-            this.outSrc = 'data:image/png;base64,' + i.item;
-            return 'img';
-        } 
-        return 'span';
     },
     hideRun() {
         this.cell.metadata.hideRun = !this.cell.metadata.hideRun;
