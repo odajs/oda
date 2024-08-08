@@ -580,6 +580,10 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
             }
         });
         this.delta = this.panel?.firstElementChild?.offsetWidth || 0;
+        this.debounce('call-openeing', () => {
+            this.opened = null;
+            this.opening();
+        }, 100);
         // this.throttle('opacity', ()=>{
         //     this.domHost.style.setProperty('opacity', 1);
         // })
