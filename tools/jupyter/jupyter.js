@@ -179,7 +179,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
 })
 
 ODA ({ is: 'oda-jupyter-cell-out', template: `
-        <span :src="outSrc" ~is="outIs" ~html="outHtml" style="white-space: break-spaces; user-select: text;"></span>
+        <span :src="outSrc" ~is="outIs" ~html="outHtml" style="white-space: break-spaces; user-select: text;" :warning :error></span>
         <div ~if="row.item.length - max > 0" class="horizontal left info flex" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
             <span style="padding: 9px;">Показано {{max * (step + 1)}} из {{row.item.length}}</span>
             <oda-button ~if="!showAll" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setStep($event, 1)">Показать следующие {{max}}</oda-button>
@@ -210,6 +210,12 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     outHtml() {
         return this.row?.item?.substring(0, this.max * (this.step + 1)) || '';
+    },
+    get warning() {
+        return this.row?.item.startsWith('<b>warn');
+    },
+    get error() {
+        return this.row?.item.startsWith('<b>err');
     },
     attached() {
         this.step = 0;

@@ -21,6 +21,7 @@
             super(arguments);
         }    
         __init__(){
+            this.generation=0
             this.layer1 = new Linear(this.dim*this.dim,this.dim*this.dim/2,true)
             this.layer2 = new Linear(this.dim*this.dim/2,10,true)
             // this.layer1 = new BinLayer(this.dim*this.dim,this.dim*this.dim/2);
@@ -65,18 +66,27 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         :host {max-width:1000px; margin:auto; display:grid; grid-template-columns:1fr 1fr; grid-template-areas: 'input output' 'loss loss'; }
         .block {border: 1px solid #4d85cf; padding:10px; margin:10px;}
         .box { margin:10px}
-        .block h3 {margin:0 10px;}
-        oda-button {border: 1px solid #4d85cf; margin:10px;}}
+        .block h3 {margin:0 10px; display:flex; color:#070637; align-items: center;}
+        .block h3 i {font-size:0.8em; opacity:0.8;}
+        oda-button {border: 1px solid #4d85cf; margin:10px;}
+        h3  oda-button {margin:1px;padding:1px;}
+        .block h3 input {border:0; width:1em; outline:none; font-style:italic; font-weight:bold; font-size:15px}
     </style>
     <div class='block' style='grid-area:input;'>
-        <h3>input:</h3>
+        <h3>input:<i flex></i>
+            <oda-button :disabled='go' icon-size="18" :icon="iconFromChar('🗑️')" @tap='input=new Array(28*28).fill(0)'></oda-button> 
+            <oda-button :disabled='go' icon-size="18" :icon="iconFromChar(drawBoll?'✍🏿':'✍🏻')" @tap='drawBoll=!drawBoll'></oda-button> 
+        </h3>
         <svg class='box' width="281" height="281" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 281 281'>
             <rect x="0" y="0" width="281" height="281" fill='#4d85cf'/>
-            <rect ~for='rects' :x="$for.item?.x" :y="$for.item?.y" width="9" height="9" :fill='$for.item?.v?"#070637":"#a9caff"'/>            
+            <rect ~for='rects' :x="$for.item?.x" :y="$for.item?.y" width="9" height="9" :fill='$for.item?.v?"#070637":"#a9caff"'
+                    @mousemove="_mouseMove($event, $for.item)"/>            
         </svg>
     </div>
     <div class='block' style='grid-area:output;'>
-        <h3>output:</h3>
+        <h3>output:<i flex></i><i>target:<input @input='_inTarget' :value='target'/></i>
+            <oda-button :disabled='go' icon-size="18" :icon="iconFromChar('🌀')" @tap='_dopTrain()'></oda-button>
+        </h3>
         <svg class='box' width="281" height="281" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 281 281'>
             <rect x="0" y="0" width="281" height="281" fill='#a9caff'/>
             <g ~for='result' :transform="'translate(0,'+ ($for.index * 28) +')'">
@@ -88,7 +98,7 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         </svg>
     </div>
     <div class='block' style='grid-area:loss;'>
-        <h3>loss: {{lastLoss}}</h3>
+        <h3>loss: {{lastLoss}} <i flex></i><i>generation: {{generation}}</i></h3>
         <svg class='box' :width :height xmlns='http://www.w3.org/2000/svg' :viewBox="'0 0 ' + width + ' ' + height">
             <rect x="0" y="0" :width :height fill='#a9caff'/>
             <path :d='pathD' fill="none" stroke="#070637" stroke-width="2"/>
@@ -96,6 +106,34 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
     </div>
     <oda-button :label='go?"pause":"play"' :icon='go?"av:pause":"av:play-arrow"' @tap="_go()"></oda-button> 
     `,
+    _inTarget(e) {
+        if (!e.data) return
+        let old = this.target
+        if ((47<e.data.charCodeAt())&(e.data.charCodeAt()<58)) e.target.value =  this.target = e.data
+        else  e.target.value =  this.target = old       
+    },
+    _dopTrain(){
+        this.mnist.generation+=1
+        let rez = this.mnist(this.input)
+        let loss = rez.crossEntropy (this.target);
+            // this.loss.push(loss.data[0])
+            // lossArr.push(loss.data[0])
+        loss.back();
+        console.log(rez)
+
+        this.result = rez.data
+
+
+        // this.lastLoss = newLoss.toFixed(4)
+        // this.generation = mnist.generation
+
+
+    },
+    iconFromChar(c) { /// 🗑️✍🏻✒️♻💊✍🏿
+        return /*html*/ `data:image/svg+xml, 
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+                <text y='.9em' x='-8' font-size='90'>${c}</text>
+            </svg>`},
     get rects() {
         return this.input.map((v,i)=> {
             let [x,y] = [i%28, ~~(i/28)].map(a=>a*10+1)
@@ -150,26 +188,41 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
     loss:{
         $def:[]//new Array(20000).fill(0).map(_=> Math.random()*5-2)
     },
+    drawBoll:true,
+    _mouseMove(x,e) {
+        if (!x.buttons) return
+        if (e.v===this.drawBoll) return
+        
+        let idx = Math.floor(e.y/10)*28 + Math.floor(e.x/10)
+        this.input[idx] = this.drawBoll
+        this.result = this.mnist(this.input).data
+
+        // console.log(e.y,e.x ,e.y*28+e.x ,this.input[e.y*28+e.x])
+    },
 
     mnist: new MNIST(),
     getTrain:getTrain,
 
     step() {
         let dat = this.getTrain(undefined, 1)
+        let mnist = this.mnist
         
         let loss, rez, lossArr=[];
         for (let i=0; i<dat.inputs.length; i++) {
-            rez = this.mnist(dat.inputs[i])
+            mnist.generation+=1
+            rez = mnist(dat.inputs[i])
             loss = rez.crossEntropy (dat.targets[i]);
             // this.loss.push(loss.data[0])
             lossArr.push(loss.data[0])
             loss.back();
         }
         this.input = dat.inputs.last
+        this.target = dat.targets.last.reduce((a,b,i,c)=>c[a]>b?a:i,0)
         this.result = rez.data
         let newLoss = lossArr.reduce((a,c)=>a+c)/lossArr.length
         this.loss.push(newLoss)
         this.lastLoss = newLoss.toFixed(4)
+        this.generation = mnist.generation
 
     },
     steps(){
@@ -180,8 +233,8 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         }, 100)
     },
     lastLoss:'',
-
-
+    generation:0,
+    target:'',
 })
 
 
