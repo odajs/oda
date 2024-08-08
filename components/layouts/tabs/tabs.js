@@ -43,7 +43,7 @@ ODA({
     <div id="container" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
         <div
             ~for="items"
-            class="tab"
+            class="tab raised"
             ~class="{accent: index === $for.index, 'fixed-tab': !!$for.item.fixed}"
             ~style="{transform: direction === 'vertical' && $for.item.label ? 'rotate(180deg)' : 'none', order: $for.item.order || 0}"
         >

@@ -1203,9 +1203,9 @@ tensor.einsum = (in_expr, sources = [])=>{
 
         let data_idx = (outs.length)?`[++idx]`:'';
         inputs.map((t, i) => {
-
             let expr = ''
             if(t.length){
+
                 expr += `v${i} = t${i}[`;
                 let m = ''
                 for (let o of t.toReversed()){
@@ -1288,7 +1288,7 @@ tensor.einsum = (in_expr, sources = [])=>{
                 const t = tensors[i];
                 if (t.dType !== BinaryArray){
                     if (func_key)
-                        return `t${i}[\${idx${i}}]`;
+                        return `t${i}[\${idx${i}]`;
                     return 'v'+i;
                 }
 
@@ -1343,7 +1343,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
         if (func_key)
-            fwd_expr += 'return out;'
+            fwd_expr += '\nreturn out;'
 
 
         fn = new Function('t', 'out', fwd_expr);
