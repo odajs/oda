@@ -1157,7 +1157,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         inputs = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
             term = term.trim();
             const tensor = tensors[i];
-            return term.split('').map((a, j)=>{            // Разделение терма на индексы и их анализ
+            let inp =  term.split('').map((a, j)=>{            // Разделение терма на индексы и их анализ
                 let d =  tensor.shape[j];
                 let ax = axis.find(v => v.a === a);
                 if(ax === undefined){
@@ -1168,6 +1168,8 @@ tensor.einsum = (in_expr, sources = [])=>{
                     throw new Error(`Axis '${a}' == ${ax.d} but on tensor №${i+1} this axis == ${d}`);
                 return ax;
             })
+            inp.t = tensor;
+            return inp;
         });
         outs = expr[1].trim().split('').map(a => {   // Разделение выходного терма на индексы и их анализ
             if(!a) return;
@@ -1220,12 +1222,11 @@ tensor.einsum = (in_expr, sources = [])=>{
             t.idx_expr = expr;
             t.v = 'v' + i;
         })
-        const used_axis = []
-        let last_var = ''
+        let last_input = null
         let out_for = outs.map((o, i) => {
             let axis_name = o.a;
-            let tab = '\t'.repeat(i)
-            let res = tab + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){`;
+            let tabs = '\t'.repeat(i)
+            let res = tabs + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){`;
             let inps = inputs.filter(i=>{
                 return i.some(a => {
                     if (a.a === axis_name){
@@ -1237,8 +1238,14 @@ tensor.einsum = (in_expr, sources = [])=>{
             res += inps.filter(i=>{
                 return i.every(a=>a.used)
             }).map(i=>{
-                let res = '\n\t'+tab+i.idx_expr + (last_var?(' * ' + last_var):'');
-                last_var = i.v;
+                let res = '\n\t'+tabs+i.idx_expr;
+                if(last_input){
+                    // if (last_input.t === i.t)
+                    //     res = '\n\t'+tabs + i.v+' = '+last_input.v;
+                    res +=  ' * ' + last_input.v;
+                }
+
+                last_input = i;
                 return res
             }).join('\n');
             return res
@@ -1268,48 +1275,22 @@ tensor.einsum = (in_expr, sources = [])=>{
                     result += inps.filter(i=>{
                         return i.every(a=>a.used)
                     }).map(i=>{
-                        let res = '\n\t'+tabs+i.idx_expr + (last_var?(' * ' + last_var):'');
-                        last_var = i.v;
+                        let res = '\n\t'+tabs+i.idx_expr;
+                        if(last_input){
+                            // if (last_input.t === i.t)
+                            //     res = '\n\t'+tabs + i.v+' = '+last_input.v;
+                            res +=  ' * ' + last_input.v;
+                        }
+                        last_input = i;
                         return res
                     }).join('\n');
-
 
                     cl++;
                     tab++
                     tabs = out_tabs + '\t'.repeat(tab)
                 }
-                // if(input.idx_expr){
-                //     result += tabs + input.idx_expr + ';\n';
-                //     if (!func_key)
-                //        // result += tabs+`v${i} = 't${i}[\${idx${i}}]';\n`;
-                //   //  else
-                //         result += tabs+`v${i} = t${i}[idx${i}];\n`;
-                // }
-                // else if (!func_key){
-                //
-                //         // result += tabs+`v${i} = 't$\${{i}}';\n`;
-                //   //  else
-                //         result += tabs+`v${i} = t${i};\n`;
-                // }
-
             })
             const has_bins = tensors.some(t=>t.dType === BinaryArray)
-            // let mult = inputs.map((_,i)=>{
-            //     const t = tensors[i];
-            //     if (t.dType !== BinaryArray){
-            //         if (func_key)
-            //             return `t${i}[\${idx${i}]`;
-            //         return 'v'+i;
-            //     }
-            //
-            // }).filter(l=>l).join(` * `);
-            //
-            // if (mult){
-            //     if (func_key)
-            //         result += '\n'+tabs + 'mult = \` + ' + mult + '\`;\n';
-            //     else
-            //         result += '\n'+tabs + 'mult = ' + mult + ';\n';
-            // }
             if (has_bins){
                 result += tabs + 'sign = (' + inputs.map((_,i)=>{
                     const t = tensors[i];
@@ -1317,12 +1298,12 @@ tensor.einsum = (in_expr, sources = [])=>{
                         return '(v'+i+' - 1)';
                 }).filter(l=>l).join(` + `) + ')&1;\n';
                 // if (mult)
-                    result += tabs + `res += ${last_var};\n`;
+                //     result += tabs + `res += ${last_var};\n`;
                 // else
                 //     result += tabs + 'res += sign?-1:1;\n';
             }
             else{
-                result += '\n' + tabs + `res += ${last_var};\n`;
+                result += '\n' + tabs + `res += ${last_input.v};\n`;
             }
 
 
