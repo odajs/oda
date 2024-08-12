@@ -48,7 +48,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 transform: translate3d(-50%, -50%, 0);
                 pointer-events: none;
                 opacity: .7;
-                fill: violet;
+                fill: violet; 
             }
             .spinner {
                 transform-origin : center;
