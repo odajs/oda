@@ -1147,7 +1147,7 @@ tensor.unpack = (expr, inputs)=>{
 const einsum_funtions = {};
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
-    let func_key = '';//tensors.map(i=>i.shape.toString()).join('-');
+    let func_key = tensors.map(i=>i.shape.toString()).join('-');
     let fn = func_key && einsum_funtions[in_expr + ': ' + func_key];
     let inputs, outs;
     if (!fn){
@@ -1240,8 +1240,6 @@ tensor.einsum = (in_expr, sources = [])=>{
             }).map(i=>{
                 let res = '\n\t'+tabs+i.idx_expr;
                 if(last_input){
-                    // if (last_input.t === i.t)
-                    //     res = '\n\t'+tabs + i.v+' = '+last_input.v;
                     res +=  ' * ' + last_input.v;
                 }
 
@@ -1313,37 +1311,21 @@ tensor.einsum = (in_expr, sources = [])=>{
 
         let body = '';
         body += input_for_func(inputs);
-        if (func_key){
-            body += out_tabs + `out.push(res)`;
-        }
-        else{
-            body += out_tabs + `out${data_idx}`;
-            body += ' = res;';
-        }
+        body += out_tabs + `out${data_idx}`;
+        body += ' = res;';
 
         let fwd_expr = vars + '\n';
         fwd_expr += out_for + '\n'
-        if (func_key) {
-            fwd_expr +=  out_tabs + `let res = \`out[\${++idx}]= 0 \`;`;
-        }
-        else{
-            fwd_expr +=  out_tabs + `let res = 0;`;
-        }
+
+        fwd_expr +=  out_tabs + `let res = 0;`;
 
 
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
-        if (func_key)
-            fwd_expr += '\nreturn out;'
 
 
         fn = new Function('t', 'out', fwd_expr);
-        if (func_key){
-            fwd_expr = fn(tensors, []);
-            fwd_expr = vars + '\n' + fwd_expr.join(';\n')
-            fn = (einsum_funtions[in_expr + ': ' + func_key] = {fn:new Function('t', 'out', fwd_expr), outs, inputs}).fn;
-            fwd_expr = '';
-        }
+        fn = (einsum_funtions[in_expr + ': ' + func_key] = {fn, outs, inputs}).fn;
     }
     else{
         outs = fn.outs;

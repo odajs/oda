@@ -388,11 +388,11 @@ ODA({ is: 'oda-jupyter-divider',
                 height: 3px;
                 justify-content: center;
                 opacity: {{!visible?0:1}};
-                transition: opacity ease-out .1s;
+                /*transition: opacity ease-out .1s;*/
                 position: relative;
             }
             :host(:hover) {
-                opacity: 1;
+                opacity: 1 !important;
             }
             oda-button {
                 font-size: 14px;
