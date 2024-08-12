@@ -39,31 +39,31 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 transition: opacity 1s;
             }
             .loader {
-                width: 5em;
-                height: 5em;
-                position: fixed !important;
+                position: absolute;
+                height: 64px;
+                width: 64px;
                 top: 50%;
                 left: 50%;
-                z-index: 100;
-                transform: translate3d(-50%, -50%, 0);
+                margin-left: -32px;
+                margin-top: -32px;
+                border: 12px solid lightgray;
+                border-radius: 50%;
+                border-top: 12px solid violet;
+                border-bottom: 12px solid violet;
+                animation: spin 1s linear infinite;
                 pointer-events: none;
+                z-index: 9999;
                 opacity: .7;
-                fill: violet; 
             }
-            .spinner {
-                transform-origin : center;
-                animation: key_spinner 1.5s linear infinite;
-            }
-            @keyframes key_spinner { 
-                100% { 
-                    transform: rotate(360deg);
-                }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
         </style>
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
-            <svg ~if="showLoader" class="loader" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g class="spinner"><circle cx="3" cy="12" r="2"/><circle cx="21" cy="12" r="2"/><circle cx="12" cy="21" r="2"/><circle cx="12" cy="3" r="2"/><circle cx="5.64" cy="5.64" r="2"/><circle cx="18.36" cy="18.36" r="2"/><circle cx="5.64" cy="18.36" r="2"/><circle cx="18.36" cy="5.64" r="2"/></g></svg>
+            <div ~if="showLoader" class="loader"></div>
     `,
     cellSelect(item){
         this['selectedCell'] = item;
