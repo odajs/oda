@@ -1197,13 +1197,13 @@ tensor.einsum = (in_expr, sources = [])=>{
             inputs.map((_, i) => `let v${i} = 0;`).join('\n')
         ].join('\n');
         vars += `\nlet mult, sign;`;
-        if (outs.length)
-            vars += `\nlet idx = -1;\n`;
+        // if (outs.length)
+        vars += `\nlet idx = -1;\n`;
 
 
         const out_tabs = '\t'.repeat(outs.length);
 
-        let data_idx = (outs.length)?`[++idx]`:'';
+        // let data_idx = (outs.length)?`[++idx]`:'';
         inputs.map((t, i) => {
             let expr = ''
             if(t.length){
@@ -1311,18 +1311,14 @@ tensor.einsum = (in_expr, sources = [])=>{
 
         let body = '';
         body += input_for_func(inputs);
-        body += out_tabs + `out${data_idx}`;
-        body += ' = res;';
+        body += out_tabs + 'out[++idx]  = res;';
 
         let fwd_expr = vars + '\n';
         fwd_expr += out_for + '\n'
 
-        fwd_expr +=  out_tabs + `let res = 0;`;
-
-
+        fwd_expr +=  out_tabs + 'let res = 0;';
         fwd_expr += '\n' + body + '\n';
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
-
 
         fn = new Function('t', 'out', fwd_expr);
         fn = (einsum_funtions[in_expr + ': ' + func_key] = {fn, outs, inputs}).fn;
@@ -1333,7 +1329,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         fn = fn.fn
     }
 
-    const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):0;
+    const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):1;
     let out = tensor.from(data);
     out._shape(outs.map(i=>i.d));
     out._src(tensors);
