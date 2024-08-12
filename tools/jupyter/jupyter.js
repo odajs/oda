@@ -50,13 +50,20 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: .7;
                 fill: violet;
             }
-
+            .spinner {
+                transform-origin : center;
+                animation: key_spinner 1.5s linear infinite;
+            }
+            @keyframes key_spinner { 
+                100% { 
+                    transform: rotate(360deg);
+                }
+            }
         </style>
-<!--        <div @tap="selectedCell = null" class="flex vertical" style="overflow: auto; border-bottom: 1px dotted gray; padding: 12px 6px 30px 6px;">-->
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
-            <svg ~if="showLoader" class="loader" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_aj0A{transform-origin:center;animation:spinner_KYSC .75s infinite linear}@keyframes spinner_KYSC{100%{transform:rotate(360deg)}}</style><path d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z" class="spinner_aj0A"/></svg>
+            <svg ~if="showLoader" class="loader" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g class="spinner"><circle cx="3" cy="12" r="2"/><circle cx="21" cy="12" r="2"/><circle cx="12" cy="21" r="2"/><circle cx="12" cy="3" r="2"/><circle cx="5.64" cy="5.64" r="2"/><circle cx="18.36" cy="18.36" r="2"/><circle cx="5.64" cy="18.36" r="2"/><circle cx="18.36" cy="5.64" r="2"/></g></svg>
     `,
     cellSelect(item){
         this['selectedCell'] = item;
