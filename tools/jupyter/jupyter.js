@@ -293,7 +293,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 </div>
             </div>
         </div>
-        <oda-jupyter-divider></oda-jupyter-divider>
+        <oda-jupyter-divider style="z-index: 9;"></oda-jupyter-divider>
     `,
     get maxOutputsRow() {
         return this.control.maxRow;
