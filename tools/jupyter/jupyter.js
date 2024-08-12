@@ -25,7 +25,6 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
-import { getLoader } from '/web/oda/components/tools/loader/loader.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
@@ -40,15 +39,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 transition: opacity 1s;
             }
             .loader {
-                width: 10em;
-                height: 10em;
+                width: 5em;
+                height: 5em;
                 position: fixed !important;
                 top: 50%;
                 left: 50%;
                 z-index: 100;
                 transform: translate3d(-50%, -50%, 0);
                 pointer-events: none;
-                opacity: 0.5;
+                opacity: .7;
                 fill: violet;
             }
 
@@ -57,7 +56,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
             <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
             <div style="min-height: 50%"></div>
-            <svg class="loader" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_Wezc{transform-origin:center;animation:spinner_Oiah .75s step-end infinite}@keyframes spinner_Oiah{8.3%{transform:rotate(30deg)}16.6%{transform:rotate(60deg)}25%{transform:rotate(90deg)}33.3%{transform:rotate(120deg)}41.6%{transform:rotate(150deg)}50%{transform:rotate(180deg)}58.3%{transform:rotate(210deg)}66.6%{transform:rotate(240deg)}75%{transform:rotate(270deg)}83.3%{transform:rotate(300deg)}91.6%{transform:rotate(330deg)}100%{transform:rotate(360deg)}}</style><g class="spinner_Wezc"><circle cx="12" cy="2.5" r="1.5" opacity=".14"/><circle cx="16.75" cy="3.77" r="1.5" opacity=".29"/><circle cx="20.23" cy="7.25" r="1.5" opacity=".43"/><circle cx="21.50" cy="12.00" r="1.5" opacity=".57"/><circle cx="20.23" cy="16.75" r="1.5" opacity=".71"/><circle cx="16.75" cy="20.23" r="1.5" opacity=".86"/><circle cx="12" cy="21.5" r="1.5"/></g></svg>
+            <svg ~if="showLoader" class="loader" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_aj0A{transform-origin:center;animation:spinner_KYSC .75s infinite linear}@keyframes spinner_KYSC{100%{transform:rotate(360deg)}}</style><path d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z" class="spinner_aj0A"/></svg>
     `,
     cellSelect(item){
         this['selectedCell'] = item;
@@ -110,9 +109,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         }
     },
     $pdp: {
-        get odaLoader() {
-            return top.document.body.getElementsByTagName('oda-loader')?.[0];
-        },
+        showLoader: false,
         get jupyter() {
             return this;
         },
@@ -176,9 +173,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 if (n && this.readOnly)
                     this.editMode = false;
             }
-        },
-        attached() {
-            if (!this.odaLoader) getLoader();
         }
     },
     scrollToCell(cell = this.selectedCell) {
@@ -929,7 +923,7 @@ class JupyterCell extends ROCKS({
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        jupyter.odaLoader._show = this.isRun = true;
+        jupyter.showLoader = this.isRun = true;
         jupyter.$render();
         this.async(async () => {
             try{
@@ -971,7 +965,7 @@ class JupyterCell extends ROCKS({
             }
             finally {
                 this.async(() =>{
-                    jupyter.odaLoader._show = this.isRun = false;
+                    jupyter.showLoader = this.isRun = false;
                 }, 500)
                 // run_context.output_data = [];
             }
