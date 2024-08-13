@@ -295,24 +295,20 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-            const mean = this.grad.reduce((r, v)=>{
-                return r + v;
-            }) / this.grad.length * tensor.LEARNING_RATE;
+            // const mean = this.grad.reduce((r, v)=>{
+            //     return r + v;
+            // }) / this.grad.length * tensor.LEARNING_RATE;
             for(let i = 0; i<bins.length; i++){
-                let g = this.grad[i] * tensor.LEARNING_RATE;
-                let sign = Math.sign(g)
+                let g = this.grad[i]// * tensor.LEARNING_RATE;
+                // let sign = Math.sign(g)
                 let value = +bins[i];
-                switch (sign){
-                    case 1: //g>0
-                        if(!value && g >= mean && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()))
-                        // if(!value && g >= mean)
-                           value = 1
-                        break;
-                    case -1: //g<0
-                        // if(value &&  -g >= mean && Math.max(0,Math.min(1,(g + 1)/2))>(Math.random()))
-                        // if(value &&  g <= mean)
-                           value = 0
-                        break;
+                if (g>0){
+                    if(!value && Math.max(0,Math.min(1,(g + 1)/2)))
+                        value = 1
+                }
+                else if (g<0){
+                    if(value && Math.max(0,Math.min(1,(g + 1)/2)))
+                        value = 0
                 }
                 val += value;
                 if (val.length === 64){
@@ -1186,17 +1182,20 @@ tensor.einsum = (in_expr, sources = [])=>{
             [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
             inputs.map((_, i) => {
                 const t = tensors[i]
-                let str =  `let dType${i} = ${t.dType.name};\n`;
-                if (t.dType === BinaryArray)
+                let str =  '';//`let dType${i} = ${t.dType.name};\n`;
+                if (t.dType === BinaryArray){
                     str += `let t${i} = t[${i}].bins;`
-                else
-                    str += `let t${i} = t[${i}].data;`
+                    str += `\nlet b${i} = 0;`;
+                }
+                else{
+                    str += `let t${i} = t[${i}].data;`;
+                    str += `\nlet v${i} = 0;`;
+                }
+
                 return str;
             }).join('\n'),
-            inputs.map((_, i) => `let idx${i} = 0;`).join('\n'),
-            inputs.map((_, i) => `let v${i} = 0;`).join('\n')
         ].join('\n');
-        vars += `\nlet mult, sign;`;
+        // vars += `\nlet mult, sign;`;
         // if (outs.length)
         vars += `\nlet idx = -1;\n`;
 
@@ -1207,8 +1206,11 @@ tensor.einsum = (in_expr, sources = [])=>{
         inputs.map((t, i) => {
             let expr = ''
             if(t.length){
-
-                expr += `v${i} = t${i}[`;
+                if (t.t.dType === BinaryArray)
+                    expr += `b${i}`;
+                else
+                    expr += `v${i}`;
+                expr += ` = t${i}[`;
                 let m = ''
                 for (let o of t.toReversed()){
                     if (m)
@@ -1220,10 +1222,14 @@ tensor.einsum = (in_expr, sources = [])=>{
                 expr+=']'
             }
             t.idx_expr = expr;
-            t.v = 'v' + i;
+            if (t.t.dType === BinaryArray)
+                t.v = `b${i}`;
+            else
+                t.v = `v${i}`;
         })
         let last_input = null
         let prev_v = [];
+        let prev_b = [];
         let out_for = outs.map((o, i) => {
             let axis_name = o.a;
             let tabs = '\t'.repeat(i)
@@ -1245,7 +1251,10 @@ tensor.einsum = (in_expr, sources = [])=>{
                 else
                     res += i.idx_expr;
                 last_input = i;
-                prev_v.push(i.v)
+                if (i.t.dType === BinaryArray)
+                    prev_b.push(i.v)
+                else
+                    prev_v.push(i.v)
                 return res + ';'
             }).join('\n');
             if (prev_v.length>1){
@@ -1253,7 +1262,12 @@ tensor.einsum = (in_expr, sources = [])=>{
                 res += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
                 prev_v = [v]
             }
-            return res
+            if (prev_b.length>1){
+                let b = prev_b.last;
+                result += '\n\t'+tabs + b + ` = (${prev_b.join(' + ')} - ${prev_b.length})&1;`;
+                prev_b = [b]
+            }
+            return res;
         }).join('\n')+'\n'
         const input_for_func = function (ts){
             const uses = outs.map(o => o.a);
@@ -1285,7 +1299,10 @@ tensor.einsum = (in_expr, sources = [])=>{
                             res += `${i.v} = ${last_input.v}`;
                         else
                             res += i.idx_expr;
-                        prev_v.push(i.v)
+                        if (i.t.dType === BinaryArray)
+                            prev_b.push(i.v)
+                        else
+                            prev_v.push(i.v)
                         last_input = i;
                         return res + ';'
                     }).join('\n');
@@ -1294,25 +1311,34 @@ tensor.einsum = (in_expr, sources = [])=>{
                         result += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
                         prev_v = [v]
                     }
+                    if (prev_b.length>1){
+                        let b = prev_b.last;
+                        result += '\n\t'+tabs + b + ` = (${prev_b.join(' + ')} - ${prev_b.length})&1;`;
+                        prev_b = [b]
+                    }
                     cl++;
                     tab++
                     tabs = out_tabs + '\t'.repeat(tab)
                 }
             })
             const has_bins = tensors.some(t=>t.dType === BinaryArray)
+            result += '\n';
             if (has_bins){
-                result += tabs + 'sign = (' + inputs.map((_,i)=>{
-                    const t = tensors[i];
-                    if (t.dType === BinaryArray)
-                        return '(v'+i+' - 1)';
-                }).filter(l=>l).join(` + `) + ')&1;\n';
-                // if (mult)
-                //     result += tabs + `res += ${last_var};\n`;
-                // else
-                //     result += tabs + 'res += sign?-1:1;\n';
+                // result += '\n' + tabs + 'sign = (' + inputs.map((_,i)=>{
+                //     const t = tensors[i];
+                //     if (t.dType === BinaryArray)
+                //         return '(v'+i+' - 1)';
+                // }).filter(l=>l).join(` + `) + ')&1;\n';
+                let b = prev_b.pop();
+                if (prev_v.length){
+                    let v = prev_v.pop();
+                    result += tabs + `res += ${b}?${v}:-${v};\n`;
+                }
+                else
+                    result += tabs + `res += ${b}?1:-1;\n`;
             }
             else{
-                result += '\n' + tabs + `res += ${last_input.v};\n`;
+                result += tabs + `res += ${last_input.v};\n`;
             }
 
 
