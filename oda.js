@@ -475,13 +475,15 @@ if (!window.ODA?.IsReady) {
             this[CORE_KEY].loaded ??={};
             this[CORE_KEY].loaded[key] = true;
             const value = ODA.LocalStorage.create(this.$savePath).getItem(key);
-            if (value && typeof value === 'object') {
-                if (Array.isArray(value)) {
-                    return Array.from(value);
-                }
-                return { ...value };
+            switch (value?.constructor) {
+                case Object: return {...value};
+                case Array: return [...value];
+                case Date:
+                case Number:
+                case String:
+                case Boolean:
+                default: return value;
             }
-            return value;
         }
         $savePropValue(key, value){
             if (!this[CORE_KEY].loaded?.[key]) return;
