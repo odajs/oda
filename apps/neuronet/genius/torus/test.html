@@ -23,7 +23,7 @@
         let t0 = tensor.arange([_x, _k, _m]);
         let t1 = tensor.arange([_y, _x]);
         let t2 = tensor.arange([_z, _y]);
-        let out = tensor.einsum('xkm, yx, zy, xkm->', [t0, t1, t2, t0])
+        let out = tensor.einsum('xkm, yx, zy, xkm->xym', [t0, t1, t2, t0])
         t0 = t0.data;
         t1 = t1.data;
         t2 = t2.data;
