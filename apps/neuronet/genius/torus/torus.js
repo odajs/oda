@@ -1330,18 +1330,13 @@ tensor.einsum = (in_expr, sources = [])=>{
             const has_bins = tensors.some(t=>t.dType === BinaryArray)
             result += '\n';
             if (has_bins){
-                // result += '\n' + tabs + 'sign = (' + inputs.map((_,i)=>{
-                //     const t = tensors[i];
-                //     if (t.dType === BinaryArray)
-                //         return '(v'+i+' - 1)';
-                // }).filter(l=>l).join(` + `) + ')&1;\n';
                 let b = prev_b.pop();
                 if (prev_v.length){
                     let v = prev_v.pop();
-                    result += tabs + `res += ${b}?${v}:-${v};\n`;
+                    result += tabs + `res += +${b}?${v}:-${v};\n`;
                 }
                 else
-                    result += tabs + `res += ${b}?1:-1;\n`;
+                    result += tabs + `res += +${b}?1:-1;\n`;
             }
             else{
                 result += tabs + `res += ${last_input.v};\n`;
