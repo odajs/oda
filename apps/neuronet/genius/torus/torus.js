@@ -295,27 +295,30 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-            const rand = Math.random();
+            // const rand = Math.random();
             for(let i = 0; i<bins.length; i++){
                 let g = this.grad[i]// * tensor.LEARNING_RATE;
                 // let sign = Math.sign(g)
-                let value = +bins[i];
-                if (g>0){
-
-                    if(!value){
-                        let hsigm = Math.max(0,Math.min(1,(g + 1)/2))
-                        if (hsigm>rand)
-                            value = 1
-                    }
-
-                }
-                else if (g<0){
-                    if(value){
-                        let hsigm = Math.max(0,Math.min(1,(-g + 1)/2))
-                        if (hsigm>rand)
-                            value = 0
-                    }
-                }
+                let value = +bins[i]-.5
+                let hsigm = Math.max(0,Math.min(1,(g + 1)/2)) - .5;
+                value += hsigm;
+                value = value>0?1:0;
+                // if (g>0){
+                //
+                //     if(!value){
+                //         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
+                //         if (hsigm>Math.random())
+                //             value = 1
+                //     }
+                //
+                // }
+                // else if (g<0){
+                //     if(value){
+                //         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
+                //         if (hsigm>Math.random())
+                //             value = 0
+                //     }
+                // }
                 val += value;
                 if (val.length === 64){
                     this.data[idx] = BigInt('0b'+val);
