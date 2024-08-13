@@ -1223,10 +1223,11 @@ tensor.einsum = (in_expr, sources = [])=>{
             t.v = 'v' + i;
         })
         let last_input = null
+        let prev_v = [];
         let out_for = outs.map((o, i) => {
             let axis_name = o.a;
             let tabs = '\t'.repeat(i)
-            let res = tabs + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){`;
+            let res = tabs + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){\n`;
             let inps = inputs.filter(i=>{
                 return i.some(a => {
                     if (a.a === axis_name){
@@ -1238,14 +1239,20 @@ tensor.einsum = (in_expr, sources = [])=>{
             res += inps.filter(i=>{
                 return i.every(a=>a.used)
             }).map(i=>{
-                let res = '\n\t'+tabs+i.idx_expr;
-                if(last_input){
-                    res +=  ' * ' + last_input.v;
-                }
-
+                let res = '\t'+tabs;
+                if (last_input?.t === i?.t)
+                    res += `${i.v} = ${last_input.v}`;
+                else
+                    res += i.idx_expr;
                 last_input = i;
-                return res
+                prev_v.push(i.v)
+                return res + ';'
             }).join('\n');
+            if (prev_v.length>1){
+                let v = prev_v.pop();
+                res += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
+                prev_v = [v]
+            }
             return res
         }).join('\n')+'\n'
         const input_for_func = function (ts){
@@ -1273,16 +1280,20 @@ tensor.einsum = (in_expr, sources = [])=>{
                     result += inps.filter(i=>{
                         return i.every(a=>a.used)
                     }).map(i=>{
-                        let res = '\n\t'+tabs+i.idx_expr;
-                        if(last_input){
-                            // if (last_input.t === i.t)
-                            //     res = '\n\t'+tabs + i.v+' = '+last_input.v;
-                            res +=  ' * ' + last_input.v;
-                        }
+                        let res = '\t'+tabs;
+                        if (last_input?.t === i?.t)
+                            res += `${i.v} = ${last_input.v}`;
+                        else
+                            res += i.idx_expr;
+                        prev_v.push(i.v)
                         last_input = i;
-                        return res
+                        return res + ';'
                     }).join('\n');
-
+                    if (prev_v.length>1){
+                        let v = prev_v.pop();
+                        result += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
+                        prev_v = [v]
+                    }
                     cl++;
                     tab++
                     tabs = out_tabs + '\t'.repeat(tab)
@@ -1314,7 +1325,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         body += out_tabs + 'out[++idx]  = res;';
 
         let fwd_expr = vars + '\n';
-        fwd_expr += out_for + '\n'
+        fwd_expr += out_for;
 
         fwd_expr +=  out_tabs + 'let res = 0;';
         fwd_expr += '\n' + body + '\n';
