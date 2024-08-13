@@ -303,7 +303,7 @@ export class tensor{
                 if (g>0){
                     if(!value){
                         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm>rand)
+                        if (hsigm<rand)
                             value = 1
                     }
 
