@@ -293,7 +293,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 </div>
             </div>
         </div>
-        <oda-jupyter-divider style="z-index: 9;"></oda-jupyter-divider>
+        <oda-jupyter-divider></oda-jupyter-divider>
     `,
     get maxOutputsRow() {
         return this.control.maxRow;
@@ -404,7 +404,7 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: 1;
             }
         </style>
-        <div class="horizontal center" style="z-index: 1">
+        <div class="horizontal center" style="z-index: 2">
             <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 1px dashed;"></div>
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
