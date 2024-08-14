@@ -1,3 +1,18 @@
+interface Table extends odaComponent {
+    table: Table;
+    $height: number;
+    rowHeight: number;
+    $scrollTop: number;
+    disallowFocusOnPointer: boolean;
+    allowSelection: 'all' | 'level' | 'type' | 'none';
+    selectedRows: TableRow[];
+    headerColumns: TableColumn[];
+
+    focusRow(e: MouseEvent): void;
+}
+
+interface TableRow { }
+
 interface TableColumn {
     name: string;
     id?: string;

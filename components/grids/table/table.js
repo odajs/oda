@@ -21,6 +21,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         tabindex: 0
     },
     overHeight: false,
+    /**
+     * @this {Table}
+     * @param {MouseEvent & {path: (HTMLElement & {row: TableRow})[]}} e
+     */
     onDblClick(e) {
         const el = e.path.find(p => p.row);
         if (el) {
@@ -40,14 +44,17 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     //     //     { parent, align: 'left', minHeight: '100%', title: 'Settings', hideCancelButton: true }
     //     // );
     // },
+    /** @this {Table} */
     get storage() {
         return ODA.LocalStorage.create(this.$savePath);
     },
+    /** @this {Table} */
     get screenFrom() {
         return Math.round(this.$scrollTop / this.rowHeight);
     },
     screenLength: {
         $pdp: true,
+        /** @this {Table} */
         get() {
             return (Math.round(this.$height / this.rowHeight) || 0) + 1;
         },
@@ -55,7 +62,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     columns: [],
     dataSet: [],
     focusedCellEnd: {},
-
+    /** @this {Table} */
     get _fixWidth() {
         return this.headerColumns.filter(i => {
             return i.fix;
@@ -988,6 +995,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.selectedRows.clear();
         this.addSelection(item);
     },
+    /**@this {Table} */
     addSelection(item) {
         if (!item || item.__group__ || item.$allowSelection === false) return;
         switch (this.allowSelection) {
