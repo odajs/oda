@@ -297,7 +297,7 @@ export class tensor{
             let val = '';
             const rand = Math.random();
             for(let i = 0; i<bins.length; i++){
-                let g = this.grad[i]// * tensor.LEARNING_RATE;
+                let g = this.grad[i] //* tensor.LEARNING_RATE;
                 // let sign = Math.sign(g)
                 let value = +bins[i];
                 if (g>0){
@@ -311,7 +311,7 @@ export class tensor{
                 else if (g<0){
                     if(value){
                         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm>rand)
+                        if (hsigm<rand)
                             value = 0
                     }
                 }
