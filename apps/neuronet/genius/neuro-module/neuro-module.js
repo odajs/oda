@@ -148,10 +148,7 @@ export class Linear extends NeuroModule{
     }
     forward(x){
         x=tensor.from(x)
-        let axis = ''
-        if (x.shape.length>1){
-            axis = Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join('')
-        }
+        let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
         x = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.W]);
         if (this.bias)
             x = x.plus(this.B);
@@ -159,16 +156,20 @@ export class Linear extends NeuroModule{
     }
 }
 export class BinLayer extends NeuroModule{
-    constructor(dim_in,  dim_out) {
+    constructor(dim_in,  dim_out, bias = false) {
         super(arguments);
     }
     __init__(){
         this.WEIGHTS = tensor.param(tensor.rand([this.dim_in, this.dim_out], BinaryArray));
+        if (this.bias)
+            this.BIAS = tensor.param(tensor.rand([this.dim_out], BinaryArray));
     }
     forward(x) {
         x = tensor.from(x);
-        const out = tensor.einsum('x, xy->y', [x, this.WEIGHTS]);
-        // out._src(x, this.WEIGHTS)._label(this.constructor.name + ` (${this.dim_in} x ${this.dim_out})`);
+        let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
+        let out = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.WEIGHTS]);
+        if (this.bias)
+            out = out.plus(this.BIAS);
         return out;
     }
 }
