@@ -25,6 +25,7 @@ window.err = console.error = (...e) => {
 }
 window.run_context = run_context;
 
+import { getLoader } from '../../components/tools/loader/loader.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
@@ -38,32 +39,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: 0;
                 transition: opacity 1s;
             }
-            .loader {
-                position: absolute;
-                height: 64px;
-                width: 64px;
-                top: 50%;
-                left: 50%;
-                margin-left: -32px;
-                margin-top: -32px;
-                border: 12px solid lightgray;
-                border-radius: 50%;
-                border-top: 12px solid violet;
-                border-bottom: 12px solid violet;
-                animation: spin 1s linear infinite;
-                pointer-events: none;
-                z-index: 9999;
-                opacity: .7;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
         </style>
-            <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-            <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
-            <div style="min-height: 50%"></div>
-            <div ~if="showLoader" class="loader"></div>
+        <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
+        <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <div style="min-height: 50%"></div>
     `,
     cellSelect(item){
         this['selectedCell'] = item;
@@ -188,6 +167,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
         cellElement.scrollIntoView();
+    },
+    async attached() {
+        this.loader = await getLoader();
     }
 })
 
@@ -930,7 +912,8 @@ class JupyterCell extends ROCKS({
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        jupyter.showLoader = this.isRun = true;
+        jupyter.loader.addTask({ id: 'jupyterIsRun' });
+        this.isRun = true;
         jupyter.$render();
         this.async(async () => {
             try{
@@ -972,7 +955,8 @@ class JupyterCell extends ROCKS({
             }
             finally {
                 this.async(() =>{
-                    jupyter.showLoader = this.isRun = false;
+                    this.isRun = false;
+                    jupyter.loader.removeTask({ id: 'jupyterIsRun' });
                 }, 500)
                 // run_context.output_data = [];
             }

@@ -900,18 +900,32 @@ tensor.prototype.silu = function (storage_tensor) {
 }
 
 tensor.prototype.softmax = function (){
-    const exps = this.data.map(Math.exp)
-    const exp = exps.reduce((r, v) => r + v);
-    const data = exps.map(x=>  x/exp);
+    const step = this.shape[this.shape.length-1];
+    const size = this.size/step;
+    const exps = this.data.map(Math.exp);
+    const data = new Float32Array(this.size);
+    for (let x = 0; x<size; x++){
+        let sum = 0;
+        for (let y = 0; y<step; y++){
+            sum += exps[y + step * x];
+        }
+        for (let y = 0; y<step; y++){
+            let idx = y + step * x;
+            data[idx] = exps[idx]/sum;
+        }
+    }
     const out =  tensor.from(data)._src(this)._label('softmax')._shape(this);
     out._back = ()=>{
-        for(let i = 0; i<data.length; i++){
-            let d = data[i];
-            let sum = data.reduce((r, sj, j)=>{
-                let v = (i === j) ?d * (1 - d): -d * sj;
-                return r + v
-            })
-            this.grad[i] += sum * out.grad[i] / tensor.GRADIENT_DIVIDER;
+        for (let x = 0; x<size; x++) {
+            for (let y = 0; y < step; y++) {
+                let idx = y + step * x;
+                let d = data[idx];
+                let sum = data.reduce((r, sj, j) => {
+                    let v = (y === j) ? d * (1 - d) : -d * sj;
+                    return r + v
+                })
+                this.grad[idx] += sum * out.grad[idx] / tensor.GRADIENT_DIVIDER;
+            }
         }
     }
     return out;
@@ -936,6 +950,10 @@ tensor.prototype.MSE = function (target){
 
 tensor.prototype.crossEntropy = function (target) {
     let y = target.data ?? target;
+
+    const step = this.shape.last;
+    const size = this.size/step;
+
     let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
     error /= this.size  // todo дополнительные измерения
     const out = tensor.from([error])._src(this)._label('crossEntropy');
