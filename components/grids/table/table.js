@@ -1725,6 +1725,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     $listeners: {
         resize(e) {
             this.setScreen();
+            this.scrollBoxWidth = undefined;
         },
         scroll(e) {
             this.setScreen();
