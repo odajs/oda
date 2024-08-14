@@ -912,7 +912,8 @@ class JupyterCell extends ROCKS({
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        ODA.top.__loader.addTask({ id: 'jupyterIsRun' });
+        const taskID = getID();
+        ODA.top.__loader.addTask({ id: taskID });
         this.isRun = true;
         jupyter.$render();
         this.async(async () => {
@@ -956,7 +957,7 @@ class JupyterCell extends ROCKS({
             finally {
                 this.async(() =>{
                     this.isRun = false;
-                    ODA.top.__loader.removeTask({ id: 'jupyterIsRun' });
+                    ODA.top.__loader.removeTask({ id: taskID });
                 }, 500)
                 // run_context.output_data = [];
             }

@@ -6,8 +6,8 @@ ODA({
         :host{
             visibility: {{_show ? 'visible' : 'hidden'}};
             position: fixed !important;
-            top: 50%;
-            left: 50%;
+            top: calc(50% - {{iconSize/2}}px);
+            left: calc(50% - {{iconSize/2}}px);
             z-index: 100;
             transform: translate3d(-50%, -50%, 0);
             pointer-events: none;
