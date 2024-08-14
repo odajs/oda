@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>loader</title>
+</head>
+<style>
+    *{
+        font-size: 2em;
+    }
+</style>
+<body style="background-color: gray;">
+    <input id="input" type="number" value="1000">
+    <button id="btn">run</button>
+    <script type="module">
+        import '../../../oda.js';
+        import { getLoader } from './loader.js';
+
+        const loader = await getLoader();
+        btn.onclick = async () => {
+            if (btn.hasAttribute('disabled')) return;
+            setRun()
+            const count = Number(input.value);
+            const task = {id: Math.random().toString().slice(2)};
+
+            loader.addTask(task);
+
+            setTimeout(() => {
+                for (let i = 0; i < count; i++) {
+                    for (let j = 0; j < count; j++) {
+                        let x = i ** j;
+                    }
+                }
+
+                loader.removeTask(task);
+
+                setStop()
+            }, 100);
+        }
+        function setRun(){
+            btn.setAttribute('disabled', '');
+            input.setAttribute('disabled', '');
+        }
+        function setStop(){
+            btn.removeAttribute('disabled');
+            input.removeAttribute('disabled');
+        }
+
+    </script>
+</body>
+
+</html>

@@ -12,13 +12,18 @@ ODA({
             transform: translate3d(-50%, -50%, 0);
             pointer-events: none;
             opacity: 0.5;
+            animation: spin 1.5s linear infinite;
         }
+        @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
         {{''}}
     </style>
     `,
     $wake: true,
     iconSize: 64,
-    icon: 'odant:spin',
+    icon: 'icons:settings',
     fill: 'var(--info-color)',
     tasks: {
         $def: [],
@@ -31,15 +36,14 @@ ODA({
                     this._tasksChanged();
                 }, this.delay);
             }
-            this.debounce('set-tasks-debounce', () => {
-                this._tasksChanged();
-            }, 5 * this.delay);
+            this._tasksChanged();
         }
     },
     _show: false,
-    delay: 1000,
+    delay: 300,
     addTask(task) {
         if (!task) return;
+        if (this.tasks.some(t => t.id === task.id)) return;
         this.tasks.push(task)
         this.tasks = [...this.tasks];
     },
