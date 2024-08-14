@@ -58,14 +58,27 @@ ODA({
         this.$render();
     }
 });
-let loader;
+let loaderPromise;
 export async function getLoader() {
-    if (loader) return loader;
-    await ODA.waitReg('oda-loader');
-    loader = document.body.querySelector('oda-loader');
-    if (!loader) {
-        loader = document.createElement('oda-loader');
-        document.body.appendChild(loader);
-    }
-    return loader;
+    if (ODA.top.__loader) return ODA.top.__loader;
+    return loaderPromise ??= new Promise(async (resolve, reject) => {
+        if (window === ODA.top) {
+            try {
+                await ODA.waitReg('oda-loader');
+                ODA.top.__loader = ODA.top.document.body.querySelector('oda-loader');
+                if (!ODA.top.__loader) {
+                    ODA.top.__loader = ODA.top.document.createElement('oda-loader');
+                    ODA.top.document.body.appendChild(ODA.top.__loader);
+                }
+                resolve(ODA.top.__loader);
+            }
+            catch (err) {
+                console.error('Error on get loader: ', err);
+                reject(err);
+            }
+        }
+        else {
+            return ODA.top.__loader;
+        }
+    })
 }

@@ -169,7 +169,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         cellElement.scrollIntoView();
     },
     async attached() {
-        this.loader = await getLoader();
+        await getLoader();
     }
 })
 
@@ -912,7 +912,7 @@ class JupyterCell extends ROCKS({
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        jupyter.loader.addTask({ id: 'jupyterIsRun' });
+        ODA.top.__loader.addTask({ id: 'jupyterIsRun' });
         this.isRun = true;
         jupyter.$render();
         this.async(async () => {
@@ -956,7 +956,7 @@ class JupyterCell extends ROCKS({
             finally {
                 this.async(() =>{
                     this.isRun = false;
-                    jupyter.loader.removeTask({ id: 'jupyterIsRun' });
+                    ODA.top.__loader.removeTask({ id: 'jupyterIsRun' });
                 }, 500)
                 // run_context.output_data = [];
             }

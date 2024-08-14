@@ -8,15 +8,25 @@
 </head>
 <style>
     *{
-        font-size: 2em;
+        font-size: 150%;
     }
 </style>
 <body style="background-color: gray;">
-    <input id="input" type="number" value="1000">
-    <button id="btn">run</button>
+    <div style="height: 50%;" class="vertical">
+        <input id="input" type="number" value="1000">
+        <button id="btn">run</button>
+        <div style="height: 100px;"></div>
+    </div>
     <script type="module">
         import '../../../oda.js';
         import { getLoader } from './loader.js';
+
+        if(window.top === window){
+            const frame = document.createElement('iframe');
+            frame.style.setProperty('height', '50%');
+            frame.src = './index.html';
+            document.body.appendChild(frame);
+        }
 
         const loader = await getLoader();
         btn.onclick = async () => {

@@ -930,6 +930,40 @@ tensor.prototype.softmax = function (){
     }
     return out;
 }
+tensor.prototype.hardmax = function (){
+    const step = this.shape[this.shape.length-1];
+    const size = this.size/step;
+    const data = new Float32Array(this.size);
+    for (let x = 0; x<size; x++){
+        let max = undefined;
+        let idx;
+        for (let y = 0; y<step; y++){
+            let v = this.data[y + step * x];
+            if (max === undefined || max < v){
+                idx = y
+                max = v;
+            }
+        }
+        for (let y = 0; y<step; y++){
+            data[y + step * x] = (idx === y)?1:0;
+        }
+    }
+    const out =  tensor.from(data)._src(this)._label('hardmax')._shape(this);
+    // out._back = ()=>{
+    //     for (let x = 0; x<size; x++) {
+    //         for (let y = 0; y < step; y++) {
+    //             let idx = y + step * x;
+    //             let d = data[idx];
+    //             let sum = data.reduce((r, sj, j) => {
+    //                 let v = (y === j) ? d * (1 - d) : -d * sj;
+    //                 return r + v
+    //             })
+    //             this.grad[idx] += sum * out.grad[idx] / tensor.GRADIENT_DIVIDER;
+    //         }
+    //     }
+    // }
+    return out;
+}
 tensor.prototype.MSE = function (target){
     let y = target.data ?? target;
     let loss = 0;
