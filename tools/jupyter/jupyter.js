@@ -627,8 +627,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         await this.cell.run(this.jupyter);
         this.async(() => {
             this.jupyter.$$('oda-jupyter-cell').map(i => {
-                if (i.control.previewMode === 'iframe') {
-                    i.control.setIframe();
+                if (i.control.cell.type === 'html') {
+                    i.control.refreshPreview();
                 }
             })
         }, 500)
