@@ -92,7 +92,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
     refreshPreview() {
         if (this.previewMode === 'html') {
             let value = this.value;
-            this.value = ' ';
+            this.value = this.value + ' ';
             this.async(() => {
                 this.value = value;
             }, 100)

@@ -615,33 +615,34 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         const taskID = getID();
         ODA.top.__loader.addTask({ id: taskID });
-        await this.$render();
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
-        try {
-            for (let code of this.notebook.codes){
-                if (code === this.cell) break;
-                if (code.status) continue;
-                await new Promise(async (resolve)=>{
-                    await code.run(this.jupyter);
-                    this.async(resolve)
-                })
-                await this.$render();
+        this.async(async () => {
+            try {
+                for (let code of this.notebook.codes){
+                    if (code === this.cell) break;
+                    if (code.status) continue;
+                    await new Promise(async (resolve)=>{
+                        await code.run(this.jupyter);
+                        this.async(resolve)
+                    })
+                    await this.$render();
+                }
+                await this.cell.run(this.jupyter);
+                this.async(() => {
+                    this.jupyter.$$('oda-jupyter-cell').map(i => {
+                        if (i.control.cell.type === 'html') {
+                            i.control.refreshPreview();
+                        }
+                    })
+                }, 500)
+                this.focus();
+            } catch (error) {
+                
+            } finally {
+                ODA.top.__loader.removeTask({ id: taskID });
             }
-            await this.cell.run(this.jupyter);
-            this.async(() => {
-                this.jupyter.$$('oda-jupyter-cell').map(i => {
-                    if (i.control.cell.type === 'html') {
-                        i.control.refreshPreview();
-                    }
-                })
-            }, 500)
-            this.focus();
-        } catch (error) {
-            
-        } finally {
-            ODA.top.__loader.removeTask({ id: taskID });
-        }
+        }, 50)
 
     },
     $public:{

@@ -1,6 +1,6 @@
 ﻿Модификатор **$type** используется для явного указания типа свойства.
 
-Например:
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -20,15 +20,17 @@
 
     let myObject = new myClass();
     let button = document.getElementById("button");
-    button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+    button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     button.onclick = function() {
         ++myObject.counter;
-        button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+        button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     }
 </script>
 ```
 
 Если тип свойства можно однозначно определить по его начальному значению, то модификатор **$type** можно не указывать. В этом случае он будет задан автоматически.
+
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -47,10 +49,10 @@
 
     let myObject = new myClass();
     let button = document.getElementById("button");
-    button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+    button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     button.onclick = function() {
         ++myObject.counter;
-        button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+        button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     }
 </script>
 ```
@@ -58,6 +60,8 @@
 В этом примере начальное значение **0** позволяет однозначно отнести свойство **counter** к типу **Number**, поэтому модификатор **$type** был опущен.
 
 При использовании сокращенной формы записи тип свойства также определяется автоматически по начальному значению.
+
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -74,10 +78,10 @@
 
     let myObject = new myClass();
     let button = document.getElementById("button");
-    button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+    button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     button.onclick = function() {
         ++myObject.counter;
-        button.innerText = "Счетчик: " + myObject.counter + " Тип:" + typeof myObject.counter;
+        button.innerText = "Счетчик: " + myObject.counter + " — Тип: " + typeof myObject.counter;
     }
 </script>
 ```
@@ -87,6 +91,8 @@
 Модификатор **$type** имеет более высокий приоритет по сравнению с типом начального значения свойства.
 
 Например, если у свойства указать начальное значение с типом, отличающимся от типа, указанного в модификаторе **$type**, то это значение сначала будет приведено к указанному типу, а только затем присвоено самому свойству.
+
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -106,7 +112,7 @@
 
     let myObject = new myClass();
     let div = document.getElementById("div");
-    div.innerText = "Значение: " + myObject.victoryDay + " Тип:" + myObject.victoryDay.constructor.name;
+    div.innerText = "Значение: " + myObject.victoryDay + " — Тип: " + myObject.victoryDay.constructor.name;
 </script>
 ```
 
@@ -134,17 +140,19 @@
 
     let myObject = new myClass();
     let button = document.getElementById("button");
-    button.innerText = "Значение: " + myObject.digit + " Тип:" + typeof myObject.digit;
+    button.innerText = "Значение: " + myObject.digit + " — Тип: " + typeof myObject.digit;
     button.onclick = function() {
-        myObject.digit = myObject.digit === 1 ? "Это строка" : "1";
-        button.innerText = "Значение: " + myObject.digit + " Тип:" + typeof myObject.digit;
+        myObject.digit = myObject.digit === 1 ? "Это строка" : 1;
+        button.innerText = "Значение: " + myObject.digit + " — Тип: " + typeof myObject.digit;
     }
 </script>
 ```
 
-В этом примере у свойства **digit** явно задан тип **Number**. В обработчике нажатия кнопки этому свойству присваивается константа строкового типа **'Это строка'**, но из-за статической типизации эта константа перед присвоением будет автоматически преобразована к типу **Number** со значением **NaN**.
+В этом примере у свойства **digit** явно задан тип **Number**. В обработчике нажатия кнопки этому свойству присваивается константа строкового типа **"Это строка"**, но из-за статической типизации эта константа перед присвоением будет автоматически преобразована к типу **Number** со значением **NaN**.
 
 Помимо типов: **Number**, **String**, **Boolean**, **Date** и **BigInt** в модификаторе **$type** можно указать любые другие типы, предусмотренные в языке JavaScript. Однако в этом случае механизм статической типизации для них работать уже не будет.
+
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -164,10 +172,10 @@
 
     let myObject = new myClass();
     let button = document.getElementById("button");
-    button.innerText = "Значение: " + myObject.collection + " Тип:" + myObject.collection.constructor.name;
+    button.innerText = "Значение: " + myObject.collection + " — Тип: " + myObject.collection.constructor.name;
     button.onclick = function() {
         myObject.collection = myObject.collection !== "Это строка" ? "Это строка" : ['Это массив'];
-        button.innerText = "Значение: " + myObject.collection + " Тип:" + myObject.collection.constructor.name;
+        button.innerText = "Значение: " + myObject.collection + " — Тип: " + myObject.collection.constructor.name;
     } 
 </script>
 ```
@@ -177,6 +185,8 @@
 Такой механизм работы со свойствами получил название динамической типизации, так как тип свойства изменяется динамически при каждом присвоении ему значения другого типа.
 
 Статическую типизацию принципиально нельзя задать у свойства с несколькими альтернативными типами.
+
+Например,
 
 ```html run_edit_h=40_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -212,11 +222,78 @@
 
 В данном примере у свойства **victoryDay** директивой **$type** заданы два альтернативных типа **Number** и **String**, относящиеся к статической типизации. По нажатию кнопки этому свойству поочередно присваиваются значения указанных типов и типа **Date**. Из примера видно, что свойство **victoryDay** изменяет свой тип в зависимости от последнего присвоенного значения включая тип **Date**, хотя его нет в списке альтернативных типов. Это значит, что при попытке объявления альтернативных типов свойство автоматически получает динамическую типизацию.
 
+По умолчанию свойства объектов имеют динамическую типизацию.
+
+Например,
+
+```html run_edit_h=40_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<button id="button"></button>
+<script type="module">
+    class myClass extends ROCKS({
+        test: {
+            digit: 1
+        }
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let button = document.getElementById("button");
+    button.innerText = "Значение: " + myObject.test.digit + " — Тип: " + typeof myObject.test.digit;
+    button.onclick = function() {
+        myObject.test.digit = myObject.test.digit === 1 ? "Это строка" : 1;
+        button.innerText = "Значение: " + myObject.test.digit + " — Тип: " + typeof myObject.test.digit;
+    }
+</script>
+```
+
+В этом примере начальное значение свойства **digit** объекта **test** имеет тип **Number**. Однако при нажатии на кнопку ему будет присвоено значение **"Это строка"** строкового типа. В результате этого свойство динамически изменяет свой тип на **String**. При повторном нажатии на кнопку свойству будет присвоено число **1** и его тип опять станет **Number**.
+
+Чтобы свойство объекта получило статическую типизацию, его необходимо объявить с модификатором **$type** или с модификатором **$def**, если тип свойства можно однозначно определить по его начальному значению.
+
+Например,
+
+```html run_edit_h=40_
+<!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
+<script type="module" src="./rocks.js"></script>
+<button id="button"></button>
+<script type="module">
+    class myClass extends ROCKS({
+        test: {
+            $def: {
+                digit: {
+                    $def: 1,
+                    $type: Number
+                }
+            }
+        }
+    }) {
+        constructor() {
+            super();
+        }
+    }
+
+    let myObject = new myClass();
+    let button = document.getElementById("button");
+    button.innerText = "Значение: " + myObject.test.digit + " — Тип: " + typeof myObject.test.digit;
+    button.onclick = function() {
+        myObject.test.digit = myObject.test.digit === 1 ? "Это строка" : 1;
+        button.innerText = "Значение: " + myObject.test.digit + " — Тип: " + typeof myObject.test.digit;
+    }
+</script>
+```
+
+Этот пример аналогичен предыдущему, только у свойства **digit** объекта **test** явно задан тип **Number**. В обработчике нажатия кнопки этому свойству присваивается константа строкового типа **"Это строка"**, но из-за статической типизации эта константа перед присвоением будет автоматически преобразована к типу **Number** со значением **NaN**.
+
 ```warning_md
 Обратите внимание, что при присвоении свойству со статическим типом **Boolean** значения строкового типа, используется алгоритм преобразования типов, который отличается от используемого в конструкторе **Boolean()**. Этот конструктор преобразует любую непустую строку в логическое значение **true**, а пустую – в **false**. Во фреймворке в значение **true** преобразуется только строка **"true"**, причем регистр символов роли не играет. Например, строка **"tRUe"** тоже примет значение истина. Все остальные строки фреймворк преобразует в значение **false**.
 ```
 
-Например:
+Например,
 
 ```html run_edit_h=55_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
@@ -241,8 +318,8 @@
     let div2 = document.getElementById("div2");
     myObject.rocksBool = "Абракадабра";
     myObject.nativeBool = Boolean("Абракадабра");
-    div1.innerText = "Значение свойства из ROCKS: " + myObject.rocksBool + " — Тип:" + typeof myObject.rocksBool;
-    div2.innerText = "Значение нативного свойства: " + myObject.nativeBool + " — Тип:" + typeof myObject.nativeBool;
+    div1.innerText = "Значение свойства из ROCKS: " + myObject.rocksBool + " — Тип: " + typeof myObject.rocksBool;
+    div2.innerText = "Значение нативного свойства: " + myObject.nativeBool + " — Тип: " + typeof myObject.nativeBool;
 </script>
 ```
 
@@ -265,7 +342,7 @@
 
 Как видите, в отличие от конструктора **BigInt()**, во фреймворке преобразование к типу **BigInt** никогда не вызывает исключение.
 
-Например:
+Например,
 
 ```html run_edit_h=55_
 <!--script type="module" src="https://cdn.jsdelivr.net/gh/odajs/oda/rocks.js"></script-->
