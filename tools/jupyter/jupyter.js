@@ -613,26 +613,35 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
         this.value = e.detail.value;
     },
     async run() {
+        const taskID = getID();
+        ODA.top.__loader.addTask({ id: taskID });
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
-        for (let code of this.notebook.codes){
-            if (code === this.cell) break;
-            if (code.status) continue;
-            await new Promise(async (resolve)=>{
-                await code.run(this.jupyter);
-                this.async(resolve)
-            })
-            await this.$render();
+        try {
+            for (let code of this.notebook.codes){
+                if (code === this.cell) break;
+                if (code.status) continue;
+                await new Promise(async (resolve)=>{
+                    await code.run(this.jupyter);
+                    this.async(resolve)
+                })
+                await this.$render();
+            }
+            await this.cell.run(this.jupyter);
+            this.async(() => {
+                this.jupyter.$$('oda-jupyter-cell').map(i => {
+                    if (i.control.cell.type === 'html') {
+                        i.control.refreshPreview();
+                    }
+                })
+            }, 500)
+            this.focus();
+        } catch (error) {
+            
+        } finally {
+            ODA.top.__loader.removeTask({ id: taskID });
         }
-        await this.cell.run(this.jupyter);
-        this.async(() => {
-            this.jupyter.$$('oda-jupyter-cell').map(i => {
-                if (i.control.cell.type === 'html') {
-                    i.control.refreshPreview();
-                }
-            })
-        }, 500)
-        this.focus();
+
     },
     $public:{
         autoRun:{
@@ -908,60 +917,52 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    run(jupyter){
+    async run(jupyter){
         this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
-        const taskID = getID();
-        ODA.top.__loader.addTask({ id: taskID });
         this.isRun = true;
-        jupyter.$render();
-        this.async(async () => {
-            try{
-                let time = Date.now();
-                run_context.output_data = [];
-                const fn = new AsyncFunction('context', this.code);
-                let res =  await fn.call(jupyter, run_context);
-                time = new Date(Date.now() - time);
-                let time_str = '';
-                let t = time.getMinutes();
-                if (t)
-                    time_str += t + ' m\n';
-                t = time.getSeconds();
-                if (time_str  || t)
-                    time_str += t + ' s\n';
-                t = time.getMilliseconds();
-                time_str += t + ' ms';
-                this.status = time_str;
-    
-                if (res){
-                    run_context.output_data.push(res);
-                }
-                this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
+        try{
+            let time = Date.now();
+            run_context.output_data = [];
+            const fn = new AsyncFunction('context', this.code);
+            let res =  await fn.call(jupyter, run_context);
+            time = new Date(Date.now() - time);
+            let time_str = '';
+            let t = time.getMinutes();
+            if (t)
+                time_str += t + ' m\n';
+            t = time.getSeconds();
+            if (time_str  || t)
+                time_str += t + ' s\n';
+            t = time.getMilliseconds();
+            time_str += t + ' ms';
+            this.status = time_str;
+
+            if (res){
+                run_context.output_data.push(res);
             }
-            catch (e){
-                let error = e.stack.split('\n');
-                let pos = error[1];
-                if (pos){
-                    pos = pos.substring(pos.indexOf('>') + 1);
-                    pos = pos.split(':');
-                    pos[1] = +pos[1] - 2;
-                    pos.shift();
-                    pos = pos.join(':');
-                    error = error[0].replace(': ', ':\n') + '\n(' +  pos;
-                }
-    
-                this.outputs = [{data:{"text/plain": error}}];
-                this.status = 'error';
+            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
+        }
+        catch (e){
+            let error = e.stack.split('\n');
+            let pos = error[1];
+            if (pos){
+                pos = pos.substring(pos.indexOf('>') + 1);
+                pos = pos.split(':');
+                pos[1] = +pos[1] - 2;
+                pos.shift();
+                pos = pos.join(':');
+                error = error[0].replace(': ', ':\n') + '\n(' +  pos;
             }
-            finally {
-                this.async(() =>{
-                    this.isRun = false;
-                    ODA.top.__loader.removeTask({ id: taskID });
-                }, 500)
-                // run_context.output_data = [];
-            }
-        }, 500)
+
+            this.outputs = [{data:{"text/plain": error}}];
+            this.status = 'error';
+        }
+        finally {
+            this.isRun = false;
+            // run_context.output_data = [];
+        }
     }
     get code(){
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
