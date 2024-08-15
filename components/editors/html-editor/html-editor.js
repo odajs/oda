@@ -28,7 +28,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
                 <oda-splitter></oda-splitter>
             </div>
             <div ~if="!isEditMode || showPreview" class="vertical flex" style="overflow: auto; min-height: 24px" @dblclick="_dblClick">
-                <div ~if="previewMode === 'html'" ~html="_value || value || (!isEditMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
+                <div ~if="previewMode === 'html'" ~html="value || (!isEditMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
                 <iframe ~if="previewMode === 'iframe'" style="border: none; width: 100%; overflow: hidden;"></iframe>
             </div>
         </div>
@@ -74,7 +74,6 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
             this.isReady && this.setIframe();
         }
     },
-    _value: '',
     onchange(e) {
         this.value = e.detail.value;
     },
@@ -92,9 +91,9 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
     },
     refreshPreview() {
         if (this.previewMode === 'html') {
-            this._value = ' ';
+            this.previewMode = 'none';
             this.async(() => {
-                this._value = '';
+                this.previewMode = 'html';
             }, 100)
         } else if (this.previewMode === 'iframe') {
             this.setIframe();
