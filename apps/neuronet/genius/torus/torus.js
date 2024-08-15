@@ -15,7 +15,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         if (Array.isArray(size)){
             let data = size;
             this['#length'] = this._binSize = data.length;
-            const str = data.map(i=>i===1?1:0).join('');
+            const str = data.map(i=>i>0?1:0).join('');
             let step = 0;
             let v;
             while (v = str.substr(step * 64, step * 64 + 64)){
@@ -1200,7 +1200,9 @@ tensor.unpack = (expr, inputs)=>{
 const einsum_funtions = {};
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
-    let func_key = tensors.map(i=>i.shape.toString()).join('-');
+    let func_key = tensors.map(i=>{
+        return i.shape.toString()+'('+ i.dType.toString() +')';
+    }).join('-');
     let fn = func_key && einsum_funtions[in_expr + ': ' + func_key];
     let inputs, outs;
     if (!fn){
