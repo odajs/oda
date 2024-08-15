@@ -615,6 +615,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
     async run() {
         const taskID = getID();
         ODA.top.__loader.addTask({ id: taskID });
+        await this.$render();
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
         try {

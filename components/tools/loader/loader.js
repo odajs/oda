@@ -4,7 +4,7 @@ ODA({
     template: /*html*/`
     <style>
         :host{
-            /*visibility: hidden;*/
+            visibility: hidden;
             position: fixed !important;
             top: calc(50% - {{iconSize/2}}px);
             left: calc(50% - {{iconSize/2}}px);
@@ -23,7 +23,7 @@ ODA({
     `,
     $wake: true,
     iconSize: 64,
-    icon: '',
+    icon: 'icons:settings',
     fill: 'var(--info-color)',
     tasks: {
         $def: [],
@@ -54,8 +54,7 @@ ODA({
         this.tasks = [...this.tasks];
     },
     _tasksChanged() {
-        // this.style.visibility = (this.tasks.length > 0)?'visible':'hidden'
-        this.icon =  (this.tasks.length > 0)?'icons:settings':''
+        this.style.visibility = (this.tasks.length > 0)?'visible':'hidden'
         // this._show = this.tasks.length > 0;
         this.$render();
         // this.async(()=>{
