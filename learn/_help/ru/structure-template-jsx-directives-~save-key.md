@@ -31,7 +31,7 @@ ODA({
 ```javascript _run_edit_[my-component.js]_{test-component.js}
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-component ~save-key="'myKey'"></test-component>
     `
 });
@@ -48,9 +48,9 @@ ODA({
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <button @tap="window.localStorage.clear()" style="background:red">RESET</button>
-        `
+    `
 });
 ```
 
@@ -69,12 +69,12 @@ ODA({
 ```javascript _run_edit_[my-component.js]_{test-component.js}
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-component ~save-key="'key1'"></test-component><br>
         <test-component ~save-key="'key2'"></test-component><br>
         <test-component ~save-key="'key1'"></test-component><br>
         <button @tap="window.location.reload(true)">Обновить</button>
-        `
+    `
 });
 ```
 
@@ -89,12 +89,12 @@ ODA({
 ```javascript_run_edit_nocopy_[my-component.js]_{test-component.js}
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-component></test-component><br>
         <test-component></test-component><br>
         <test-component></test-component><br>
         <button @tap="window.location.reload(true)">Обновить</button>
-        `
+    `
 });
 ```
 
@@ -114,10 +114,10 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         test-component: <test-component ~save-key="'myKey1'"></test-component><br>
         new-component: <new-component ~save-key="'myKey1'"></new-component>
-        `
+    `
 });
 ```
 
