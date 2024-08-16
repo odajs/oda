@@ -68,9 +68,9 @@ ODA({
 ```javascript _run_edit_[my-component.js]
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <button @tap="window.localStorage.clear()" style="background:red">RESET</button>
-        `
+    `
 });
 ```
 
@@ -260,10 +260,10 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         test-component9: <test-component9></test-component9><br>
         test-component10: <test-component10></test-component10>
-        `
+    `
 });
 ```
 
@@ -292,7 +292,7 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-component11></test-component11><br>
         <test-component11></test-component11><br>
         <button @tap="window.location.reload(true)">Обновить</button>
@@ -325,7 +325,7 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-component11 ~save-key="'key1'"></test-component11><br>
         <test-component11 ~save-key="'key2'"></test-component11>
     `
