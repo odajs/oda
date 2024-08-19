@@ -303,14 +303,15 @@ export class tensor{
                 if (g !== 0){
                     const rand = Math.random();
                     let p = Math.max(0,Math.min(1,(g + 1)/2));
-                    if (value === '1'){
-                        if (p < rand)
-                            value = '0'
-                    }
-                    else{
-                        // p = 1 - p;
-                        if (p < rand)
-                            value = '1'
+                    if (rand > p){
+                        if (value === '1'){
+                            if (p < .5)
+                                value = '0'
+                        }
+                        else{
+                            if (p > .5)
+                                value = '1'
+                        }
                     }
                 }
                 val += value;

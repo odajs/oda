@@ -5,10 +5,33 @@
 ```
 
 ```info_md
-ODA-компоненты содержат служебный метод **$resetSettings()**, который очищает Web-хранилище от их сохраненных свойств. Очистка хранилища может потребоваться для возврата свойств компонента к значениям по умолчанию. Метод удаляет данные только из хранилища, текущие значения свойств компонента не изменяются, начальные значения они примут только после перезагрузки страницы. Метод не имеет параметров и удаляет из хранилища данные сразу всех сохраненных свойств. Вернуть начальное значение только одному конкретному свойству не получится.
+ODA-компоненты содержат служебный метод **$resetSettings()**, который очищает Web-хранилище от их сохраненных свойств. Очистка хранилища может потребоваться для возврата свойств компонента к значениям по умолчанию. Метод удаляет данные только из хранилища, текущие значения свойств компонента не изменяются, начальные значения они примут только после перезагрузки страницы. Метод не имеет параметров и удаляет из хранилища данные сразу всех сохраненных свойств.
 ```
 
-В данной статье этот метод используется совместно с методом [**window.location.reload(true)**](https://developer.mozilla.org/en-US/docs/Web/API/Location/reload "Программная перезагрузка страницы") для приведения примеров в исходное состояние.
+**Примечание:** В данной статье этот метод используется совместно с методом [**window.location.reload(true)**](https://developer.mozilla.org/en-US/docs/Web/API/Location/reload "Программная перезагрузка страницы") для приведения примеров в исходное состояние.
+
+Например,
+
+```javascript _run_edit_[test-storage.js]
+ODA({
+    is: 'test-storage',
+    template: `
+        <input ::value>
+        <button @tap="clear">Очистить хранилище</button>
+        <span>Ключ хранилища: {{$savePath}}</span>
+    `,
+    value: {
+        $def: 'Пример для $save',
+        $save: true
+    },
+    clear() {
+        this.$resetSettings();
+        window.location.reload(true);
+    }
+});
+```
+
+В данном примере текст, введенный в поле ввода, попадает в свойство **value**, объявленное с модификатором **$save**, и, соответственно, сохраняется в Web-хранилище. Чтобы в этом убедиться, измените текст в поле ввода и перезагрузить страницу. Введенный текст отобразится после перезагрузки. Нажмите кнопу *«Очистить хранилище»*, чтобы вызвать метод **$resetSettings()** компонента, который очистит хранилище. В результате в поле ввода отобразится текст *«Пример для $save»*, принятый по умолчанию.
 
 Фреймворк сохраняет данные компонента в виде пары ключ/значение.
 
@@ -54,7 +77,7 @@ ODA({
 ```javascript _run_edit_[my-component.js]_{test-storage.js}
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-storage></test-storage><br>
         <test-storage></test-storage>
     `
@@ -70,7 +93,7 @@ ODA({
 ```javascript _run_edit_[my-component.js]_{test-storage.js}
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <test-storage ~save-key="'key1'"></test-storage><br>
         <test-storage ~save-key="'key2'"></test-storage>
     `
@@ -89,7 +112,7 @@ ODA({
 ODA({
     is: 'new-storage',
     extends: 'test-storage',
-    template:`
+    template: `
         <br>
         <input type="range" ::value="prop">
     `,
@@ -119,7 +142,7 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <my-storage ~save-key="'key4'"></my-storage><br>
         <my-storage ~save-key="'key5'"></my-storage>
     `
@@ -134,7 +157,7 @@ ODA({
 
 ODA({
     is: 'my-storage',
-    template:`
+    template: `
         <test-storage ~save-key="$savePath"></test-storage>
     `
 });
@@ -160,7 +183,7 @@ ODA({
 
 ODA({
     is: 'my-storage',
-    template:`
+    template: `
         <test-storage ~save-key="'item1'+'/'+$savePath"></test-storage><br>
         <test-storage ~save-key="'item2'+'/'+$savePath"></test-storage>
     `
@@ -168,7 +191,7 @@ ODA({
 
 ODA({
     is: 'my-component',
-    template:`
+    template: `
         <my-storage ~save-key="'key4'"></my-storage><br>
         <my-storage ~save-key="'key5'"></my-storage>
     `
@@ -179,69 +202,44 @@ ODA({
 
 Как видно из примера с помощью директивы [**~save-key**](./index.html#structure-template-jsx-directives-~save-key.md) и свойства **$savePath** можно легко создать уникальные ключи для любой конфигурации компонентов.
 
-```info_md
-ODA-компоненты содержат служебный метод **$loadPropValue()**, который позволяет прочитать из Web-хранилища значение заданного свойства компонента. Метод имеет единственный параметр, в котором указывается имя считываемого свойства. Если в хранилище отсутствуют данные для указанного свойства, то метод возвращает значение **undefined**.
+```faq_md
+Если в процессе работы компонента свойству присвоить значение **undefined**, то оно будет удалено из хранилища, и после перезагрузки страницы примет значение по умолчанию. При этом данные остальных свойств останутся в хранилище.
 ```
-
-Формат команды: `$loadPropValue( имя_свойства )`.
 
 Например,
 
-```javascript _run_edit_[test2-storage.js]
+```javascript _run_edit_[test-storage1.js]
 ODA({
-    is: 'test2-storage',
+    is: 'test-storage1',
     template: `
-        <input ::value>
-        <button @tap="clear">Очистить хранилище</button>
-        <span>Значение в хранилище: {{$loadPropValue('value')}}</span>
+        <input ::value="value1">
+        <button @tap="clear1">Очистить свойство 1</button><br>
+        <input ::value="value2">
+        <button @tap="clear2">Очистить свойство 2</button><br>
+        <button @tap="clearAll">Очистить хранилище</button>
     `,
-    value: {
+    value1: {
         $def: 'Пример для $save',
         $save: true
     },
-    clear() {
+    value2: {
+        $def: 'Пример для $save',
+        $save: true
+    },
+    clear1() {
+        this.value1 = undefined;
+        window.location.reload(true);
+    },
+    clear2() {
+        this.value2 = undefined;
+        window.location.reload(true);
+    },
+    clearAll() {
         this.$resetSettings();
         window.location.reload(true);
     }
 });
 ```
 
-В данном примере с помощью метода **$loadPropValue()** значение свойства **value** считывается непосредственно из хранилища. Введите что-нибудь в строку ввода и убедитесь, что из хранилища считывается именно это значение. Нажмите кнопку *«Очистить хранилище»*. Из хранилища будет считано значение **undefined**, т.к. все данные компонента были из него удалены.
-
----
-
-```info_md
-ODA-компоненты содержат служебный метод **$savePropValue()**, который сохраняет в Web-хранилище заданное значение указанного свойства компонента. Метод имеет два параметра. В первом указывается имя свойства, во втором — новое значение свойства. Метод изменяет значение свойства только в хранилище, текущее значение свойства не меняется, новое значение оно получит только после перезагрузки страницы. Если в качестве значения свойства указать **undefined** или опустить второй параметр метода, то данные указанного свойства будут удалены из хранилища, и после перезагрузки страницы свойство получит начальное значение.
-```
-
-Формат команды: `$savePropValue( имя_свойства, новое_значение )`.
-
-Например,
-
-```javascript _run_edit_[test3-storage.js]
-ODA({
-    is: 'test3-storage',
-    template: `
-        <input ::value>
-        <button @tap="clear">Очистить хранилище</button><br>
-        <span>Текущее значение: {{value}}</span>
-        <button @tap="save">Сохранить в хранилище</button><br>
-        <button @tap="load">Прочитать из хранилища</button><br>
-        <span>Значение в хранилище: {{load()}}</span>
-    `,
-    value: 'Пример для $save',
-    clear() {
-        this.$resetSettings();
-        window.location.reload(true);
-    },
-    save() {
-        this.$savePropValue('value', this.value);
-    },
-    load() {
-        return this.$loadPropValue('value');
-    }
-});
-```
-
-
+В данном примере в компоненте **test-storage1** объявлены свойства **value1** и **value2** с модификатором **$save**, в результате их значения сохраняются в хранилище. Измените их значения в полях ввода. В окне инструментов разработчика можно увидеть, что в хранилище появилась запись с ключом **test-storage1**, содержащая значения обоих свойств. Нажмите кнопку *«Очистить поле 1»*, и убедитесь, что из хранилища было удалено свойство **value1**, а **value2** — осталось.
 

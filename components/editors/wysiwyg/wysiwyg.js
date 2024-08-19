@@ -70,6 +70,9 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
         },
         value: {
             $type: String,
+            get() {
+                return this._value || '';
+            },
             set(n) {
                 if (this.editor && this.editor.content.innerHTML !== n) this.editor.content.innerHTML = n ? n : '';
             }
@@ -87,7 +90,7 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
             this.editor = pell.init({
                 element: this.$('#editor'),
                 onChange: html => {
-                    this.value = html
+                    this._value = html;
                     this.fire('change', html)
                 },
                 actions: [
@@ -217,7 +220,7 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
                 ],
             });
             this.editor.content.contentEditable = this.editable;
-            this.editor.content.innerHTML = this.value ? this.value : '';
+            this._value = this.editor.content.innerHTML = this.value || '';
         }, 16);
     },
     _open() {
