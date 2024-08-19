@@ -297,13 +297,14 @@ export class tensor{
             let val = '';
             const rand = Math.random();
             for(let i = 0; i<bins.length; i++){
+                this.grad = this.grad.map(g=>g * this.grad.length)
                 let g = this.grad[i] //* tensor.LEARNING_RATE;
                 // let sign = Math.sign(g)
                 let value = +bins[i];
                 if (g>0){
                     if(!value){
                         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm<rand)
+                        if (hsigm === 1)
                             value = 1
                     }
 
@@ -311,7 +312,7 @@ export class tensor{
                 else if (g<0){
                     if(value){
                         let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm<rand)
+                        if (hsigm === 0)
                             value = 0
                     }
                 }
@@ -1430,7 +1431,7 @@ tensor.einsum = (in_expr, sources = [])=>{
     out._shape(outs.map(i=>i.d));
     out._src(tensors);
     out._back = function (){
-        out = tensor.from(out.grad)._shape(out);
+        const grad = tensor.from(out.grad)._shape(out);
         tensors.forEach((t, i)=>{
             if(!t.allowGrad) return;
             let expr =  inputs.map((tt, ii)=>{
@@ -1440,7 +1441,7 @@ tensor.einsum = (in_expr, sources = [])=>{
             }).join(',') + '->' + inputs[i].map(i=>i.a).join('');
             let sources = tensors.map((tt,ii)=>{
                 if(ii === i)
-                    return out;
+                    return grad;
                 return tt;
             })
             t.grad = tensor.einsum(expr, sources, func_key).data.map(d=>d /tensor.GRADIENT_DIVIDER);
