@@ -295,25 +295,21 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-            const rand = Math.random();
+
             for(let i = 0; i<bins.length; i++){
                 let g = this.grad[i] //* tensor.LEARNING_RATE;
                 // let sign = Math.sign(g)
                 let value = +bins[i];
-                if (g>0){
-                    if(!value){
-                        let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm<rand)
-                            value = 1
-                    }
-
+                const rand = Math.random();
+                let p = Math.max(0,Math.min(1,(g + 1)/2));
+                if (value){
+                    if (p>rand)
+                        value = '0'
                 }
-                else if (g<0){
-                    if(value){
-                        let hsigm = Math.max(0,Math.min(1,(g + 1)/2));
-                        if (hsigm<rand)
-                            value = 0
-                    }
+                else{
+                    p = 1 - p;
+                    if (p>rand)
+                        value = '1'
                 }
                 val += value;
                 if (val.length === 64){
@@ -749,7 +745,18 @@ tensor.prototype.sigm = function (t){
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let x = data[i];
-            this.grad[i] += (1 - x) * x * out.grad[i] / tensor.GRADIENT_DIVIDER;
+            this.grad[i] += (1 - x) * x * out.grad[i] // tensor.GRADIENT_DIVIDER;
+        }
+    }
+    return out;
+}
+tensor.prototype.sigmBin = function (t){
+    const data = this.data.map(x => Math.round(1 / (1 + Math.exp(-x))))
+    const out = tensor.from(data)._shape(this)._src(this)._label('sigmBin');
+    out._back = ()=>{
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            this.grad[i] += (1 - x) * x * out.grad[i] // tensor.GRADIENT_DIVIDER;
         }
     }
     return out;
@@ -848,6 +855,22 @@ tensor.prototype.softplus = function (storage_tensor) {
     }
     return out;
 }
+
+tensor.prototype.relu = function (storage_tensor) {
+    let data  = this.data.map(x => x>0?x:0);
+    const out =  tensor.from(data)._label('relu')._src(this)._shape(this);
+    out._back = ()=>{
+        let o_grad = out.grad;
+        let x_grad = this.grad;
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            x_grad[i] += (x>0?1:0) * o_grad[i] //tensor.GRADIENT_DIVIDER;
+        }
+    }
+
+    return out;
+}
+
 
 
 tensor.prototype.silu = function (storage_tensor) {
