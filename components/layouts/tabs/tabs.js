@@ -40,7 +40,7 @@ ODA({
         }
         {{''}}
     </style>
-    <div id="container" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
+    <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
         <div
             ~for="items"
             class="tab raised"
@@ -56,7 +56,7 @@ ODA({
     $public: {
         $pdp: true,
         direction: {
-            $def: 'horizontal',
+            $type: String,
             $list: ['horizontal', 'vertical']
         },
         items: Array,
