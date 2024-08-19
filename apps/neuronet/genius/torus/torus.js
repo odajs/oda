@@ -334,28 +334,28 @@ export class tensor{
         }
     }
     back(grad){
-        this.topo = [];
+        const topo = [];
         let visited = new Set();
         let build_topo = (t) => {
             if (!visited.has(t)) {
                 visited.add(t)
                 t.src?.forEach(ch => build_topo(ch))
-                this.topo.push(t)
+                topo.push(t)
             }
         }
         build_topo(this);
-        this.topo.forEach((node) => {
+        topo.forEach((node) => {
             node.clearGrad();
         })
-        this.topo.reverse();
+        topo.reverse();
         if(grad){
-            this.topo[0].grad = grad;
+            topo[0].grad = grad;
         }
-        this.topo.forEach((node) => {
+        topo.forEach((node) => {
             if (!node.src) return;
             node._back?.();
         })
-        this.topo.forEach((node) => {
+        topo.forEach((node) => {
             if (node.src) return;
             node.updateParams();
         })
@@ -574,7 +574,11 @@ export class tensor{
     get array() {
         if(!this.shape.length)
             return [this.data];
-        let data = this.data;
+        let data;
+        if (this.dType === BinaryArray)
+            data = this.bins.match(/0|1/g).map(i=>i==='1'?1:-1);
+        else
+            data = this.data;
         let res = [];
         const shape = Array.from(this.shape);
         let s
@@ -586,6 +590,7 @@ export class tensor{
             res = [];
         }
         return data.flat();
+
     }
     static get LEARNING_RATE() {
         return globalThis.LEARNING_RATE
@@ -1045,7 +1050,7 @@ if (!Array.prototype.toTensorString) {
 
 function num2text(x){
    if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
-        return x;
+        return x.toString().padStart(2, ' ');
     return x.toExponential(2).padStart(9, ' ');
 }
 
