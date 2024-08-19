@@ -295,13 +295,13 @@ export class tensor{
             let data = this.data;
             let idx = 0;
             let val = '';
-
+            const rand = Math.random();
             for(let i = 0; i<bins.length; i++){
 
-                let g = this.grad[i];
+                let g = this.grad[i] * tensor.LEARNING_RATE;
                 let value = bins[i];
                 if (g !== 0){
-                    const rand = Math.random();
+
                     let p = Math.max(0,Math.min(1,(g + 1)/2));
                     if (rand > p){
                         if (value === '1'){
