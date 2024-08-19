@@ -297,19 +297,21 @@ export class tensor{
             let val = '';
 
             for(let i = 0; i<bins.length; i++){
-                let g = this.grad[i] //* tensor.LEARNING_RATE;
-                // let sign = Math.sign(g)
-                let value = +bins[i];
-                const rand = Math.random();
-                let p = Math.max(0,Math.min(1,(g + 1)/2));
-                if (value){
-                    if (p>rand)
-                        value = '0'
-                }
-                else{
-                    p = 1 - p;
-                    if (p>rand)
-                        value = '1'
+
+                let g = this.grad[i];
+                let value = bins[i];
+                if (g !== 0){
+                    const rand = Math.random();
+                    let p = Math.max(0,Math.min(1,(g + 1)/2));
+                    if (value === '1'){
+                        if (p < rand)
+                            value = '0'
+                    }
+                    else{
+                        // p = 1 - p;
+                        if (p < rand)
+                            value = '1'
+                    }
                 }
                 val += value;
                 if (val.length === 64){
