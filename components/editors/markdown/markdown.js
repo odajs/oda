@@ -14,7 +14,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         </style>
         <div class="flex horizontal">
             <div ~if="editMode" class="horizontal" style="min-width: 120px; width: 50%;  position: relative;">
-                <oda-markdown-editor flex ::value style="overflow: hidden"></oda-markdown-editor>
+                <oda-markdown-editor flex ::value style="overflow: hidden" @change="onChange"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
             <oda-markdown-viewer flex :value="value || (!editMode ? '<b><u>Double click for Markdown edit...</u></b>' : '')"  @dblclick="_dblClick" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
@@ -54,5 +54,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
     _dblClick() {
         // if (!this.value)
         this.editMode = !this.editMode;
+    },
+    onChange(e) {
+        this.fire('change', this.value);
     }
 })
