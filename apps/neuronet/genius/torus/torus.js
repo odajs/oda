@@ -1433,10 +1433,13 @@ tensor.einsum = (in_expr, sources = [])=>{
                 let b = prev_b.pop();
                 if (prev_v.length){
                     let v = prev_v.pop();
-                    result += tabs + `res += +${b}?${v}:-${v};\n`;
+                    result += tabs + `if(${b} === '1')\n`;
+                    result += tabs + `\tres += ${v};\n`;
+                    result += tabs + `else\n`;
+                    result += tabs + `\tres -= ${v};\n`;
                 }
                 else
-                    result += tabs + `res += +${b}?1:-1;\n`;
+                    result += tabs + `res += (${b}==='1')?1:-1;\n`;
             }
             else{
                 result += tabs + `res += ${last_input.v};\n`;
