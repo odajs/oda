@@ -747,7 +747,7 @@ tensor.prototype.sigm = function (t){
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
             let x = data[i];
-            this.grad[i] += (1 - x) * x * out.grad[i] // tensor.GRADIENT_DIVIDER;
+            this.grad[i] += x * (1 - x) * out.grad[i] // tensor.GRADIENT_DIVIDER;
         }
     }
     return out;
