@@ -742,7 +742,7 @@ tensor.prototype.tahn = function (){
 }
 
 tensor.prototype.sigm = function (t){
-    const data = this.data.map(x => (1 / (1 + Math.exp(-x))))
+    const data = this.data.map(x => (1 / (1 + Math.exp(-x))));
     const out = tensor.from(data)._shape(this)._src(this)._label('sigm');
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
@@ -752,8 +752,25 @@ tensor.prototype.sigm = function (t){
     }
     return out;
 }
+tensor.prototype.tanh = function (t){
+    const data = this.data.map(x=>{
+        let e = Math.exp(2 * x)
+        return (e - 1) / (e + 1);
+    })
+    const out = tensor.from(data)._shape(this)._src(this)._label('tanh');
+    out._back = ()=>{
+        for(let i = 0; i<data.length; i++){
+            let x = data[i];
+            this.grad[i] += (1 - x ** 2) * out.grad[i] // tensor.GRADIENT_DIVIDER;
+        }
+    }
+    return out;
+}
 tensor.prototype.sigmBin = function (t){
-    const data = this.data.map(x => Math.round(1 / (1 + Math.exp(-x))))
+    const data = this.data.map(x => {
+        let v = Math.round(1 / (1 + Math.exp(-x)))
+        return v
+    })
     const out = tensor.from(data)._shape(this)._src(this)._label('sigmBin');
     out._back = ()=>{
         for(let i = 0; i<data.length; i++){
