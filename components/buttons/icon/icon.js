@@ -48,8 +48,17 @@ ODA({is: 'oda-icon',
                 pointer-events: none;
             }
         </div>
-        <div :bubble="bubble>0?(bubble>9?'9+':bubble):''" class="icon no-flex" ~style="_style">
-            <svg ~style="_svgStyle" :stroke :view-box :fill >
+        <div
+            :bubble="bubble>0?(bubble>9?'9+':bubble):''"
+            class="icon no-flex"
+            ~style="_style"
+        >
+            <svg
+                ~style="_svgStyle"
+                :stroke
+                :view-box
+                :fill
+            >
                 <defs ~if="blink">
                     <g is="style" type="text/css">
                         @keyframes blinker { 100% { opacity: 0; } }
@@ -59,7 +68,16 @@ ODA({is: 'oda-icon',
                 <g ~html="_body?.body"></g>
             </svg>
         </div>
-        <oda-icon :title="subTitle" class="subicon" ~if="subIcon" :blink :icon="subIcon" :default="subDefault" :icon-size="iconSize/3" ~style="{borderRadius: iconSize/16 + 'px', padding: iconSize/16 + 'px', left: iconSize/2 + 'px', margin: getComputedStyle(this)['padding']?.toString() || 'unset'}"></oda-icon>
+        <oda-icon
+            :title="subTitle"
+            class="subicon"
+            ~if="subIcon"
+            :blink
+            :icon="subIcon"
+            :default="subDefault"
+            :icon-size="iconSize/3"
+            ~style="{borderRadius: iconSize/16 + 'px', padding: iconSize/16 + 'px', left: iconSize/2 + 'px', margin: getComputedStyle(this)['padding']?.toString() || 'unset'}"
+        ></oda-icon>
     `,
     get viewBox() {
         const size = this._body?.size || 0;
