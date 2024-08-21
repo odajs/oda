@@ -1015,7 +1015,7 @@ tensor.prototype.MSE = function (target){
     let y = target.data ?? target;
     let loss = 0;
     let errors = this.data.map((x, i)=>{
-        x = (x - y[i]);
+        x = y[i] - x;
         loss += x ** 2;
         return x;
     });
@@ -1023,7 +1023,7 @@ tensor.prototype.MSE = function (target){
     const out = tensor.from([loss])._src(this)._label('MSE');
     out._back = ()=>{
         for (let i = 0; i<errors.length; i++){
-            this.grad[i] += -errors[i];
+            this.grad[i] += errors[i];
         }
     }
     return out;
