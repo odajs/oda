@@ -149,7 +149,7 @@ export class tensor{
         return result;
     }
     _label(label){
-        this.#label = label;
+        this['#label'] = label;
         return this;
     }
     _src(...src){
@@ -1488,7 +1488,9 @@ tensor.einsum = (in_expr, sources = [])=>{
                     return grad;
                 return tt;
             })
-            t.grad = tensor.einsum(expr, sources, func_key).data.map(d=>d /tensor.GRADIENT_DIVIDER);
+            t.grad = tensor.einsum(expr, sources, func_key).data.map((v, i)=>{
+                return v + t.grad[i]// tensor.GRADIENT_DIVIDER
+            });
         })
     }
     fn(tensors, out.data);
