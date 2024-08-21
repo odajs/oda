@@ -27,10 +27,12 @@ ODA({ is: 'oda-summernote',
     },
     init() {
         this.iframe = this.$('iframe');
+        if (!this.iframe) return;
         this.iframe.addEventListener('load', () => {
             this.iframe.contentDocument.addEventListener('summernoteChange', (e) => {
                 this.debounce('summernoteChange', () => {
                     this._value = e.detail.contents;
+                    this.fire('change', this._value)
                 }, 300)
             })
         })
@@ -47,12 +49,18 @@ const srcdoc = (v, h) => {
     <script src="${distPath}jquery-3.4.1.slim.min.js"></script>
     <link href="${distPath}summernote-lite.min.css" rel="stylesheet">
     <script src="${distPath}summernote-lite.min.js"></script>
-    <script src="${distPath}snb-gallery-brick.min.js" type="text/javascript"></script>
-    <style> 
+    <style>
+        .note-editor {
+            border: none !important;
+        }
         .note-toolbar {
+            border: 1px solid lightgray;
             position: sticky;
             top: 0;
             z-index: 1;
+        }
+        .note-statusbar {
+            display: none;
         }
     </style>
 </head>
