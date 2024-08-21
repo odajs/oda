@@ -1488,9 +1488,10 @@ tensor.einsum = (in_expr, sources = [])=>{
                     return grad;
                 return tt;
             })
-            t.grad = tensor.einsum(expr, sources, func_key).data.map((v, i)=>{
-                return v + t.grad[i]// tensor.GRADIENT_DIVIDER
-            });
+            let out = tensor.einsum(expr, sources);
+            for (let j = 0; j<out.size; j++){
+                t.grad[j] += out.data[j];
+            }
         })
     }
     fn(tensors, out.data);
