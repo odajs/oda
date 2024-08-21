@@ -450,6 +450,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                 position: sticky;
                 top: 20px;
                 z-index: 3;
+                display: block;
             }
             .top {
                 @apply --horizontal;
@@ -457,14 +458,16 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                 @apply --content;
                 @apply --raised;
                 @apply --shadow;
+                right: 8px;
                 position: absolute;
-                left: -30px;
                 padding: 1px;
                 border-radius: 4px;
                 margin-top: -20px;
+                width: 98px;
             }
         </style>
-        <div class="top" ~if="cell?.outputs?.length">
+        <div class="top info border" ~if="cell?.outputs?.length">
+            <div class="flex"></div>
             <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun()" title="Hide/Show"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
             <oda-button :icon-size icon="icons:fullscreen" @tap="cellControl?.$('#out').requestFullscreen();" title="Full screen"></oda-button>
