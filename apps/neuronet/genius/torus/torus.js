@@ -1470,7 +1470,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         fn = fn.fn
     }
 
-    const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):1;
+    const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):new Float32Array(1);
     let out = tensor.from(data);
     out._shape(outs.map(i=>i.d));
     out._src(tensors);
