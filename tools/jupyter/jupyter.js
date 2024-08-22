@@ -1,8 +1,7 @@
 const jupyter_path = import.meta.url.split('/').slice(0, -1).join('/');
 const path = window.location.href.split('/').slice(0, -1).join('/');
-
 window.run_context = Object.create(null);
-run_context.output_data = undefined;
+run_context.output_data = [];
 const console_log = console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
@@ -46,6 +45,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
+    run_context: {},
     cellSelect(item){
         this['selectedCell'] = item;
         // this.$render();
@@ -936,6 +936,7 @@ class JupyterCell extends ROCKS({
         this.isRun = true;
         try{
             let time = Date.now();
+            run_context = jupyter.run_context;
             run_context.output_data = [];
             const fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
