@@ -24,7 +24,6 @@ window.err = console.error = (...e) => {
     run_context.output_data?.push( '<b>error:</b>\n'+ [...e].join('\n'));
 }
 window.run_context = run_context;
-
 import { getLoader } from '../../components/tools/loader/loader.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
@@ -173,6 +172,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     async attached() {
         await getLoader();
+        window.addEventListener('hashchange', (e)=>{
+            this.savedIndex = +(window.location.hash.slice(1) || '0');
+            this.selectedCell = this.cells[this.savedIndex];
+            this.scrollToCell();
+        })
     }
 })
 
