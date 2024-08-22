@@ -1,6 +1,6 @@
 const componentPath = import.meta.url.split('/').slice(0, -1).join('/')+'/src/';
 ODA({is: 'oda-code-editor',
-    template: `
+    template: /*html*/`
         <style>
             :host([read-only]){
                 @apply --dimmed;
