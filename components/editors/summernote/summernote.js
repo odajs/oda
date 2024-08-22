@@ -11,6 +11,12 @@ ODA({ is: 'oda-summernote',
         </style>
         <iframe class="flex" style="border: none;"></iframe>
     `,
+    editMode: {
+        $def: false,
+        set(n) {
+            this.init();
+        }
+    },
     editorHeight: '',
     _value: '',
     get value() {
@@ -36,7 +42,7 @@ ODA({ is: 'oda-summernote',
                 }, 300)
             })
         })
-        this.iframe.srcdoc = srcdoc(this.value, this.editorHeight);
+        this.iframe.srcdoc = this.editMode ? srcdoc(this.value, this.editorHeight) : this.value;
     }
 })
 
@@ -65,7 +71,7 @@ const srcdoc = (v, h) => {
     </style>
 </head>
 <body>
-    <div id="summernote">${v}</div>
+    <div id="summernote">${v || ''}</div>
     <script type="module">
         $('#summernote').summernote({
             placeholder: '',
