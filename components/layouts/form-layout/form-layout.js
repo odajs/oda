@@ -161,9 +161,10 @@ ODA({
             $def: 'normal',
             $save: true,
             $attr: true,
-            // set(v){
-            //     this._updateTrackListen();
-            // }
+            set() {
+                this._titleFlexDir = undefined;
+                this._titleButtonsAlign = undefined;
+            }
         },
         pos: {
             $def: {
