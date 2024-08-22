@@ -1,7 +1,8 @@
 const jupyter_path = import.meta.url.split('/').slice(0, -1).join('/');
 const path = window.location.href.split('/').slice(0, -1).join('/');
+
 window.run_context = Object.create(null);
-run_context.output_data = [];
+run_context.output_data = undefined;
 const console_log = console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
@@ -23,6 +24,7 @@ window.err = console.error = (...e) => {
     run_context.output_data?.push( '<b>error:</b>\n'+ [...e].join('\n'));
 }
 window.run_context = run_context;
+
 import { getLoader } from '../../components/tools/loader/loader.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
@@ -45,7 +47,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
-    run_context: {},
     cellSelect(item){
         this['selectedCell'] = item;
         // this.$render();
@@ -172,11 +173,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     async attached() {
         await getLoader();
-        window.addEventListener('hashchange', (e)=>{
-            this.savedIndex = +(window.location.hash.slice(1) || '0');
-            this.selectedCell = this.cells[this.savedIndex];
-            this.scrollToCell();
-        })
     }
 })
 
@@ -936,7 +932,6 @@ class JupyterCell extends ROCKS({
         this.isRun = true;
         try{
             let time = Date.now();
-            run_context = jupyter.run_context;
             run_context.output_data = [];
             const fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
