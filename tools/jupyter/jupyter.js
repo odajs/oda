@@ -635,13 +635,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                     await this.$render();
                 }
                 await this.cell.run(this.jupyter);
-                this.async(() => {
-                    this.jupyter.$$('oda-jupyter-cell').map(i => {
-                        if (i.control.cell.type === 'html') {
-                            i.control.refreshPreview();
-                        }
-                    })
-                }, 500)
+                // this.async(() => {
+                //     this.jupyter.$$('oda-jupyter-cell').map(i => {
+                //         if (i.control.cell.type === 'html') {
+                //             i.control.refreshPreview();
+                //         }
+                //     })
+                // }, 500)
                 this.focus();
             } catch (error) {
                 
