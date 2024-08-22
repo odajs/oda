@@ -18,6 +18,9 @@ window.warn =  console.warn = (...e) => {
     console_warn.call(window, ...e);
     run_context.output_data?.push('<b>warning</b>:\n'+[...e].join('\n'));
 }
+window.show = (...e) => {
+    run_context.output_data?.push(...e);
+}
 const console_error =  console.error;
 window.err = console.error = (...e) => {
     console_error.call(window, ...e);
@@ -207,13 +210,14 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return 'span';
     },
     outHtml() {
-        return this.row?.item?.substring(0, this.max * (this.step + 1)) || '';
+        if (this.row?.item instanceof HTMLElement) return this.row.item;
+        return this.row?.item?.substring?.(0, this.max * (this.step + 1)) || '';
     },
     get warning() {
-        return this.row?.item.startsWith('<b>warn');
+        return this.row?.item?.startsWith?.('<b>warn');
     },
     get error() {
-        return this.row?.item.startsWith('<b>err');
+        return this.row?.item?.startsWith?.('<b>err');
     },
     attached() {
         this.step = 0;
@@ -952,7 +956,7 @@ class JupyterCell extends ROCKS({
             if (res){
                 run_context.output_data.push(res);
             }
-            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i.toString()}}));
+            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i/*.toString()*/}}));
         }
         catch (e){
             let error = e.stack.split('\n');
