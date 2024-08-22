@@ -1,17 +1,17 @@
-ODA({ is: 'oda-local-dirs', imports: '@oda/ace-editor',
+ODA({ is: 'oda-local-dirs', imports: '@oda/code-editor',
     template: `
         <style>
             :host {
                 @apply --vertical;
                 @apply --flex;
             }
-            oda-ace-editor {
+            oda-code-editor {
                 border: 1px solid gray;
                 margin: 4px;
                 padding: 4px;
             }
         </style>
-        <oda-ace-editor mode="json" :src></oda-ace-editor>
+        <oda-code-editor mode="json" :src></oda-code-editor>
     `,
     src: '',
     async attached() {

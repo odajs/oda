@@ -98,7 +98,7 @@ ODA({ is: 'oda-md-viewer', imports: './dist/showdown.min.js, ./dist/decodeHTML.m
 
 let files = new Map();
 let fileCount = 0;
-ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor',
+ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/code-editor',
     template: `
         <style>
             :host { transition: opacity .5s linear, visibility .5s linear; }
@@ -133,7 +133,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor',
                         ~if="infpnl && !hideicon" :title="infpnl"></oda-icon>
                 <code ~if="md" :contenteditable="enableEdit" ~class="md?'md':'hljs'" ~html="html" @input="_changed" style="outline:0px solid transparent;"
                         ~style="md?'font-family:var(--font-family);font-size:.95em':'font-size:1.25em;line-height: 1.3em;'"></code>
-                <oda-ace-editor ~if="!md" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" :src="_code" style="flex: 1; background-color: white; opacity: unset !important; filter: unset !important;" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0', 'padding-top': hideGutter ? '16px' : 0 }" highlight-active-line="false" min-lines="1" :max-lines="_maxLines || 100" show-cursor=false @wheel.stop></oda-ace-editor>
+                <oda-code-editor ~if="!md" :show-gutter="!hideGutter" :read-only="!enableEdit" :show-print-margin="false" :src="_code" style="flex: 1; background-color: white; opacity: unset !important; filter: unset !important;" font-size="16" :mode="_mode" @change="_changed" ~style="{'padding-left': hideGutter ? '10px' : '0', 'padding-top': hideGutter ? '16px' : 0 }" highlight-active-line="false" min-lines="1" :max-lines="_maxLines || 100" show-cursor=false @wheel.stop></oda-code-editor>
             </pre>
             <iframe ~if="showRun" :srcdoc="_src" style="padding: 6px;border-radius:0 0 2px 2px;border: 1px solid darkgray;min-width:0px;height:28px;margin:-14px 0 14px 0"
                     onload="setTimeout(()=>{this.style.height=this?.contentDocument?.body?.scrollHeight+'px'},500)" ~style="{'min-height': (_h||28)+'px','max-height': _h ? _h+'px':'unset'}"></iframe>
@@ -286,7 +286,7 @@ ODA({ is: 'oda-md-code', imports: '@oda/icon, @oda/ace-editor',
         await navigator.clipboard.writeText(this._code);
     },
     _changed(iframeChanged = true) {
-        const code = this.$('code') || this.$('oda-ace-editor');
+        const code = this.$('code') || this.$('oda-code-editor');
         if (!code) return;
         this._edit = code.editor?.getValue() || code.innerText || '';
         files.set(this.filename, this._edit);

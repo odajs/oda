@@ -1,4 +1,4 @@
-ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @tools/containers, ./pell.js',
+ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/code-editor, @oda/palette, @tools/containers, ./pell.js',
     template: /*html*/`
     <style>
         :host {
@@ -196,7 +196,7 @@ ODA({ is: 'oda-wysiwyg', imports: '@oda/button, @oda/ace-editor, @oda/palette, @
                         icon: '&lt;/&gt;',
                         title: 'View source code',
                         result: async () => {
-                            let ctrl = document.createElement('oda-ace-editor');
+                            let ctrl = document.createElement('oda-code-editor');
                             ctrl.style.height = (window.innerHeight - window.innerHeight * 0.18) + 'px';
                             ctrl.style.width = (window.innerWidth - window.innerWidth * 0.18) + 'px';
                             ctrl.value = this.editor.content.innerHTML;

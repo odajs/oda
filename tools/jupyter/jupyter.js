@@ -564,7 +564,7 @@ ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-
     }
 })
 const AsyncFunction = async function () {}.constructor;
-ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
+ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     template: `
         <style>
             :host {
@@ -581,7 +581,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 border-radius: 50%;
                 @apply --active;
             }
-            oda-ace-editor {
+            oda-code-editor {
                 opacity: 1;
                 filter: unset;
                 z-index: 1;
@@ -592,12 +592,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/ace-editor',
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding: 8px 0px 10px 0px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
-            <oda-ace-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-ace-editor>                        
+            <oda-code-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>                        
         </div>
  
     `,
     focus() {
-        this.$('oda-ace-editor').focus();
+        this.$('oda-code-editor').focus();
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){

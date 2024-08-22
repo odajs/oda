@@ -1,4 +1,4 @@
-ODA({ is: "oda-xml-editor", imports: '@oda/ace-editor', extends: 'oda-ace-editor',
+ODA({ is: "oda-xml-editor", imports: '@oda/code-editor', extends: 'oda-code-editor',
     // template:`<!--<script src="./sax-min.js"></script>-->`,
     $public: {
         mode: 'xml',

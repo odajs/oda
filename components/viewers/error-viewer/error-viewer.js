@@ -1,5 +1,5 @@
 ODA({
-    is: 'oda-error-viewer', imports: '@oda/ace-editor',
+    is: 'oda-error-viewer', imports: '@oda/code-editor',
     template: /*html*/`
     <style>
         :host{
@@ -16,7 +16,7 @@ ODA({
         <div>{{message}}</div>
         <oda-button @tap="_gotoError(message)" icon="enterprise:target"></oda-button>
     </div>
-    <oda-ace-editor class="flex" :wrap="false" :value="code" :mode read-only></oda-ace-editor>
+    <oda-code-editor class="flex" :wrap="false" :value="code" :mode read-only></oda-code-editor>
     `,
     message: '',
     set code(code) {
@@ -28,7 +28,7 @@ ODA({
     _gotoError(message) {
         if (message) {
             const [line, col] = message.match(/\(\d*,\s\d*\)$/)?.[0].replace(/[()\s]/g, '').split(',');
-            this.$('oda-ace-editor').editor.gotoLine(line, col);
+            this.$('oda-code-editor').editor.gotoLine(line, col);
         }
     }
 })

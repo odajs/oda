@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="ODA Framework - designed for rapid development of websites, mobile PWAs and web applications using web components technology - https://odajs.org/" />
+    <title>oda-code-editor</title>
+</head>
+
+<body>
+    <oda-tester>
+        <oda-code-editor id="editor" mode="javascript" theme="monokai" max-lines="0"></oda-code-editor>
+    </oda-tester>
+    <iframe id="frame" style="flex: auto; width: 100%;"></iframe>
+    <script type="module">
+        import '../../../oda.js';
+        import './ace-editor.js';
+        editor.addEventListener('loaded', ()=>{
+            editor.src = `\
+async function t(){
+    return new Promise(resolve =>{
+        setTimeout(()=>{
+            resolve('result');
+        }, 1000);
+    });
+}
+(async ()=>{
+    const res = await t();
+    console.log(res);
+})()
+`;
+        });
+        editor.addEventListener('change', () => {
+            frame.srcdoc = `<script type="module">${editor.value}<\/script>`
+        })
+    </script>
+</body>
+
+</html>

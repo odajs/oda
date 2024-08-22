@@ -1,4 +1,4 @@
-ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monaco-editor',
+ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/code-editor, @oda/monaco-editor',
     template:`
         <style>
             :host {
@@ -23,7 +23,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
         </style>
         <div class="editor">
             <div class="editors" ~if="isEditMode" class="horizontal" style="overflow: hidden; min-width: 120px; position: relative" ~style="{maxWidth: isEditMode && showPreview && direction==='row' ? '50%' : '100%', minWidth: isEditMode && showPreview && direction==='row' ? '50%' : '100%'}">
-                <oda-ace-editor  class="ace" ~if="editorType==='ace'" :src="value" @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="false" min-lines="3" max-lines="Infinity" :wrap="!noWrap" style="overflow: auto;"></oda-ace-editor>                        
+                <oda-code-editor  class="ace" ~if="editorType==='ace'" :src="value" @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="false" min-lines="3" max-lines="Infinity" :wrap="!noWrap" style="overflow: auto;"></oda-code-editor>                        
                 <oda-monaco-editor class="monaco" ~if="editorType==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
                 <oda-splitter></oda-splitter>
             </div>
@@ -79,7 +79,7 @@ ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/ace-editor, @oda/monac
     },
     focus() {
         this.async(() => {
-            this.$('oda-ace-editor')?.focus();
+            this.$('oda-code-editor')?.focus();
         }, 500)
     },
     _dblClick() {

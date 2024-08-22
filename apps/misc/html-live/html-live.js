@@ -50,7 +50,7 @@ ODA({
         </div>
         <div id="main">
             <div class="main-panel" ~style="{width: _widthL+'px', display: _widthL > 0 ? '':'none'}">
-                <oda-ace-editor id="editor" @change="_change()" :options mode="html" theme="cobalt"></oda-ace-editor>
+                <oda-code-editor id="editor" @change="_change()" :options mode="html" theme="cobalt"></oda-code-editor>
             </div>
             <div class="splitter" ~class="_action === 'splitter-move' ? 'splitter-move' : ''" @pointerdown="_pointerdown"></div>
             <div class="main-panel" ~show="this._widthL < clientWidth" style="flex: 1">
@@ -66,7 +66,7 @@ ODA({
     },
     _action: '',
     get editor() {
-        return this.$('oda-ace-editor')?.editor
+        return this.$('oda-code-editor')?.editor
     },
     attached() {
         const int = setInterval(() => {
