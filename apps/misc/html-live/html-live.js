@@ -1,9 +1,7 @@
-import '../../../components/buttons/button/button.js';
-import '../../../components/editors/ace-editor/ace-editor.js';
 import { LZString } from './lib/lz-string.js';
 const path = import.meta.url;
 
-ODA({
+ODA({imports: '@oda/code-editor, @oda/button',
     is: 'oda-html-live',
     template: `
         <style>

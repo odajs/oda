@@ -1,119 +1,227 @@
-ODA({is: 'oda-html-editor', imports: '@oda/splitter, @oda/code-editor, @oda/monaco-editor',
-    template:`
-        <style>
-            :host {
-                display: {{direction === 'row' ? 'flex' : ''}};
-            }
-            .editor {
-                display: flex;
-                flex-direction: {{direction}};
-                @apply --flex;
-                position: relative;
-                overflow: auto;
-                width: 100%;
-            }
-            .editors {
-                height: {{editorHeight ? editorHeight : '100%'}};
-            }
-            .monaco, .ace {
-                display: block;
-                width: 100%;
-                height: 100%;
-            }
-        </style>
-        <div class="editor">
-            <div class="editors" ~if="isEditMode" class="horizontal" style="overflow: hidden; min-width: 120px; position: relative" ~style="{maxWidth: isEditMode && showPreview && direction==='row' ? '50%' : '100%', minWidth: isEditMode && showPreview && direction==='row' ? '50%' : '100%'}">
-                <oda-code-editor  class="ace" ~if="editorType==='ace'" :src="value" @change="onchange" mode="html" theme="cobalt" font-size="12" class="flex" show-gutter="false" min-lines="3" max-lines="Infinity" :wrap="!noWrap" style="overflow: auto;"></oda-code-editor>                        
-                <oda-monaco-editor class="monaco" ~if="editorType==='monaco'" :value @change="onchange" class="flex" theme="vs-dark" language="html"></oda-monaco-editor>
-                <oda-splitter></oda-splitter>
-            </div>
-            <div ~if="!isEditMode || showPreview" class="vertical flex" style="overflow: auto; min-height: 24px" @dblclick="_dblClick">
-                <div ~if="previewMode === 'html'" ~html="value || (!isEditMode ? '<b><u>Double click for HTML edit...</u></b>' : '')" style="border: none; width: 100%;"></div>
-                <iframe ~if="previewMode === 'iframe'" style="border: none; width: 100%; overflow: hidden;"></iframe>
-            </div>
-        </div>
-    `,
-    $public:{
-        editorType:{
-            $def: 'ace',
-            $list: ['ace', 'monaco'],
-            set(n) {
-                this.src = this.value;
-            }
-        },
-        editorHeight: '',
-        direction: {
-            $def: 'row',
-            $list: ['row', 'column'],
-        },
-        noWrap: false,
-        showPreview: false,
-        previewMode: {
-            $def: 'html',
-            $list: ['html', 'iframe'],
-            set(n){
-                this.async(() => {
-                    this.setIframe();  
-                }, 100)
-            }
-        },
-        isEditMode: {
+ODA({ is: 'oda-html-editor', imports: '@oda/button, @oda/code-editor, @oda/palette, @tools/containers, ./pell.js',
+    template: /*html*/`
+    <style>
+        :host {
+            @apply --vertical;
+            @apply --flex;
+            height: 100%;
+        }
+        .pell {
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        .pell-content {
+            box-sizing: border-box;
+            outline: 0;
+            overflow-y: auto;
+            padding: 10px;
+            height: 100%;
+            text-wrap: wrap;
+        }
+
+        .pell-actionbar {
+            background-color: var(--layout-background);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0px;
+            z-index: 10;
+            display: none;
+            flex-wrap: wrap;
+        }
+
+        :host([editable]) .pell-actionbar {
+            display: flex;
+        }
+
+        .pell-button {
+            background-color: var(--layout-background);
+            border: solid 1px var(--border-color);
+            border-radius: 2px;
+            margin: 1px;
+            cursor: pointer;
+            height: 24px;
+            outline: 0;
+            width: 30px;
+            vertical-align: bottom;
+        }
+
+        .pell-button-selected {
+            background-color: var(--selected-background);
+        }
+
+        .pell-button:hover {
+            filter: brightness(80%);
+        }
+    </style>
+    <div id="editor" class="flex"></div>
+    <div ~if="syspanel" class="horizontal" style="position: sticky; bottom: 0; background-color: var(--layout-background); border-top: 1px solid var(--border-color);">
+        <oda-button icon="editor:mode-edit" @tap.stop="editable=!editable" :label="editable?'Switch to View mode':'Switch to Edit mode'" style="opacity: 0.7"></oda-button>
+        <oda-button icon="icons:open-in-browser" @tap.stop="_open" label="Open in browser" style="opacity: 0.7"></oda-button>
+    </div>`,
+    $public: {
+        editable: {
             $def: false,
-            set(n){
-                if (n) {
-                    if(this.readOnly)
-                        this.isEditMode = false
-                    this.focus();
-                }  
+            $attr: true,
+            set(n) {
+                if (this.editor?.content)
+                    this.editor.content.contentEditable = n;
             }
-        }
+        },
+        value: {
+            $type: String,
+            set(n) {
+                if (this.editor && this.editor.content.innerHTML !== n) this.editor.content.innerHTML = n ? n : '';
+            }
+        },
+        editor: {
+            $type: [Object, HTMLElement]
+        },
+        syspanel: false
     },
-    value: {
-        $def: '',
-        set(n) {
-            this.isReady && this.setIframe();
-        }
+    detached(e) {
+        this.editor.innerHTML = '';
     },
-    onchange(e) {
-        this.value = e.detail.value;
+    async attached() {
+        setTimeout(async () => {
+            this.editor = pell.init({
+                element: this.$('#editor'),
+                onChange: html => {
+                    this.value = html
+                    this.fire('change', html)
+                },
+                actions: [
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strikethrough',
+                    'heading1',
+                    'heading2',
+                    'heading3',
+                    'heading4',
+                    'heading5',
+                    'heading6',
+                    {
+                        name: 'foreColor',
+                        icon: '&#9734;',
+                        title: 'foreColor',
+                        result: async () => {
+                            let ctrl = document.createElement('oda-palette');
+                            await ODA.showDialog(ctrl, {
+                                title: 'Select Color',
+                                buttons: []
+                            });
+                            pell.exec('foreColor', ctrl.value)
+                        }
+                    },
+                    {
+                        name: 'backColor',
+                        icon: '&#9733',
+                        title: 'backColor',
+                        result: async () => {
+                            let ctrl = document.createElement('oda-palette');
+                            await ODA.showDialog(ctrl, {
+                                title: 'Select Color',
+                                buttons: []
+                            });
+
+                            pell.exec('backColor', ctrl.value)
+                        }
+                    },
+                    'olist',
+                    'ulist',
+                    'paragraph',
+                    'quote',
+                    'code',
+                    'line',
+                    'link',
+                    'image',
+                    'video',
+                    'html',
+                    {
+                        name: 'Commands',
+                        icon: '✓',
+                        title: 'Commands',
+                        result: function result() {
+                            var url = window.prompt('c-center, f-full, l-left, r-right, i-indent, o-outdent, 1-7 fontSize, s-subScript, u-superScript, z-unLink, <-undo, >-redo, x-removeFormat');
+                            if (url) {
+                                url = url.toLowerCase();
+                                switch (url) {
+                                    case 'c':
+                                        url = 'justifyCenter'
+                                        break;
+                                    case 'f':
+                                        url = 'justifyFull'
+                                        break;
+                                    case 'l':
+                                        url = 'justifyLeft'
+                                        break;
+                                    case 'r':
+                                        url = 'justifyRight'
+                                        break;
+                                    case 'x':
+                                        url = 'removeFormat'
+                                        break;
+                                    case 'i':
+                                        url = 'inDent'
+                                        break;
+                                    case 'o':
+                                        url = 'outDent'
+                                        break;
+                                    case 's':
+                                        url = 'subScript'
+                                        break;
+                                    case 'u':
+                                        url = 'superScript'
+                                        break;
+                                    case 'z':
+                                        url = 'unLink'
+                                        break;
+                                    case '<':
+                                        url = 'undo'
+                                        break;
+                                    case '>':
+                                        url = 'redo'
+                                        break;
+                                    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                                        pell.exec('fontSize', url);
+                                        return;
+                                }
+                                pell.exec(url);
+                            }
+                        }
+                    },
+                    {
+                        name: 'viewSource',
+                        icon: '&lt;/&gt;',
+                        title: 'View source code',
+                        result: async () => {
+                            let ctrl = document.createElement('oda-code-editor');
+                            ctrl.style.height = (window.innerHeight - window.innerHeight * 0.18) + 'px';
+                            ctrl.style.width = (window.innerWidth - window.innerWidth * 0.18) + 'px';
+                            ctrl.value = this.editor.content.innerHTML;
+                            ctrl.mode = 'html';
+                            ctrl.wrap = true;
+                            ctrl.addEventListener('keydown', (e) => {
+                                if (e.code === 'Enter') {
+                                    e.stopPropagation();
+                                }
+                            });
+                            await ODA.showDialog(ctrl, {
+                                title: 'Ace HTML editor',
+                                buttons: []
+                            });
+                            this.editor.content.innerHTML = ctrl.value;
+                        }
+                    },
+                ],
+            });
+            this.editor.content.contentEditable = this.editable;
+            this.editor.content.innerHTML = this.value || '';
+        }, 16);
     },
-    focus() {
-        this.async(() => {
-            this.$('oda-code-editor')?.focus();
-        }, 500)
-    },
-    _dblClick() {
-        // if (!this.value)
-        this.isEditMode = !this.isEditMode;
-    },
-    attached() {
-        this.setIframe();
-    },
-    refreshPreview() {
-        if (this.previewMode === 'html') {
-            let value = this.value;
-            this.value = this.value + ' ';
-            this.async(() => {
-                this.value = value;
-            }, 100)
-        } else if (this.previewMode === 'iframe') {
-            this.setIframe();
-        }
-    },
-    setIframe() {
-        const iframe= this.$('iframe');
-        if (!iframe || !this.previewMode === 'iframe') return;
-        iframe.addEventListener('load', () => {
-            iframe.contentDocument.body.style.margin = 0;
-            const resizeObserver = new ResizeObserver((e) => {
-                iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
-            })
-            resizeObserver.observe(iframe.contentDocument.body);
-            this.isReady = true;
-            iframe.contentDocument.body.addEventListener('click', e => {
-                this.click();
-            })
-        })
-        iframe.srcdoc = this.value || (this.isEditMode ? '' : '<b><u>Double click for HTML edit...</u></b>');
+    _open() {
+        let newWin = window.open("about:blank", "HTML");
+        newWin.document.write(this.editor.content.innerHTML);
     }
 })

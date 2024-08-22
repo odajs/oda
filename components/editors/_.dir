@@ -1,14 +1,7 @@
 [
     {
-        "name": "ace-editor",
-        "label": "<b style='color: #e689fe'>oda-code-editor:</b> Ace редактор кода",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "monaco-editor",
-        "label": "<b style='color: #e689fe'>oda-monaco-editor:</b> Monaco редактор кода",
+        "name": "code-editor",
+        "label": "<b style='color: #e689fe'>oda-code-editor:</b> Редактор кода",
         "content": {
             "link": "index.html"
         }
@@ -29,7 +22,7 @@
     },
     {
         "name": "wysiwyg",
-        "label": "<b style='color: #e689fe'>oda-wysiwyg:</b> WYSIWYG редактор HTML кода",
+        "label": "<b style='color: #e689fe'>oda-html-editor:</b> WYSIWYG редактор HTML кода",
         "content": {
             "link": "index.html"
         }

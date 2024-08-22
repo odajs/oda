@@ -39,6 +39,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: 0;
                 transition: opacity 1s;
             }
+            oda-jupyter-cell:hover{
+                @apply --light;
+            }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
