@@ -32,12 +32,15 @@ ODA({ is: 'oda-html-editor', imports: './src/suneditor.min.js',
             }
         }
     },
-    get value() {
-        return this.editor?.getContet?.() || '';
-    },
-    setValue(v) {
-        if (this.editor)
-            this.editor.setContents(v);
+    value: {
+        $def: '',
+        get() {
+            return this.editor?.getContents?.() || '';
+        },
+        set (n) {
+            if (this.editor?.getContents && this.editor.getContents() !== n)
+                this.editor.setContents(n);
+        }
     },
     async attached() {
         this.init();
