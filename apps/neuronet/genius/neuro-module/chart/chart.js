@@ -4,14 +4,16 @@ ODA({is: 'oda-chart', template: /*html*/ `
         <rect x="0" y="0" :width :height :fill='background'/>
         <path :d='pathD' fill="none" :stroke :stroke-width="strokeWidth"/>
     </svg>`,
-    label:'',
-    width:1000,
-    height:300,
-    maxPoint:100,
-    stroke:"#070637",
-    strokeWidth:2,
-    background:'#a9caff',
-
+    $public: {
+        label:'',
+        width:1000,
+        height:300,
+        maxPoint:100,
+        stroke:"#070637",
+        strokeWidth:2,
+        background:'#a9caff',
+        bezier:false,
+    },
     get pathD(){
         if (this.pointsL.length<2) return ''
         let padding = Math.min(this.width,this.height)/10
@@ -36,10 +38,10 @@ ODA({is: 'oda-chart', template: /*html*/ `
         newP.push(this.dataSet[lL-1])
         return newP
     },
-    bezier:false,
-
     dataSet:{
         $def: new Array(20000).fill(0).map(_=> Math.random()*5-2)
     },
+
+    push(t) {this.dataSet.push(t)}
 
 })
