@@ -253,7 +253,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-toolbar>
         <div class="horizontal">
             <div class="vertical">
-                <div style="position: sticky; top: 0; min-width: 32px; max-width: 32px; padding-top: 10px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
+                <div style="position: sticky; top: 0; min-width: 32px; max-width: 32px; padding: 10px 0px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
             </div>
             <div class="vertical flex">
                 <div class="vertical flex">
