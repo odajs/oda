@@ -144,7 +144,7 @@ export class tensor{
             isSerializable: this.isSerializable,
             isParam: this.isParam,
             dType: this.dType.name,
-            data: this.data.join(' ').toString()
+            data: this.data?.join(' ').toString()
         }
         return result;
     }
@@ -513,7 +513,7 @@ export class tensor{
         return tensor.from(data)._label('hippo');
     }
     static from(data, dType){
-        if (Object.equal(data.constructor, tensor))
+        if (Object.equal(data?.constructor, tensor))
             return data;
         return new tensor(data, dType);
     }
