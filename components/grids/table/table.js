@@ -606,7 +606,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         cols.filter(i => i.fix === 'right').toReversed().reduce((res, i) => {
             i.right = res;
             res += i.width ?? i.$width ?? 0;
-            return res;
+    return res;
         }, 0);
         cols.forEach((c, i) => {
             c.id = i;
@@ -617,90 +617,45 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     colStyles: {
         $pdp: true,
         get() {
-            const parts = ['left', 'middle', 'right'];
-            /** @typedef {{cols: TableColumn[], fixWidthCols: *[], fixAutoWidthCols: *[], simpleWidthCols: *[], fixWidth: number, fixAutoWidthWidths: *[]}} ColsDataWrite */
-            /** @type {{[key: string]: ColsDataWrite}} */
-            const colsData = {};
-
-            for (const c of this.rowColumns) {
-                for (const part of parts) {
-                    if ((part === parts[1] && !c.fix) || (c.fix === part)) {
-                        colsData[part] ??= {cols: [], fixWidthCols: [], fixAutoWidthCols: [], simpleWidthCols: [], fixWidth: 0, fixAutoWidthWidths: []};
-                        colsData[part].cols.push(c);
-                        if (c.width) {
-                            if (c.autoWidth) {
-                                colsData[part].fixAutoWidthCols.push(c);
-                            }
-                            else {
-                                colsData[part].fixWidthCols.push(c);
-                            }
-                        }
-                        else {
-                            colsData[part].simpleWidthCols.push(c);
-                        }
-                    }
-                }
-            }
-            const calcFixWidth = (res, c) => res += (c.width || 0);
-            for (const k in colsData) {
-                for (const part in colsData) {
-                    colsData[part].fixWidth = colsData[part].fixWidthCols?.reduce(calcFixWidth, 0) || 0;
-                }
-            }
-
-            const tableWidth = this.$width - this.scrollBoxWidth;
-
-            const partWidth = tableWidth / 3;
-            const leftWidth = colsData.left ? partWidth : 0;
-            const rightWidth = colsData.right ? partWidth : 0;
-            const middleWidth =  tableWidth - (leftWidth + rightWidth);
-
-            const leftColWidth = colsData.left ? ((leftWidth - colsData.left.fixWidth) / colsData.left.simpleWidthCols.length) || 0 : 0;
-            const middleColWidth = colsData.middle ? ((middleWidth - colsData.middle.fixWidth) / colsData.middle.simpleWidthCols.length) || 0 : 0;
-            const rightColWidth = colsData.right ? ((rightWidth - colsData.right.fixWidth) / colsData.right.simpleWidthCols.length) || 0 : 0;
-
-            const result = [];
-
-            for (const part in colsData) {
-                for (const c of colsData[part].cols) {
-                    c.className = `col-${c.id}`;
-                    let style = `.${c.className}{/*${c[this.columnId]}*/\n\t\n\torder: ${c.$order};`;
-                    if (c.__parent__) {
-                        style += '\n\tbackground-color: whitesmoke;';
-                    }
-                    if (c.$flex) {
-                        style += `\n\tflex: 1;\n\tflex-basis: 100%;`;
-                    }
-                    else if (c.width) {
-                        style += `\n\tmin-width: ${c.$width}px; \n\tmax-width: ${c.$width}px;\n\tflex: 0;`;
+            const result = this.rowColumns.map(col => {
+                if (col.id === undefined)
+                    return '';
+                col.className = `col-${col.id}`;
+                let style = `.${col.className}{/*${col[this.columnId]}*/\n\t\n\torder: ${col.$order};`;
+                if (col.__parent__)
+                    style += '\n\tbackground-color: whitesmoke;';
+                if (col.$flex)
+                    style += '\n\tflex: 1;\n\tflex-basis: "100%";';
+                else {
+                    style += '\n\tposition: sticky;';
+                    if (col.width) {
+                        style += `\n\tmin-width: ${col.width}px; \n\tmax-width: ${col.width}px;\n\tflex: 0;`;
                     }
                     else {
-                        let width = (this.autoWidth
-                            ? ({ left: leftColWidth, middle: middleColWidth, right: rightColWidth })[part]
-                            : c.$width);
-                        style += `\n\tmin-width: ${width}px; \n\tmax-width: ${width}px;\n\tflex: 0;`;
-                        // if (this.autoWidth && this.rowColumns.at(-1) === c){
-                        //     style += `\n\tflex: 1 !important;`;
-                        // }
-                        // style += `\n\tmin-width: 16px;`;
+                        if (this.autoWidth && this.rowColumns.last === col)
+                            style += `\n\tflex: 1 !important;`;
+                        style += `\n\tmin-width: 16px;`;
                     }
-                    c.$width = c.$width || c.width || 150;
-                    style += `\n\twidth: ${c.$width}px;`;
-                    if (c.fix) {
-                        style += '\n\tposition: sticky;';
+                    col.$width = col.$width || col.width || 150;
+                    style += `\n\twidth: ${col.$width}px;`;
+
+
+                    const min = (this.autoWidth && !col.fix) ? '10px' : (col.width + 'px');
+                    const max = col.$width + 'px';
+                    if (col.fix) {
                         style += `\n\tz-index: 1;`;
-                        if (c.fix === 'left') {
-                            style += `\n\tleft: ${c.left}px;`;
+                        if (col.fix === 'left') {
+                            style += `\n\tleft: ${col.left}px;`;
                         }
-                        else if (c.fix === 'right') {
-                            style += `\n\tright: ${c.right}px;`;
+                        else if (col.fix === 'right') {
+                            style += `\n\tright: ${col.right}px;`;
                         }
                     }
-                    style += '\n}\n';
-                    result.push(style);
                 }
-            };
-            return result.join('\n');
+                style += '\n}\n';
+                return style;
+            }).join('\n');
+            return result;
         }
     },
 
@@ -1501,7 +1456,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         :host {
             position: relative;
             overflow-x: {{autoWidth?'hidden':'auto'}};
-            overflow-y: scroll;
+            overflow-y: auto;
             @apply --vertical;
         }
         .row {
@@ -2300,7 +2255,7 @@ cells: {
                 white-space:break-spaces !important;
             }
         </style>
-        <div class="flex vertical" style="cursor: pointer"  :disabled="!column.name">
+        <div class="flex vertical" style="cursor: pointer" :disabled="!column.name">
             <div @tap.stop="setSort" class="flex horizontal" ~style="{flexDirection: column.fix === 'right'?'row-reverse':'row', minHeight: rowHeight+'px', height: column?.__expanded__?'auto':'100%'}">
                 <div class="flex horizontal" style="align-items: center;">
                     <oda-table-expand ~if="showExpander" :item class="no-flex"></oda-table-expand>
@@ -2308,7 +2263,7 @@ cells: {
                     <oda-icon :disabled="column?.__expanded__ && column?.items?.length" style="position: absolute; right: 0px; top: 0px;" ~if="allowSort && sortIndex" title="sort" :icon="sortIcon" :bubble="sortIndex"></oda-icon>
                 </div>
                 <slot name="tools"></slot>
-                <div @dblclick="column.reset('$width')" class="split"  @tap.stop @track="_track"></div>
+                <div @dblclick="column.reset('$width')" class="split" @tap.stop @track="_track"></div>
             </div>
             <div class="cell flex horizontal filter-container" ~if="!column.__expanded__ && column.name && showFilter" style="align-items: center" @tap.stop>
                 <input class="flex filter-input" ::value="filter" @tap.stop style="margin-left: 8px; padding: 2px;">
@@ -2316,7 +2271,7 @@ cells: {
                 <oda-button ~if="filter"  :icon-size="Math.round(iconSize * .5)" icon="icons:close" @tap.stop="filter = ''" title="clear"></oda-button>
             </div>
             <div class="flex sub-cols horizontal" ~if="expanded && column?.items?.length">
-                <oda-table-header-cell ~wake="true" ~is="headerTemplate"  class="header-cell flex" ~for="subCols" :item="$for.item" :column="$for.item" ~class="['col-' + $for.item.id]"></oda-table-header-cell>
+                <oda-table-header-cell ~wake="true" ~is="headerTemplate"  class="header-cell flex" ~for="subCols" :item="$for.item" :column="$for.item" ~class="[$for.item.className]"></oda-table-header-cell>
             </div>
             <div class="flex" ~if="!column.name"></div>
         </div>`,
