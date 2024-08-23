@@ -134,6 +134,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             }
         },
         tap(e) {
+            if( this.showTrash ) return;
             this.designInfo = undefined
             this.focusedPin = null
         },
@@ -148,7 +149,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             this.removeSelection();
         }
     },
-    trackBlock(e) {
+    async trackBlock(e) {
         if (!this.designMode) return;
         switch (e.detail.state) {
             case 'start': {
@@ -176,7 +177,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                 this.links = undefined;
             } break;
             case 'end': {
-                this.showTrash = false;
                 this.lastdown.style.opacity = 1;
                 this.lastdown = null;
                 this.async(() => {
@@ -184,8 +184,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     this.links = undefined;
                 });
                 if (e.detail.x > (this.layout.offsetWidth - 120) && e.detail.y > (this.layout.offsetHeight - 120)) {
-                    this.removeSelection();
+                    await this.removeSelection();
                 };
+                this.showTrash = false;
             } break;
         }
     },

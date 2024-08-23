@@ -5,8 +5,7 @@ ODA({is: 'oda-embedding',
                 @apply --vertical;
                 @apply --dark;
                 overflow: hidden;
-                max-height: 50%;
-                max-width: 50%;
+                max-height: 300px;
             }
             span{
                 padding: 4px;
