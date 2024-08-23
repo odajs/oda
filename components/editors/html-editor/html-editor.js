@@ -1,227 +1,79 @@
-ODA({ is: 'oda-html-editor', imports: '@oda/button, @oda/code-editor, @oda/palette, @tools/containers, ./pell.js',
-    template: /*html*/`
-    <style>
-        :host {
-            @apply --vertical;
-            @apply --flex;
-            height: 100%;
-        }
-        .pell {
-            border: 1px solid var(--border-color);
-            box-sizing: border-box;
-        }
+const srcPath = import.meta.url.split('/').slice(0, -1).join('/') + '/src/';
 
-        .pell-content {
-            box-sizing: border-box;
-            outline: 0;
-            overflow-y: auto;
-            padding: 10px;
-            height: 100%;
-            text-wrap: wrap;
-        }
-
-        .pell-actionbar {
-            background-color: var(--layout-background);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0px;
-            z-index: 10;
-            display: none;
-            flex-wrap: wrap;
-        }
-
-        :host([editable]) .pell-actionbar {
-            display: flex;
-        }
-
-        .pell-button {
-            background-color: var(--layout-background);
-            border: solid 1px var(--border-color);
-            border-radius: 2px;
-            margin: 1px;
-            cursor: pointer;
-            height: 24px;
-            outline: 0;
-            width: 30px;
-            vertical-align: bottom;
-        }
-
-        .pell-button-selected {
-            background-color: var(--selected-background);
-        }
-
-        .pell-button:hover {
-            filter: brightness(80%);
-        }
-    </style>
-    <div id="editor" class="flex"></div>
-    <div ~if="syspanel" class="horizontal" style="position: sticky; bottom: 0; background-color: var(--layout-background); border-top: 1px solid var(--border-color);">
-        <oda-button icon="editor:mode-edit" @tap.stop="editable=!editable" :label="editable?'Switch to View mode':'Switch to Edit mode'" style="opacity: 0.7"></oda-button>
-        <oda-button icon="icons:open-in-browser" @tap.stop="_open" label="Open in browser" style="opacity: 0.7"></oda-button>
-    </div>`,
-    $public: {
-        editable: {
-            $def: false,
-            $attr: true,
-            set(n) {
-                if (this.editor?.content)
-                    this.editor.content.contentEditable = n;
+ODA({ is: 'oda-html-editor', imports: './src/suneditor.min.js',
+    template: `
+        <style>
+            :host {
+                @apply --vertical;
+                @apply --flex;
             }
-        },
-        value: {
-            $type: String,
-            set(n) {
-                if (this.editor && this.editor.content.innerHTML !== n) this.editor.content.innerHTML = n ? n : '';
+            .sun-editor {
+                border: none;
             }
-        },
-        editor: {
-            $type: [Object, HTMLElement]
-        },
-        syspanel: false
+            .se-navigation, .se-resizing-bar {
+                display: none!important;
+            }
+            .se-wrapper-code {
+                min-height: 300px!important;
+            }
+        </style>
+        <link :href rel="stylesheet">
+        <div class="sun-editor-editable" ~if="!editMode" ~html="value"></div>
+        <textarea id="html-editor" hidden></textarea>
+    `,
+    get href() {
+        return srcPath + 'suneditor.min.css';
     },
-    detached(e) {
-        this.editor.innerHTML = '';
+    $public: {
+        editMode: {
+            $def: false,
+            set(n) {
+                this.init();
+            }
+        }
+    },
+    get value() {
+        return this.editor?.getContet?.() || '';
+    },
+    setValue(v) {
+        if (this.editor)
+            this.editor.setContents(v);
     },
     async attached() {
-        setTimeout(async () => {
-            this.editor = pell.init({
-                element: this.$('#editor'),
-                onChange: html => {
-                    this.value = html
-                    this.fire('change', html)
-                },
-                actions: [
-                    'bold',
-                    'italic',
-                    'underline',
-                    'strikethrough',
-                    'heading1',
-                    'heading2',
-                    'heading3',
-                    'heading4',
-                    'heading5',
-                    'heading6',
-                    {
-                        name: 'foreColor',
-                        icon: '&#9734;',
-                        title: 'foreColor',
-                        result: async () => {
-                            let ctrl = document.createElement('oda-palette');
-                            await ODA.showDialog(ctrl, {
-                                title: 'Select Color',
-                                buttons: []
-                            });
-                            pell.exec('foreColor', ctrl.value)
-                        }
-                    },
-                    {
-                        name: 'backColor',
-                        icon: '&#9733',
-                        title: 'backColor',
-                        result: async () => {
-                            let ctrl = document.createElement('oda-palette');
-                            await ODA.showDialog(ctrl, {
-                                title: 'Select Color',
-                                buttons: []
-                            });
-
-                            pell.exec('backColor', ctrl.value)
-                        }
-                    },
-                    'olist',
-                    'ulist',
-                    'paragraph',
-                    'quote',
-                    'code',
-                    'line',
-                    'link',
-                    'image',
-                    'video',
-                    'html',
-                    {
-                        name: 'Commands',
-                        icon: '✓',
-                        title: 'Commands',
-                        result: function result() {
-                            var url = window.prompt('c-center, f-full, l-left, r-right, i-indent, o-outdent, 1-7 fontSize, s-subScript, u-superScript, z-unLink, <-undo, >-redo, x-removeFormat');
-                            if (url) {
-                                url = url.toLowerCase();
-                                switch (url) {
-                                    case 'c':
-                                        url = 'justifyCenter'
-                                        break;
-                                    case 'f':
-                                        url = 'justifyFull'
-                                        break;
-                                    case 'l':
-                                        url = 'justifyLeft'
-                                        break;
-                                    case 'r':
-                                        url = 'justifyRight'
-                                        break;
-                                    case 'x':
-                                        url = 'removeFormat'
-                                        break;
-                                    case 'i':
-                                        url = 'inDent'
-                                        break;
-                                    case 'o':
-                                        url = 'outDent'
-                                        break;
-                                    case 's':
-                                        url = 'subScript'
-                                        break;
-                                    case 'u':
-                                        url = 'superScript'
-                                        break;
-                                    case 'z':
-                                        url = 'unLink'
-                                        break;
-                                    case '<':
-                                        url = 'undo'
-                                        break;
-                                    case '>':
-                                        url = 'redo'
-                                        break;
-                                    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
-                                        pell.exec('fontSize', url);
-                                        return;
-                                }
-                                pell.exec(url);
-                            }
-                        }
-                    },
-                    {
-                        name: 'viewSource',
-                        icon: '&lt;/&gt;',
-                        title: 'View source code',
-                        result: async () => {
-                            let ctrl = document.createElement('oda-code-editor');
-                            ctrl.style.height = (window.innerHeight - window.innerHeight * 0.18) + 'px';
-                            ctrl.style.width = (window.innerWidth - window.innerWidth * 0.18) + 'px';
-                            ctrl.value = this.editor.content.innerHTML;
-                            ctrl.mode = 'html';
-                            ctrl.wrap = true;
-                            ctrl.addEventListener('keydown', (e) => {
-                                if (e.code === 'Enter') {
-                                    e.stopPropagation();
-                                }
-                            });
-                            await ODA.showDialog(ctrl, {
-                                title: 'Ace HTML editor',
-                                buttons: []
-                            });
-                            this.editor.content.innerHTML = ctrl.value;
-                        }
-                    },
-                ],
-            });
-            this.editor.content.contentEditable = this.editable;
-            this.editor.content.innerHTML = this.value || '';
-        }, 16);
+        this.init();
     },
-    _open() {
-        let newWin = window.open("about:blank", "HTML");
-        newWin.document.write(this.editor.content.innerHTML);
+    init() {
+        const ed = this.$('#html-editor');
+        if (!ed || !this.editMode) {
+            this.editor?.destroy();
+            return;
+        }
+        this.editor = SUNEDITOR.create(ed, {
+            maxHeight: '90vh',
+            width: '100%',
+            buttonList: [
+                [
+                    // 'undo', 'redo',
+                    'formatBlock', 'font', 'fontSize',
+                    'paragraphStyle', 'blockquote',
+                    'bold', 'underline', 'italic', 'strike', 'subscript', 'superscript',
+                    'fontColor', 'hiliteColor', 'textStyle',
+                    'removeFormat',
+                    'outdent', 'indent',
+                    'align', 'horizontalRule', 'list', 'lineHeight',
+                    'table', 'link', 'image', 'video', 'audio',
+                    // 'math', // You must add the 'katex' library at options to use the 'math' plugin.
+                    // 'imageGallery', // You must add the "imageGalleryUrl".
+                    // 'fullScreen', 
+                    'showBlocks', 'codeView',
+                    // 'preview', 'print', 'save', 'template'
+                ]
+            ]
+        })
+        this.editor.setContents(this.value || '');
+        this.editor.onChange = (e) => {
+            this.value = e;
+            this.fire('change', this.value);
+        }
     }
 })

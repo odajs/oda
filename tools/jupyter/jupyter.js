@@ -6,7 +6,7 @@ run_context.output_data = undefined;
 const console_log = console.log;
 window.log = window.print = console.log = (...e) => {
     e = e.map(i=>{
-        if (typeof i === 'object' || i.toJSON)
+        if (i && (typeof i === 'object' || i.toJSON))
             return JSON.stringify(i, null,  4);
         return i;
     })
@@ -29,7 +29,7 @@ window.err = console.error = (...e) => {
 window.run_context = run_context;
 
 import { getLoader } from '../../components/tools/loader/loader.js';
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
     template: `
         <style>
             :host {
@@ -142,7 +142,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
-            html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
+            html: { label: 'HTML', editor: 'oda-html-editor', type: 'html' }
         },
         selectedCell: {
             $def: null,
@@ -418,7 +418,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             :host{
                 position: sticky;
                 top: 20px;
-                z-index: 3;
+                z-index: 9;
             }
             .top {
                 @apply --horizontal;
@@ -436,7 +436,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         <div class="top" ~if="!readOnly && selected" >
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="cell.move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="cell.move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
@@ -458,7 +458,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
             :host{
                 position: sticky;
                 top: 20px;
-                z-index: 3;
+                z-index: 9;
                 display: block;
             }
             .top {
@@ -496,82 +496,6 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-html-editor',
-    $public:{
-        editorType:{
-            $def: 'ace',
-            $list: ['ace', 'monaco'],
-            get(){
-                return this.cell?.readMetadata('editorType', 'ace');
-            },
-            set(n) {
-                this.src = this.value;
-                this.cell?.writeMetadata('editorType', n);
-            }
-        },
-        editorHeight: {
-            $def: '',
-            get(){
-                return this.cell?.readMetadata('editorHeight', '');
-            },
-            set(n) {
-                this.cell?.writeMetadata('editorHeight', n);
-            }
-        },
-        direction: {
-            $def: 'row',
-            $list: ['row', 'column'],
-            get(){
-                return this.cell?.readMetadata('direction', 'row');
-            },
-            set(n) {
-                this.src = this.value;
-                this.cell?.writeMetadata('direction', n);
-            }
-        },
-        noWrap: {
-            $def: false,
-            get(){
-                return this.cell?.readMetadata('noWrap', false);
-            },
-            set(n) {
-                this.cell?.writeMetadata('noWrap', n);
-            }
-        },
-        showPreview: {
-            $def: false,
-            get(){
-                return this.cell?.readMetadata('showPreview', false);
-            },
-            set(n) {
-                this.cell?.writeMetadata('showPreview', n);
-            }
-        },
-        previewMode: {
-            $def: 'html',
-            $list: ['html', 'iframe'],
-            get(){
-                return this.cell?.readMetadata('previewMode', 'html');
-            },
-            set(n){
-                this.async(() => {
-                    this.setIframe();  
-                }, 100)
-                this.cell?.writeMetadata('previewMode', n);
-            }
-        },
-        isEditMode: {
-            $def: false,
-            get() {
-                return this.cell?.readMetadata('isEditMode', false) || this.editMode;
-            },
-            set(n) {
-                this.editMode = n;
-                this.cell?.writeMetadata('isEditMode', n);
-            }
-        }
-    }
-})
 const AsyncFunction = async function () {}.constructor;
 ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     template: `
@@ -597,7 +521,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
-            <div vertical style="width: 30px; align-items: center;"> 
+            <div vertical style="width: 30px; align-items: center; background: white;"> 
                 <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding: 8px 0px 10px 0px;">[ ]</span>
                 <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
             </div>
