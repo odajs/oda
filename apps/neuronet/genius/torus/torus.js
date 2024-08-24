@@ -1260,6 +1260,14 @@ tensor.unpack = (expr, inputs)=>{
     //todo
 }
 const einsum_funtions = {};
+tensor.eye = (dim)=>{
+    const data = Array(dim).fill().map((_,i)=>{
+        let res =  Array(dim).fill(0);
+        res[i] = 1;
+        return res;
+    })
+    return tensor.from(data)._shape([dim,dim])._label('eye');
+}
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
     let func_key = tensors.map(i=>{
