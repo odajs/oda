@@ -479,6 +479,21 @@ export class tensor{
         }
         return this.fill(shape, handler, dType);
     }
+    static random(shape, from = 0, to = 1, dType = Float32Array) {
+        let handler = ()=>{
+            return Math.random() * (to - from) + from;
+        }
+        if (dType === BinaryArray){
+            // handler = BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+            handler = ()=>{
+                // return 5508166759905001231n
+                let value = Math.random().toString(2).substring(2);
+                return BigInt('0b' + value.padEnd(64, value))
+                //return BigInt('0b'+Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(Math.random() * 2 ** 32).toString(2).padStart(32, '0'));
+            }
+        }
+        return this.fill(shape, handler, dType);
+    }
     static randNorm(shape){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
     }
