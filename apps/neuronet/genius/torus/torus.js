@@ -698,20 +698,35 @@ tensor.prototype.minus = function (other){
     return out;
 }
 tensor.prototype.mul = function (other){
-    let y = other.data;
-    let data = this.data.map((x, i) => x * y[i]);
-    const out = tensor.from(data)._label('mul')._src(this, other)._shape(this);
-    out._back = ()=>{
-        let _x = this.grad;
-        let x = this.data;
-        let _y = other.grad;
-        let _z = out.grad;
-        for (let i = 0; i<data.length; i++){
-            let g = _z[i] /tensor.GRADIENT_DIVIDER;
-            _x[i] += y[i] * g;
-            _y[i] += x[i] * g;
+    let data;
+    let y = other.data ?? other;
+    if(other instanceof tensor){
+        data = this.data.map((x, i) => x * y[i]);
+    }
+    else{
+        data = this.data.map((x, i) => x * y);
+    }
+    let out = tensor.from(data)._label('mul')._shape(this);
+    if(other instanceof tensor){
+        out = out._src(this, other);
+        out._back = ()=>{
+            for (let i = 0; i<data.length; i++){
+                let g = out.grad[i];
+                this.grad[i] += y[i] * g;
+                other.grad[i] += this.data[i] * g;
+            }
         }
     }
+    else{
+        out = out._src(this, other);
+        out._back = ()=>{
+            for (let i = 0; i<data.length; i++){
+                this.grad[i] += y * out.grad[i];
+            }
+        }
+    }
+
+
     return out;
 }
 tensor.prototype.div = function (other){
@@ -732,20 +747,17 @@ tensor.prototype.div = function (other){
     return out;
 }
 tensor.prototype.pow = function (other){
-    let y = other.data;
-    let data = this.data.map((x, i)=>x ** y[i])
+    let y = other.data || other;
+    let data = this.data.map((x, i)=>x ** (y[i] ?? y[0] ?? y));
     let out =  tensor.from(data)._label(`pow`)._src(this, other)._shape(this);
     out._back = ()=>{
-        let _x = this.grad;
-        let x = this.data;
-        let _y = other.grad;
-        let _z = out.grad;
+        let o_grad = other.grad;
         for (let i = 0; i<data.length; i++){
-            let g = _z[i] /tensor.GRADIENT_DIVIDER;
-            let yi = y[i];
-            let xi = x[i];
-            _x[i] += yi * x[i] ** (yi - 1) * g;
-            _y[i] += data[i] * Math.ln(xi) * g;
+            let g = out.grad[i];
+            let yi = (y[i] ?? y[0] ?? y);
+            let xi = this.data[i];
+            this.grad[i] += yi * xi ** (yi - 1) * g;
+            o_grad && (o_grad[i] += data[i] * Math.ln(xi) * g);
         }
     }
     return out;
