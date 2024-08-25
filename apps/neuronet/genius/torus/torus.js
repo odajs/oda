@@ -634,6 +634,10 @@ tensor.prototype.log = function (){
     }
     return out;
 }
+tensor.prototype.log_ = function (){
+    this['#data'] = this.data.map(Math.log);
+    return this;
+}
 
 tensor.prototype.exp = function (){
     const data = this.data.map(Math.exp);
