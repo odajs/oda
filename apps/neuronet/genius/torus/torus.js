@@ -400,7 +400,7 @@ export class tensor{
             const d = new this.dType(size).map(x=>src[++idx]);
             return tensor.from(d, 'split', [this])._shape(...shape);
         });
-        console.log(data)
+        // console.log(data)
         return data;
 
     }
