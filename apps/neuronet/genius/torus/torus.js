@@ -635,7 +635,9 @@ tensor.prototype.log = function (){
     return out;
 }
 tensor.prototype.log_ = function (){
-    this['#data'] = this.data.map(Math.log);
+    for(let i = 0; i<this.data.length; i++){
+        this.data[i] = Math.log(this.data[i]);
+    }
     return this;
 }
 
