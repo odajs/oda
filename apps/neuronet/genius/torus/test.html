@@ -13,52 +13,24 @@
 
     btn.onclick = (e)=>{
         console.time('time')
-        let _x = 5;
-        let _k = 3;
-        let _y = 10;
-        let _z = 20;
-        let _m = 7;
+        let _x = 3;
+        let _y = 4;
+        let _z = 5;
+        let t = tensor.arange(_x * _y * _z)._shape(_x, _y, _z);
+        let idx = -1;
+        for (let x = x_b; x < x_e; x += x_s){
+            x = (x + 0) * _y;
+            for (let y = y_b; y < y_e; y += y_s){
+                y = (y + x) * _z;
+                for (let z = z_b; z < z_e; z += z_s){
+                    z = (z + y) ;
+                    out[++idx] =  t.data[z];
+                }
+            }
+        }
 
-        // let out = tensor.zeros([_z, _y, _k], Float32Array).data
-        let t0 = tensor.rand([_x, _k, _m], BinaryArray);
-        let t1 = tensor.rand([_y, _x]);
-        let t2 = tensor.rand([_z, _y], BinaryArray);
-        let out = tensor.einsum('xkm, yx, zy, xkm->xym', [t0, t1, t2, t0])
-        t0 = t0.data;
-        t1 = t1.data;
-        t2 = t2.data;
-        let t3 = t0;
-
-        // let out = new Float32Array(_y * _k * _z);
-        // let v0, v1, v2, v3;
-        // let idx = -1;
-        // for(let y = 0; y < _y; y++){
-        //     for(let k = 0; k < _k; k++){
-        //         for(let z = 0; z < _z; z++){
-        //             // v2 = t2[y + _y * (z)]
-        //             v2 = 0;
-        //             // let res = 0;
-        //
-        //             for(let x = 0; x < _x; x++){
-        //                 v1 = 0;
-        //                 // v1 = t1[x + _x * (y)] * v2
-        //                 for(let m = 0; m < _m; m++){
-        //
-        //                     v0 = t0[m + _m * (k + _k * (x))];//* v1
-        //
-        //                     v1 += v0 * v0
-        //
-        //                     // res += v3;
-        //                 }
-        //                 v2 += v1 * t1[x + _x * (y)]
-        //             }
-        //             out[++idx] = v2 * t2[y + _y * (z)];
-        //         }
-        //     }
-        // }
 
         console.timeEnd('time')
-        console.log(out)
     }
 
 

@@ -362,6 +362,9 @@ export class tensor{
         if (slicers.length>this.dim)
             throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
         let shape = [];
+
+        let func = ['let idx=-1;'];
+        func.push('let data = tensor.data;')
         for (let d = 0; d < this.dim; d++){
             let slicer = (slicers[d] || '').split(':');
             let size = this.shape[d];
@@ -377,11 +380,23 @@ export class tensor{
             size = Math.ceil((to - from)/step);
             if (size < 0)
                 size = 0;
+            let t = '\t'.repeat(d);
+            func.push(t+`for(let v${d} = ${from}; v${d}<${to}; v${d} += ${step}){`)
+            func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * (tensor.shape[${d+1}] || 1);`);
             if (size === 1 && shape.length && d  < (this.dim))
                 continue;
             shape.push(size);
         }
-        console.log(shape)
+        func.push('\t'.repeat(this.dim+1)+`out[++idx] = data[vi${this.dim-1}];`);
+        this.shape.forEach((_, d)=>{
+            func.push('\t'.repeat(this.dim - d)+`}`);
+        })
+        let size = shape.reduce((r,v)=>r*v, 1);
+        func.unshift(`let out = new tensor.dType(${size})`);
+        func.push(`return tensor.constructor.from(out)._shape(${shape})`);
+        func = func.join('\n');
+        let fn = new Function('tensor', func);
+        return fn(this);
     }
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
