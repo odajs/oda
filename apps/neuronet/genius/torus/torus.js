@@ -359,7 +359,25 @@ export class tensor{
         throw new Error(`to do`);
     }
     slice(...slicers){
-        console.log(slicers)
+        if (slicers.length>this.dim)
+            throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
+        let shape = [];
+        for (let d = 0; d < this.dim; d++){
+            let slicer = (slicers[d] || '').split(':');
+            let size = this.shape[d];
+            let from = +(slicer[0]?.trim() || 0);
+            if (from < 0)
+                from += size;
+            let to = +(slicer[1]?.trim() || size);
+            if (to < 0)
+                to += size;
+            let step = +(slicer[2]?.trim() || 1);
+            if (step < 0)
+                step += size;
+            size = Math.floor((to - from)/step);
+            shape.push(size);
+        }
+        console.log(shape)
     }
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
