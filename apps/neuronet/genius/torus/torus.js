@@ -364,24 +364,33 @@ export class tensor{
         let shape = [];
 
         let func = ['let idx=-1;'];
-        func.push('let data = tensor.data;')
+        func.push('let data = tensor.data;');
+        let size, start, end, step;
         for (let d = 0; d < this.dim; d++){
-            let slicer = (slicers[d] || '').split(':');
-            let size = this.shape[d];
-            let from = +(slicer[0]?.trim() || 0);
-            if (from < 0)
-                from += size;
-            let to = +(slicer[1]?.trim() || size);
-            if (to < 0)
-                to += size;
-            let step = +(slicer[2]?.trim() || 1);
-            if (step < 0)
-                step += size;
-            size = Math.ceil((to - from)/step);
+            let slicer = (slicers[d] || '').toString().trim();
+            if (+slicer>0){
+                start = +slicer;
+                end = start + 1;
+                step = 1;
+            }
+            else{
+                slicer = slicer.split(':');
+                size = this.shape[d];
+                let start = +(slicer[0]?.trim() || 0);
+                if (start < 0)
+                    start += size;
+                let end = +(slicer[1]?.trim() || size);
+                if (end < 0)
+                    end += size;
+                let step = +(slicer[2]?.trim() || 1);
+                if (step < 0)
+                    step += size;
+            }
+            size = Math.ceil((end - start)/step);
             if (size < 0)
                 size = 0;
             let t = '\t'.repeat(d);
-            func.push(t+`for(let v${d} = ${from}; v${d}<${to}; v${d} += ${step}){`)
+            func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
             func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * (tensor.shape[${d+1}] || 1);`);
             if (size === 1 && shape.length && d  < (this.dim))
                 continue;
@@ -391,7 +400,7 @@ export class tensor{
         this.shape.forEach((_, d)=>{
             func.push('\t'.repeat(this.dim - d)+`}`);
         })
-        let size = shape.reduce((r,v)=>r*v, 1);
+        size = shape.reduce((r,v)=>r*v, 1);
         func.unshift(`let out = new tensor.dType(${size})`);
         func.push(`return tensor.constructor.from(out)._shape(${shape})`);
         func = func.join('\n');
@@ -427,14 +436,13 @@ export class tensor{
         let shape = [...this.shape];
         if (dim < 0)
             dim = this.dim + dim;
-        const data = split_sizes.map(v=>{
+        const result = split_sizes.map(v=>{
             shape[dim] = v;
             const size = shape.reduce((r, s)=>r * s, 1);
             const d = new this.dType(size).map(x=>src[++idx]);
-            return tensor.from(d, 'split', [this])._shape(...shape);
+            return tensor.from(d)._shape(...shape)._dType(this.dType)._src([this]);
         });
-        // console.log(data)
-        return data;
+        return result;
 
     }
     static stack(tensors, dim= 0){
