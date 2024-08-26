@@ -374,14 +374,18 @@ export class tensor{
             let step = +(slicer[2]?.trim() || 1);
             if (step < 0)
                 step += size;
-            size = Math.floor((to - from)/step);
+            size = Math.ceil((to - from)/step);
+            if (size < 0)
+                size = 0;
+            if (size === 1 && shape.length && d  < (this.dim))
+                continue;
             shape.push(size);
         }
         console.log(shape)
     }
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
-            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
+            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
         if (dim < 0)
             dim = this.dim + dim;
         return  this.shape[dim];
