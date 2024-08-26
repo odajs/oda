@@ -259,10 +259,6 @@ export class tensor{
     get size(){
         return this.shape.reduce((r, v)=>r * v, 1);
     }
-
-    get data(){
-        return this.#data;
-    }
     get dim(){
         return this.shape.length;
     }
@@ -362,8 +358,8 @@ export class tensor{
     static concat(tensors, dim= 0){
         throw new Error(`to do`);
     }
-    slice(from, to, step){
-        throw new Error(`to do`);
+    slice(...slicers){
+        console.log(slicers)
     }
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
