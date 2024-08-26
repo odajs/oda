@@ -368,24 +368,26 @@ export class tensor{
         let size, start, end, step;
         for (let d = 0; d < this.dim; d++){
             let slicer = (slicers[d] || '').toString().trim();
-            if (+slicer>0){
+            size = this.shape[d];
+            if (slicer.length && !Number.isNaN(+slicer)){
                 start = +slicer;
                 end = start + 1;
                 step = 1;
             }
             else{
                 slicer = slicer.split(':');
-                size = this.shape[d];
-                let start = +(slicer[0]?.trim() || 0);
+                start = +(slicer[0]?.trim() || 0);
                 if (start < 0)
                     start += size;
-                let end = +(slicer[1]?.trim() || size);
+                end = +(slicer[1]?.trim() || size);
                 if (end < 0)
                     end += size;
-                let step = +(slicer[2]?.trim() || 1);
+                step = +(slicer[2]?.trim() || 1);
                 if (step < 0)
                     step += size;
             }
+            if (end > size)
+                end = size
             size = Math.ceil((end - start)/step);
             if (size < 0)
                 size = 0;
