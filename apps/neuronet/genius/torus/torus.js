@@ -365,16 +365,18 @@ export class tensor{
 
         let func = ['let idx=-1;'];
         func.push('let data = tensor.data;');
-        let size, start, end, step;
+        let size, start, end, step, add_shape;
         for (let d = 0; d < this.dim; d++){
-            let slicer = (slicers[d] || '').toString().trim();
+            let slicer = (slicers[d]?.toString() || '').toString().trim();
             size = this.shape[d];
             if (slicer.length && !Number.isNaN(+slicer)){
+                add_shape = false;
                 start = +slicer;
                 end = start + 1;
                 step = 1;
             }
             else{
+                add_shape = true;
                 slicer = slicer.split(':');
                 start = +(slicer[0]?.trim() || 0);
                 if (start < 0)
@@ -394,9 +396,8 @@ export class tensor{
             let t = '\t'.repeat(d);
             func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
             func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * (tensor.shape[${d+1}] || 1);`);
-            if (size === 1 && shape.length && d  < (this.dim))
-                continue;
-            shape.push(size);
+            if (add_shape)
+                shape.push(size);
         }
         func.push('\t'.repeat(this.dim+1)+`out[++idx] = data[vi${this.dim-1}];`);
         this.shape.forEach((_, d)=>{
