@@ -6,7 +6,6 @@ ODA({is: 'oda-icon',
             :host {
                 @apply --horizontal;
                 @apply --no-flex;
-                display: flex;
                 align-items: center;
                 position: relative;
             }

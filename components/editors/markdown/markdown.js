@@ -5,6 +5,7 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         <style>
             :host{
                 @apply --vertical;
+                border: {{showBorder?'1px solid var(--border-color)':'none'}};
                 overflow-x: hidden;
             }
             oda-markdown-viewer {
@@ -17,11 +18,12 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
                 <oda-markdown-editor flex ::value style="overflow: hidden" @change="onChange"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <oda-markdown-viewer flex :value="value || (!editMode ? '<b><u>Double click for Markdown edit...</u></b>' : '')"  @dblclick="_dblClick" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
+            <oda-markdown-viewer flex :value="value || (!readOnly && !editMode ? _value : '')"  @dblclick="_dblClick" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
         </div>
     `,
     $public:{
         value: '',
+        _value: '',
         url:{
             $type: String,
             async set(n) {
@@ -38,7 +40,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
                 }  
             }
         },
-        readOnly: false
+        readOnly: false,
+        showBorder: false
     },
     focus() {
         this.async(() => {
@@ -52,8 +55,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         return this.$('oda-markdown-viewer');
     },
     _dblClick() {
-        // if (!this.value)
-        this.editMode = !this.editMode;
+        if (!this.value && !this.readOnly)
+            this.editMode = true;
     },
     onChange(e) {
         this.fire('change', this.value);

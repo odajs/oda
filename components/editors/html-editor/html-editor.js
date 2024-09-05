@@ -1,82 +1,109 @@
-const srcPath = import.meta.url.split('/').slice(0, -1).join('/') + '/src/';
+const distPath = import.meta.url.split('/').slice(0, -1).join('/') + '/dist/';
 
-ODA({ is: 'oda-html-editor', imports: './src/suneditor.min.js',
+ODA({ is: 'oda-html-editor', imports: '@oda/code-editor',
     template: `
         <style>
             :host {
                 @apply --vertical;
                 @apply --flex;
+                postiton: relative;
+                opacity: 0;
             }
-            .sun-editor {
-                border: none;
-            }
-            .se-navigation, .se-resizing-bar {
-                display: none!important;
-            }
-            .se-wrapper-code {
-                min-height: 300px!important;
+            iframe {
+                border: {{showBorder?'1px solid var(--border-color)':'none'}};
+                width: 100%;
+                min-height: 80vh;
+                display: flex;
+                flex: 1;
             }
         </style>
-        <link :href rel="stylesheet">
-        <div class="sun-editor-editable" ~if="!editMode" ~html="value"></div>
-        <textarea id="html-editor" hidden></textarea>
+        <iframe ~if="!readOnly && editMode && editType==='html'"></iframe>
+        <oda-code-editor ~if="!readOnly && editMode && editType==='code'" show-gutter :src="value" mode="html" theme="solarized_light" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="codeValueChanged"></oda-code-editor>
+        <div id="viewer" ~if="readOnly || !editMode" ~html="value || (readOnly ? '' : _value)" @dblclick="_dblClick"></div>
     `,
-    get href() {
-        return srcPath + 'suneditor.min.css';
-    },
     $public: {
+        editType: {
+            $def: 'html',
+            $list: ['html', 'code'],
+            set(n) {
+                this.init();
+            }
+        },
         editMode: {
             $def: false,
             set(n) {
                 this.init();
             }
-        }
-    },
-    value: {
-        $def: '',
-        get() {
-            return this.editor?.getContents?.() || '';
         },
-        set (n) {
-            if (this.editor?.getContents && this.editor.getContents() !== n)
-                this.editor.setContents(n);
+        readOnly: {
+            $def: false,
+            set(n) {
+                this.init();
+            }
+        },
+        showBorder: false
+    },
+    value: '',
+    _value: '',
+    codeValueChanged(e) {
+        this.value = e.detail.value;
+    },
+    _dblClick() {
+        if (!this.value && !this.readOnly) {
+            this.editMode = true;
+            this.$render();
         }
     },
     async attached() {
         this.init();
     },
     init() {
-        const ed = this.$('#html-editor');
-        if (!ed || !this.editMode) {
-            this.editor?.destroy();
-            return;
-        }
-        this.editor = SUNEDITOR.create(ed, {
-            maxHeight: '90vh',
-            width: '100%',
-            buttonList: [
-                [
-                    // 'undo', 'redo',
-                    'formatBlock', 'font', 'fontSize',
-                    'paragraphStyle', 'blockquote',
-                    'bold', 'underline', 'italic', 'strike', 'subscript', 'superscript',
-                    'fontColor', 'hiliteColor', 'textStyle',
-                    'removeFormat',
-                    'outdent', 'indent',
-                    'align', 'horizontalRule', 'list', 'lineHeight',
-                    'table', 'link', 'image', 'video', 'audio',
-                    // 'math', // You must add the 'katex' library at options to use the 'math' plugin.
-                    // 'imageGallery', // You must add the "imageGalleryUrl".
-                    // 'fullScreen', 
-                    'showBlocks', 'codeView',
-                    // 'preview', 'print', 'save', 'template'
-                ]
-            ]
+        this.async(() => {
+            if (!this.editMode || this.readOnly) {
+                this.style.opacity = 1;
+                return;
+            }
+            const iframe = this.$('iframe');
+            if (iframe) {
+                iframe.addEventListener('load', () => {
+                    iframe.contentDocument.addEventListener('change', (e) => {
+                        this.debounce('change', () => {
+                            e.stopPropagation();
+                            this.value = e.detail;
+                            this.fire('change', this.value)
+                        }, 300)
+                    })
+                    this.editor = iframe.contentDocument.editor;
+                    this.editor.setData(this.value || '');
+                    this.style.opacity = 1;
+                })
+                iframe.srcdoc = this.srcdoc(this.value || '');
+            } else {
+                this.style.opacity = 1;
+            }
         })
-        this.editor.setContents(this.value || '');
-        this.editor.onChange = (e) => {
-            this.value = e;
-            this.fire('change', this.value);
-        }
+    },
+    srcdoc(src) {
+        return `
+<style>
+    html::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { border-radius: 10px; }
+</style>
+<div id="editor" style="overflow: hidden">${src || this.src || ''}</div>
+<script src="${distPath}ckeditor.js"></script>
+<script>
+let editor = CKEDITOR.replace('editor', { 
+    versionCheck: false
+    // readOnly: true
+})
+editor.on('change', (e) => {
+    document.dispatchEvent(new CustomEvent('change', { detail: e.editor.getData() }));
+})
+editor.on('instanceReady', (e) => {
+    if(e.editor.getCommand('maximize').state==CKEDITOR.TRISTATE_OFF) e.editor.execCommand('maximize');
+})
+document.editor = editor;
+document.CKEDITOR = CKEDITOR;
+</script>
+        `
     }
 })

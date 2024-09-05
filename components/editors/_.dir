@@ -8,7 +8,7 @@
     },
     {
         "name": "html-editor",
-        "label": "<b style='color: #e689fe'>oda-html-editor:</b> Редактор HTML/CSS кода",
+        "label": "<b style='color: #e689fe'>oda-html-editor:</b> WYSIWYG редактор HTML",
         "content": {
             "link": "index.html"
         }
@@ -16,13 +16,6 @@
     {
         "name": "markdown",
         "label": "<b style='color: #e689fe'>oda-markdown:</b> markdown редактор",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "wysiwyg",
-        "label": "<b style='color: #e689fe'>oda-html-editor:</b> WYSIWYG редактор HTML кода",
         "content": {
             "link": "index.html"
         }
@@ -37,13 +30,6 @@
     {
         "name": "rich-text-editor",
         "label": "<b style='color: #e689fe'>oda-rich-text-editor:</b> Текстовый редактор",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "diagram-editor",
-        "label": "<b style='color: #e689fe'>oda-diagram-editor:</b> Редактор диаграмм",
         "content": {
             "link": "index.html"
         }

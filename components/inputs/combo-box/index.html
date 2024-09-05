@@ -18,5 +18,9 @@
     });
     setTimeout(() => {
         box.dropDownControl = el;
+        box.value = el.items[Math.floor(getRandomArbitrary(0, el.items.length))];
     }, 10)
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+    }
 </script>

@@ -5,12 +5,5 @@
         "content": {
             "link": "index.html"
         }
-    },
-    {
-        "name": "selector",
-        "label": "<b style='color: #996083'>oda-selector:</b> Поле с выбором",
-        "content": {
-            "link": "index.html"
-        }
     }
 ]

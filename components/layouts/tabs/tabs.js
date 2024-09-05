@@ -46,6 +46,7 @@ ODA({
             class="tab raised"
             ~class="{accent: index === $for.index, 'fixed-tab': !!$for.item.fixed}"
             ~style="{transform: direction === 'vertical' && $for.item.label ? 'rotate(180deg)' : 'none', order: $for.item.order || 0}"
+            @mousedown="_tabOnMouseDown($for.item, $event)"
         >
             <oda-tabs-tab ~is="$for.item.componentName || componentName" :item="$for.item" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)"></oda-tabs-tab>
             <oda-icon ~if="typeof $for.item.close === 'function'" icon="icons:close" @tap.stop="$for.item.close()"></oda-icon>
@@ -100,6 +101,25 @@ ODA({
         }
     },
     overflow: false,
+    /**
+     * @param {{close?: function}} item
+     * @param {MouseEvent} event
+     */
+    _tabOnMouseDown(item, event) {
+        if (typeof item.close === 'function' && event.button === 1) {
+            const target = event.target;
+            const cancel = () => {
+                target.removeEventListener('mouseup', onMouseUp);
+                window.top.removeEventListener('mouseup', cancel);
+            };
+            const onMouseUp = () => {
+                item.close();
+                cancel();
+            };
+            target.addEventListener('mouseup', onMouseUp);
+            window.top.addEventListener('mouseup', cancel);
+        }
+    },
     _scroll(dir = 1) {
         if (!this.container) return;
         this.container[`scroll${this._scrollSuffix}`] += dir * 100;

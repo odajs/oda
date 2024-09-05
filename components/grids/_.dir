@@ -5,12 +5,5 @@
         "content": {
             "link": "index.html"
         }
-    },
-        {
-        "name": "canvas-table",
-        "label": "<b style='color: #42b983'>oda-canvas-table:</b> Вариант таблицы на canvas",
-        "content": {
-            "link": "index.html"
-        }
     }
 ]

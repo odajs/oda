@@ -332,10 +332,10 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
     <div @tap.stop class="horizontal shadow content drawer no-flex"
         ~style="_styles">
         <div class="flex vertical" style="overflow: hidden;">
-            <slot name="panel-header" class="no-flex"></slot>
             <div ~if="showTitle || showPin || openedTitle" invert class="horizontal content shadow" ~style="{flexDirection: \`row\${pos === 'right'?'-reverse':''}\`}" style="align-items: center; padding: 2px" @tap.stop>
                 <oda-icon :icon-size ~if="opened?.titleIcon" :icon="opened?.titleIcon"></oda-icon>
                 <label ~if="openedTitle || showPin" class="flex title-label" ~text="openedTitle"></label>
+                <slot name="panel-header"></slot>
                 <oda-button ~if="showPin" :icon="pinned ? 'icons:pin-fill:315' : 'icons:pin'" @mousedown.stop="pinned = !pinned" :icon-size style="transform: scale(.5)"></oda-button>
 <!--                <oda-button :icon-size="iconSize*0.66" :icon="\`icons:chevron-right:\${pos === 'left' ? 180 : 0}\`" @tap.stop="opened = null"></oda-button>-->
             </div>

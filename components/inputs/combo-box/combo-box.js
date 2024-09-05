@@ -68,6 +68,7 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         return this.$('input');
     },
     set value(n) {
+        this.text = this._getTextFromValue(n);
         this.async(() => {
             this.input?.select(0, 1000);
         })
@@ -79,22 +80,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
         //     this.closeDown();
         // })
     },
-    $observers: {
-        load: 'value'
-    },
-    load(value) {
-        if (!this.text)
-            this.text = value;
-    },
-    // get text() {
-    //     switch (typeof this.value) {
-    //         case 'string':
-    //             return this.value;
-    //         case 'object':
-    //             return (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
-    //     }
-    //     return this.value?.toString() || '';
-    // },
     createDropDownControl() {
         return ODA.createElement(this.template);
     },
@@ -134,17 +119,6 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
             this._dd = ODA.showDropdown(this.dropDownControl, this.params, { parent: this, useParentWidth: this.useParentWidth, fadein: this.fadein, title: this.dropDownTitle });
             this._dd.then(res => {
                 this.value = this.result;
-                switch (typeof this.value) {
-                    case 'string': {
-                        this.text = this.value;
-                    } break;
-                    case 'object': {
-                        this.text = (this.value?.label || this.value?.name || this.value?.key || this.value?.toString());
-                    } break;
-                    default: {
-                        this.text = this.value?.toString() || '';
-                    } break;
-                }
             }).catch(e => {
                 this.arrowMoveDone = false;
             }).finally(() => {
@@ -212,6 +186,14 @@ ODA({is: 'oda-combo-box', imports: '@oda/button, @tools/containers',
     },
     onEnter() {
 
+    },
+    _getTextFromValue(value) {
+        switch (typeof value) {
+            case 'number':
+            case 'string': return value;
+            case 'object': return (value?.label || value?.name || value?.id || value?.key || value?.toString());
+            default: return value?.toString() || '';
+        }
     }
 })
 

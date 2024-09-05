@@ -3,33 +3,36 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 
 window.run_context = Object.create(null);
 run_context.output_data = undefined;
-const console_log = console.log;
-window.log = window.print = console.log = (...e) => {
+window.print = window.log = (...e) => {
     e = e.map(i=>{
-        if (i && (typeof i === 'object' || i.toJSON))
-            return JSON.stringify(i, null,  4);
-        return i;
+        if (i && typeof i === 'object')
+            return JSON.stringify(i, undefined, 2)
+        return i
     })
-    console_log.call(window, ...e);
     run_context.output_data?.push([...e].join('\n'));
 }
-const console_warn=  console.warn;
-window.warn =  console.warn = (...e) => {
+const console_warn = console.warn;
+window.warning = window.warn =  console.warn = (...e) => {
     console_warn.call(window, ...e);
     run_context.output_data?.push('<b>warning</b>:\n'+[...e].join('\n'));
 }
 window.show = (...e) => {
+    e = e.map(i=>{
+        if (typeof i === 'string' && window.customElements.get(i))
+            return document.createElement(i);
+        return i;
+    })
     run_context.output_data?.push(...e);
 }
 const console_error =  console.error;
-window.err = console.error = (...e) => {
+window.err = window.error = console.error = (...e) => {
     console_error.call(window, ...e);
     run_context.output_data?.push( '<b>error:</b>\n'+ [...e].join('\n'));
 }
 window.run_context = run_context;
 
 import { getLoader } from '../../components/tools/loader/loader.js';
-ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor',
+ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
             :host {
@@ -142,7 +145,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
-            html: { label: 'HTML', editor: 'oda-html-editor', type: 'html' }
+            html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
         },
         selectedCell: {
             $def: null,
@@ -180,25 +183,24 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown, @oda/html-editor'
 })
 
 ODA ({ is: 'oda-jupyter-cell-out', template: `
-        <span :src="outSrc" ~is="outIs" ~html="outHtml" style="white-space: break-spaces; user-select: text;" :warning :error></span>
-        <div ~if="row.item.length - max > 0" class="horizontal left info flex" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
-            <span style="padding: 9px;">Показано {{max * (step + 1)}} из {{row.item.length}}</span>
-            <oda-button ~if="!showAll" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setStep($event, 1)">Показать следующие {{max}}</oda-button>
-            <oda-button ~if="!showAll" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setStep($event, 0)">Показать все</oda-button>
+        <div :src="outSrc" ~is="outIs" info ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" style="padding: 4px; user-select: text; overflow-x: auto;" :warning :error></div>
+        <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
+            <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
+            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
+            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
         </div>
     `,
+    get textWrap() {
+        return this.cell?.metadata?.textWrap || false;
+    },
     row: undefined,
     showAll: false,
-    max: 10000,
+    max: 50,
     step: 0,
     setStep(e, sign) {
         e.preventDefault();
         e.stopPropagation();
         this.step += sign;
-        if (this.step > this.row.item.length / this.max - 1 || sign === 0) {
-            this.step = this.row.item.length / this.max - 1;
-            this.showAll = true;
-        }
     },
     outSrc: '',
     outIs(i = this.row) {
@@ -207,21 +209,30 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
         } 
-        return 'span';
+        return 'div';
+    },
+    get maxRowsLength(){
+        return  this.split_out.length;
+    },
+    get curRowsLength(){
+        return this.max * (this.step + 1);
+    },
+    get split_out(){
+        return this.row?.item?.split?.('\n') || [];
     },
     outHtml() {
-        if (this.row?.item instanceof HTMLElement) return this.row.item;
-        return this.row?.item?.substring?.(0, this.max * (this.step + 1)) || '';
+        if (this.row?.item instanceof HTMLElement)
+            return this.row.item;
+        if (this.showAll)
+            return this.row?.item || ''
+        let array = this.split_out.slice(0, this.curRowsLength);
+        return array.join('\n');
     },
     get warning() {
         return this.row?.item?.startsWith?.('<b>warn');
     },
     get error() {
         return this.row?.item?.startsWith?.('<b>err');
-    },
-    attached() {
-        this.step = 0;
-        this.showAll = false;
     }
 })
 
@@ -232,8 +243,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --vertical; 
                 @apply --no-flex;
                 position: relative;
-                margin-bottom: 6px;
-                width: 100%;
+                padding-right: 4px;
+                padding-top: 4px;
                 min-height: 24px;  
             }
             .sticky{
@@ -250,47 +261,55 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --active;
             }
         </style>
-        <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-toolbar>
-        <div class="horizontal">
-            <div class="vertical">
-                <div style="position: sticky; top: 0; min-width: 32px; max-width: 32px; padding: 10px 0px; font-size: xx-small; text-align: center; white-space: break-spaces;" :error-invert="status === 'error'">{{status}}</div>
+       
+        <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
+            
+            <div class="vertical" :error-invert="status === 'error'">
+                <div class="sticky" style="min-width: 32px; max-width: 32px; margin: 2px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run"></oda-button>
+                    {{status}}
+                </div>
             </div>
-            <div class="vertical flex">
-                <div class="vertical flex">
+            <div class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
+                <div class="vertical">
+                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-toolbar>
                     <div class="horizontal" >
                         <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                        <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview></div>
+                        <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
                     </div>
                     <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
                         <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="cell?.outputs?.length" class="info border"  style="max-height: 100%;">
+                <div  ~if="cell?.outputs?.length" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell :cell-control></oda-jupyter-outputs-toolbar>
-                    <div id="out" class="vertical flex" style="max-width: 100%; overflow: hidden; padding: 4px 0;">
+                    <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideRun" style="overflow: hidden;">
-                            <div ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="padding: 4px;  border-bottom: 1px dashed; font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxStr"></oda-jupyter-cell-out>
+                            <div raised ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="font-family: monospace;" >
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
-                        <div ~if="cell?.metadata?.hideRun" info style="cursor: pointer; margin: 4px; padding: 6px;" @tap="hideRun">Show hidden outputs data</div>
+                    </div>
+                    <div ~if="cell?.metadata?.hideRun" class="horizontal left header" style="padding: 0 4px; font-size: small;">
+                        <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="hideRun">Show hidden outputs data</oda-button>
                     </div>
                 </div>        
-                <div class="horizontal left info flex" ~if="showOutInfo" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
+                <div class="horizontal left info flex" ~if="!cell?.metadata?.hideRun && showOutInfo" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
                     <span style="padding: 9px;">{{outInfo}}</span>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Показать следующие {{maxOutputsRow}}</oda-button>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="border info" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Показать все</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark header" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark header" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
                 </div>
             </div>
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    _value: '<b><u>Double click for edit...</u></b>',
     get maxOutputsRow() {
         return this.control.maxRow;
     },
     get outInfo() {
-        return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length : Math.round(this.maxOutputsRow * (this.outputsStep + 1))} из ${this.cell?.outputs?.length}`;
+        return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length.toLocaleString() : Math.round(this.maxOutputsRow * (this.outputsStep + 1)).toLocaleString()} из ${this.cell?.outputs?.length.toLocaleString()}`;
     },
     get showOutInfo() {
         return this.cell?.outputs?.length > this.maxOutputsRow;
@@ -327,13 +346,48 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     $listeners:{
         dblclick(e){
-            this.editMode = true;
+            if (!this.cell.src) {
+                this.editMode = true;
+                this.$render();
+            }
         }
     },
     get status(){
         return this.cell.status;
     },
+    async run() {
+        const taskID = getID();
+        ODA.top.__loader.addTask({ id: taskID });
+        this.outputsStep = 0;
+        this.showAllOutputsRow = false;
+        this.async(async () => {
+            try {
+                for (let code of this.notebook.codes){
+                    if (code === this.cell) break;
+                    if (code.status) continue;
+                    await new Promise(async (resolve)=>{
+                        await code.run(this.jupyter);
+                        this.async(resolve)
+                    })
+                    await this.$render();
+                }
+                await this.cell.run(this.jupyter);
+                this.focus();
+            } catch (error) {
+
+            } finally {
+                ODA.top.__loader.removeTask({ id: taskID });
+            }
+        }, 50)
+    },
     $pdp: {
+        get icon(){
+            return this.cell?.isRun? 'spinners:8-dots-rotate': (this.isHover?'av:play-circle-outline':'icons:check-box-outline-blank');
+        },
+        isHover: false,
+        get isReadyRun(){
+            return this.isHover || this.selected || this.cell?.isRun;
+        },
         editMode: {
             $def: false,
             get() {
@@ -379,7 +433,7 @@ ODA({ is: 'oda-jupyter-divider',
                 height: 3px;
                 justify-content: center;
                 opacity: {{!visible?0:1}};
-                /*transition: opacity ease-out .1s;*/
+                margin-top: {{last?'12px':'0px'}};
                 position: relative;
             }
             :host(:hover) {
@@ -396,10 +450,12 @@ ODA({ is: 'oda-jupyter-divider',
             }
         </style>
         <div class="horizontal center" style="z-index: 2">
-            <div ~if="!readOnly && cells?.length > 0" style="width: 100%; position: absolute; top: 2px; height: 1px; border-bottom: 1px dashed;"></div>
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
         </div>
     `,
+    get last() {
+        return this.cell?.isLast;
+    },
     get visible(){
         if (!this.cells?.length)
             return true;
@@ -425,18 +481,20 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                 @apply --no-flex;
                 @apply --content;
                 @apply --raised;
-                @apply --shadow;
                 position: absolute;
                 right: 8px;
                 padding: 1px;
                 border-radius: 4px;
                 margin-top: -20px;
             }
+            oda-button{
+                 border-radius: 4px;
+            }
         </style>
         <div class="top" ~if="!readOnly && selected" >
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
@@ -473,25 +531,29 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                 @apply --no-flex;
                 @apply --content;
                 @apply --raised;
-                @apply --shadow;
                 right: 8px;
                 position: absolute;
                 padding: 1px;
                 border-radius: 4px;
                 margin-top: -20px;
-                width: 98px;
+            }
+            oda-button{
+                 border-radius: 4px;
             }
         </style>
         <div class="top info border" ~if="cell?.outputs?.length">
-            <div class="flex"></div>
-            <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun()" title="Hide/Show"></oda-button>
+            <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
+            <oda-button :icon-size icon="bootstrap:eye-slash" @tap="hideRun" title="Hide/Show" allow-toggle :toggled="cell.metadata.hideRun"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
-            <oda-button :icon-size icon="icons:fullscreen" @tap="cellControl?.$('#out').requestFullscreen();" title="Full screen"></oda-button>
         </div>
     `,
     cell: null,
     iconSize: 16,
     cellControl: undefined,
+    textWrap() {
+        this.cell.metadata.textWrap = !this.cell.metadata.textWrap;
+        this.cell?.writeMetadata('textWrap', this.cell.metadata.textWrap);
+    },
     hideRun() {
         this.cellControl.hideRun();
         this.jupyter.scrollToCell(this.selectedCell);
@@ -500,6 +562,20 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
         this.cell.metadata.hideRun = false;
         this.cell.outputs = [];
         this.jupyter.scrollToCell(this.cell);
+    }
+})
+
+ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-html-editor',
+    $public: {
+        editType:{
+            $def: 'html',
+            get(){
+                return this.cell?.readMetadata('editType', 'html');
+            },
+            set(n){
+                this.cell?.writeMetadata('editType', n);
+            }
+        }
     }
 })
 
@@ -527,11 +603,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" @pointerover="isHover = true" @pointerout="isHover = false">
-            <div vertical style="width: 30px; align-items: center; background: white;"> 
-                <span class="sticky" ~if="!isReadyRun" style="text-align: center; font-family: monospace; font-size: small; padding: 8px 0px 10px 0px;">[ ]</span>
-                <oda-button class="sticky" ~if="!!isReadyRun"  :icon-size :icon @tap="run"></oda-button>
-            </div>
+        <div  class="horizontal border" >
             <oda-code-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>                        
         </div>
  
@@ -544,50 +616,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             this.run();
         }
     },
-    get isReadyRun(){
-        return this.isHover || this.selected || this.cell?.isRun;
-    },
-    isHover: false,
     value: '',
-    get icon(){
-        return this.cell?.isRun? 'spinners:8-dots-rotate': 'av:play-circle-outline';
-    },
     editorValueChanged(e) {
         this.value = e.detail.value;
     },
-    async run() {
-        const taskID = getID();
-        ODA.top.__loader.addTask({ id: taskID });
-        this.outputsStep = 0;
-        this.showAllOutputsRow = false;
-        this.async(async () => {
-            try {
-                for (let code of this.notebook.codes){
-                    if (code === this.cell) break;
-                    if (code.status) continue;
-                    await new Promise(async (resolve)=>{
-                        await code.run(this.jupyter);
-                        this.async(resolve)
-                    })
-                    await this.$render();
-                }
-                await this.cell.run(this.jupyter);
-                // this.async(() => {
-                //     this.jupyter.$$('oda-jupyter-cell').map(i => {
-                //         if (i.control.cell.type === 'html') {
-                //             i.control.refreshPreview();
-                //         }
-                //     })
-                // }, 500)
-                this.focus();
-            } catch (error) {
-                
-            } finally {
-                ODA.top.__loader.removeTask({ id: taskID });
-            }
-        }, 50)
 
-    },
     $public:{
         autoRun:{
             $def: false,
@@ -596,16 +629,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             },
             set(n){
                 this.cell?.writeMetadata('autoRun', n)
-            }
-        },
-        maxStr:{
-            $pdp: true,
-            $def: 10000,
-            get(){
-                return this.cell?.readMetadata('maxStr', 10000)
-            },
-            set(n){
-                this.cell?.writeMetadata('maxStr', n)
             }
         },
         maxRow:{
@@ -863,7 +886,6 @@ class JupyterCell extends ROCKS({
         this.data = data;
     }
     async run(jupyter){
-        this.outputs = []
         this.metadata.hideRun = false;
         this.status = '';
         this.isRun = true;

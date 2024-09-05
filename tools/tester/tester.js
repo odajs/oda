@@ -48,6 +48,7 @@ ODA({is: 'oda-tester-container',
     template: /*html*/`
         <style>
             :host{
+                @apply --vertical;
                 overflow: overlay;
             }
             ::slotted(*){

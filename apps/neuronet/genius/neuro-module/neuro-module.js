@@ -1,18 +1,12 @@
 import {tensor} from "../torus/torus.js";
 export class NeuroModule extends Function{
     #params = Object.create(null);
+    #label = undefined;
     constructor(argumetns) {
         super()
-        let model;
+
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
-            argumetns = argumetns[0];
-            model = Object.create(null)
-            for (let n in argumetns){
-                if (typeof argumetns[n] === 'object')
-                    model[n] = argumetns[n]
-                else
-                    this[n] = this.#params[n] = argumetns[n];
-            }
+            this.setModel(this.#params = argumetns[0]);
         }
         else{
             let expr = this.constructor.toString();
@@ -23,31 +17,10 @@ export class NeuroModule extends Function{
                 let [n, d] = name.split('=').map(i=>i.trim());
                 this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
             }
+            this.__init__.call(this.params);
         }
-        if (model){
-            for (let n in model){
-                const item = model[n];
-                this[n] ??= ((item)=>{
-                    function recurse (obj){
-                        if (Array.isArray(obj)){
-                            return item.map(i=> {
-                                if (i.$)
-                                    return new (eval(i.$))(i);
-                                return recurse (i);
-                            })
-                        }
-                        if (obj.$)
-                            return new (eval(obj.$))(i);
-                        return recurse (obj)
-                    }
-                    return recurse (item);
-                })()
-            }
-        }
-        else{
-            // setTimeout(()=>{
-                this.__init__();
-            // }, 0)
+        for (let n in this.params){
+            this[n] ??= this.params[n];
         }
         return new Proxy(this, {
             get(target, p, receiver) {
@@ -57,6 +30,36 @@ export class NeuroModule extends Function{
                 return target.forward(...args)
             }
         })
+    }
+    get model(){
+        return JSON.stringify(this.params, undefined, 2)
+    }
+    setModel(model){
+        for (let n in model){
+            const item = model[n];
+            this[n] = this.#params[n] = ((item)=>{
+                function recurse (obj){
+                    if (Array.isArray(obj)){
+                        return item.map(i=> {
+                            if (i.$)
+                                return new (eval(i.$))(i);
+                            return recurse (i);
+                        })
+                    }
+                    if (obj?.$)
+                        return new (eval(obj.$))(obj);
+                    if (obj?.constructor === Object){
+                        let res = Object.create(null);
+                        for (let o in obj){
+                            res[o] = recurse(obj[o])
+                        }
+                        return res;
+                    }
+                    return obj
+                }
+                return recurse (item);
+            })(item)
+        }
     }
     get params(){
         return this.#params;
@@ -84,25 +87,27 @@ export class NeuroModule extends Function{
         }
         return result;
     }
-    toString(){
-        return this.toStringTree()
-    }
-    toStringTree(step = 0){
-        const add = 3;
-        const tab = (' ').repeat(step + add);
-        let s = `${this.label} (${this.__params__})\r\n`;
+    toString(step = 0){
+        let tab = ('  ').repeat(step);
+        let s = tab + `${this.label}\n`;
+        tab = ('  ').repeat(++step);
+        step++;
         s += this.__children__.map(obj => {
             const key = Object.keys(obj)[0];
             const prop = obj[key];
             if(Array.isArray(prop)){
-                return tab + key + `[${prop.length}]:\r\n` +prop.map((m, i)=>(' ').repeat(step + add * 2)+i+': '+m.toString(step + add * 2)).join('')
+                return tab + key + `[${prop.length}]:\n` + prop.map((m, i)=>(' ').repeat(step)+i+': '+m.toString(step)).join('')
             }
-            return tab + key+': ' + (prop.toStringTree?.(step + add) || prop.toString());
-        }).join('');
+            return tab + key+':\n' + prop.toString(step);
+        }).join('\n');
         return s;
     }
+    _label(label){
+        this.#label = label;
+        return this;
+    }
     get label(){
-        return `${this.constructor.name} (${Object.keys(this.params).map(k=>k+'='+this.params[k])})`;
+        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).map(k=>k+': '+(this.params[k].name || this.params[k])).join(', ')})`;
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
@@ -114,9 +119,6 @@ export class NeuroModule extends Function{
             }
         }
         return res
-    }
-    set model(n){
-
     }
     train(dataset, getTrain, steps=1000, los_steps=100, loss_type='MSE', test_size=0.2, banch=10) {
         // for (let i= 0; i < steps; i++) {
@@ -137,9 +139,9 @@ export class Embedding  extends NeuroModule{
     negativeSize = 3;
     constructor(dim = 1024, char_step = 0, win_size = 8) {
         super(arguments);
-        this.BINS = Array(win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
     }
     __init__(){
+        this.BINS = Array(this.win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
         this.vocabulary = {"<end>":{
                 id: 0,
                 w: "<end>",
@@ -344,19 +346,21 @@ export class Linear extends NeuroModule{
     }
     __init__() {
         this.W = tensor.param(tensor.rand([this.d_in, this.d_out], this.dType).minus_(.5).mul_(.1));
-        this.W._label(this.W.label + '/linear weights');
+        this.W._label(this.W.label + ': Weights');
         if(this.bias){
             this.B = tensor.param(tensor.rand([this.d_out], this.dType).minus_(.5).mul_(.1));
-            this.B._label(this.bias._label + '/linear bias');
+            this.B._label(this.B.label + ': Bias');
         }
 
     }
     forward(x){
-        x=tensor.from(x)
+        x = tensor.from(x);
+        x._label(`INPUT (${x.shape})`);
         let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
         x = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.W]);
         if (this.bias)
-            x = x.plus(this.B);
+            x = x.plus(this.B)._label('plus BIAS');
+        x._label(`Linear (${x.shape}): bias=`+this.bias);
         return x;
     }
 }
@@ -435,7 +439,7 @@ export class conv1D extends NeuroModule {
         for (let b = 0; b < batches; b += data_step){
             let batch_data = x.data.slice(b, b + data_step);
             for (let o = 0; o < outs; o++) {
-                let kernel = kernels[o] ??= this.weights._slice(o);
+                let kernel = kernels[o] ??= this.weights.slice(o);
                 let src_idx = 0;
                 let k_idx = 0;
                 for (let l = 0; l<links; l++){
@@ -503,6 +507,9 @@ export class RMSNorm extends NeuroModule {
         this.eps = 1e-5;
     }
     forward(x) {
+        x = tensor.from(x);
+        let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
+
         let p = x.pow(2);
         let m = p.mean();
         let eps = m.plus(this.eps);

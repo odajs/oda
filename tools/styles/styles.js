@@ -1,7 +1,7 @@
 let style = /*css*/`
 @media (prefers-color-scheme: dark) {
     :root{
-        --content-background: rgb(60 60 60);
+        --content-background: oklch(0.40 0 0);
         --light-background: gray;
         --light-color: #eee;
         --bar-background: var(--content-background);
@@ -582,6 +582,7 @@ function cssRuleParse (rules, res, host = false) {
 style = extractCSSRules(style)
 const ss = document.createElement('style');
 ss.textContent = style;
+ss.setAttribute('scope', 'ODA');
 document.head.appendChild(ss);
 import './adoptedStyleSheets.js'; // https://github.com/calebdwilliams/construct-style-sheets
 if ('adoptedStyleSheets' in Document.prototype) {

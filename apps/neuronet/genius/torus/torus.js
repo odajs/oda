@@ -8,13 +8,14 @@ BigInt.prototype.toBin = function (dim = 64){
 globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     _binSize = 0;
     #length = 0;
+    #bins = undefined;
     _self = undefined;
     bit_mask = BigInt(1);
     constructor(size) {
         super(Math.ceil((Array.isArray(size)?size.length:size)/64));
         if (Array.isArray(size)){
             let data = size;
-            this['#length'] = this._binSize = data.length;
+            this.#length = this._binSize = data.length;
             const str = data.map(i=>i>0?1:0).join('');
             let step = 0;
             let v;
@@ -24,7 +25,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
             }
         }
         else{
-            this['#length'] = this._binSize = size;
+            this.#length = this._binSize = size;
         }
         this._self = this;
         return new Proxy(this, {
@@ -70,10 +71,10 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         })
     }
     get bins(){
-        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin());
+        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin());
     }
     get binLength(){
-        return this['#length']
+        return this.#length
     }
     get binSize(){
         return this._binSize;
@@ -94,18 +95,18 @@ export class tensor{
     #shape = [];
     #data = null;
     #dType = Float32Array;
-    #label = 'tensor';
+    #label = undefined;
     #src = undefined;
+    #grad = undefined;
+    #bins = undefined;
+    #path = undefined;
     constructor(data, dType = Float32Array) {
         if(!data) return;
         if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
-            this.#shape = data.shape.split(',');
+            this.#shape = data.shape;
             data = data.data.split(' ');
-            // if (this.dType === BigUint64Array)
-            //     data = data.map(i=>BigInt('0b'+i));
             this.#data = new this.dType(data);
-
         }
         else{
             this.#dType = dType;
@@ -136,20 +137,32 @@ export class tensor{
         }
         this.id = genId();
     }
-    
+    getPath(level = 0){
+        let tab = '|'.repeat(level) + '|- '
+        let path = [tab + this.label];
+        let src = this.#src?.map(v=>v.getPath(level+1));
+        if(src){
+            path.push(...src.flat());
+        }
+        return path;
+    }
+    get path(){
+        return this.getPath();
+    }
     toJSON(){
         const result =  {
             $: this.constructor.name,
-            shape: this.shape.toString(),
+            label: this.label,
+            shape: this.shape,
             isSerializable: this.isSerializable,
             isParam: this.isParam,
             dType: this.dType.name,
-            data: this.data?.join(' ').toString()
+            data: this.data?.join(' ')
         }
         return result;
     }
     _label(label){
-        this['#label'] = label;
+        this.#label = label;
         return this;
     }
     _src(...src){
@@ -183,24 +196,11 @@ export class tensor{
             shape = shape[0];
         if(Object.equal(shape[0]?.constructor, tensor))
             shape = shape[0].shape;
-        const size = shape.reduce((r, v)=>r * v, 1);
+        const size = shape.reduce((r, v)=>r * (v || 1), 1);
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
         this.#shape = shape
         return this;
-    }
-    _slice(...dims){
-        if(Array.isArray(dims[0]))
-            dims = dims[0];
-        if (dims.length >= this.dim)
-            throw new Error(`Axis count for _slice(...) must be less then tensor.dim, expected ${dims.length} to have ${this.dim}`);
-        dims.forEach((v, i)=>{
-            if (v >= this.shape[i])
-                throw new Error(`Axis[${i}] for _slice(...) must be less dimension then tensor.shape[${i}], expected ${v} to have ${this.shape[i]}`);
-        })
-        let step =  this.shape.slice(dims.length).reduce((r, v, i)=>r * v, 1);
-        let start = dims.reduce((r, v, i)=>r * v, 1) * step;
-        return this.#data.slice(start, start + step);
     }
     //inplace functions
     mul_(factor){
@@ -226,19 +226,24 @@ export class tensor{
         return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
     get grad(){
-        return this['#grad'] ??= new Float32Array(this.size);
+        return this.#grad ??= new Float32Array(this.size);
     }
     get data(){
         return this.#data;
     }
+    set data(n){
+        if (n.length !== this.#data.length)
+            throw new Error(`Dimension out of range (expected ${this.#data.length}, but got ${n.length})`);
+        this.#data = n
+    }
     set grad(n){
-        this['#grad'] = n;
+        this.#grad = n;
     }
     get BiTES_PER_ELEMENT(){
         return this.dType.BYTES_PER_ELEMENT * 8;
     }
     get bins(){
-        return this['#bins'] ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(0, this.size);
+        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(0, this.size);
     }
     getBit(idx){
         return this.data.getBit(idx);
@@ -263,7 +268,7 @@ export class tensor{
         return this.shape.length;
     }
     get label(){
-        return this['#label'] ?? (()=>{
+        return this.#label ?? (()=>{
             switch (this.dim){
                 case 0:
                     return `scalar = ${this.data}`;
@@ -282,7 +287,7 @@ export class tensor{
         return 0;
     }
     clearGrad(){
-        this['#grad'] = undefined;
+        this.#grad = undefined;
     }
     updateParams(){
         if (!this.isParam) return;
@@ -319,7 +324,7 @@ export class tensor{
             if (val.length){
                 this.data[idx] = BigInt('0b'+val.padEnd(64, '0'));
             }
-            this['#bins'] = undefined
+            this.#bins = undefined
         }
         else{
             for(let i = 0; i<this.data.length; i++){
@@ -358,58 +363,6 @@ export class tensor{
     static concat(tensors, dim= 0){
         throw new Error(`to do`);
     }
-    slice(...slicers){
-        if (slicers.length>this.dim)
-            throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
-        let shape = [];
-
-        let func = ['let idx=-1;'];
-        func.push('let data = tensor.data;');
-        let size, start, end, step, add_shape;
-        for (let d = 0; d < this.dim; d++){
-            let slicer = (slicers[d]?.toString() || '').toString().trim();
-            size = this.shape[d];
-            if (slicer.length && !Number.isNaN(+slicer)){
-                add_shape = false;
-                start = +slicer;
-                end = start + 1;
-                step = 1;
-            }
-            else{
-                add_shape = true;
-                slicer = slicer.split(':');
-                start = +(slicer[0]?.trim() || 0);
-                if (start < 0)
-                    start += size;
-                end = +(slicer[1]?.trim() || size);
-                if (end < 0)
-                    end += size;
-                step = +(slicer[2]?.trim() || 1);
-                if (step < 0)
-                    step += size;
-            }
-            if (end > size)
-                end = size
-            size = Math.ceil((end - start)/step);
-            if (size < 0)
-                size = 0;
-            let t = '\t'.repeat(d);
-            func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
-            func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * (tensor.shape[${d+1}] || 1);`);
-            if (add_shape)
-                shape.push(size);
-        }
-        func.push('\t'.repeat(this.dim+1)+`out[++idx] = data[vi${this.dim-1}];`);
-        this.shape.forEach((_, d)=>{
-            func.push('\t'.repeat(this.dim - d)+`}`);
-        })
-        size = shape.reduce((r,v)=>r*v, 1);
-        func.unshift(`let out = new tensor.dType(${size})`);
-        func.push(`return tensor.constructor.from(out)._shape(${shape})`);
-        func = func.join('\n');
-        let fn = new Function('tensor', func);
-        return fn(this);
-    }
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
@@ -439,18 +392,27 @@ export class tensor{
         let shape = [...this.shape];
         if (dim < 0)
             dim = this.dim + dim;
-        const result = split_sizes.map(v=>{
+        const result = split_sizes.map((v, i)=>{
             shape[dim] = v;
             const size = shape.reduce((r, s)=>r * s, 1);
+            let start = idx;
             const d = new this.dType(size).map(x=>src[++idx]);
-            return tensor.from(d)._shape(...shape)._dType(this.dType)._src([this]);
+            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split (${shape}): ${i+1} of ${split_sizes.length} -> ${v}`);
+            if (this.allowGrad){
+                out._back = ()=>{
+                    out.grad.forEach((g, i)=>{
+                        this.grad[i + start] = g;
+                    })
+                }
+            }
+            return out
         });
         return result;
 
     }
     static stack(tensors, dim= 0){
         let shape = [...tensors[0].shape];
-        if (this.dim < dim)
+        if ((dim > 0)?(shape.length < dim):(shape.length + dim)<-1)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim+1}, ${this.dim}], but got ${dim})`)
         let size = tensors[0].size;
         let step = size;
@@ -476,7 +438,7 @@ export class tensor{
             }
         }
         shape.splice(dim, 0, tensors.length);
-        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${shape}), dim=${dim})`)._src(tensors);
+        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${tensors[0].shape}) by ${dim} axis)`)._src(tensors);
         out._back = ()=>{
             for(let start = 0; start<size; start += step){
                 let delta = start
@@ -501,10 +463,10 @@ export class tensor{
         data = data.map(handler);
         return tensor.from(data, dType)._shape(shape);
     }
-    static zeros(shape, dType = Int8Array) {
+    static zeros(shape, dType = Float32Array) {
         return this.fill(shape, 0, dType);
     }
-    static ones(shape, dType = Int8Array) {
+    static ones(shape, dType = Float32Array) {
         return this.fill(shape, 1, dType);
     }
     static ones_like(src) {
@@ -553,8 +515,10 @@ export class tensor{
         let step = (to - from) / (steps - 1);
         let data = [];
         let idx = -1;
-        for (let i = from; i <= to; i += step){
-            data[++idx] = i;
+        let v = from-step;
+        for (let i = 0; i < steps; i++){
+            data[++idx] = (v += step);
+
         }
         data = new Float32Array(Array(repeat).fill(data).flat());
         return tensor.from(data)._shape(shape);
@@ -616,15 +580,12 @@ export class tensor{
         this._shape([...repeat_shape, ...this.shape]);
         return this;
     }
-    toString(max = 8){
+    toString(step = 0, max = 6){
         if (this.shape.length){
-            let data = this.array.toTensorString(max, this.shape).split('\r\n');
-            // if (data.length > max){
-            //     const padding = data[0].length/2 + 2
-            //     data = [...data.slice(0, Math.floor(max/2)), ('...').padStart(padding, ' '), ...data.slice(-Math.floor(max/2))]
-            // }
-            data = data.join('\r\n')
-            return `(${data}),\r\ndType=${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})`;
+            let data = this.array.toTensorString(step, max, this.shape).split('\n');
+            data = data.join('\n')
+            let tab = ('  ').repeat(step)
+            return tab +`tensor[${this.label}]: dType=${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}(${data})`;
         }
         return this.data;
     }
@@ -663,21 +624,120 @@ export class tensor{
     }
 
 }
-tensor.prototype.log = function (){
-    const data = this.data.map(Math.log);
-    const out = tensor.from(data)._label('log')._src(this)._shape(this);
+tensor.prototype.slice = function (...slicers){
+    if (slicers.length>this.dim)
+        throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
+    let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
+    let fn = fn_cache.slice?.[key];
+    if (!fn){
+        let shape = [];
+        let func = ['let idx=-1;'];
+        func.push('let data = tensor.data;');
+        let size, start, end, step, add_shape;
+        for (let d = 0; d < this.dim; d++){
+            let slicer = (slicers[d]?.toString() || '').toString().trim();
+            size = this.shape[d];
+            if (slicer.length && !Number.isNaN(+slicer)){
+                add_shape = false;
+                start = +slicer;
+                end = start + 1;
+                step = 1;
+            }
+            else{
+                add_shape = true;
+                slicer = slicer.split(':');
+                start = +(slicer[0]?.trim() || 0);
+                if (start < 0)
+                    start += size;
+                end = +(slicer[1]?.trim() || size);
+                if (end < 0)
+                    end += size;
+                step = +(slicer[2]?.trim() || 1);
+                if (step < 0)
+                    step += size;
+            }
+            if (end > size)
+                end = size
+            size = Math.ceil((end - start)/step);
+            if (size < 0)
+                size = 0;
+            let t = '\t'.repeat(d);
+            func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
+            func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * ${this.shape[d+1] || 1};`);
+            if (add_shape)
+                shape.push(size);
+        }
+        func.push('\t'.repeat(this.dim)+`out[++idx] = data[vi${this.dim-1}];`);
+        this.shape.forEach((_, d)=>{
+            func.push('\t'.repeat(this.dim - d - 1)+`}`);
+        })
+        size = shape.reduce((r,v)=>r*v, 1);
+        func.unshift(`let out = new tensor.dType(${size})`);
+        func.push(`return tensor.constructor.from(out)._shape(${shape})`);
+        func = func.join('\n');
+        fn_cache.slice ??= Object.create(null);
+        fn_cache.slice[key] = fn = new Function('tensor', func);
+    }
+    let out =  fn(this);
+    out._label('slice '+key)._src(this);
     if (this.allowGrad){
         out._back = ()=>{
-            let _x = this.grad;
-            let _z = out.grad;
-            let x = this.data;
-            for(let i = 0; i<this.data.length; i++){
-                _x[i] = 1 / x[i] * _z[i] /tensor.GRADIENT_DIVIDER;
+            let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
+            let fn = fn_cache.slice?.[key];
+            if (!fn){
+                let shape = [];
+                let func = ['let idx=-1;'];
+                func.push('let grad = tensor.grad;');
+                let size, start, end, step, add_shape;
+                for (let d = 0; d < this.dim; d++){
+                    let slicer = (slicers[d]?.toString() || '').toString().trim();
+                    size = this.shape[d];
+                    if (slicer.length && !Number.isNaN(+slicer)){
+                        add_shape = false;
+                        start = +slicer;
+                        end = start + 1;
+                        step = 1;
+                    }
+                    else{
+                        add_shape = true;
+                        slicer = slicer.split(':');
+                        start = +(slicer[0]?.trim() || 0);
+                        if (start < 0)
+                            start += size;
+                        end = +(slicer[1]?.trim() || size);
+                        if (end < 0)
+                            end += size;
+                        step = +(slicer[2]?.trim() || 1);
+                        if (step < 0)
+                            step += size;
+                    }
+                    if (end > size)
+                        end = size
+                    size = Math.ceil((end - start)/step);
+                    if (size < 0)
+                        size = 0;
+                    let t = '\t'.repeat(d);
+                    func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
+                    func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * ${this.shape[d+1] || 1};`);
+                    if (add_shape)
+                        shape.push(size);
+                }
+                func.push('\t'.repeat(this.dim)+`grad[vi${this.dim-1}] += out[++idx];`);
+                this.shape.forEach((_, d)=>{
+                    func.push('\t'.repeat(this.dim - d - 1)+`}`);
+                })
+                size = shape.reduce((r,v)=>r*v, 1);
+                func.unshift(`out = out.grad;`);
+                func = func.join('\n');
+                fn_cache.slice ??= Object.create(null);
+                fn_cache.slice[key] = fn = new Function('tensor', 'out', func);
             }
+            fn(this, out);
         }
     }
     return out;
 }
+
 tensor.prototype.log_ = function (){
     for(let i = 0; i<this.data.length; i++){
         this.data[i] = Math.log(this.data[i]);
@@ -685,344 +745,159 @@ tensor.prototype.log_ = function (){
     return this;
 }
 
-tensor.prototype.exp = function (){
-    const data = this.data.map(Math.exp);
-    const out = tensor.from(data)._label(`exp`)._src(this)._shape(this);
-    if (this.allowGrad){
+tensor.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
+    other = tensor.from(other);
+    let dim  = Math.max(this.dim, other.dim);
+    let shape = []
+    for (let i = 0; i<dim; i++){
+        let idx1 = this.shape[this.shape.length - i - 1] || '';
+        let idx2 = other.shape[other.shape.length - i - 1] || '';
+        if (idx1 && idx2 && idx1 !== idx2)
+            throw new Error(`RuntimeError: The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
+        shape.push(Math.max(idx1, idx2));
+    }
+    let size = shape.reduce((r, v)=>r*v, 1);
+    let func = [`let out = new Float32Array(${size});`];
+    func.push('let idx, g;');
+    func.push('const x_data = this.data;');
+    func.push('const y_data = other.data;');
+    if (this.shape.length === 0)
+        func.push(`let x = this.data[0];`);
+    if (other.shape.length === 0)
+        func.push(`let y = other.data[0];`);
+    let t;
+    for (let i = 0; i<dim; i++){
+        t = '\t'.repeat(i);
+        let s = shape.slice(0, i+1).reduce((r,v)=>r * v, 1)
+        func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
+        let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
+        if (dim - i === 1)
+            func.push(t+`\tidx = ${idx};`);
+        if (this.shape.length === i + 1) {
+            func.push(t+`\tlet x = x_data[${dim - i === 1?'idx':idx}];`);
+        }
+        if (other.shape.length === i + 1) {
+            func.push(t+`\tlet y = y_data[${dim - i === 1?'idx':idx}];`);
+        }
+    }
+    func.push(t+`\tout[idx] = func(x,y);`);
+    shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`))
+    func.push(`return out;`);
+    func = func.join('\n')
+    func = new Function('other', 'func', func);
+    let data = func.call(this, other, forward_func);
+    const out = tensor.from(data)._src(this, other)._shape(shape.toReversed());
+    out._label(label+' ('+out.shape+')');
+    if (this_back_func && (this.allowGrad || other.allowGrad)){
+        out._back = ()=>{
+            func = ['let idx;'];
+            func.push(`let _x, x = 0;`);
+            func.push(`let _y, y = 0;`);
+            func.push('const x_data = this.data;');
+            func.push('const y_data = other.data;');
+            func.push('const o_grad = out.grad;');
+            func.push('const x_grad = this.grad;');
+            func.push('const y_grad = other.grad;');
+            for (let i = 0; i<dim; i++){
+                t = '\t'.repeat(i);
+                let s = shape.slice(0, i+1).reduce((r,v)=>r * v, 1)
+                func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
+                let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
+                if (dim - i === 1)
+                    func.push(t+`\tidx = ${idx};`);
+                if (this.shape.length === i + 1) {
+                    func.push(t+`\tx = ${dim - i === 1?'idx':idx};`);
+                }
+                if (other.shape.length === i + 1) {
+                    func.push(t+`\ty = ${dim - i === 1?'idx':idx};`);
+                }
+            }
+            func.push(t+`\tg = o_grad[idx] / ${GRADIENT_DIVIDER};`);
+            func.push(t+`\t_x = x_data[x];`);
+            func.push(t+`\t_y = y_data[y];`);
+            if (this.allowGrad)
+                func.push(t+`\tx_grad[x] += x_func(_x,_y) * g;`);
+            if (other.allowGrad)
+                func.push(t+`\ty_grad[y] += y_func(_x,_y) * g;`);
+            shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`));
+            func = func.join('\n')
+            func = new Function('other', 'out', 'x_func', 'y_func', func);
+            func.call(this, other, out, this_back_func, other_back_func || this_back_func);
+        }
+    }
+    return out;
+}
+tensor.prototype.plus = function (other){
+    return this._element_wise_operator('plus', other, (x,y)=>x+y, ()=>1);
+}
+tensor.prototype.minus = function (other){
+    return this._element_wise_operator('minus', other, (x,y)=>x-y, ()=>1, ()=>-1);
+}
+tensor.prototype.multiply = function (other){
+    return this._element_wise_operator('multiply', other, (x,y)=>x*y, (x,y)=>y, x=>x);
+}
+tensor.prototype.divide = function (other){
+    return this._element_wise_operator('divide', other, (x,y)=>x/y, (x,y)=>1/y, (x,y)=>-x/(y**2));
+}
+tensor.prototype.pow = function (other){
+    return this._element_wise_operator('pow', other, (x,y)=>x**y, (x,y)=>y * (x ** (y - 1)), (x,y)=>x ** y * Math.log(x));
+}
+tensor.prototype._element_wise_function = function (label, forward_func, back_func){
+    const data = this.data.map(forward_func);
+    const out = tensor.from(data)._src(this)._shape(this);
+    out._label(label+' ('+out.shape+')');
+    if (back_func && this.allowGrad){
         out._back = ()=>{
             let x_grad = this.grad;
-            let o_grad = out.grad;
             let x_data = this.data;
-            for(let i = 0; i<x_data.length; i++){
-                x_grad[i] += x_data[i] * o_grad[i] /tensor.GRADIENT_DIVIDER;
-            }
+            let o_data = out.data;
+            let x, y
+            out.grad.forEach((g, i)=>{
+                x = this.data[i];
+                y = out.data[i];
+                this.grad[i] += back_func(x, y) * g / GRADIENT_DIVIDER;
+            })
         }
     }
     return out;
 }
 tensor.prototype.invert = function (){
-    const data = this.data.map(x=>-x);
-    const out = tensor.from(data)._label(`invert`)._src(this)._shape(this);
-    if (this.allowGrad){
-        out._back = ()=>{
-            let x_grad = this.grad;
-            let o_grad = out.grad;
-            for(let i = 0; i<this.data.length; i++){
-                x_grad[i] += -o_grad[i] /tensor.GRADIENT_DIVIDER;
-            }
-        }
-    }
-    return out;
+    return this._element_wise_function('invert', x=>x * -1, ()=>-1);
 }
-
-tensor.prototype.plus = function (other){
-    let y = other.data;
-    let data = this.data.map((x, i) => x + y[i]);
-    const out = tensor.from(data)._label('plus')._src(this, other)._shape(this);
-    out._back = ()=>{
-        let _x = this.grad;
-        let _y = other.grad;
-        let _z = out.grad;
-        for (let i = 0; i<data.length; i++){
-            let g = _z[i] /tensor.GRADIENT_DIVIDER;
-            _x[i] += g;
-            _y[i] += g;
-        }
-    }
-    return out;
+tensor.prototype.exp = function (){
+    return this._element_wise_function('exp', Math.exp, x=>x);
 }
-tensor.prototype.minus = function (other){
-    let y = other.data;
-    let data = this.data.map((x, i) => x - y[i]);
-    const out = tensor.from(data)._label('minus')._src(this, other)._shape(this);
-    out._back = ()=>{
-        let _x = this.grad;
-        let _y = other.grad;
-        let _z = out.grad;
-        for (let i = 0; i<data.length; i++){
-            let g = _z[i] /tensor.GRADIENT_DIVIDER;
-            _x[i] += g;
-            _y[i] += -g;
-        }
-    }
-    return out;
+tensor.prototype.log = function (){
+    return this._element_wise_function('log', Math.log, (x, y)=>1/x*y);
 }
-tensor.prototype.mul = function (other){
-    let data;
-    let y = other.data ?? other;
-    if(other instanceof tensor){
-        data = this.data.map((x, i) => x * y[i]);
-    }
-    else{
-        data = this.data.map((x, i) => x * y);
-    }
-    let out = tensor.from(data)._label('mul')._shape(this);
-    if(other instanceof tensor){
-        out = out._src(this, other);
-        out._back = ()=>{
-            for (let i = 0; i<data.length; i++){
-                let g = out.grad[i];
-                this.grad[i] += y[i] * g;
-                other.grad[i] += this.data[i] * g;
-            }
-        }
-    }
-    else{
-        out = out._src(this, other);
-        out._back = ()=>{
-            for (let i = 0; i<data.length; i++){
-                this.grad[i] += y * out.grad[i];
-            }
-        }
-    }
-
-
-    return out;
+tensor.prototype.tanh = function (){
+    return this._element_wise_function('tanh', Math.tanh, x=>(1 - x ** 2));
 }
-tensor.prototype.div = function (other){
-    let y = other.data;
-    let data = this.data.map((x, i) => x / y[i]);
-    const out = tensor.from(data)._label('div')._src(this, other)._shape(this);
-    out._back = ()=>{
-        let _x = this.grad;
-        let x = this.data;
-        let _y = other.grad;
-        let _z = out.grad;
-        for (let i = 0; i<data.length; i++){
-            let g = _z[i] /tensor.GRADIENT_DIVIDER;
-            _x[i] += 1 / _y[i] * g;
-            _y[i] += -x[i]/(y ** 2) * g;
-        }
-    }
-    return out;
+tensor.prototype.sigmoid = function (params){
+    return this._element_wise_function('sigmoid', x=>(1 / (1 + Math.exp(-x))), (x, y)=>y * (1 - y));
 }
-tensor.prototype.pow = function (other){
-    let y = other.data || other;
-    let data = this.data.map((x, i)=>x ** (y[i] ?? y[0] ?? y));
-    let out =  tensor.from(data)._label(`pow`)._src(this, other)._shape(this);
-    out._back = ()=>{
-        let o_grad = other.grad;
-        for (let i = 0; i<data.length; i++){
-            let g = out.grad[i];
-            let yi = (y[i] ?? y[0] ?? y);
-            let xi = this.data[i];
-            this.grad[i] += yi * xi ** (yi - 1) * g;
-            o_grad && (o_grad[i] += data[i] * Math.ln(xi) * g);
-        }
-    }
-    return out;
+tensor.prototype.sigm = function (params){
+    return this.sigmoid(params);
 }
-
-tensor.prototype.tahn = function (){
-    const data = this.data.map(x=>x.tahn());
-    return tensor.from(data)._label('tahn')._src(this)._shape(this);
+tensor.prototype.relu = function (params) {
+    return this._element_wise_function('relu', (x)=>(x>0?x:0), (x, y)=>(y>0?1:0));
 }
-
-tensor.prototype.sigm = function (t){
-    const data = this.data.map(x => (1 / (1 + Math.exp(-x))));
-    const out = tensor.from(data)._shape(this)._src(this)._label('sigm');
-    out._back = ()=>{
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            this.grad[i] += x * (1 - x) * out.grad[i] // tensor.GRADIENT_DIVIDER;
-        }
-    }
-    return out;
+tensor.prototype.mandelbrot = function (params){
+    return this._element_wise_function('mandelbrot', x=>(Math.pow(x,  2) + 1), (x, y)=>(2 * y));
 }
-tensor.prototype.tanh = function (t){
-    const data = this.data.map(x=>{
-        let e = Math.exp(2 * x)
-        return (e - 1) / (e + 1);
+tensor.prototype.softplus = function (params) {
+    return this._element_wise_function('softplus', x=>(Math.log(1 + Math.exp(x))), (x, y)=> {
+        let exp = Math.exp(y);
+        return exp / (1 + exp);
+    });
+}
+tensor.prototype.silu = function (params) {
+    return this._element_wise_function('silu', x=>(x  / (1 + Math.exp(-x))), (x, y)=> {
+        let ex = Math.exp(-y);
+        let onePlusEx = 1 + ex;
+        return (onePlusEx + ex * y) / (onePlusEx ** 2);
     })
-    const out = tensor.from(data)._shape(this)._src(this)._label('tanh');
-    out._back = ()=>{
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            this.grad[i] += (1 - x ** 2) * out.grad[i] // tensor.GRADIENT_DIVIDER;
-        }
-    }
-    return out;
 }
-tensor.prototype.sigmBin = function (t){
-    const data = this.data.map(x => {
-        let v = Math.round(1 / (1 + Math.exp(-x)))
-        return v
-    })
-    const out = tensor.from(data)._shape(this)._src(this)._label('sigmBin');
-    out._back = ()=>{
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            this.grad[i] += (1 - x) * x * out.grad[i] // tensor.GRADIENT_DIVIDER;
-        }
-    }
-    return out;
-}
-tensor.prototype.mandelbrot = function (storage_tensor){
-    let data;
-    let size = this.size;
-    if(storage_tensor){
-        if(!storage_tensor.data){
-            data = new Float32Array(size * 2).map(i=>Math.random()-.5);
-            data.fill(2, size, size * 2);
-            storage_tensor._data(data)._shape(2, ...this.shape);
-        }
-        data = storage_tensor.data;
-        data = this.data.map((x, i)=> Math.pow(x,  data[i +size]) + data[i]);
-    }
-    else
-        data = this.data.map(x => Math.pow(x,  2) + 1)
-    const out = tensor.from(data)._shape(this)._src(this)._label('mandelbrot');
-    if(storage_tensor){
-        out._src(this, storage_tensor);
-        out._back = ()=>{
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            let s_grad = storage_tensor.grad;
-            let s_data = storage_tensor.data;
-            for(let i = 0; i<data.length; i++){
-                let x = data[i];
-                let y = s_data[i];
-                let z = s_data[i+size];
-                let g = o_grad[i] /tensor.GRADIENT_DIVIDER;
-                x_grad[i] += y * Math.pow(x, y-1) * g;
-                s_grad[i] += g;
-                s_grad[i+size] += Math.pow(x, y) * Math.ln(x) * g;
-            }
-        }
-    }
-    else{
-        out._back = ()=>{
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            for(let i = 0; i<data.length; i++){
-                x_grad[i] += 2 * data[i] * o_grad[i] /tensor.GRADIENT_DIVIDER;
-            }
-        }
-    }
-    return out;
-}
-tensor.prototype.softplus = function (storage_tensor) {
-    let data;
-    let size = this.size;
-    if(storage_tensor){
-        if(!storage_tensor.data){
-            data = new Float32Array(size * 2).fill(1,0, this.size);
-            data.fill(Math.E, size, size * 2);
-            storage_tensor._data(data)._shape(2, ...this.shape);
-        }
-        data = storage_tensor.data;
-        data = this.data.map((x, i)=> Math.log(data[i] + data[i + size] ** x));
-    }
-    else
-        data = this.data.map(x => Math.log(1 + Math.exp(x)))
-    const out =  tensor.from(data)._label('this')._src(this)._shape(this);
-    if(storage_tensor){
-        out._src(this, storage_tensor);
-        out._back = ()=>{
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            let s_grad = storage_tensor.grad;
-            let s_data = storage_tensor.data;
-            for(let i = 0; i<data.length; i++){
-                let og = o_grad[i] /tensor.GRADIENT_DIVIDER;
-                let x = data[i];
-                let y = s_data[i];
-                let z = s_data[i+size];
-                let expX = z ** x;
-                let yPlusExpX = y + expX;
-                let lnZ = Math.log(z)
-                x_grad[i] += (expX / yPlusExpX) * og;
-                s_grad[i] += (1 / (lnZ * (yPlusExpX))) * og;
-                s_grad[i+size] += (x * expX * lnZ - Math.log(yPlusExpX) * yPlusExpX) / (z * lnZ ** 2 * yPlusExpX) * og;
-
-            }
-        }
-    }
-    else {
-        out._back = () => {
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            for (let i = 0; i < data.length; i++) {
-                let x = data[i];
-                let exp = Math.exp(x);
-                x_grad[i] += (exp / (1 + exp)) * o_grad[i] /tensor.GRADIENT_DIVIDER;
-            }
-        }
-    }
-    return out;
-}
-
-tensor.prototype.relu = function (storage_tensor) {
-    let data  = this.data.map(x => x>0?x:0);
-    const out =  tensor.from(data)._label('relu')._src(this)._shape(this);
-    out._back = ()=>{
-        let o_grad = out.grad;
-        let x_grad = this.grad;
-        for(let i = 0; i<data.length; i++){
-            let x = data[i];
-            x_grad[i] += (x>0?1:0) * o_grad[i] //tensor.GRADIENT_DIVIDER;
-        }
-    }
-
-    return out;
-}
-
-
-
-tensor.prototype.silu = function (storage_tensor) {
-    let data;
-    let size = this.size;
-    if(storage_tensor){
-        if(!storage_tensor.data){
-            data = new Float32Array(size * 2).fill(1,0, this.size);
-            data.fill(Math.E, size, size * 2);
-            storage_tensor._data(data)._shape(2, ...this.shape);
-        }
-        data = storage_tensor.data;
-        data = this.data.map((x, i)=> (x  / (data[i] + data[i + size] ** -x)));
-    }
-    else
-        data = this.data.map((x, i)=> x  / (1 + Math.exp(-x)));
-    const out =  tensor.from(data)._label('silu')._src(this)._shape(this);
-    if(storage_tensor){
-        out._src(this, storage_tensor);
-        out._back = ()=>{
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            let s_grad = storage_tensor.grad;
-            let s_data = storage_tensor.data;
-            for(let i = 0; i<data.length; i++){
-                let og = o_grad[i] /tensor.GRADIENT_DIVIDER;
-                let x = data[i];
-                let y = s_data[i];
-                let z = s_data[i+size];
-                let ex = z ** -x;
-                let onePlusEx = y + ex;
-                let onePlusEx2 = onePlusEx ** 2;
-
-                x_grad[i] += (onePlusEx + ex * x * Math.log(z)) / onePlusEx2 * og;
-                s_grad[i] += -x/onePlusEx2 * og;
-                s_grad[i+size] += x ** 2 * z ** -(x-1)/onePlusEx2 * og;
-            }
-        }
-    }
-    else{
-        out._back = ()=>{
-            let o_grad = out.grad;
-            let x_grad = this.grad;
-            for(let i = 0; i<data.length; i++){
-                let x = data[i];
-                let ex = Math.exp(-x);
-                let onePlusEx = 1 + ex;
-                let g = (onePlusEx + ex * x) / (onePlusEx ** 2);
-                x_grad[i] += g * o_grad[i] /tensor.GRADIENT_DIVIDER;
-            }
-        }
-    }
-
-    return out;
-}
-
 tensor.prototype.softmax = function (){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
@@ -1092,12 +967,12 @@ tensor.prototype.MSE = function (target){
     let y = target.data ?? target;
     let loss = 0;
     let errors = this.data.map((x, i)=>{
-        x = (x - y[i]);
+        x = (x - (y[i] || 0));
         loss += x ** 2;
         return x;
     });
     loss /= this.size;
-    const out = tensor.from([loss])._src(this)._label('MSE');
+    const out = tensor.from([loss])._src(this)._label(`MSE (${this.shape}): loss=`+loss);
     out._back = ()=>{
         for (let i = 0; i<errors.length; i++){
             this.grad[i] += -errors[i];
@@ -1130,14 +1005,14 @@ if (!Array.prototype.toTensorString) {
     Object.defineProperty(Array.prototype, 'toTensorString', {
         configurable:true,
         enumerable:false,
-        value (max = 4, shape = []) {
+        value (step = 0, max = 4, shape = []) {
             function recurse(d, idx = 0, l = 0){
-                let result = idx?`\r\n${(' ').repeat(l)}[`:'['
+                let result = (idx?`\n${('  ').repeat(step)+(' ').repeat(l)}[`:'[');
                 if (d[0]?.map){
                     let list = Array.from(d).map((v, i)=>{
                         return recurse(v, i, l + 1);
                     })
-                    result += list;
+                    result += list.join(' ');
                 }
                 else{
                     if (d.length > max){
@@ -1321,7 +1196,7 @@ tensor.pack = (expr, inputs)=>{
 tensor.unpack = (expr, inputs)=>{
     //todo
 }
-const einsum_funtions = {};
+
 tensor.eye = (dim)=>{
     const data = Array(dim).fill().map((_,i)=>{
         let res =  Array(dim).fill(0);
@@ -1332,12 +1207,10 @@ tensor.eye = (dim)=>{
 }
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
-    let func_key = tensors.map(i=>{
-        return i.shape.toString()+'('+ i.dType.toString() +')';
-    }).join('-');
-    let fn = func_key && einsum_funtions[in_expr + ': ' + func_key];
+    let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-');
+    let fn = fn_cache.einsum?.[key];
     let inputs, outs;
-    if (!fn){
+    if (!fn){         // Выделение из выражения оператора
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
         const axis = [];//Object.keys(ext_axis).map(a =>({a, d:ext_axis[a]}));
         const terms = expr[0].trim().split(',');            // Разделение входа на термы
@@ -1450,7 +1323,7 @@ tensor.einsum = (in_expr, sources = [])=>{
             }).join('\n');
             if (prev_v.length>1){
                 let v = prev_v.pop();
-                res += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
+                res += `\n\t${tabs + v} *= ${prev_v.join(' * ')};`;
                 prev_v = [v]
             }
             if (prev_b.length>1){
@@ -1547,7 +1420,8 @@ tensor.einsum = (in_expr, sources = [])=>{
         fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
 
         fn = new Function('t', 'out', fwd_expr);
-        fn = (einsum_funtions[in_expr + ': ' + func_key] = {fn, outs, inputs}).fn;
+        fn_cache.einsum ??= Object.create(null);
+        fn = (fn_cache.einsum[in_expr + ': ' + key] = {fn, outs, inputs}).fn;
     }
     else{
         outs = fn.outs;
@@ -1575,12 +1449,12 @@ tensor.einsum = (in_expr, sources = [])=>{
             })
             let out = tensor.einsum(expr, sources);
             for (let j = 0; j<out.size; j++){
-                t.grad[j] += out.data[j];
+                t.grad[j] += out.data[j] / GRADIENT_DIVIDER;
             }
         })
     }
     fn(tensors, out.data);
-    out._label('einsum: \"'+in_expr+'\"' + (out.shape.length?(' ('+out.shape+')'):''));
+    out._label(`einsum (${out.shape}): "${in_expr}"`);
     return out;
 }
 
@@ -1682,9 +1556,4 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
     }
     return result;
 }
-
-function binarize (grad_i) {return grad_i>0} 
-// function binarize (grad_i) {
-//     let p = Math.max(0,Math.min(1,(grad_i+1)/2)) // σ(x) = hard sigmoid
-//     return p>Math.random() // +1 with probability p = σ(x), -1 otherwise.
-// }
+const fn_cache = Object.create(null);
