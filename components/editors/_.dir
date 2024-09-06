@@ -15,14 +15,7 @@
     },
     {
         "name": "markdown",
-        "label": "<b style='color: #e689fe'>oda-markdown:</b> markdown редактор",
-        "content": {
-            "link": "index.html"
-        }
-    },
-    {
-        "name": "xml-editor",
-        "label": "<b style='color: #e689fe'>oda-xml-editor:</b> Редактор XML кода",
+        "label": "<b style='color: #e689fe'>oda-markdown:</b> Markdown редактор",
         "content": {
             "link": "index.html"
         }
