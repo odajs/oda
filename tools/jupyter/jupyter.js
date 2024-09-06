@@ -295,10 +295,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="hideRun">Show hidden outputs data</oda-button>
                     </div>
                 </div>        
-                <div class="horizontal left info flex" ~if="!cell?.metadata?.hideRun && showOutInfo" style="padding: 0 4px; width: 100%; font-size: small; align-items: center;">
+                <div class="horizontal left header flex" ~if="!cell?.metadata?.hideRun && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
                     <span style="padding: 9px;">{{outInfo}}</span>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark header" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark header" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
+                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
                 </div>
             </div>
         </div>
@@ -309,7 +309,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.control.maxRow;
     },
     get outInfo() {
-        return `Показано ${this.showAllOutputsRow ? this.cell.outputs.length.toLocaleString() : Math.round(this.maxOutputsRow * (this.outputsStep + 1)).toLocaleString()} из ${this.cell?.outputs?.length.toLocaleString()}`;
+        return `Blocks: ${this.showAllOutputsRow ? this.cell.outputs.length.toLocaleString() : Math.round(this.maxOutputsRow * (this.outputsStep + 1)).toLocaleString()} of ${this.cell?.outputs?.length.toLocaleString()}`;
     },
     get showOutInfo() {
         return this.cell?.outputs?.length > this.maxOutputsRow;
