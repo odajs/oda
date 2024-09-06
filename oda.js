@@ -976,7 +976,7 @@ if (!window.ODA?.IsReady) {
                     return;
                 $el.innerHTML = $el.___innerHTML = html;
             }
-            
+
         },
         text($el, fn, p) {
             const text =  exec.call(this, fn, $el, p) ?? '';
@@ -1662,11 +1662,12 @@ in the <${host.localName}>`);
             this.domHost?.$render?.(src);
         };
     }
+    const AsyncFunction = (async function () { }).constructor;
     Element:{
         Element.prototype.assignProps = function (props = {}){
             for (let i in props){
                 const p = props[i];
-                if (typeof p === 'function') {
+                if (p && [Function, AsyncFunction].some(ctor => p.constructor === ctor)) {
                     this.__propsHandlers ??= {};
                     const fn = this.__propsHandlers[i] ??= p.bind(this);
                     // если не кешировать функцию после bind, то каждый раз будет новая подписка
@@ -1676,7 +1677,7 @@ in the <${host.localName}>`);
             }
             for (let i in props){
                 const p = props[i];
-                if (typeof p !== 'function'){
+                if (p &&[Function, AsyncFunction].every(ctor => p.constructor !== ctor)){
                     if(i in this)
                         this[i] = p;
                     else if(i[0] !== '#')
