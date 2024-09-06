@@ -1454,7 +1454,7 @@ tensor.einsum = (in_expr, sources = [])=>{
         })
     }
     fn(tensors, out.data);
-    out._label(`einsum (${out.shape}): "${in_expr}"`);
+    out._label(`einsum (${out.shape}): '${in_expr}'`);
     return out;
 }
 

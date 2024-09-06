@@ -535,7 +535,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                 position: absolute;
                 padding: 1px;
                 border-radius: 4px;
-                margin-top: -20px;
+                margin-top: 4px;
             }
             oda-button{
                  border-radius: 4px;
@@ -603,7 +603,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border">
+        <div  class="horizontal border" style="min-height: 30px;">
             <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
             <div ~if="hideCode" class="horizontal left header flex" style="padding: 0 4px; font-size: small;">
                 <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="hideCode=false">Show hidden code</oda-button>
