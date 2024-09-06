@@ -603,7 +603,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" >
+        <div  class="horizontal border" style="min-height: 32px;">
             <oda-code-editor show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>                        
         </div>
  
