@@ -36,23 +36,45 @@ ODA({is: 'oda-modal', imports: '@oda/button',
                 from {transform:scale(0)}
                 to {transform:scale(1)}
             }
-            oda-button{
+            oda-button {
                 opacity: .7;
             }
-            oda-button:hover{
+            oda-button:hover {
                 opacity: 1 !important;
             }
         </style>
         <div class="vertical shadow">
             <div class="horizontal no-flex accent-invert" style="align-items: center; overflow: hidden;">
-                <oda-icon ~if="icon" no-flex :icon :icon-size :sub-icon style="margin-left: 8px;"></oda-icon>
-                <label ~if="title" class="flex" ~html="title" style="text-overflow: ellipsis; white-space: nowrap; padding: 8px; overflow: hidden;"></label>
+                <oda-icon
+                    ~if="icon"
+                    no-flex
+                    :icon
+                    :icon-size
+                    :sub-icon
+                    style="margin-left: 8px;"
+                ></oda-icon>
+                <label
+                    ~if="title"
+                    ~html="title"
+                    class="flex"
+                    style="text-overflow: ellipsis; white-space: nowrap; padding: 8px; overflow: hidden;"
+                ></label>
                 <div class="flex" style="overflow: auto;">
                     <slot class="no-flex" name="modal-title"></slot>
                 </div>
-                <oda-button :icon-size="iconSize + 4" icon="icons:close" @tap.stop="cancel" style="background-color: red; align-self: flex-start;"></oda-button>
+                <oda-button
+                    :icon-size="iconSize + 4"
+                    icon="icons:close"
+                    style="background-color: red; align-self: flex-start;"
+                    @tap.stop="cancel"
+                ></oda-button>
             </div>
-            <slot @slotchange="onSlotChange" class="flex content vertical" style="overflow: auto;" @dblclick.stop></slot>
+            <slot
+                class="flex content vertical"
+                style="overflow: auto;"
+                @slotchange="onSlotChange"
+                @dblclick.stop
+            ></slot>
         </div>
     `,
     help: '',
@@ -66,9 +88,9 @@ ODA({is: 'oda-modal', imports: '@oda/button',
         maxHeight: undefined,
         maxWidth: undefined,
     },
-    $pdp:{
+    $pdp: {
         title: '',
-        get container(){
+        get container() {
             return this;
         },
         control: null,
@@ -76,7 +98,7 @@ ODA({is: 'oda-modal', imports: '@oda/button',
     onSlotChange(e) {
         this.control ??= e.target.assignedNodes()?.[0];
     },
-    cancel(e){
+    cancel(e) {
         this.container.fire('cancel');
     }
 })
@@ -96,8 +118,18 @@ ODA({is: 'oda-dialog-message', imports: '@oda/icon',
                 margin: 8px;
             }
         </style>
-        <oda-icon warning ~if="icon" :icon :icon-size style="margin: 8px 8px 8px 16px;"></oda-icon>
-        <label class="flex" ~html="message" ~style="{textAlign: icon?'left':'center'}"></label>
+        <oda-icon
+            ~if="icon"
+            warning
+            :icon
+            :icon-size
+            style="margin: 8px 8px 8px 16px;"
+        ></oda-icon>
+        <label
+            class="flex"
+            ~html="message"
+            ~style="{textAlign: icon?'left':'center'}"
+        ></label>
     `,
     iconSize: 64,
     message: '',

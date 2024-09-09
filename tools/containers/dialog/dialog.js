@@ -2,7 +2,7 @@ ODA({is: 'oda-dialog', extends: 'oda-modal', imports: '@tools/modal',
     template: /*html*/`
         <oda-dialog-footer ~if="control && (buttons?.length || !hideOkButton || !hideCancelButton)" class="no-flex" slot="*" ></oda-dialog-footer>
     `,
-    title: 'Dialog',
+    title: '',
     $pdp:{
         buttons: [],
         hideOkButton: false,
