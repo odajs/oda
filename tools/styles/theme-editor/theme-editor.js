@@ -1,28 +1,38 @@
 class themeVars extends ROCKS({
     $public: (() => {
         let styles = document.head.querySelectorAll('style');
-        styles = Array.from(styles).filter(i => {
-            return Array.from(i.sheet.rules).some(r => r.selectorText === ':root');
-        })
+        styles = Array.from(styles).filter(i => Array.from(i.sheet.cssRules).some(r => r.selectorText === ':root'));
         styles = styles.map(s => {
             return {
                 scope: s.getAttribute('scope'),
                 style: s,
-                vars: {}
+                vars: {},
+                rules: []
             }
         })
-        styles.map(s => s.rules = Array.from(s.style.sheet.rules).filter(rule => rule.selectorText === ':root'));
-        styles.map(s => s.rules.map(rule => {
-            [...rule.style].map(propName => {
-                s.vars[propName.trim()] = rule.style.getPropertyValue(propName).trim();
+        const isCorrectRule = (rule) => rule.type === 1 || rule.type === 4;
+        const getRules = (rules = []) => {
+            return rules.map(r => {
+                if (isCorrectRule(r)) {
+                    if (r.type === 4)
+                        return r.cssRules[0];
+                    return r;
+                }
             })
-        }))
+        }
+        styles.map(s => s.rules = [...s.rules, ...getRules(Array.from(s.style.sheet.cssRules))]);
+        styles.map(s => s.rules.map(rule =>
+            [...(rule?.style || [])].map(propName => {
+                if (propName?.indexOf("--") === 0)
+                    s.vars[propName.trim()] = rule.style.getPropertyValue(propName).trim();
+            })
+        ))
         let vars = {}
         styles.map(s => {
-            Object.keys(s.vars).map(k=> {
-                vars[k] = { 
-                    $public: true, 
-                    $group: s.scope, 
+            Object.keys(s.vars).map(k => {
+                vars[k] = {
+                    $public: true,
+                    $group: s.scope,
                     $editor: k.includes('color') || k.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
                     [k]: s.vars[k]
                 }
