@@ -61,7 +61,7 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
             </div>
         </div>
     `,
-    vars: null,
+    vars: { $def() { return new themeVars(); } },
     $public: {
         width: {
             $def: 240,
@@ -70,9 +70,5 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
     },
     reSize(e) {
         this.width = Math.round(e.detail.value.w);
-    },
-    attached() {
-        let tw = new themeVars();
-        this.vars = tw;
     }
 })
