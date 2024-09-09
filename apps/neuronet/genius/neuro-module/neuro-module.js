@@ -121,20 +121,9 @@ export class NeuroModule extends Function{
         }
         return res
     }
-    train(dataset, getTrain, steps=1000, los_steps=100, loss_type='MSE', test_size=0.2, banch=10) {
-        // for (let i= 0; i < steps; i++) {
-        //     let [inputs,target] = getTrain(dataset, test_size, banch)
-        //     for (let j=0; j <inputs.length; j++ ) {
+    train(dataset) {
 
-        //         this(inputs[j]); 
-        //     }
-        //     let loss = .MSE(target);
-        //     loss.back();
-        //     if (i % los_steps === 0) console.log(loss)
-        // }
-        // return this    
     }
-
 }
 export class Embedding  extends NeuroModule{
     negativeSize = 3;
