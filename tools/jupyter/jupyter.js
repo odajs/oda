@@ -283,7 +283,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div  ~if="cell?.outputs?.length" class="info border"  style="max-height: 100%;">
-                    <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell :cell-control></oda-jupyter-outputs-toolbar>
+                    <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
                             <div raised ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="font-family: monospace;" >
