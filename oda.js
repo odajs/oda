@@ -67,7 +67,7 @@ if (!window.ODA?.IsReady) {
     }
 
     function finalizeRegistration(prototype, imports = [], parents = []) {
-        try{
+        try {
             let template = prototype.template || '';
             if (parents.length) {
                 let templateExt = '';
@@ -221,7 +221,7 @@ if (!window.ODA?.IsReady) {
                 }
                 attributeChangedCallback(name, o, n) {
                     if (name === 'slot') {
-                        this.throttle('$render', ()=>{
+                        this.throttle('$render', () => {
                             this.$render();
                         }, 16)
                     }
@@ -279,7 +279,7 @@ if (!window.ODA?.IsReady) {
             }
             return prototype.is;
         }
-        catch (e){
+        catch (e) {
             console.error(prototype.is, e);
         }
     }
@@ -342,16 +342,16 @@ if (!window.ODA?.IsReady) {
         }
         return toRemove;
     }
-    class odaComponent extends HTMLElement{
+    class odaComponent extends HTMLElement {
         connectedCallback() {
             ODA.resizeObserver.observe(this);
             ODA.intersectionObserver.observe(this);
-            this.__pdp?.forEach(i=>{
-                if(i.name in this)
+            this.__pdp?.forEach(i => {
+                if (i.name in this)
                     return;
                 Object.defineProperty(this, i.name, i)
             })
-            if (this._on_disconnect_timer){
+            if (this._on_disconnect_timer) {
                 clearTimeout(this._on_disconnect_timer)
                 this._on_disconnect_timer = 0;
                 return;
@@ -371,12 +371,12 @@ if (!window.ODA?.IsReady) {
                 this.detached?.();
             }, 100)
             if (this[CORE_KEY].slotted?.size) {
-                this.async(()=>{
+                this.async(() => {
                     this.$render(true);
                 })
             }
         }
-        setProperty(name, v){
+        setProperty(name, v) {
             if (name.includes('.')) {
                 let path = name.split('.');
                 let step;
@@ -401,19 +401,19 @@ if (!window.ODA?.IsReady) {
             else if (name in this.__proto__) {
                 this[name] = v;
             }
-            else if (!isObject(v)){
-                try{
+            else if (!isObject(v)) {
+                try {
                     name = name.toKebabCase();
                     if (v || v === 0)
                         this.setAttribute(name, v === true ? '' : v);
                     else
                         this.removeAttribute(name);
                 }
-                catch (e){
+                catch (e) {
                     console.log(e)
                 }
             }
-            else{
+            else {
                 this[name] = v;
             }
         }
@@ -421,7 +421,7 @@ if (!window.ODA?.IsReady) {
             const pdps = this.domHost?.__pdp || [];
             pdps.push(...(this.domHost?.[CORE_KEY].pdp || []));
             return pdps?.filter(desc => {
-                return  !Object.keys(this.constructor.__rocks__.descrs).some(key => key === desc.name);
+                return !Object.keys(this.constructor.__rocks__.descrs).some(key => key === desc.name);
             })
         }
         $updateStyle(styles = {}) {
@@ -429,7 +429,7 @@ if (!window.ODA?.IsReady) {
             this.$render();
         }
         $notify($prop, val) {
-            if($prop?.$attr){
+            if ($prop?.$attr) {
                 if (val || val === 0)
                     this.setAttribute($prop?.$attr, val === true ? '' : val);
                 else
@@ -439,10 +439,10 @@ if (!window.ODA?.IsReady) {
         }
         $render(force) {
 
-            if(this.isConnected || force) {
-                if(this.domHost?.__render && !force)
+            if (this.isConnected || force) {
+                if (this.domHost?.__render && !force)
                     return this.domHost?.__render;
-                return this.__render ??= new Promise(async resolve =>{
+                return this.__render ??= new Promise(async resolve => {
                     await renderChildren.call(this, this[CORE_KEY].shadowRoot)
                     this[CORE_KEY].test['render'] = (this[CORE_KEY].test['render'] || 0) + 1;
                     this.onRender?.();
@@ -452,8 +452,8 @@ if (!window.ODA?.IsReady) {
             }
             return this.__render;
         }
-        get $keys(){
-            if (!this['#$keys']){
+        get $keys() {
+            if (!this['#$keys']) {
                 this['#$keys'] = {};
                 for (let i in this.constructor.__rocks__.prototype.$keyBindings || {}) {
                     let handler = this.constructor.__rocks__.prototype.$keyBindings[i];
@@ -464,19 +464,19 @@ if (!window.ODA?.IsReady) {
             }
             return this['#$keys'];
         }
-        get $body(){
+        get $body() {
             return this.domHost?.body || this.parentNode?.body || this.parentElement;
         }
 
-        get $savePath(){
-            return `${this.localName}${this.$saveKey && ('/'+this.$saveKey) || ''}`;
+        get $savePath() {
+            return `${this.localName}${this.$saveKey && ('/' + this.$saveKey) || ''}`;
         }
-        $loadPropValue(key){
-            this[CORE_KEY].loaded ??={};
+        $loadPropValue(key) {
+            this[CORE_KEY].loaded ??= {};
             this[CORE_KEY].loaded[key] = true;
             const value = ODA.LocalStorage.create(this.$savePath).getItem(key);
             switch (value?.constructor) {
-                case Object: return {...value};
+                case Object: return { ...value };
                 case Array: return [...value];
                 case Date:
                 case Number:
@@ -485,11 +485,11 @@ if (!window.ODA?.IsReady) {
                 default: return value;
             }
         }
-        $savePropValue(key, value){
+        $savePropValue(key, value) {
             if (!this[CORE_KEY].loaded?.[key]) return;
             ODA.LocalStorage.create(this.$savePath).setItem(key, value);
         }
-        $resetSettings(){
+        $resetSettings() {
             ODA.LocalStorage.create(this.$savePath).clear();
         }
         get $slotted() {
@@ -502,10 +502,10 @@ if (!window.ODA?.IsReady) {
         $(path) {
             if (!path) return null;
             let result = this[CORE_KEY].shadowRoot?.querySelector(path);
-            if(!result){
-                for(let i of this.$slotted){
+            if (!result) {
+                for (let i of this.$slotted) {
                     result = i.querySelector(path);
-                    if(result && result.domHost === this)
+                    if (result && result.domHost === this)
                         break;
                     else
                         result = null;
@@ -515,12 +515,12 @@ if (!window.ODA?.IsReady) {
         }
         $$(path) {
             if (!path) return [];
-            let result =  Array.from(this[CORE_KEY].shadowRoot.querySelectorAll(path));
-            for(let i of this.$slotted){
+            let result = Array.from(this[CORE_KEY].shadowRoot.querySelectorAll(path));
+            for (let i of this.$slotted) {
                 const res = i.querySelectorAll(path);
-                for(let el of res){
-                    if(el.domHost === this);
-                        result.add(el)
+                for (let el of res) {
+                    if (el.domHost === this);
+                    result.add(el)
                 }
             }
             return result;
@@ -528,9 +528,9 @@ if (!window.ODA?.IsReady) {
         get $url() {
             this.constructor.__rocks__.prototype.$system.url;
         }
-        $next(handler, tacts = 0){
-            if (tacts>0)
-                requestAnimationFrame(()=>{
+        $next(handler, tacts = 0) {
+            if (tacts > 0)
+                requestAnimationFrame(() => {
                     this.$next(handler, tacts - 1)
                 })
             else {
@@ -562,16 +562,16 @@ if (!window.ODA?.IsReady) {
         })();
     }
     // ODA.isHidden = true;
-    ODA.regHotKey = function (key, handle){
+    ODA.regHotKey = function (key, handle) {
         ODA.$hotKeys = ODA.$hotKeys || {};
-        ODA.$hotKeys[key] =  handle;
+        ODA.$hotKeys[key] = handle;
     }
-    document.addEventListener('keydown', async (e) =>{
+    document.addEventListener('keydown', async (e) => {
         if (!e.code?.startsWith?.('Key')) return;
         let key = (e.ctrlKey ? 'ctrl+' : '') + (e.altKey ? 'alt+' : '') + (e.shiftKey ? 'shift+' : '') + e.code.replace('Key', '').toLowerCase();
         ODA.$hotKeys?.[key]?.(e);
     });
-    ODA.regTool = function (name){
+    ODA.regTool = function (name) {
         return ODA[name] || (ODA[name] = Object.create(null));
     }
     ODA.rootPath = import.meta.url;
@@ -583,7 +583,7 @@ if (!window.ODA?.IsReady) {
         if (tag in ODA.telemetry.components) {
             return ODA.telemetry.components[tag].prototype;
         }
-        ODA.wait[tag] ??= {promise: undefined, reg: undefined};
+        ODA.wait[tag] ??= { promise: undefined, reg: undefined };
         ODA.wait[tag].promise ??= new Promise(resolve => {
             ODA.wait[tag].reg = prototype => resolve(prototype);
         });
@@ -596,39 +596,39 @@ if (!window.ODA?.IsReady) {
     window.ODA = ODA;
     const apples = ['Mac68K', 'MacPPC', 'MacIntel', 'iPhone', 'iPod', 'iPad',]
     ODA.isApple = apples.includes(navigator.platform);
-    localStorage:{
+    localStorage: {
         ODA.LocalStorage = class odaLocalStorage extends ROCKS({
-            get data(){
-                try{
+            get data() {
+                try {
                     const data = JSON.parse(globalThis.localStorage.getItem(this.path) || '{}');
                     data.$$stamp ??= Date.now();
                     return data;
                 }
-                catch (e){
+                catch (e) {
                     console.warn(e)
                 }
                 return {};
             },
-            getItem(key){
+            getItem(key) {
                 return this.data[key];
             },
-            getFromItem(key, subKey){
+            getFromItem(key, subKey) {
                 return this.data[key]?.[subKey];
             },
             getByPath(path) {
                 const [key, ...subKeys] = path.split('/');
                 let res = this.data[key];
                 for (const subKey of subKeys) {
-                    if(!res) break;
+                    if (!res) break;
                     res = res[subKey];
                 }
                 return res;
             },
-            setItem(key, value){
+            setItem(key, value) {
                 this.data[key] = value;
                 this.save();
             },
-            setToItem(key, subKey, value){
+            setToItem(key, subKey, value) {
                 key = this.data[key] ??= {};
                 key[subKey] = value;
                 this.save();
@@ -647,37 +647,37 @@ if (!window.ODA?.IsReady) {
                 }
                 this.save();
             },
-            save(){
+            save() {
                 if (this['#data'] === undefined) return;
-                if(this.raf)
+                if (this.raf)
                     cancelAnimationFrame(this.raf);
-                this.raf = requestAnimationFrame(()=>{
+                this.raf = requestAnimationFrame(() => {
                     globalThis.localStorage.setItem(this.path, JSON.stringify(this.data));
                     this.raf = 0;
                 })
             },
-            get version(){
+            get version() {
                 return this.data.$$stamp;
             },
-            clear(){
+            clear() {
                 this.data = undefined;
                 this.version = undefined;
                 globalThis.localStorage.removeItem(this.path);
 
             }
-        }){
+        }) {
             constructor(path) {
                 super();
                 this.path = path;
             }
             static items = {}
-            static create(path){
+            static create(path) {
                 return ODA.LocalStorage.items[path] ??= new ODA.LocalStorage(path);
             }
         }
     }
 
-    Object.defineProperty(ODA, 'top',  {
+    Object.defineProperty(ODA, 'top', {
         get() {
             try {
                 if (window.parent !== window)
@@ -723,27 +723,27 @@ if (!window.ODA?.IsReady) {
         if (el.nodeType === 3) {
             let value = el.textContent.trim();
             if (!value) return;
-            if (INLINE_EXPRESSION.test(value)){
+            if (INLINE_EXPRESSION.test(value)) {
                 let expr = '""+' + value.replace(/^|$/g, "'").replace(/{{/g, "'+(").replace(/}}/g, ")+'").replace(/\n/g, "\\n").replace(/\+\'\'/g, "").replace(/\'\'\+/g, "");
                 if (prototype[expr])
                     expr += '()';
                 const fn = createFunc(vars.join(','), expr, prototype);
                 src.text ??= [];
-                if(el.parentElement?.localName === 'style'){
+                if (el.parentElement?.localName === 'style') {
                     let name = '_style' + el.$node.id;
-                    const key = '#'+name;
+                    const key = '#' + name;
                     prototype[name] = {
-                        get(){
+                        get() {
                             return exec.call(this, fn);
                         }
                     }
                     src.text.push(function ($el) {
-                        if(this[key]) return;
+                        if (this[key]) return;
                         $el.textContent = this[name] || '';
 
                     })
                 }
-                else{
+                else {
                     src.text.push(function ($el) {
                         let text = String(exec.call(this, fn, $el, $el.__for));
                         if ($el.___textContent == text)
@@ -752,10 +752,10 @@ if (!window.ODA?.IsReady) {
                     })
                 }
             }
-            else if(el.parentElement?.localName === 'style' && !el.parentElement.parentElement){
+            else if (el.parentElement?.localName === 'style' && !el.parentElement.parentElement) {
                 el.parentElement.$node.$remove = true;
                 let ss = new CSSStyleSheet();
-                while(value.includes('@apply'))
+                while (value.includes('@apply'))
                     value = ODA.applyStyleMixins(value);
                 ss.replaceSync(value);
                 prototype.$system.$styles.push(ss);
@@ -800,7 +800,7 @@ if (!window.ODA?.IsReady) {
                             target.addEventListener('blur', handle);
                             target.dispatchEvent(new CustomEvent(name + '-changed', { detail: { value } }));
                         };
-                        const func = new Function('$this,'+params.join(','), `with (this) {${expr} = $value}`);
+                        const func = new Function('$this,' + params.join(','), `with (this) {${expr} = $value}`);
                         src.listeners[name + '-changed'] = function func2wayBind(e, d) {
                             if (!e.target.parentNode) return;
                             let res = e.detail.value === undefined ? e.target[name] : e.detail.value;
@@ -814,7 +814,7 @@ if (!window.ODA?.IsReady) {
                                 }
                             }
                             if (res !== undefined || e.target.__for !== undefined) //todo понаблюдать
-                                exec.call(this, func, e.target, [res,  ...(e.target.__for || [])]);
+                                exec.call(this, func, e.target, [res, ...(e.target.__for || [])]);
                         };
                         src.listeners[name + '-changed'].notify = name;
                         src.listeners[name + '-changed'].expr = expr;
@@ -841,10 +841,10 @@ if (!window.ODA?.IsReady) {
                     modifiers = parseModifiers(name);
                     if (modifiers)
                         name = name.replace(modifierRE, '');
-                    if (expr === (attr.value +'()'))
+                    if (expr === (attr.value + '()'))
                         expr = attr.value + '($event, $detail)';
                     name = name.replace(/^@/g, '');
-                    const params = ['$this','$event', '$detail',  ...(vars || [])];
+                    const params = ['$this', '$event', '$detail', ...(vars || [])];
                     const fn = new Function(params.join(','), `with (this) {${expr}}`);
                     src.listeners = src.listeners || {};
                     // const handler = prototype[expr];
@@ -854,17 +854,17 @@ if (!window.ODA?.IsReady) {
                         modifiers && modifiers.prevent && e.preventDefault();
                         modifiers && modifiers.immediate && e.stopImmediatePropagation();
                         let result;
-                        const descriptor  = Object.getOwnPropertyDescriptor(this,  expr)
+                        const descriptor = Object.getOwnPropertyDescriptor(this, expr)
                         const handler = this[func];
                         if (typeof handler === 'function')
                             result = handler.call(this, e, e.detail);
                         else
-                            result = exec.call(this, fn, e.target,  [e, e.detail, ...(e.target.__for || [])]);
-                        if (result?.then){
-                            try{
+                            result = exec.call(this, fn, e.target, [e, e.detail, ...(e.target.__for || [])]);
+                        if (result?.then) {
+                            try {
                                 await result;
                             }
-                            catch (e){
+                            catch (e) {
 
                             }
                         }
@@ -881,11 +881,11 @@ if (!window.ODA?.IsReady) {
                 for (const a of Object.keys(src.attrs)) {
                     if (src.dirs.find(f => f.name === a)) {
                         src.vals = src.vals || {};
-                        switch (a){
+                        switch (a) {
                             case 'style': {
                                 src.vals[a] = styleStringToObject(src.attrs[a]);
                             } break;
-                            default:{
+                            default: {
                                 src.vals[a] = src.attrs[a];
                             }
                         }
@@ -913,15 +913,15 @@ if (!window.ODA?.IsReady) {
                 return parseJSX(prototype, el, vars)
             }).filter(i => i);
         }
-        if(src.children.length === 1 && src.children[0].tag === '#text')
+        if (src.children.length === 1 && src.children[0].tag === '#text')
             src.ignoreChildren = true;
-        if(src.bind?.slot || src.attrs?.slot)
+        if (src.bind?.slot || src.attrs?.slot)
             src.isSlotted = true;
         return src;
     }
     const tags = {
         if(tag, fn, p, $el) {
-            return  exec.call(this, fn, $el, p)? tag : false;
+            return exec.call(this, fn, $el, p) ? tag : false;
         },
         'else-if'(tag, fn, p, $el) {
             if ($el?.previousElementSibling?.nodeType !== 1)
@@ -943,7 +943,7 @@ if (!window.ODA?.IsReady) {
         },
         'save-key'($el, fn, p) {
             if ($el[CORE_KEY]) {
-                $el.$saveKey =  exec.call(this, fn, $el, p);
+                $el.$saveKey = exec.call(this, fn, $el, p);
             }
         },
         props($el, fn, p) {
@@ -979,7 +979,7 @@ if (!window.ODA?.IsReady) {
 
         },
         text($el, fn, p) {
-            const text =  exec.call(this, fn, $el, p) ?? '';
+            const text = exec.call(this, fn, $el, p) ?? '';
             if ($el.___textContent == text)
                 return;
             $el.textContent = $el.___textContent = text;
@@ -1040,7 +1040,7 @@ if (!window.ODA?.IsReady) {
     }
     function forDirective(prototype, src, name, expr, vars, attrName) {
         const idx = vars.length + 1;
-        src.vars = [...vars, '$'.repeat(idx)+'for'];
+        src.vars = [...vars, '$'.repeat(idx) + 'for'];
         src.el.removeAttribute(attrName);
         const child = parseJSX(prototype, src.el, src.vars);
         const fn = createFunc(src.vars.join(','), expr, prototype);
@@ -1048,9 +1048,9 @@ if (!window.ODA?.IsReady) {
             let items = exec.call(this, fn, undefined, p);
             if (typeof items === 'string')
                 items = items.split('');
-            else if (isObject(items) && !Array.isArray(items)){
-                return Object.keys(items).map((key, index)=>{
-                    return {child, params: [...p, {item: items[key], index, items, key}]}
+            else if (isObject(items) && !Array.isArray(items)) {
+                return Object.keys(items).map((key, index) => {
+                    return { child, params: [...p, { item: items[key], index, items, key }] }
                 });
             }
             if (!Array.isArray(items)) {
@@ -1064,7 +1064,7 @@ if (!window.ODA?.IsReady) {
             for (let index = 0; index < items.length; index++) {
                 if (!(index in items)) continue;
                 const item = items[index];
-                res.push({ child, params: [...p, {item, index, items, key: index}] });
+                res.push({ child, params: [...p, { item, index, items, key: index }] });
             }
             return res;
         };
@@ -1074,7 +1074,7 @@ if (!window.ODA?.IsReady) {
 
     const _createElement = document.createElement;
     document.createElement = function (tag, ...args) {
-        if(tag.includes('-')){
+        if (tag.includes('-')) {
             const prototype = ODA.telemetry.prototypes[tag];
             if (prototype?.then) {
                 prototype.then(prototype => {
@@ -1101,24 +1101,24 @@ if (!window.ODA?.IsReady) {
             else {
                 $el = ODA.createElement.call(this, tag);
             }
-            switch (tag){
-                case 'STYLE':{
+            switch (tag) {
+                case 'STYLE': {
 
                 } break;
-                case 'IFRAME':{
-                    $el.addEventListener('load', e=>{
-                        try{
-                            if (!e.target.contentDocument.ODA){
+                case 'IFRAME': {
+                    $el.addEventListener('load', e => {
+                        try {
+                            if (!e.target.contentDocument.ODA) {
                                 pointerDownListen(e.target.contentWindow);
                             }
                         }
-                        catch (e){
+                        catch (e) {
                             console.warn(e)
                         }
                     })
                 } break;
-                default:{
-                    if (!src.isSvg && !src.isSlot){
+                default: {
+                    if (!src.isSvg && !src.isSlot) {
                         ODA.intersectionObserver.observe($el);
                         ODA.resizeObserver.observe($el);
                     }
@@ -1131,7 +1131,7 @@ if (!window.ODA?.IsReady) {
                 const event = (ev) => {
                     src.listeners[e].call(this, ev);
                 }
-                $el.addEventListener(e, event, {passive: ['wheel'].some(i=>i === e)});
+                $el.addEventListener(e, event, { passive: ['wheel'].some(i => i === e) });
             }
         }
         $el.$node = src;
@@ -1140,35 +1140,35 @@ if (!window.ODA?.IsReady) {
         return $el;
     }
 
-    async function renderChildren(root){
-        if (!root.$sleep || root.$wake){
+    async function renderChildren(root) {
+        if (!root.$sleep || root.$wake) {
             let el, idx = 0;
-            for (let h of (root?.$node || this[CORE_KEY]).children || []){
-                if (h.call){ // table list
+            for (let h of (root?.$node || this[CORE_KEY]).children || []) {
+                if (h.call) { // table list
                     let items = h.call(this, root.__for);
-                    for(let i = 0; i<items.length; i++){
+                    for (let i = 0; i < items.length; i++) {
                         const node = items[i];
-                        if(node){
-                            while (el = root.childNodes[idx]){
+                        if (node) {
+                            while (el = root.childNodes[idx]) {
                                 if (el.$node === node.child) break;
                                 if (!el.$node) {
                                     idx++;
                                     continue;
                                 }
                                 //понаблюдать 👀
-                                else if(el.$node.vars !== node.child.vars) {
+                                else if (el.$node.vars !== node.child.vars) {
                                     break;
                                 }
                                 root.removeChild(el);
                             }
-                            el = root.childNodes[idx+i];
+                            el = root.childNodes[idx + i];
                             el = await renderElement.call(this, node.child, el, root, node.params);
                         }
                     }
                     idx += items.length;
                 }
-                else{ // single element
-                    while (el = root.childNodes[idx]){
+                else { // single element
+                    while (el = root.childNodes[idx]) {
                         if (el.$node === h) break;
                         if (!el.$node) {
                             idx++;
@@ -1180,7 +1180,7 @@ if (!window.ODA?.IsReady) {
                     idx++;
                 }
             }
-            if (root[CORE_KEY] && root.isConnected){
+            if (root[CORE_KEY] && root.isConnected) {
                 await root.$render(this);
             }
             // else if (root?.$node?.isSlot){
@@ -1189,8 +1189,8 @@ if (!window.ODA?.IsReady) {
             //     //     /*await*/ el.$render(this);
             //     // }
             // }
-            else{
-                while (el = root.childNodes[idx]){
+            else {
+                while (el = root.childNodes[idx]) {
                     if (!el?.$node) {
                         idx++;
                         continue;
@@ -1223,8 +1223,8 @@ if (!window.ODA?.IsReady) {
                     $parent.replaceChild(el, $el);
                 $el = el;
             }
-            else if ($el.slotTarget){
-                if($el.slotTarget.nodeName !== tag){
+            else if ($el.slotTarget) {
+                if ($el.slotTarget.nodeName !== tag) {
                     const old = $el.slotTarget;
                     old.__before ??= Object.create(null);
                     const el = old.__before[tag] ??= createElement.call(this, src, tag, old, __for);
@@ -1274,13 +1274,13 @@ if (!window.ODA?.IsReady) {
                         }
                     }
                 }
-                if(val?.then){
-                    if ('result' in val.then){
+                if (val?.then) {
+                    if ('result' in val.then) {
                         val = val.then.result;
                     }
-                    else{
+                    else {
                         const _key = key;
-                        val?.then(res=>{
+                        val?.then(res => {
                             $el.setProperty(_key, res);
                         })
                     }
@@ -1289,13 +1289,13 @@ if (!window.ODA?.IsReady) {
                     $el.setProperty(key, val);
             }
         }
-        if(src.isSlotted)
+        if (src.isSlotted)
             renderSlottedElement.call(this, src, $el, $parent);
-        if(src.ignoreChildren && !$el?.[CORE_KEY])
+        if (src.ignoreChildren && !$el?.[CORE_KEY])
             return renderElement.call(this, src.children[0], $el.childNodes[0], $el, __for);
         return renderChildren.call(this, $el);
     }
-    function renderSlottedElement(src, $el, $parent){
+    function renderSlottedElement(src, $el, $parent) {
         if (this.isConnected) {
             if ($el.slot && !$el.slotProxy && $el.slot !== '?' && !$el.parentElement?.slot) {
                 $el.slotProxy ??= createElement.call(this, src, '#comment');
@@ -1320,7 +1320,7 @@ if (!window.ODA?.IsReady) {
                     host = this;
                     while (host) {
                         for (let ch of host.children) {
-                            if(ch[CORE_KEY]?.shadowRoot?.querySelector(filter)){
+                            if (ch[CORE_KEY]?.shadowRoot?.querySelector(filter)) {
                                 applySlotByOrder($el, ch);
                                 return;
                             }
@@ -1371,7 +1371,7 @@ if (!window.ODA?.IsReady) {
     }
     function createFunc(vars, expr, prototype = {}) {
         try {
-            return new Function('$this,'+vars, `with (this) {return (${expr})}`);
+            return new Function('$this,' + vars, `with (this) {return (${expr})}`);
         }
         catch (e) {
             console.error('%c' + expr + '\r\n', 'color: black; font-weight: bold; padding: 4px;', prototype.is, prototype.$system.url, e);
@@ -1382,12 +1382,12 @@ if (!window.ODA?.IsReady) {
             return fn.call(this, $el, ...p);
         }
         catch (e) {
-            switch (e.name){
-                case 'ReferenceError':{
+            switch (e.name) {
+                case 'ReferenceError': {
                     const prop = e.message.split(' ')[0];
                     let host = this.domHost;
-                    while (host){
-                        if(prop in host){
+                    while (host) {
+                        if (prop in host) {
                             console.error(`${e.name}: ${e.message} in <${this.localName}>.
 But this problem can be fixed by set
 the property modifier $pdp: true
@@ -1406,39 +1406,39 @@ in the <${host.localName}>`);
     const modifierRE = /\.[^.]+/g;
     ODA.origin = origin;
     ODA.calledDeferred = [];
-    ODA.updateStyle=(changes = ODAStyles.cssRules, el)=>{
+    ODA.updateStyle = (changes = ODAStyles.cssRules, el) => {
         if (el?.style) {
             for (let p in changes)
                 el.style.setProperty(p, changes[p])
             return;
         }
-        Array.from(window).forEach(w=>{
+        Array.from(window).forEach(w => {
             w.ODA?.updateStyle(changes);
         })
-        for (let style of document.querySelectorAll('style')){
+        for (let style of document.querySelectorAll('style')) {
             for (let i of style.sheet.cssRules) {
-                for (let p in changes){
+                for (let p in changes) {
                     i.style?.setProperty(p, changes[p])
                 }
             }
         }
     }
 
-    ODA.convertOdaUrl = function (url, prototype){
-        try{
+    ODA.convertOdaUrl = function (url, prototype) {
+        try {
             url = url.trim();
             if (aliases && url in aliases)
                 url = ODA.rootPath + '/' + aliases[url];
-            else if (prototype){
+            else if (prototype) {
                 if (url.startsWith('./'))
                     url = prototype.$system.dir + url.substring(1);
                 else if (url.startsWith('../'))
-                    url = prototype.$system.dir +'/'+url;
+                    url = prototype.$system.dir + '/' + url;
             }
             url = url.replace(/\/\//g, '/');
             url = (new URL(url)).href;
         }
-        catch (e){
+        catch (e) {
             console.log(e)
         }
         return url;
@@ -1456,20 +1456,20 @@ in the <${host.localName}>`);
         for (let i = 0, entry, l = entries.length; i < l; i++) {
             entry = entries[i];
             entry.target.$sleep = !entry.isIntersecting && !entry.target.$wake;
-            if (!entry.target.$sleep){
+            if (!entry.target.$sleep) {
                 wake ??= [];
                 wake.add(entry.target.domHost || entry.target)
             }
         }
-        if(!wake) return;
-        for(let t of wake)
+        if (!wake) return;
+        for (let t of wake)
             t.$render?.()
-    }, { rootMargin: '10%', threshold: 0})
+    }, { rootMargin: '10%', threshold: 0 })
 
 
     ODA.cache = {};
 
-    ODA.import = function (url, prototype){
+    ODA.import = function (url, prototype) {
         url = ODA.convertOdaUrl(url, prototype);
         return ODA.cache[url] ??= import(url);
     }
@@ -1478,7 +1478,7 @@ in the <${host.localName}>`);
         return ODA.cache[url] ??= fetch(url);
     }
     ODA.loadJSON = function (url, prototype) {
-        return ODA.cache['json:'+url] ??= ODA.fetch(url, prototype).then(file=>{
+        return ODA.cache['json:' + url] ??= ODA.fetch(url, prototype).then(file => {
             return file.json();
         })
     }
@@ -1616,16 +1616,16 @@ in the <${host.localName}>`);
         const only_getters = ['viewBox'];
         Node.prototype.setProperty = function (name, v) {
             if ((name in this || ob_types.includes(typeof v) || this.nodeType !== 1) && !only_getters.includes(name)) {
-                try{
+                try {
                     if (!(this.attributes?.[name]?.value == v || this[name] == v))
                         this[name] = v;
                 }
-                catch (e){
+                catch (e) {
                     console.warn(e, 'Error on set value ', v, name, this)
                 }
             }
-            if (!ob_types.includes(typeof v)){ // todo лишняя проверка
-                if(this.localName !== 'svg')
+            if (!ob_types.includes(typeof v)) { // todo лишняя проверка
+                if (this.localName !== 'svg')
                     name = name.toKebabCase();
                 if (!v && v !== 0)
                     this.removeAttribute(name);
@@ -1655,7 +1655,7 @@ in the <${host.localName}>`);
         }
         Node.prototype.fire = function (event, detail, options = {}) {
             if (!this.$wake && this.$sleep) return;
-            event = new odaCustomEvent(event, { detail: { value: detail }, composed: true, ...options});
+            event = new odaCustomEvent(event, { detail: { value: detail }, composed: true, ...options });
             this.dispatchEvent(event);
         };
         Node.prototype.$render = function (src) {
@@ -1665,7 +1665,7 @@ in the <${host.localName}>`);
     const AsyncFunction = (async function () { }).constructor;
     Element:{
         Element.prototype.assignProps = function (props = {}){
-            for (let i in props){
+            for (let i in props) {
                 const p = props[i];
                 if (p && [Function, AsyncFunction].some(ctor => p.constructor === ctor)) {
                     this.__propsHandlers ??= {};
@@ -1675,15 +1675,14 @@ in the <${host.localName}>`);
                     // todo: отписка?
                 }
             }
-            for (let i in props){
+            for (let i in props) {
                 const p = props[i];
-                if (p &&[Function, AsyncFunction].every(ctor => p.constructor !== ctor)){
-                    if(i in this)
+                if (!(p && [Function, AsyncFunction].every(ctor => p.constructor === ctor))) {
+                    if (i in this)
                         this[i] = p;
-                    else if(i[0] !== '#')
+                    else if (i[0] !== '#')
                         this.setProperty(i, p)
                 }
-
             }
         }
         Element.prototype.getClientRect = function (host) {
@@ -1699,7 +1698,7 @@ in the <${host.localName}>`);
                 res.left -= rectHost.left || 0;
                 res.bottom -= rectHost.top || 0;
                 res.right -= rectHost.left || 0;
-                res.center = {x: res.left + (res.right-res.left)/2, y: res.top + (res.bottom-res.top)/2};
+                res.center = { x: res.left + (res.right - res.left) / 2, y: res.top + (res.bottom - res.top) / 2 };
                 rect = res;
                 rect.host = host;
             }
@@ -1736,7 +1735,7 @@ in the <${host.localName}>`);
                 return __unlisten.call(this, type, handler, ...args);
             };
             function listenTrack(target, handler, params) {
-                if (!('__trackHandlers' in target)){
+                if (!('__trackHandlers' in target)) {
                     Object.defineProperty(target, '__trackHandlers', {
                         enumerable: false,
                         configurable: true,
@@ -1754,7 +1753,7 @@ in the <${host.localName}>`);
                 target.addEventListener('pointerdown', pointerDown);
                 info.target.pointerdown = pointerDown;
 
-                function pointerDown(e){
+                function pointerDown(e) {
                     if ((target !== e.target && !(target.contains(e.target))) || e.buttons !== 1) return;
                     detail = {
                         start: {
@@ -1828,7 +1827,7 @@ in the <${host.localName}>`);
                 if (!info) return;
                 [...Object.keys(info)].forEach(t => {
                     [...Object.keys(info[t])].forEach(k => {
-                        ({window, target})[t].removeEventListener(k, info[t][k]);
+                        ({ window, target })[t].removeEventListener(k, info[t][k]);
                     })
                 });
                 target.__trackHandlers.delete(handler);
@@ -1841,7 +1840,7 @@ in the <${host.localName}>`);
         },
         set(v) {
             globalThis.localStorage.setItem('oda-language', v);
-            const event = new odaCustomEvent('change-language', { detail: { value: v }, composed: true});
+            const event = new odaCustomEvent('change-language', { detail: { value: v }, composed: true });
             window.dispatchEvent(event);
         }
     });
@@ -1849,7 +1848,7 @@ in the <${host.localName}>`);
     Qarantine:{
         ODA.createComponent = ODA.createElement = (id, props) => {
             let el = document.createElement(id);
-            if(props)
+            if (props)
                 el.assignProps(props);
             return el;
         }
@@ -1894,12 +1893,12 @@ in the <${host.localName}>`);
             })
         };
         ODA.showFileDialog = ({ accept = '*', multiple }) => {
-            return new Promise(resolve=>{
+            return new Promise(resolve => {
                 const fialog = document.createElement('input');
                 fialog.setAttribute('type', 'file');
-                fialog.setAttribute('accept', accept );
+                fialog.setAttribute('accept', accept);
                 fialog.setAttribute('multiple', multiple);
-                fialog.onchange = (e)=>{
+                fialog.onchange = (e) => {
                     resolve(e.target.files);
                 };
                 fialog.click();
@@ -1907,13 +1906,13 @@ in the <${host.localName}>`);
             })
         };
 
-        ODA.saveJSON = async (fileName, json)=> {
+        ODA.saveJSON = async (fileName, json) => {
 
             const opts = {
                 types: [{
 
                     description: 'JSON file',
-                    accept: {'text/plain': ['.json']},
+                    accept: { 'text/plain': ['.json'] },
 
                 }],
                 suggestedName: fileName,
@@ -1936,7 +1935,7 @@ in the <${host.localName}>`);
             const input = document.createElement("input");
             input.type = "file";
             input.multiple = options.multiple;
-            if(options.types) {
+            if (options.types) {
                 input.accept = options.types
                     .map((type) => type.accept)
                     .flatMap((inst) => Object.keys(inst).flatMap((key) => inst[key]))
@@ -1988,63 +1987,63 @@ in the <${host.localName}>`);
     if (typeof window.showOpenFilePicker !== 'function') {
         window.showOpenFilePicker = showOpenFilePickerPolyfill
     }
-    ODA.Worker = class{
+    ODA.Worker = class {
         constructor(url, props) {
-            this.worker = new ((typeof SharedWorker !== 'undefined')?SharedWorker:Worker)(url, props);
+            this.worker = new ((typeof SharedWorker !== 'undefined') ? SharedWorker : Worker)(url, props);
             this.worker = this.worker.port || this.worker;
             this.worker.start?.();
         }
-        set onmessage(v){
+        set onmessage(v) {
             this.worker.onmessage = v;
         }
-        get onmessage(){
+        get onmessage() {
             return this.worker.onmessage;
         }
-        set onmessageerror(v){
+        set onmessageerror(v) {
             this.worker.onmessageerror = v
         }
-        get onmessageerror(){
+        get onmessageerror() {
             return this.worker.onmessageerror;
         }
-        postMessage(...args){
+        postMessage(...args) {
             this.worker.postMessage(...args);
         }
     }
     telemetry:{
         let telId = 0;
         class odaTelemetry extends ROCKS({
-            get(path){
-                return new Promise(resolve=>{
+            get(path) {
+                return new Promise(resolve => {
                     this.resolves[path] = resolve;
-                    worker.postMessage({type: 'get', path})
-                }).then(res=>{
+                    worker.postMessage({ type: 'get', path })
+                }).then(res => {
                     console.log(res);
                 })
             },
-            set(path, value){
-                worker.postMessage({type: 'set', path, value})
+            set(path, value) {
+                worker.postMessage({ type: 'set', path, value })
             },
-            add(path, value){
-                worker.postMessage({type: 'add', path, value})
+            add(path, value) {
+                worker.postMessage({ type: 'add', path, value })
             },
-            clear(path){
-                worker.postMessage({type: 'clear', path})
+            clear(path) {
+                worker.postMessage({ type: 'clear', path })
             },
-            async measure(path, handle){
+            async measure(path, handle) {
                 let time = Date.now();
                 await handle();
-                worker.postMessage({type: 'add', path, value: { ' time': Date.now() - time, ' count': 1}})
+                worker.postMessage({ type: 'add', path, value: { ' time': Date.now() - time, ' count': 1 } })
             }
-        }){
+        }) {
             prototypes = {}
             components = {}
             resolves = {}
         }
         ODA.telemetry = new odaTelemetry();
-        let worker = new ODA.Worker(ODA.rootPath+'/telemetry-ww.js');
-        worker.onmessage = function (e){
-            switch (e.data.type){
-                case 'get':{
+        let worker = new ODA.Worker(ODA.rootPath + '/telemetry-ww.js');
+        worker.onmessage = function (e) {
+            switch (e.data.type) {
+                case 'get': {
                     ODA.telemetry.resolves[e.data.path]?.(e.data.result);
                     delete ODA.telemetry.resolves[e.data.path];
                 } break;
@@ -2055,7 +2054,7 @@ in the <${host.localName}>`);
         }
     }
 
-    isoLocale:{
+    isoLocale: {
         const exclusionsLangFlag = {
             'en': 'gb',
             'zh': 'cn',
@@ -2063,18 +2062,18 @@ in the <${host.localName}>`);
             'be': 'by',
         }
         ODA.getFlags = isoLocale => {
-            let regExp = new RegExp( Object.keys(exclusionsLangFlag).join('|'),'g')
-            let parts = isoLocale.toLowerCase().replace(regExp, (m)=> exclusionsLangFlag[m]).split('-')
+            let regExp = new RegExp(Object.keys(exclusionsLangFlag).join('|'), 'g')
+            let parts = isoLocale.toLowerCase().replace(regExp, (m) => exclusionsLangFlag[m]).split('-')
             return `flags:${(parts[1] || parts[0]).toUpperCase()}`
         }
-        ODA.getLangLabel  = isoLocale => {
+        ODA.getLangLabel = isoLocale => {
             let [language, region, variant] = isoLocale.split('-');
-            let langLang = new Intl.DisplayNames(isoLocale, {type: "language"}).of(language)
+            let langLang = new Intl.DisplayNames(isoLocale, { type: "language" }).of(language)
             let label = langLang
-            if (region) label +=  ` (${ new Intl.DisplayNames(isoLocale, {type: "region", style: "short"}).of(region) })`
-            if (variant)  label += ` ${ variant }`
-            let langCur = new Intl.DisplayNames(ODA.language, {type: "language"}).of(language)
-            if (langLang!==langCur) label +=  ` - ${langCur}`
+            if (region) label += ` (${new Intl.DisplayNames(isoLocale, { type: "region", style: "short" }).of(region)})`
+            if (variant) label += ` ${variant}`
+            let langCur = new Intl.DisplayNames(ODA.language, { type: "language" }).of(language)
+            if (langLang !== langCur) label += ` - ${langCur}`
             return label
         }
     }

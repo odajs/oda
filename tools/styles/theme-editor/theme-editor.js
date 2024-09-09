@@ -52,10 +52,10 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
             }
         </style>
         <div class="horizontal flex" style="max-width: 100%; overflow: hidden;">
-            <div class="flex" style="min-width: 100px; overflow: auto;">
-                <div ~for="elements" style="border-bottom: 1px solid lightgray;">
-                    {{$for.key}}
-                    <div ~for="$for.item" style="margin-left: 16px;">{{$$for.item.k}}</div>
+            <div class="horizontal wrap flex" style="min-width: 100px; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
+                <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px;" ~style="$for.item.style">
+                    <span style="font-size: larger">{{$for.key}}</span>
+                    <div ~for="$for.item.vars" style="margin-left: 16px; font-size: small">{{$$for.item.k}}: {{$$for.item.v}};</div>
                 </div>
             </div>
             <oda-divider use_px reverse @end-splitter-move="reSize"></oda-divider>
@@ -68,12 +68,15 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
     get elements() {
         const elms = {};
         Object.keys(this.vars.constructor.__rocks__.descrs).map(k => {
-            const i = this.vars.constructor.__rocks__.descrs[k];
-            const name = k.split('-')[2];
-            elms[name] ||= [];
-            elms[name].push({ name, k, v: this.vars[k] });
+            const i = this.vars.constructor.__rocks__.descrs[k],
+                v = this.vars[k],
+                group = k.split('-')[2];
+            elms[group] ||= { vars: [], style: {} };
+            elms[group].vars.push({ group, k, v });
+            if (k.includes('-color')) elms[group].style.color = v;
+            if (k.includes('-background')) elms[group].style.background = v;
         })
-        // console.log(elms);
+        console.log(elms);
         return elms;
     } ,
     $public: {
