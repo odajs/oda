@@ -353,6 +353,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         ODA.top.__loader.addTask({ id: taskID });
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
+        const out = this.$$('oda-jupyter-cell-out');
+        if (out?.length) {
+            out.map(i => {
+                i.step = 0;
+                i.showAll = false;
+            })
+        }
         this.async(async () => {
             try {
                 for (let code of this.notebook.codes){

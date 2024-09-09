@@ -1,8 +1,5 @@
 class themeVars extends ROCKS({
-    $public: {
-        vars: null
-    },
-    _init() {
+    $public: (() => {
         let styles = document.head.querySelectorAll('style');
         styles = Array.from(styles).filter(i => {
             return Array.from(i.sheet.rules).some(r => r.selectorText === ':root');
@@ -20,19 +17,21 @@ class themeVars extends ROCKS({
                 s.vars[propName.trim()] = rule.style.getPropertyValue(propName).trim();
             })
         }))
-        let vars = {};
+        let vars = {}
         styles.map(s => {
-            vars = { ...vars, ...s.vars };
+            Object.keys(s.vars).map(k=> {
+                vars[k] = { 
+                    $public: true, 
+                    $group: s.scope, 
+                    $editor: k.includes('color') || k.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                    [k]: s.vars[k]
+                }
+            })
         })
-        console.log(vars);
-        this.vars = vars;
-    }
-}) {
-    constructor() {
-        super();
-        this._init();
-    }
-}
+        // console.log(vars);
+        return vars;
+    })()
+}) { }
 
 ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
     template: `
