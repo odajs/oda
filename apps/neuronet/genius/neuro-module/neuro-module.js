@@ -2,6 +2,7 @@ import {tensor} from "../torus/torus.js";
 export class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
+    losts  = [];
     constructor(argumetns) {
         super()
 
