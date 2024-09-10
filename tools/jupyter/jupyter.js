@@ -265,7 +265,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
             
             <div class="vertical" :error-invert="status === 'error'">
-                <div class="sticky" style="min-width: 32px; max-width: 32px; margin: 2px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+                <div class="sticky" style="min-width: 32px; max-width: 32px; margin: -2px; margin-top: -6px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run"></oda-button>
                     {{status}}
                 </div>
@@ -492,6 +492,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="top" ~if="!readOnly && selected" >
+            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="cell.metadata.hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
@@ -542,8 +543,8 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
             }
         </style>
         <div class="top info border" ~if="cell?.outputs?.length">
-            <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
             <oda-button :icon-size icon="bootstrap:eye-slash"  title="Hide/Show" allow-toggle ::toggled="toggleOutput"></oda-button>
+            <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
         </div>
     `,
@@ -605,10 +606,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" style="min-height: 30px;">
+        <div  class="horizontal border" style="min-height: 18px;">
             <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
-            <div ~if="hideCode" class="horizontal left header flex" style="padding: 0 4px; font-size: small;">
-                <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="hideCode=false">Show hidden code</oda-button>
+            <div ~if="hideCode" class="horizontal left header flex" style="cursor: pointer; padding: 0 4px; font-size: small;" @tap="hideCode=false">
+                code hidden...
             </div>                  
         </div>
  

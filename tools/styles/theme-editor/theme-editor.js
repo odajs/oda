@@ -53,7 +53,7 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid',
         </style>
         <div class="horizontal flex" style="max-width: 100%; overflow: hidden;">
             <div class="horizontal wrap flex" style="min-width: 100px; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-                <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px;" ~style="$for.item.style">
+                <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding: 2px;" ~style="$for.item.style">
                     <span style="font-size: larger">{{$for.key}}</span>
                     <div ~for="$for.item.vars" style="margin-left: 16px; font-size: small">{{$$for.item.k}}: {{$$for.item.v}};</div>
                 </div>
