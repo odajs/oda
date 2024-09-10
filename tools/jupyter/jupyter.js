@@ -45,9 +45,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: 0;
                 transition: opacity 1s;
             }
-            oda-jupyter-cell:hover{
+            /* oda-jupyter-cell:hover{
                 @apply --light;
-            }
+            } */
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
@@ -260,12 +260,15 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 border-radius: 50%;
                 @apply --active;
             }
+            .left-panel[hover] {
+                @apply --header;
+            }
         </style>
        
         <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
             
-            <div class="vertical" :error-invert="status === 'error'">
-                <div class="sticky" style="min-width: 32px; max-width: 32px; margin: -2px; margin-top: -6px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover">
+                <div class="sticky" style="min-width: 32px; max-width: 32px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run"></oda-button>
                     {{status}}
                 </div>
@@ -608,7 +611,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         </style>
         <div  class="horizontal border" style="min-height: 18px;">
             <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
-            <div ~if="hideCode" class="horizontal left header flex" style="padding: 0 4px; font-size: small;">
+            <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
                 <span style="cursor: pointer;" @tap="hideCode=false">code hidden...</span>
             </div>                  
         </div>

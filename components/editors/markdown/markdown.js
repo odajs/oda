@@ -11,15 +11,15 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             }
             oda-markdown-viewer {
                 width: {{editMode ? '50%': 'unset'}};
-                margin: {{editMode ? '32px 8px 0px 8px' : '0 8px'}};
+                margin: 0 8px;
             }
         </style>
         <div class="flex horizontal">
-            <div ~if="editMode" class="horizontal no-flex" style="min-width: 120px; width: 50%">
+            <div ~if="editMode" class="horizontal no-flex" style="max-height: 80vh; min-width: 120px; width: 50%">
                 <oda-markdown-editor flex ::value style="overflow: hidden" @change="onChange"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
-            <oda-markdown-viewer flex :value="value || (!readOnly && !editMode ? _value : '')"  @dblclick="_dblClick" style="text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
+            <oda-markdown-viewer flex :value="value || (!readOnly && !editMode ? _value : '')"  @dblclick="_dblClick" ~style="{maxHeight: editMode?'80vh':''}" style="overflow-y: auto; text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
         </div>
     `,
     $public:{

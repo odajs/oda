@@ -9,10 +9,13 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
         }
         .CodeMirror-wrap {
             min-height: 24px; 
-
+            height: 100%;
         }
         .CodeMirror-scroll {
             min-height: 0px; 
+        }
+        .CodeMirror-hscrollbar {
+            display: none!important;
         }
         .editor-toolbar { 
             display: flex;
@@ -27,7 +30,6 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">
     <link rel="stylesheet" type="text/css" href="${PATH}lib/font-awesome.min.css">
     <textarea></textarea>
-    <div vertical flex></div>
     `,
     $public: {
         status: false,
