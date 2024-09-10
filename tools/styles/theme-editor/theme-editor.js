@@ -56,7 +56,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 padding: 2px;
                 outline: none;
                 border-bottom: 1px solid var(--border-color, lightgray);
-
+                background: transparent;
             }
             legend{
                 overflow: hidden;

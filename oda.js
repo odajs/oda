@@ -1862,21 +1862,20 @@ in the <${host.localName}>`);
         ODA.notify = function (text) {
             ODA.push(text);
         };
-        ODA.push = (title = 'Warning!', params = {}) => {
-            if (!params.body) {
-                params.body = title;
-                title = 'Warning!'
-            }
+        ODA.push = (title = '', options = {}) => {
             switch (Notification.permission.toLowerCase()) {
                 case "granted":
-                    new Notification(title, params);
+                    new Notification(title, {
+                        badge: '/web/core/odant.png',
+                        ...options
+                    });
                     break;
                 case "denied":
                     break;
                 case "default":
                     Notification.requestPermission(state => {
                         if (state === "granted")
-                            ODA.push(title, params);
+                            ODA.push(title, options);
                     });
                     break;
             }
