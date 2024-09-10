@@ -43,7 +43,7 @@ class themeVars extends ROCKS({
     })()
 }) { }
 
-ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid, @oda/color-picker',
+ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
     template: `
         <style>
             :host {
@@ -66,24 +66,19 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid, @oda
                 font-size: x-small;
             }
         </style>
-        <div class="horizontal flex" style="max-width: 100%; overflow: hidden;">
-            <div class="horizontal wrap flex" style="position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-                <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding-bottom: 4px; position: relative">
-                    <div style="font-size: larger; padding: 4px;" ~style="$for.item.style">
-                        <div>{{$for.key}}</div>
-                    </div>
-                    <fieldset ~for="$for.item.vars" class="vertical flex" style="position: relative; border-radius: 2px; border: 1px solid lightgray;">
-                        <legend>{{$$for.item.k}}</legend>
-                        <input :value="$$for.item.v"></input>
-                        <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid lightgray;"></oda-color-picker>
-                    </fieldset>
+        <div class="horizontal wrap flex" style="justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
+            <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding-bottom: 4px; position: relative">
+                <div style="font-size: larger; padding: 4px;" ~style="$for.item.style">
+                    <div>{{$for.key}}</div>
                 </div>
-            </div>
-            <oda-divider use_px reverse @end-splitter-move="reSize"></oda-divider>
-            <div class="vertical no-flex" style="min-width: 100px" ~style="{width: width+'px'}">
-                <oda-property-grid class="flex" label="Theme settings" :inspected-object="vars" style="padding:0"></oda-property-grid>
+                <fieldset ~for="$for.item.vars" class="vertical flex" style="position: relative; border-radius: 2px; border: 1px solid lightgray;">
+                    <legend>{{$$for.item.k}}</legend>
+                    <input :value="$$for.item.v"></input>
+                    <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid lightgray;"></oda-color-picker>
+                </fieldset>
             </div>
         </div>
+        <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
     vars: { $def() { return new themeVars() } },
     get elements() {
@@ -97,16 +92,7 @@ ODA({ is: 'oda-theme-editor', imports: '@oda/divider, @tools/property-grid, @oda
             if (k.includes('-color')) elms[group].style.color = v;
             if (k.includes('-background')) elms[group].style.background = v;
         })
-        console.log(elms);
+        // console.log(elms);
         return elms;
-    } ,
-    $public: {
-        width: {
-            $def: 240,
-            $save: true
-        }
-    },
-    reSize(e) {
-        this.width = Math.round(e.detail.value.w);
     }
 })
