@@ -55,7 +55,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 width: 100%;
                 padding: 2px;
                 outline: none;
-                border-bottom: 1px solid lightgray;
+                border-bottom: 1px solid var(--border-color, lightgray);
 
             }
             legend{
@@ -71,10 +71,10 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 <div style="font-size: larger; padding: 4px;" ~style="$for.item.style">
                     <div>{{$for.key}}</div>
                 </div>
-                <fieldset ~for="$for.item.vars" class="vertical flex" style="position: relative; border-radius: 2px; border: 1px solid lightgray;">
+                <fieldset ~for="$for.item.vars" class="vertical flex" style="position: relative; border-radius: 2px; border: 1px solid var(--border-color, lightgray);">
                     <legend>{{$$for.item.k}}</legend>
                     <input :value="$$for.item.v"></input>
-                    <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid lightgray;"></oda-color-picker>
+                    <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid var(--border-color, lightgray);"></oda-color-picker>
                 </fieldset>
             </div>
         </div>
