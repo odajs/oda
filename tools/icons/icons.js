@@ -8,7 +8,14 @@ ODA({ is: 'oda-icons',
                 overflow: auto;
             }
         </style>
-        <oda-icons-tree ~if="!hideTree" opened title="icons" label="icons" ::focused-row ::filter-val slot="left-panel"></oda-icons-tree>
+        <oda-icons-tree
+            ~if="!hideTree"
+            title="icons"
+            label="icons"
+            ::focused-row
+            ::filter-val
+            slot="left-panel"
+        ></oda-icons-tree>
         <oda-icons-set :icons="_icons || icons" :icon-size ::selected-icon></oda-icons-set>
     `,
     $public: {
@@ -19,7 +26,7 @@ ODA({ is: 'oda-icons',
         selectedIcon: ''
     },
     focusedRow: {
-        $def: Object,
+        $type: Object,
         set(n) {
             if (!this.filterVal) {
                 this._icons = [];
@@ -56,5 +63,11 @@ ODA({ is: 'oda-icons',
         }
     },
     icons: [],
-    _icons: []
+    _icons: [],
+    async attached() {
+        this.layoutHost.panels.forEach(p => {
+            p.showPin = false;
+            p.pinned = true;
+        });
+    },
 })
