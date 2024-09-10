@@ -2,26 +2,23 @@ const PATH = import.meta.url.replace('markdown-editor.js', '');
 ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*html*/`
     <style>
         :host {
-            @apply --vertical; 
-            /*height: 100%;*/
+            @apply --vertical;
         }
         .CodeMirror{
             padding: 0px 0px 4px 0px;
         }
         .CodeMirror-wrap {
             min-height: 24px; 
-            margin-top: 32px;
+
         }
         .CodeMirror-scroll {
             min-height: 0px; 
         }
         .editor-toolbar { 
-            display: flex; 
-            /* flex-wrap: wrap; */
-            width: 300%;
-            position: absolute;
-            z-index: 2;
-            opacity: 1;
+            display: flex;
+            position: sticky;
+            flex-wrap: wrap;
+            top: 0;
             border: none;
             border-bottom: 1px solid gray;
             background: white;
@@ -30,7 +27,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
     <link rel="stylesheet" type="text/css" href="${PATH}lib/simplemde.min.css">
     <link rel="stylesheet" type="text/css" href="${PATH}lib/font-awesome.min.css">
     <textarea></textarea>
-    <div flex></div>
+    <div vertical flex></div>
     `,
     $public: {
         status: false,
@@ -43,7 +40,10 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
         value: {
             $type: String,
             set(n) {
-                if (this.simpleMde && this.simpleMde.value() !== n) this.simpleMde.value(n);
+                if (!this.isReady && this.simpleMde && this.simpleMde.value() !== n) {
+                    this.isReady = true;
+                    this.simpleMde.value(n);
+                }
             },
             get() {
                 return this.simpleMde.value();

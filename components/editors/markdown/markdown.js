@@ -5,16 +5,17 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         <style>
             :host{
                 @apply --vertical;
+                @apply --flex;
                 border: {{showBorder?'1px solid var(--border-color)':'none'}};
-                overflow-x: hidden;
+                overflow: hidden;
             }
             oda-markdown-viewer {
-                width: {{editMode ? 0 : 'unset'}};
+                width: {{editMode ? '50%': 'unset'}};
                 margin: {{editMode ? '32px 8px 0px 8px' : '0 8px'}};
             }
         </style>
         <div class="flex horizontal">
-            <div ~if="editMode" class="horizontal" style="min-width: 120px; width: 50%;  position: relative;">
+            <div ~if="editMode" class="horizontal no-flex" style="min-width: 120px; width: 50%">
                 <oda-markdown-editor flex ::value style="overflow: hidden" @change="onChange"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>

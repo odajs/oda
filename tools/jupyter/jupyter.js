@@ -82,7 +82,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         },
         arrowdown(e){
             e.preventDefault();
-            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index){}
+            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
                 this.selectedCell = this.cells[this.selectedCell.index + 1]
         }
     },
