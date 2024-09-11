@@ -54,7 +54,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
 <!--            <oda-button :icon-size icon="icons:search" @tap="_keypress($event, true)"></oda-button>-->
         </div>
     `,
-    async attached(){
+    async attached() {
         const list = await this.iconsList;
         this.dataSet = await loadIcons(list);
     },
@@ -67,8 +67,8 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
         allowSort: true,
         iconsList: {
             $type: Array,
-            get(){
-                return  fetch(iconsPath + 'info.json').then(res=>{
+            get() {
+                return fetch(iconsPath + 'info.json').then(res => {
                     return res.json();
                 })
             }
@@ -131,7 +131,7 @@ ODA({ is: 'oda-icons-icon', extends: 'oda-icon', imports: '@oda/icon',
         oda-icon {
             filter: invert(1);
         }
-        label{
+        label {
             align-self: center;
             padding-left: 4px;
             text-overflow: ellipsis;
