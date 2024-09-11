@@ -613,10 +613,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" style="min-height: 18px;">
+        <div  class="horizontal border" style="min-height: 32px;">
             <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
             <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
-                <span style="cursor: pointer;" @tap="hideCode=false">code hidden...</span>
+                <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">code hidden...</span>
             </div>                  
         </div>
  
