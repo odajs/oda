@@ -53,6 +53,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
+    output_data: [],
     cellSelect(item){
         this['selectedCell'] = item;
         // this.$render();
@@ -285,10 +286,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div  ~if="cell?.outputs?.length" class="info border"  style="max-height: 100%;">
+                <div  ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
+                            <div raised ~for="cell.controls" style="font-family: monospace;" >
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxRow"></oda-jupyter-cell-out>
+                            </div>
                             <div raised ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxRow"></oda-jupyter-cell-out>
                             </div>
@@ -765,6 +769,7 @@ class JupyterCell extends ROCKS({
     get id() {
         return this.metadata?.id || getID();
     },
+    controls: [],
     get outputs() {
         // return [ ...Array(40000).keys() ];
         return this.data?.outputs || [];
@@ -910,7 +915,7 @@ class JupyterCell extends ROCKS({
         this.isRun = true;
         try{
             let time = Date.now();
-            run_context.output_data = [];
+            run_context.output_data = jupyter.output_data = [];
             const fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
@@ -924,11 +929,11 @@ class JupyterCell extends ROCKS({
             t = time.getMilliseconds();
             time_str += t + ' ms';
             this.status = time_str;
-
             if (res){
-                run_context.output_data.push(res);
+                jupyter.output_data.push(res);
             }
-            this.outputs = run_context.output_data.map(i=>({data:{"text/plain": i/*.toString()*/}}));
+            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement)).map(i=>({data:{"text/plain": i}}));
+            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
         }
         catch (e){
             let error = e.stack.split('\n');
@@ -947,7 +952,7 @@ class JupyterCell extends ROCKS({
         }
         finally {
             this.isRun = false;
-            // run_context.output_data = [];
+            run_context.output_data = [];
         }
     }
     get code(){
