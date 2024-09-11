@@ -549,7 +549,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                  border-radius: 4px;
             }
         </style>
-        <div class="top info border" ~if="cell?.outputs?.length">
+        <div class="top info border" ~if="cell?.outputs?.length || cell?.controls?.length">
             <oda-button :icon-size icon="bootstrap:eye-slash"  title="Hide/Show" allow-toggle ::toggled="toggleOutput"></oda-button>
             <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
