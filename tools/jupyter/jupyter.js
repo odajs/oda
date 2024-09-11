@@ -776,7 +776,7 @@ class JupyterCell extends ROCKS({
     },
     set outputs(n) {
         this.data.outputs = n;
-        // this.notebook.change();
+        this.notebook.change();
     },
     get sources() {
         return this.data?.source || [];
@@ -915,7 +915,6 @@ class JupyterCell extends ROCKS({
         this.isRun = true;
         try{
             let time = Date.now();
-            const outdata = JSON.stringify(jupyter.output_data || []);
             run_context.output_data = jupyter.output_data = [];
             const fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
@@ -932,10 +931,6 @@ class JupyterCell extends ROCKS({
             this.status = time_str;
             if (res){
                 jupyter.output_data.push(res);
-            }
-            if (outdata !== JSON.stringify(jupyter.output_data || [])) {
-                this.notebook.change();
-                console.log('change');
             }
             this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement)).map(i=>({data:{"text/plain": i}}));
             this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));

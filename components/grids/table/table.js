@@ -1650,7 +1650,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         // this.focusedCellEnd = {};
         const res = this._cellSelection.rows.includes(row) && this._cellSelection.cols.includes(col);
         if (res) {
-            elem.firstElementChild.$('input, textarea, *[tabindex]')?.focus();
+            elem.firstElementChild.$('input, textarea, *[tabindex]');
         }
         return res;
     },
