@@ -776,7 +776,7 @@ class JupyterCell extends ROCKS({
     },
     set outputs(n) {
         this.data.outputs = n;
-        this.notebook.change();
+        // this.notebook.change();
     },
     get sources() {
         return this.data?.source || [];
