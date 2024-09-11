@@ -8,32 +8,46 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
                 background-color: {{paper.background}} !important;
             }
         </style>
-        <oda-tree icon-checked="icons:visibility" icon-unchecked="icons:visibility-off" allow-check="single" :label="label || 'structure'" icon="odant:fields" title="fields" cell-template="oda-layout-designer-table-cell" allow-selection="level" ~if="layout && designMode" slot="left-panel" :data-set="[layout]" show-grouping-panel="false" :selected-rows="selection"></oda-tree>
+        <oda-tree
+            ~if="layout && designMode"
+            slot="left-panel"
+            icon="odant:fields"
+            title="fields"
+            icon-checked="icons:visibility"
+            icon-unchecked="icons:visibility-off"
+            allow-check="single"
+            :label="label || 'structure'"
+            cell-template="oda-layout-designer-table-cell"
+            allow-selection="level"
+            :data-set="[layout]"
+            show-grouping-panel="false"
+            :selected-rows="selection"
+        ></oda-tree>
         <div class="flex vertical" style="overflow-x: hidden; overflow-y: auto;">
-            <oda-layout-designer-structure ~is="structureTemplate" class="flex" ~class="{header: designMode}" :layout ></oda-layout-designer-structure>
+            <oda-layout-designer-structure ~is="structureTemplate" class="flex" ~class="{header: designMode}" :layout></oda-layout-designer-structure>
             <div class="flex"></div>
         </div>
         <oda-property-grid icon="icons:menu" ~if="designMode" slot="right-panel" group-expanding-mode="all" :inspected-object="selection"></oda-property-grid>
     `,
-    async loadSettings(layout){
+    async loadSettings(layout) {
         return this.settings[layout.path] ??= {};
     },
-    async saveSettings(layout){
+    async saveSettings(layout) {
         this.settings[layout.path] = layout.settings;
     },
-    resetDesign(){
+    resetDesign() {
         this.designInfo.selected = [];
         this.layout.reset(true);
     },
     label: '',
-    $pdp:{
+    $pdp: {
         settings: {},
-        get designer(){
+        get designer() {
             return this;
         },
         designInfo: {
             selected: [],
-            dropTo:{
+            dropTo: {
                 target: null,
                 align: ''
             }
@@ -45,52 +59,52 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
         containerTemplate: 'oda-layout-designer-container',
         focusedField: null,
     },
-    get selection(){
+    get selection() {
         return this.designInfo.selected;
     },
     data: {
         $type: Object
     },
-    colors:{
+    colors: {
         $public: true,
         $pdp: true,
-        paper:{
+        paper: {
             $def: {
-                color:{
+                color: {
                     $def: 'var(--content-color)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                 },
-                background:{
+                background: {
                     $def: 'var(--content-background)',
                     $editor: '@oda/color-picker[oda-color-picker]',
-                    set(v){
+                    set(v) {
                         console.log(v);
                     }
                 }
             },
             $save: true,
         },
-        tools:{
+        tools: {
             $def: {
-                color:{
+                color: {
                     $def: 'var(--dark-color)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                 },
-                background:{
+                background: {
                     $def: 'var(--dark-background)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                 }
             },
             $save: true,
         },
-        content:{
+        content: {
             $def: {
-                color:{
+                color: {
                     $def: 'var(--content-color)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                     $save: true,
                 },
-                background:{
+                background: {
                     $def: 'var(--content-background)',
                     $editor: '@oda/color-picker[oda-color-picker]',
                     $save: true,
@@ -100,8 +114,8 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
         }
     },
     $public: {
-        $pdp:true,
-        get isDesignChanged(){
+        $pdp: true,
+        get isDesignChanged() {
             const flatter = i => i.items && i.items.length ? i.items.flatMap(flatter) : [i];
             const itemsToSave = this.designer.layout.items.flatMap(flatter);
             return !!itemsToSave.filter(i => i.layer.isChanged).length;
@@ -109,7 +123,7 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
         designMode: {
             $def: false,
             async set(n) {
-                if (n){
+                if (n) {
                     await ODA.import('@oda/tree');
                     await ODA.import('@tools/property-grid');
                 }
@@ -117,8 +131,8 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
             },
         }
     },
-    $observers:{
-        setLayout(data, dataKeys){
+    $observers: {
+        setLayout(data, dataKeys) {
             if (dataKeys) {
                 this.style.visibility = 'hidden';
                 this.layout = new LayoutItem(undefined, undefined, this.dataKeys, this.data);
@@ -172,36 +186,36 @@ ODA({ is: 'oda-layout-designer-structure',
         </style>
         <div ~is="containerTemplate" ~for="items" :item="$for.item" :is-active-tab="isTabsContainer && layout?.focusedTab === $for.item"  :denied="_denied($for.item)" :allow="_allow($for.item)"  :outlined="_allowDrop($for.item)" :info="_allowDrop($for.item)"></div>
     `,
-    _allowDrop(item){
+    _allowDrop(item) {
         return this.designMode && this.designInfo.selected.includes(item);
     },
-    _denied(item){
+    _denied(item) {
         const layer = this.designMode && this.designInfo.selected?.[0]?.layer;
         return layer && layer !== item.layer;
     },
-    _allow(item){
+    _allow(item) {
         return this.designMode && !!this.designInfo.selected.length && this.designInfo.selected?.[0]?.layer === item.layer;
     },
-    isTabsContainer:{
-        get(){
+    isTabsContainer: {
+        get() {
             return this.layout?.itemType === 'tabs';
         },
         $attr: true
     },
-    get items(){
+    get items() {
         return this.layout?.items;
     },
-    isBlock:{
+    isBlock: {
         $type: Boolean,
         $attr: true,
-        get(){
+        get() {
             return this.designMode && this.layout?.itemType === 'block';
         }
     },
     layout: {
         $type: Object,
-        async set(v){
-            if (v?.isLayerRoot){
+        async set(v) {
+            if (v?.isLayerRoot) {
                 this.style.visibility = 'hidden';
                 v.settings ??= await this.loadSettings(v) || {};
                 this.designer.debounce('show-layer', () => {
@@ -213,11 +227,11 @@ ODA({ is: 'oda-layout-designer-structure',
             }
         }
     },
-    $pdp:{
-        align:{
+    $pdp: {
+        align: {
             $type: '',
             $attr: true,
-            get (){
+            get() {
                 return this.layout?.align;
             }
         }
@@ -240,32 +254,32 @@ ODA({ is: 'oda-layout-designer-container',
                 flex: {{maxWidth ? '0 0 auto':'1000000000000000000000000000000 1 auto'}} !important;
                 display: {{hidden && !designMode?'none':'flex'}};
             }
-            :host([denied]){
+            :host([denied]) {
                 background-color: rgba(255,0,0,.3);
                 color: var(--dark-background);
                 fill: var(--dark-background);
             }
-            :host([allow]){
+            :host([allow]) {
                 background-color: rgba(0, 255, 0,.3);
                 color: var(--content-color);
             }
-            :host([allow])>fieldset, :host([denied])>fieldset{
+            :host([allow]) > fieldset, :host([denied]) > fieldset {
                 background-color: transparent !important;
             }
-            :host([is-group]){
+            :host([is-group]) {
                 @apply --dark;
                 /*@apply --raised;*/
                 border: 1px solid {{paper.background}};
                 min-width: calc(100% - 8px) !important;
                 border-radius: 6px;
             }
-            :host([is-block]){
+            :host([is-block]) {
                 padding: 0px !important;
             }
-            :host([info]){
+            :host([info]) {
                 @apply --info;
             }
-            legend{
+            legend {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -276,11 +290,11 @@ ODA({ is: 'oda-layout-designer-container',
                 margin-left: 4px;
                 max-width: 90%;
             }
-            :host([drop-to]){
+            :host([drop-to]) {
                 @apply --outlined;
             }
 
-            :host([drop-to=top])::before{
+            :host([drop-to=top])::before {
                content: "";
                position: absolute;
                top: 0px;
@@ -291,7 +305,7 @@ ODA({ is: 'oda-layout-designer-container',
               background-color: var(--success-color);
             }
 
-            :host([drop-to=bottom])::after{
+            :host([drop-to=bottom])::after {
                content: "";
                position: absolute;
                bottom: 0px;
@@ -301,7 +315,7 @@ ODA({ is: 'oda-layout-designer-container',
                z-index: 1;
               background-color: var(--success-color);
             }
-            :host([drop-to=left])::before{
+            :host([drop-to=left])::before {
                content: "";
                position: absolute;
                top: 0px;
@@ -311,7 +325,7 @@ ODA({ is: 'oda-layout-designer-container',
                z-index: 1;
               background-color: var(--success-color);
             }
-            :host([drop-to=right])::after{
+            :host([drop-to=right])::after {
                content: "";
                position: absolute;
                bottom: 0px;
@@ -321,48 +335,80 @@ ODA({ is: 'oda-layout-designer-container',
                z-index: 1;
               background-color: var(--success-color);
             }
-            :host([is-tab]){
+            :host([is-tab]) {
                 padding: 0px !important;
                 visibility: hidden;
                 min-width: calc(100%-8px);
                 order: 1;
             }
-            :host([is-tabs]){
+            :host([is-tabs]) {
                 padding: 0px !important;
             }
-            :host([is-active-tab]){
+            :host([is-active-tab]) {
                 visibility: inherit;
                 order: 0 !important;
             }
         </style>
-        <fieldset class="vertical flex" ~is="fieldset" :title :content="!isGroup"  style="border-radius: 4px; min-width: 0px;" ~style="_fieldsetStyle">
+        <fieldset
+            ~is="fieldset"
+            class="vertical flex"
+            :title
+            :content="!isGroup"
+            style="border-radius: 4px; min-width: 0px;"
+            ~style="_fieldsetStyle"
+        >
             <legend ~if="isField" ~html="title" ~style="{color: isGroup?'inherit':item.textColor}"></legend>
             <div ~if="!isBlock" class="horizontal" style="overflow: hidden; justify-content: end;" ~show="!isTabs && !isTab">
-                <oda-icon ~if="expandIcon" :icon-size style="cursor: pointer; opacity: .5" :icon="expandIcon" @pointerdown.stop @tap.stop="expand"></oda-icon>
-                <div id="input" @focusin="focusedField = item" :disabled="designMode && !isGroup" ~is="item?.editorTemplate || editorTemplate" class="flex" :layout="item" style="border: none; outline: none;" :focused="item === focusedField"></div>
+                <oda-icon
+                    ~if="expandIcon"
+                    :icon="expandIcon"
+                    :icon-size
+                    style="cursor: pointer; opacity: .5"
+                    @pointerdown.stop
+                    @tap.stop="expand"
+                ></oda-icon>
+                <div
+                    ~is="item?.editorTemplate || editorTemplate"
+                    id="input"
+                    :disabled="designMode && !isGroup"
+                    class="flex"
+                    :layout="item"
+                    style="border: none; outline: none;"
+                    :focused="item === focusedField"
+                    @focusin="this.editorFocusIn($event, item)"
+                ></div>
             </div>
-            <div  ~if="showExt" ~is="item?.structureTemplate || structureTemplate" :layout="item" style="position: relative;" :flex="isTab || isGroup"></div>
+            <div
+                ~if="showExt"
+                ~is="item?.structureTemplate || structureTemplate"
+                :layout="item"
+                style="position: relative;"
+                :flex="isTab || isGroup"
+            ></div>
         </fieldset>
-
     `,
-    get showExt(){
+    editorFocusIn(e, item) {
+        this.focusedField = item;
+        e.target.focus();
+    },
+    get showExt() {
         return this.item?.__expanded__ || this.isTab
     },
-    get _fieldsetStyle(){
-        return {border: (this.isGroup || !this.isField)?'none':'1px solid '+this.item.textColor, padding: !this.isField?'0px':'0px 0px;'}
+    get _fieldsetStyle() {
+        return { border: (this.isGroup || !this.isField) ? 'none' : '1px solid ' + this.item.textColor, padding: !this.isField ? '0px' : '0px 0px;' }
     },
-    get isField(){
+    get isField() {
         return !this.isTabs && !this.isBlock && !this.isTab;
     },
-    get fieldset(){
+    get fieldset() {
         if (!this.isField)
             return 'div';
         return 'fieldset';
     },
-    tabindex:{
-        get(){
-            if (this.designMode && this.designInfo.selected.includes(this.item)){
-                this.async(()=>{
+    tabindex: {
+        get() {
+            if (this.designMode && this.designInfo.selected.includes(this.item)) {
+                this.async(() => {
                     this.focus();
                 })
                 return 0;
@@ -372,36 +418,36 @@ ODA({ is: 'oda-layout-designer-container',
         },
         $attr: true,
     },
-    isGroup:{
+    isGroup: {
         $type: Boolean,
         $attr: true,
-        get(){
+        get() {
             return this.item?.itemType === 'group';
         }
     },
-    isBlock:{
+    isBlock: {
         $type: Boolean,
         $attr: true,
-        get(){
+        get() {
             return this.item?.itemType === 'block';
         }
     },
-    isTabs:{
+    isTabs: {
         $type: Boolean,
         $attr: true,
-        get(){
+        get() {
             return this.item?.itemType === 'tabs';
         }
     },
-    isTab:{
+    isTab: {
         $type: Boolean,
         $attr: true,
-        get(){
+        get() {
             return this.item?.itemType === 'tab';
         }
     },
     // $pdp: {
-    get maxWidth(){
+    get maxWidth() {
         return this.$('#input')?.maxWidth || undefined;
     },
     // },
@@ -410,27 +456,27 @@ ODA({ is: 'oda-layout-designer-container',
     //         return this.item?.maxWidth;
     //     },
     // },
-    dropTo:{
+    dropTo: {
         $attr: true,
-        get(){
-            if(this.designMode)
+        get() {
+            if (this.designMode)
                 return this.designInfo.dropTo.target === this && this.designInfo.dropTo.align;
             return '';
         }
     },
-    hidden:{
+    hidden: {
         $attr: true,
-        get (){
+        get() {
             return this.item?.hidden;
         }
     },
-    get title(){
+    get title() {
         return this.item?.title;
     },
-    get expandIcon(){
+    get expandIcon() {
         return (this.extendedMode || this.isGroup) ? (this.item?.__expanded__ ? 'icons:chevron-right:90' : 'icons:chevron-right') : '';
     },
-    get extendedMode(){
+    get extendedMode() {
         return this.item?.items?.length;
     },
     expand() {
@@ -446,15 +492,15 @@ ODA({ is: 'oda-layout-designer-container',
             },
         },
     },
-    draggable:{
+    draggable: {
         $attr: true,
-        get (){
-            return this.designMode?'true':'false';
+        get() {
+            return this.designMode ? 'true' : 'false';
         }
     },
     item: {},
-    $keyBindings:{
-        escape(e){
+    $keyBindings: {
+        escape(e) {
             if (!this.item?.owner?.name)
                 return;
             e.stopPropagation();
@@ -462,8 +508,8 @@ ODA({ is: 'oda-layout-designer-container',
             this.blur();
         }
     },
-    $listeners:{
-        dragover(e){
+    $listeners: {
+        dragover(e) {
             if (!this.designMode) return;
             e.stopPropagation();
             if (this.designInfo.selected[0]?.layer !== this.item.layer)
@@ -479,72 +525,72 @@ ODA({ is: 'oda-layout-designer-container',
             this.designInfo.dropTo.target = e.target;
             let align = '';
             this.designInfo.dropTo.align = '';
-            if (w>h){
-                if (x<min)
+            if (w > h) {
+                if (x < min)
                     align = 'left';
                 else if (x > w - min)
                     align = 'right';
-                else if (y<min)
+                else if (y < min)
                     align = 'top';
                 else
                     align = 'bottom';
             }
-            else{
-                if (y<min)
+            else {
+                if (y < min)
                     align = 'top';
                 else if (y > h - min)
                     align = 'bottom';
-                else if (x<min)
+                else if (x < min)
                     align = 'left';
                 else
                     align = 'right';
             }
             this.designInfo.dropTo.align = align;
         },
-        dragleave(e){
+        dragleave(e) {
             this.designInfo.dropTo.align = '';
             this.designInfo.dropTo.target = null;
         },
-        drop(e){
+        drop(e) {
             if (!this.designInfo.dropTo.target)
                 return;
             if (this.designInfo.dropTo.target?.item.itemType === 'tab')
-                this.designInfo.dropTo.target.item.addItems({items: this.designInfo.selected, align: this.designInfo.dropTo.align}, true);
+                this.designInfo.dropTo.target.item.addItems({ items: this.designInfo.selected, align: this.designInfo.dropTo.align }, true);
             else
-                this.designInfo.selected = [this.designInfo.dropTo.target.item.addBlock({items: this.designInfo.selected, align: this.designInfo.dropTo.align}, true)];
+                this.designInfo.selected = [this.designInfo.dropTo.target.item.addBlock({ items: this.designInfo.selected, align: this.designInfo.dropTo.align }, true)];
             this.designInfo.dropTo.align = '';
             this.designInfo.dropTo.target = null;
 
         },
-        dragstart(e){
+        dragstart(e) {
             if (!this.designMode) return;
             e.stopPropagation();
             if (!this.designInfo.selected.includes(this.item))
                 this.$listeners.pointerdown.call(this, e)
         },
-        pointerdown(e){
-            if (this.designMode){
+        pointerdown(e) {
+            if (this.designMode) {
                 selectItem.call(this, e)
                 window.dispatchEvent(new PointerEvent('pointerdown', e))
                 this.designer.$render();
             }
         },
-        contextmenu(e){
+        contextmenu(e) {
             if (!this.designInfo.selected.includes(this.item))
                 return;
             contextMenu.call(this, e)
         }
     }
 })
-function selectItem(e){
+function selectItem(e) {
     if (!this.designMode) return;
     e.stopPropagation();
-    if (e.button === 0){
-        if (!e.ctrlKey || !this.designInfo.selected.length){
+    if (e.button === 0) {
+        if (!e.ctrlKey || !this.designInfo.selected.length) {
             if (!this.designInfo.selected.includes(this.item))
                 this.designInfo.selected = [this.item];
         }
-        else if (this.designInfo.selected[0].layer === this.item.layer){
+        else if (this.designInfo.selected[0].layer === this.item.layer) {
             if (this.designInfo.selected.includes(this.item))
                 this.designInfo.selected.remove(this.item);
             else
@@ -552,15 +598,15 @@ function selectItem(e){
 
         }
     }
-    else if (!this.designInfo.selected.includes(this.item)){
+    else if (!this.designInfo.selected.includes(this.item)) {
         if (!e.ctrlKey)
             this.designInfo.selected = [this.item];
         else
             this.designInfo.selected.add(this.item);
     }
-
 }
-async function contextMenu(e){
+
+async function contextMenu(e) {
     if (!this.designMode) return;
     e.preventDefault();
     if (!this.designInfo.selected.includes(this.item))
@@ -572,43 +618,43 @@ async function contextMenu(e){
             label: `Grouping`,
             icon: 'fontawesome:s-object-group',
             execute: () => {
-                this.item.group({items: this.designInfo.selected, align: ''}, true);
+                this.item.group({ items: this.designInfo.selected, align: '' }, true);
             }
         }
     ];
-    if (this.item.itemType){
+    if (this.item.itemType) {
         menu.push({
             label: `Ungrouping`,
             icon: 'fontawesome:s-object-ungroup',
             execute: () => {
-                this.item.ungroup({items: this.designInfo.selected}, true);
+                this.item.ungroup({ items: this.designInfo.selected }, true);
             }
         })
     }
     menu.push({
-        label: this.item.hidden?`Show`:'Hide',
-            icon: this.item.hidden?'icons:visibility':'icons:visibility-off',
+        label: this.item.hidden ? `Show` : 'Hide',
+        icon: this.item.hidden ? 'icons:visibility' : 'icons:visibility-off',
         execute: () => {
             const hidden = !this.item.hidden
             this.designInfo.selected.add(this.item);
-            for (let item of this.designInfo.selected){
+            for (let item of this.designInfo.selected) {
                 item.hidden = hidden;
             }
         }
     })
 
-    const res = await ODA.showDropdown('oda-menu', {iconSize: this.iconSize, items: menu}, {title: `Design menu [${this.designInfo.selected.length}]`, allowClose: true });
+    const res = await ODA.showDropdown('oda-menu', { iconSize: this.iconSize, items: menu }, { title: `Design menu [${this.designInfo.selected.length}]`, allowClose: true });
     res?.focusedItem.execute();
 }
 ODA({is:'oda-layout-designer-tabs',
-    template:`
+    template:/*html*/`
         <style>
-            :host{
+            :host {
                 background-color: transparent !important;
                 @apply --horizontal;
                 overflow: hidden;
             }
-            .tab{
+            .tab {
                 @apply --border;
                 @apply --horizontal;
                 @apply --raised;
@@ -677,30 +723,28 @@ ODA({is:'oda-layout-designer-tabs',
     layout: null,
 })
 ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
-    template:`
+    template: /*html*/`
         <style>
-            .icon{
+            .icon {
                 padding: 2px;
                 opacity: .5;
                 transform: scale(.5);
                 display: none;
-
-
             }
-            :host([icon]) .icon{
+            :host([icon]) .icon {
                 display: block !important;
             }
-            label{
+            label {
                 padding: 4px;
             }
-            :host([is-dark])>label{
+            :host([is-dark]) > label {
                 @apply --dark;
                 border-radius: 4px;
             }
-            :host([drop-to]){
+            :host([drop-to]) {
                 @apply --outlined;
             }
-            :host([drop-to=top])::before{
+            :host([drop-to=top])::before {
                content: "";
                position: absolute;
                top: 0px;
@@ -711,7 +755,7 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
                background-color: var(--success-color);
             }
 
-            :host([drop-to=bottom])::after{
+            :host([drop-to=bottom])::after {
                content: "";
                position: absolute;
                bottom: 0px;
@@ -721,7 +765,7 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
                z-index: 1;
               background-color: var(--success-color);
             }
-            :host([drop-to=left])::before{
+            :host([drop-to=left])::before {
                content: "";
                position: absolute;
                top: 0px;
@@ -731,7 +775,7 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
                z-index: 1;
               background-color: var(--success-color);
             }
-            :host([drop-to=right])::after{
+            :host([drop-to=right])::after {
                content: "";
                position: absolute;
                bottom: 0px;
@@ -742,30 +786,45 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
               background-color: var(--success-color);
             }
         </style>
-        <oda-button ~if="isDesigned"  @down.stop @up.stop icon="carbon:reset" @pointerdown.stop @pointerup.stop @tap.stop="item.reset()"></oda-button>
-        <oda-button :disabled="isLayerRoot && !item?.isChanged"  @down.stop @up.stop :icon="buttonIcon" @pointerdown.stop @pointerup.stop @tap.stop="buttonTap"></oda-button>
+        <oda-button
+            ~if="isDesigned"
+            @down.stop
+            @up.stop icon="carbon:reset"
+            @pointerdown.stop
+            @pointerup.stop
+            @tap.stop="item.reset()"
+        ></oda-button>
+        <oda-button
+            :disabled="isLayerRoot && !item?.isChanged"
+            :icon="buttonIcon"
+            @down.stop
+            @up.stop
+            @pointerdown.stop
+            @pointerup.stop
+            @tap.stop="buttonTap"
+        ></oda-button>
     `,
-    get isDesigned(){
+    get isDesigned() {
         return this.item?.settings?.actions?.length || Object.keys(this.item?.settings?.states || {}).length;
     },
-    dropTo:{
+    dropTo: {
         $attr: true,
-        get(){
-            if(this.designMode)
+        get() {
+            if (this.designMode)
                 return this.designInfo.dropTo.target?.item === this.item && this.designInfo.dropTo.align;
             return '';
         }
     },
-    async buttonTap(e){
-        switch (this.item.itemType){
-            case 'group':{
+    async buttonTap(e) {
+        switch (this.item.itemType) {
+            case 'group': {
                 this.item.addTab(true);
             } break;
-            case 'tab':{
+            case 'tab': {
                 this.item.remove(true);
             } break;
-            default:{
-                if (this.isLayerRoot && this.item.isChanged){
+            default: {
+                if (this.isLayerRoot && this.item.isChanged) {
                     await this.saveSettings(this.item);
                     this.item.isChanged = false;
                     this.$render();
@@ -773,85 +832,84 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
             }
         }
     },
-    disabled:{
+    disabled: {
         $attr: true,
-        get (){
+        get() {
             return this.item?.hidden;
         }
     },
-    header:{
+    header: {
         $attr: true,
-        get (){
+        get() {
             return this.isLayerRoot;
         }
     },
-    isDark:{
+    isDark: {
         $attr: true,
-        get (){
+        get() {
             return this.item?.itemType && this.item?.itemType !== 'block';
         }
     },
-    get isLayerRoot(){
+    get isLayerRoot() {
         return this.item.isLayerRoot;
     },
-    get buttonIcon(){
-        switch (this.item.itemType){
+    get buttonIcon() {
+        switch (this.item.itemType) {
             case 'group':
                 return 'icons:add';
             case 'tab':
                 return 'icons:close';
-            default:{
+            default: {
                 if (this.isLayerRoot)
                     return 'icons:save';
             }
         }
     },
 
-    icon:{
+    icon: {
         $attr: true,
-        get(){
+        get() {
             return this.item?.icon;
         }
     },
-    get value(){
-        return this.item.label +' ['+this.item.name+']'
+    get value() {
+        return this.item.label + ' [' + this.item.name + ']'
     },
     $listeners: {
-        contextmenu(e){
+        contextmenu(e) {
             contextMenu.call(this, e)
         },
         pointerdown(e) {
-            if (e.button === 2){
+            if (e.button === 2) {
                 selectItem.call(this, e)
             }
-            else if(this.item.itemType === 'tab'){
+            else if (this.item.itemType === 'tab') {
                 this.item.owner.focusedTab = this.item;
             }
             window.dispatchEvent(new PointerEvent('pointerdown', e))
         }
     }
-
 })
 
 const LayoutItem = class extends ROCKS({
-    settings:{
+    settings: {
         $type: Object,
-        async set(n){
-            for (let step of n?.actions || []){
+        async set(n) {
+            for (let step of n?.actions || []) {
                 let context = await this.findItem(step.context);
                 if (!context)
                     continue;
                 const params = {};
-                for (let p in step.params){
+                for (let p in step.params) {
                     let value = step.params[p];
-                    switch (p){
-                        case 'items':{
-                            value = await Promise.all(value.map(async i=>{
+                    switch (p) {
+                        case 'items': {
+                            value = await Promise.all(value.map(async i => {
                                 return await this.findItem(i);
                             }))
                         } break;
                         case 'old':
-                        case 'item':{
+                        case 'item': {
                             value = await this.findItem(value);
                         }
                     }
@@ -861,92 +919,92 @@ const LayoutItem = class extends ROCKS({
             }
         }
     },
-    get states(){
+    get states() {
         const layer = this.layer || this;
         return layer.settings?.states?.[this.name];
     },
-    groups:[],
-    get path(){
+    groups: [],
+    get path() {
         if (this.isLayerRoot)
-            return !this.layer?('ROOT'):this.layer.path + '/' + this.name;
+            return !this.layer ? ('ROOT') : this.layer.path + '/' + this.name;
     },
-    async findItem(name){
-        const items = (this.items?.then?await this.items:this.items) || []
-        for (let i of items){
-            if (i.layer === this || this.layer){
+    async findItem(name) {
+        const items = (this.items?.then ? await this.items : this.items) || []
+        for (let i of items) {
+            if (i.layer === this || this.layer) {
                 if (i.name == name)
                     return i;
-                const res =  await i.findItem(name);
+                const res = await i.findItem(name);
                 if (res)
                     return res;
             }
         }
     },
     align: '',
-    get checked(){
-        return this.hidden?'unchecked':'checked';
+    get checked() {
+        return this.hidden ? 'unchecked' : 'checked';
     },
-    set checked(v){
+    set checked(v) {
         this.hidden = v === 'unchecked';
         this.layer.isChanged = true;
     },
-    group(params = {items: [], align}, inLog){
+    group(params = { items: [], align }, inLog) {
         let items = [...params.items];
         let align = params.align;
         let idx = this.owner.items.indexOf(this);
         const layer = this.layer;
-        const name = this.generateName(align?'block':'group');
-        const data = {itemType: (align?'block':'group'), name: name, [this.dataKeys]: []}
+        const name = this.generateName(align ? 'block' : 'group');
+        const data = { itemType: (align ? 'block' : 'group'), name: name, [this.dataKeys]: [] }
         layer.groups.push(data);
         const grp = new LayoutItem(this.owner, this.layer, this.dataKeys, data)
         this.owner?.items.splice(idx, 0, grp);
         grp.align = align;
-        if (!align){
+        if (!align) {
             grp.editorTemplate = 'oda-layout-designer-tabs';
         }
-        while(items.length){
-            grp.addItem({item: items.shift()});
+        while (items.length) {
+            grp.addItem({ item: items.shift() });
         }
         grp.__expanded__ = true;
         if (inLog)
-            this.addAction({action: 'group', context: this.name, params:{items: params.items.map(i=>i.name), align}});
+            this.addAction({ action: 'group', context: this.name, params: { items: params.items.map(i => i.name), align } });
         return grp;
     },
-    addBlock(params= {items: [], align: ''}, inLog){
+    addBlock(params = { items: [], align: '' }, inLog) {
         let toItem = this;
         let items = [...params.items];
         const align = params.align;
-        if(items.length>1){
-            let grp = items[0].group({items, align: items[0].owner.align || align});
+        if (items.length > 1) {
+            let grp = items[0].group({ items, align: items[0].owner.align || align });
             items = [grp];
         }
-        switch (align){
+        switch (align) {
             case 'left':
-            case 'top':{
+            case 'top': {
                 items.push(toItem);
-            }  break;
-            default:{
+            } break;
+            default: {
                 items.unshift(toItem);
             }
         }
         if (inLog)
-            this.addAction({action: 'addBlock', context: this.name, params: {items: params.items.map(i=>i.name), align}});
-        return toItem.group({items, align});
+            this.addAction({ action: 'addBlock', context: this.name, params: { items: params.items.map(i => i.name), align } });
+        return toItem.group({ items, align });
     },
-    generateName(type){
-        return type + (this.layer.groups.filter(i=>i.itemType === type).length + 1);
+    generateName(type) {
+        return type + (this.layer.groups.filter(i => i.itemType === type).length + 1);
     },
-    addTab({}, inLog) {
+    addTab({ }, inLog) {
         if (this.itemType !== 'group')
             return;
-        let tabs = this.items.find(i=>{
+        let tabs = this.items.find(i => {
             return i.itemType === 'tabs'
         })
         let items = [];
-        if (!tabs){
+        if (!tabs) {
             items = this.items;
             const name = this.generateName('tabs');
-            const data = {itemType: 'tabs', name, [this.dataKeys]: [], label: 'tabs'}
+            const data = { itemType: 'tabs', name, [this.dataKeys]: [], label: 'tabs' }
             this.layer.groups.push(data);
             tabs = new LayoutItem(this, this.layer, this.dataKeys, data);
             this.items = [tabs];
@@ -954,116 +1012,116 @@ const LayoutItem = class extends ROCKS({
             tabs.hideExpander = true;
         }
         const name = this.generateName('tab');
-        const data = {itemType: 'tab', name, [this.dataKeys]: []}
+        const data = { itemType: 'tab', name, [this.dataKeys]: [] }
         this.layer.groups.push(data);
         const tab = new LayoutItem(tabs, this.layer, this.dataKeys, data);
-        tab.addItems({items});
-        tabs.addItem({item: tab});
+        tab.addItems({ items });
+        tabs.addItem({ item: tab });
         tab.__expanded__ = true;
         data.label = 'Tab ' + (tabs.items.length);
-        if (inLog){
-            tabs.focusedTab =  tab;
-            this.addAction({action: 'addTab', context: this.name});
+        if (inLog) {
+            tabs.focusedTab = tab;
+            this.addAction({ action: 'addTab', context: this.name });
         }
         else if (tabs.items.length === 1)
-            tabs.focusedTab =  tab;
+            tabs.focusedTab = tab;
     },
-    ungroup(params = {items}, inLog) {
+    ungroup(params = { items }, inLog) {
         let items = params.items;
         if (!this.itemType) return;
-        this.owner.replaceItems({item: this, items: this.items});
-        items?.forEach(i=>{
+        this.owner.replaceItems({ item: this, items: this.items });
+        items?.forEach(i => {
             i.ungroup({});
         })
         if (inLog)
-            this.addAction({action: 'ungroup', context: this.name, params: {items: params.items.map(i=>i.name)}});
+            this.addAction({ action: 'ungroup', context: this.name, params: { items: params.items.map(i => i.name) } });
     },
-    removeItem(params = {item}, inLog){
+    removeItem(params = { item }, inLog) {
         let item = params.item;
         if (!this.items.includes(item))
             return;
         const res = this.items.remove(item);
-        switch (this.itemType){
-            case 'block':{
-                if (this.items.length === 1){
-                    this.owner.replaceItem({old: this,  item: this.items[0]});
+        switch (this.itemType) {
+            case 'block': {
+                if (this.items.length === 1) {
+                    this.owner.replaceItem({ old: this, item: this.items[0] });
                 }
             } break;
             case 'tabs':
-            case 'group':{
-                if (this.items.length === 0){
-                    this.owner.removeItem({item: this});
+            case 'group': {
+                if (this.items.length === 0) {
+                    this.owner.removeItem({ item: this });
                 }
             }
         }
         if (inLog)
-            this.addAction({action: 'removeItem', context: this.name, params: {item: item.name}});
+            this.addAction({ action: 'removeItem', context: this.name, params: { item: item.name } });
     },
-    remove(inLog){
-        if (this.itemType === 'tab'){
+    remove(inLog) {
+        if (this.itemType === 'tab') {
             let nextFocus = this.owner.items.indexOf(this);
             const grp = this.owner.owner;
             const grp_idx = grp.owner.items.indexOf(grp) + 1;
             grp.owner.items.splice(grp_idx, 0, ...this.items)
             // this.layer.addItems({items: this.items});
-            this.owner.removeItem({item: this});
-            while(nextFocus>-1){
+            this.owner.removeItem({ item: this });
+            while (nextFocus > -1) {
                 const next = this.owner.items[nextFocus];
-                if (next?.itemType === 'tab'){
-                    this.owner.focusedTab =  next;
+                if (next?.itemType === 'tab') {
+                    this.owner.focusedTab = next;
                     break;
                 }
                 nextFocus--;
             }
         }
-        else{
-            this.owner.replaceItems({item: this, items: this.items});
-            this.owner.removeItem({item: this});
+        else {
+            this.owner.replaceItems({ item: this, items: this.items });
+            this.owner.removeItem({ item: this });
         }
         if (inLog)
-            this.addAction({action: 'remove', context: this.name});
+            this.addAction({ action: 'remove', context: this.name });
     },
-    addItems(params = {items}, inLog) {
+    addItems(params = { items }, inLog) {
         let items = params.items;
-        for (let item of items){
-            this.addItem({item});
+        for (let item of items) {
+            this.addItem({ item });
         }
         if (inLog)
-            this.addAction({action: 'addItems', context: this.name, params:{ items: params.items.map(i=>i.name)}});
+            this.addAction({ action: 'addItems', context: this.name, params: { items: params.items.map(i => i.name) } });
     },
-    addItem(params = {item}, inLog) {
+    addItem(params = { item }, inLog) {
         let item = params.item;
-        item.owner?.removeItem({item});
+        item.owner?.removeItem({ item });
         this.items.push(item);
         item.owner = this;
         if (inLog)
-            this.addAction({action: 'addItem', context: this.name, params:{item: item.name}});
+            this.addAction({ action: 'addItem', context: this.name, params: { item: item.name } });
     },
-    replaceItems(params = {item, items}, inLog){
+    replaceItems(params = { item, items }, inLog) {
         let items = params.items;
         let item = params.item;
         const idx = this.items.indexOf(item);
-        if (idx<0) return;
+        if (idx < 0) return;
         this.items.splice(idx, 1, ...items);
         for (let i of items)
             i.owner = this;
         if (inLog)
-            this.addAction({action: 'replaceItems', context: this.name, params: {item, items: params.items.map(i=>i.name)}});
+            this.addAction({ action: 'replaceItems', context: this.name, params: { item, items: params.items.map(i => i.name) } });
     },
-    replaceItem(params = {old, item}, inLog){
+    replaceItem(params = { old, item }, inLog) {
         let old = params.old;
         let item = params.item;
         const idx = this.items.indexOf(old);
         this.items.splice(idx, 1, item);
         item.owner = this;
         if (inLog)
-            this.addAction({action: 'replaceItem', context: this.name,params: {old: old.name, item: item.name}});
+            this.addAction({ action: 'replaceItem', context: this.name, params: { old: old.name, item: item.name } });
     },
     items: {
         $def: [],
-        get(){
+        get() {
             const items = this.data?.[this.dataKeys];
-            const layer = this.itemType === 'group'? this.layer : this;
+            const layer = this.itemType === 'group' ? this.layer : this;
             if (items?.then) {
                 return items.then(items => {
                     return items.map(i => new LayoutItem(this, layer, this.dataKeys, i))
@@ -1072,14 +1130,14 @@ const LayoutItem = class extends ROCKS({
             return items?.map(item => new LayoutItem(this, layer, this.dataKeys, item))
         }
     },
-    addAction(action){
+    addAction(action) {
         const layer = this.layer || this;
         layer.settings.actions ??= [];
         layer.settings.actions.push(action);
         layer.isChanged = true;
         this.root.designer.$render();
     },
-    get isLayerRoot(){
+    get isLayerRoot() {
         return !!((this.items?.[0]?.layer === this) || this.items?.then);
     },
     title: {
@@ -1092,22 +1150,22 @@ const LayoutItem = class extends ROCKS({
         return this.owner?.root || this;
 
     },
-    $public:{
-        label:{
+    $public: {
+        label: {
             $type: String,
             get() {
                 return this.states?.label || this.data.label || this.name || (!this.owner && 'ROOT');
             },
-            set(n){
+            set(n) {
                 this.setPropValue('label', n)
             }
         },
-        hidden:{
+        hidden: {
             $type: Boolean,
             get() {
                 return this.states?.hidden || this.data.hidden || false;
             },
-            set(n){
+            set(n) {
                 this.setPropValue('hidden', n)
             }
         },
@@ -1117,13 +1175,13 @@ const LayoutItem = class extends ROCKS({
             get() {
                 return this.states?.textColor || 'var(--dark-background)';
             },
-            set(n){
+            set(n) {
                 this.setPropValue('textColor', n)
             }
         }
     },
 
-    setPropValue(prop, val){
+    setPropValue(prop, val) {
         const layer = this.layer || this;
         layer.settings ??= {};
         layer.settings.states ??= {};
@@ -1136,23 +1194,23 @@ const LayoutItem = class extends ROCKS({
         return this.data?.name;
     },
     isChanged: false,
-    get itemType(){
+    get itemType() {
         return this.data?.itemType;
     },
     data: Object,
     __expanded__: false,
     width: undefined,
-    get icon(){
+    get icon() {
         return this.data?.icon;
     },
-    reset(deep){
-        if (deep){
-            for (let item of ((this.items?.length && this.items) || [])){
+    reset(deep) {
+        if (deep) {
+            for (let item of ((this.items?.length && this.items) || [])) {
                 item.reset(deep);
             }
         }
-        if (this.settings?.actions?.length){
-            const exp  = this.__expanded__;
+        if (this.settings?.actions?.length) {
+            const exp = this.__expanded__;
             this.items = undefined;
             this.settings.actions = [];
             this.isChanged = true;
