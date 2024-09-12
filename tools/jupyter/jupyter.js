@@ -727,7 +727,6 @@ class JupyterNotebook extends ROCKS({
     change(add_new) {
         this.isChanged = true;
         this.fire('changed', add_new);
-        console.log('changed');
     }
 }) {
     url = '';
