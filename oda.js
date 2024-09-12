@@ -2076,8 +2076,6 @@ in the <${host.localName}>`);
             return label
         }
     }
-
-    ODA.import('./tools/containers/containers.js');
     window.ODA.IsReady = true;
 }
 
