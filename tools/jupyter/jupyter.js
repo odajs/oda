@@ -499,7 +499,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="top" ~if="!readOnly && selected" >
-            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="cell.metadata.hideCode"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="cell.metadata.hideCode" @tap="notebook?.change()"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
@@ -721,6 +721,7 @@ class JupyterNotebook extends ROCKS({
     change(add_new) {
         this.isChanged = true;
         this.fire('changed', add_new);
+        console.log('changed');
     }
 }) {
     url = '';
