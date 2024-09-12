@@ -5,7 +5,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'oda-table',
         autoWidth: true,
         keyName: 'name',
         hideFocusCell: true,
-        disallowFocusOnPointer: true,
+        doubleClickFocusMode: true,
         disableColumnsSave: true,
     },
     get columns() {

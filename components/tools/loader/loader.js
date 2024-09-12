@@ -33,7 +33,7 @@ ODA({is: 'oda-loader',  extends: 'oda-icon', imports: '@oda/icon',
     },
     addTask(task) {
         if (!task) {
-            const id = getID();
+            const id = Math.floor(Math.random() * Date.now()).toString(16);
             task = {id}
         }
         if (!this.tasks.some(t => t.id === task.id))

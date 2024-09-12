@@ -276,7 +276,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             </div>
             <div class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
                 <div class="vertical">
-                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-toolbar>
+                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control="control()"></oda-jupyter-toolbar>
                     <div class="horizontal" >
                         <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
@@ -291,10 +291,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
                             <div raised ~for="cell.controls" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxRow"></oda-jupyter-cell-out>
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
                             <div raised ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control.maxRow"></oda-jupyter-cell-out>
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
                     </div>
@@ -313,7 +313,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     `,
     _value: '<b><u>Double click for edit...</u></b>',
     get maxOutputsRow() {
-        return this.control.maxRow;
+        return this.control().maxRow;
     },
     get outInfo() {
         return `Blocks: ${this.showAllOutputsRow ? this.cell.outputs.length.toLocaleString() : Math.round(this.maxOutputsRow * (this.outputsStep + 1)).toLocaleString()} of ${this.cell?.outputs?.length.toLocaleString()}`;
@@ -356,7 +356,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.cell.status;
     },
     async run() {
-
         const task = ODA.addTask();
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
@@ -412,7 +411,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 return !this.readOnly &&  (this.selectedCell === this.cell/* || this.selectedCell?.id === this.cell?.id*/);
             }
         },
-        get control() {
+        control() {
             return this.$('#control');
         },
         showAllOutputsRow: false,
@@ -520,6 +519,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
     },
+    control: null,
     showSettings(e) {
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     }

@@ -3,7 +3,7 @@ interface Table extends odaComponent {
     $height: number;
     rowHeight: number;
     $scrollTop: number;
-    disallowFocusOnPointer: boolean;
+    doubleClickFocusMode: boolean;
     allowSelection: 'all' | 'level' | 'type' | 'none';
     selectedRows: TableRow[];
     headerColumns: TableColumn[];

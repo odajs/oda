@@ -60,7 +60,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
     },
     $public: {
         allowFocus: true,
-        disallowFocusOnPointer: false,
+        doubleClickFocusMode: false,
         autoFixRows: true,
         lazy: true,
         allowDrag: true,
