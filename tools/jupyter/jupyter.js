@@ -513,9 +513,8 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     `,
     move(direction){
         this.cell.move(direction);
-        let c = this.cell
         this.async(()=>{
-            this.scrollToCell(c);
+            // this.scrollToCell(this.cell);
         })
     },
     cell: null,
