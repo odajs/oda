@@ -318,7 +318,7 @@ class PropertyGridDataSet extends PropertyGridDataRowOwner.ROCKS({
 }
 
 cells: {
-    ODA({is: 'oda-pg-cell-value', extends: 'oda-table-cell',
+    ODA({is: 'oda-pg-cell-value', extends: 'oda-table-cell', imports: '@oda/menu',
         template: /*html*/`
         <style>
             :host {
