@@ -299,7 +299,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         </div>
                     </div>
                     <div ~if="cell?.metadata?.hideOutput" class="horizontal left header" style="padding: 0 4px; font-size: small;">
-                        <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="hideOutput">Show hidden outputs data</oda-button>
+                        <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="showOutput">Show hidden outputs data</oda-button>
                     </div>
                 </div>        
                 <div class="horizontal left header flex" ~if="!cell?.metadata?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
@@ -428,6 +428,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     get expanderIcon() {
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
+    },
+    showOutput() {
+        this.cell.metadata.hideOutput = false;
+        this.jupyter.$render();
+        this.notebook.change();
     }
 })
 
@@ -567,6 +572,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     set toggleOutput(n){
         this.cell.metadata.hideOutput = n;
         this.jupyter.$render();
+        this.notebook.change();
     },
     clearOutputs() {
         this.cell.metadata.hideOutput = false;
