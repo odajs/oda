@@ -356,8 +356,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.cell.status;
     },
     async run() {
-        const taskID = getID();
-        ODA.top.__loader.addTask({ id: taskID });
+
+        const task = ODA.addTask();
         this.outputsStep = 0;
         this.showAllOutputsRow = false;
         const out = this.$$('oda-jupyter-cell-out');
@@ -383,7 +383,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             } catch (error) {
 
             } finally {
-                ODA.top.__loader.removeTask({ id: taskID });
+                ODA.removeTask(task);
             }
         }, 50)
     },

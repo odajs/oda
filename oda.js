@@ -1532,6 +1532,12 @@ in the <${host.localName}>`);
             }
         }
     }
+    ODA.addTask = function (task){
+        return ODA.top.__loader?.addTask(task);
+    }
+    ODA.removeTask = function (task){
+        return ODA.top.__loader?.removeTask(task);
+    }
     ODA.getDirInfo = async function (url) {
         let res;
         if (window.location.hostname !== 'localhost') {

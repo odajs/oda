@@ -33,10 +33,7 @@
             if (btn.hasAttribute('disabled')) return;
             setRun()
             const count = Number(input.value);
-            const task = {id: Math.random().toString().slice(2)};
-
-            loader.addTask(task);
-
+            const task = loader.addTask();
             setTimeout(() => {
                 for (let i = 0; i < count; i++) {
                     for (let j = 0; j < count; j++) {

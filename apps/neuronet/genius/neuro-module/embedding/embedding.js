@@ -24,7 +24,7 @@ ODA({is: 'oda-embedding',
             </div>
         </div>
         <div class="horizontal">
-            <span>tokens: {{size}}</span>
+            <span>tokens: {{this.tokenizer?.size || 0}}</span>
             <span>error:  {{tokenizer?.error.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
         </div>
 

@@ -32,9 +32,13 @@ ODA({is: 'oda-loader',  extends: 'oda-icon', imports: '@oda/icon',
         $attr: true
     },
     addTask(task) {
-        if (!task) return;
-        if (this.tasks.some(t => t.id === task.id)) return;
-        this.tasks.push(task);
+        if (!task) {
+            const id = getID();
+            task = {id}
+        }
+        if (!this.tasks.some(t => t.id === task.id))
+            this.tasks.push(task);
+        return task
     },
     removeTask(task) {
         if (!task) return;
