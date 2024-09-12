@@ -1,58 +1,55 @@
-ODA({
-    is: 'oda-tabs', imports: '@oda/button',
+ODA({is: 'oda-tabs', imports: '@oda/button',
     template: /*html*/`
-    <style>
-        :host{
-            display: flex;
-            flex-direction: {{direction === 'horizontal' ? 'row' : 'column'}};
-            overflow: hidden;
-            max-{{direction === 'horizontal' ? 'height' : 'width'}}: {{iconSize + 14}}px;
-            min-{{direction === 'horizontal' ? 'height' : 'width'}}: {{iconSize + 14}}px;
-        }
-        :host #container{
-            @apply --flex;
-            display: flex;
-            flex-direction: {{direction === 'horizontal' ? 'row' : 'column'}};
-            overflow-{{direction === 'horizontal' ? 'x' : 'y'}}: auto;
-            overflow-{{direction === 'horizontal' ? 'y' : 'x'}}: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--dark-color) var(--dark-background);
-            gap: 2px;
-        }
-        :host .scrollButton{
-            max-{{direction === 'horizontal' ? 'width' : 'height'}}: 12px;
-        }
-        :host .tab{
-            @apply --content;
-            display: flex;
-            align-items: center;
-            padding: 4px;
-            writing-mode: {{direction === 'horizontal' ? 'lr' : 'tb'}};
-            cursor: pointer;
-            padding: 8px;
-            outline-offset: -2px;
-        }
-        :host .fixed-tab{
-            position: sticky;
-            z-index: 10;
-            {{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
-            @apply --shadow;
-        }
-        {{''}}
-    </style>
-    <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
-        <div
-            ~for="items"
-            class="tab raised"
-            ~class="{accent: index === $for.index, 'fixed-tab': !!$for.item.fixed}"
-            ~style="{transform: direction === 'vertical' && $for.item.label ? 'rotate(180deg)' : 'none', order: $for.item.order || 0}"
-            @mousedown="_tabOnMouseDown($for.item, $event)"
-        >
-            <oda-tabs-tab ~is="$for.item.componentName || componentName" :item="$for.item" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)"></oda-tabs-tab>
-            <oda-icon ~if="typeof $for.item.close === 'function'" icon="icons:close" @tap.stop="$for.item.close()"></oda-icon>
+        <style>
+            :host{
+                display: flex;
+                flex-direction: {{direction === 'horizontal' ? 'row' : 'column'}};
+                overflow: hidden;
+                max-{{direction === 'horizontal' ? 'height' : 'width'}}: {{iconSize + 14}}px;
+                min-{{direction === 'horizontal' ? 'height' : 'width'}}: {{iconSize + 14}}px;
+            }
+            :host #container{
+                @apply --flex;
+                display: flex;
+                flex-direction: {{direction === 'horizontal' ? 'row' : 'column'}};
+                overflow-{{direction === 'horizontal' ? 'x' : 'y'}}: auto;
+                overflow-{{direction === 'horizontal' ? 'y' : 'x'}}: hidden;
+                scrollbar-width: thin;
+                scrollbar-color: var(--dark-color) var(--dark-background);
+                gap: 2px;
+            }
+            :host .scrollButton{
+                max-{{direction === 'horizontal' ? 'width' : 'height'}}: 12px;
+            }
+            :host .tab{
+                @apply --content;
+                display: flex;
+                align-items: center;
+                padding: 4px;
+                writing-mode: {{direction === 'horizontal' ? 'lr' : 'tb'}};
+                cursor: pointer;
+                padding: 8px;
+                outline-offset: -2px;
+            }
+            :host .fixed-tab{
+                position: sticky;
+                z-index: 10;
+                {{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
+                @apply --shadow;
+            }
+            {{''}}
+        </style>
+        <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
+            <div ~for="items"
+                class="tab raised" :accent="index === $for.index"  ~class="{'fixed-tab': !!$for.item.fixed}"
+                ~style="{transform: direction === 'vertical' && $for.item.label ? 'rotate(180deg)' : 'none', order: $for.item.order || 0}"
+                @mousedown="_tabOnMouseDown($for.item, $event)">
+                
+                <div ~is="$for.item.componentName || componentName" :item="$for.item" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)"></div>
+                <oda-icon ~if="typeof $for.item.close === 'function'" icon="icons:close" @tap.stop="$for.item.close()"></oda-icon>
+            </div>
         </div>
-    </div>
-    <oda-button ~if="items.some(i => typeof i.close === 'function')"  icon="icons:close" style="fill: red;" title="close all tabs" @tap="_closeAll"></oda-button>
+        <oda-button ~if="items.some(i => typeof i.close === 'function')"  icon="icons:close" style="fill: red;" title="close all tabs" @tap="_closeAll"></oda-button>
     `,
     $public: {
         $pdp: true,
@@ -144,18 +141,18 @@ ODA({
 ODA({
     is: 'oda-tabs-tab',
     template: /*html*/`
-    <style>
-        :host{
-            @apply --horizontal;
-            align-items: center;
-            gap: 2px;
-        }
-        :host oda-icon{
-            margin: 2px;
-        }
-    </style>
-    <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' && item.label ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
-    <div ~text="item.label"></div>
+        <style>
+            :host{
+                @apply --horizontal;
+                align-items: center;
+                gap: 2px;
+            }
+            :host oda-icon{
+                margin: 2px;
+            }
+        </style>
+        <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' && item.label ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
+        <div ~text="item.label"></div>
     `,
     item: null,
     iconSize: 24,
