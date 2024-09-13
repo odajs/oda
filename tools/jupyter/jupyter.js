@@ -184,7 +184,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
 })
 
 ODA ({ is: 'oda-jupyter-cell-out', template: `
-        <div :src="outSrc" ~is="outIs" vertical info ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" style="padding: 4px; user-select: text; overflow-x: auto;" :warning :error></div>
+        <style>
+            [text-mode]{
+                padding: 4px; 
+                user-select: text; 
+                overflow-x: auto;
+            }
+        </style>
+        <div :src="outSrc" ~is="outIs" vertical info ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
@@ -221,7 +228,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     get split_out(){
         return this.row?.item?.split?.('\n') || [];
     },
-    outHtml() {
+    get outHtml() {
         if (this.row?.item instanceof HTMLElement)
             return this.row.item;
         if (this.showAll)
@@ -512,10 +519,15 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     move(direction){
+        let top = this.jupyter.scrollTop;
+        if(direction<0){
+            top -= this.domHost.previousElementSibling.offsetHeight
+        }
+        else if(direction>0){
+            top += this.domHost.nextElementSibling.offsetHeight
+        }
         this.cell.move(direction);
-        this.async(()=>{
-            // this.scrollToCell(this.cell);
-        })
+        this.jupyter.scrollTop = top;
     },
     cell: null,
     iconSize: 16,
