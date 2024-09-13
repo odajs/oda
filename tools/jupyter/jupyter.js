@@ -524,13 +524,21 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     set hideCode(n){
         let top = this.jupyter.scrollTop;
         if (n){
-            top -= this.domHost.$('#main').offsetHeight;
+            if (top > this.domHost.$('#main').offsetTop){
+                this.async(()=>{
+                    this.jupyter.scrollToCell(this.selectedCell);
+                })
+
+                //top -= this.domHost.$('#main').offsetHeight - (top - this.domHost.$('#main').offsetTop);
+
+            }
+
         }
         else{
 
         }
         this.cell.writeMetadata('hideCode', n);
-        this.jupyter.scrollTop = top;
+       // this.jupyter.scrollTop = top;
     },
     move(direction){
         let top = this.jupyter.scrollTop;
