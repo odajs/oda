@@ -1916,7 +1916,7 @@ cells: {
         },
         _toggleExpand(e, d) {
             this.async(() => {
-                if (!this.item.hideExpander) {
+                if (!this.item.hideExpander && !this.hideIcon) {
                     this.item.__expanded__ = !this.item.__expanded__;
                     this.fire('expanded-changed', this.item.__expanded__);
                 }
