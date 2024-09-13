@@ -267,14 +267,16 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 border-radius: 50%;
                 @apply --success-invert;
             }
+            .left-panel[selected] {
+                @apply --content;
+            }
             .left-panel[hover] {
                 @apply --header;
             }
         </style>
        
         <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
-            
-            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover">
+            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover" :selected>
                 <div class="sticky" style="min-width: 40px; max-width: 40x; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     {{status}}
