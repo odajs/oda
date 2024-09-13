@@ -418,7 +418,7 @@ body[context-menu-show] *:not(oda-context-menu){
         outline-offset: -1px;
     };
     --focused:{
-        box-shadow: inset 0 -2px 0 0  var(--focused-color) !important;
+        box-shadow: 0 -2px 0 0  var(--focused-color) !important;
     };
     --dimmed: {
         opacity: 0.7;

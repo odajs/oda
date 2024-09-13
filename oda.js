@@ -967,16 +967,15 @@ if (!window.ODA?.IsReady) {
         },
         html($el, fn, p) {
             const html = exec.call(this, fn, $el, p) ?? '';
+            if ($el.___innerHTML == html)
+                return;
+            $el.___innerHTML = html;
             if (html instanceof HTMLElement) {
-                if ($el.firstChildElement === html) return;
                 $el.innerHTML = '';
                 $el.appendChild(html)
             } else {
-                if ($el.___innerHTML == html)
-                    return;
-                $el.innerHTML = $el.___innerHTML = html;
+                $el.innerHTML = html
             }
-
         },
         text($el, fn, p) {
             const text = exec.call(this, fn, $el, p) ?? '';
