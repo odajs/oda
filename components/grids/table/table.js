@@ -1505,18 +1505,18 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             border-left: 2px solid var(--dark-background);
             border-right: none;
         }
-        .row[focused]>.cell::after {
-            content: '';
-            background-color: var(--focused-color);
-            position: absolute;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            height: 1px;
-            z-index: 1;
-            pointer-events: none;
-            @apply --shadow;
-        }
+        /*.row[focused]>.cell::after {*/
+        /*    content: '';*/
+        /*    background-color: var(--focused-color);*/
+        /*    position: absolute;*/
+        /*    bottom: 0px;*/
+        /*    left: 0px;*/
+        /*    right: 0px;*/
+        /*    height: 1px;*/
+        /*    z-index: 1;*/
+        /*    pointer-events: none;*/
+        /*    @apply --shadow;*/
+        /*}*/
         .row[pointer]::before {
             content: '';
             position: absolute;
