@@ -137,12 +137,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 }
                 this.fire('changed');
             })
-            nb.listen('move-cell', async (e) => {
+            nb.listen('move-cell', (e) => {
                 this.async(() => {
                     const rect = this.getElementFromCell().getBoundingClientRect();
-                    console.log(this.moveRect, rect);
                     this.scrollTop = this.moveRect.scrollTop + rect.top - this.moveRect.rect.top;
-                })
+                }, 100)
                 this.fire('changed');
             })
             if (!this.url) {
@@ -223,8 +222,6 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
         }
-        if (this.row?.item instanceof HTMLElement)
-            return this.row.item.localName;
         return 'div';
     },
     get maxRowsLength(){
@@ -238,7 +235,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     outHtml() {
         if (this.row?.item instanceof HTMLElement)
-            return ''; // this.row.item;
+            return  this.row.item;
         if (this.showAll)
             return this.row?.item || ''
         let array = this.split_out.slice(0, this.curRowsLength);

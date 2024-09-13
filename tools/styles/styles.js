@@ -417,10 +417,10 @@ body[context-menu-show] *:not(oda-context-menu){
         outline: var(--content-color) dashed .5px;
         outline-offset: -1px;
     };
-    // --focused:{
-    //    
-    //     //box-shadow: 0 2px 0 0  var(--focused-color) !important;
-    // };
+    --focused:{
+        position: relative !important;
+        //box-shadow: 0 2px 0 0  var(--focused-color) !important;
+    };
     --dimmed: {
         opacity: 0.7;
         filter: grayscale(80%);
@@ -436,9 +436,9 @@ body[context-menu-show] *:not(oda-context-menu){
         pointer-events: none;
     };
 }
-.focused, *[focused]{
-    position: relative !important;
-}
+// .focused, *[focused]{
+//     position: relative !important;
+// }
 .focused:after, *[focused]:after{
     content: '';
     position: absolute;
