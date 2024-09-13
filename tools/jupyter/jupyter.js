@@ -281,8 +281,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     {{status}}
                 </div>
             </div>
-            <div class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
-                <div class="vertical">
+            <div  class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
+                <div id="main" class="vertical">
                     <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control="control()"></oda-jupyter-toolbar>
                     <div class="horizontal" >
                         <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
@@ -510,7 +510,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="top" ~if="!readOnly && selected" >
-            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="cell.metadata.hideCode" @tap="notebook?.change()"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
@@ -518,6 +518,20 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
     `,
+    get hideCode(){
+        return this.cell?.metadata?.hideCode || false;
+    },
+    set hideCode(n){
+        let top = this.jupyter.scrollTop;
+        if (n){
+            top -= this.domHost.$('#main').offsetHeight;
+        }
+        else{
+
+        }
+        this.cell.writeMetadata('hideCode', n);
+        this.jupyter.scrollTop = top;
+    },
     move(direction){
         let top = this.jupyter.scrollTop;
         if(direction<0){
@@ -786,14 +800,22 @@ class JupyterCell extends ROCKS({
     get id() {
         return this.metadata?.id || getID();
     },
-    controls: [],
+    get controls() {
+        return this.data?.controls || [];
+    },
+    set controls(n) {
+        Object.defineProperty(this.data, 'controls', {
+            value: n,
+            enumerable: false,
+            configurable: true,
+            writable: false,
+        })
+    },
     get outputs() {
-        // return [ ...Array(40000).keys() ];
         return this.data?.outputs || [];
     },
     set outputs(n) {
         this.data.outputs = n;
-        // this.notebook.change();
     },
     get sources() {
         return this.data?.source || [];
