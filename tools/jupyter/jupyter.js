@@ -137,6 +137,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 }
                 this.fire('changed');
             })
+            nb.listen('move-cell', async (e) => {
+                this.async(() => {
+                    this.scrollToCell();
+                })
+                this.fire('changed');
+            })
             if (!this.url) {
                 this.style.visibility = 'visible';
                 this.style.opacity = 1;
@@ -513,9 +519,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     `,
     move(direction){
         this.cell.move(direction);
-        this.async(()=>{
-            // this.scrollToCell(this.cell);
-        })
     },
     cell: null,
     iconSize: 16,
@@ -618,8 +621,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" style="min-height: 32px;">
-            <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
+        <div id="code-editor" class="horizontal border" style="min-height: 32px;">
+            <oda-code-editor ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
             <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
                 <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">code hidden...</span>
             </div>                  
@@ -627,7 +630,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
  
     `,
     focus() {
-        this.$('oda-code-editor').focus();
+        this.$('#code-editor').focus();
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
@@ -899,10 +902,16 @@ class JupyterCell extends ROCKS({
         this.notebook.change();
     },
     move(direct) {
+        const controls = this.notebook.cells.filter(i => i.controls?.length);
         direct = this.index + direct;
         const cells = this.notebook.data.cells.splice(this.index, 1);
         this.notebook.data.cells.splice(direct, 0, cells[0]);
         this.notebook.change();
+        controls.map(i => {
+            const id = i.metadata.id;
+            this.notebook.cells.find(i => i.id === id).controls = i.controls;
+        })
+        this.notebook.fire('move-cell');
     },
     get isLast(){
         return this.notebook.cells.last === this;
