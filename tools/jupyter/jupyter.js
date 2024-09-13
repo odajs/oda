@@ -215,7 +215,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         if (i.key === 'image/png') {
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
-        } 
+        }
+        if (this.row?.item instanceof HTMLElement)
+            return this.row.item.localName;
         return 'div';
     },
     get maxRowsLength(){
@@ -229,7 +231,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     outHtml() {
         if (this.row?.item instanceof HTMLElement)
-            return this.row.item;
+            return ''; // this.row.item;
         if (this.showAll)
             return this.row?.item || ''
         let array = this.split_out.slice(0, this.curRowsLength);
