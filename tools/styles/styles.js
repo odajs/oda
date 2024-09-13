@@ -83,10 +83,15 @@ let style = /*css*/`
         --layout-color: black;
     }
 }
-
 :root{
     --font-family: Roboto, Noto, sans-serif;
+    --font-150:{
+        font-size: 150%;
+    };
+}
 
+:root{
+    --style-group: 'layouts';
     --content:{
         background-color: var(--content-background, white);
         color: var(--content-color, black);
@@ -97,9 +102,7 @@ let style = /*css*/`
         color: var(--light-color, gray);
         fill: var(--light-color, gray);
     };
-    --font-150:{
-        font-size: 150%;
-    };
+
     --boxed: {
         border: 1px solid darkgray;
         margin: 4px;
@@ -162,6 +165,11 @@ let style = /*css*/`
         background: var(--header-background);
         color: var(--header-color);
         fill: var(--header-color);
+    };
+    --dark: {
+        color: var(--dark-color) !important;
+        fill: var(--dark-color) !important;
+        background-color: var(--dark-background) !important;
     };
     --heading: {
         @apply --horizontal;
@@ -293,6 +301,7 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 :root {
+    --style-group: 'states';
     --invert:{
         filter: invert(1);
     };
@@ -397,11 +406,8 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 }
 :root{
-    --dark: {
-        color: var(--dark-color) !important;
-        fill: var(--dark-color) !important;
-        background-color: var(--dark-background) !important;
-    };
+    --style-group: 'selectors';
+
 
     --active: {
         color: var(--selected-color) !important;

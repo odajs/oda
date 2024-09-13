@@ -524,7 +524,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     set hideCode(n){
         let top = this.jupyter.scrollTop;
         if (n){
-            if (top > this.domHost.$('#main').offsetTop){
+            if (top > this.domHost.offsetTop){
                 this.async(()=>{
                     this.jupyter.scrollToCell(this.selectedCell);
                 })
