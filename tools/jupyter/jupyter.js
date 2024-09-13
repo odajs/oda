@@ -132,16 +132,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 }
                 await this.$render();
                 if (e.detail.value) {
-                    const added = this.getElementFromCell();
+                    const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
                     added.focus();
                 }
-                this.fire('changed');
-            })
-            nb.listen('move-cell', (e) => {
-                this.async(() => {
-                    const rect = this.getElementFromCell().getBoundingClientRect();
-                    this.scrollTop = this.moveRect.scrollTop + rect.top - this.moveRect.rect.top;
-                }, 100)
                 this.fire('changed');
             })
             if (!this.url) {
@@ -150,7 +143,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
             return nb;
         },
-        moveRect: undefined,
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
@@ -179,16 +171,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    getElementFromCell(cell =  this.selectedCell) {
-        const elms = this.$$('oda-jupyter-cell'),
-            elm = elms.find(i => i.cell.id === cell.id);
-        return elm;
-    },
     scrollToCell(cell = this.selectedCell) {
         if (!cell) return;
-        const elm = this.getElementFromCell(cell);
-        if (!elm) return;
-            elm.scrollIntoView();
+        const cellElements = this.jupyter.$$('oda-jupyter-cell');
+        const cellElement = cellElements.find(el => el.cell.id === cell.id);
+        if (!cellElement) return;
+        cellElement.scrollIntoView();
     },
     async attached() {
         await getLoader();
@@ -221,7 +209,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         if (i.key === 'image/png') {
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
-        }
+        } 
         return 'div';
     },
     get maxRowsLength(){
@@ -235,7 +223,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     outHtml() {
         if (this.row?.item instanceof HTMLElement)
-            return  this.row.item;
+            return this.row.item;
         if (this.showAll)
             return this.row?.item || ''
         let array = this.split_out.slice(0, this.curRowsLength);
@@ -273,16 +261,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 border-radius: 50%;
                 @apply --success-invert;
             }
-            .left-panel[selected] {
-                @apply --content;
-            }
             .left-panel[hover] {
                 @apply --header;
             }
         </style>
        
         <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
-            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover" :selected>
+            
+            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover">
                 <div class="sticky" style="min-width: 40px; max-width: 40x; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     {{status}}
@@ -526,9 +512,10 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     move(direction){
-        this.moveRect = { direction, scrollTop: this.jupyter.scrollTop };
-        this.moveRect.rect = this.jupyter.getElementFromCell(this.cell).getBoundingClientRect();
         this.cell.move(direction);
+        this.async(()=>{
+            // this.scrollToCell(this.cell);
+        })
     },
     cell: null,
     iconSize: 16,
@@ -631,8 +618,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div id="code-editor" class="horizontal border" style="min-height: 32px;">
-            <oda-code-editor ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
+        <div  class="horizontal border" style="min-height: 32px;">
+            <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
             <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
                 <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">code hidden...</span>
             </div>                  
@@ -640,7 +627,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
  
     `,
     focus() {
-        this.$('#code-editor').focus();
+        this.$('oda-code-editor').focus();
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
@@ -912,16 +899,10 @@ class JupyterCell extends ROCKS({
         this.notebook.change();
     },
     move(direct) {
-        const controls = this.notebook.cells.filter(i => i.controls?.length);
         direct = this.index + direct;
         const cells = this.notebook.data.cells.splice(this.index, 1);
         this.notebook.data.cells.splice(direct, 0, cells[0]);
         this.notebook.change();
-        controls.map(i => {
-            const id = i.metadata.id;
-            this.notebook.cells.find(i => i.id === id).controls = i.controls;
-        })
-        this.notebook.fire('move-cell');
     },
     get isLast(){
         return this.notebook.cells.last === this;
