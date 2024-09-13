@@ -132,14 +132,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 }
                 await this.$render();
                 if (e.detail.value) {
-                    const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
+                    const added = this.getElementFromCell();
                     added.focus();
                 }
                 this.fire('changed');
             })
             nb.listen('move-cell', async (e) => {
                 this.async(() => {
-                    this.scrollToCell();
+                    const rect = this.getElementFromCell().getBoundingClientRect();
+                    console.log(this.moveRect, rect);
+                    this.scrollTop = this.moveRect.scrollTop + rect.top - this.moveRect.rect.top;
                 })
                 this.fire('changed');
             })
@@ -149,6 +151,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
             return nb;
         },
+        moveRect: undefined,
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
@@ -177,12 +180,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
+    getElementFromCell(cell =  this.selectedCell) {
+        const elms = this.$$('oda-jupyter-cell'),
+            elm = elms.find(i => i.cell.id === cell.id);
+        return elm;
+    },
     scrollToCell(cell = this.selectedCell) {
         if (!cell) return;
-        const cellElements = this.jupyter.$$('oda-jupyter-cell');
-        const cellElement = cellElements.find(el => el.cell.id === cell.id);
-        if (!cellElement) return;
-        cellElement.scrollIntoView();
+        const elm = this.getElementFromCell(cell);
+        if (!elm) return;
+            elm.scrollIntoView();
     },
     async attached() {
         await getLoader();
@@ -522,6 +529,8 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     move(direction){
+        this.moveRect = { direction, scrollTop: this.jupyter.scrollTop };
+        this.moveRect.rect = this.jupyter.getElementFromCell(this.cell).getBoundingClientRect();
         this.cell.move(direction);
     },
     cell: null,
