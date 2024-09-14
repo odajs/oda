@@ -4,3 +4,11 @@
 <oda-tester>
     <oda-code-editor src="0123456789" max-lines="0"></oda-code-editor>
 </oda-tester>
+<script>
+    setTimeout(()=>{
+        tester.addButton({label: 'TEST', tap: (e)=>{
+                alert('test')
+            }})
+    }, 1000)
+
+</script>

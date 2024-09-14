@@ -4,6 +4,7 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         <rect x="0" y="0" :width :height :fill='background'/>
         <path :d='pathD' fill="none" :stroke :stroke-width="strokeWidth"/>
     </svg>`,
+    data: [],
     $public: {
         label:'',
         width:1000,
@@ -38,7 +39,8 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         newP.push(this.data[lL-1])
         return newP
     },
-    data:[],
-    push(t) {this.data.push(t)}
+    push(t) {
+        this.data.push(t);
+    }
 
 })

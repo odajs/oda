@@ -4,6 +4,9 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
         <div class="horizontal" slot="left" style="align-items:center; width: 100%">
             <oda-button class="no-flex" ~for="views" :icon="$for.item.icon" :title="$for.item.label" allow-toggle :toggled="focused === $for.item" @tap="focused = $for.item"></oda-button>
         </div>
+        <div class="horizontal" slot="left" style="align-items:center; width: 100%">
+            <oda-button class="no-flex" ~for="customButtons" ~props="$for.item"></oda-button>
+        </div>
         <span class="flex" slot="center" style="font-weight: bold; font-size: large; text-align: center">{{label}}</span>
     </app-layout-toolbar>
     <slot style="display: none" @slotchange="onSlot" class="flex"></slot>
@@ -14,6 +17,10 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
         this.async(()=>{
             this.leftPanelElement.showPin = true;
         })
+    },
+    customButtons:[],
+    addButton(props){
+        this.customButtons.push(props);
     },
     $public: {
         label: {

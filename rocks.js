@@ -770,6 +770,22 @@ in the <${host.localName}>`;
     const PROPERTY_SIGNS = ['$def', '$type', 'get', 'set'];
     const PROPERTY_ATTRIBUTES = [...ROCKS.PROPERTY_FLAGS, '$label', '$list', '$multiSelect', '$attr', '$hidden', '$editor', '$description'];
     Array:{
+        const push = Array.prototype.push;
+        Array.prototype.push = function (...item){
+            const res = push.call(this, ...item);
+            let deps = this[ROCKS.KEY]?.props?.length;
+            if(deps)
+                ROCKS.resetDeps(deps);
+            return res;
+        }
+        const slice = Array.prototype.slice;
+        Array.prototype.slice = function (...item){
+            const res = slice.call(this, ...item);
+            let deps = this[ROCKS.KEY]?.props?.length;
+            if(deps)
+                ROCKS.resetDeps(deps);
+            return res;
+        }
         Object.defineProperty(Array.prototype, 'has', {
             enumerable: false, configurable: true, value: Array.prototype.includes
         });

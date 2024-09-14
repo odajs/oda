@@ -1596,13 +1596,20 @@ in the <${host.localName}>`);
         if (document.body.firstElementChild) {
             if (document.body.firstElementChild.tagName === 'ODA-TESTER') {
                 document.body.style.visibility = 'hidden';
+                window.tester = document.body.firstElementChild;
+
                 document.body.firstElementChild.$wake = true;
                 document.body.firstElementChild.style.visibility = 'hidden';
+                const buttons = []
+                window.tester.constructor.prototype.addButton = function (e){
+                    buttons.push(e)
+                }
                 await import('./tools/tester/tester.js');
                 setTimeout(() => {
                     document.body.firstElementChild.style.visibility = '';
                     // ODA.isHidden = false;
                     document.body.style.visibility = '';
+                   buttons.forEach(i=>window.tester.addButton(i))
                 }, 200);
                 // sleep = 500;
             }
