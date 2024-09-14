@@ -28,7 +28,7 @@ export class NeuroModule extends Function{
                 return target[p];
             },
             apply(target, _, args) {
-                return target.forward(...args)
+                return target.forward(...args);
             }
         })
     }
@@ -67,6 +67,13 @@ export class NeuroModule extends Function{
     }
     forward(x){
         return x;
+    }
+    train(input, target, loss_func = 'MSE'){
+        const result  = this(input);
+        let loss = result[loss_func](target);
+        loss.back();
+        this.losts.push(loss.data[0]);
+        return result;
     }
     back(g){
         return g;
@@ -120,9 +127,6 @@ export class NeuroModule extends Function{
             }
         }
         return res
-    }
-    train(dataset) {
-
     }
 }
 export class Embedding  extends NeuroModule{
@@ -222,6 +226,7 @@ export class Embedding  extends NeuroModule{
             let window = tokens.slice(j, j + this.win_size);
             this.trainStep(token, window);
         }
+        this.losts.push(this.error);
         return tokens;
     }
     trainStep(token, phrase){
