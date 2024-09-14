@@ -1,4 +1,4 @@
-ODA({is: 'oda-chart', template: /*html*/ `
+ODA({is: 'oda-loss-chart', template: /*html*/ `
     <h3 ~if='label.length>0'>{{label}}</h3>
     <svg class='box' :width :height xmlns='http://www.w3.org/2000/svg' :viewBox="'0 0 ' + width + ' ' + height">
         <rect x="0" y="0" :width :height :fill='background'/>
@@ -38,10 +38,7 @@ ODA({is: 'oda-chart', template: /*html*/ `
         newP.push(this.data[lL-1])
         return newP
     },
-    data:{
-        $def: new Array(20000).fill(0).map(_=> Math.random()*5-2)
-    },
-
+    data:[],
     push(t) {this.data.push(t)}
 
 })

@@ -2,7 +2,7 @@ import {tensor} from "../torus/torus.js";
 export class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
-    losts  = [];
+    losses  = [];
     constructor(argumetns) {
         super()
 
@@ -72,7 +72,7 @@ export class NeuroModule extends Function{
         const result  = this(input);
         let loss = result[loss_func](target);
         loss.back();
-        this.losts.push(loss.data[0]);
+        this.losses.push(loss.data[0]);
         return result;
     }
     back(g){
@@ -226,7 +226,7 @@ export class Embedding  extends NeuroModule{
             let window = tokens.slice(j, j + this.win_size);
             this.trainStep(token, window);
         }
-        this.losts.push(this.error);
+        this.losses.push(this.error);
         return tokens;
     }
     trainStep(token, phrase){
