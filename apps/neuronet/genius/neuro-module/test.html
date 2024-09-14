@@ -121,9 +121,10 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
     },
     _dopTrain(){
         this.mnist.generation+=1
-        let rez = this.mnist(this.input)
-        let loss = rez.crossEntropy (targets[this.target]);
-        loss.back();
+        let rez = this.mnist.train(this.input, targets[this.target], 'crossEntropy')
+        // let rez = this.mnist(this.input)
+        // let loss = rez.crossEntropy (targets[this.target]);
+        // loss.back();
         console.log(rez)
 
         this.result = rez.data
@@ -205,11 +206,11 @@ ODA({is: 'oda-mnist', imports: '@oda/button', template: /*html*/ `
         let loss, rez, lossArr=[];
         for (let i=0; i<dat.inputs.length; i++) {
             mnist.generation+=1
-            rez = mnist(dat.inputs[i])
-            loss = rez.crossEntropy (dat.targets[i]);
+            rez = mnist.train(dat.inputs[i], dat.targets[i], 'crossEntropy');
+            // loss = rez.crossEntropy (dat.targets[i]);
             // this.loss.push(loss.data[0])
-            lossArr.push(loss.data[0])
-            loss.back();
+            lossArr = mnist.losses
+            // loss.back();
         }
         this.input = dat.inputs.last
         this.target = dat.targets.last.reduce((a,b,i,c)=>c[a]>b?a:i,0)

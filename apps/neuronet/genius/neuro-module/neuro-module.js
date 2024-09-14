@@ -126,6 +126,7 @@ export class NeuroModule extends Function{
                 res[key] = JSON.parse(JSON.stringify(obj.value));
             }
         }
+        // res.loses = this.loses;
         return res
     }
 }
