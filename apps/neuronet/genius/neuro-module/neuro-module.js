@@ -23,6 +23,7 @@ export class NeuroModule extends Function{
         for (let n in this.params){
             this[n] ??= this.params[n];
         }
+        this.params.losses ??= this.losses;
         return new Proxy(this, {
             get(target, p, receiver) {
                 return target[p];
@@ -126,7 +127,7 @@ export class NeuroModule extends Function{
                 res[key] = JSON.parse(JSON.stringify(obj.value));
             }
         }
-        // res.loses = this.loses;
+        // res.losses = this.losses;
         return res
     }
 }
