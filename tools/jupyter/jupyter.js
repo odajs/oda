@@ -116,13 +116,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             nb.listen('ready', async (e) => {
                 await this.$render();
                 this.async(async () => {
+                    const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last
+                    if(auto_run)
+                        await auto_run.run();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
                         this.scrollToCell();
                     }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
-                }, 1000)
+                }, 1000);
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
@@ -180,6 +183,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     async attached() {
         await getLoader();
+        this.$wake = true;
     }
 })
 
@@ -363,35 +367,39 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.cell.status;
     },
     async run() {
-        const task = ODA.addTask();
-        this.outputsStep = 0;
-        this.showAllOutputsRow = false;
-        const out = this.$$('oda-jupyter-cell-out');
-        if (out?.length) {
-            out.map(i => {
-                i.step = 0;
-                i.showAll = false;
-            })
-        }
-        this.async(async () => {
-            try {
-                for (let code of this.notebook.codes){
-                    if (code === this.cell) break;
-                    if (code.status) continue;
-                    await new Promise(async (resolve)=>{
-                        await code.run(this.jupyter);
-                        this.async(resolve)
-                    })
-                    await this.$render();
-                }
-                await this.cell.run(this.jupyter);
-                this.focus();
-            } catch (error) {
-
-            } finally {
-                ODA.removeTask(task);
+        return new Promise(resolve => {
+            const task = ODA.addTask();
+            this.outputsStep = 0;
+            this.showAllOutputsRow = false;
+            const out = this.$$('oda-jupyter-cell-out');
+            if (out?.length) {
+                out.map(i => {
+                    i.step = 0;
+                    i.showAll = false;
+                })
             }
-        }, 50)
+            this.async(async () => {
+                try {
+                    for (let code of this.notebook.codes){
+                        if (code === this.cell) break;
+                        if (code.status) continue;
+                        await new Promise(async (resolve)=>{
+                            await code.run(this.jupyter);
+                            this.async(resolve)
+                        })
+                        await this.$render();
+                    }
+                    await this.cell.run(this.jupyter);
+                    this.focus();
+                } catch (error) {
+
+                } finally {
+                    ODA.removeTask(task);
+                    resolve();
+                }
+            }, 50)
+        })
+
     },
     $pdp: {
         get icon(){
@@ -674,15 +682,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
 
     $public:{
-        autoRun:{
-            $def: false,
-            get(){
-                return this.cell?.readMetadata('autoRun', false)
-            },
-            set(n){
-                this.cell?.writeMetadata('autoRun', n)
-            }
-        },
+
         hideCode: {
             $def: false,
             get(){
@@ -704,10 +704,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         }
     },
-    attached() {
-        if (this.autoRun)
-            this.run();
-    }
+    // attached() {
+    //     if (this.autoRun)
+    //         this.run();
+    // }
 })
 
 class JupyterNotebook extends ROCKS({
@@ -818,6 +818,14 @@ class JupyterCell extends ROCKS({
             configurable: true,
             writable: false,
         })
+    },
+    autoRun:{
+        get(){
+            return this.readMetadata('autoRun', false)
+        },
+        set(n){
+            this.writeMetadata('autoRun', n)
+        }
     },
     get outputs() {
         return this.data?.outputs || [];
