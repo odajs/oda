@@ -245,6 +245,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.row?.item?.startsWith?.('<b>err');
+    },
+    attached(){
+        this.$wake = true;
     }
 })
 
@@ -448,6 +451,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.metadata.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
+    },
+    attached(){
+        this.$wake = true;
     }
 })
 
