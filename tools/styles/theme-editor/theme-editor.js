@@ -1,40 +1,39 @@
 class themeVars extends ROCKS({
     $public: (() => {
-        let styles = document.head.querySelectorAll('style');
-        styles = Array.from(styles).filter(i => Array.from(i.sheet.cssRules).some(r => r.selectorText === ':root'));
-        styles = styles.map(s => {
-            return {
-                scope: s.getAttribute('scope'),
-                style: s,
-                vars: {},
-                rules: []
+        const styles = {}, media = [];
+        const fn =(rule, scope, isMedia = false) => {
+            if (rule.selectorText === ':root') {
+                styles[scope] ||= { rules: [] };
+                styles[scope].rules.push({ rule });
+                [...(rule?.style || [])].map(propName => {
+                    if (propName?.indexOf("--") === 0) {
+                        styles[scope].vars ||= [];
+                        const v = rule.style.getPropertyValue(propName).trim();
+                        styles[scope].vars.push( { var: { [propName.trim()]: v }, isMedia });
+                    }
+                })
             }
-        })
-        const isCorrectRule = (rule) => rule.type === 1 || rule.type === 4;
-        const getRules = (rules = []) => {
-            return rules.map(r => {
-                if (isCorrectRule(r)) {
-                    if (r.type === 4)
-                        return r.cssRules[0];
-                    return r;
+        }
+        [...document.styleSheets].map(sheet => {
+            const scope = sheet.ownerNode.getAttribute('scope') || 'no-scope';
+            [...sheet.cssRules].map(rule => {
+                fn(rule, scope);
+                if (rule?.media?.mediaText.includes("prefers-color-scheme")) {
+                    [...rule.cssRules].map(rule => fn(rule, scope, true));
                 }
             })
-        }
-        styles.map(s => s.rules = [...s.rules, ...getRules(Array.from(s.style.sheet.cssRules))]);
-        styles.map(s => s.rules.map(rule =>
-            [...(rule?.style || [])].map(propName => {
-                if (propName?.indexOf("--") === 0)
-                    s.vars[propName.trim()] = rule.style.getPropertyValue(propName).trim();
-            })
-        ))
+        })
+        // console.log(styles)
         let vars = {}
-        styles.map(s => {
-            Object.keys(s.vars).map(k => {
-                vars[k] = {
+        Object.keys(styles).map(s => {
+            styles[s].vars.map(v => {
+                const key = Object.keys(v.var)[0],
+                    val = Object.values(v.var)[0];
+                vars[key] = {
                     $public: true,
-                    $group: s.scope,
-                    $editor: k.includes('color') || k.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
-                    [k]: s.vars[k]
+                    $group: s,
+                    $editor: key.includes('color') || key.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                    $def: val
                 }
             })
         })
