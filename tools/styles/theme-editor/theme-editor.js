@@ -66,7 +66,11 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 font-size: x-small;
             }
         </style>
-        <div class="horizontal wrap flex" style="justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
+        <div class="horizontal" style="align-items: center; margin-left: 8px;">
+            <div>Switch Light/Dark mode: </div>
+            <oda-toggle size="24" @tap="switchTheme"></oda-toggle>
+        </div>
+        <!-- <div class="horizontal wrap flex" style="justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
             <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding-bottom: 4px; position: relative">
                 <div style="font-size: larger; padding: 4px;" ~style="$for.item.style">
                     <div>{{$for.key}}</div>
@@ -77,7 +81,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                     <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid var(--border-color, lightgray);"></oda-color-picker>
                 </fieldset>
             </div>
-        </div>
+        </div> -->
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
     vars: { $def() { return new themeVars() } },
@@ -94,5 +98,20 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         })
         // console.log(elms);
         return elms;
+    },
+    switchTheme() {
+        [...document.styleSheets].map(sheet => {
+            [...sheet.cssRules].map(rule => {
+                if (rule?.media?.mediaText.includes("prefers-color-scheme")) {
+                    let rule_media = rule.media.mediaText, new_rule_media;
+                    if (rule_media.includes("light"))
+                        new_rule_media = rule_media.replace("light", "dark");
+                    if (rule_media.includes("dark"))
+                        new_rule_media = rule_media.replace("dark", "light");
+                    rule.media.deleteMedium(rule_media);
+                    rule.media.appendMedium(new_rule_media);
+                }
+            })
+        })
     }
 })
