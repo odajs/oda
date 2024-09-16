@@ -85,8 +85,8 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
         }
     </style>
     <div ~show="!isMinimized" id="appHeader" class="top title">
-        <slot name="title" class="horizontal"></slot>
-        <slot name="header" class="vertical no-flex"></slot>
+<!--        <slot name="title" class="horizontal"></slot>-->
+        <slot name="header" class="horizontal"></slot>
     </div>
     <div ~show="!isMinimized" class="main-container header flex" ~class="{'stop-pointer-events': sizeMode === 'min'}" ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}">
         <div class="main vertical flex shadow" @wheel="_scroll"  style="order:1" ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}">

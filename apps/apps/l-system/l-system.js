@@ -13,7 +13,7 @@ ODA({ is: 'oda-l-system', extends: 'oda-app-layout',
                 height: 100%;
             }
         </style>
-        <div slot="title" class="horizontal no-flex header border" style="width:100%">
+        <div slot="header" class="horizontal no-flex header border" style="width:100%">
             <div class="flex"></div>
             <div>
                 <a target="_blank" href="https://ru.wikipedia.org/wiki/L-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0" style="margin: 4px; font-size: x-large; font-weight: 600">L-System</a>
