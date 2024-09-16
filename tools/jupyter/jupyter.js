@@ -275,15 +275,15 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 border-radius: 50%;
                 @apply --success-invert;
             }
-            .left-panel[hover] {
+            :host(:hover) .left-panel {
                 @apply --header;
             }
+            
         </style>
        
-        <div class="horizontal" @pointerover="isHover = true" @pointerout="isHover = false">
-            
-            <div class="left-panel vertical" :error-invert="status === 'error'" :hover="isHover">
-                <div class="sticky" style="min-width: 40px; max-width: 40x; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+        <div class="horizontal">
+            <div class="left-panel vertical" :error-invert="status === 'error'">
+                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     {{status}}
                 </div>
@@ -406,11 +406,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     $pdp: {
         get icon(){
-            return this.cell?.isRun? 'spinners:8-dots-rotate': (this.isHover?'av:play-circle-outline':'icons:check-box-outline-blank');
+            return this.cell?.isRun? 'spinners:8-dots-rotate': 'av:play-circle-outline';
         },
-        isHover: false,
         get isReadyRun(){
-            return this.isHover || this.selected || this.cell?.isRun;
+            return this.selected || this.cell?.isRun;
         },
         editMode: {
             $def: false,
@@ -667,7 +666,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal border" style="min-height: 32px;">
-            <oda-code-editor  ~show="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
+            <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
             <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
                 <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">code hidden...</span>
             </div>                  

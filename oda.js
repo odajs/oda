@@ -967,13 +967,15 @@ if (!window.ODA?.IsReady) {
         },
         html($el, fn, p) {
             const html = exec.call(this, fn, $el, p) ?? '';
-            if ($el.___innerHTML == html)
-                return;
-            $el.___innerHTML = html;
             if (html instanceof HTMLElement) {
+                if ($el.firstChild === html)
+                    return;
                 $el.innerHTML = '';
                 $el.appendChild(html)
             } else {
+                if ($el.___innerHTML == html)
+                    return;
+                $el.___innerHTML = html;
                 $el.innerHTML = html
             }
         },
@@ -1590,7 +1592,7 @@ in the <${host.localName}>`);
         pointerDownListen();
         document.oncontextmenu = (e) => {
             e.target.dispatchEvent(new MouseEvent('menu', e));
-            // return false;
+            return false;
         };
         // let sleep = 0;
         if (document.body.firstElementChild) {
