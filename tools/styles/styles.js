@@ -169,6 +169,7 @@ let style = /*css*/`
     --dark: {
         color: var(--dark-color) !important;
         fill: var(--dark-color) !important;
+        border-color: var(--dark-color) !important;
         background-color: var(--dark-background) !important;
     };
     --heading: {

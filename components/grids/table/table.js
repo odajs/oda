@@ -290,6 +290,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     get size() {
         return this.sortedItems?.length || 0;
     },
+    filter: {
+        $def: '',
+        $public: true
+    },
 
     $pdp: {
         doubleClickFocusMode: false,
@@ -508,12 +512,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             if (!this.dataSet?.length) return emptyRows;
             let array = Object.assign([], this.dataSet);
             array = extract.call(this, array, this.hideRoot || this.hideTop ? -1 : 0);
-            this._useColumnFilters(array);
             return array;
         },
         get filteredItems() {
-            if (this.items?.length)
-                return this.items;
+            if (this.items?.length) {
+                const items = [...this.items];
+                this._useColumnFilters(items);
+                this._applyFilter(items);
+                return items;
+            }
             return emptyRows;
         },
         get groupedItems() {
@@ -757,6 +764,27 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }));
             }));
         });
+    },
+    /**
+     * @param {TableRow[]} items
+     * @this {Table}
+     */
+    _applyFilter(items) {
+        if (!this.filter) return;
+        try {
+            const filter = new RegExp(this.filter);
+            items.splice(0, items.length, ...items.filter(item => {
+                return this.rowColumns.some(col => {
+                    const name = col[this.columnId];
+                    return (filter.test(item[name]) || item.items?.find(subItem => {
+                        return filter.test(subItem[name]);
+                    }));
+                })
+            }));
+        }
+        catch (err) {
+            console.warn(err);
+        }
     },
     _groups: [],
     _group(array) {

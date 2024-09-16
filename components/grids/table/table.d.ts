@@ -7,11 +7,20 @@ interface Table extends odaComponent {
     allowSelection: 'all' | 'level' | 'type' | 'none';
     selectedRows: TableRow[];
     headerColumns: TableColumn[];
+    filter: string;
+    columnId: string;
+    items: TableRow[];
+    filteredItems: TableRow[];
+    columns: TableColumn[];
+    rowColumns: TableColumn[];
 
     focusRow(e: MouseEvent): void;
+    _applyFilter(items: TableRow[]);
 }
 
-interface TableRow { }
+interface TableRow {
+    items?: TableRow[];
+}
 
 interface TableColumn {
     name: string;

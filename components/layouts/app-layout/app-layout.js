@@ -110,7 +110,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             <slot :name="$for.item.pos + '-panel'"></slot>
         </app-layout-drawer>
     </div>
-    <slot ~show="!isMinimized" name="footer" class="horizontal no-flex" style="overflow: visible; border-top: 1px solid gray;"></slot>
+    <slot ~show="!isMinimized" name="footer" class="horizontal no-flex" style="overflow: visible;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],
