@@ -1,6 +1,47 @@
 let style = /*css*/`
-@media (prefers-color-scheme: dark) {
-    :root{
+
+:root {
+    --style-group: 'theme';
+    --content-background: light-dark(white, oklch(0.40 0 0));
+    --light-background: light-dark(#eee, gray);
+    --light-color: light-dark(gray, #eee);
+    --bar-background: var(--content-background);
+    --stroke-color: light-dark(transparent, transparent);
+    --content-color: light-dark(black, rgb(200 200 200));
+    --header-background: light-dark(silver, rgb(50 50 50));
+    --header-color: var(--content-color);
+    --border-color: light-dark(darkgray, darkgray);
+
+    --accent-color: light-dark(blue, oklch(0.72 0.16 259.27));
+    --success-color: light-dark(green, green);
+    --error-color: light-dark(red, yellow);
+    --error-background: light-dark(yellow, red);
+    --info-color: light-dark(blueviolet, lightyellow);
+    --info-background: light-dark(lightyellow, blueviolet);
+    --warning-color: light-dark(orange, orange);
+    --disabled-color: light-dark(silver, silver);
+
+    --focused-color: var(--accent-color);
+    --selected-color: light-dark(navy, rgb(0 153 255));
+    --selected-background: var(--header-background);
+    /* --selected-filter: light-dark(brightness(0.8) contrast(1.2), brightness(1.2) contrast(0.9)); */
+    --pointer-color: light-dark(magenta, magenta);
+
+    --dark-color: light-dark(white, rgb(20, 20, 20));
+    --dark-background: light-dark(gray, gray);
+
+    --body-background: light-dark(transparent, transparent);
+    --body-color: var(--content-background);
+
+    --section-background: light-dark(lightgrey, rgb(26 26 26));
+    --section-color: light-dark(black, rgb(200 200 200));
+
+    --layout-background: light-dark(whitesmoke, rgb(26 26 26));
+    --layout-color: light-dark(black, rgb(200 200 200));
+}
+
+/* @media (prefers-color-scheme: dark) {
+    :root {
         --content-background: oklch(0.40 0 0);
         --light-background: gray;
         --light-color: #eee;
@@ -40,9 +81,10 @@ let style = /*css*/`
         --layout-background: rgb(26 26 26);
         --layout-color: rgb(200 200 200);
     }
-}
-@media (prefers-color-scheme: light) {
-    :root{
+} */
+
+/* @media (prefers-color-scheme: light) {
+    :root {
         --content-background: white;
         --light-background: #eee;
         --light-color: gray;
@@ -82,7 +124,7 @@ let style = /*css*/`
         --layout-background: whitesmoke;
         --layout-color: black;
     }
-}
+} */
 :root{
     --font-family: Roboto, Noto, sans-serif;
     --font-150:{
@@ -188,6 +230,7 @@ let style = /*css*/`
     --footer: {
         @apply --header;
     };
+    --border-radius: 0px;
     --border: {
         border: 1px solid var(--border-color, black);
         border-radius: var(--border-radius);

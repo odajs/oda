@@ -1,17 +1,26 @@
 class themeVars extends ROCKS({
     $public: (() => {
         const styles = {}, media = [];
-        const fn =(rule, scope, isMedia = false) => {
+        const fn =(rule, _scope = 'no-scope', isMedia = false) => {
+            let scope = _scope;
             if (rule.selectorText === ':root') {
                 styles[scope] ||= { rules: [] };
                 styles[scope].rules.push({ rule });
+                [...(rule?.style || [])].map(i => {
+                    if (i === "--style-group") {
+                        scope = _scope + '-' + rule.style.getPropertyValue(i).trim().replaceAll('\'', '');
+                        styles[scope] ||= {}
+                    }
+                });
                 [...(rule?.style || [])].map(propName => {
                     if (propName?.indexOf("--") === 0) {
-                        styles[scope].vars ||= [];
                         const v = rule.style.getPropertyValue(propName).trim();
-                        styles[scope].vars.push( { var: { [propName.trim()]: v }, isMedia });
+                        if (propName !== '--style-group') {
+                            styles[scope].vars ||= [];
+                            styles[scope].vars.push( { var: { [propName.trim()]: v }, isMedia });
+                        }
                     }
-                })
+                });
             }
         }
         [...document.styleSheets].map(sheet => {
@@ -26,7 +35,7 @@ class themeVars extends ROCKS({
         // console.log(styles)
         let vars = {}
         Object.keys(styles).map(s => {
-            styles[s].vars.map(v => {
+            styles[s].vars?.map(v => {
                 const key = Object.keys(v.var)[0],
                     val = Object.values(v.var)[0];
                 vars[key] = {
@@ -48,6 +57,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             :host {
                 @apply --vertical;
                 @apply --flex;
+                background: var(--content-background);
             }
             input {
                 border: none;
@@ -65,9 +75,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 font-size: x-small;
             }
         </style>
-        <div class="horizontal" style="align-items: center; margin-left: 8px;">
+        <div class="horizontal" style="align-items: center; margin-left: 8px;" >
             <div>Switch Light/Dark mode: </div>
-            <oda-toggle size="24" @tap="switchTheme"></oda-toggle>
+            <oda-toggle size="24" ::toggled></oda-toggle>
         </div>
         <!-- <div class="horizontal wrap flex" style="justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
             <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding-bottom: 4px; position: relative">
@@ -83,6 +93,23 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         </div> -->
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
+    toggled: {
+        $def: false,
+        set(n) {
+            this.theme = n ? 'dark' : 'light';
+            this.switchTheme();
+        }
+    },
+    $public: {
+        theme: {
+            $def: 'light',
+            $list: ['light', 'dark', 'light dark'],
+            set(n) {
+                this.toggled = n === 'dark';
+            },
+            $save: true
+        },
+    },
     vars: { $def() { return new themeVars() } },
     get elements() {
         const elms = {};
@@ -98,19 +125,21 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         // console.log(elms);
         return elms;
     },
-    switchTheme() {
-        [...document.styleSheets].map(sheet => {
-            [...sheet.cssRules].map(rule => {
-                if (rule?.media?.mediaText.includes("prefers-color-scheme")) {
-                    let rule_media = rule.media.mediaText, new_rule_media;
-                    if (rule_media.includes("light"))
-                        new_rule_media = rule_media.replace("light", "dark");
-                    if (rule_media.includes("dark"))
-                        new_rule_media = rule_media.replace("dark", "light");
-                    rule.media.deleteMedium(rule_media);
-                    rule.media.appendMedium(new_rule_media);
-                }
-            })
+    switchTheme(theme = this.theme) {
+        let wins = [ top ];
+        wins = [...wins, ...Array.from(top)];
+        wins.map(w => {
+            let meta = w.document.getElementById('color-scheme');
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.id = meta.name = "color-scheme";
+                w.document.head.appendChild(meta);
+            }
+            meta.content = theme;
         })
+        return theme;
+    },
+    ready() {
+        this.toggled = this.theme === 'dark';
     }
 })
