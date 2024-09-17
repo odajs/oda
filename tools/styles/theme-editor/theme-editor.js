@@ -59,38 +59,18 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 @apply --flex;
                 background: var(--content-background);
             }
-            input {
-                border: none;
-                width: 100%;
-                padding: 2px;
-                outline: none;
-                border-bottom: 1px solid var(--border-color, lightgray);
-                background: transparent;
-            }
-            legend{
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                text-align: left;
-                font-size: x-small;
-            }
         </style>
         <div class="horizontal" ~if="!hideSwitchBtn" style="align-items: center; margin-left: 8px;" >
             <div>Switch Light/Dark mode: </div>
             <oda-toggle size="24" ::toggled></oda-toggle>
         </div>
-        <!-- <div class="horizontal wrap flex" style="justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-            <div class="border no-flex" ~for="elements" style="width: 300px; margin: 4px; padding-bottom: 4px; position: relative">
-                <div style="font-size: larger; padding: 4px;" ~style="$for.item.style">
-                    <div>{{$for.key}}</div>
-                </div>
-                <fieldset ~for="$for.item.vars" class="vertical flex" style="position: relative; border-radius: 2px; border: 1px solid var(--border-color, lightgray);">
-                    <legend>{{$$for.item.k}}</legend>
-                    <input :value="$$for.item.v"></input>
-                    <oda-color-picker ~if="$$for.item.k?.includes('color') || $$for.item.k?.includes('background')" :value="$$for.item.v" style="top: -7px;height: 14px;width: 14px; position: absolute; right: 4px; border: none; cursor: pointer; border: 1px solid var(--border-color, lightgray);"></oda-color-picker>
-                </fieldset>
+        <div class="horizontal wrap no-flex" style="position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
+            <div class="border no-flex" ~for="elements" style="width: 160px; margin: 4px; position: relative; border-radius: 2px">
+                <oda-button style="font-size: larger; padding: 4px;" ~style="$for.item.style" @tap="showInfo($for.item)">
+                    {{$for.key}}
+                </oda-button>
             </div>
-        </div> -->
+        </div>
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
     toggled: {
@@ -117,13 +97,17 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             const i = this.vars.constructor.__rocks__.descrs[k],
                 v = this.vars[k],
                 group = k.split('-')[2];
-            elms[group] ||= { vars: [], style: {} };
-            elms[group].vars.push({ group, k, v });
+            elms[group] ||= { vars: {}, style: {} };
+            elms[group].vars[k] = i;
             if (k.includes('-color')) elms[group].style.color = v;
             if (k.includes('-background')) elms[group].style.background = v;
         })
         // console.log(elms);
         return elms;
+    },
+    async showInfo(item) {
+        console.log(item);
+        const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: item.vars }, { });
     },
     async switchTheme(theme = this.theme) {
         let wins = [ top ];
