@@ -1,8 +1,7 @@
 import {tensor} from "../../torus/torus.js";
 import {Linear, NeuroModule} from "../neuro-module.js";
 export class Embedding  extends NeuroModule{
-    negativeSize = 3;
-    constructor(dim = 1024, char_step = 0, win_size = 8) {
+    constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
     __init__(){
@@ -76,8 +75,8 @@ export class Embedding  extends NeuroModule{
     get size(){
         return this['#size'] ??= this.tokens.length;
     }
-    get error(){
-        return this['#error'] ??= (()=>{
+    get tokens_error(){
+        return this['#tokens_error'] ??= (()=>{
             const tokens = this.tokens.filter(i=>(i.error>0 && i.error<1))
             const size = tokens.length;
             if (!size)
@@ -88,6 +87,9 @@ export class Embedding  extends NeuroModule{
             error /= size;
             return  error;
         })()
+    }
+    get error(){
+        return (this.losses?.last?.reduce((r,v)=>r+v) || 2)/2
     }
     train(text){
         let tokens = this._tokenize(text);
@@ -104,14 +106,14 @@ export class Embedding  extends NeuroModule{
         const target = tensor.eye(this.tokens.length,  this.dim);
         const losses = softmax.crossEntropy(target);
         losses.back();
-        this.losses.push([this.error, losses.data[0]]);
+        this.losses.push([this.tokens_error, losses.data[0]]);
         return tokens;
     }
     trainStep(token, phrase){
         if (!phrase.length)
             return 1;
         let target = this.BINS.slice(0, phrase.length);
-        let size = this.win_size * (this.negativeSize + 1);
+        let size = this.win_size * (this.negative_size + 1);
         let stop = size * 2;
         while (stop-- && phrase.length < size && this.size > size){
             const idx = Math.ceil(Math.random() * this.size)
@@ -128,7 +130,7 @@ export class Embedding  extends NeuroModule{
         res = res.MSE(target);
         token.error = res.data[0];
         res.back();
-        this['#error'] = undefined;
+        this['#tokens_error'] = undefined;
     }
     get tokens(){
         return this._tokens ??= Object.values(this.vocabulary);
