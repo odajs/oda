@@ -1,7 +1,6 @@
 import '../../../components/grids/table/tree/tree.js';
 ODA({ is: 'oda-jupyter-tree', extends: 'oda-tree',
     allowFocus: true,
-    doubleClickFocusMode: false,
     get dataSet() {
         return this.notebook?.items
     },

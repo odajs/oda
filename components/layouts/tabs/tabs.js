@@ -43,10 +43,10 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
                 @apply --content;
                 opacity: 1;
                 box-shadow:
-                    0 2px 3px 0 rgba(0, 0, 0, 0.05),
-                    2px 0 3px 0 rgba(0, 0, 0, 0.05),
-                    0 -2px 3px 0 rgba(0, 0, 0, 0.05),
-                    -2px 0 3px 0 rgba(0, 0, 0, 0.05);
+                    inset 0 2px 3px 0 rgba(0, 0, 0, 0.05),
+                    inset 2px 0 3px 0 rgba(0, 0, 0, 0.05),
+                    inset 0 -2px 3px 0 rgba(0, 0, 0, 0.05),
+                    inset -2px 0 3px 0 rgba(0, 0, 0, 0.05);
                 border-{{direction === 'horizontal' ? 'top-left' : 'bottom-right'}}-radius: 8px;
                 border-{{direction === 'horizontal' ? 'top-right' : 'top-right'}}-radius: 8px;
             }

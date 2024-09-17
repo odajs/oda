@@ -29,9 +29,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const el = e.path.find(p => p.row);
         if (el) {
             this.table.fire('row-dblclick', el.row);
-            if (this.doubleClickFocusMode) {
-                this.focusRow(e);
-            }
         }
 
     },
@@ -106,11 +103,9 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (event?.shiftKey) {
             this.selectRow({ target: { item: curPos.row }, ctrlKey: true });
         }
-        if (!this.doubleClickFocusMode) {
-            this.focusedRow = this.focusedCell.row;
-            if (event?.shiftKey) {
-                this.selectRow({ target: { item: this.focusedRow }, ctrlKey: true });
-            }
+        this.focusedRow = this.focusedCell.row;
+        if (event?.shiftKey) {
+            this.selectRow({ target: { item: this.focusedRow }, ctrlKey: true });
         }
 
         // this.throttle('move', e => {
@@ -296,7 +291,6 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
 
     $pdp: {
-        doubleClickFocusMode: false,
         set focusedCell(v) {
             if (v?.col) {
                 const idx = this.activeCols.findIndex(i => i === v?.col);
@@ -913,9 +907,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             const item = d?.value || e.target.item;
             this.pointerRow = item;
         }
-        if (!this.doubleClickFocusMode) {
-            this.focusRow(e, d);
-        }
+        this.focusRow(e, d);
     },
     getRowIndex(row) {
         return this.rows.findIndex(r => Object.equal(r, row));

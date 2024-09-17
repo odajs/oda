@@ -324,6 +324,7 @@ ODA({
         this._parentHeight = parent.offsetHeight;
         this._applyMove();
         this._applyResize();
+        this.pos = {...this.pos};
     },
     _resize() {
         if (this.autosize) return;
@@ -341,13 +342,15 @@ ODA({
                         if (!this.pos) this.pos = { ...this.drawPos };
                         for (const m of forms) {
                             if (
-                                this.pos.x >= m.pos.x
-                                && this.pos.x < m.pos.x + this.topPadding
-                                && this.pos.y >= m.pos.y
-                                && this.pos.y < m.pos.y + this.topPadding
+                                this.pos.l >= m.drawPos.l
+                                && this.pos.l < m.drawPos.l + this.topPadding
+                                && this.pos.t >= m.drawPos.t
+                                && this.pos.t < m.drawPos.t + this.topPadding
                             ) {
-                                this.pos.x = this.pos.x + this.topPadding;
-                                this.pos.y = this.pos.y + this.topPadding;
+                                this.pos.l = m.drawPos.l + this.topPadding;
+                                this.pos.r = m.drawPos.r - this.topPadding;
+                                this.pos.t = m.drawPos.t + this.topPadding;
+                                this.pos.b = m.drawPos.b - this.topPadding;
                                 this._setTransform();
                                 return;
                             }

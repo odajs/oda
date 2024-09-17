@@ -689,7 +689,31 @@ if (!window.ODA?.IsReady) {
                 return window;
             }
         }
-    })
+    });
+    class ODAServiceManeger {
+        constructor() {
+            throw new TypeError('Illegal invocation');
+        }
+        static registerService(name, service) {
+            if (this.#services[name]) {
+                throw new Error('The service is already registered!');
+            }
+            this.#services[name] = service;
+        }
+        static getService(name) {
+            let w = window;
+            let service = this.#services[name];
+            while (!service && w !== w.parent && (w = w.parent)) {
+                service = w.ODA?.services.getService(name);
+            }
+            return service;
+        }
+        static unregisterService(name) {
+            delete this.#services[name];
+        }
+        static #services = {};
+    }
+    ODA.services = ODAServiceManeger;
 
     class VNode {
         constructor(el, vars) {
