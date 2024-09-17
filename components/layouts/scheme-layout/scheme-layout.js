@@ -50,11 +50,6 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             $def: 30,
             $pdp: true,
         },
-        blockTemplate: {
-            $type: String,
-            $pdp: true,
-            $def: 'div'
-        },
         linkColor: {
             $def: 'gray',
             $save: true,
@@ -89,6 +84,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         }
     },
     $pdp: {
+        blockTemplate: 'div',
         layout: {
             get() {
                 return this;
