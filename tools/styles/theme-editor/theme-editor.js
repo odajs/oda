@@ -75,7 +75,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 font-size: x-small;
             }
         </style>
-        <div class="horizontal" ~if="!hideSwitchMode" style="align-items: center; margin-left: 8px;" >
+        <div class="horizontal" ~if="!hideSwitchBtn" style="align-items: center; margin-left: 8px;" >
             <div>Switch Light/Dark mode: </div>
             <oda-toggle size="24" ::toggled></oda-toggle>
         </div>
@@ -100,7 +100,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             this.switchTheme();
         }
     },
-    hideSwitchMode: false,
+    hideSwitchBtn: false,
     $public: {
         theme: {
             $def: 'light',
